@@ -1,32 +1,78 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Load header component
+    // Define the header content directly in the script to avoid network request delay
+    const headerHTML = `
+        <header class="site-header">
+            <div class="container header-container">
+                <div class="logo">
+                    <a href="index.html">
+                        <img src="assets/images/uaw-logo.png" alt="Universal Automation Wiki Logo">
+                    </a>
+                </div>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="technical.html">Technical Details</a></li>
+                        <li><a href="output.html">Example Workflows</a></li>
+                        <li><a href="https://jamiem.me/iterative-code" target="_blank">GitHub</a></li>
+                    </ul>
+                </nav>
+                <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </header>
+    `;
+
+    // Define the footer content directly in the script
+    const footerHTML = `
+        <footer class="site-footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-logo">
+                        <img src="assets/images/uaw-logo.png" alt="Universal Automation Wiki Logo">
+                    </div>
+                    <div class="footer-links">
+                        <div class="footer-links-column">
+                            <h4>Platform</h4>
+                            <ul>
+                                <li><a href="output.html">Example Workflows</a></li>
+                                <li><a href="technical.html">Technical Details</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-links-column">
+                            <h4>Resources</h4>
+                            <ul>
+                                <li><a href="https://github.com/iterative-ai/">GitHub</a></li>
+                                <li><a href="#">Documentation</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-links-column">
+                            <h4>Connect</h4>
+                            <ul>
+                                <li><a href="#">Twitter</a></li>
+                                <li><a href="#">LinkedIn</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="copyright">
+                    <p>&copy; 2025 Universal Automation Wiki. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    `;
+
+    // Insert the header and footer without making network requests
     const headerPlaceholder = document.querySelector('#header-placeholder');
     if (headerPlaceholder) {
-        fetch('/components/header.html')
-            .then(response => response.text())
-            .then(data => {
-                headerPlaceholder.innerHTML = data;
-                // Initialize header-specific functionality after loading
-                initializeHeaderFunctionality();
-            })
-            .catch(error => {
-                console.error('Error loading header component:', error);
-                headerPlaceholder.innerHTML = '<p>Error loading header</p>';
-            });
+        headerPlaceholder.innerHTML = headerHTML;
+        initializeHeaderFunctionality();
     }
     
-    // Load footer component
     const footerPlaceholder = document.querySelector('#footer-placeholder');
     if (footerPlaceholder) {
-        fetch('/components/footer.html')
-            .then(response => response.text())
-            .then(data => {
-                footerPlaceholder.innerHTML = data;
-            })
-            .catch(error => {
-                console.error('Error loading footer component:', error);
-                footerPlaceholder.innerHTML = '<p>Error loading footer</p>';
-            });
+        footerPlaceholder.innerHTML = footerHTML;
     }
 });
 

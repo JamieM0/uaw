@@ -11,9 +11,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder {
+            min-height: 70px; /* Match header height */
+        }
+        #footer-placeholder {
+            min-height: 250px; /* Approximate height of footer */
+        }
+    </style>
 </head>
 <body>
-    <!-- Header placeholder -->
+    <!-- Header placeholder to be filled by components.js -->
     <div id="header-placeholder"></div>
 
     <main>
@@ -146,9 +155,10 @@
         </section>
     </main>
 
-    <!-- Footer placeholder -->
+    <!-- Footer placeholder to be filled by components.js -->
     <div id="footer-placeholder"></div>
     
+    <!-- Load components.js first to ensure header/footer are loaded before other scripts -->
     <script src="assets/js/components.js"></script>
     <script src="assets/js/main.js"></script>
 </body>
