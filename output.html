@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example Workflows - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/responsive.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="assets/images/uaw-logo.png" alt="Universal Automation Wiki Logo">
+                </a>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="technical.html">Technical Details</a></li>
+                    <li><a href="https://jamiem.me/iterative-code" target="_blank">GitHub</a></li>
+                </ul>
+            </nav>
+            <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Example Workflows</h1>
+                <p class="hero-subtitle">Explore our example automation trees and pathways</p>
+                <div class="hero-actions">
+                    <a href="https://jamiem.me/live-tree-example" class="button primary" target="_blank">View Interactive Tree Demo</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="output-workflows">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Dyson Sphere Construction Workflow</h2>
+                    <p>This tree demonstrates a theoretical automation process for constructing a Dyson sphere</p>
+                </div>
+                
+                <div class="workflow-container">
+                    <div class="tree-view">
+                        <pre class="tree-structure">
+construct_dyson_sphere
+├── assess_resource_need_201ccf06-feb7-465c-a9bb-353b1c87d2b3
+│   ├── check_stock_now_be2a8461-c2f7-494c-81fb-7a3d45ee1857
+│   ├── cost_get_price_30031571-d0a5-4cec-9fc7-2acc460e699d
+│   ├── count_each_thing_now_5ef2fe62-d7aa-418c-9470-2d8d4c57f933
+│   ├── find_need_help_bbda38a7-c9f8-43f3-befe-97e7d8c0d997
+│   ├── finds_and_says_help_e8f68996-b91f-46ff-877f-a144ced80f09
+│   ├── lead_time_check_9bbf7bd5-5475-4be4-91e2-423d4e1fdc5a
+│   └── supply_chain_look_1221d985-53a7-448a-aec7-e9f7385f032f
+├── build_base_help_d41c7b01-6580-4785-967b-92712044531d
+│   ├── build_base_ground_d316efcd-3b4a-4438-8c37-7f57950a4922
+│   ├── level_secure_start_89cc8718-0bb6-4e64-a58a-bf82dc8f7188
+│   ├── posts_help_beam_cb68d9bb-138b-4cdb-8a19-e93974134b2c
+│   ├── site_check_now_5c92d7af-632f-45cb-83b7-88300c31b584
+│   ├── support_help_data_b791af6d-43b4-46cc-9ac6-82d83940b6eb
+│   └── support_need_find_63d28913-9088-4b84-9668-82ae3dade0f7
+├── build_outer_shell_b25c1406-a785-46e3-aec0-a59663d8aeba
+│   ├── add_layers_now_9810a7b3-6c55-43bb-940e-f478ad678df3
+│   ├── base_layer_make_1ce4e11a-42af-46b5-9af4-a81cd5419741
+│   ├── check_layer_good_c2d7f058-e4e5-49e3-a35f-e8cbdaa9e6a9
+│   ├── coat_protect_now_2b8ac267-4d73-4279-b0a9-458471b14cbd
+│   └── shell_specs_done_480c6488-b7b5-4e55-9902-51779f234902
+├── dyson_sphere_idea_plan_388ca608-d7d1-4ffc-96b5-70a03ff49a29
+│   ├── assess_need_for_work_f6824cd7-dc85-4af5-a95f-50d7937faaa5
+│   ├── dyson_sphere_build_go_7f0f5e79-cbe0-4b8a-99be-946282029ac3
+│   │   ├── build_plan_time_fd255000-5c2e-4ea9-a855-360d0bfb70ba
+│   │   ├── force_account_gravity_c399076c-b9ac-4fc8-9f4c-084de38c0613
+│   │   └── orbit_find_stability_48f459d3-a80d-4580-b388-8c5cf6b3ff80
+│   ├── dyson_sphere_energy_need_f1ada4de-33be-42d8-aaea-cfda8e972290
+│   │   ├── assess_tech_level_cbd288f4-1569-4906-a506-bd0bac7c38a4
+│   │   ├── energy_use_rate_d95bb972-9bfe-4908-b206-208ee54364d9
+│   │   └── growth_plan_now_e5dedd5f-f91a-4c99-8bef-e829ad294c8e
+│   ├── dyson_sphere_goal_plan_dd30adfc-06aa-406d-be7b-19e808377f40
+│   ├── risk_plan_make_safe_5bfe8f72-19e2-4cf6-9c00-9e8b389069c4
+│   ├── sphere_design_plan_a7d99c11-f23d-4359-859c-ebb0db8fa27e
+│   │   ├── design_build_support_systems_e941251e-0074-4314-883d-7cb3dd909c1e
+│   │   ├── energy_collection_design_3dcddf0a-71cf-4855-a354-267d04fa8225
+│   │   └── select_main_stuff_1359336f-ed53-4ba6-a574-1d30eb3f199d
+│   └── study_new_tech_b5cca447-4b8f-461a-b352-a88c0b561f72
+│       ├── new_study_work_0e2715be-81b7-4ec1-b004-f9b0850e5eeb
+│       ├── robots_do_work_dc238b9d-7ce6-460d-81ee-6824f22d39b3
+│       ├── solar_energy_collection_1df4fc83-aa48-47ad-a932-46abff3204d5
+│       └── space_build_ways_514e2d1d-3cd0-4f3d-92e4-c2475e4ae9b6
+├── expand_sphere_now_76da00a7-d598-43fa-8f1e-6d4f7801de17
+│   ├── new_sphere_volume_radius_9d51316a-58b4-40d1-8b2c-bed60b8d1c44
+│   ├── rate_change_time_8ab3aafe-a218-40d4-8445-d41cc1ad8489
+│   ├── repeat_count_grow_daf3462f-4ff1-4c24-9cc2-1c667aec16e1
+│   ├── sphere_radius_expansion_rate_04a36ea6-13f7-4d2e-9d30-ff6a2bec9005
+│   ├── sphere_size_start_b1ca88ac-77b5-46d8-8872-6d026cf564e1
+│   ├── sphere_volume_size_calc_962d3b5e-d8e4-41f2-a393-82199d5b70e2
+│   └── stop_loop_size_00ea7a3c-9bee-41b2-9bf3-d5cfe2a5f430
+├── solar_energy_catch_go_355ea9cb-d8f1-4031-9f08-18ada38164da
+│   ├── grid_link_power_sale_b76a68ed-3863-4534-8458-e82080c1eab6
+│   ├── solar_inverter_connect_3d668d77-f856-408f-8cb3-6650d4fedb9e
+│   ├── solar_panel_choice_b48d51bb-8a8e-48c2-8061-c483f1f17416
+│   ├── solar_panels_install_now_7f56e5af-724f-49c5-9dd4-9b6f6a9c5899
+│   ├── sun_light_data_check_52d15092-a3e3-4c13-b207-f0fbd36539a9
+│   ├── system_check_energy_78ff3fbb-5957-49e1-9b9d-c19da312ea38
+│   └── system_keep_clean_work_8b2ab747-8ff3-448f-b5b1-322aff5eac91
+└── sphere_keep_fix_94f635b8-6ffc-4175-8b98-95c7c39525ee
+    ├── assess_sphere_state_53b34f65-ecca-484f-98d6-cb2d376e82a6
+    ├── find_damage_types_b0ce74bc-0eac-4197-8349-212d423a9f96
+    │   ├── check_surface_flaws_39b3f7df-f219-4bea-8fdd-6f3ce306d907
+    │   ├── look_for_cracks_now_9b075965-f0c2-42bf-9f9a-7303360e904d
+    │   └── measure_size_true_3ebde53c-79c7-4f40-b309-358cff60c07e
+    ├── fix_plan_make_b4efef5c-d196-4060-a35b-7cc711e7fdf4
+    ├── get_tools_now_c85c0bbe-4be8-4730-bb31-d266ede8be9e
+    ├── quality_check_test_7c275195-2075-4a0e-a1cc-1eddbce93cc8
+    └── run_fix_now_e2cd99dc-1743-4940-b7d7-71a8c87670cf
+        ├── check_bad_parts_now_55d469bd-fcf9-4eea-a29f-ccf869a77750
+        ├── disassemble_fix_step_note_16e96bee-1f42-439f-99cf-adeb9875fbaa
+        ├── find_the_issue__ba3a2a08-3238-41a2-9731-8b9478ab994a
+        ├── get_tools_now_cb7e10ad-b2b3-4e9f-8855-15106c465bc1
+        ├── rebuild_gear_now_0fbe048a-8274-4cf4-ba37-adbc75501541
+        ├── repair_manual_study_a511ba05-40cc-4618-8b6e-b99fe8706fe5
+        └── work_area_ready_55df9333-4e53-4eae-b399-eaafdca5a543
+                        </pre>
+                    </div>
+                </div>
+                
+                <div class="workflow-explanation">
+                    <h3>About This Tree</h3>
+                    <p>This tree represents the complete workflow for planning, building, and maintaining a theoretical Dyson sphere. Each node contains specific instructions and requirements for completing that step of the process.</p>
+                    <p>The workflow is broken down into several main segments:</p>
+                    <ul>
+                        <li><strong>Planning Phase:</strong> Assessment of resources, design considerations, and energy needs</li>
+                        <li><strong>Construction Phase:</strong> Building the base, outer shell, and expansion of the structure</li>
+                        <li><strong>Energy Collection:</strong> Implementation of solar energy collection systems</li>
+                        <li><strong>Maintenance:</strong> Ongoing repairs, quality checks, and system maintenance</li>
+                    </ul>
+                    
+                    <div class="workflow-actions">
+                        <h3>Interact with this Tree</h3>
+                        <p>To explore this workflow in detail with an interactive interface, visit our live demo:</p>
+                        <a href="https://jamiem.me/live-tree-example" class="button primary" target="_blank">Launch Interactive Tree View</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="get-involved">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Contribute to Our Workflows</h2>
+                    <p>Our workflow trees are community-driven and constantly evolving. Help us improve by providing feedback or suggesting new pathways.</p>
+                </div>
+                <div class="contribute-content">
+                    <div class="contribute-text"></div>
+                        <p>We welcome contributions from experts in various domains to help refine our automation trees and develop more efficient pathways.</p>
+                        <div class="contribute-actions">
+                            <a href="https://github.com/iterative-ai/" target="_blank" class="button primary">Contribute on GitHub</a>
+                            <a href="technical.html" class="button secondary">Learn About Our System</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="assets/images/uaw-logo.png" alt="Universal Automation Wiki Logo">
+                </div>
+                <div class="footer-links">
+                    <div class="footer-links-column">
+                        <h4>Platform</h4>
+                        <ul>
+                            <li><a href="index.html">Home</a></li>
+                            <li><a href="technical.html">Technical Details</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-links-column">
+                        <h4>Resources</h4>
+                        <ul>
+                            <li><a href="https://github.com/iterative-ai/">GitHub</a></li>
+                            <li><a href="#">Documentation</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-links-column">
+                        <h4>Connect</h4>
+                        <ul>
+                            <li><a href="#">Twitter</a></li>
+                            <li><a href="#">LinkedIn</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Universal Automation Wiki. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

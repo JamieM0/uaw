@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technical Details - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/responsive.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="assets/images/uaw-logo.png" alt="Universal Automation Wiki Logo">
+                </a>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="output.html">Example Workflows</a></li>
+                    <li><a href="https://github.com/microsoft/vscode-extension-samples/blob/main/getting-started-sample" target="_blank">GitHub</a></li>
+                </ul>
+            </nav>
+            <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Technical Details</h1>
+                <p class="hero-subtitle">Dive deep into the architecture and implementation of Universal Automation Wiki</p>
+            </div>
+        </section>
+
+        <section class="technical-overview">
+            <div class="container">
+                <div class="section-header">
+                    <h2>System Overview</h2>
+                </div>
+                <div class="technical-content">
+                    <p>The Universal Automation Wiki is designed to provide a comprehensive mapping of automation workflows across various domains. At its core is the Iterative AI technology, which breaks down complex tasks into manageable steps using a bottom-up approach.</p>
+                    <p>Rather than relying on a traditional database, we use a file system-based hierarchy to represent and manage our automation trees. This approach allows for flexibility, ease of maintenance, and transparent version control.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="technical-approaches">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Bottom-Up Implementation</h2>
+                </div>
+                <div class="technical-content">
+                    <p>Our system employs a bottom-up approach to building automation trees. This means we start with existing automation technologies and components, identifying what's already possible, and then build up more complex solutions from these foundational elements.</p>
+                    
+                    <p>The bottom-up methodology allows us to:</p>
+                    <ul>
+                        <li>Ground our automation trees in real-world capabilities</li>
+                        <li>Provide accurate predictions about when full automation will be possible</li>
+                        <li>Identify gaps in current technology that require innovation</li>
+                        <li>Create practical, achievable automation pathways</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="file-organization">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Tree Structure & File System Implementation</h2>
+                </div>
+                <div class="technical-content">
+                    <p>Instead of storing automation trees in a database, we use a file system-based hierarchy where each node in the tree is represented as a folder. This approach offers several advantages:</p>
+                    
+                    <ul>
+                        <li>Simplicity in implementation and maintenance</li>
+                        <li>Easy version control with standard tools like Git</li>
+                        <li>Human-readable structure for debugging and manual inspection</li>
+                        <li>Scalability for large automation trees</li>
+                    </ul>
+                    
+                    <h3>Directory Structure</h3>
+                    <div class="code-example">
+                        <pre><code>/tree_root/
+│── bake_bread/  # A node (task)
+│   │── 1a2b3c.json  # First alternative
+│   │── 4d5e6f.json  # Second alternative
+│── build_computer/
+│   │── 7g8h9i.json  
+│   │── j0k1l2.json</code></pre>
+                    </div>
+                    
+                    <h3>JSON File Format</h3>
+                    <p>Each folder (node) contains multiple JSON files, representing different possible steps (alternatives). JSON file contents include:</p>
+                    
+                    <div class="code-example">
+                        <pre><code>{
+  "step": "Mix the dough by hand, kneading for 10-15 minutes until elastic",
+  "uuid": "1a2b3c",
+  "parent_uuid": "9a02dc13"
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="python-routines">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Potential Routines</h2>
+                </div>
+                <div class="technical-content">
+                    <p>The project uses small Python scripts (routines) to manage and expand the automation tree. These routines provide the core functionality of our system:</p>
+                    
+                    <div class="routines-grid">
+                        <div class="routine-card">
+                            <h3>Initial Tree Hallucination</h3>
+                            <p>A script that generates an initial task tree from a high-level goal using AI.</p>
+                            <p><strong>Example:</strong> "Bake a loaf of bread" → Generates a tree with steps like "Gather ingredients," "Mix dough," etc.</p>
+                            <div class="code-snippet">
+                                <pre><code>python hallucinate_tree.py ./input/ht.json ./output/ht-out</code></pre>
+                            </div>
+                        </div>
+                        
+                        <div class="routine-card">
+                            <h3>Node Expansion</h3>
+                            <p>Expands specific nodes, generating alternative breakdowns for a given step.</p>
+                            <p><strong>Example:</strong> Expanding "Mix dough" might generate different techniques (hand kneading vs. using a mixer).</p>
+                            <div class="code-snippet">
+                                <pre><code>python expand_node.py --node ./tree_root/bake_bread/mix_dough --alternatives 3</code></pre>
+                            </div>
+                        </div>
+                        
+                        <div class="routine-card">
+                            <h3>User Feedback Integration</h3>
+                            <p>A voting system that allows users to select the best steps. The top-voted step becomes the primary "best" path shown in the main wiki view.</p>
+                            <div class="code-snippet">
+                                <pre><code>python process_votes.py --node ./tree_root/bake_bread/mix_dough</code></pre>
+                            </div>
+                        </div>
+                        
+                        <div class="routine-card">
+                            <h3>Prediction System</h3>
+                            <p>Using collected data, this script estimates when full automation for a given task might be possible.</p>
+                            <p><strong>Example:</strong> If robotics can already knead dough, we predict when an entire bread-making process can be fully automated.</p>
+                            <div class="code-snippet">
+                                <pre><code>python predict_automation.py --task "bake_bread" --output predictions.json</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="ai-generation">
+            <div class="container">
+                <div class="section-header">
+                    <h2>AI-Driven Tree Generation</h2>
+                </div>
+                <div class="technical-content">
+                    <p>Iterative AI is central to our bottom-up approach. It analyses existing automation capabilities and builds a hierarchical representation of how these components can be combined to achieve more complex tasks.</p>
+                    
+                    <h3>How Iterative AI Works</h3>
+                    <ol>
+                        <li><strong>Capability Scanning:</strong> The AI identifies existing automation technologies and their capabilities.</li>
+                        <li><strong>Component Analysis:</strong> It breaks down complex tasks into potentially automatable components.</li>
+                        <li><strong>Path Building:</strong> It constructs potential paths to automation by combining available components.</li>
+                        <li><strong>Gap Identification:</strong> Where automation is not yet possible, it identifies technological gaps.</li>
+                        <li><strong>Timeline Prediction:</strong> Based on technology trends, it predicts when gaps might be filled.</li>
+                    </ol>
+                    
+                    <p>This process allows for continuous improvement and adaptation of workflows based on user feedback and evolving technologies.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="community-input">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Community-Driven Refinement</h2>
+                </div>
+                <div class="technical-content">
+                    <p>User feedback is integral to our platform's evolution. Through targeted questionnaires, users help refine our automation trees:</p>
+                    
+                    <div class="feedback-methods">
+                        <div class="feedback-method">
+                            <h4>Alternative Evaluation</h4>
+                            <p>Users vote on alternative implementations for specific steps, helping identify the most effective approaches.</p>
+                        </div>
+                        <div class="feedback-method">
+                            <h4>Capability Assessment</h4>
+                            <p>Users report on automation technologies they're familiar with, helping us expand our knowledge base of existing capabilities.</p>
+                        </div>
+                        <div class="feedback-method">
+                            <h4>Prediction Refinement</h4>
+                            <p>Expert users provide insights on timeline predictions for future automation developments.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="future-improvements">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Future Improvements</h2>
+                </div>
+                <div class="technical-content">
+                    <p>We aim to enhance the system by:</p>
+                    <ul>
+                        <li>Incorporating more advanced AI models for better identification of automation components</li>
+                        <li>Expanding our catalogue of existing automation technologies</li>
+                        <li>Creating more sophisticated prediction algorithms for automation timelines</li>
+                        <li>Developing visualisation tools that make complex automation trees more accessible</li>
+                        <li>Adding integration with real-world automation systems for validation</li>
+                    </ul>
+                    <p>Community input will play a crucial role in shaping these developments and prioritising our roadmap.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="assets/images/uaw-logo.png" alt="Universal Automation Wiki Logo">
+                </div>
+                <div class="footer-links">
+                    <div class="footer-links-column">
+                        <h4>Platform</h4>
+                        <ul>
+                            <li><a href="index.html">Home</a></li>
+                            <li><a href="output.html">Example Workflows</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-links-column">
+                        <h4>Resources</h4>
+                        <ul>
+                            <li><a href="https://github.com/iterative-ai/">GitHub</a></li>
+                            <li><a href="#">Documentation</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-links-column">
+                        <h4>Connect</h4>
+                        <ul>
+                            <li><a href="#">Twitter</a></li>
+                            <li><a href="#">LinkedIn</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Universal Automation Wiki. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
