@@ -19,6 +19,29 @@
         #footer-placeholder {
             min-height: 250px; /* Approximate height of footer */
         }
+        
+        /* New styles for developer section */
+        .developer-content {
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--spacing-lg) 0;
+        }
+        
+        .developer-info h3 {
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .developer-info p {
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .about-developer {
+            background-color: var(--bg-light);
+            padding: var(--spacing-xxl) 0;
+        }
     </style>
 </head>
 <body>
@@ -29,7 +52,7 @@
         <section class="hero">
             <div class="container">
                 <h1>About the Project</h1>
-                <p class="hero-subtitle">Learn about Universal Automation Wiki and the team behind it</p>
+                <p class="hero-subtitle">Mapping automation's future and the people behind it</p>
             </div>
         </section>
 
@@ -41,8 +64,26 @@
                 <div class="mission-content">
                     <div class="mission-text">
                         <p class="highlight-text">This project is being developed in QLab at Queen's University Belfast under the supervision of <a href="https://linkedin.com/in/johndavidbustard"><u>Dr. John Bustard</u></a>.</p>
-                        <p>The Universal Automation Wiki is dedicated to mapping the future of automation across diverse domains. We aim to create a comprehensive platform that tracks automation progress through a wide variety of topics.</p>
-                        <p>Through systematic analysis and community contributions, we're building a resource that helps people understand the progression of automation technologies and their potential impact on various fields.</p>
+                        <p>The Universal Automation Wiki is focused on mapping the future of automation across diverse domains. Through this project we aim to track automation progress through a wide variety of topics, creating a comprehensive resource that monitors the advancement toward fully automated systems.</p>
+                        <p>By systematically documenting what's currently possible and tracking emerging technologies, we provide a clear picture of automation's trajectory and help identify where future breakthroughs are likely to occur.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="about-developer">
+            <div class="container">
+                <div class="section-header">
+                    <h2>About the Developer</h2>
+                </div>
+                <div class="developer-content">
+                    <div class="developer-info">
+                        <h3><a href="https://jmatthews.uk">Jamie Matthews</a></h3>
+                        <p>I'm a student studying Software Engineering at Queen's University Belfast in the UK. I enjoy creating systems that make complex technologies more accessible and useful for everyday applications.</p>
+                        
+                        <p>Currently, I'm primarily working on developing the Universal Automation Wiki and the underlying Iterative AI technology that powers it. My previous work includes the Simple Encryption Program, which explored making encryption more accessible for everyday users, without the need for an understanding of how the system works.</p>
+                        
+                        <p>I'm interested in the potential of automation to transform our world and democratize access to advanced technologies. Through this project, I hope to create a platform that helps everyone understand and participate in the advancement of automation.</p>
                     </div>
                 </div>
             </div>
@@ -66,11 +107,11 @@
                 </div>
             </div>
         </section>
-
+        
         <section class="features">
             <div class="container">
                 <div class="section-header">
-                    <h2>Community Participation</h2>
+                    <h2>Community-Driven Development</h2>
                 </div>
                 <div class="feature-grid">
                     <div class="feature-card">
@@ -82,8 +123,8 @@
                                 <path d="M16 3.13C17.7699 3.58317 19.0078 5.17798 19.0078 7.005C19.0078 8.83202 17.7699 10.4268 16 10.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </div>
-                        <h3>Expert Contributions</h3>
-                        <p>The platform encourages experts from various fields to contribute their knowledge and insights, refining our understanding of automation possibilities.</p>
+                        <h3>Expert Collaboration</h3>
+                        <p>Our platform takes open source development to the next level by enabling experts from various fields to contribute their specialized knowledge and insights.</p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">
@@ -92,8 +133,8 @@
                                 <path d="M5 7H15C18.3137 7 21 9.68629 21 13C21 16.3137 18.3137 19 15 19H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </div>
-                        <h3>User Feedback</h3>
-                        <p>Users can submit opinions on how to improve the software, taking open source development to the next level through direct community engagement.</p>
+                        <h3>Direct User Input</h3>
+                        <p>Users can submit their opinions directly through the platform on how to improve both the software and the automation trees, creating a feedback loop that continuously refines our data.</p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">
@@ -104,8 +145,8 @@
                                 <path d="M19 19V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </div>
-                        <h3>Prediction Capabilities</h3>
-                        <p>The platform aims to provide insights on when full automation is likely to be achievable in specific domains and tasks.</p>
+                        <h3>Automation Timeline</h3>
+                        <p>The platform will eventually provide insights on when full automation is likely to be achievable for specific tasks, helping organizations plan their technology roadmaps.</p>
                     </div>
                 </div>
             </div>
@@ -118,7 +159,7 @@
                 </div>
                 <div class="contribute-content">
                     <div class="contribute-text">
-                        <p>Help us map the future of automation by contributing your expertise and insights. Together, we can create a comprehensive understanding of automation's potential across all domains.</p>
+                        <p>Help us map the future of automation by contributing your expertise and insights. Whether you're an expert in a specific field or simply interested in automation's potential, your perspective is valuable to our project.</p>
                         <div class="contribute-actions">
                             <a href="https://github.com/microsoft/vscode-extension-samples/blob/main/getting-started-sample" target="_blank" class="button primary">Contribute on GitHub</a>
                             <a href="output.html" class="button secondary">Explore Examples</a>
