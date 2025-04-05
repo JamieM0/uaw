@@ -312,3 +312,52 @@
     background-color: var(--bg-light);
     padding: var(--spacing-xxl) 0;
 }
+
+/* About page specific components */
+.academic-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xl);
+    align-items: center;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: var(--spacing-lg) 0;
+}
+
+.academic-text {
+    flex: 1;
+    min-width: 300px;
+}
+
+.academic-image {
+    flex: 1;
+    min-width: 300px;
+    text-align: center;
+}
+
+.academic-photo {
+    max-width: 100%;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.image-caption {
+    margin-top: var(--spacing-sm);
+    color: var(--text-light);
+    font-style: italic;
+    font-size: var(--font-size-sm);
+}
+
+.highlight-text {
+    font-size: var(--font-size-lg);
+    font-weight: 500;
+    color: var(--primary-color);
+    border-left: 4px solid var(--primary-color);
+    padding-left: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.academic-background {
+    background-color: var(--bg-light);
+    padding: var(--spacing-xxl) 0;
+}
