@@ -13,28 +13,8 @@ The Universal Automation Wiki is built around **Iterative AI**, a technology des
 - **Community Engagement**: Users can contribute by providing feedback and voting on the best automation approaches.
 - **Future Predictions**: Get insights on when full automation will be achievable for various topics.
 
-## Website Structure
-
-The Universal Automation Wiki consists of three main pages:
-
-1. **Landing Page**: Introduces the project, explains how it works, and provides links to the GitHub repository for technical details.
-2. **Technical Page**: Offers an in-depth look at the system's design, including scripts, file organization, and AI-driven tree generation.
-3. **Output Page**: Showcases example automation workflows with community voting to refine the most effective approaches.
-
-## Getting Started
-
-To get started with the Universal Automation Wiki, clone the repository and open the `index.html` file in your web browser. You can explore the various features and contribute to the project by providing feedback or suggesting improvements.
-
-## Contributing
-
-We welcome contributions from the community! If you have ideas for new automation workflows or improvements to existing ones, please submit a pull request or open an issue on our GitHub repository.
-
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for more details.
-
 ## Contact
 
-For more information, please reach out via our GitHub repository or contact us directly through the provided channels.
+For more information, please reach out via email at: [contact@universalautomation.wiki](mailto:contact@universalautomation.wiki).
 
-Thank you for your interest in the Universal Automation Wiki! Together, we can explore the future of automation.
+Thank you for your interest in the Universal Automation Wiki!
