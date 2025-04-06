@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bread Making - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="../../assets/css/main.css">
+    <link rel="stylesheet" href="../../assets/css/components.css">
+    <link rel="stylesheet" href="../../assets/css/responsive.css">
+    <link rel="icon" href="../../favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder {
+            min-height: 70px; /* Match header height */
+        }
+        #footer-placeholder {
+            min-height: 250px; /* Approximate height of footer */
+        }
+        
+        /* Wiki article specific styles */
+        .wiki-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: var(--spacing-lg) 0;
+        }
+        
+        .breadcrumbs {
+            display: flex;
+            gap: var(--spacing-sm);
+            font-size: var(--font-size-sm);
+            color: var(--text-light);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+        
+        .breadcrumbs a {
+            color: var(--primary-color);
+        }
+        
+        .breadcrumbs span:not(:last-child)::after {
+            content: "›";
+            margin: 0 var(--spacing-sm);
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            background-color: rgba(10, 94, 149, 0.1);
+            padding: var(--spacing-xs) var(--spacing-md);
+            border-radius: var(--border-radius-xl);
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .status-indicator .dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: var(--bg-dark);
+            border-radius: var(--border-radius-xl);
+            margin-bottom: var(--spacing-xl);
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 65%; /* Partial automation level */
+        }
+        
+        .process-section {
+            background-color: var(--bg-light);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .process-section h3 {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .step-list {
+            margin-left: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .step-list li {
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .automation-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .timeline-entry {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-md);
+        }
+        
+        .timeline-year {
+            background-color: var(--primary-color);
+            color: white;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--border-radius-sm);
+            font-weight: 600;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .timeline-content {
+            flex: 1;
+        }
+        
+        .method-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .method-tab {
+            padding: var(--spacing-sm) var(--spacing-lg);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .method-tab.active {
+            border-bottom: 3px solid var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .contributors-section {
+            margin-top: var(--spacing-xxl);
+            padding: var(--spacing-lg);
+            background-color: var(--bg-light);
+            border-radius: var(--border-radius-lg);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header placeholder to be filled by components.js -->
+    <div id="header-placeholder"></div>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Bread Making</h1>
+                <p class="hero-subtitle">Exploring automation possibilities in artisanal and commercial bread production</p>
+            </div>
+        </section>
+
+        <section class="wiki-article">
+            <div class="container">
+                <div class="wiki-content">
+                    <div class="breadcrumbs">
+                        <span><a href="#">Food Production</a></span>
+                        <span><a href="#">Baking</a></span>
+                        <span>Bread Making</span>
+                    </div>
+                    
+                    <div class="status-indicator">
+                        <div class="dot"></div>
+                        <span>Partial Automation Available</span>
+                    </div>
+                    
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    
+                    <div class="article-summary">
+                        <p>Bread making is a multistep process that combines science and artistry. From gathering ingredients to the final rise and baking, each step presents unique automation opportunities. At present, commercial bakeries have achieved partial automation, with certain processes still benefiting from human expertise and intervention.</p>
+                        <p>This workflow breaks down the bread making process into manageable steps, illustrating both current automation capabilities and areas for future development.</p>
+                    </div>
+                    
+                    <div class="method-tabs">
+                        <div class="method-tab active">Standard Process</div>
+                        <div class="method-tab">Automation Pathway</div>
+                        <div class="method-tab">Technical Details</div>
+                    </div>
+                    
+                    <div class="process-section">
+                        <h3>1. Gathering Ingredients and Equipment</h3>
+                        <p>The foundation of bread making begins with proper preparation. This involves identifying all necessary ingredients and equipment.</p>
+                        <h4>Key Steps:</h4>
+                        <ul class="step-list">
+                            <li>Determine recipe requirements</li>
+                            <li>Create a detailed ingredient list</li>
+                            <li>Check existing pantry and fridge</li>
+                            <li>Purchase missing ingredients</li>
+                            <li>Identify necessary equipment</li>
+                            <li>Ensure equipment is clean and functional</li>
+                        </ul>
+                        <p><strong>Automation Status:</strong> Inventory management systems can track ingredients, and automated ordering is possible, but final checks often require human intervention.</p>
+                    </div>
+                    
+                    <div class="process-section">
+                        <h3>2. Combining Dry Ingredients</h3>
+                        <p>Proper measurement and thorough mixing of dry ingredients ensures consistent bread quality.</p>
+                        <h4>Key Steps:</h4>
+                        <ul class="step-list">
+                            <li>Gather all dry ingredients</li>
+                            <li>Measure flour accurately</li>
+                            <li>Measure other dry ingredients (baking powder, salt, etc.)</li>
+                            <li>Combine all measured dry ingredients in a bowl</li>
+                            <li>Check for clumps and break them up</li>
+                            <li>Whisk thoroughly to ensure even distribution</li>
+                        </ul>
+                        <p><strong>Automation Status:</strong> Commercial bakeries utilise automated sifting and measuring systems with high precision. Residential automated systems are less common but emerging.</p>
+                    </div>
+                    
+                    <div class="process-section">
+                        <h3>3. Combining Wet Ingredients</h3>
+                        <p>Careful measurement and mixing of wet ingredients contributes to proper dough hydration and texture.</p>
+                        <h4>Key Steps:</h4>
+                        <ul class="step-list">
+                            <li>Gather all wet ingredients</li>
+                            <li>Measure each ingredient accurately:
+                                <ul>
+                                    <li>Use measuring cups for liquids</li>
+                                    <li>Use measuring spoons for small quantities</li>
+                                </ul>
+                            </li>
+                            <li>Combine ingredients in a bowl</li>
+                            <li>Mix thoroughly until fully combined</li>
+                            <li>Check for consistency and adjust if needed</li>
+                        </ul>
+                        <p><strong>Automation Status:</strong> Automated liquid dispensing systems with precision controls are common in commercial settings, while home bread machines offer simpler versions.</p>
+                    </div>
+                    
+                    <div class="process-section">
+                        <h3>4. Activating Yeast</h3>
+                        <p>Proper yeast activation is crucial for successful bread rising and fermentation.</p>
+                        <h4>Key Steps:</h4>
+                        <ul class="step-list">
+                            <li>Measure yeast accurately</li>
+                            <li>Prepare warm water (105-115°F/40-46°C)</li>
+                            <li>Combine ingredients (add yeast and sugar to water)</li>
+                            <li>Wait for bloom (allow the mixture to become foamy)</li>
+                            <li>Check for activity</li>
+                            <li>Add to recipe and incorporate the activated yeast</li>
+                        </ul>
+                        <p><strong>Automation Status:</strong> Temperature-controlled activation chambers with optical sensors to detect proper blooming are available in industrial settings.</p>
+                    </div>
+                    
+                    <div class="process-section">
+                        <h3>5. Mixing Dough</h3>
+                        <p>Proper mixing combines all ingredients into a cohesive dough with developed gluten.</p>
+                        <h4>Key Steps:</h4>
+                        <ul class="step-list">
+                            <li>Gather ingredients</li>
+                            <li>Activate yeast (if using dry yeast)</li>
+                            <li>Combine dry ingredients in a large bowl</li>
+                            <li>Add wet ingredients gradually</li>
+                            <li>Mix until combined</li>
+                            <li>Knead the dough</li>
+                            <li>First rise</li>
+                        </ul>
+                        <p><strong>Automation Status:</strong> Stand mixers and commercial dough mixers with programmed kneading cycles are widely available. Advanced systems include real-time gluten development monitoring.</p>
+                    </div>
+                    
+                    <div class="process-section">
+                        <h3>6. First Rise</h3>
+                        <p>The initial fermentation develops flavour and structure in the bread dough.</p>
+                        <h4>Key Steps:</h4>
+                        <ul class="step-list">
+                            <li>Prepare the dough (combine ingredients)</li>
+                            <li>Form the dough into a ball</li>
+                            <li>Place dough in a container</li>
+                            <li>Cover the dough tightly</li>
+                            <li>Create a warm environment</li>
+                            <li>Allow to rise for the specified time</li>
+                        </ul>
+                        <p><strong>Automation Status:</strong> Temperature and humidity-controlled proofing chambers with automated timers are standard in commercial bakeries. Home bread makers include proofing settings.</p>
+                    </div>
+                    
+                    <div class="process-section">
+                        <h3>7. Shaping and Placing Dough</h3>
+                        <p>Proper shaping creates the final structure and appearance of the bread.</p>
+                        <h4>Key Steps:</h4>
+                        <ul class="step-list">
+                            <li>Prepare the dough (knead and rest)</li>
+                            <li>Place dough on a clean surface</li>
+                            <li>Divide into portions:
+                                <ul>
+                                    <li>Measure each portion accurately</li>
+                                    <li>Form each portion into a ball</li>
+                                </ul>
+                            </li>
+                            <li>Shape each dough portion:
+                                <ul>
+                                    <li>Consider the specific shape required</li>
+                                    <li>Roll out each dough ball to the desired shape</li>
+                                    <li>Use a rolling pin for consistency</li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <p><strong>Automation Status:</strong> Dough dividing and rounding machines are common in industrial bakeries. Artisanal bakeries often prefer manual shaping for quality control.</p>
+                    </div>
+                    
+                    <div class="automation-timeline">
+                        <h3>Automation Development Timeline</h3>
+                        <div class="timeline-entry">
+                            <div class="timeline-year">1940s</div>
+                            <div class="timeline-content">
+                                <p>First mechanised dough mixers and basic production lines for commercial bread</p>
+                            </div>
+                        </div>
+                        <div class="timeline-entry">
+                            <div class="timeline-year">1960s</div>
+                            <div class="timeline-content">
+                                <p>Introduction of continuous mix process—automation of mixing, shaping, and proofing</p>
+                            </div>
+                        </div>
+                        <div class="timeline-entry">
+                            <div class="timeline-year">1980s</div>
+                            <div class="timeline-content">
+                                <p>Home bread machines introduced, bringing partial automation to home baking</p>
+                            </div>
+                        </div>
+                        <div class="timeline-entry">
+                            <div class="timeline-year">2000s</div>
+                            <div class="timeline-content">
+                                <p>Sensor technology integration for monitoring dough consistency and moisture content</p>
+                            </div>
+                        </div>
+                        <div class="timeline-entry">
+                            <div class="timeline-year">2020s</div>
+                            <div class="timeline-content">
+                                <p>AI-assisted dough analysis and robotic shaping systems; fully automated retail bakery units</p>
+                            </div>
+                        </div>
+                        <div class="timeline-entry">
+                            <div class="timeline-year">2030</div>
+                            <div class="timeline-content">
+                                <p>Projected: Complete end-to-end automation with ingredient quality assessment and real-time recipe optimisation</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="automation-challenges">
+                        <h3>Current Automation Challenges</h3>
+                        <p>Despite significant progress, several challenges remain in fully automating the bread making process:</p>
+                        <ul>
+                            <li><strong>Ingredient Variability:</strong> Fluctuations in flour quality, humidity, and temperature affect dough behaviour, requiring adaptive systems.</li>
+                            <li><strong>Tactile Assessment:</strong> Expert bakers rely on touch and feel to determine dough readiness—a capability difficult to replicate with sensors.</li>
+                            <li><strong>Artisanal Techniques:</strong> Unique shaping methods and custom scoring patterns often require human dexterity and creativity.</li>
+                            <li><strong>Quality Control:</strong> Visual and olfactory assessment of the final product requires advanced sensory systems still under development.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="contributors-section">
+                        <h3>Contributors</h3>
+                        <p>This workflow was developed using Iterative AI analysis of bread making processes with input from professional bakers and food automation engineers.</p>
+                        <p><em>Last updated: April 2024</em></p>
+                        <a href="#" class="button secondary">Suggest Improvements</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer placeholder to be filled by components.js -->
+    <div id="footer-placeholder"></div>
+    
+    <!-- Load components.js first to ensure header/footer are loaded before other scripts -->
+    <script src="../../assets/js/components.js"></script>
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

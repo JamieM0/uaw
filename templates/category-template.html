@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder {
+            min-height: 70px; /* Match header height */
+        }
+        #footer-placeholder {
+            min-height: 250px; /* Approximate height of footer */
+        }
+    </style>
+</head>
+<body>
+    <!-- Header placeholder to be filled by components.js -->
+    <div id="header-placeholder"></div>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Category Title</h1>
+                <p class="hero-subtitle">Exploring automation possibilities across this category</p>
+            </div>
+        </section>
+
+        <section class="category-section">
+            <div class="container">
+                <div class="category-container">
+                    <!-- Breadcrumbs - populated by JavaScript -->
+                    <div class="breadcrumbs" data-breadcrumbs='[]'></div>
+                    
+                    <div class="category-header">
+                        <p class="category-description">This category contains various topics related to automation in this domain. Explore the items below to learn more about automation possibilities and progress.</p>
+                    </div>
+                    
+                    <!-- Category Grid - populated by JavaScript -->
+                    <div class="category-grid" id="category-items" data-category-title="" data-category-items='[]'></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer placeholder to be filled by components.js -->
+    <div id="footer-placeholder"></div>
+    
+    <!-- Load components.js first, then category-template.js -->
+    <script src="/assets/js/components.js"></script>
+    <script src="/assets/js/category-template.js"></script>
+</body>
+</html>
