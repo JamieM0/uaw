@@ -1,42 +1,60 @@
 // This file manages the feedback mechanism, including displaying questionnaires and collecting user input.
 
 document.addEventListener('DOMContentLoaded', function() {
-    const feedbackForm = document.getElementById('feedback-form');
-    const feedbackButton = document.getElementById('feedback-button');
-    const feedbackResponse = document.getElementById('feedback-response');
-
-    feedbackButton.addEventListener('click', function() {
-        feedbackForm.classList.toggle('hidden');
-    });
-
-    feedbackForm.addEventListener('submit', function(event) {
-        event.preventDefault();
-        const formData = new FormData(feedbackForm);
-        const feedbackData = {};
-
-        formData.forEach((value, key) => {
-            feedbackData[key] = value;
+    const suggestButton = document.getElementById('suggest-improvements');
+    const feedbackForm = document.getElementById('feedback-form-container');
+    const feedbackSubject = document.getElementById('feedback-subject');
+    const feedbackBody = document.getElementById('feedback-body');
+    const sendButton = document.getElementById('send-feedback');
+    const cancelButton = document.getElementById('cancel-feedback');
+    const feedbackMessage = document.getElementById('feedback-message');
+    
+    // Toggle feedback form visibility
+    if (suggestButton) {
+        suggestButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            feedbackForm.classList.toggle('visible');
+            
+            // Focus on subject field when form opens
+            if (feedbackForm.classList.contains('visible')) {
+                feedbackSubject.focus();
+            }
         });
-
-        sendFeedback(feedbackData);
-    });
-
-    function sendFeedback(data) {
-        fetch('/api/feedback', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        })
-        .then(response => response.json())
-        .then(data => {
-            feedbackResponse.textContent = 'Thank you for your feedback!';
+    }
+    
+    // Hide form on cancel
+    if (cancelButton) {
+        cancelButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            feedbackForm.classList.remove('visible');
             feedbackForm.reset();
-            feedbackForm.classList.add('hidden');
-        })
-        .catch((error) => {
-            feedbackResponse.textContent = 'There was an error submitting your feedback. Please try again.';
+            feedbackMessage.className = 'feedback-message';
+            feedbackMessage.textContent = '';
+        });
+    }
+    
+    // Handle form submission with mailto
+    if (sendButton) {
+        sendButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const subject = feedbackSubject.value.trim();
+            const body = feedbackBody.value.trim();
+            
+            if (!subject || !body) {
+                feedbackMessage.className = 'feedback-message error';
+                feedbackMessage.textContent = 'Please fill out both subject and feedback fields.';
+                return;
+            }
+            
+            // Show success message
+            feedbackMessage.className = 'feedback-message success';
+            feedbackMessage.textContent = 'Thanks for your feedback!';
+            
+            // Reset form after submission
+            setTimeout(() => {
+                document.getElementById('feedback-form').reset();
+            }, 500);
         });
     }
 });
