@@ -86,44 +86,46 @@
   
   <script>
   document.getElementById('feedback-form').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
-      const resultElement = document.getElementById('feedback-result');
-      resultElement.className = '';
-      resultElement.textContent = 'Submitting...';
-      
-      const formData = {
-          name: document.getElementById('name').value || 'Anonymous',
-          email: document.getElementById('email').value || '',
-          message: document.getElementById('message').value,
-          pageUrl: window.location.href
-      };
-      
-      try {
-          const apiUrl = 'https://4hmwnax7r1.execute-api.us-east-1.amazonaws.com/default/uaw-feedback-handler';
-          
-          const response = await fetch(apiUrl, {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(formData)
-          });
-          
-          const result = await response.json();
-          
-          if (response.ok) {
-              document.getElementById('feedback-form').reset();
-              resultElement.className = 'success';
-              resultElement.textContent = 'Thank you for your feedback!';
-          } else {
-              resultElement.className = 'error';
-              resultElement.textContent = 'Error: ' + (result.message || 'Could not submit feedback');
-          }
-      } catch (error) {
-          resultElement.className = 'error';
-          resultElement.textContent = 'Error submitting feedback. Please try again.';
-          console.error('Feedback submission error:', error);
-      }
-  });
+    e.preventDefault();
+    
+    const resultElement = document.getElementById('feedback-result');
+    resultElement.className = '';
+    resultElement.textContent = 'Submitting...';
+    
+    const formData = {
+        name: document.getElementById('name').value || 'Anonymous',
+        email: document.getElementById('email').value || '',
+        message: document.getElementById('message').value,
+        pageUrl: window.location.href
+    };
+    
+    try {
+        // Your actual API Gateway URL
+        const apiUrl = 'https://4hmwnax7r1.execute-api.us-east-1.amazonaws.com/default/uaw-feedback-handler';
+        
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData),
+            mode: 'cors' // Explicitly request CORS
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            document.getElementById('feedback-form').reset();
+            resultElement.className = 'success';
+            resultElement.textContent = 'Thank you for your feedback!';
+        } else {
+            resultElement.className = 'error';
+            resultElement.textContent = 'Error: ' + (result.message || 'Could not submit feedback');
+        }
+    } catch (error) {
+        resultElement.className = 'error';
+        resultElement.textContent = 'Error submitting feedback. Please try again.';
+        console.error('Feedback submission error:', error);
+    }
+});
   </script>
