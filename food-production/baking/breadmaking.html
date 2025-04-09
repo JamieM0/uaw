@@ -530,7 +530,17 @@ hybrid_bread_system
                             <h4>Suggest Improvements</h4>
                             <p>We value your input on how to improve this bread making workflow. Please provide your suggestions below.</p>
                             
-                            <form action="https://formspree.io/f/xqapgdjv" method="POST" id="feedback-form" class="feedback-form">
+                            <form id="feedback-form" class="feedback-form">
+                                <div class="feedback-form-field">
+                                    <label for="feedback-name">Name (optional)</label>
+                                    <input type="text" id="feedback-name" name="name" placeholder="Your name">
+                                </div>
+                                
+                                <div class="feedback-form-field">
+                                    <label for="feedback-email">Email (optional)</label>
+                                    <input type="email" id="feedback-email" name="email" placeholder="your@email.com">
+                                </div>
+                                
                                 <div class="feedback-form-field">
                                     <label for="feedback-subject">Subject</label>
                                     <input type="text" id="feedback-subject" name="subject" placeholder="Brief description of your suggestion" required>
@@ -538,12 +548,12 @@ hybrid_bread_system
                                 
                                 <div class="feedback-form-field">
                                     <label for="feedback-body">Feedback Details</label>
-                                    <textarea id="feedback-body" name="body" placeholder="Please describe your suggestion in detail..." required></textarea>
+                                    <textarea id="feedback-body" name="message" placeholder="Please describe your suggestion in detail..." required></textarea>
                                 </div>
                                 
                                 <div class="feedback-actions">
                                     <button type="button" id="cancel-feedback" class="button secondary">Cancel</button>
-                                    <button type="button" id="send-feedback" class="button primary">Send Feedback</button>
+                                    <button type="submit" id="send-feedback" class="button primary">Send Feedback</button>
                                 </div>
                             </form>
                             
