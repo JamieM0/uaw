@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test Form</title>
+</head>
+<body>
+    <h2>Test Form</h2>
+    <button onclick="testAPI()">Test API</button>
+    <div id="result"></div>
+
+    <script>
+        function testAPI() {
+            fetch('https://api.yourdomain.com/emailaddress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    subject: 'Test Subject',
+                    body: 'This is a test message from the API test form.'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerHTML = 
+                    '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            })
+            .catch(error => {
+                document.getElementById('result').innerHTML = 
+                    '<pre style="color: red">Error: ' + error + '</pre>';
+            });
+        }
+    </script>
+</body>
+</html>
