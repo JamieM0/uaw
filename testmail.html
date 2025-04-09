@@ -1,33 +1,129 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>API Test Form</title>
-</head>
-<body>
-    <h2>Test Form</h2>
-    <button onclick="testAPI()">Test API</button>
-    <div id="result"></div>
-
-    <script>
-        function testAPI() {
-            fetch('https://api.yourdomain.com/emailaddress', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    subject: 'Test Subject',
-                    body: 'This is a test message from the API test form.'
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('result').innerHTML = 
-                    '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
-            })
-            .catch(error => {
-                document.getElementById('result').innerHTML = 
-                    '<pre style="color: red">Error: ' + error + '</pre>';
-            });
-        }
-    </script>
-</body>
-</html>
+<style>
+    #feedback-form {
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-family: Arial, sans-serif;
+    }
+    
+    #feedback-form .form-group {
+      margin-bottom: 15px;
+    }
+    
+    #feedback-form label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    #feedback-form input, 
+    #feedback-form textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    #feedback-form textarea {
+      min-height: 120px;
+    }
+    
+    #feedback-form button {
+      background-color: #0366d6;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    
+    #feedback-form button:hover {
+      background-color: #0056b3;
+    }
+    
+    #feedback-result {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+  
+  <form id="feedback-form">
+      <h2>Share Your Feedback</h2>
+      
+      <div class="form-group">
+          <label for="name">Name (optional):</label>
+          <input type="text" id="name" name="name" placeholder="Your name">
+      </div>
+      
+      <div class="form-group">
+          <label for="email">Email (optional):</label>
+          <input type="email" id="email" name="email" placeholder="your@email.com">
+      </div>
+      
+      <div class="form-group">
+          <label for="message">Feedback:</label>
+          <textarea id="message" name="message" required placeholder="Please share your thoughts, suggestions, or issues"></textarea>
+      </div>
+      
+      <button type="submit">Submit Feedback</button>
+      <div id="feedback-result"></div>
+  </form>
+  
+  <script>
+  document.getElementById('feedback-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const resultElement = document.getElementById('feedback-result');
+      resultElement.className = '';
+      resultElement.textContent = 'Submitting...';
+      
+      const formData = {
+          name: document.getElementById('name').value || 'Anonymous',
+          email: document.getElementById('email').value || '',
+          message: document.getElementById('message').value,
+          pageUrl: window.location.href
+      };
+      
+      try {
+          const apiUrl = 'https://4hmwnax7r1.execute-api.us-east-1.amazonaws.com/default/uaw-feedback-handler';
+          
+          const response = await fetch(apiUrl, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(formData)
+          });
+          
+          const result = await response.json();
+          
+          if (response.ok) {
+              document.getElementById('feedback-form').reset();
+              resultElement.className = 'success';
+              resultElement.textContent = 'Thank you for your feedback!';
+          } else {
+              resultElement.className = 'error';
+              resultElement.textContent = 'Error: ' + (result.message || 'Could not submit feedback');
+          }
+      } catch (error) {
+          resultElement.className = 'error';
+          resultElement.textContent = 'Error submitting feedback. Please try again.';
+          console.error('Feedback submission error:', error);
+      }
+  });
+  </script>
