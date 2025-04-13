@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Vehicles - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/article.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header placeholder to be filled by components.js -->
+    <div id="header-placeholder"></div>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Autonomous Vehicles</h1>
+                <p class="hero-subtitle">Exploring the Technologies, Challenges, and Current State of Self-Driving Vehicles</p>
+            </div>
+        </section>
+
+        <section class="wiki-article">
+            <div class="container">
+                <div class="wiki-content">
+                    <div class="breadcrumbs">
+                        <span><a href="/index">Home</a></span>
+                        <span><a href="/food-production/index">Food Production</a></span>
+                        <span><a href="/transportation/autonomous-vehicles/index">Transportation</a></span>
+                        <span>Autonomous Vehicles</span>
+                    </div>
+                    
+                    <div class="status-indicator">
+                        <div class="dot"></div>
+                        <span>Early Automation</span>
+                    </div>
+                    
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 35%;"></div>
+                    </div>
+                    
+                    <div class="article-summary">
+<p>Autonomous vehicles represent a complex and rapidly evolving technological landscape. At its core, the pursuit of self-driving capability hinges on integrating a suite of sophisticated systems, primarily centered around perception, planning, and control. Perception involves utilizing sensors – including LiDAR, radar, cameras, and ultrasonic sensors – to create a detailed 3D representation of the vehicle’s surroundings, identifying objects like other vehicles, pedestrians, cyclists, and road infrastructure. This raw sensor data is then processed using advanced algorithms, often based on deep learning, to accurately classify and track these objects in real-time.</p>
+<p>Following perception, the system must plan a safe and efficient trajectory. This involves complex algorithms that consider factors such as traffic rules, road conditions, and the predicted behavior of other road users. Path planning is frequently coupled with motion control, which translates the planned trajectory into commands for the vehicle’s actuators – steering, throttle, and brakes. The integration of these components is a significant challenge, requiring robust and reliable systems that can operate effectively in a wide range of environmental conditions and traffic scenarios.</p>
+<p>Despite significant advancements, particularly in specific operational design domains (ODDs) like highway driving, truly 'full' autonomy remains elusive. While Level 2 and Level 3 automation are increasingly common in consumer vehicles, achieving Level 5 autonomy – where the vehicle can handle all driving tasks in all conditions – faces substantial hurdles related to unpredictable events, edge cases, and the inherent complexity of human driving. Current development is focused on refining existing technologies and expanding the operational capabilities within defined, controlled environments, rather than a generalized, fully autonomous solution.</p>
+</div>
+                    
+                    <div class="method-tabs" id="method-tabs">
+                        <div class="method-tab active" data-tab="standard-process">Standard Process</div>
+                        <div class="method-tab" data-tab="automation-pathway">Automation Pathway</div>
+                        <div class="method-tab" data-tab="technical-details">Technical Details</div>
+                        <div class="method-tab" data-tab="competing-approaches">Competing Approaches</div>
+                    </div>
+                    
+                    <!-- Standard Process Tab Content -->
+<div id="standard-process" class="tab-content active">
+    <div class="process-section">
+        <h3>1. Research and Define Requirements</h3>
+        <p>This step involves research and define requirements.</p>
+        <h4>Key Steps:</h4>
+        <ul class="step-list">
+            <li>Identify Project Goals and Objectives</li>
+            <li>Determine Stakeholder Needs</li>
+            <li>Conduct Initial Research on Existing Solutions</li>
+            <li>Document Functional Requirements</li>
+            <li>Document Non-Functional Requirements</li>
+            <li>Prioritize Requirements</li>
+            <li>Create a Requirements Traceability Matrix</li>
+        </ul>
+        <p><strong>Automation Status:</strong> Currently being developed and refined.</p>
+    </div>
+    <div class="process-section">
+        <h3>2. Sensor Selection and Integration</h3>
+        <p>This step involves sensor selection and integration.</p>
+        <h4>Key Steps:</h4>
+        <ul class="step-list">
+            <li>Define Sensor Requirements</li>
+            <li>Research and Identify Potential Sensors</li>
+            <li>Evaluate Sensor Specifications</li>
+            <li>Select Preferred Sensor(s)</li>
+            <li>Prepare Sensor Interface</li>
+            <li>Integrate Sensor with System</li>
+            <li>Test and Calibrate Sensor</li>
+        </ul>
+        <p><strong>Automation Status:</strong> Currently being developed and refined.</p>
+    </div>
+    <div class="process-section">
+        <h3>3. Develop Perception Algorithms</h3>
+        <p>This step involves develop perception algorithms.</p>
+        <h4>Key Steps:</h4>
+        <ul class="step-list">
+            <li>Define the Perception Task</li>
+            <li>Gather and Prepare Data</li>
+            <li>Select Appropriate Algorithms</li>
+            <li>Implement and Train Algorithms</li>
+            <li>Evaluate Algorithm Performance</li>
+            <li>Tune and Optimize Algorithms</li>
+            <li>Document and Deploy Algorithms</li>
+        </ul>
+        <p><strong>Automation Status:</strong> Currently being developed and refined.</p>
+    </div>
+    <div class="process-section">
+        <h3>4. Implement Localization and Mapping</h3>
+        <p>This step involves implement localization and mapping.</p>
+        <h4>Key Steps:</h4>
+        <ul class="step-list">
+            <li>Define Localization Requirements</li>
+            <li>Select Localization Sensors</li>
+            <li>Implement Localization Algorithms</li>
+            <li>Develop Mapping System</li>
+            <li>Integrate Localization and Mapping</li>
+            <li>Test and Validate Localization and Mapping</li>
+        </ul>
+        <p><strong>Automation Status:</strong> Currently being developed and refined.</p>
+    </div>
+    <div class="process-section">
+        <h3>5. Design and Develop Control Systems</h3>
+        <p>This step involves design and develop control systems.</p>
+        <h4>Key Steps:</h4>
+        <ul class="step-list">
+            <li>Define System Requirements</li>
+            <li>Conduct System Analysis</li>
+            <li>Develop Control Logic</li>
+            <li>Select Hardware Components</li>
+            <li>Implement Control Software</li>
+            <li>Test and Validate Control System</li>
+            <li>Document Control System</li>
+        </ul>
+        <p><strong>Automation Status:</strong> Currently being developed and refined.</p>
+    </div>
+    <div class="process-section">
+        <h3>6. Simulate and Test the System</h3>
+        <p>This step involves simulate and test the system.</p>
+        <h4>Key Steps:</h4>
+        <ul class="step-list">
+            <li>Define System Requirements</li>
+            <li>Create Test Environment</li>
+            <li>Develop Test Cases</li>
+            <li>Execute Test Cases</li>
+            <li>Analyze Test Results</li>
+            <li>Report Findings and Recommendations</li>
+        </ul>
+        <p><strong>Automation Status:</strong> Currently being developed and refined.</p>
+    </div>
+    <div class="process-section">
+        <h3>7. Conduct Real-World Testing and Refinement</h3>
+        <p>This step involves conduct real-world testing and refinement.</p>
+        <h4>Key Steps:</h4>
+        <ul class="step-list">
+            <li>Define Testing Objectives and Scope</li>
+            <li>Develop Test Cases and Scenarios</li>
+            <li>Conduct Initial Real-World Testing</li>
+            <li>Collect and Analyze Test Data</li>
+            <li>Identify and Document Issues/Bugs</li>
+            <li>Prioritize Issues Based on Severity and Impact</li>
+            <li>Implement and Test Refinements</li>
+        </ul>
+        <p><strong>Automation Status:</strong> Currently being developed and refined.</p>
+    </div>
+    <div class="automation-timeline">
+    <h3>Automation Development Timeline</h3>
+    <div class="timeline-entry">
+        <div class="timeline-year">1920s - 1930s</div>
+        <div class="timeline-content">
+            <p>Early experimentation with radio-controlled vehicles. Significant advancements in pneumatic control systems, laying the groundwork for remote control of machinery.  The concept of ‘driverless’ vehicles was largely theoretical, focused on military applications and remote operation of machinery.</p>
+        </div>
+    </div>
+    <div class="timeline-entry">
+        <div class="timeline-year">1940s - 1950s</div>
+        <div class="timeline-content">
+            <p>Post-World War II saw the rise of automated factory systems – largely based on pneumatic control and relay logic.  The ‘Industrial Robot’ concept began to emerge, though these were largely stationary and programmed for specific, repetitive tasks.  Early attempts at automated guided vehicles (AGVs) were explored, primarily for material handling in factories.</p>
+        </div>
+    </div>
+    <div class="timeline-entry">
+        <div class="timeline-year">1960s - 1970s</div>
+        <div class="timeline-content">
+            <p>The first industrial robots, like Unimate, were introduced – primarily for die casting and welding in automotive factories.  These robots were heavily reliant on pre-programmed paths and lacked sophisticated sensing capabilities.  Research into automated guided vehicles continued, but limitations in navigation and obstacle avoidance remained significant.</p>
+        </div>
+    </div>
+    <div class="timeline-entry">
+        <div class="timeline-year">1980s - 1990s</div>
+        <div class="timeline-content">
+            <p>Increased sophistication in robot control systems, including more complex programming languages and improved sensor technology (e.g., encoders).  The rise of Programmable Logic Controllers (PLCs) facilitated greater automation in manufacturing.  Early experiments with autonomous navigation systems began, often utilizing laser scanners and basic path planning algorithms.</p>
+        </div>
+    </div>
+    <div class="timeline-entry">
+        <div class="timeline-year">2000s - 2010s</div>
+        <div class="timeline-content">
+            <p>Significant advancements in sensor technology – LiDAR, radar, cameras – dramatically improved the ability of vehicles to perceive their surroundings.  The development of sophisticated algorithms, including Simultaneous Localization and Mapping (SLAM), enabled more robust autonomous navigation.  Companies like Google, Tesla, and others began serious investment in self-driving car technology.</p>
+        </div>
+    </div>
+    <div class="timeline-entry">
+        <div class="timeline-year">2020s - Present</div>
+        <div class="timeline-content">
+            <p>Widespread testing of Level 2 and Level 3 autonomous driving systems.  Increased regulatory scrutiny and debates surrounding safety and liability.  Continued development of advanced driver-assistance systems (ADAS) like adaptive cruise control and lane keeping assist.  Significant progress in AI and machine learning for perception and decision-making.</p>
+        </div>
+    </div>
+    <div class="timeline-entry">
+        <div class="timeline-year">2020s - 2030s</div>
+        <div class="timeline-content">
+            <p>Level 4 automation becomes increasingly prevalent in geofenced areas – highways, industrial parks, and designated urban zones.  Ride-hailing services utilizing autonomous vehicles will expand, particularly in dense urban environments.  Significant advancements in sensor fusion and redundancy will improve reliability and safety.  Increased use of V2X (Vehicle-to-Everything) communication for enhanced situational awareness.</p>
+        </div>
+    </div>
+    <div class="timeline-entry">
+        <div class="timeline-year">2030s - 2040s</div>
+        <div class="timeline-content">
+            <p>Level 4 automation extends to a wider range of environments – suburban areas and less complex urban streets.  Mass adoption of autonomous trucking for long-haul freight transport.  Development of more sophisticated AI models capable of handling complex, unpredictable driving scenarios.  Increased focus on cybersecurity and protecting autonomous vehicles from hacking.</p>
+        </div>
+    </div>
+    <div class="timeline-entry">
+        <div class="timeline-year">2040s - 2050s</div>
+        <div class="timeline-content">
+            <p>Level 4 automation is nearly ubiquitous in many developed nations.  Fully autonomous public transportation systems become commonplace.  Significant reduction in traffic accidents due to the elimination of human error.  Development of ‘Mobility-as-a-Service’ (MaaS) ecosystems integrating autonomous vehicles with other transportation modes.</p>
+        </div>
+    </div>
+    <div class="timeline-entry">
+        <div class="timeline-year">2050s - 2060s</div>
+        <div class="timeline-content">
+            <p>Level 5 automation – true full autonomy – is achieved in most developed countries, though likely with continued regulatory oversight and fallback systems.  Urban design will be fundamentally reshaped by the widespread availability of autonomous vehicles.  Potential for significant social and economic disruption as traditional driving jobs disappear.  Increased reliance on AI for traffic management and optimization.</p>
+        </div>
+    </div>
+    <div class="timeline-entry">
+        <div class="timeline-year">2060s - 2080s</div>
+        <div class="timeline-content">
+            <p>Global deployment of fully autonomous vehicle networks.  Vehicles become primarily ‘transportation shells,’ managed by centralized AI systems.  Potential for ‘teleportation’ or instantaneous transportation through advanced AI-controlled networks (highly speculative, dependent on breakthroughs in physics and computing).  Ethical considerations surrounding AI decision-making in accident scenarios become paramount.</p>
+        </div>
+    </div>
+</div>
+
+    <div class="automation-challenges">
+    <h3>Current Automation Challenges</h3>
+    <p>Despite significant progress, several challenges remain in fully automating the autonomous process:</p>
+    <ul>
+        <li><strong>Perception in Adverse Conditions:</strong> Autonomous vehicles rely heavily on sensors (lidar, radar, cameras) to perceive their surroundings. However, performance degrades significantly in adverse conditions like heavy rain, snow, fog, or direct sunlight.</li>
+        <li><strong>Edge Case Handling & Rare Event Prediction:</strong> Autonomous vehicles are trained on vast datasets, but these datasets inevitably lack coverage of truly rare and unpredictable events – ‘edge cases.’</li>
+        <li><strong>Complex Human-Vehicle Interaction & Negotiation:</strong> Autonomous vehicles must safely interact with human-driven vehicles, cyclists, and pedestrians.</li>
+        <li><strong>Localization & Mapping Accuracy & Maintenance:</strong> Precise localization (knowing the vehicle's exact position) and accurate, up-to-date maps are crucial for autonomous navigation.</li>
+        <li><strong>Decision-Making Under Uncertainty:</strong> Autonomous vehicles must make real-time decisions based on incomplete and uncertain information.</li>
+        <li><strong>Verification & Validation of Safety-Critical Systems:</strong> Demonstrating the safety of autonomous vehicles is an immense challenge. Traditional software testing methods are inadequate for complex, dynamic systems operating in unpredictable environments.</li>
+        <li><strong>Sensor Fusion & Data Synchronization:</strong> Autonomous vehicles integrate data from multiple sensors (lidar, radar, cameras, IMU, GPS).</li>
+        <li><strong>Ethical Considerations & Value Alignment:</strong> Autonomous vehicles must be programmed to make ethical decisions in unavoidable accident scenarios (the ‘trolley problem’). Defining and encoding ethical values into algorithms is a deeply complex philosophical and technical challenge.</li>
+    </ul>
+</div>
+
+</div>
+
+<!-- Automation Pathway Tab Content -->
+<div id="automation-pathway" class="tab-content">
+    <div class="process-section">
+        <h3>Automation Adoption Framework</h3>
+        <p>This framework outlines the pathway to full automation, detailing the progression from manual processes to fully automated systems.</p>
+        <h4>Basic Mechanical Assistance & Driver Assistance Systems (Currently widespread)</h4>
+        <ul class="step-list">
+            <li>Electronic Stability Control (ESC): Detects and corrects skidding by applying brakes to individual wheels.</li>
+            <li>Anti-lock Braking System (ABS): Prevents wheel lockup during braking, maintaining steering control.</li>
+            <li>Traction Control System (TCS): Prevents wheel spin during acceleration, improving grip.</li>
+            <li>Adaptive Cruise Control (ACC) - Level 1: Maintains a set speed and distance from the vehicle ahead, with driver intervention required for lane changes and emergency maneuvers.</li>
+            <li>Blind Spot Monitoring (BSM): Uses radar and cameras to alert the driver to vehicles in their blind spots.</li>
+            <li>Lane Departure Warning (LDW): Alerts the driver if the vehicle drifts out of its lane without signaling.</li>
+        </ul>
+        <h4>Integrated Semi-Automation (Transitioning) (Currently in transition – increasing adoption in consumer vehicles)</h4>
+        <ul class="step-list">
+            <li>Highway Assist (Level 2): Combines ACC with Lane Centering Assist, allowing for automated driving on highways with minimal driver intervention.</li>
+            <li>Traffic Jam Assist (Level 2): Automatically accelerates, brakes, and steers within a low-speed traffic jam, requiring driver monitoring.</li>
+            <li>Parking Assist Systems (Level 1/2): Utilizes ultrasonic sensors and cameras to automatically steer the vehicle into parking spaces, with driver control during execution.</li>
+            <li>Dynamic Speed Adaptation (Level 2): Adjusts speed based on real-time traffic conditions, utilizing data from connected vehicles and infrastructure.</li>
+            <li>Automatic Emergency Braking (AEB) - Enhanced:  More sophisticated sensor fusion and predictive algorithms to detect and mitigate potential collisions, including pedestrian and cyclist detection.</li>
+            <li>Remote Vehicle Control (Limited): Allowing drivers to remotely control vehicle functions like locking/unlocking and starting/stopping from a mobile app – primarily for parking assistance.</li>
+        </ul>
+        <h4>Advanced Automation Systems (Emerging Technology) (Emerging technology – Primarily in controlled environments and commercial applications)</h4>
+        <ul class="step-list">
+            <li>Geofenced Autonomous Navigation (Level 3):  Allows for autonomous operation within designated geographic areas (e.g., university campuses, industrial parks) with pre-mapped routes.</li>
+            <li>Cooperative Driving Systems (Level 3): Vehicles communicate and coordinate their movements with each other and infrastructure, enabling platooning and optimized traffic flow.</li>
+            <li>Sensor Fusion & Predictive Modeling (Level 3/4): Utilizing LiDAR, radar, and cameras to create a highly detailed and dynamic understanding of the environment, incorporating predictive algorithms for anticipating potential hazards.</li>
+            <li>Automated Route Planning & Optimization (Level 3/4): Dynamically adjusting routes based on real-time traffic, weather, and road conditions, optimizing for speed, efficiency, and safety.</li>
+            <li>Automated Valet Parking (Level 3):  Autonomous parking within parking garages, utilizing sensor data and precise control systems.</li>
+            <li>Remote Monitoring & Override (Level 3/4): Allowing remote operators to take control of the vehicle in complex or unforeseen situations, providing a safety net.</li>
+        </ul>
+        <h4>Full End-to-End Automation (Future Development) (Future development – Significant technological and regulatory hurdles remain)</h4>
+        <ul class="step-list">
+            <li>Truly Autonomous Ride-Hailing (Level 5):  Vehicles operate without any human intervention, providing on-demand transportation services in diverse urban and rural environments.</li>
+            <li>Dynamic Route Generation & Adaptation (Level 5):  Real-time route planning that considers all factors – traffic, weather, road closures, pedestrian activity – with zero human input.</li>
+            <li>Swarm Intelligence & Collective Decision-Making (Level 5): Vehicles communicate and coordinate their actions as a ‘swarm,’ optimizing traffic flow and responding to complex events in real-time.</li>
+            <li>AI-Powered Risk Assessment & Mitigation (Level 5):  Sophisticated AI algorithms that can anticipate and react to unforeseen hazards with minimal human intervention, potentially including complex emergency maneuvers.</li>
+            <li>Infrastructure-Based Automation (Level 5):  Vehicles interact with smart roads and traffic management systems, receiving real-time information and coordinating their movements with the infrastructure.</li>
+            <li>Personalized Driving Profiles & Adaptive Control (Level 5):  Vehicles learn and adapt to individual driver preferences and driving styles, optimizing for comfort, efficiency, and safety.</li>
+        </ul>
+    </div>
+    <div class="process-section">
+        <h3>Current Implementation Levels</h3>
+        <p>The table below shows the current automation levels across different scales:</p>
+        <table class="automation-table">
+            <thead>
+                <tr>
+                    <th>Process Step</th>
+                    <th>Small Scale</th>
+                    <th>Medium Scale</th>
+                    <th>Large Scale</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Sensor Data Acquisition</td>
+                    <td>High</td>
+                    <td>Medium</td>
+                    <td>High</td>
+                </tr>
+                <tr>
+                    <td>Sensor Data Processing & Fusion</td>
+                    <td>Medium</td>
+                    <td>High</td>
+                    <td>High</td>
+                </tr>
+                <tr>
+                    <td>Path Planning & Navigation</td>
+                    <td>Low</td>
+                    <td>Medium</td>
+                    <td>High</td>
+                </tr>
+                <tr>
+                    <td>Vehicle Control & Actuation</td>
+                    <td>Medium</td>
+                    <td>High</td>
+                    <td>High</td>
+                </tr>
+                <tr>
+                    <td>Human-Machine Interface (HMI) & Monitoring</td>
+                    <td>Low</td>
+                    <td>Medium</td>
+                    <td>High</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="process-section">
+        <h3>Automation ROI Analysis</h3>
+        <p>The return on investment for automation depends on scale and production volume:</p>
+        <ul class="step-list">
+            <li><strong>Small Scale:</strong> 1-2 years</li>
+            <li><strong>Medium Scale:</strong> 3-5 years</li>
+            <li><strong>Large Scale:</strong> 5-10+ years</li>
+        </ul>
+        <p>Key benefits driving ROI include Increased Efficiency & Productivity, Reduced Operational Costs, Improved Accuracy & Quality, Enhanced Safety & Security, and Data-Driven Decision Making.</p>
+    </div>
+</div>
+
+<!-- Technical Details Tab Content -->
+<div id="technical-details" class="tab-content">
+    <div class="process-section">
+        <h3>Automation Technologies</h3>
+        <p>This section details the underlying technologies enabling automation.</p>
+        <h4>Sensory Systems</h4>
+        <ul class="step-list">
+            <li><strong>Advanced LiDAR (Solid-State LiDAR):</strong> High-resolution, solid-state LiDAR systems capable of 360-degree scanning with significantly improved range, resolution, and robustness compared to current rotating LiDAR. Utilizing MEMS technology and silicon photonics for miniaturization and reduced cost.</li>
+            <li><strong>Multi-Modal Radar (4D Radar):</strong> Advanced radar systems integrating multiple frequency bands (Ku-band, Ka-band, V-band) for enhanced object detection, velocity estimation, and tracking, particularly in challenging conditions.</li>
+            <li><strong>Thermal Imaging Cameras:</strong> High-resolution thermal cameras integrated for pedestrian and animal detection, particularly at night or in low-visibility conditions.</li>
+            <li><strong>Event Cameras:</strong> Dynamic vision sensors that capture changes in brightness asynchronously, offering high temporal resolution and resilience to motion blur.</li>
+        </ul>
+        <h4>Control Systems</h4>
+        <ul class="step-list">
+            <li><strong>Model Predictive Control (MPC) with Reinforcement Learning:</strong> Advanced control algorithms utilizing MPC for trajectory planning and control, augmented with reinforcement learning for adaptation to complex and unpredictable environments.</li>
+            <li><strong>Centralized Vehicle-to-Everything (V2X) Communication:</strong> High-bandwidth, low-latency communication system enabling direct communication between vehicles, infrastructure, and pedestrians.</li>
+        </ul>
+        <h4>Mechanical Systems</h4>
+        <ul class="step-list">
+            <li><strong>Compact Electric Drive Units:</strong> High-torque, lightweight electric motors and power electronics for efficient propulsion.</li>
+            <li><strong>Advanced Suspension Systems (Active Suspension):</strong> Adaptive suspension systems utilizing sensors and actuators to dynamically adjust ride height and damping characteristics.</li>
+        </ul>
+        <h4>Software Integration</h4>
+        <ul class="step-list">
+            <li><strong>Sensor Fusion Framework:</strong> Real-time framework for integrating data from multiple sensors using Kalman filters, Bayesian networks, and deep learning.</li>
+            <li><strong>Behavioral Planning & Prediction System:</strong> AI-powered system for predicting the behavior of other road users and planning safe and efficient trajectories.</li>
+            <li><strong>Digital Twin Platform:</strong> Real-time simulation environment mirroring the vehicle's state and environment for testing and validation.</li>
+        </ul>
+    </div>
+    <div class="process-section">
+        <h3>Technical Specifications for Commercial Automation</h3>
+        <p>Standard parameters for industrial production:</p>
+        <h4>Performance Metrics</h4>
+        <ul class="step-list">
+            <li>Average Speed (km/h): 40-60 (Range: 35-70)</li>
+            <li>Operational Range (km): 300-500 (Range: 250-600)</li>
+            <li>Passenger Comfort (dB): 55-65 (Range: 45-75)</li>
+            <li>Accuracy of Localization (m): 5-10 (Range: 3-15)</li>
+            <li>Reaction Time (s): 0.2-0.5 (Range: 0.1-1.0)</li>
+            <li>Cargo Capacity (kg): 1000-2000 (Range: 800-3000)</li>
+            <li>Energy Consumption (kWh/100km): 25-40 (Range: 18-60)</li>
+        </ul>
+        <h4>Implementation Requirements</h4>
+        <ul class="step-list">
+            <li>Sensor Suite Integration: Must integrate LiDAR (360° coverage, 150m range), Radar (100m range, 50° beam), Cameras (High-resolution, color, 120° field of view), Ultrasonic Sensors (Short-range, 5m range)</li>
+            <li>Redundancy Systems: Dual power supply units, redundant steering and braking systems, backup computing platform</li>
+            <li>Cybersecurity Protocols: ISO 27001 compliance, intrusion detection systems, secure communication channels (TLS 1.3 or higher)</li>
+            <li>Mapping & Navigation System: High-definition maps (1m resolution), real-time traffic data integration, dynamic route planning</li>
+            <li>Vehicle Control System: Automated driving algorithms (Level 4 or 5), fail-safe mechanisms, emergency stop functionality</li>
+            <li>Over-the-Air (OTA) Updates: Secure and reliable OTA update mechanism for software and map updates</li>
+        </ul>
+    </div>
+</div>
+
+<!-- Competing Approaches Tab Content -->
+<div id="competing-approaches" class="tab-content">
+    <div class="process-section">
+        <h3>Alternative Approaches</h3>
+        <p>These are alternative automation trees generated by different versions of our Iterative AI algorithm. Browse these competing models and vote for approaches you find most effective.</p>
+    </div>
+    <div class="approaches-grid">
+        <div class="approach-card">
+            <h4>Efficiency-Optimized Approach</h4>
+            <p>This approach prioritizes minimizing resource usage and production time.</p>
+            <div class="approach-preview">
+efficiency_optimized
+├── sensor_data_collection_8f29
+│   ├── lidar_scanning_a421
+│   └── camera_imaging_c731
+├── data_processing_d54f
+│   ├── object_detection_b651
+│   ├── path_planning_e922
+│   └── decision_making_f110
+├── control_execution_4a12
+└── monitoring_feedback_7b29</div>
+            <div class="approach-meta">
+                <p>Created by: Iterative AI v2.3</p>
+                <p>Votes: <span class="vote-count">18</span></p>
+            </div>
+            <div class="approach-actions">
+                <button class="button secondary vote-button">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 4L18 10H6L12 4Z" fill="currentColor"/>
+                    </svg>
+                    Vote Up
+                </button>
+                <a href="#" class="button secondary">View Full Tree</a>
+            </div>
+        </div>
+        <div class="approach-card">
+            <h4>Safety-Optimized Approach</h4>
+            <p>This approach focuses on maximizing safety and reliability.</p>
+            <div class="approach-preview">
+safety_optimized
+├── redundant_sensing_f721
+│   ├── primary_sensor_suite_a918
+│   ├── secondary_sensor_suite_c624
+│   └── failsafe_systems_d837
+├── validation_process_e542
+│   └── multi_level_verification_b213
+├── safety_protocols_9c31
+│   ├── emergency_procedures_a432
+│   ├── fault_detection_b548
+│   └── degraded_mode_operation_c659</div>
+            <div class="approach-meta">
+                <p>Created by: Iterative AI v2.4</p>
+                <p>Votes: <span class="vote-count">24</span></p>
+            </div>
+            <div class="approach-actions">
+                <button class="button secondary vote-button">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 4L18 10H6L12 4Z" fill="currentColor"/>
+                    </svg>
+                    Vote Up
+                </button>
+                <a href="#" class="button secondary">View Full Tree</a>
+            </div>
+        </div>
+        <div class="approach-card">
+            <h4>Hybridized Approach</h4>
+            <p>This approach balances efficiency with safety considerations.</p>
+            <div class="approach-preview">
+hybrid_system
+├── sensor_fusion_a329
+│   ├── multi_modal_sensing_b428
+│   ├── environmental_mapping_c529
+│   └── object_tracking_d630
+├── decision_making_e731
+│   ├── situation_assessment_f832
+│   ├── risk_evaluation_g933
+│   └── action_selection_h034</div>
+            <div class="approach-meta">
+                <p>Created by: Iterative AI v2.5</p>
+                <p>Votes: <span class="vote-count">42</span></p>
+            </div>
+            <div class="approach-actions">
+                <button class="button secondary vote-button">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 4L18 10H6L12 4Z" fill="currentColor"/>
+                    </svg>
+                    Vote Up
+                </button>
+                <a href="#" class="button secondary">View Full Tree</a>
+            </div>
+        </div>
+    </div>
+    <div class="process-section">
+        <h3>Why Multiple Approaches?</h3>
+        <p>Different methodologies offer unique advantages depending on context:</p>
+        <ul class="step-list">
+            <li><strong>Scale considerations:</strong> Some approaches work better for large-scale production, while others are more suitable for specialized applications</li>
+            <li><strong>Resource constraints:</strong> Different methods optimize for different resources (time, computing power, energy)</li>
+            <li><strong>Quality objectives:</strong> Approaches vary in their emphasis on safety, efficiency, adaptability, and reliability</li>
+            <li><strong>Automation potential:</strong> Some approaches are more easily adapted to full automation than others</li>
+        </ul>
+        <p>By voting for approaches you find most effective, you help our community identify the most promising automation pathways.</p>
+    </div>
+</div>
+
+                    <div class="contributors-section">
+                        <h3>Contributors</h3>
+                        <p>This workflow was developed using Iterative AI analysis of autonomous vehicles processes with input from professional engineers and automation experts.</p>
+                        <p><em>Last updated: April 2024</em></p>
+                        <a href="#" class="button secondary" id="suggest-improvements">Suggest Improvements</a>
+                        
+                        <!-- Feedback form container (initially hidden) -->
+                        <div id="feedback-form-container" class="feedback-form-container">
+                            <h4>Suggest Improvements</h4>
+                            <p>We value your input on how to improve this autonomous vehicles workflow. Please provide your suggestions below.</p>
+                            
+                            <form id="feedback-form" class="feedback-form">
+                                <div class="feedback-form-field">
+                                    <label for="feedback-name">Name (optional)</label>
+                                    <input type="text" id="feedback-name" name="name" placeholder="Your name">
+                                </div>
+                                
+                                <div class="feedback-form-field">
+                                    <label for="feedback-email">Email (optional)</label>
+                                    <input type="email" id="feedback-email" name="email" placeholder="your@email.com">
+                                </div>
+                                
+                                <div class="feedback-form-field">
+                                    <label for="feedback-subject">Subject</label>
+                                    <input type="text" id="feedback-subject" name="subject" placeholder="Brief description of your suggestion" required>
+                                </div>
+                                
+                                <div class="feedback-form-field">
+                                    <label for="feedback-body">Feedback Details</label>
+                                    <textarea id="feedback-body" name="message" placeholder="Please describe your suggestion in detail..." required></textarea>
+                                </div>
+                                
+                                <div class="feedback-actions">
+                                    <button type="button" id="cancel-feedback" class="button secondary">Cancel</button>
+                                    <button type="submit" id="send-feedback" class="button primary">Send Feedback</button>
+                                </div>
+                            </form>
+                            
+                            <div id="feedback-message" class="feedback-message"></div>
+                        </div>
+                    </div>
+<!-- Footer placeholder to be filled by components.js -->
+    <div id="footer-placeholder"></div>
+    
+    <!-- Load components.js first to ensure header/footer are loaded before other scripts -->
+    <script src="/assets/js/components.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/tabbed-content.js"></script>
+    <script src="/assets/js/feedback.js"></script>
+</body>
+</html>
