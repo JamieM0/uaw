@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technology - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder {
+            min-height: 70px; /* Match header height */
+        }
+        #footer-placeholder {
+            min-height: 250px; /* Approximate height of footer */
+        }
+    </style>
+</head>
+<body>
+    <!-- Header placeholder to be filled by components.js -->
+    <div id="header-placeholder"></div>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Technology</h1>
+                <p class="hero-subtitle">Exploring automation possibilities in technology systems</p>
+            </div>
+        </section>
+
+        <section class="category-section">
+            <div class="container">
+                <div class="category-container">
+                    <!-- Breadcrumbs - populated by JavaScript -->
+                    <div class="breadcrumbs" data-breadcrumbs='[
+                        {"title": "Home", "url": "/"},
+                        {"title": "Technology", "url": "/technology"}
+                    ]'></div>
+                    
+                    <div class="category-header">
+                        <p class="category-description">Technology automation encompasses the systems and processes that enable technological tasks to be performed with minimal human intervention. Explore the categories below to learn about automation across various technology domains.</p>
+                    </div>
+                    
+                    <!-- Category Grid - populated by JavaScript -->
+                    <div class="category-grid" id="category-items" 
+                        data-category-title="Technology" 
+                        data-category-items='[
+                            {
+                                "title": "Computing",
+                                "description": "Automation in computing systems including server management, cloud infrastructure, and computational tasks.",
+                                "url": "/technology/computing"
+                            },
+                            {
+                                "title": "Software Development",
+                                "description": "Automated processes in software engineering, including testing, deployment, and continuous integration.",
+                                "url": "#"
+                            },
+                            {
+                                "title": "Telecommunications",
+                                "description": "Automation technologies in network management, signal processing, and communications infrastructure.",
+                                "url": "#"
+                            },
+                            {
+                                "title": "Electronics Manufacturing",
+                                "description": "Automated systems for producing electronic components, circuit boards, and consumer electronics.",
+                                "url": "#"
+                            },
+                            {
+                                "title": "Data Centers",
+                                "description": "Automation in data center operations, including server maintenance, cooling systems, and power management.",
+                                "url": "#"
+                            },
+                            {
+                                "title": "Cybersecurity",
+                                "description": "Automated security systems for threat detection, vulnerability assessment, and incident response.",
+                                "url": "#"
+                            }
+                        ]'>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer placeholder to be filled by components.js -->
+    <div id="footer-placeholder"></div>
+    
+    <!-- Load components.js first, then category-template.js -->
+    <script src="/assets/js/components.js"></script>
+    <script src="/assets/js/category-template.js"></script>
+</body>
+</html>

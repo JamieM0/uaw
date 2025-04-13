@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computing - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder {
+            min-height: 70px; /* Match header height */
+        }
+        #footer-placeholder {
+            min-height: 250px; /* Approximate height of footer */
+        }
+    </style>
+</head>
+<body>
+    <!-- Header placeholder to be filled by components.js -->
+    <div id="header-placeholder"></div>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Computing</h1>
+                <p class="hero-subtitle">Exploring automation in computational systems and infrastructure</p>
+            </div>
+        </section>
+
+        <section class="category-section">
+            <div class="container">
+                <div class="category-container">
+                    <!-- Breadcrumbs - populated by JavaScript -->
+                    <div class="breadcrumbs" data-breadcrumbs='[
+                        {"title": "Home", "url": "/index"},
+                        {"title": "Technology", "url": "/technology"},
+                        {"title": "Computing", "url": "/technology/computing"}
+                    ]'></div>
+                    
+                    <div class="category-header">
+                        <p class="category-description">Computing automation encompasses technologies that enable computational tasks to be performed with minimal human intervention. From automated server management to quantum computing, these technologies are transforming how computational resources are deployed and utilized.</p>
+                    </div>
+                    
+                    <!-- Category Grid - populated by JavaScript -->
+                    <div class="category-grid" id="category-items" 
+                        data-category-title="Computing" 
+                        data-category-items='[
+                            {
+                                "title": "Cloud Infrastructure",
+                                "description": "Automation technologies for deploying, scaling, and managing cloud computing resources across distributed environments.",
+                                "url": "/technology/computing/cloud-infrastructure"
+                            },
+                            {
+                                "title": "Quantum Computing",
+                                "description": "Automation approaches for quantum algorithm implementation, error correction, and quantum resource management.",
+                                "url": "/technology/computing/quantum-computing"
+                            },
+                            {
+                                "title": "High-Performance Computing",
+                                "description": "Automated workload management, resource allocation, and optimization for supercomputers and compute clusters.",
+                                "url": "#"
+                            },
+                            {
+                                "title": "Server Management",
+                                "description": "Automation systems for server provisioning, configuration management, and maintenance in data centers.",
+                                "url": "#"
+                            },
+                            {
+                                "title": "Edge Computing",
+                                "description": "Automated deployment and management of computational resources at network edges to reduce latency and bandwidth usage.",
+                                "url": "#"
+                            }
+                        ]'>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer placeholder to be filled by components.js -->
+    <div id="footer-placeholder"></div>
+    
+    <!-- Load components.js first, then category-template.js -->
+    <script src="/assets/js/components.js"></script>
+    <script src="/assets/js/category-template.js"></script>
+</body>
+</html>
