@@ -619,7 +619,7 @@ bread_making
             .transparency-modal-content {
               background: var(--bg-color);
               border-radius: 16px;
-              max-width: 900px;
+              max-width: 1200px;
               width: 95vw;
               margin: 0 auto;
               padding: 2rem;
@@ -633,6 +633,9 @@ bread_making
               font-family: var(--font-family);
               flex-shrink: 0;
               margin-bottom: 2rem;
+              width: 100%; 
+              display: flex;
+              justify-content: center;
             }
             #transparency-details {
               background: var(--bg-light);
@@ -647,11 +650,16 @@ bread_making
               overflow-wrap: break-word;
               max-height: none;
               overflow-y: visible;
+              font-family: 'Inter', sans-serif; /* Added font family */
             }
             #close-transparency {
               position: absolute;
               right: 2rem;
               top: 2rem;
+            }
+            /* Style to prevent body scroll when modal is open */
+            body.modal-open {
+              overflow: hidden;
             }
             @media (max-width: 600px) {
               .transparency-modal-content { padding: 1rem; }
@@ -683,6 +691,7 @@ bread_making
     let flowMeta = null;
     let inputPrompt = null;
     let stepOutputs = {};
+    let stepInputs = {};
 
     // Initialize mermaid with configuration
     mermaid.initialize({ 
@@ -690,24 +699,34 @@ bread_making
       theme: 'default', 
       themeVariables: { 
         'primaryColor': '#0A5E95', 
-        'fontFamily': 'Inter, sans-serif' 
-      } 
+        'fontFamily': 'Inter, sans-serif' ,
+        'fontSize': '12px'
+      },
+      flowchart: {
+        nodeSpacing: 25,
+        curve: 'basis',
+        htmlLabels: true,
+        useMaxWidth: false
+      }
     });
 
     showBtn.addEventListener('click', async () => {
       modal.style.display = 'flex';
+      document.body.classList.add('modal-open'); // Prevent body scroll
       if (!flowMeta) await loadTransparencyData();
       renderMermaid();
     });
     
     closeBtn.addEventListener('click', () => {
       modal.style.display = 'none';
+      document.body.classList.remove('modal-open'); // Allow body scroll
       detailsDiv.innerHTML = '';
     });
     
     window.addEventListener('click', e => {
       if (e.target === modal) { 
         modal.style.display = 'none'; 
+        document.body.classList.remove('modal-open'); // Allow body scroll
         detailsDiv.innerHTML = ''; 
       }
     });
@@ -715,14 +734,16 @@ bread_making
     async function loadTransparencyData() {
       try {
         // Load flow-metadata.json and input.json
-        flowMeta = await fetch('/flow/834904cf-eb21-4e44-a8b5-48c7815af902/flow-metadata.json').then(r => r.json());
-        inputPrompt = await fetch('/flow/834904cf-eb21-4e44-a8b5-48c7815af902/input.json').then(r => r.json());
+        flowMeta = await fetch('/flow/ce6c090c-ba50-40fe-84eb-d3defd181c30/flow-metadata.json').then(r => r.json());
+        inputPrompt = await fetch('/flow/ce6c090c-ba50-40fe-84eb-d3defd181c30/input.json').then(r => r.json());
         
         // Load all step outputs (1.json, 2.json, ...)
         for (let i = 1; i <= 9; ++i) {
           try {
-            const data = await fetch(`/flow/834904cf-eb21-4e44-a8b5-48c7815af902/${i}.json`).then(r => r.json());
+            const data = await fetch(`/flow/ce6c090c-ba50-40fe-84eb-d3defd181c30/${i}.json`).then(r => r.json());
             stepOutputs[i] = data;
+            const inputData = await fetch(`/flow/ce6c090c-ba50-40fe-84eb-d3defd181c30/inputs/${i}-in.json`).then(r => r.json());
+            stepInputs[i] = inputData;
           } catch (err) {
             console.log(`Could not load step ${i} data: ${err.message}`);
           }
@@ -738,36 +759,49 @@ bread_making
         // Clear previous content
         mermaidDiv.innerHTML = '';
         
-        // Build Mermaid graph definition - vertical flow (TD = top-down)
-        let graph = 'graph TD\n';
+        // Build Mermaid graph definition - horizontal flow (LR = left-right)
+        let graph = 'graph LR\n';
         
         // Add input node
-        graph += 'A[Input Prompt]\n';
+        graph += '  A[Input Prompt]\n';
         
-        // Create sequential flow through each program
         const programs = flowMeta?.programs_run || [];
-        let prevNodeId = 'A';
-        
+        const assemblyProgramIndex = programs.length - 1; // Assume last program is assembly
+        const assemblyNodeId = 'Assemble';
+        const assemblyProgramName = programs[assemblyProgramIndex]?.replace(/_/g, ' ').replace(/\.py$/, '') || 'Assemble Article';
+
+        // Add assembly node definition
+        graph += `  ${assemblyNodeId}[${assemblyProgramName}]\n`;
+        graph += `  ${assemblyNodeId}:::stepNode\n`;
+
+        // Add nodes for programs before assembly and connect them
         programs.forEach((prog, idx) => {
+          if (idx === assemblyProgramIndex) return; // Skip assembly program here
+
           const nodeId = `S${idx+1}`;
-          // Clean up program name for display
           const cleanName = prog.replace(/_/g, ' ').replace(/\.py$/, '');
           
-          // Connect previous node to current node
-          graph += `${prevNodeId} --> ${nodeId}[${cleanName}]\n`;
-          graph += `${nodeId}:::stepNode\n`;
+          // Define program node and style
+          graph += `  ${nodeId}[${cleanName}]\n`;
+          graph += `  ${nodeId}:::stepNode\n`;
+
+          // Connect Input to this program node
+          graph += `  A --> ${nodeId}\n`;
           
-          // Current node becomes previous for next iteration
-          prevNodeId = nodeId;
+          // Connect this program node to the Assembly node
+          graph += `  ${nodeId} --> ${assemblyNodeId}\n`;
         });
         
         // Add final node representing the completed article
-        graph += `${prevNodeId} --> End[Completed Article]\n`;
-        graph += 'End:::endNode\n';
+        graph += '  End[Completed Article]\n';
+        graph += '  End:::endNode\n';
+
+        // Connect Assembly node to End node
+        graph += `  ${assemblyNodeId} --> End\n`;
         
-        // Style nodes
-        graph += 'classDef stepNode fill:#eaf6fb,stroke:#0A5E95,stroke-width:2px,color:#0A5E95,font-weight:bold;\n';
-        graph += 'classDef endNode fill:#e6f7e6,stroke:#2e8b57,stroke-width:2px,color:#2e8b57,font-weight:bold;\n';
+        // Style nodes (definitions remain the same)
+        graph += '  classDef stepNode fill:#eaf6fb,stroke:#0A5E95,stroke-width:2px,color:#0A5E95,font-weight:bold;\n';
+        graph += '  classDef endNode fill:#e6f7e6,stroke:#2e8b57,stroke-width:2px,color:#2e8b57,font-weight:bold;\n';
         
         // Create a new div with the mermaid class and the graph definition
         const newDiv = document.createElement('div');
@@ -798,7 +832,7 @@ bread_making
         if (inputNode) {
           inputNode.style.cursor = 'pointer';
           inputNode.addEventListener('click', () => {
-            detailsDiv.innerHTML = `<b>Input Prompt</b><pre style='white-space:pre-wrap;background:#f8f9fa;padding:1em;border-radius:8px;'>${JSON.stringify(inputPrompt, null, 2)}</pre>`;
+            detailsDiv.innerHTML = `<b>Input Prompt</b><pre style='background:#f8f9fa;padding:1em;border-radius:8px;'>${JSON.stringify(inputPrompt, null, 2)}</pre>`;
           });
         }
         
@@ -810,8 +844,9 @@ bread_making
           if (node) {
             node.style.cursor = 'pointer';
             node.addEventListener('click', () => {
+              const input = stepInputs[idx+1];
               const output = stepOutputs[idx+1];
-              detailsDiv.innerHTML = `<b>Step: ${prog}</b><pre style='white-space:pre-wrap;background:#f8f9fa;padding:1em;border-radius:8px;'>${output ? JSON.stringify(output, null, 2) : 'No output available.'}</pre>`;
+              detailsDiv.innerHTML = `<h3>${prog}</h3><pre style='background:#f8f9fa;padding:1em;border-radius:8px;'><h4>Input</h4>${input ? JSON.stringify(input, null, 2) : 'No input available.'}</pre><pre style='background:#f8f9fa;padding:1em;border-radius:8px;'><h4>Output</h4>${output ? JSON.stringify(output, null, 2) : 'No output available.'}</pre>`;
             });
           }
         });

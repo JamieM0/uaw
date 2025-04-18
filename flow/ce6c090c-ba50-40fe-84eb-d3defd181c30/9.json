@@ -1,0 +1,106 @@
+{
+    "uuid": null,
+    "date_created": "2025-04-18T21:26:35.844576",
+    "task": "Industrial Specifications Analysis",
+    "time_taken": "0:00:10.058719",
+    "industrial_specifications": {
+        "performance_metrics": [
+            {
+                "name": "Yield Rate (Bread)",
+                "value": "92-98%",
+                "description": "Percentage of dough produced that successfully transforms into finished bread. Accounts for waste due to defects, under-proofing, or over-proofing."
+            },
+            {
+                "name": "Moisture Content (Finished Bread)",
+                "value": "38-42% (Wet Basis)",
+                "description": "Percentage of water in the finished bread product. Critical for shelf life and texture. Measured using Karl Fischer titration."
+            },
+            {
+                "name": "Crumb Volume (cm³)",
+                "value": "450-600 cm³ (Standard Loaf)",
+                "description": "Volume of the internal crumb structure of the bread. Influenced by fermentation time, dough hydration, and baking conditions."
+            },
+            {
+                "name": "Specific Volume (cm³/g)",
+                "value": "1.2 - 1.6 cm³/g",
+                "description": "A measure of the bread's airiness. Higher values indicate a lighter texture."
+            },
+            {
+                "name": "Crust Hardness (Shore A)",
+                "value": "30-45",
+                "description": "Measured using a Shore A durometer. Indicates crust crispness and resistance to breakage."
+            },
+            {
+                "name": "Shelf Life (Days)",
+                "value": "14-21 Days (Under Controlled Conditions)",
+                "description": "Time the bread remains acceptable for sale, considering moisture content, crust integrity, and microbial activity.  Requires controlled temperature (20-24°C) and humidity (60-70%)."
+            },
+            {
+                "name": "Baking Time (Loaf)",
+                "value": "30-45 Minutes",
+                "description": "Total time from initial loading to finished baking. Dependent on oven type and loaf size."
+            }
+        ],
+        "implementation_requirements": [
+            {
+                "name": "Dough Mixer Capacity",
+                "specification": "Minimum 500 kg/batch",
+                "description": "Capacity of the dough mixer, considering batch size and production volume."
+            },
+            {
+                "name": "Proofer Temperature",
+                "specification": "24-28°C",
+                "description": "Temperature of the proofer, crucial for yeast activity and dough development."
+            },
+            {
+                "name": "Proofer Humidity",
+                "specification": "80-85%",
+                "description": "Relative humidity within the proofer, maintaining optimal dough hydration."
+            },
+            {
+                "name": "Oven Type",
+                "specification": "Convection Oven with Independent Temperature Zones",
+                "description": "Allows for precise control of baking temperature and humidity, ensuring uniform bread quality."
+            },
+            {
+                "name": "Scale Accuracy",
+                "specification": "± 100g",
+                "description": "Accuracy of the scale used for measuring ingredients."
+            },
+            {
+                "name": "Ingredient Storage",
+                "specification": "Temperature Controlled, Humidity Controlled",
+                "description": "Ingredients must be stored under conditions that maintain their quality and prevent spoilage."
+            },
+            {
+                "name": "Cleaning and Sanitation Procedures",
+                "specification": "CIP (Clean-In-Place) System",
+                "description": "Automated cleaning system for equipment, adhering to HACCP principles."
+            }
+        ],
+        "industry_standards": [
+            "HACCP (Hazard Analysis and Critical Control Points)",
+            "ISO 9001 (Quality Management System)",
+            "BRC (British Retail Consortium) Global Standards",
+            "IFS (International Food Standard)",
+            "FDA Food Safety Modernization Act (FSMA)"
+        ],
+        "key_suppliers": [
+            " Brabender GmbH & Co. KG",
+            "Buhler Group",
+            "Erichsen & Fils",
+            "Rheon Group",
+            "AMF Bakery Systems"
+        ],
+        "operational_considerations": [
+            "Raw Material Sourcing (Wheat Flour, Yeast, Water, Salt)",
+            "Dough Formulation Optimization (Hydration, Protein Content)",
+            "Fermentation Control (Temperature, Time)",
+            "Batch Size Management",
+            "Equipment Maintenance (Preventative Maintenance Schedule)",
+            "Waste Management (Ingredient Spoilage, Dough Scraping)",
+            "Energy Efficiency (Oven Operation, Cooling Systems)",
+            "Staff Training (Dough Handling, Baking Procedures)"
+        ]
+    }
+}

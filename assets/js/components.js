@@ -4,15 +4,15 @@ document.addEventListener('DOMContentLoaded', function() {
         <header class="site-header">
             <div class="container header-container">
                 <div class="logo">
-                    <a href="/index.html">
+                    <a href="/index">
                         <img src="/assets/images/uaw-logo.png" alt="Universal Automation Wiki Logo">
                     </a>
                 </div>
                 <nav class="main-nav">
                     <ul>
-                        <li><a href="/about.html">About</a></li>
-                        <li><a href="/technical.html">Technical Details</a></li>
-                        <li><a href="/output.html">Example Workflows</a></li>
+                        <li><a href="/about">About</a></li>
+                        <li><a href="/technical">Technical Details</a></li>
+                        <li><a href="/output">Example Workflows</a></li>
                         <li><a href="https://jamiem.me/iterative-code" target="_blank">GitHub</a></li>
                     </ul>
                 </nav>
@@ -37,15 +37,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="footer-links-column">
                             <h4>Platform</h4>
                             <ul>
-                                <li><a href="/about.html">About</a></li>
-                                <li><a href="/output.html">Example Workflows</a></li>
-                                <li><a href="/technical.html">Technical Details</a></li>
+                                <li><a href="/about">About</a></li>
+                                <li><a href="/output">Example Workflows</a></li>
+                                <li><a href="/technical">Technical Details</a></li>
                             </ul>
                         </div>
                         <div class="footer-links-column">
                             <h4>Resources</h4>
                             <ul>
-                                <li><a href="https://github.com/iterative-ai/">GitHub</a></li>
+                                <li><a href="https://jamiem.me/iterative-code">GitHub</a></li>
                                 <li><a href="#">Documentation</a></li>
                             </ul>
                         </div>
