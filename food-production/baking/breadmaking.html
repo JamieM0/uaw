@@ -596,11 +596,18 @@ bread_making
         
         <!-- Move the transparency modal outside of the wiki-content container -->
         <div id="transparency-modal" class="transparency-modal" style="display:none;">
-          <div class="transparency-modal-content">
+          <div class="transparency-modal-content" style="max-height: 90vh; overflow: hidden;">
             <button id="close-transparency" class="button secondary">Close</button>
             <h2>Article Transparency Diagram (Pre-alpha)</h2>
-            <div id="mermaid-diagram" class="mermaid"></div>
-            <div id="transparency-details"></div>
+            <div class="transparency-body" style="overflow: hidden;">
+              <div class="transparency-column transparency-column-left">
+                <div id="mermaid-diagram" class="mermaid"></div>
+              </div>
+              <div class="transparency-column transparency-column-right">
+                <div id="transparency-input" class="transparency-detail-section"></div>
+                <div id="transparency-output" class="transparency-detail-section"></div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -619,14 +626,55 @@ bread_making
             .transparency-modal-content {
               background: var(--bg-color);
               border-radius: 16px;
-              max-width: 1200px;
+              max-width: 95vw; 
               width: 95vw;
+              max-height: 90vh; /* Limit overall modal height */
+              overflow: hidden;  /* Prevent children from overflowing modal */
               margin: 0 auto;
               padding: 2rem;
               box-shadow: 0 8px 32px rgba(10,94,149,0.15);
               position: relative;
               display: flex;
               flex-direction: column;
+            }
+            .transparency-body {
+              display: flex;
+              flex-direction: row;
+              gap: 1rem;
+              flex: 1; /* Allow body to fill available height */
+              overflow: hidden;  /* Clip overflow so children scroll within */
+            }
+            .transparency-column {
+              flex: 1;
+            }
+            .transparency-column-left {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            }
+            .transparency-column-right {
+              display: flex;
+              flex-direction: column;
+              gap: 1rem;
+              /* fill height from body flex */
+              min-height: 0;
+            }
+            .transparency-detail-section {
+              background: var(--bg-light);
+              border-radius: 8px;
+              padding: 1.5rem;
+              color: var(--text-color);
+              font-size: 1rem;
+              box-shadow: 0 2px 8px rgba(10,94,149,0.07);
+              flex: 1;           
+              min-height: 0;     
+              overflow-y: auto;  /* Make section scrollable */
+              /* Max height is implicitly handled by parent flex constraints and modal max-height */
+            }
+            .transparency-detail-section pre {
+              white-space: pre-wrap;
+              overflow-wrap: break-word;
+              word-break: break-word;
             }
             #mermaid-diagram {
               min-height: 300px;
@@ -636,21 +684,6 @@ bread_making
               width: 100%; 
               display: flex;
               justify-content: center;
-            }
-            #transparency-details {
-              background: var(--bg-light);
-              border-radius: 8px;
-              padding: 1.5rem;
-              color: var(--text-color);
-              font-size: 1rem;
-              box-shadow: 0 2px 8px rgba(10,94,149,0.07);
-            }
-            #transparency-details pre {
-              white-space: pre-wrap;
-              overflow-wrap: break-word;
-              max-height: none;
-              overflow-y: visible;
-              font-family: 'Inter', sans-serif; /* Added font family */
             }
             #close-transparency {
               position: absolute;
@@ -686,7 +719,8 @@ bread_making
     const modal = document.getElementById('transparency-modal');
     const closeBtn = document.getElementById('close-transparency');
     const mermaidDiv = document.getElementById('mermaid-diagram');
-    const detailsDiv = document.getElementById('transparency-details');
+    const inputDiv = document.getElementById('transparency-input');
+    const outputDiv = document.getElementById('transparency-output');
 
     let flowMeta = null;
     let inputPrompt = null;
@@ -720,14 +754,16 @@ bread_making
     closeBtn.addEventListener('click', () => {
       modal.style.display = 'none';
       document.body.classList.remove('modal-open'); // Allow body scroll
-      detailsDiv.innerHTML = '';
+      inputDiv.innerHTML = '';
+      outputDiv.innerHTML = '';
     });
     
     window.addEventListener('click', e => {
       if (e.target === modal) { 
         modal.style.display = 'none'; 
         document.body.classList.remove('modal-open'); // Allow body scroll
-        detailsDiv.innerHTML = ''; 
+        inputDiv.innerHTML = '';
+        outputDiv.innerHTML = '';
       }
     });
 
@@ -750,7 +786,7 @@ bread_making
         }
       } catch (err) {
         console.error("Error loading transparency data:", err);
-        detailsDiv.innerHTML = `<p>Error loading data: ${err.message}. Please try again later.</p>`;
+        inputDiv.innerHTML = `<p>Error loading data: ${err.message}. Please try again later.</p>`;
       }
     }
 
@@ -832,7 +868,7 @@ bread_making
         if (inputNode) {
           inputNode.style.cursor = 'pointer';
           inputNode.addEventListener('click', () => {
-            detailsDiv.innerHTML = `<b>Input Prompt</b><pre style='background:#f8f9fa;padding:1em;border-radius:8px;'>${JSON.stringify(inputPrompt, null, 2)}</pre>`;
+            inputDiv.innerHTML = `<b>Input Prompt</b><pre style='background:#f8f9fa;padding:1em;border-radius:8px;'>${JSON.stringify(inputPrompt, null, 2)}</pre>`;
           });
         }
         
@@ -846,7 +882,8 @@ bread_making
             node.addEventListener('click', () => {
               const input = stepInputs[idx+1];
               const output = stepOutputs[idx+1];
-              detailsDiv.innerHTML = `<h3>${prog}</h3><pre style='background:#f8f9fa;padding:1em;border-radius:8px;'><h4>Input</h4>${input ? JSON.stringify(input, null, 2) : 'No input available.'}</pre><pre style='background:#f8f9fa;padding:1em;border-radius:8px;'><h4>Output</h4>${output ? JSON.stringify(output, null, 2) : 'No output available.'}</pre>`;
+              inputDiv.innerHTML = `<h3>${prog}</h3><pre style='background:#f8f9fa;padding:1em;border-radius:8px;'><h4>Input</h4>${input ? JSON.stringify(input, null, 2) : 'No input available.'}</pre>`;
+              outputDiv.innerHTML = `<pre style='background:#f8f9fa;padding:1em;border-radius:8px;'><h4>Output</h4>${output ? JSON.stringify(output, null, 2) : 'No output available.'}</pre>`;
             });
           }
         });
