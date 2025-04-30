@@ -25,16 +25,7 @@
     <div id="header-placeholder"></div>
 
     <div class="docs-layout"> <!-- Added layout wrapper -->
-        <aside class="sidebar">
-            <nav>
-                <h3>Documentation</h3>
-                <ul>
-                    <li><a href="/docs">Home</a></li>
-                    <li><a href="/docs/standards"><strong>Standards</strong></a></li>
-                    <li><a href="#"><strong>- Automation Status</strong></a></li>
-                </ul>
-            </nav>
-        </aside>
+        <div id="sidebar-placeholder"></div>
 
         <main>
             <section class="hero">
@@ -197,5 +188,7 @@ graph LR
         mermaid.initialize({ startOnLoad: true });
     </script>
     <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
 </body>
 </html>

@@ -25,16 +25,7 @@
     <div id="header-placeholder"></div>
 
     <div class="docs-layout"> <!-- Added layout wrapper -->
-        <aside class="sidebar">
-            <nav>
-                <h3>Documentation</h3>
-                <ul>
-                    <li><a href="#"><strong>Home</strong></a></li>
-                    <li><a href="/docs/standards/index">Standards</a></li>
-                    <li><a href="standards/automation-status">- Automation Status</a></li>
-                </ul>
-            </nav>
-        </aside>
+        <div id="sidebar-placeholder"></div>
 
         <main>
             <section class="hero">
@@ -74,5 +65,7 @@
     <!-- Load components.js first to ensure header/footer are loaded before other scripts -->
     <script src="/assets/js/components.js"></script>
     <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
 </body>
 </html>
