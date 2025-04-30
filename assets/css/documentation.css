@@ -1,0 +1,106 @@
+/* Sidebar & Layout Styles for Documentation Pages */
+.docs-layout {
+    display: flex;
+    gap: 1.5rem; /* Gap between sidebar and main */
+    padding-top: 1rem; /* Space below header */
+    max-width: 1200px; /* Optional: constrain max width */
+    margin: 0 auto; /* Center layout */
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 90px; /* Header height (70px) + padding-top (1rem ~ 16px) + extra space */
+    height: calc(100vh - 120px); /* Adjust based on header/footer/spacing */
+    overflow-y: auto;
+    padding-top: 1rem; /* Align top content with main */
+}
+
+.sidebar nav h3 {
+    font-size: 0.9rem; /* Smaller heading */
+    margin-bottom: 0.8rem;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-left: 0.5rem;
+}
+
+.sidebar nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar nav ul li {
+    margin-bottom: 0.1rem;
+}
+
+.sidebar nav ul li a {
+    text-decoration: none;
+    color: var(--text-color);
+    display: block;
+    padding: 0.4rem 0.5rem; /* Adjust padding */
+    border-radius: 4px;
+    font-size: 0.95rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar nav ul li a:hover,
+.sidebar nav ul li a.active { /* Add .active class logic if needed via JS */
+    background-color: var(--background-color-hover);
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+/* Adjust main content within docs layout */
+.docs-layout main {
+    flex-grow: 1;
+    min-width: 0; /* Prevent overflow issues with flex items */
+}
+
+/* Adjust hero/intro sections within docs layout */
+.docs-layout .hero .container,
+.docs-layout .doc-intro .container {
+     max-width: none; /* Remove max-width from inner containers */
+     padding-left: 0; /* Remove padding as layout handles it */
+     padding-right: 0;
+}
+.docs-layout .doc-intro .section-header { margin-bottom: 1.5rem; } /* Slightly reduce margin */
+.docs-layout .doc-intro p { margin-bottom: 1rem; }
+.docs-layout .category-grid { margin-top: 2rem; }
+
+/* Responsive adjustments for docs layout */
+@media (max-width: 992px) { /* Adjust breakpoint if needed */
+     .sidebar {
+         width: 200px; /* Slightly narrower sidebar */
+     }
+}
+@media (max-width: 768px) {
+    .docs-layout {
+        flex-direction: column;
+        padding-top: 0.5rem;
+    }
+    .sidebar {
+        width: 100%;
+        position: static;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 1.5rem;
+        padding-right: 0;
+        padding-top: 0;
+        padding-bottom: 1rem;
+        overflow-y: visible;
+    }
+     .sidebar nav h3 {
+         margin-top: 0.5rem;
+     }
+    .docs-layout .hero .container,
+    .docs-layout .doc-intro .container {
+         padding-left: 0; /* Keep padding managed by layout */
+         padding-right: 0;
+    }
+}

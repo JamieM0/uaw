@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <ul>
                         <li><a href="/about">About</a></li>
                         <li><a href="/technical">Technical Details</a></li>
-                        <li><a href="/output">Example Workflows</a></li>
+                        <li><a href="/docs">Documentation</a></li>
                         <li><a href="https://jamiem.me/iterative-code" target="_blank">GitHub</a></li>
                     </ul>
                 </nav>
@@ -38,7 +38,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             <h4>Platform</h4>
                             <ul>
                                 <li><a href="/about">About</a></li>
-                                <li><a href="/output">Example Workflows</a></li>
                                 <li><a href="/technical">Technical Details</a></li>
                             </ul>
                         </div>
@@ -46,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <h4>Resources</h4>
                             <ul>
                                 <li><a href="https://jamiem.me/iterative-code">GitHub</a></li>
-                                <li><a href="#">Documentation</a></li>
+                                <li><a href="/docs">Documentation</a></li>
                             </ul>
                         </div>
                         <div class="footer-links-column">

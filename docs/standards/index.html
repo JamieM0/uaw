@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css"> <!-- For nav cards -->
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css"> <!-- Added documentation styles -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+        /* Other inline styles removed and moved to documentation.css */
+    </style>
+</head>
+<body>
+    <!-- Header placeholder to be filled by components.js -->
+    <div id="header-placeholder"></div>
+
+    <div class="docs-layout"> <!-- Added layout wrapper -->
+        <aside class="sidebar">
+            <nav>
+                <h3>Documentation Standards</h3>
+                <ul>
+                    <li><a href="/docs/index.html">Home</a></li>
+                    <li><p><strong>Standards</strong></p></li>
+                    <li><a href="/docs/standards/automation-status.html">Automation Status</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main>
+            <section class="hero">
+                <div class="container">
+                    <h1>Documentation Standards</h1>
+                    <p class="hero-subtitle">Standards for the Universal Automation Wiki.</p>
+                </div>
+            </section>
+            <section class="doc-intro">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Explore Documentation Sections</h2>
+                    </div>
+                <div class="category-grid">
+                    <div class="category-card">
+                        <div class="category-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3>Technical Details</h3>
+                        <p>Dive into the system architecture, file structure, AI approach, and Python routines.</p>
+                        <a href="/technical.html" class="category-link">View Technical Details</a>
+                    </div>
+
+                    <div class="category-card">
+                        <div class="category-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 16V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <h3>About the Project</h3>
+                        <p>Learn about the mission, how the wiki works, and the overall goals.</p>
+                        <a href="/index.html#mission" class="category-link">Learn More</a>
+                    </div>
+
+                    <div class="category-card">
+                        <div class="category-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 16l-4 4-4-4M4 8l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M4 16v-3a7 7 0 0 1 7-7h9M20 8v3a7 7 0 0 1-7 7H4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3>Technology Categories</h3>
+                        <p>Explore automation trees related to computing, software, telecommunications, and more.</p>
+                        <a href="/technology/index.html" class="category-link">Explore Technology</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        </main>
+    </div> <!-- Closed layout wrapper -->
+
+    <!-- Footer placeholder to be filled by components.js -->
+    <div id="footer-placeholder"></div>
+
+    <!-- Load components.js first to ensure header/footer are loaded before other scripts -->
+    <script src="/assets/js/components.js"></script>
+    <script src="/assets/js/main.js"></script>
+</body>
+</html>
