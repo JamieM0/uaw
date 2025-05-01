@@ -28,15 +28,15 @@
         <main>
             <section class="hero">
                 <div class="container">
-                    <h1>Title</h1>
-                    <p class="hero-subtitle">Subtitle-explain</p>
+                    <h1>{{ title }}</h1>
+                    <p class="hero-subtitle">{{ subtitle }}</p>
                 </div>
             </section>
             <div class="spacer"></div>
             <section class="content-section">
                 <div class="spacer"></div>
 
-                content
+                {{ content|safe }}
             </section>
 
         </main>

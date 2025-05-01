@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css"> <!-- For nav cards -->
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css"> <!-- Added documentation styles -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-layout">
+        <div id="sidebar-placeholder"></div>
+
+        <main>
+            <section class="hero">
+                <div class="container">
+                    <h1>Docs Translator</h1>
+                    <p class="hero-subtitle">This script converts Markdown documentation files into HTML pages using a specified HTML template. It extracts key elements like the title and subtitle from the Markdown source and injects them along with the main content (converted to HTML) into the template.</p>
+                </div>
+            </section>
+            <div class="spacer"></div>
+            <section class="content-section">
+                <div class="spacer"></div>
+
+                <h1>Docs Translator</h1>
+<p>This script converts Markdown documentation files into HTML pages using a specified HTML template. It extracts key elements like the title and subtitle from the Markdown source and injects them along with the main content (converted to HTML) into the template.</p>
+<h2>Purpose</h2>
+<p>The primary goal of this script is to automate the process of generating consistent HTML documentation pages from Markdown source files. It ensures that all generated pages adhere to a standard layout defined by the HTML template, while dynamically populating the title, subtitle, and main content area.</p>
+<h2>Usage</h2>
+<p>The script is executed from the command line.</p>
+<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>docs/docs-translator.py<span class="w"> </span>&lt;input_file&gt;<span class="w"> </span><span class="o">[</span>--output<span class="w"> </span>&lt;output_file&gt;<span class="o">]</span><span class="w"> </span><span class="o">[</span>--template<span class="w"> </span>&lt;template_file&gt;<span class="o">]</span>
+</code></pre></div>
+
+<p><strong>Arguments:</strong></p>
+<ul>
+<li><code>&lt;input_file&gt;</code> (Required): Path to the source Markdown file. This file <strong>must</strong> reside within the <code>docs-md/</code> directory relative to the workspace root.<ul>
+<li>Example: <code>docs-md/standards/automation-status.md</code></li>
+</ul>
+</li>
+<li><code>--output &lt;output_file&gt;</code> (Optional): Path to the output HTML file. If omitted, the script automatically computes the output path by placing the HTML file in the <code>docs/</code> directory, mirroring the structure within <code>docs-md/</code>.<ul>
+<li>Example: <code>docs/standards/automation-status.html</code> (if <code>--output</code> is omitted for the input example above).</li>
+</ul>
+</li>
+<li><code>--template &lt;template_file&gt;</code> (Optional): Path to the HTML template file.<ul>
+<li>Default: <code>templates/documentation-page-template.html</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>Examples:</strong></p>
+<ol>
+<li>
+<p><strong>Basic usage (automatic output path):</strong>
+    <code>bash
+    python docs/docs-translator.py docs-md/introduction.md</code>
+    This will generate <code>docs/introduction.html</code> using the default template.</p>
+</li>
+<li>
+<p><strong>Specifying output and template:</strong>
+    <code>bash
+    python docs/docs-translator.py docs-md/guides/setup.md --output docs/generated/setup-guide.html --template templates/custom-template.html</code></p>
+</li>
+</ol>
+<h2>Input Files</h2>
+<ul>
+<li><strong>Markdown Source (<code>&lt;input_file&gt;</code>):</strong><ul>
+<li>Must be a valid Markdown file located within the <code>docs-md/</code> directory.</li>
+<li>The script expects the first Level 1 Header (<code># Header</code>) to be the document title.</li>
+<li>The first non-empty paragraph immediately following the title header is treated as the subtitle.</li>
+</ul>
+</li>
+<li><strong>HTML Template (<code>--template</code>):</strong><ul>
+<li>A valid HTML file used as the base structure for the output.</li>
+<li>It must contain specific placeholders that the script will replace:<ul>
+<li><code>&lt;h1&gt;Title&lt;/h1&gt;</code>: Replaced with the title extracted from the Markdown.</li>
+<li><code>&lt;p class="hero-subtitle"&gt;Subtitle-explain&lt;/p&gt;</code>: Replaced with the subtitle extracted from the Markdown.</li>
+<li><code>&lt;section class="content-section"&gt;content&lt;/section&gt;</code>: The literal word <code>content</code> within this section is replaced by the HTML generated from the Markdown body.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2>Key Functions</h2>
+<ul>
+<li><code>compute_output_path(input_path_str)</code>:<ul>
+<li>Takes the input Markdown file path string.</li>
+<li>Validates that the input path starts with <code>docs-md/</code>.</li>
+<li>Constructs the default output HTML path by replacing <code>docs-md/</code> with <code>docs/</code> and changing the file extension to <code>.html</code>.</li>
+<li>Returns the computed output path string.</li>
+</ul>
+</li>
+<li><code>parse_markdown(content)</code>:<ul>
+<li>Takes the full Markdown content as a string.</li>
+<li>Finds the first Level 1 Header (<code>#</code>) and extracts it as the <code>title</code>.</li>
+<li>Finds the first non-empty paragraph following the title header and extracts it as the <code>subtitle</code>.</li>
+<li>Converts the <em>entire</em> Markdown content into an HTML string using the <code>markdown</code> library.</li>
+<li>Prints warnings if the title or subtitle cannot be found.</li>
+<li>Returns the extracted <code>title</code>, <code>subtitle</code>, and the generated <code>html_content</code>.</li>
+</ul>
+</li>
+<li><code>main()</code>:<ul>
+<li>Parses command-line arguments (<code>input_file</code>, <code>--output</code>, <code>--template</code>).</li>
+<li>Determines the final output path, calling <code>compute_output_path</code> if <code>--output</code> is not provided.</li>
+<li>Reads the content of the specified HTML template file.</li>
+<li>Reads the content of the source Markdown file.</li>
+<li>Calls <code>parse_markdown</code> to get the title, subtitle, and HTML body.</li>
+<li>Populates the template content by replacing the defined placeholders (<code>&lt;h1&gt;Title&lt;/h1&gt;</code>, <code>&lt;p class="hero-subtitle"&gt;Subtitle-explain&lt;/p&gt;</code>, and <code>content</code> within the content section) with the extracted/generated values.</li>
+<li>Ensures the output directory exists, creating it if necessary.</li>
+<li>Writes the final populated HTML content to the output file.</li>
+<li>Includes error handling for file operations and Markdown parsing.</li>
+</ul>
+</li>
+</ul>
+<h2>Template Processing</h2>
+<ol>
+<li>The script reads the entire content of the HTML template file specified by <code>--template</code> (or the default).</li>
+<li>It calls <code>parse_markdown</code> on the input Markdown content to extract the <code>title</code> and <code>subtitle</code>, and to convert the full Markdown body to <code>html_body</code>.</li>
+<li>It replaces the <em>first occurrence</em> of <code>&lt;h1&gt;Title&lt;/h1&gt;</code> in the template with <code>&lt;h1&gt;{extracted_title}&lt;/h1&gt;</code>.</li>
+<li>It replaces the <em>first occurrence</em> of <code>&lt;p class="hero-subtitle"&gt;Subtitle-explain&lt;/p&gt;</code> with <code>&lt;p class="hero-subtitle"&gt;{extracted_subtitle}&lt;/p&gt;</code>.</li>
+<li>It finds the section <code>&lt;section class="content-section"&gt;...&lt;/section&gt;</code>.</li>
+<li>It replaces the <em>first occurrence</em> of the literal word <code>content</code> <em>within</em> that section with the generated <code>html_body</code>. If the word <code>content</code> is not found within the section, it prints a warning and replaces the entire original content of the section with the <code>html_body</code>.</li>
+</ol>
+<h2>Output</h2>
+<p>The script generates a single HTML file.</p>
+<ul>
+<li><strong>Path:</strong> The location of the output file is determined by the <code>--output</code> argument if provided. If not provided, the path is automatically calculated by taking the relative path of the input file within <code>docs-md/</code>, placing it under the <code>docs/</code> directory, and changing the extension to <code>.html</code>. For example, <code>docs-md/folder/file.md</code> becomes <code>docs/folder/file.html</code>.</li>
+<li><strong>Content:</strong> The content is the HTML template populated with the title, subtitle, and HTML-converted body from the source Markdown file.</li>
+</ul>
+<style>
+/* Code highlighting styles */
+.codehilite .hll { background-color: #ffffcc }
+.codehilite { background: #f8f8f8; padding: 0.5em; border-radius: 4px; overflow: auto; }
+.codehilite .c { color: #3D7B7B; font-style: italic } /* Comment */
+.codehilite .err { border: 1px solid #FF0000 } /* Error */
+.codehilite .k { color: #008000; font-weight: bold } /* Keyword */
+.codehilite .o { color: #666666 } /* Operator */
+.codehilite .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.codehilite .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.codehilite .cp { color: #9C6500 } /* Comment.Preproc */
+.codehilite .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.codehilite .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.codehilite .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.codehilite .gd { color: #A00000 } /* Generic.Deleted */
+.codehilite .ge { font-style: italic } /* Generic.Emph */
+.codehilite .gr { color: #E40000 } /* Generic.Error */
+.codehilite .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.codehilite .gi { color: #008400 } /* Generic.Inserted */
+.codehilite .go { color: #717171 } /* Generic.Output */
+.codehilite .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.codehilite .gs { font-weight: bold } /* Generic.Strong */
+.codehilite .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.codehilite .gt { color: #0044DD } /* Generic.Traceback */
+.codehilite .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.codehilite .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.codehilite .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.codehilite .kp { color: #008000 } /* Keyword.Pseudo */
+.codehilite .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.codehilite .kt { color: #B00040 } /* Keyword.Type */
+.codehilite .m { color: #666666 } /* Literal.Number */
+.codehilite .s { color: #BA2121 } /* Literal.String */
+.codehilite .na { color: #687822 } /* Name.Attribute */
+.codehilite .nb { color: #008000 } /* Name.Builtin */
+.codehilite .nc { color: #0000FF; font-weight: bold } /* Name.Class */
+.codehilite .no { color: #880000 } /* Name.Constant */
+.codehilite .nd { color: #AA22FF } /* Name.Decorator */
+.codehilite .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.codehilite .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.codehilite .nf { color: #0000FF } /* Name.Function */
+.codehilite .nl { color: #767600 } /* Name.Label */
+.codehilite .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+.codehilite .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.codehilite .nv { color: #19177C } /* Name.Variable */
+.codehilite .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+.codehilite .w { color: #bbbbbb } /* Text.Whitespace */
+.codehilite .mb { color: #666666 } /* Literal.Number.Bin */
+.codehilite .mf { color: #666666 } /* Literal.Number.Float */
+.codehilite .mh { color: #666666 } /* Literal.Number.Hex */
+.codehilite .mi { color: #666666 } /* Literal.Number.Integer */
+.codehilite .mo { color: #666666 } /* Literal.Number.Oct */
+.codehilite .sa { color: #BA2121 } /* Literal.String.Affix */
+.codehilite .sb { color: #BA2121 } /* Literal.String.Backtick */
+.codehilite .sc { color: #BA2121 } /* Literal.String.Char */
+.codehilite .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.codehilite .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.codehilite .s2 { color: #BA2121 } /* Literal.String.Double */
+.codehilite .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.codehilite .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.codehilite .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.codehilite .sx { color: #008000 } /* Literal.String.Other */
+.codehilite .sr { color: #A45A77 } /* Literal.String.Regex */
+.codehilite .s1 { color: #BA2121 } /* Literal.String.Single */
+.codehilite .ss { color: #19177C } /* Literal.String.Symbol */
+.codehilite .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.codehilite .fm { color: #0000FF } /* Name.Function.Magic */
+.codehilite .vc { color: #19177C } /* Name.Variable.Class */
+.codehilite .vg { color: #19177C } /* Name.Variable.Global */
+.codehilite .vi { color: #19177C } /* Name.Variable.Instance */
+.codehilite .vm { color: #19177C } /* Name.Variable.Magic */
+.codehilite .il { color: #666666 } /* Literal.Number.Integer.Long */
+
+/* Additional styling for specific code elements */
+.codehilite pre { margin: 0; padding: 10px; white-space: pre; }
+.codehilite code { font-family: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace; }
+</style>
+
+            </section>
+
+        </main>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+<script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

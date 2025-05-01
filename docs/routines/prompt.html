@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css"> <!-- For nav cards -->
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css"> <!-- Added documentation styles -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-layout">
+        <div id="sidebar-placeholder"></div>
+
+        <main>
+            <section class="hero">
+                <div class="container">
+                    <h1>Prompt Response Generation</h1>
+                    <p class="hero-subtitle">This script utilizes a Large Language Model (LLM) to generate a factual response based on a user-provided prompt. The response is structured as a simple list of facts, one per line.</p>
+                </div>
+            </section>
+            <div class="spacer"></div>
+            <section class="content-section">
+                <div class="spacer"></div>
+
+                <h1>Prompt Response Generation</h1>
+<p>This script utilizes a Large Language Model (LLM) to generate a factual response based on a user-provided prompt. The response is structured as a simple list of facts, one per line.</p>
+<h2>Purpose</h2>
+<p>The script takes a JSON file containing a prompt, an optional model specification, and optional parameters as input. It interacts with an LLM via the <code>chat_with_llm</code> utility function to generate a response according to specific instructions (factual, concise, varied facts, one per line). The resulting response, along with metadata, is saved to an output JSON file.</p>
+<h2>Usage</h2>
+<p>To run the script, use the following command format:</p>
+<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>prompt.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span>
+</code></pre></div>
+
+<ul>
+<li><code>&lt;input_json&gt;</code>: Path to the required input JSON file.</li>
+<li><code>[output_json]</code>: Optional path for the output JSON file. If not provided, a path will be generated automatically in the <code>output/</code> directory based on the task name and a UUID.</li>
+</ul>
+<p>The script uses the <code>handle_command_args</code> function from <code>utils.py</code> to parse these command-line arguments.</p>
+<h2>Input Files</h2>
+<p>The input must be a JSON file containing the following keys:</p>
+<ul>
+<li><code>prompt</code> (string): The user's prompt or question for the LLM. (Required)</li>
+<li><code>model</code> (string): The identifier for the LLM to use. Defaults to <code>"gemma3"</code> if not provided. (Optional)</li>
+<li><code>parameters</code> (object): Additional parameters to pass to the LLM API. (Optional)</li>
+</ul>
+<p>Example (<code>examples/prompt-in.json</code>):</p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;List key facts about the planet Mars.&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gemma3&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h2>Key Functions</h2>
+<ul>
+<li><strong><code>generate_prompt_response(input_data)</code></strong>:<ul>
+<li>Extracts the <code>prompt</code>, <code>model</code>, and <code>parameters</code> from the input dictionary.</li>
+<li>Constructs a detailed system message instructing the LLM on the desired output format and style (factual, concise, varied, one fact per line, no extra formatting).</li>
+<li>Calls the <code>chat_with_llm</code> function (from <code>utils.py</code>) with the model, system message, user prompt, and parameters.</li>
+<li>Returns the content of the LLM's response.</li>
+</ul>
+</li>
+<li><strong><code>main()</code></strong>:<ul>
+<li>Parses command-line arguments using <code>handle_command_args</code>.</li>
+<li>Loads the input data from the specified JSON file using <code>load_json</code>.</li>
+<li>Calls <code>generate_prompt_response</code> to get the LLM response.</li>
+<li>Determines the output file path using <code>get_output_filepath</code>, generating one if not specified.</li>
+<li>Creates metadata (process name, start time, UUID) using <code>create_output_metadata</code>.</li>
+<li>Formats the final output data, including metadata, the original prompt, and the response content (split into a list of strings by newline).</li>
+<li>Saves the output data to the determined JSON file path using <code>save_output</code>.</li>
+</ul>
+</li>
+<li><strong>Imported <code>utils</code> Functions</strong>:<ul>
+<li><code>load_json</code>: Loads data from a JSON file.</li>
+<li><code>save_output</code>: Saves data to a JSON file.</li>
+<li><code>chat_with_llm</code>: Handles interaction with the LLM API.</li>
+<li><code>create_output_metadata</code>: Generates standard metadata for output files.</li>
+<li><code>get_output_filepath</code>: Determines the appropriate output file path.</li>
+<li><code>handle_command_args</code>: Parses command-line arguments for input/output files.</li>
+</ul>
+</li>
+</ul>
+<h2>LLM Interaction</h2>
+<p>The script interacts with an LLM specified by the <code>model</code> parameter (defaulting to "gemma3").</p>
+<ol>
+<li><strong>System Prompt Construction</strong>: A specific system message is sent to the LLM:
+    <code>You are a knowledgeable assistant specialized in providing accurate, concise, and informative facts about various topics. Your responses should be factual, specific, and organized. When asked about a subject, provide clear, detailed information based on your knowledge, focusing on relevant details. Present your information in a clear, structured format with one fact per line. Avoid unnecessary commentary, opinions, or irrelevant details. Focus on providing factual, educational content about the requested topic. Focus on having a wide variety of facts. Output the instructions in a simple list format with no numbers, symbols, markdown, or extra formatting.</code>
+    This guides the LLM to generate a list of distinct, factual statements about the topic in the user prompt.</li>
+<li><strong>User Prompt</strong>: The <code>prompt</code> value from the input JSON is used as the user prompt.</li>
+<li><strong>API Call</strong>: The <code>chat_with_llm</code> function sends the system message, user prompt, model identifier, and any specified <code>parameters</code> to the LLM API.</li>
+<li><strong>Response Processing</strong>: The raw text response from the LLM is returned by <code>generate_prompt_response</code>.</li>
+</ol>
+<h2>Output</h2>
+<p>The script generates a JSON file containing:</p>
+<ul>
+<li>Metadata generated by <code>create_output_metadata</code> (including <code>process_name</code>, <code>start_time</code>, <code>uuid</code>).</li>
+<li>The original <code>prompt</code> provided in the input file.</li>
+<li>The <code>response</code> from the LLM, formatted as a list of strings. Each string in the list corresponds to a line (intended to be a single fact) from the LLM's raw output, split by the newline character (<code>\n</code>).</li>
+</ul>
+<p>Example (<code>examples/prompt-out.json</code>):
+```json
+{
+    "process_name": "Prompt Response",
+    "start_time": "2024-07-15T10:30:00.123456",
+    "uuid": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "prompt": "List key facts about the planet Mars.",
+    "response": [
+        "Mars is the fourth planet from the Sun.",
+        "It is often called the 'Red Planet' due to its reddish appearance.",
+        "Mars has two small moons, Phobos and Deimos.",
+        "A Martian day (sol) is slightly longer than an Earth day: 24 hours and 37 minutes.",
+        "The planet has polar ice caps composed of water ice and frozen carbon dioxide.",
+        "Olympus Mons on Mars is the largest volcano in the solar system.",
+        "Valles Marineris is one of the largest canyons in the solar system, located on Mars."
+    ]
+}</p>
+<style>
+/* Code highlighting styles */
+.codehilite .hll { background-color: #ffffcc }
+.codehilite { background: #f8f8f8; padding: 0.5em; border-radius: 4px; overflow: auto; }
+.codehilite .c { color: #3D7B7B; font-style: italic } /* Comment */
+.codehilite .err { border: 1px solid #FF0000 } /* Error */
+.codehilite .k { color: #008000; font-weight: bold } /* Keyword */
+.codehilite .o { color: #666666 } /* Operator */
+.codehilite .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.codehilite .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.codehilite .cp { color: #9C6500 } /* Comment.Preproc */
+.codehilite .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.codehilite .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.codehilite .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.codehilite .gd { color: #A00000 } /* Generic.Deleted */
+.codehilite .ge { font-style: italic } /* Generic.Emph */
+.codehilite .gr { color: #E40000 } /* Generic.Error */
+.codehilite .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.codehilite .gi { color: #008400 } /* Generic.Inserted */
+.codehilite .go { color: #717171 } /* Generic.Output */
+.codehilite .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.codehilite .gs { font-weight: bold } /* Generic.Strong */
+.codehilite .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.codehilite .gt { color: #0044DD } /* Generic.Traceback */
+.codehilite .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.codehilite .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.codehilite .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.codehilite .kp { color: #008000 } /* Keyword.Pseudo */
+.codehilite .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.codehilite .kt { color: #B00040 } /* Keyword.Type */
+.codehilite .m { color: #666666 } /* Literal.Number */
+.codehilite .s { color: #BA2121 } /* Literal.String */
+.codehilite .na { color: #687822 } /* Name.Attribute */
+.codehilite .nb { color: #008000 } /* Name.Builtin */
+.codehilite .nc { color: #0000FF; font-weight: bold } /* Name.Class */
+.codehilite .no { color: #880000 } /* Name.Constant */
+.codehilite .nd { color: #AA22FF } /* Name.Decorator */
+.codehilite .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.codehilite .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.codehilite .nf { color: #0000FF } /* Name.Function */
+.codehilite .nl { color: #767600 } /* Name.Label */
+.codehilite .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+.codehilite .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.codehilite .nv { color: #19177C } /* Name.Variable */
+.codehilite .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+.codehilite .w { color: #bbbbbb } /* Text.Whitespace */
+.codehilite .mb { color: #666666 } /* Literal.Number.Bin */
+.codehilite .mf { color: #666666 } /* Literal.Number.Float */
+.codehilite .mh { color: #666666 } /* Literal.Number.Hex */
+.codehilite .mi { color: #666666 } /* Literal.Number.Integer */
+.codehilite .mo { color: #666666 } /* Literal.Number.Oct */
+.codehilite .sa { color: #BA2121 } /* Literal.String.Affix */
+.codehilite .sb { color: #BA2121 } /* Literal.String.Backtick */
+.codehilite .sc { color: #BA2121 } /* Literal.String.Char */
+.codehilite .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.codehilite .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.codehilite .s2 { color: #BA2121 } /* Literal.String.Double */
+.codehilite .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.codehilite .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.codehilite .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.codehilite .sx { color: #008000 } /* Literal.String.Other */
+.codehilite .sr { color: #A45A77 } /* Literal.String.Regex */
+.codehilite .s1 { color: #BA2121 } /* Literal.String.Single */
+.codehilite .ss { color: #19177C } /* Literal.String.Symbol */
+.codehilite .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.codehilite .fm { color: #0000FF } /* Name.Function.Magic */
+.codehilite .vc { color: #19177C } /* Name.Variable.Class */
+.codehilite .vg { color: #19177C } /* Name.Variable.Global */
+.codehilite .vi { color: #19177C } /* Name.Variable.Instance */
+.codehilite .vm { color: #19177C } /* Name.Variable.Magic */
+.codehilite .il { color: #666666 } /* Literal.Number.Integer.Long */
+
+/* Additional styling for specific code elements */
+.codehilite pre { margin: 0; padding: 10px; white-space: pre; }
+.codehilite code { font-family: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace; }
+</style>
+
+            </section>
+
+        </main>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+<script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

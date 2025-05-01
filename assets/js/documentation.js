@@ -13,6 +13,34 @@ const docsTree = [
     children: [
       { title: "- Automation Status", path: "/docs/standards/automation-status" }
     ]
+  },
+  {
+    title: "Routines",
+    path: "/docs/routines",
+    children: [
+      { title: "- Assemble", path: "/docs/routines/assemble" },
+      { title: "- Automation Adoption", path: "/docs/routines/automation-adoption" },
+      { title: "- Basic English", path: "/docs/routines/basic-english" },
+      { title: "- Current Implementations", path: "/docs/routines/current-implementations" },
+      { title: "- Docs Translator", path: "/docs/routines/docs-translator" },
+      { title: "- Expand Node", path: "/docs/routines/expand-node" },
+      { title: "- Extract Steps", path: "/docs/routines/extract-steps" },
+      { title: "- Flow Maker", path: "/docs/routines/flow-maker" },
+      { title: "- Future Technology", path: "/docs/routines/future-technology" },
+      { title: "- Generate Automation Challenges", path: "/docs/routines/generate-automation-challenges" },
+      { title: "- Generate Automation Timeline", path: "/docs/routines/generate-automation-timeline" },
+      { title: "- Generate Metadata", path: "/docs/routines/generate-metadata" },
+      { title: "- Hallucinate Tree", path: "/docs/routines/hallucinate-tree" },
+      { title: "- Merge Duplicate Facts", path: "/docs/routines/merge-duplicate-facts" },
+      { title: "- Prompt", path: "/docs/routines/prompt" },
+      { title: "- Reconstructor", path: "/docs/routines/reconstructor" },
+      { title: "- Return Analysis", path: "/docs/routines/return-analysis" },
+      { title: "- Search Queries", path: "/docs/routines/search-queries" },
+      { title: "- Simplified Technical English", path: "/docs/routines/simplified-technical-english" },
+      { title: "- Specifications Industrial", path: "/docs/routines/specifications-industrial" },
+      { title: "- Summary", path: "/docs/routines/summary" },
+      { title: "- Utils", path: "/docs/routines/utils" }
+    ]
   }
 ];
 

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css"> <!-- For nav cards -->
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css"> <!-- Added documentation styles -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-layout">
+        <div id="sidebar-placeholder"></div>
+
+        <main>
+            <section class="hero">
+                <div class="container">
+                    <h1>Node Expansion</h1>
+                    <p class="hero-subtitle">This script expands a specified node within a filesystem-based tree structure. It uses a Large Language Model (LLM) to generate substeps for the node&#39;s task and creates corresponding subdirectories and `node.json` files for each substep.</p>
+                </div>
+            </section>
+            <div class="spacer"></div>
+            <section class="content-section">
+                <div class="spacer"></div>
+
+                <h1>Node Expansion</h1>
+<p>This script expands a specified node within a filesystem-based tree structure. It uses a Large Language Model (LLM) to generate substeps for the node's task and creates corresponding subdirectories and <code>node.json</code> files for each substep.</p>
+<h2>Purpose</h2>
+<p>The primary goal of <code>expand-node.py</code> is to break down a task represented by a node into smaller, more manageable substeps. It automates the process of generating these substeps using an LLM and organizing them within the existing filesystem tree structure.</p>
+<h2>Usage</h2>
+<p>The script is executed from the command line:</p>
+<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>expand-node.py<span class="w"> </span>&lt;input_directory&gt;<span class="w"> </span><span class="o">[</span>node_path_or_uuid<span class="o">]</span><span class="w"> </span><span class="o">[</span>output_metadata_path<span class="o">]</span>
+</code></pre></div>
+
+<ul>
+<li><strong><code>&lt;input_directory&gt;</code> (Required):</strong> The path to the root directory of the filesystem tree structure (e.g., <code>output/hallucinate-tree/some_uuid</code>). This directory should contain the initial <code>node.json</code> and potentially subdirectories representing existing nodes.</li>
+<li><strong><code>[node_path_or_uuid]</code> (Optional):</strong> Specifies the target node to expand. If omitted, the root node in the <code>&lt;input_directory&gt;</code> is expanded. This can be:<ul>
+<li>A path of indices separated by dashes (e.g., <code>1-0-2</code>), representing the navigation path from the root directory (0-based index for alphabetically sorted subdirectories).</li>
+<li>A full or partial UUID of the target node. The script will search the tree for a matching UUID.</li>
+</ul>
+</li>
+<li><strong><code>[output_metadata_path]</code> (Optional):</strong> The path where the JSON metadata file for this expansion operation will be saved. If omitted, a default path is generated based on the script name and a UUID (e.g., <code>output/expand-node/some_uuid.json</code>).</li>
+</ul>
+<p><strong>Examples:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Expand the root node in the specified directory</span>
+python<span class="w"> </span>expand-node.py<span class="w"> </span>output/hallucinate-tree/e2dd9b38-ab19-4156-8031-bcb2db5c93a7
+
+<span class="c1"># Expand the node found by navigating to the 2nd subdir, then the 1st subdir</span>
+python<span class="w"> </span>expand-node.py<span class="w"> </span>output/hallucinate-tree/e2dd9b38-ab19-4156-8031-bcb2db5c93a7<span class="w"> </span><span class="m">1</span>-0
+
+<span class="c1"># Expand the node with a UUID starting with &#39;e2dd9b38&#39;</span>
+python<span class="w"> </span>expand-node.py<span class="w"> </span>output/hallucinate-tree/e2dd9b38-ab19-4156-8031-bcb2db5c93a7<span class="w"> </span>e2dd9b38
+
+<span class="c1"># Expand the root node and save metadata to a specific file</span>
+python<span class="w"> </span>expand-node.py<span class="w"> </span>output/hallucinate-tree/e2dd9b38-ab19-4156-8031-bcb2db5c93a7<span class="w"> </span>output/my_expansion_metadata.json
+</code></pre></div>
+
+<h2>Input</h2>
+<ul>
+<li><strong>Filesystem Tree:</strong> The script requires an <code>&lt;input_directory&gt;</code> containing a tree structure where each node is represented by a directory.</li>
+<li><strong><code>node.json</code>:</strong> Each node directory must contain a <code>node.json</code> file with at least a <code>"step"</code> (describing the task) and a <code>"uuid"</code> field.</li>
+<li><strong><code>metadata.json</code> (Optional):</strong> If a <code>metadata.json</code> file exists in the <code>&lt;input_directory&gt;</code>, the script will attempt to read the <code>"model"</code> and <code>"parameters"</code> fields to use for the LLM interaction. Defaults are used if the file is missing or cannot be parsed.</li>
+</ul>
+<h2>Key Functions</h2>
+<ul>
+<li><strong><code>sanitize_filename(name)</code>:</strong> Converts a given step name into a valid, lowercase directory name using underscores instead of spaces or invalid characters. Limits length.</li>
+<li><strong><code>find_node_by_path(base_dir, path_indices)</code>:</strong> Locates a node's data (<code>node.json</code>) and its directory path within the <code>base_dir</code> by following a list of subdirectory indices (<code>path_indices</code>). Handles the root node case (empty <code>path_indices</code>).</li>
+<li><strong><code>find_node_by_uuid(search_uuid, base_dir)</code>:</strong> Searches the entire filesystem tree starting from <code>base_dir</code> to find a node whose <code>node.json</code> contains a matching <code>uuid</code>.</li>
+<li><strong><code>expand_node_in_filesystem(node_data, node_dir, model, parameters, num_substeps)</code>:</strong> The core function that takes a target node's data and directory, interacts with the LLM to get substeps, translates substep names to Basic English, creates sanitized directory names (Basic English + UUID), creates the subdirectories, and generates <code>node.json</code> files for each new substep.</li>
+<li><strong><code>parse_path_string(path_str)</code>:</strong> Converts a dash-separated string of indices (e.g., "1-0-2") or a single number string into a list of integers.</li>
+<li><strong><code>handle_expand_node_args()</code>:</strong> Parses the command-line arguments provided to the script, determining the input directory, node specifier (path or UUID), and output metadata path.</li>
+<li><strong><code>main()</code>:</strong> Orchestrates the script's execution: handles arguments, finds the target node, calls the expansion function, creates metadata for the operation, and saves the output metadata.</li>
+<li><strong>Imported <code>utils</code>:</strong><ul>
+<li><code>load_json</code>, <code>save_output</code>: For reading/writing JSON files.</li>
+<li><code>chat_with_llm</code>: Interacts with the specified LLM.</li>
+<li><code>parse_llm_json_response</code>: Parses the expected JSON array from the LLM response.</li>
+<li><code>create_output_metadata</code>, <code>get_output_filepath</code>: Utilities for generating and saving metadata.</li>
+<li><code>translate_to_basic_english</code>: Translates text to simplified English, used for creating directory names.</li>
+</ul>
+</li>
+</ul>
+<h2>Filesystem Interaction</h2>
+<ul>
+<li><strong>Reading:</strong> The script reads <code>node.json</code> files to get task descriptions (<code>step</code>) and UUIDs. It navigates the directory structure based on either index paths or by searching for UUIDs. It also reads an optional <code>metadata.json</code> in the input directory.</li>
+<li><strong>Writing:</strong><ul>
+<li>Creates new subdirectories under the target node's directory for each generated substep.</li>
+<li>Directory names are generated by:<ol>
+<li>Translating the LLM-generated substep text to Basic English.</li>
+<li>Sanitizing the Basic English text (lowercase, underscores, limited length).</li>
+<li>Appending <code>_</code> and the full UUID of the substep. (e.g., <code>prepare_warm_water_b06cfe1f-7104-48eb-8fe4-e0ceb140a1b3</code>)</li>
+</ol>
+</li>
+<li>Writes a new <code>node.json</code> file inside each created subdirectory, containing the original substep text, the new substep's UUID, and the parent node's UUID.</li>
+</ul>
+</li>
+</ul>
+<h2>LLM Interaction</h2>
+<ol>
+<li><strong>Substep Generation:</strong> The script constructs a prompt asking the LLM (specified by <code>model</code> and <code>parameters</code>, potentially read from <code>metadata.json</code>) to break down the target node's <code>"step"</code> text into a specified range of detailed substeps (defaulting to 3-7).</li>
+<li><strong>JSON Formatting:</strong> The prompt explicitly requests the LLM to return <em>only</em> a valid JSON array of objects, where each object has a <code>"step"</code> field containing the substep description.</li>
+<li><strong>Response Parsing:</strong> The <code>parse_llm_json_response</code> utility is used to extract the list of substep objects from the LLM's raw text response.</li>
+<li><strong>Basic English Translation:</strong> For each generated substep, <code>translate_to_basic_english</code> is called to get a simplified version of the step text, which is then used to create a more readable and filesystem-friendly directory name.</li>
+</ol>
+<h2>Output</h2>
+<ol>
+<li><strong>Filesystem Modifications:</strong> The primary output is the creation of new subdirectories and corresponding <code>node.json</code> files under the expanded node's directory, representing the generated substeps.</li>
+<li><strong>Metadata File:</strong> A JSON file is saved (either to the specified path or a default location) containing metadata about the expansion process. This includes:<ul>
+<li>General run information (script name, timestamp, UUID of the run).</li>
+<li>Details of the node that was expanded (step, UUID, directory).</li>
+<li>A list of the newly created nodes (step, UUID, directory).</li>
+<li>The number of substeps created.</li>
+</ul>
+</li>
+</ol>
+<style>
+/* Code highlighting styles */
+.codehilite .hll { background-color: #ffffcc }
+.codehilite { background: #f8f8f8; padding: 0.5em; border-radius: 4px; overflow: auto; }
+.codehilite .c { color: #3D7B7B; font-style: italic } /* Comment */
+.codehilite .err { border: 1px solid #FF0000 } /* Error */
+.codehilite .k { color: #008000; font-weight: bold } /* Keyword */
+.codehilite .o { color: #666666 } /* Operator */
+.codehilite .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.codehilite .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.codehilite .cp { color: #9C6500 } /* Comment.Preproc */
+.codehilite .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.codehilite .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.codehilite .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.codehilite .gd { color: #A00000 } /* Generic.Deleted */
+.codehilite .ge { font-style: italic } /* Generic.Emph */
+.codehilite .gr { color: #E40000 } /* Generic.Error */
+.codehilite .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.codehilite .gi { color: #008400 } /* Generic.Inserted */
+.codehilite .go { color: #717171 } /* Generic.Output */
+.codehilite .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.codehilite .gs { font-weight: bold } /* Generic.Strong */
+.codehilite .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.codehilite .gt { color: #0044DD } /* Generic.Traceback */
+.codehilite .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.codehilite .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.codehilite .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.codehilite .kp { color: #008000 } /* Keyword.Pseudo */
+.codehilite .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.codehilite .kt { color: #B00040 } /* Keyword.Type */
+.codehilite .m { color: #666666 } /* Literal.Number */
+.codehilite .s { color: #BA2121 } /* Literal.String */
+.codehilite .na { color: #687822 } /* Name.Attribute */
+.codehilite .nb { color: #008000 } /* Name.Builtin */
+.codehilite .nc { color: #0000FF; font-weight: bold } /* Name.Class */
+.codehilite .no { color: #880000 } /* Name.Constant */
+.codehilite .nd { color: #AA22FF } /* Name.Decorator */
+.codehilite .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.codehilite .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.codehilite .nf { color: #0000FF } /* Name.Function */
+.codehilite .nl { color: #767600 } /* Name.Label */
+.codehilite .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+.codehilite .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.codehilite .nv { color: #19177C } /* Name.Variable */
+.codehilite .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+.codehilite .w { color: #bbbbbb } /* Text.Whitespace */
+.codehilite .mb { color: #666666 } /* Literal.Number.Bin */
+.codehilite .mf { color: #666666 } /* Literal.Number.Float */
+.codehilite .mh { color: #666666 } /* Literal.Number.Hex */
+.codehilite .mi { color: #666666 } /* Literal.Number.Integer */
+.codehilite .mo { color: #666666 } /* Literal.Number.Oct */
+.codehilite .sa { color: #BA2121 } /* Literal.String.Affix */
+.codehilite .sb { color: #BA2121 } /* Literal.String.Backtick */
+.codehilite .sc { color: #BA2121 } /* Literal.String.Char */
+.codehilite .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.codehilite .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.codehilite .s2 { color: #BA2121 } /* Literal.String.Double */
+.codehilite .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.codehilite .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.codehilite .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.codehilite .sx { color: #008000 } /* Literal.String.Other */
+.codehilite .sr { color: #A45A77 } /* Literal.String.Regex */
+.codehilite .s1 { color: #BA2121 } /* Literal.String.Single */
+.codehilite .ss { color: #19177C } /* Literal.String.Symbol */
+.codehilite .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.codehilite .fm { color: #0000FF } /* Name.Function.Magic */
+.codehilite .vc { color: #19177C } /* Name.Variable.Class */
+.codehilite .vg { color: #19177C } /* Name.Variable.Global */
+.codehilite .vi { color: #19177C } /* Name.Variable.Instance */
+.codehilite .vm { color: #19177C } /* Name.Variable.Magic */
+.codehilite .il { color: #666666 } /* Literal.Number.Integer.Long */
+
+/* Additional styling for specific code elements */
+.codehilite pre { margin: 0; padding: 10px; white-space: pre; }
+.codehilite code { font-family: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace; }
+</style>
+
+            </section>
+
+        </main>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+<script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>
