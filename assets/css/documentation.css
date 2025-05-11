@@ -35,8 +35,20 @@
 }
 
 .sidebar nav ul li {
-    margin-bottom: 0.1rem;
+    /* Default margin for main topics, will be overridden for submenus */
+    margin-bottom: 0.5rem;
 }
+
+/* Submenu items should have no extra bottom margin */
+.sidebar nav ul.submenu > li {
+    margin-bottom: 0.05rem; /* Minimal space for sub-items if any, or 0 */
+}
+
+/* Remove bottom margin from the last item in a submenu */
+.sidebar nav ul.submenu > li:last-child {
+    margin-bottom: 0;
+}
+
 
 .sidebar nav ul li a {
     text-decoration: none;
@@ -49,11 +61,43 @@
 }
 
 .sidebar nav ul li a:hover,
-.sidebar nav ul li a.active { /* Add .active class logic if needed via JS */
+.sidebar nav ul li a.active,
+.sidebar nav ul li a.active-ancestor { /* Style for active ancestors */
     background-color: var(--background-color-hover);
     color: var(--primary-color);
     font-weight: 500;
 }
+
+/* Collapsible styles */
+.sidebar nav ul li.has-children > ul.submenu {
+    display: none;
+    padding-left: 1rem; /* Indent submenus */
+    margin-top: 0.25rem; /* Space between parent and submenu */
+}
+
+.sidebar nav ul li.has-children.open > ul.submenu {
+    display: block;
+}
+
+.sidebar nav ul li.has-children > a {
+    position: relative; /* For positioning the arrow */
+}
+
+.sidebar nav ul li.has-children > a::after {
+    content: '▶'; /* Collapsed state arrow */
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%) rotate(0deg);
+    font-size: 0.7em;
+    color: var(--text-color-secondary);
+    transition: transform 0.2s ease;
+}
+
+.sidebar nav ul li.has-children.open > a::after {
+    transform: translateY(-50%) rotate(90deg); /* Expanded state arrow */
+}
+
 
 /* Adjust main content within docs layout */
 .docs-layout main {

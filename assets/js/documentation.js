@@ -66,28 +66,64 @@ function isCurrentOrAncestor(item, currentPath) {
  * @param {string} currentPath - The current page's path.
  * @returns {HTMLUListElement} - The generated UL element.
  */
-function buildList(items, currentPath) {
+function buildList(items, currentPath, isSubmenu = false) {
   const ul = document.createElement('ul');
+  if (isSubmenu) {
+    ul.classList.add('submenu');
+  }
+
   items.forEach(item => {
     const li = document.createElement('li');
     const a = document.createElement('a');
     a.href = item.path;
     a.textContent = item.title;
 
+    if (item.children && item.children.length > 0) {
+      li.classList.add('has-children');
+      // Make parent item clickable to toggle submenu
+      a.href = 'javascript:void(0)'; // Prevent navigation
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        li.classList.toggle('open');
+        // Ensure the link still navigates if it's a direct page link too
+        // For now, we assume parent items are categories, not pages themselves
+        // If a parent could be a page, this logic needs adjustment
+      });
+    } else if (isSubmenu) {
+      li.classList.add('submenu-item');
+    } else {
+      li.classList.add('main-topic-item');
+    }
+
+
     const isCurrent = item.path === currentPath;
-    const isAncestor = !isCurrent && item.children && isCurrentOrAncestor(item, currentPath);
+    // An ancestor is active if one of its children is the current path
+    const isAncestor = !isCurrent && item.children && item.children.some(child => isCurrentOrAncestor(child, currentPath));
 
     // Always append the link directly
     li.appendChild(a);
 
     // Add 'active' class if it's the current page or an ancestor
-    if (isCurrent || isAncestor) {
+    if (isCurrent) {
       a.classList.add('active');
     }
+    if (isAncestor) {
+      // If an ancestor is active, it should also be open
+      li.classList.add('open');
+      // The direct link of the ancestor itself might not be 'active' unless it's also the current page
+      // but we want to highlight it if a child is active.
+      // We can add a specific class for this or rely on styling .has-children.open > a
+      a.classList.add('active-ancestor'); // New class for styling active ancestors
+    }
+
 
     if (item.children && item.children.length > 0) {
-      const childrenUl = buildList(item.children, currentPath);
+      const childrenUl = buildList(item.children, currentPath, true); // Pass true for isSubmenu
       li.appendChild(childrenUl);
+      // If it's an ancestor of the current page, ensure it's open by default
+      if (isAncestor) {
+        li.classList.add('open');
+      }
     }
     ul.appendChild(li);
   });
