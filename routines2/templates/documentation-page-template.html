@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css"> <!-- For nav cards -->
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css"> <!-- Added documentation styles -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-layout">
+        <div id="sidebar-placeholder"></div>
+
+        <main>
+            <section class="hero">
+                <div class="container">
+                    <h1>{{ title }}</h1>
+                    <p class="hero-subtitle">{{ subtitle }}</p>
+                </div>
+            </section>
+            <div class="spacer"></div>
+            <section class="content-section">
+                <div class="spacer"></div>
+
+                {{ content|safe }}
+            </section>
+
+        </main>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+<script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

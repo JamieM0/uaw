@@ -1,0 +1,21 @@
+{
+  "model": "llama3.1:8b-instruct-q5_K_M",
+  "task": "Merge duplicate facts about bread manufacturing",
+  "topic": "Bread Manufacturing Process",
+  "facts": [
+    "The dough is mixed using industrial mixers.",
+    "Industrial mixers are used to blend the dough thoroughly.",
+    "Mixing is done with high-capacity industrial mixers.",
+    "Bread production involves mixing ingredients in large mixers.",
+    "Quality control is performed during the mixing phase."
+  ],
+  "output_format": "plain text, one fact per line",
+  "success_criteria": {
+    "stop_condition": "No duplicate or overly similar facts remain that add no unique detail",
+    "efficiency_goal": "Merge similar facts carefully, preserving any unique information"
+  },
+  "parameters": {
+    "temperature": 0.2,
+    "max_tokens": 500
+  }
+}

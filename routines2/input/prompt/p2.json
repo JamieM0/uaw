@@ -1,0 +1,13 @@
+{
+  "model": "qwen2.5:7b",
+  "task": "Generate a list of specific facts related to bread manufacturing. Include information about raw ingredients, equipment, mixing, fermentation, baking, cooling, packaging, and transportation. Include specific measurements, tools, and techniques when possible.",
+  "output_format": "a numbered list with each fact on a new line",
+  "parameters": {
+    "temperature": 0.7,
+    "max_tokens": 1000
+  },
+  "success_criteria": {
+    "stop_condition": "No new facts can be generated that add unique details to any existing fact",
+    "efficiency_goal": "Maximize new facts generated per API call"
+  }
+}

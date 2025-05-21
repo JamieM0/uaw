@@ -1,0 +1,15 @@
+{
+  "model": "qwen2.5:7b",
+  "task": "Summarize content about bread manufacturing",
+  "topic": "Bread Manufacturing Process",
+  "input_text": "Bread manufacturing involves several steps, starting with the procurement of high-quality raw ingredients such as flour, water, yeast, and salt. These ingredients are mixed using industrial mixers, and the dough is allowed to ferment in a controlled environment with carefully monitored temperature and humidity. After fermentation, the dough is shaped and baked in large ovens before being cooled and packaged. Quality control is performed at various stages to ensure consistency and safety, and finally, the bread is distributed to retailers.",
+  "output_format": "plain text",
+  "success_criteria": {
+    "stop_condition": "The summary should cover all key steps of the manufacturing process without including extraneous details.",
+    "efficiency_goal": "The summary should be concise, ideally under 20% of the word count of the input."
+  },
+  "parameters": {
+    "temperature": 0.5,
+    "max_tokens": 500
+  }
+}

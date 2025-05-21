@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ metadata.title }} - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/article.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header placeholder to be filled by components.js -->
+    <div id="header-placeholder"></div>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>{{ metadata.title }}</h1>
+                <p class="hero-subtitle">{{ metadata.subtitle }}</p>
+            </div>
+        </section>
+
+        <section class="wiki-article">
+            <div class="container">
+                <div class="wiki-content">
+                    <div class="breadcrumbs">
+                        {# Iterate over the processed breadcrumbs list #}
+                        {% for crumb in breadcrumbs %}
+                            {% if crumb.url %}
+                                <span><a href="{{ crumb.url }}">{{ crumb.name }}</a></span>
+                            {% else %}
+                                <span>{{ crumb.name }}</span> {# Last item, no link #}
+                            {% endif %}
+                            {% if not loop.last %} → {% endif %} {# Add arrow if not the last item #}
+                        {% else %}
+                            <span><a href="/index">Home</a></span> {# Fallback if breadcrumbs list is empty #}
+                        {% endfor %}
+                    </div>
+
+                    <div class="status-indicator">
+                        <div class="dot"></div>
+                        <span>{{ metadata.status | default('Unknown') }}</span> {# Use status from processed metadata #}
+                    </div>
+
+                    <div class="progress-bar">
+                        {% set progress = metadata.progress_percentage|default(0) %}
+                        <div class="progress-fill" style="width: {{ progress }}%"></div>
+                    </div>
+
+                    <div class="article-summary">
+                        {# Use the processed summary_paragraphs list from the context #}
+                        {% for paragraph in metadata.summary_paragraphs %}
+                        <p>{{ paragraph | process_bold | safe }}</p> {# Apply bold processing and mark as safe #}
+                        {% else %}
+                        <p>Summary not available.</p> {# Fallback if summary is empty #}
+                        {% endfor %}
+                    </div>
+
+                    <div class="method-tabs" id="method-tabs">
+                        <div class="method-tab active" data-tab="standard-process">Standard Process</div>
+                        <div class="method-tab" data-tab="automation-pathway">Automation Pathway</div>
+                        <div class="method-tab" data-tab="technical-details">Technical Details</div>
+                        <div class="method-tab" data-tab="competing-approaches">Competing Approaches</div>
+                    </div>
+
+                    <!-- Standard Process Tab Content -->
+                    <div id="standard-process" class="tab-content active">
+                        {% for i, step in enumerate(tree.children) %}
+                        <div class="process-section">
+                            <h3>{{ i + 1 }}. {{ step.step }}</h3>
+                            <p>{{ step.description | default('This step involves ' ~ step.step|lower ~ '.') | process_bold | safe }}</p> {# Add description if available #}
+                            <h4>Key Steps:</h4>
+                            <ul class="step-list">
+                                {% if step.children %}
+                                {% for child_step in step.children %}
+                                <li>{{ child_step.step | process_bold | safe }}</li>
+                                {% endfor %}
+                                {% else %}
+                                <li>No sub-steps defined.</li>
+                                {% endif %}
+                            </ul>
+                            <p><strong>Automation Status:</strong> {{ step.automation_status | default('Currently being developed and refined.') }}</p> {# Add automation status if available #}
+                        </div>
+                        {% else %}
+                        <p>Standard process steps not available.</p>
+                        {% endfor %}
+
+                        <div class="automation-timeline">
+                            <h3>Automation Development Timeline</h3>
+                            {# Use timeline_entries list from context #}
+                            {% for entry in timeline_entries %}
+                            <div class="timeline-entry">
+                                <div class="timeline-{{ 'year-prediction' if entry.is_prediction else 'year' }}">{{ entry.year }}</div>
+                                <div class="timeline-content">
+                                    {% if entry.is_prediction %}
+                                    <p><em>{{ entry.content | process_bold | safe }}</em></p>
+                                    {% else %}
+                                    <p>{{ entry.content | process_bold | safe }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% else %}
+                            <p>Timeline information not available.</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="automation-challenges">
+                            <h3>Current Automation Challenges</h3>
+                            {# Use challenge_points list from context #}
+                            {% if challenge_points %}
+                            <p>Despite significant progress, several challenges remain in fully automating the {{ metadata.title|lower }} process:</p>
+                            <ul>
+                                {% for point in challenge_points %}
+                                <li><strong>{{ point.title }}:</strong> {{ point.explanation | process_bold | safe }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p>Challenge information not available.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Automation Pathway Tab Content -->
+                    <div id="automation-pathway" class="tab-content">
+                        <div class="process-section">
+                            <h3>Automation Adoption Framework</h3>
+                            <p>This framework outlines the pathway to full automation, detailing the progression from manual processes to fully automated systems.</p>
+
+                            {# Use adoption_stages list from context #}
+                            {% for stage in adoption_stages %}
+                            <h4>{{ stage.title }} ({{ stage.status }})</h4>
+                            <ul class="step-list">
+                                {% for example in stage.examples %}
+                                <li>{{ example | process_bold | safe }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p>Adoption framework information not available.</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="process-section">
+                            <h3>Current Implementation Levels</h3>
+                            <p>The table below shows the current automation levels across different scales:</p>
+
+                            <table class="automation-table">
+                                <thead>
+                                    <tr>
+                                        <th>Process Step</th>
+                                        <th>Small Scale</th>
+                                        <th>Medium Scale</th>
+                                        <th>Large Scale</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {# Use implementation_levels list from context #}
+                                    {% for level in implementation_levels %}
+                                    <tr>
+                                        <td>{{ level.step_name }}</td>
+                                        <td>{{ level.automation_levels.low_scale }}</td>
+                                        <td>{{ level.automation_levels.medium_scale }}</td>
+                                        <td>{{ level.automation_levels.high_scale }}</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr><td colspan="4">Implementation level information not available.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="process-section">
+                            <h3>Automation ROI Analysis</h3>
+                            <p>The return on investment for automation depends on scale and production volume:</p>
+                            <ul class="step-list">
+                                {# Use roi_points list from context #}
+                                {% for point in roi_points %}
+                                 <li><strong>{{ point.scale|replace('_', ' ')|title }}:</strong> {{ point.timeframe | process_bold | safe }}</li>
+                                {% else %}
+                                <li>ROI information not available.</li>
+                                {% endfor %}
+                            </ul>
+                            {# Use key_benefits list from context #}
+                            {% if key_benefits %}
+                            <p>Key benefits driving ROI include {{ key_benefits | map('process_bold') | map('safe') | join(', ') }}.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Technical Details Tab Content -->
+                    <div id="technical-details" class="tab-content">
+                        <div class="process-section">
+                            <h3>Automation Technologies</h3>
+                            <p>This section details the underlying technologies enabling automation.</p>
+
+                            {# Use future_technologies list from context #}
+                            {% set categories = future_technologies | map(attribute='category') | unique | list %}
+                            {% for category in categories %}
+                                <h4>{{ category }}</h4>
+                                <ul class="step-list">
+                                {% for tech in future_technologies if tech.category == category %}
+                                    <li><strong>{{ tech.name }}:</strong> {{ tech.description | process_bold | safe }}</li>
+                                {% endfor %}
+                                </ul>
+                            {% else %}
+                            <p>Future technology information not available.</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="process-section">
+                            <h3>Technical Specifications for Commercial Automation</h3>
+                            <p>Standard parameters for industrial production:</p>
+
+                            <h4>Performance Metrics</h4>
+                            <ul class="step-list">
+                                {# Use spec_performance list from context #}
+                                {% for metric in spec_performance %}
+                                <li>{{ metric.name }}: {{ metric.value }}
+                                    {% if metric.range %} (Range: {{ metric.range }}){% endif %}
+                                    {% if metric.description %} - {{ metric.description | process_bold | safe }}{% endif %}
+                                </li>
+                                {% else %}
+                                <li>Performance metrics not available.</li>
+                                {% endfor %}
+                            </ul>
+
+                            <h4>Implementation Requirements</h4>
+                            <ul class="step-list">
+                                {# Use spec_requirements list from context #}
+                                {% for req in spec_requirements %}
+                                <li>{{ req.name }}: {{ req.specification or req.value or req.description or 'Specification not available' | process_bold | safe }}</li>
+                                {% else %}
+                                <li>Implementation requirements not available.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Competing Approaches Tab Content -->
+                    <div id="competing-approaches" class="tab-content">
+                        <div class="process-section">
+                            <h3>Alternative {{ metadata.title }} Approaches</h3>
+                            <p>These are alternative automation trees generated by different versions of our Iterative AI algorithm. Browse these competing models and vote for approaches you find most effective.</p>
+                        </div>
+
+                        <div class="approaches-grid">
+                            {# Use alternatives list from context (which now includes preview_text) #}
+                            {% for alt in alternatives %}
+                            <div class="approach-card">
+                                <h4>{{ alt.title }}</h4>
+                                <p>{{ alt.description | default('An alternative methodology for approaching this process.') | process_bold | safe }}</p>
+                                <div class="approach-preview">{{ alt.preview_text }}</div>
+                                <div class="approach-meta">
+                                    <p>Created by: {{ alt.creator }}</p>
+                                    <p>Votes: <span class="vote-count">{{ alt.votes }}</span></p>
+                                </div>
+                                <div class="approach-actions">
+                                    <button class="button secondary vote-button">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4L18 10H6L12 4Z" fill="currentColor"/>
+                                        </svg>
+                                        Vote Up
+                                    </button>
+                                    {# Link might need adjustment based on how full trees are displayed #}
+                                    <a href="#alternative-{{ loop.index }}" class="button secondary">View Full Tree</a>
+                                </div>
+                            </div>
+                            {% else %}
+                            <p>No alternative approaches available.</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="process-section">
+                            <h3>Why Multiple Approaches?</h3>
+                            <p>Different methodologies offer unique advantages depending on context:</p>
+                            <ul class="step-list">
+                                <li><strong>Scale considerations:</strong> Some approaches work better for large-scale production, while others are more suitable for specialized applications</li>
+                                <li><strong>Resource constraints:</strong> Different methods optimize for different resources (time, computing power, energy)</li>
+                                <li><strong>Quality objectives:</strong> Approaches vary in their emphasis on safety, efficiency, adaptability, and reliability</li>
+                                <li><strong>Automation potential:</strong> Some approaches are more easily adapted to full automation than others</li>
+                            </ul>
+                            <p>By voting for approaches you find most effective, you help our community identify the most promising automation pathways.</p>
+                        </div>
+                    </div>
+
+                    <div class="contributors-section">
+                        <h3>Contributors</h3>
+                        <p>{{ metadata.contributors | process_bold | safe }}</p>
+                        <p><em>Last updated: {{ metadata.last_updated }}</em></p>
+                        <a href="#" class="button secondary" id="suggest-improvements">Suggest Improvements</a>
+
+                        <!-- Feedback form container (initially hidden) -->
+                        <div id="feedback-form-container" class="feedback-form-container">
+                            <h4>Suggest Improvements</h4>
+                            <p>We value your input on how to improve this {{ metadata.title|lower }} workflow. Please provide your suggestions below.</p>
+
+                            <form id="feedback-form" class="feedback-form">
+                                <div class="feedback-form-field">
+                                    <label for="feedback-name">Name (optional)</label>
+                                    <input type="text" id="feedback-name" name="name" placeholder="Your name">
+                                </div>
+
+                                <div class="feedback-form-field">
+                                    <label for="feedback-email">Email (optional)</label>
+                                    <input type="email" id="feedback-email" name="email" placeholder="your@email.com">
+                                </div>
+
+                                <div class="feedback-form-field">
+                                    <label for="feedback-subject">Subject</label>
+                                    <input type="text" id="feedback-subject" name="subject" placeholder="Brief description of your suggestion" required>
+                                </div>
+
+                                <div class="feedback-form-field">
+                                    <label for="feedback-body">Feedback Details</label>
+                                    <textarea id="feedback-body" name="message" placeholder="Please describe your suggestion in detail..." required></textarea>
+                                </div>
+
+                                <div class="feedback-actions">
+                                    <button type="button" id="cancel-feedback" class="button secondary">Cancel</button>
+                                    <button type="submit" id="send-feedback" class="button primary">Send Feedback</button>
+                                </div>
+                            </form>
+
+                            <div id="feedback-message" class="feedback-message"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer placeholder to be filled by components.js -->
+    <div id="footer-placeholder"></div>
+
+    <!-- Load components.js first to ensure header/footer are loaded before other scripts -->
+    <script src="/assets/js/components.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/tabbed-content.js"></script>
+    <script src="/assets/js/feedback.js"></script>
+</body>
+</html>
