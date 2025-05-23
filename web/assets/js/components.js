@@ -1,4 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Define the persona data that the header selector will use.
+    // This needs to be available when the header is injected.
+    const PERSONAS_DATA_FOR_HEADER = {
+        "hobbyist": "Hobbyist",
+        "researcher": "Researcher",
+        "investor": "Investor",
+        "educator": "Educator",
+        "field_expert": "Field Expert"
+    };
+
     // Define the header content directly in the script to avoid network request delay
     const headerHTML = `
         <header class="site-header">
@@ -16,6 +26,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         <li><a href="https://jamiem.me/iterative-code" target="_blank">GitHub</a></li>
                     </ul>
                 </nav>
+                <div class="header-persona-selector">
+                    <label for="persona-selector-header">View as:</label>
+                    <select id="persona-selector-header" name="persona-header">
+                        <!-- Options will be populated by main.js -->
+                    </select>
+                </div>
                 <button class="mobile-menu-toggle" aria-label="Toggle menu">
                     <span></span>
                     <span></span>
@@ -68,7 +84,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const headerPlaceholder = document.querySelector('#header-placeholder');
     if (headerPlaceholder) {
         headerPlaceholder.innerHTML = headerHTML;
-        initializeHeaderFunctionality();
+
+        // Create and append the persona data script tag
+        // This was previously done when header.html was fetched,
+        // now it needs to be done here after headerHTML is injected.
+        if (document.getElementById('core-personas-data')) {
+            console.warn('components.js: #core-personas-data script tag already exists. Skipping creation.');
+        } else {
+            const personasDataScript = document.createElement('script');
+            personasDataScript.id = 'core-personas-data';
+            personasDataScript.type = 'application/json';
+            personasDataScript.textContent = JSON.stringify(PERSONAS_DATA_FOR_HEADER);
+            document.body.appendChild(personasDataScript);
+            console.log('components.js: #core-personas-data script tag created and appended.');
+        }
+
+        initializeHeaderFunctionality(); // Initializes mobile menu, etc.
+
+        // Dispatch a custom event indicating the header and its data are loaded
+        const event = new CustomEvent('headerloaded', { bubbles: true, cancelable: true });
+        document.dispatchEvent(event);
+        console.log('components.js: "headerloaded" event dispatched.');
+
     }
     
     const footerPlaceholder = document.querySelector('#footer-placeholder');

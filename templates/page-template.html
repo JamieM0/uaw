@@ -130,7 +130,7 @@
                     </div>
                 </div> <!-- This now correctly closes wiki-content-main -->
 
-                <aside class="wiki-sidebar">
+                {# <aside class="wiki-sidebar">
                     <div id="persona-selector-widget" class="sticky-widget">
                         <label for="persona-selector">Persona:</label>
                         <select id="persona-selector" name="persona">
@@ -139,7 +139,8 @@
                             {% endfor %}
                         </select>
                     </div>
-                </aside>
+                </aside> #}
+                <!-- Sidebar and old persona selector removed -->
 
             </div> <!-- This now correctly closes container article-layout-container -->
         </section>
@@ -148,6 +149,9 @@
     <!-- Footer placeholder to be filled by components.js -->
     <div id="footer-placeholder"></div>
     
+    <script id="core-personas-data" type="application/json">
+        {{ core_personas | tojson | safe }}
+    </script>
     <script src="/assets/js/components.js"></script>
     <script src="/assets/js/main.js"></script>
     {# <script src="/assets/js/tabbed-content.js"></script> #} <!-- Tabbed content JS is no longer needed -->

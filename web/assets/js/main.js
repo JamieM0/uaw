@@ -108,8 +108,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize any interactive components
     initializeComponents();
-    initializePersonaFeatures();
+    // initializePersonaFeatures(); // Moved to be triggered by 'headerloaded' event
     initializeCollapsibleSections();
+});
+
+// Listen for the custom 'headerloaded' event dispatched by components.js
+// This ensures persona features are initialized only after the header and its data are ready.
+document.addEventListener('headerloaded', function() {
+    console.log('main.js: "headerloaded" event received. Initializing persona features.');
+    initializePersonaFeatures();
 });
 
 // Initialize components like tabs, accordions, etc.
@@ -120,36 +127,93 @@ function initializeComponents() {
 
 // --- Persona and Metrics Features ---
 
-const CORE_PERSONAS = ['hobbyist', 'researcher', 'investor', 'educator', 'field_expert'];
+function populateHeaderPersonaSelector() {
+    const selector = document.getElementById('persona-selector-header');
+    const personasDataElement = document.getElementById('core-personas-data');
+
+    if (!selector) {
+        console.warn('Header persona selector (#persona-selector-header) not found by populateHeaderPersonaSelector. Selector will not be populated.');
+        return;
+    }
+    if (!personasDataElement) {
+        console.warn('Personas data element (#core-personas-data) not found by populateHeaderPersonaSelector. Selector will not be populated.');
+        return;
+    }
+
+    try {
+        const personas = JSON.parse(personasDataElement.textContent);
+        if (personas && typeof personas === 'object') {
+            // Add a "Select Persona" or "Default" option if needed, or just populate
+            // selector.innerHTML = '<option value="">View as...</option>'; // Optional placeholder
+
+            for (const key in personas) {
+                if (Object.hasOwnProperty.call(personas, key)) {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = personas[key];
+                    selector.appendChild(option);
+                }
+            }
+        } else {
+            console.error('Core personas data is not a valid object:', personas);
+        }
+    } catch (e) {
+        console.error('Error parsing core personas data:', e);
+    }
+}
+
+const CORE_PERSONAS_FROM_JS = ['hobbyist', 'researcher', 'investor', 'educator', 'field_expert']; // Fallback if JSON data fails
 const DEFAULT_PERSONA = 'hobbyist';
 const PERSONA_STORAGE_KEY = 'uawSelectedPersona';
 
 function initializePersonaFeatures() {
-    const personaSelector = document.getElementById('persona-selector');
+    populateHeaderPersonaSelector(); // Populate the new header selector
+
+    const personaSelector = document.getElementById('persona-selector-header'); // Target new selector
     const metricsModal = document.getElementById('metrics-modal');
     const metricsModalContent = document.getElementById('metrics-modal-content');
     const metricsModalTitle = document.getElementById('metrics-modal-title');
 
     if (!personaSelector) {
-        console.warn('Persona selector not found.');
+        // console.warn('Header persona selector not found after populating. Filtering will not work.');
+        // This might happen on pages where the header exists but it's not an article page
+        // with persona-filterable content.
         return;
     }
 
     // Load stored persona or use default
     let currentPersona = localStorage.getItem(PERSONA_STORAGE_KEY) || DEFAULT_PERSONA;
-    if (!CORE_PERSONAS.includes(currentPersona)) {
-        currentPersona = DEFAULT_PERSONA;
+    
+    // Ensure the stored persona is valid, using the options now in the selector
+    let isValidPersona = false;
+    for (let i = 0; i < personaSelector.options.length; i++) {
+        if (personaSelector.options[i].value === currentPersona) {
+            isValidPersona = true;
+            break;
+        }
     }
+    if (!isValidPersona) {
+        currentPersona = personaSelector.options.length > 0 ? personaSelector.options[0].value : DEFAULT_PERSONA;
+        // If selector is empty (e.g. data load failed), use hardcoded default.
+        // If selector has options, use the first one as default if stored is invalid.
+    }
+    
     personaSelector.value = currentPersona;
 
-    // Apply initial filtering
-    filterContentByPersona(currentPersona);
+    // Apply initial filtering only if on a page with filterable content
+    if (document.querySelector('.content-section[data-relevant-personas]')) {
+        filterContentByPersona(currentPersona);
+    }
+
 
     // Handle persona change
     personaSelector.addEventListener('change', function() {
         currentPersona = this.value;
         localStorage.setItem(PERSONA_STORAGE_KEY, currentPersona);
-        filterContentByPersona(currentPersona);
+        // Apply filtering only if on a page with filterable content
+        if (document.querySelector('.content-section[data-relevant-personas]')) {
+            filterContentByPersona(currentPersona);
+        }
     });
 
     // Handle metrics icon clicks

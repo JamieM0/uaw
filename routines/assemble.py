@@ -7,8 +7,22 @@ from datetime import datetime
 import re # Ensure re is imported at the top level
 
 # Define Core Personas
-CORE_PERSONAS = ['hobbyist', 'researcher', 'investor', 'educator', 'field_expert']
+CORE_PERSONAS = ['hobbyist', 'researcher', 'investor', 'educator', 'field_expert'] # List of slugs
 DEFAULT_PERSONA = 'hobbyist'
+
+# Dictionary for persona display names, to be passed to the template
+CORE_PERSONAS_DICT = {
+    slug: slug.replace('_', ' ').capitalize() for slug in CORE_PERSONAS
+}
+# This creates:
+# {
+#     "hobbyist": "Hobbyist",
+#     "researcher": "Researcher",
+#     "investor": "Investor",
+#     "educator": "Educator",
+#     "field_expert": "Field Expert"
+# }
+
 
 def read_json_file(file_path, is_critical=True):
     """Read a JSON file and return its contents as a Python dictionary."""
@@ -78,7 +92,8 @@ def get_section_metrics_and_relevance(id_suffix, article_metrics_data, metric_de
         print(f"DEBUG: No metrics content found in article_metrics_data['sections'] for key: {metrics_key_for_file} (from id_suffix: {id_suffix})")
 
 
-    for persona_slug in CORE_PERSONAS:
+    # Use the slugs for internal logic
+    for persona_slug in CORE_PERSONAS: # Use the list of slugs
         # Get the persona-specific block (e.g., content of "hobbyist" under "2.json")
         persona_data_block = section_metrics_content_from_file.get(persona_slug, {})
         
@@ -616,7 +631,7 @@ def main():
             'breadcrumbs': processed_breadcrumbs,
             'metric_definitions': metric_definitions_data, # Pass global definitions
             # 'article_metrics': article_metrics_data, # This is now processed into each section's metrics_data_json
-            'core_personas': {slug: slug.replace('_', ' ').capitalize() for slug in CORE_PERSONAS} # Convert list to dict for template
+            'core_personas': CORE_PERSONAS_DICT # Pass the pre-defined dictionary
         }
 
         # --- Render Main Template ---

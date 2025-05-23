@@ -205,6 +205,33 @@ ul, ol {
     transition: all var(--transition-normal);
 }
 
+/* Header Persona Selector Styles (to match old sidebar style) */
+.header-persona-selector {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-left: auto; /* Pushes it to the right if space allows, or adjust as needed */
+}
+
+.header-persona-selector label {
+    font-weight: 500;
+    font-size: var(--font-size-sm); /* Match typical label size */
+    color: var(--text-color);
+}
+
+#persona-selector-header {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-light);
+    min-width: 150px;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    color: var(--text-color);
+    height: 36px; /* Align with other header elements if needed */
+    line-height: normal; /* Reset line-height for select */
+}
+
 /* Hero section */
 .hero {
     padding: var(--spacing-xxl) 0;
