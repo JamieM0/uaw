@@ -69,16 +69,33 @@ def chat_with_llm(model, system_message, user_message, parameters=None):
     return response["message"]["content"].strip()
 
 def clean_llm_json_response(response_text):
-    """Clean an LLM response to extract valid JSON."""
-    # Remove markdown code fences
+    """Clean an LLM response to extract valid JSON, removing markdown fences."""
     text = response_text.strip()
-    text = text.replace("```json", "").replace("```", "")
-    # Extract JSON object or array from text
-    match = re.search(r"(\{[\s\S]*\}|\[[\s\S]*\])", text, re.S)
-    if match:
-        return match.group(1)
-    # Fallback: return cleaned text
-    return text
+    
+    # Regex to find content within ```json ... ``` or ``` ... ```
+    # It handles optional "json" label and potential newlines around the JSON content.
+    # It captures the content within the fences.
+    fence_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text, re.S)
+    
+    if fence_match:
+        # If fences are found, use the content within them
+        json_candidate = fence_match.group(1).strip()
+    else:
+        # If no fences, assume the whole text might be JSON or contain JSON
+        json_candidate = text
+        
+    # Try to extract the first valid JSON object or array from the candidate string
+    # This helps if there's extraneous text before or after the actual JSON
+    # even if fences were not perfectly matched or were absent.
+    json_match = re.search(r"^\s*(\{[\s\S]*\}|\[[\s\S]*\])\s*$", json_candidate, re.S)
+    
+    if json_match:
+        return json_match.group(1)
+    
+    # Fallback: if no clear JSON structure is found after attempting to strip fences,
+    # return the json_candidate (which is either content from fences or original text).
+    # The calling function (parse_llm_json_response) will attempt to parse this.
+    return json_candidate
 
 def parse_llm_json_response(response_text, include_children=False):
     """Parse JSON from an LLM response with fallback handling.

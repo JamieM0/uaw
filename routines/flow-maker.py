@@ -9,31 +9,84 @@ from utils import (
     get_output_filepath, handle_command_args
 )
 
-def run_program(program_name, input_path, output_path, extra_args=None):
-    """Run a program with the specified input and output paths."""
-    print(f"Running {program_name}...")
-    
-    # Build command with any extra arguments
-    command = [sys.executable, program_name, input_path, output_path]
+# Attempt to enable ANSI escape code processing on Windows
+if sys.platform == "win32":
+    import ctypes
+    try:
+        kernel32 = ctypes.windll.kernel32
+        stdout_handle = kernel32.GetStdHandle(-11) # STD_OUTPUT_HANDLE
+        mode = ctypes.c_ulong()
+        if kernel32.GetConsoleMode(stdout_handle, ctypes.byref(mode)):
+            ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
+            # Enable VT processing if not already enabled
+            if (mode.value & ENABLE_VIRTUAL_TERMINAL_PROCESSING) == 0:
+                kernel32.SetConsoleMode(stdout_handle, mode.value | ENABLE_VIRTUAL_TERMINAL_PROCESSING)
+    except Exception:
+        # If enabling fails (e.g., ctypes not available, or older Windows), colors might not work.
+        # A common fallback is os.system('') but it's not ideal.
+        # For now, we'll proceed, and colors will simply not render if this failed.
+        pass
+
+# ANSI escape codes for colors
+class Colors:
+    GREEN = '\033[92m'
+    RED = '\033[91m'
+    YELLOW = '\033[93m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+
+def run_program(program_name, input_path, output_path, step_info="Running script", extra_args=None):
+    """
+    Run a program with specified input/output, enhanced console output, and error handling.
+    Returns a dictionary with 'status': 'success' or 'failure', and 'error_info' if failed.
+    """
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    script_full_path = os.path.join(script_dir, program_name)
+
+    command = [sys.executable, script_full_path, input_path, output_path]
     if extra_args:
         command.extend(extra_args)
-        
+
+    # Print initial running message (no newline)
+    sys.stdout.write(f"{step_info}{program_name}... ")
+    sys.stdout.flush()
+
     try:
-        # Run the program and capture its output
         result = subprocess.run(
             command,
             capture_output=True,
             text=True,
-            check=True
+            check=False, # We'll check status manually
+            cwd=script_dir
         )
-        print(f"  {program_name} completed successfully")
-        print(f"  {result.stdout.strip()}")
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"  ERROR running {program_name}: {e}")
-        print(f"  STDOUT: {e.stdout}")
-        print(f"  STDERR: {e.stderr}")
-        return False
+
+        if result.returncode == 0:
+            sys.stdout.write(f"\r{step_info}{program_name}... {Colors.GREEN}Completed!{Colors.ENDC}\n")
+            sys.stdout.flush()
+            # Generic message, actual saving happens in sub-scripts
+            print("  Saved inputs and outputs.")
+            return {"status": "success"}
+        else:
+            sys.stdout.write(f"\r{step_info}{program_name}... {Colors.RED}Failed!{Colors.ENDC}\n")
+            sys.stdout.flush()
+            error_info = (
+                f"  {Colors.RED}ERROR running {program_name}:{Colors.ENDC}\n"
+                f"  Return Code: {result.returncode}\n"
+                f"  {Colors.YELLOW}STDOUT from {program_name}:{Colors.ENDC}\n{result.stdout.strip()}\n"
+                f"  {Colors.YELLOW}STDERR from {program_name}:{Colors.ENDC}\n{result.stderr.strip()}"
+            )
+            return {"status": "failure", "error_info": error_info, "program_name": program_name, "args": (program_name, input_path, output_path, step_info, extra_args)}
+
+    except Exception as e: # Catch other exceptions like file not found for the script itself
+        sys.stdout.write(f"\r{step_info}{program_name}... {Colors.RED}Failed! (Critical Error){Colors.ENDC}\n")
+        sys.stdout.flush()
+        error_info = (
+            f"  {Colors.RED}CRITICAL ERROR trying to run {program_name}:{Colors.ENDC}\n"
+            f"  Exception: {str(e)}"
+        )
+        return {"status": "failure", "error_info": error_info, "program_name": program_name, "args": (program_name, input_path, output_path, step_info, extra_args)}
+
+PROFILES = ["hobbyist", "educator", "field_expert", "investor", "researcher"]
 
 def main():
     """Main function to run the flow of programs."""
@@ -88,34 +141,167 @@ def main():
         ("assemble.py", None),  # 10. assemble.py - Output filename handled differently
     ]
     
-    # Run each program in sequence
-    for i, (program, output_filename) in enumerate(programs):
-        print(f"\nStep {i+1}/{len(programs)}: Running {program}")
+    evaluation_summary = {
+        profile: {"passed": 0, "total_relevant_checks": 0}
+        for profile in PROFILES
+    }
+    # Initialize structure for collecting all metrics for metrics.json
+    all_flow_metrics = {
+        "flow_uuid": flow_uuid,
+        "sections": {}
+    }
 
-        # Default input is the copied input.json
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    evaluator_script_path = os.path.join(script_dir, "evaluator.py")
+
+    # Run each program in sequence
+    program_idx = 0
+    while program_idx < len(programs):
+        program, output_filename = programs[program_idx]
+        step_info_prefix = f"Step {program_idx + 1}/{len(programs)}: "
+
         current_input_path = input_copy_path
+        abs_current_input_path = os.path.abspath(current_input_path)
         
-        # Define output path for this program
-        # For assemble.py, the output path is the flow directory itself
         if program == "assemble.py":
             output_path = flow_dir
-            current_input_path = flow_dir # assemble.py takes the flow dir as input now
-            extra_args = None # assemble.py doesn't need extra args like this
+            abs_current_input_path = os.path.abspath(flow_dir)
+            extra_args = None
         else:
             output_path = os.path.join(flow_dir, output_filename)
-            # Handle special parameters for hallucinate-tree.py
             extra_args = ["-saveInputs", "-flow_uuid="+flow_uuid]
             if program == "hallucinate-tree.py":
                 extra_args += ["-flat"]
         
-        # Run the program
-        success = run_program(program, current_input_path, output_path, extra_args)
+        abs_output_path = os.path.abspath(output_path)
+        
+        run_result = run_program(program, abs_current_input_path, abs_output_path, step_info_prefix, extra_args)
 
-        if not success:
-            print(f"Warning: {program} failed to complete successfully")
-            # Optionally, decide if the flow should stop if a step fails
-            # sys.exit(1)
-    
+        if run_result["status"] == "failure":
+            print(run_result["error_info"])
+            while True:
+                choice = input(f"  {Colors.YELLOW}Action: [R]etry, [C]ontinue (skip step), or [S]top flow? {Colors.ENDC}").upper()
+                if choice == 'R':
+                    print(f"  Retrying {program}...")
+                    # Loop will re-run current program_idx
+                    break
+                elif choice == 'C':
+                    print(f"  Skipping {program} and continuing...")
+                    program_idx += 1
+                    break
+                elif choice == 'S':
+                    print(f"  Stopping flow.")
+                    sys.exit(1)
+                else:
+                    print("  Invalid choice. Please enter R, C, or S.")
+            if choice == 'R':
+                continue # Retry the current script
+            if choice == 'C':
+                if program_idx >= len(programs): break # End of programs
+                continue # Go to next iteration for the next script
+            elif choice == 'S':
+                sys.exit(1)
+        
+        # If successful and not assemble.py, run evaluations
+        if run_result["status"] == "success" and program != "assemble.py":
+            print(f"\n--- Starting Evaluation for output of {program} ({output_filename}) ---")
+            section_source_file_path = abs_output_path
+
+            for profile_name in PROFILES:
+                # Using sys.stdout.write for more control over newlines if needed
+                sys.stdout.write(f"\n  Evaluating for Profile: {Colors.BOLD}{profile_name.capitalize()}{Colors.ENDC}... ")
+                sys.stdout.flush()
+                
+                eval_command = [
+                    sys.executable,
+                    evaluator_script_path,
+                    section_source_file_path,
+                    profile_name
+                ]
+                
+                try:
+                    eval_result_proc = subprocess.run(
+                        eval_command,
+                        capture_output=True,
+                        text=True,
+                        check=False, # Check manually
+                        cwd=script_dir
+                    )
+                    
+                    if eval_result_proc.returncode == 0:
+                        sys.stdout.write(f"{Colors.GREEN}Done.{Colors.ENDC}\n")
+                        sys.stdout.flush()
+                        actual_json_str = eval_result_proc.stdout.strip()
+                        if not actual_json_str:
+                            print(f"    {Colors.RED}ERROR: No output received from evaluator.py for profile {profile_name}.{Colors.ENDC}")
+                            eval_results_list = []
+                        else:
+                            eval_results_list = json.loads(actual_json_str)
+                    else:
+                        sys.stdout.write(f"{Colors.RED}Failed.{Colors.ENDC}\n")
+                        sys.stdout.flush()
+                        print(f"    {Colors.RED}ERROR running evaluator.py for profile {profile_name}. Return code: {eval_result_proc.returncode}{Colors.ENDC}")
+                        if eval_result_proc.stdout.strip():
+                             print(f"    {Colors.YELLOW}STDOUT from evaluator:{Colors.ENDC}\n{eval_result_proc.stdout.strip()}")
+                        if eval_result_proc.stderr.strip():
+                             print(f"    {Colors.YELLOW}STDERR from evaluator:{Colors.ENDC}\n{eval_result_proc.stderr.strip()}")
+                        eval_results_list = []
+
+                except json.JSONDecodeError as e_json:
+                    sys.stdout.write(f"{Colors.RED}Failed (JSON Error).{Colors.ENDC}\n") # Overwrite "Done."
+                    sys.stdout.flush()
+                    print(f"    {Colors.RED}ERROR decoding JSON from evaluator.py for profile {profile_name}: {e_json}{Colors.ENDC}")
+                    # actual_json_str might not be defined if subprocess failed before stdout was read
+                    # For safety, let's ensure it exists or provide a placeholder.
+                    raw_output_for_error = eval_result_proc.stdout.strip() if 'eval_result_proc' in locals() and hasattr(eval_result_proc, 'stdout') else "N/A"
+                    print(f"    Raw STDOUT from evaluator for JSON parsing: '{raw_output_for_error}'")
+                    eval_results_list = []
+                except Exception as e_eval_general: # Catch other potential errors
+                    sys.stdout.write(f"{Colors.RED}Failed (General Error).{Colors.ENDC}\n")
+                    sys.stdout.flush()
+                    print(f"    {Colors.RED}An unexpected error occurred running evaluator.py for {profile_name}: {e_eval_general}{Colors.ENDC}")
+                    eval_results_list = []
+
+
+                if not eval_results_list:
+                    print(f"    No evaluation results processed for profile {profile_name} from {output_filename}.")
+
+                for item_index, section_eval_result in enumerate(eval_results_list):
+                    evaluation_details = section_eval_result.get("evaluation", {})
+                    is_relevant = evaluation_details.get("relevant", False)
+
+                    print(f"\n    Sub-section {item_index + 1} (from {output_filename}, Profile: {profile_name.capitalize()}):")
+                    print(f"      Relevant: {is_relevant}")
+
+                    if is_relevant:
+                        metrics_results = evaluation_details.get("metrics", {})
+                        if metrics_results:
+                            print("      Metrics:")
+                            for metric_name, passed_status in metrics_results.items():
+                                status_str = f"{Colors.GREEN}Passed{Colors.ENDC}" if passed_status else \
+                                             (f"{Colors.RED}Failed{Colors.ENDC}" if passed_status is False else "Not Applicable/Checked")
+                                print(f"        - {metric_name}: {status_str}")
+                                if passed_status is not None:
+                                    evaluation_summary[profile_name]["total_relevant_checks"] += 1
+                                    if passed_status:
+                                        evaluation_summary[profile_name]["passed"] += 1
+                                    
+                                    # Populate all_flow_metrics with this specific metric result
+                                    # Ensure section and profile lists are initialized
+                                    if output_filename not in all_flow_metrics["sections"]:
+                                        all_flow_metrics["sections"][output_filename] = {}
+                                    if profile_name not in all_flow_metrics["sections"][output_filename]:
+                                        all_flow_metrics["sections"][output_filename][profile_name] = {}
+                                    
+                                    all_flow_metrics["sections"][output_filename][profile_name][metric_name] = bool(passed_status)
+                        else:
+                            print("      No specific metrics evaluated for this relevant section.")
+                    elif evaluation_details:
+                        print("      Section deemed not relevant. No metrics applied by evaluator.")
+            print(f"--- Finished Evaluation for output of {program} ---")
+        
+        program_idx += 1 # Move to next program
+
     # Generate alternative trees if specified in the input
     num_alternatives = input_data.get("alternatives", 0)
     if num_alternatives > 0:
@@ -184,8 +370,26 @@ def main():
     with open(metadata_path, "w", encoding="utf-8") as f:
         json.dump(flow_metadata, f, indent=4)
     
-    # HTML generation is now handled within the main loop
+    # HTML generation is now handled within the main loop (by assemble.py)
     
+    print("\n--- Overall Evaluation Summary ---")
+    for profile_name, data in evaluation_summary.items():
+        passed_count = data["passed"]
+        total_checks = data["total_relevant_checks"]
+        if total_checks > 0:
+            print(f"  {profile_name.capitalize()}: {passed_count}/{total_checks} metrics passed across all relevant sections.")
+        else:
+            print(f"  {profile_name.capitalize()}: No relevant metrics evaluated or all sections deemed irrelevant.")
+
+    # Save all collected metrics to metrics.json
+    metrics_file_path = os.path.join(flow_dir, "metrics.json")
+    try:
+        with open(metrics_file_path, "w", encoding="utf-8") as mf:
+            json.dump(all_flow_metrics, mf, indent=2)
+        print(f"\n{Colors.GREEN}Successfully saved detailed metrics to {os.path.abspath(metrics_file_path)}{Colors.ENDC}")
+    except Exception as e:
+        print(f"\n{Colors.RED}Error saving detailed metrics to {os.path.abspath(metrics_file_path)}: {e}{Colors.ENDC}")
+
     print(f"\nFlow process completed in {time_taken}")
     print(f"Output files saved to: {os.path.abspath(flow_dir)}")
 
