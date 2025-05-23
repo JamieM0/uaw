@@ -2,17 +2,118 @@ import json
 import os
 import sys
 from pathlib import Path
-from jinja2 import Environment, FileSystemLoader
-from datetime import datetime # Import datetime
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+from datetime import datetime
+import re # Ensure re is imported at the top level
 
-def read_json_file(file_path):
+# Define Core Personas
+CORE_PERSONAS = ['hobbyist', 'researcher', 'investor', 'educator', 'field_expert']
+DEFAULT_PERSONA = 'hobbyist'
+
+def read_json_file(file_path, is_critical=True):
     """Read a JSON file and return its contents as a Python dictionary."""
-    with open(file_path, 'r', encoding='utf-8') as file:
-        return json.load(file)
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        if is_critical:
+            print(f"Error: Critical file not found - {file_path}", file=sys.stderr)
+            sys.exit(1)
+        else:
+            print(f"Warning: Optional file not found - {file_path}", file=sys.stderr)
+            return {} # Return empty dict for optional files
+    except json.JSONDecodeError as e:
+        if is_critical:
+            print(f"Error: Failed to decode JSON from {file_path} - {e}", file=sys.stderr)
+            sys.exit(1)
+        else:
+            print(f"Warning: Failed to decode JSON from {file_path} - {e}", file=sys.stderr)
+            return {} # Return empty dict for optional files with bad JSON
+    except Exception as e:
+        if is_critical:
+            print(f"Error: An unexpected error occurred while reading {file_path} - {e}", file=sys.stderr)
+            sys.exit(1)
+        else:
+            print(f"Warning: An unexpected error occurred while reading {file_path} - {e}", file=sys.stderr)
+            return {}
+
+
+# Mapping from id_suffix to the keys in metrics.json's "sections" object
+SECTION_ID_SUFFIX_TO_METRICS_KEY_MAP = {
+    "process-steps": "2.json",
+    "timeline": "3.json",
+    "challenges": "4.json",
+    "adoption-framework": "5.json",
+    "implementation-levels": "6.json",
+    "roi-analysis": "7.json",
+    "automation-technologies": "8.json",
+    "technical-specifications": "9.json",
+    # "alternative-approaches-intro": None, # Or a specific key if metrics are defined
+    # "alternative-approaches-grid": None,
+    # "why-multiple-approaches": None,
+}
+
+def get_section_metrics_and_relevance(id_suffix, article_metrics_data, metric_definitions_data):
+    """
+    Gathers metrics and relevance for a specific section based on its id_suffix,
+    expecting an 'is_relevant' flag and a nested 'metrics' object in article_metrics_data.
+    Returns a dictionary containing:
+        - relevant_personas_list: List of persona slugs for which this section is relevant.
+        - metrics_data_for_section_json: JSON string of detailed metrics for the modal.
+    """
+    relevant_personas_list = []
+    detailed_metrics_for_modal_by_persona = {}
+
+    metrics_key_for_file = SECTION_ID_SUFFIX_TO_METRICS_KEY_MAP.get(id_suffix)
+    
+    section_metrics_content_from_file = {} # This will hold the content of e.g. "2.json"
+    if metrics_key_for_file and article_metrics_data.get("sections"):
+        section_metrics_content_from_file = article_metrics_data["sections"].get(metrics_key_for_file, {})
+    else:
+        # If no mapping or "sections" key, this id_suffix won't have specific metrics.
+        # It will default to not relevant for any persona unless handled differently.
+        print(f"DEBUG: No metrics mapping or 'sections' in article_metrics_data for id_suffix: {id_suffix}")
+
+    if not section_metrics_content_from_file and metrics_key_for_file: # Check if the specific file key yielded data
+        print(f"DEBUG: No metrics content found in article_metrics_data['sections'] for key: {metrics_key_for_file} (from id_suffix: {id_suffix})")
+
+
+    for persona_slug in CORE_PERSONAS:
+        # Get the persona-specific block (e.g., content of "hobbyist" under "2.json")
+        persona_data_block = section_metrics_content_from_file.get(persona_slug, {})
+        
+        is_relevant_for_persona = persona_data_block.get("is_relevant", False) # Crucial: Read the flag
+        
+        evaluated_metrics_list = []
+        
+        if is_relevant_for_persona:
+            if persona_slug not in relevant_personas_list:
+                relevant_personas_list.append(persona_slug)
+            
+            # Iterate over the nested "metrics" object
+            for metric_key, passed_value in persona_data_block.get("metrics", {}).items():
+                metric_def = metric_definitions_data.get(metric_key, {}) # Look up description
+                evaluated_metrics_list.append({
+                    "name": metric_def.get("name", metric_key.replace('_', ' ').capitalize()),
+                    "passed": bool(passed_value),
+                    "description": metric_def.get("description", "No description available.")
+                })
+        
+        detailed_metrics_for_modal_by_persona[persona_slug] = {
+            "is_relevant_to_persona": is_relevant_for_persona,
+            "evaluated_metrics": evaluated_metrics_list
+        }
+    
+    if not relevant_personas_list and metrics_key_for_file:
+         print(f"DEBUG: id_suffix '{id_suffix}' (metrics key '{metrics_key_for_file}') is not relevant for any persona based on 'is_relevant' flags in metrics file.")
+
+    return {
+        "relevant_personas_list": relevant_personas_list,
+        "metrics_data_for_section_json": json.dumps(detailed_metrics_for_modal_by_persona)
+    }
 
 def process_bold_text(text):
     """Replace text surrounded by ** with HTML bold tags."""
-    import re
     # Find all text surrounded by ** and replace with <strong> tags
     return re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', text)
 
@@ -119,10 +220,20 @@ def process_metadata(metadata, breadcrumb_str):
 
     # Set last updated date
     now = datetime.now()
-    result['last_updated'] = now.strftime("%B %Y") # e.g., April 2025
+    result['last_updated'] = now.strftime("%B %d, %Y") # e.g., April 23, 2025
 
     # Add breadcrumb string read from file
-    result['breadcrumbs'] = breadcrumb_str
+    result['breadcrumbs_str'] = breadcrumb_str # Store the raw string
+
+    # Ensure explanatory_text is a string
+    if 'explanatory_text' in result and not isinstance(result['explanatory_text'], str):
+        result['explanatory_text'] = str(result['explanatory_text'])
+    elif 'explanatory_text' not in result:
+        result['explanatory_text'] = result.get('summary', '') # Fallback to summary if explanatory_text is missing
+
+    # Generate and store slug
+    slug_base = result.get('title', 'untitled').lower().replace(' ', '-')
+    result['slug'] = "".join(c for c in slug_base if c.isalnum() or c in ('-', '_')).rstrip() or "untitled-page"
 
     return result
 
@@ -136,15 +247,15 @@ def process_breadcrumbs(breadcrumbs_str):
     current_path = ""
 
     # Add Home breadcrumb
-    result.append({'name': 'Home', 'url': '/index'})
+    result.append({'name': 'Home', 'url': '/'})
 
     for i, part in enumerate(parts):
         # Build cumulative path, ensuring no double slashes
         current_path = f"{current_path}/{part}".replace('//', '/')
         display_name = part.replace('-', ' ').title()
 
-        # Determine URL - only add index if it's not the last part
-        url = f"{current_path}/index" if i < len(parts) - 1 else None
+        # Determine URL
+        url = f"{current_path}/" if i < len(parts) - 1 else None
 
         result.append({
             'name': display_name,
@@ -174,18 +285,32 @@ def main():
     specs_path = os.path.join(files_dir_path, "9.json")
 
     try:
-        # Load all required JSON data
-        metadata_raw = read_json_file(metadata_path)
-        tree_data = read_json_file(tree_path)
+        # --- Load Core Data Files ---
+        metadata_raw = read_json_file(metadata_path, is_critical=True)
+        
+        # --- Load Metrics Data ---
+        # Article-specific metrics
+        article_metrics_path = os.path.join(files_dir_path, "metrics.json")
+        article_metrics_data = read_json_file(article_metrics_path, is_critical=False) # Not critical if missing, sections default to not relevant
+        if not article_metrics_data:
+            print(f"Warning: Article metrics file not found or empty at {article_metrics_path}. Sections may not display correctly.", file=sys.stderr)
 
-        # Load optional JSON data with fallbacks
-        timeline_data = read_json_file(timeline_path) if os.path.exists(timeline_path) else {}
-        challenges_data = read_json_file(challenges_path) if os.path.exists(challenges_path) else {}
-        adoption_data = read_json_file(adoption_path) if os.path.exists(adoption_path) else {}
-        implementation_data = read_json_file(implementation_path) if os.path.exists(implementation_path) else {}
-        roi_data = read_json_file(roi_path) if os.path.exists(roi_path) else {}
-        future_tech_data = read_json_file(future_tech_path) if os.path.exists(future_tech_path) else {}
-        specs_data = read_json_file(specs_path) if os.path.exists(specs_path) else {}
+        # Global metric definitions
+        # Assuming 'metrics/definitions.json' is relative to the project root (where templates/ and routines/ are)
+        project_root = Path(__file__).resolve().parent.parent
+        metric_definitions_path = project_root / "metrics" / "definitions.json"
+        metric_definitions_data = read_json_file(metric_definitions_path, is_critical=True)
+
+
+        # --- Load Content Data Files (Optional, with fallbacks) ---
+        tree_data = read_json_file(tree_path, is_critical=False)
+        timeline_data = read_json_file(timeline_path, is_critical=False)
+        challenges_data = read_json_file(challenges_path, is_critical=False)
+        adoption_data = read_json_file(adoption_path, is_critical=False)
+        implementation_data = read_json_file(implementation_path, is_critical=False)
+        roi_data = read_json_file(roi_path, is_critical=False)
+        future_tech_data = read_json_file(future_tech_path, is_critical=False)
+        specs_data = read_json_file(specs_path, is_critical=False)
 
         # --- Read Breadcrumbs File ---
         breadcrumb_file_path = os.path.join(files_dir_path, "breadcrumbs.txt")
@@ -220,102 +345,288 @@ def main():
                         print(f"Warning: Could not load or process alternative file {filename}: {alt_err}", file=sys.stderr)
 
 
-        # Set up Jinja2 environment
+        # --- Set up Jinja2 Environment ---
+        project_root_for_templates = Path(__file__).resolve().parent.parent / "templates"
         env = Environment(
-            loader=FileSystemLoader('templates'),
-            autoescape=True, # Keep autoescape True for security
+            loader=FileSystemLoader(str(project_root_for_templates)),
+            autoescape=select_autoescape(['html', 'xml']),
             trim_blocks=True,
             lstrip_blocks=True
         )
-
-        # Add custom filters
         env.filters['process_bold'] = process_bold_text
+        env.globals['enumerate'] = enumerate
+        env.globals['json_dumps'] = json.dumps # Make json.dumps available for inline JSON in template if needed
 
-        # Register generate_tree_preview_text as a global function (still useful if template calls it)
-        env.globals['generate_tree_preview_text'] = generate_tree_preview_text
-        env.globals['enumerate'] = enumerate  # Make enumerate available in templates
+        # --- Process Metadata and Breadcrumbs ---
+        page_level_metadata = process_metadata(metadata_raw, breadcrumb_string)
+        processed_breadcrumbs = process_breadcrumbs(page_level_metadata.get('breadcrumbs_str', ''))
 
-        # Load template
-        template = env.get_template('page-template.html')
 
-        # Process data before adding to context (pass breadcrumb string)
-        processed_metadata = process_metadata(metadata_raw, breadcrumb_string)
-        # Now process the breadcrumbs string stored within processed_metadata
-        processed_breadcrumbs = process_breadcrumbs(processed_metadata.get('breadcrumbs', ''))
+        # --- Prepare `all_content_sections` for the new template structure ---
+        all_content_sections = []
 
-        # --- Process Timeline Data ---
-        timeline_entries = []
-        timeline_content = timeline_data.get('timeline', {})
-        for year, content in timeline_content.get('historical', {}).items():
-            timeline_entries.append({'year': year, 'content': content, 'is_prediction': False})
-        for year, content in timeline_content.get('predictions', {}).items():
-            timeline_entries.append({'year': year, 'content': content, 'is_prediction': True})
-        # Sort entries (optional, depends on desired order)
-        # timeline_entries.sort(key=lambda x: x['year']) # Simple sort might fail with year ranges
+        # Helper to add sections
+        def add_section(id_suffix, title, content_data, template_str_or_html, is_html=False):
+            # Construct section_id based on page slug (if available) or a default
+            page_slug = page_level_metadata.get('slug')
+            if not page_slug or not isinstance(page_slug, str):
+                page_slug = "article"
+            
+            section_id_for_html = f"{page_slug}-{id_suffix}" # Used for HTML element IDs
+            print(f"DEBUG: HTML section_id: {section_id_for_html}, using id_suffix '{id_suffix}' for metrics lookup.")
+            
+            # Pass the id_suffix to get_section_metrics_and_relevance for mapping
+            metrics_info = get_section_metrics_and_relevance(id_suffix, article_metrics_data, metric_definitions_data)
+            
+            content_html_output = ""
+            if is_html:
+                content_html_output = template_str_or_html # Already HTML
+            elif content_data is not None and template_str_or_html:
+                # Render content HTML using a temporary Jinja template string
+                section_template = env.from_string(template_str_or_html)
+                content_html_output = section_template.render(data=content_data, page_metadata=page_level_metadata) # Pass page_metadata for context
+            
+            all_content_sections.append({
+                "id": section_id_for_html, # Use the slug-prefixed ID for HTML
+                "title_text": title,
+                "title_html": title,
+                "content_html": content_html_output,
+                "relevant_personas_json": json.dumps(metrics_info["relevant_personas_list"]),
+                "metrics_data_json": metrics_info["metrics_data_for_section_json"]
+            })
 
-        # --- Process Adoption Data ---
-        adoption_stages = []
-        adoption_content = adoption_data.get('automation_adoption', {})
-        # Sort by phase key (phase1, phase2, ...) if needed
-        for phase_key in sorted(adoption_content.keys()):
-            if phase_key.startswith('phase'):
-                adoption_stages.append(adoption_content[phase_key])
+        # 1. Standard Process Steps (from tree_data)
+        if tree_data and tree_data.get('tree', {}).get('children'):
+            process_steps_content = """
+                {% if data.tree and data.tree.children %}
+                    {% for step_item in data.tree.children %}
+                    <div class="process-section-item"> {# Changed from process-section to avoid nesting issues if original styles are kept #}
+                        <h4>{{ loop.index }}. {{ step_item.step }}</h4>
+                        <p>This step involves {{ step_item.step | lower }}.</p>
+                        {% if step_item.children %}
+                        <h5>Key Sub-Steps:</h5>
+                        <ul class="step-list">
+                            {% for sub_step in step_item.children %}
+                            <li>{{ sub_step.step }}
+                                {% if sub_step.children %}
+                                <ul>
+                                    {% for sub_sub_step in sub_step.children %}
+                                    <li>{{ sub_sub_step.step }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                        <p><strong>Automation Status:</strong> Currently being developed and refined.</p> {# Example, might come from data #}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            """
+            add_section("process-steps", "Standard Process", tree_data, process_steps_content)
 
-        # --- Process ROI Data ---
-        roi_points = []
-        roi_scales_data = roi_data.get('roi_analysis', {}).get('roi_analysis', {})
-        for scale_key, scale_data in roi_scales_data.items():
-            if isinstance(scale_data, dict) and 'timeframe' in scale_data:
-                 roi_points.append({'scale': scale_key, 'timeframe': scale_data['timeframe']})
-        key_benefits_list = roi_data.get('roi_analysis', {}).get('key_benefits', [])
+        # 2. Automation Development Timeline
+        if timeline_data and timeline_data.get('timeline'):
+            timeline_content_template = """
+                {% if data.timeline.historical or data.timeline.predictions %}
+                    {% for year, description in data.timeline.historical.items() %}
+                    <div class="timeline-entry">
+                        <div class="timeline-year">{{ year }}</div>
+                        <div class="timeline-content"><p>{{ description }}</p></div>
+                    </div>
+                    {% endfor %}
+                    {% for year, description in data.timeline.predictions.items() %}
+                    <div class="timeline-entry">
+                        <div class="timeline-year-prediction">{{ year }}</div>
+                        <div class="timeline-content"><p><em>{{ description }}</em></p></div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No timeline data available.</p>
+                {% endif %}
+            """
+            add_section("timeline", "Automation Development Timeline", timeline_data, timeline_content_template)
+            
+        # 3. Current Automation Challenges
+        if challenges_data and challenges_data.get('challenges', {}).get('challenges'):
+            challenges_content_template = """
+                <p>Despite significant progress, several challenges remain in fully automating the {{ data.challenges.topic | lower | default('process') }} process:</p>
+                <ul>
+                    {% for challenge in data.challenges.challenges %}
+                    <li><strong>{{ challenge.title }}:</strong> {{ challenge.explanation }}</li>
+                    {% endfor %}
+                </ul>
+            """
+            add_section("challenges", "Current Automation Challenges", challenges_data, challenges_content_template)
 
-        # --- Process Future Technology Data ---
-        future_technologies = []
-        future_tech_content = future_tech_data.get('future_technology', {})
-        categories = {
-            'sensory_systems': 'Sensory Systems',
-            'control_systems': 'Control Systems',
-            'mechanical_systems': 'Mechanical Systems',
-            'software_integration': 'Software Integration'
-        }
-        for category_key, category_name in categories.items():
-            for tech_item in future_tech_content.get(category_key, []):
-                if isinstance(tech_item, dict):
-                    tech_item['category'] = category_name # Add category for template grouping
-                    future_technologies.append(tech_item)
+        # 4. Automation Adoption Framework
+        if adoption_data and adoption_data.get('automation_adoption'):
+            adoption_content_template = """
+                <p>This framework outlines the pathway to full automation, detailing the progression from manual processes to fully automated systems.</p>
+                {% for phase_key, phase_data in data.automation_adoption.items() %}
+                <h4>{{ phase_data.title }} ({{ phase_data.status }})</h4>
+                <ul class="step-list">
+                    {% for example in phase_data.examples %}
+                    <li>{{ example|safe }}</li>
+                    {% endfor %}
+                </ul>
+                {% endfor %}
+            """
+            add_section("adoption-framework", "Automation Adoption Framework", adoption_data, adoption_content_template)
 
-        # --- Prepare context with processed and structured data ---
+        # 5. Current Implementation Levels
+        if implementation_data and implementation_data.get('implementation_assessment',{}).get('process_steps'):
+            implementation_content_template = """
+                <p>The table below shows the current automation levels across different scales:</p>
+                <table class="automation-table">
+                    <thead>
+                        <tr><th>Process Step</th><th>Small Scale</th><th>Medium Scale</th><th>Large Scale</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for step in data.implementation_assessment.process_steps %}
+                        <tr>
+                            <td>{{ step.step_name }}</td>
+                            <td>{{ step.automation_levels.low_scale }}</td>
+                            <td>{{ step.automation_levels.medium_scale }}</td>
+                            <td>{{ step.automation_levels.high_scale }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            """
+            add_section("implementation-levels", "Current Implementation Levels", implementation_data, implementation_content_template)
+
+        # 6. Automation ROI Analysis
+        if roi_data and roi_data.get('roi_analysis'):
+            roi_content_template = """
+                <p>The return on investment for automation depends on scale and production volume:</p>
+                {% if data.roi_analysis.roi_analysis %}
+                    {% for scale_key, scale_data in data.roi_analysis.roi_analysis.items() %}
+                    <h4>{{ scale_key | replace('_', ' ') | capitalize }}</h4>
+                    <ul class="step-list">
+                        <li><strong>Timeframe:</strong> {{ scale_data.timeframe }}</li>
+                        <li><strong>Initial Investment:</strong> {{ scale_data.initial_investment }}</li>
+                        <li><strong>Annual Savings:</strong> {{ scale_data.annual_savings }}</li>
+                        <li><strong>Key Considerations:</strong>
+                            <ul>{% for consideration in scale_data.key_considerations %}<li>{{ consideration }}</li>{% endfor %}</ul>
+                        </li>
+                    </ul>
+                    {% endfor %}
+                {% endif %}
+                {% if data.roi_analysis.key_benefits %}
+                    <h4>Key Benefits</h4>
+                    <ul class="step-list">{% for benefit in data.roi_analysis.key_benefits %}<li>{{ benefit }}</li>{% endfor %}</ul>
+                {% endif %}
+                {% if data.roi_analysis.barriers %}
+                    <h4>Barriers</h4>
+                    <ul class="step-list">{% for barrier in data.roi_analysis.barriers %}<li>{{ barrier }}</li>{% endfor %}</ul>
+                {% endif %}
+                {% if data.roi_analysis.recommendation %}
+                    <h4>Recommendation</h4><p>{{ data.roi_analysis.recommendation }}</p>
+                {% endif %}
+            """
+            add_section("roi-analysis", "Automation ROI Analysis", roi_data, roi_content_template)
+
+        # 7. Automation Technologies (Future Tech)
+        if future_tech_data and future_tech_data.get('future_technology'):
+            future_tech_template = """
+                <p>This section details the underlying technologies enabling automation.</p>
+                {% if data.future_technology.sensory_systems %}
+                <h4>Sensory Systems</h4>
+                <ul class="step-list">{% for item in data.future_technology.sensory_systems %}<li><strong>{{ item.name }}:</strong> {{ item.description }}</li>{% endfor %}</ul>
+                {% endif %}
+                {% if data.future_technology.control_systems %}
+                <h4>Control Systems</h4>
+                <ul class="step-list">{% for item in data.future_technology.control_systems %}<li><strong>{{ item.name }}:</strong> {{ item.description }}</li>{% endfor %}</ul>
+                {% endif %}
+                {% if data.future_technology.mechanical_systems %}
+                <h4>Mechanical Systems</h4>
+                <ul class="step-list">{% for item in data.future_technology.mechanical_systems %}<li><strong>{{ item.name }}:</strong> {{ item.description }}</li>{% endfor %}</ul>
+                {% endif %}
+                {% if data.future_technology.software_integration %}
+                <h4>Software Integration</h4>
+                <ul class="step-list">{% for item in data.future_technology.software_integration %}<li><strong>{{ item.name }}:</strong> {{ item.description }}</li>{% endfor %}</ul>
+                {% endif %}
+            """
+            add_section("automation-technologies", "Automation Technologies", future_tech_data, future_tech_template)
+
+        # 8. Technical Specifications for Commercial Automation
+        if specs_data and specs_data.get('industrial_specifications'):
+            specs_template = """
+                <p>Standard parameters for industrial production:</p>
+                {% if data.industrial_specifications.performance_metrics %}
+                <h4>Performance Metrics</h4>
+                <ul class="step-list">{% for metric in data.industrial_specifications.performance_metrics %}<li><strong>{{ metric.name }}:</strong> {{ metric.value }} - {{ metric.description }}</li>{% endfor %}</ul>
+                {% endif %}
+                {% if data.industrial_specifications.implementation_requirements %}
+                <h4>Implementation Requirements</h4>
+                <ul class="step-list">{% for req in data.industrial_specifications.implementation_requirements %}<li><strong>{{ req.name }}:</strong> {{ req.specifications }} - {{ req.description }}</li>{% endfor %}</ul>
+                {% endif %}
+            """
+            add_section("technical-specifications", "Technical Specifications for Commercial Automation", specs_data, specs_template)
+
+        # 9. Alternative Approaches Introduction
+        alt_intro_html = "<p>These are alternative automation trees generated by different versions of our Iterative AI algorithm. Browse these competing models and vote for approaches you find most effective.</p>"
+        add_section("alternative-approaches-intro", "Alternative Approaches", None, alt_intro_html, is_html=True)
+        
+        # 10. Alternative Approaches Grid
+        if alt_trees_data:
+            alt_grid_template = """
+            <div class="approaches-grid">
+                {% for approach in data %}
+                <div class="approach-card">
+                    <h4>{{ approach.input_data.approach_name | default(approach.title) }}</h4>
+                    <p>{{ approach.input_data.approach_description | default("No description available.") }}</p>
+                    <div class="approach-preview">{{ approach.preview_text | default("Preview not available") }}</div>
+                    <div class="approach-meta">
+                        <p>Created by: {{ approach.creator | default("Iterative AI Alpha") }}</p>
+                        <p>Votes: <span class="vote-count">{{ approach.votes | default(0) }}</span></p>
+                    </div>
+                    <div class="approach-actions">
+                        <button class="button secondary vote-button">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 4L18 10H6L12 4Z" fill="currentColor"/></svg> Vote Up
+                        </button>
+                        <a href="{{ approach.full_tree_url | default('#') }}" class="button secondary">View Full Tree</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            """
+            add_section("alternative-approaches-grid", "Competing Models", alt_trees_data, alt_grid_template)
+
+        # 11. Why Multiple Approaches?
+        why_multiple_html = """
+            <p>Different methodologies offer unique advantages depending on context:</p>
+            <ul class="step-list">
+                <li><strong>Scale considerations:</strong> Some approaches work better for large-scale production, while others are more suitable for specialized applications</li>
+                <li><strong>Resource constraints:</strong> Different methods optimize for different resources (time, computing power, energy)</li>
+                <li><strong>Quality objectives:</strong> Approaches vary in their emphasis on safety, efficiency, adaptability, and reliability</li>
+                <li><strong>Automation potential:</strong> Some approaches are more easily adapted to full automation than others</li>
+            </ul>
+            <p>By voting for approaches you find most effective, you help our community identify the most promising automation pathways.</p>
+        """
+        add_section("why-multiple-approaches", "Why Multiple Approaches?", None, why_multiple_html, is_html=True)
+
+
+        # --- Final Jinja2 Context for page-template.html ---
         context = {
-            # Use processed metadata
-            'metadata': processed_metadata,
-            # Main process tree
-            'tree': tree_data.get('tree', {}),
-            # Use processed lists/data
-            'timeline_entries': timeline_entries,
-            'challenge_points': challenges_data.get('challenges', {}).get('challenges', []), # Use 'challenges' list
-            'adoption_stages': adoption_stages,
-            'implementation_levels': implementation_data.get('implementation_assessment', {}).get('process_steps', []), # Use 'process_steps' list
-            'roi_points': roi_points,
-            'key_benefits': key_benefits_list,
-            'future_technologies': future_technologies,
-            # Use correct keys for specifications
-            'spec_performance': specs_data.get('industrial_specifications', {}).get('performance_metrics', []),
-            'spec_requirements': specs_data.get('industrial_specifications', {}).get('implementation_requirements', []),
-            # Use processed breadcrumbs
+            'page_metadata': page_level_metadata, # Renamed from 'metadata' for clarity in template
+            'all_content_sections': all_content_sections,
             'breadcrumbs': processed_breadcrumbs,
-            # Pass alternatives with pre-generated preview text
-            'alternatives': alt_trees_data
+            'metric_definitions': metric_definitions_data, # Pass global definitions
+            # 'article_metrics': article_metrics_data, # This is now processed into each section's metrics_data_json
+            'core_personas': {slug: slug.replace('_', ' ').capitalize() for slug in CORE_PERSONAS} # Convert list to dict for template
         }
 
-        # Render template
-        output_html = template.render(context)
+        # --- Render Main Template ---
+        main_template = env.get_template('page-template.html')
+        output_html = main_template.render(context)
 
-        # Write output
-        # Generate slug from processed metadata title
-        slug = processed_metadata.get('slug', processed_metadata.get('title', 'output').lower().replace(' ', '-'))
-        # Ensure slug is filesystem-safe (basic example)
-        slug = "".join(c for c in slug if c.isalnum() or c in ('-', '_')).rstrip() or "output"
-        output_path = Path(output_dir) / f"{slug}.html"
+        # --- Write Output File ---
+        slug_base = page_level_metadata.get('slug', page_level_metadata.get('title', 'output').lower().replace(' ', '-'))
+        safe_slug = "".join(c for c in slug_base if c.isalnum() or c in ('-', '_')).rstrip() or "output"
+        output_path = Path(output_dir) / f"{safe_slug}.html"
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(output_path, 'w', encoding='utf-8') as f:
@@ -324,13 +635,13 @@ def main():
         print(f"Generated HTML page: {output_path}")
 
     except FileNotFoundError as fnf_error:
-         print(f"Error: Input file not found - {fnf_error}", file=sys.stderr)
-         sys.exit(1)
+        print(f"Error: Input file not found - {fnf_error}", file=sys.stderr)
+        sys.exit(1)
     except json.JSONDecodeError as json_error:
-         print(f"Error: Failed to decode JSON - {json_error}", file=sys.stderr)
-         sys.exit(1)
+        print(f"Error: Failed to decode JSON - {json_error}", file=sys.stderr)
+        sys.exit(1)
     except Exception as e:
-        print(f"An unexpected error occurred: {str(e)}", file=sys.stderr)
+        print(f"An unexpected error occurred in main: {str(e)}", file=sys.stderr)
         import traceback
         traceback.print_exc(file=sys.stderr)
         sys.exit(1)

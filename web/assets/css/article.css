@@ -354,3 +354,352 @@ input:checked + .toggle-slider:before {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+/* Persona Selector Styles */
+.persona-selector-container {
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.persona-selector-container label {
+    font-weight: 500;
+}
+
+#persona-selector {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-light);
+    min-width: 150px;
+}
+
+/* Metrics Icon Styles */
+.metrics-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em; /* Adjust size as needed */
+    padding: 0 var(--spacing-xs);
+    margin-left: var(--spacing-xs);
+    vertical-align: middle;
+}
+
+.metrics-icon:hover {
+    opacity: 0.7;
+}
+
+/* Styles for Content Sections in the new flat layout */
+.content-section {
+    background-color: var(--bg-light, #f8f9fa); /* Contrasting background with fallback */
+    padding: var(--spacing-lg, 20px);
+    margin-bottom: var(--spacing-xl, 25px); /* Spacing between sections */
+    border-radius: var(--border-radius-lg, 8px);
+    box-shadow: var(--shadow-sm, 0 2px 4px rgba(0,0,0,0.05));
+}
+
+.content-section h3 { /* Title within each section */
+    margin-top: 0;
+    margin-bottom: var(--spacing-md, 15px);
+    padding-bottom: var(--spacing-sm, 10px);
+    border-bottom: 1px solid var(--border-color, #dee2e6);
+    display: flex; /* For aligning title and metrics icon */
+    justify-content: space-between;
+    align-items: center;
+}
+
+.content-section .section-body p,
+.content-section .section-body ul,
+.content-section .section-body ol,
+.content-section .section-body table {
+    margin-bottom: var(--spacing-md, 15px); /* Consistent bottom margin for elements within section body */
+}
+
+.content-section .section-body ul li,
+.content-section .section-body ol li {
+    margin-bottom: var(--spacing-sm, 8px); /* Spacing for list items */
+}
+/* End of new Content Section Styles */
+
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5); /* Dim background */
+    align-items: center;
+    justify-content: center;
+}
+
+.modal[aria-hidden="false"] {
+    display: flex; /* Shown when aria-hidden is false */
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-container {
+    background-color: var(--bg-surface, #ffffff); /* Ensure fallback background */
+    color: var(--text-color);
+    margin: auto;
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    width: 90%;
+    max-width: 600px; /* Max width of modal */
+    position: relative; /* For positioning close button */
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.modal-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-light);
+}
+.modal-close:hover {
+    color: var(--text-color);
+}
+
+.modal-content {
+    overflow-y: auto; /* Scrollable content */
+    margin-bottom: var(--spacing-md);
+    flex-grow: 1;
+}
+
+.modal-content h4 {
+    margin-top: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+}
+
+.modal-content ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.modal-content li {
+    padding: var(--spacing-xs) 0;
+    border-bottom: 1px solid var(--border-color-light);
+}
+.modal-content li:last-child {
+    border-bottom: none;
+}
+
+.metric-pass {
+    color: var(--success-color, green);
+    font-weight: 500;
+}
+
+.metric-fail {
+    color: var(--error-color, red);
+    font-weight: 500;
+}
+
+.metric-description {
+    font-size: var(--font-size-sm);
+    color: var(--text-light);
+    margin-top: var(--spacing-xs);
+    margin-left: var(--spacing-md);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border-color);
+    padding-top: var(--spacing-md);
+    text-align: right;
+}
+
+/* Hide sections that are not relevant */
+.content-section[hidden] {
+    display: none !important;
+}
+
+/* Responsive modal adjustments */
+@media (max-width: 768px) {
+    .modal-container {
+        width: 95%;
+        margin: var(--spacing-md) auto;
+        max-height: 90vh;
+    }
+    .modal-title {
+        font-size: var(--font-size-md);
+    }
+}
+
+/* Article Layout with Sidebar */
+.article-layout-container {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: var(--spacing-xl, 30px);
+    width: 100%;
+    /* margin-left: 0; /* Removed override attempts, assuming parent .container is fine */
+    /* margin-right: 0; */
+}
+
+.wiki-content-main {
+    flex-grow: 1; /* Allow main content to grow */
+    flex-shrink: 1; /* Allow main content to shrink if needed */
+    flex-basis: 70%; /* Suggest it takes up a majority of space initially */
+    /* min-width: 0; /* Already there, good for preventing overflow */
+    min-width: min(100%, 500px); /* Ensure it has some base width but can shrink */
+}
+
+.wiki-sidebar {
+    flex-grow: 0; /* Don't allow sidebar to grow beyond its basis/max-width */
+    flex-shrink: 0; /* Prevent sidebar from shrinking below its basis/min-width */
+    flex-basis: 260px; /* Define a more explicit basis */
+    min-width: 220px;
+    max-width: 280px;
+    /* Adding margin-left to push it right if main content doesn't fill space,
+       though with flex-grow on main, this might not be needed if layout works.
+       This is more of a fallback if the flex isn't distributing space as expected.
+       A better solution is to ensure the flex layout itself works.
+    */
+    /* margin-left: auto; */ /* This would push it to the far right if there's space, but might not be what we want if main content should take up slack */
+}
+
+#persona-selector-widget {
+    position: -webkit-sticky; /* For Safari */
+    position: sticky;
+    top: 100px; /* Adjust based on header height + desired offset */
+    padding: var(--spacing-md, 15px);
+    background-color: var(--bg-light, #f8f9fa);
+    border-radius: var(--border-radius-md, 6px);
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
+    border: 1px solid var(--border-color, #e9ecef);
+    z-index: 100; /* Ensure it's above other content but below modal */
+}
+
+#persona-selector-widget label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm, 8px);
+    color: var(--text-color);
+}
+
+#persona-selector-widget select {
+    width: 100%;
+    padding: var(--spacing-sm, 10px);
+    border-radius: var(--border-radius-sm, 4px);
+    border: 1px solid var(--border-color-dark, #ced4da);
+    background-color: var(--bg-surface, #fff);
+    font-size: var(--font-size-md, 1rem);
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+/* Collapsible Section Styles */
+.content-section .section-header { /* Target the h3 with this class */
+    /* display: flex; is already on .content-section h3 from previous diff */
+    /* justify-content: space-between; is already on .content-section h3 */
+    /* align-items: center; is already on .content-section h3 */
+    width: 100%;
+    /* Remove bottom border from here if it was on h3 directly, it's on .content-section h3 */
+}
+
+.section-toggle-button {
+    flex-grow: 1; /* Title takes available space */
+    display: flex;
+    justify-content: space-between; /* Pushes indicator to the right of title */
+    align-items: center;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0; /* Remove any default button margins */
+    margin-right: var(--spacing-sm, 10px); /* Space before metrics icon */
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    line-height: inherit; /* Ensure consistent line height with h3 */
+}
+
+.section-toggle-button:hover .section-title-text,
+.section-toggle-button:focus .section-title-text {
+    text-decoration: underline;
+}
+
+.toggle-indicator {
+    margin-left: var(--spacing-sm, 10px);
+    font-size: 0.9em; /* Adjusted size */
+    transition: transform 0.2s ease-in-out;
+    display: inline-block; /* Ensure transform works */
+}
+
+.content-section.collapsed .toggle-indicator {
+    transform: rotate(-90deg);
+}
+.content-section:not(.collapsed) .toggle-indicator {
+    transform: rotate(0deg);
+}
+
+.section-body {
+    padding-top: var(--spacing-md, 15px);
+    /* overflow: hidden; -- Let content flow naturally, JS handles visibility */
+}
+
+.content-section.collapsed .section-body {
+     /* display: none; -- JS will toggle 'hidden' attribute */
+}
+
+/* Responsive adjustments for sidebar */
+@media (max-width: 992px) {
+    .article-layout-container {
+        flex-direction: column;
+    }
+    .wiki-sidebar {
+        order: -1;
+        width: 100%;
+        max-width: none;
+        margin-bottom: var(--spacing-lg);
+    }
+    #persona-selector-widget {
+        position: static;
+        width: auto; /* Allow it to take natural width or be styled by its container */
+    }
+}
+
+@media (max-width: 768px) {
+    .content-section h3, .content-section .section-header { /* Ensure metrics icon doesn't cause overflow on small screens */
+        flex-wrap: wrap; /* Allow items to wrap if needed */
+    }
+    .section-toggle-button {
+        margin-right: 0; /* Remove right margin if metrics icon wraps */
+        margin-bottom: var(--spacing-xs, 5px); /* Add some space if it wraps */
+    }
+    .metrics-icon {
+        margin-left: 0; /* Adjust if it wraps */
+    }
+}

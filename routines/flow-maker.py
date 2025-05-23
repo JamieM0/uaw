@@ -35,6 +35,66 @@ class Colors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
 
+def validate_timeline_structure(data):
+    """Validates the structure of the timeline JSON (3.json)."""
+    if not isinstance(data, dict):
+        return False, "Root of timeline data is not a dictionary."
+    
+    if "timeline" not in data: # Check for the top-level "timeline" key
+        return False, "Missing 'timeline' key at the root of timeline data."
+        
+    timeline_obj = data.get("timeline") # This should be an object
+    if not isinstance(timeline_obj, dict):
+        # This is the primary check for the "bad" format vs "good" format for 3.json
+        # In "bad" format, data["timeline"] is a list of {"step": "..."}
+        # In "good" format, data["timeline"] is an object {"historical": {}, "predictions": {}}
+        return False, "The 'timeline' key should map to an object (containing 'historical' and 'predictions'), not directly to a list. This indicates a malformed structure."
+        
+    if "historical" not in timeline_obj or not isinstance(timeline_obj.get("historical"), dict):
+        return False, "Invalid or missing 'historical' (object) in the timeline object."
+        
+    if "predictions" not in timeline_obj or not isinstance(timeline_obj.get("predictions"), dict):
+        return False, "Invalid or missing 'predictions' (object) in the timeline object."
+        
+    # Optionally, check types of keys/values within historical and predictions
+    for section_key, section_obj in timeline_obj.items(): # Iterates historical, predictions
+        if section_key in ["historical", "predictions"]:
+            for year_key, desc_val in section_obj.items():
+                if not isinstance(year_key, str) or not isinstance(desc_val, str):
+                    return False, f"Invalid entry in timeline's '{section_key}': key '{year_key}' or its value is not a string."
+    return True, "Timeline structure appears valid."
+
+def validate_challenges_structure(data):
+    """Validates the structure of the challenges JSON (4.json)."""
+    if not isinstance(data, dict):
+        return False, "Root of challenges data is not a dictionary."
+    
+    if "challenges" not in data:
+        return False, "Missing 'challenges' key at the root of challenges data."
+        
+    challenges_obj = data.get("challenges")
+    if not isinstance(challenges_obj, dict):
+        return False, "The main 'challenges' key should map to an object (containing 'topic' and a 'challenges' list), not directly to a list of steps. This indicates a malformed structure (like 4-bad.json)."
+        
+    if "topic" not in challenges_obj or not isinstance(challenges_obj.get("topic"), str):
+        return False, "Invalid or missing 'topic' (string) in the challenges object."
+        
+    if "challenges" not in challenges_obj or not isinstance(challenges_obj.get("challenges"), list):
+        return False, "Invalid or missing 'challenges' (list) within the challenges object."
+        
+    challenges_list = challenges_obj.get("challenges")
+    for idx, item in enumerate(challenges_list):
+        if not isinstance(item, dict):
+            return False, f"Item at index {idx} in the nested challenges list is not a dictionary."
+        if not all(k in item for k in ["id", "title", "explanation"]):
+            return False, f"Item at index {idx} in the nested challenges list is missing one or more required keys (id, title, explanation)."
+        if not isinstance(item.get("title"), str) or \
+           not isinstance(item.get("explanation"), str) or \
+           not (isinstance(item.get("id"), int) or isinstance(item.get("id"), str)): # ID can be int or string
+            return False, f"Item at index {idx} in the nested challenges list has non-string title/explanation or invalid ID type."
+            
+    return True, "Challenges structure appears valid."
+
 def run_program(program_name, input_path, output_path, step_info="Running script", extra_args=None):
     """
     Run a program with specified input/output, enhanced console output, and error handling.
@@ -138,7 +198,7 @@ def main():
         ("return-analysis.py", "7.json"),  # 7. return-analysis.py
         ("future-technology.py", "8.json"),  # 8. future-technology.py
         ("specifications-industrial.py", "9.json"),  # 9. specifications-industrial.py
-        ("assemble.py", None),  # 10. assemble.py - Output filename handled differently
+        # 10. assemble.py - Run after metrics evaluation
     ]
     
     evaluation_summary = {
@@ -163,15 +223,11 @@ def main():
         current_input_path = input_copy_path
         abs_current_input_path = os.path.abspath(current_input_path)
         
-        if program == "assemble.py":
-            output_path = flow_dir
-            abs_current_input_path = os.path.abspath(flow_dir)
-            extra_args = None
-        else:
-            output_path = os.path.join(flow_dir, output_filename)
-            extra_args = ["-saveInputs", "-flow_uuid="+flow_uuid]
-            if program == "hallucinate-tree.py":
-                extra_args += ["-flat"]
+        
+        output_path = os.path.join(flow_dir, output_filename)
+        extra_args = ["-saveInputs", "-flow_uuid="+flow_uuid]
+        if program == "hallucinate-tree.py":
+            extra_args += ["-flat"]
         
         abs_output_path = os.path.abspath(output_path)
         
@@ -202,103 +258,162 @@ def main():
             elif choice == 'S':
                 sys.exit(1)
         
-        # If successful and not assemble.py, run evaluations
-        if run_result["status"] == "success" and program != "assemble.py":
-            print(f"\n--- Starting Evaluation for output of {program} ({output_filename}) ---")
-            section_source_file_path = abs_output_path
+        # If script execution was successful, proceed to potential validation and then evaluation
+        if run_result["status"] == "success":
+            validation_passed_for_current_file = True
+            validation_error_message = ""
 
-            for profile_name in PROFILES:
-                # Using sys.stdout.write for more control over newlines if needed
-                sys.stdout.write(f"\n  Evaluating for Profile: {Colors.BOLD}{profile_name.capitalize()}{Colors.ENDC}... ")
-                sys.stdout.flush()
-                
-                eval_command = [
-                    sys.executable,
-                    evaluator_script_path,
-                    section_source_file_path,
-                    profile_name
-                ]
-                
+            # Perform specific validation based on the program that just ran
+            if program == "generate-automation-timeline.py": # For 3.json
                 try:
-                    eval_result_proc = subprocess.run(
-                        eval_command,
-                        capture_output=True,
-                        text=True,
-                        check=False, # Check manually
-                        cwd=script_dir
-                    )
-                    
-                    if eval_result_proc.returncode == 0:
-                        sys.stdout.write(f"{Colors.GREEN}Done.{Colors.ENDC}\n")
-                        sys.stdout.flush()
-                        actual_json_str = eval_result_proc.stdout.strip()
-                        if not actual_json_str:
-                            print(f"    {Colors.RED}ERROR: No output received from evaluator.py for profile {profile_name}.{Colors.ENDC}")
-                            eval_results_list = []
-                        else:
-                            eval_results_list = json.loads(actual_json_str)
+                    generated_content = load_json(abs_output_path)
+                    validation_passed_for_current_file, validation_error_message = validate_timeline_structure(generated_content)
+                    if not validation_passed_for_current_file:
+                        print(f"  {Colors.RED}Structural Validation Failed for {output_filename} (Timeline):{Colors.ENDC} {validation_error_message}")
+                except Exception as e_val:
+                    validation_passed_for_current_file = False
+                    validation_error_message = f"Exception during timeline validation of {output_filename}: {e_val}"
+                    print(f"  {Colors.RED}{validation_error_message}{Colors.ENDC}")
+            
+            elif program == "generate-automation-challenges.py": # For 4.json
+                try:
+                    generated_content = load_json(abs_output_path)
+                    validation_passed_for_current_file, validation_error_message = validate_challenges_structure(generated_content)
+                    if not validation_passed_for_current_file:
+                        print(f"  {Colors.RED}Structural Validation Failed for {output_filename} (Challenges):{Colors.ENDC} {validation_error_message}")
+                except Exception as e_val:
+                    validation_passed_for_current_file = False
+                    validation_error_message = f"Exception during challenges validation of {output_filename}: {e_val}"
+                    print(f"  {Colors.RED}{validation_error_message}{Colors.ENDC}")
+
+            if not validation_passed_for_current_file:
+                # Validation failed, prompt user
+                while True:
+                    choice = input(f"  {Colors.YELLOW}Action for {output_filename} (validation error: {validation_error_message}): [R]etry generation, [C]ontinue (skip evals), or [S]top flow? {Colors.ENDC}").upper()
+                    if choice == 'R':
+                        print(f"  Retrying {program}...")
+                        break
+                    elif choice == 'C':
+                        print(f"  Skipping evaluations for {output_filename} and continuing with next program...")
+                        program_idx += 1
+                        break
+                    elif choice == 'S':
+                        print(f"  Stopping flow.")
+                        sys.exit(1)
                     else:
-                        sys.stdout.write(f"{Colors.RED}Failed.{Colors.ENDC}\n")
+                        print("  Invalid choice. Please enter R, C, or S.")
+                
+                if choice == 'R':
+                    continue # Retry current program in the main while loop
+                elif choice == 'C':
+                    if program_idx >= len(programs): break
+                    continue # Go to next program in the main while loop
+            
+            # If validation passed (or was not applicable for this file type)
+            # AND program is not assemble.py, then run evaluations.
+            if validation_passed_for_current_file and program != "assemble.py":
+                print(f"\n--- Starting Evaluation for output of {program} ({output_filename}) ---")
+                section_source_file_path = abs_output_path
+
+                for profile_name in PROFILES:
+                    # Using sys.stdout.write for more control over newlines if needed
+                    sys.stdout.write(f"\n  Evaluating for Profile: {Colors.BOLD}{profile_name.capitalize()}{Colors.ENDC}... ")
+                    sys.stdout.flush()
+                    
+                    eval_command = [
+                        sys.executable,
+                        evaluator_script_path,
+                        section_source_file_path,
+                        profile_name
+                    ]
+                    
+                    try:
+                        eval_result_proc = subprocess.run(
+                            eval_command,
+                            capture_output=True,
+                            text=True,
+                            check=False, # Check manually
+                            cwd=script_dir
+                        )
+                        
+                        if eval_result_proc.returncode == 0:
+                            sys.stdout.write(f"{Colors.GREEN}Done.{Colors.ENDC}\n")
+                            sys.stdout.flush()
+                            actual_json_str = eval_result_proc.stdout.strip()
+                            if not actual_json_str:
+                                print(f"    {Colors.RED}ERROR: No output received from evaluator.py for profile {profile_name}.{Colors.ENDC}")
+                                eval_results_list = []
+                            else:
+                                eval_results_list = json.loads(actual_json_str)
+                        else:
+                            sys.stdout.write(f"{Colors.RED}Failed.{Colors.ENDC}\n")
+                            sys.stdout.flush()
+                            print(f"    {Colors.RED}ERROR running evaluator.py for profile {profile_name}. Return code: {eval_result_proc.returncode}{Colors.ENDC}")
+                            if eval_result_proc.stdout.strip():
+                                 print(f"    {Colors.YELLOW}STDOUT from evaluator:{Colors.ENDC}\n{eval_result_proc.stdout.strip()}")
+                            if eval_result_proc.stderr.strip():
+                                 print(f"    {Colors.YELLOW}STDERR from evaluator:{Colors.ENDC}\n{eval_result_proc.stderr.strip()}")
+                            eval_results_list = []
+
+                    except json.JSONDecodeError as e_json:
+                        sys.stdout.write(f"{Colors.RED}Failed (JSON Error).{Colors.ENDC}\n") # Overwrite "Done."
                         sys.stdout.flush()
-                        print(f"    {Colors.RED}ERROR running evaluator.py for profile {profile_name}. Return code: {eval_result_proc.returncode}{Colors.ENDC}")
-                        if eval_result_proc.stdout.strip():
-                             print(f"    {Colors.YELLOW}STDOUT from evaluator:{Colors.ENDC}\n{eval_result_proc.stdout.strip()}")
-                        if eval_result_proc.stderr.strip():
-                             print(f"    {Colors.YELLOW}STDERR from evaluator:{Colors.ENDC}\n{eval_result_proc.stderr.strip()}")
+                        print(f"    {Colors.RED}ERROR decoding JSON from evaluator.py for profile {profile_name}: {e_json}{Colors.ENDC}")
+                        raw_output_for_error = eval_result_proc.stdout.strip() if 'eval_result_proc' in locals() and hasattr(eval_result_proc, 'stdout') else "N/A"
+                        print(f"    Raw STDOUT from evaluator for JSON parsing: '{raw_output_for_error}'")
+                        eval_results_list = []
+                    except Exception as e_eval_general: # Catch other potential errors
+                        sys.stdout.write(f"{Colors.RED}Failed (General Error).{Colors.ENDC}\n")
+                        sys.stdout.flush()
+                        print(f"    {Colors.RED}An unexpected error occurred running evaluator.py for {profile_name}: {e_eval_general}{Colors.ENDC}")
                         eval_results_list = []
 
-                except json.JSONDecodeError as e_json:
-                    sys.stdout.write(f"{Colors.RED}Failed (JSON Error).{Colors.ENDC}\n") # Overwrite "Done."
-                    sys.stdout.flush()
-                    print(f"    {Colors.RED}ERROR decoding JSON from evaluator.py for profile {profile_name}: {e_json}{Colors.ENDC}")
-                    # actual_json_str might not be defined if subprocess failed before stdout was read
-                    # For safety, let's ensure it exists or provide a placeholder.
-                    raw_output_for_error = eval_result_proc.stdout.strip() if 'eval_result_proc' in locals() and hasattr(eval_result_proc, 'stdout') else "N/A"
-                    print(f"    Raw STDOUT from evaluator for JSON parsing: '{raw_output_for_error}'")
-                    eval_results_list = []
-                except Exception as e_eval_general: # Catch other potential errors
-                    sys.stdout.write(f"{Colors.RED}Failed (General Error).{Colors.ENDC}\n")
-                    sys.stdout.flush()
-                    print(f"    {Colors.RED}An unexpected error occurred running evaluator.py for {profile_name}: {e_eval_general}{Colors.ENDC}")
-                    eval_results_list = []
 
+                    if not eval_results_list:
+                        print(f"    No evaluation results processed for profile {profile_name} from {output_filename}.")
 
-                if not eval_results_list:
-                    print(f"    No evaluation results processed for profile {profile_name} from {output_filename}.")
+                    for item_index, section_eval_result in enumerate(eval_results_list):
+                        evaluation_details = section_eval_result.get("evaluation", {})
+                        is_relevant = evaluation_details.get("relevant", False)
 
-                for item_index, section_eval_result in enumerate(eval_results_list):
-                    evaluation_details = section_eval_result.get("evaluation", {})
-                    is_relevant = evaluation_details.get("relevant", False)
+                        print(f"\n    Sub-section {item_index + 1} (from {output_filename}, Profile: {profile_name.capitalize()}):")
+                        print(f"      Relevant: {is_relevant}")
 
-                    print(f"\n    Sub-section {item_index + 1} (from {output_filename}, Profile: {profile_name.capitalize()}):")
-                    print(f"      Relevant: {is_relevant}")
-
-                    if is_relevant:
-                        metrics_results = evaluation_details.get("metrics", {})
-                        if metrics_results:
-                            print("      Metrics:")
-                            for metric_name, passed_status in metrics_results.items():
-                                status_str = f"{Colors.GREEN}Passed{Colors.ENDC}" if passed_status else \
-                                             (f"{Colors.RED}Failed{Colors.ENDC}" if passed_status is False else "Not Applicable/Checked")
-                                print(f"        - {metric_name}: {status_str}")
-                                if passed_status is not None:
-                                    evaluation_summary[profile_name]["total_relevant_checks"] += 1
-                                    if passed_status:
-                                        evaluation_summary[profile_name]["passed"] += 1
-                                    
-                                    # Populate all_flow_metrics with this specific metric result
-                                    # Ensure section and profile lists are initialized
-                                    if output_filename not in all_flow_metrics["sections"]:
-                                        all_flow_metrics["sections"][output_filename] = {}
-                                    if profile_name not in all_flow_metrics["sections"][output_filename]:
-                                        all_flow_metrics["sections"][output_filename][profile_name] = {}
-                                    
-                                    all_flow_metrics["sections"][output_filename][profile_name][metric_name] = bool(passed_status)
+                        if output_filename not in all_flow_metrics["sections"]:
+                            all_flow_metrics["sections"][output_filename] = {}
+                        if profile_name not in all_flow_metrics["sections"][output_filename]:
+                            all_flow_metrics["sections"][output_filename][profile_name] = {
+                                "is_relevant": is_relevant,
+                                "metrics": {}
+                            }
                         else:
-                            print("      No specific metrics evaluated for this relevant section.")
-                    elif evaluation_details:
-                        print("      Section deemed not relevant. No metrics applied by evaluator.")
-            print(f"--- Finished Evaluation for output of {program} ---")
+                            all_flow_metrics["sections"][output_filename][profile_name]["is_relevant"] = is_relevant
+                            if "metrics" not in all_flow_metrics["sections"][output_filename][profile_name]:
+                                 all_flow_metrics["sections"][output_filename][profile_name]["metrics"] = {}
+
+
+                        if is_relevant:
+                            metrics_results = evaluation_details.get("metrics", {})
+                            if metrics_results:
+                                print("      Metrics:")
+                                for metric_name, passed_status in metrics_results.items():
+                                    status_str = f"{Colors.GREEN}Passed{Colors.ENDC}" if passed_status else \
+                                                 (f"{Colors.RED}Failed{Colors.ENDC}" if passed_status is False else "Not Applicable/Checked")
+                                    print(f"        - {metric_name}: {status_str}")
+                                    if passed_status is not None:
+                                        evaluation_summary[profile_name]["total_relevant_checks"] += 1
+                                        if passed_status:
+                                            evaluation_summary[profile_name]["passed"] += 1
+                                        
+                                        all_flow_metrics["sections"][output_filename][profile_name]["metrics"][metric_name] = bool(passed_status)
+                            else:
+                                print("      No specific metrics evaluated for this relevant section.")
+                        elif evaluation_details:
+                            all_flow_metrics["sections"][output_filename][profile_name]["is_relevant"] = False
+                            if "metrics" not in all_flow_metrics["sections"][output_filename][profile_name]:
+                                 all_flow_metrics["sections"][output_filename][profile_name]["metrics"] = {}
+                            print("      Section deemed not relevant. No metrics applied by evaluator.")
+                print(f"--- Finished Evaluation for output of {program} ---")
         
         program_idx += 1 # Move to next program
 
@@ -390,6 +505,14 @@ def main():
     except Exception as e:
         print(f"\n{Colors.RED}Error saving detailed metrics to {os.path.abspath(metrics_file_path)}: {e}{Colors.ENDC}")
 
+    # Run assemble.py to generate HTML output
+    output_path = flow_dir
+    abs_current_input_path = os.path.abspath(flow_dir)
+    extra_args = None
+    run_result = run_program("assemble.py", abs_current_input_path, output_path, "Assembling HTML output... ", extra_args)
+    if run_result["status"] == "failure":
+        print(run_result["error_info"])
+        sys.exit(1)
     print(f"\nFlow process completed in {time_taken}")
     print(f"Output files saved to: {os.path.abspath(flow_dir)}")
 

@@ -26,14 +26,15 @@
         </section>
 
         <section class="wiki-article">
-            <div class="container">
-                <div class="wiki-content">
+            <div class="container article-layout-container"> {# This div is now the flex container #}
+                
+                <div class="wiki-content-main"> {# Wrapper for the main content column #}
                     <div class="breadcrumbs">
                         {% if breadcrumbs %}
                             {% for crumb in breadcrumbs[:-1] %}
-                                <span><a href="{{ crumb.url }}">{{ crumb.text }}</a></span>
+                                <span><a href="{{ crumb.url }}">{{ crumb.name }}</a></span>
                             {% endfor %}
-                            <span>{{ breadcrumbs[-1].text }}</span> {# Last item is current page, not linked #}
+                            <span>{{ breadcrumbs[-1].name }}</span> {# Last item is current page, not linked #}
                         {% endif %}
                     </div>
                     
@@ -43,290 +44,54 @@
                     </div>
                     
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: {{ page_metadata.progress_percentage }};"></div>
+                        <div class="progress-fill" style="width: {{ page_metadata.progress_percentage }}%;"></div>
                     </div>
                     
                     <div class="article-summary">
                         {{ page_metadata.explanatory_text|safe }}
                     </div>
                     
-                    <div class="method-tabs" id="method-tabs">
-                        <div class="method-tab active" data-tab="standard-process">Standard Process</div>
-                        <div class="method-tab" data-tab="automation-pathway">Automation Pathway</div>
-                        <div class="method-tab" data-tab="technical-details">Technical Details</div>
-                        <div class="method-tab" data-tab="competing-approaches">Competing Approaches</div>
-                    </div>
+                    {# Persona selector is now in the sidebar #}
                     
-                    <!-- Standard Process Tab Content -->
-                    <div id="standard-process" class="tab-content active">
-                        {% if process_tree and process_tree.tree and process_tree.tree.children %}
-                            {% for step_item in process_tree.tree.children %}
-                            <div class="process-section">
-                                <h3>{{ loop.index }}. {{ step_item.step }}</h3>
-                                <p>This step involves {{ step_item.step | lower }}.</p>
-                                {% if step_item.children %}
-                                <h4>Key Steps:</h4>
-                                <ul class="step-list">
-                                    {% for sub_step in step_item.children %}
-                                    <li>{{ sub_step.step }}
-                                        {% if sub_step.children %}
-                                        <ul> {# Nested list for sub-sub-steps if they exist and are to be rendered #}
-                                            {% for sub_sub_step in sub_step.children %}
-                                            <li>{{ sub_sub_step.step }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                        {% endif %}
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                                {% endif %}
-                                <p><strong>Automation Status:</strong> Currently being developed and refined.</p>
-                            </div>
-                            {% endfor %}
-                        {% endif %}
-
-                        {% if timeline_data and timeline_data.timeline %}
-                        <div class="automation-timeline">
-                            <h3>Automation Development Timeline</h3>
-                            {% if timeline_data.timeline.historical %}
-                                {% for year, description in timeline_data.timeline.historical.items() %}
-                                <div class="timeline-entry">
-                                    <div class="timeline-year">{{ year }}</div>
-                                    <div class="timeline-content">
-                                        <p>{{ description }}</p>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            {% endif %}
-                            {% if timeline_data.timeline.predictions %}
-                                {% for year, description in timeline_data.timeline.predictions.items() %}
-                                <div class="timeline-entry">
-                                    <div class="timeline-year-prediction">{{ year }}</div>
-                                    <div class="timeline-content">
-                                        <p><em>{{ description }}</em></p>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                        {% endif %}
-
-                        {% if challenges_data and challenges_data.challenges %}
-                        <div class="automation-challenges">
-                            <h3>Current Automation Challenges</h3>
-                            <p>Despite significant progress, several challenges remain in fully automating the {{ challenges_data.challenges.topic | lower }} process:</p>
-                            <ul>
-                                {% for challenge in challenges_data.challenges.challenges %}
-                                <li><strong>{{ challenge.title }}:</strong> {{ challenge.explanation }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Automation Pathway Tab Content -->
-                    <div id="automation-pathway" class="tab-content">
-                        {% if adoption_data and adoption_data.automation_adoption %}
-                        <div class="process-section">
-                            <h3>Automation Adoption Framework</h3>
-                            <p>This framework outlines the pathway to full automation, detailing the progression from manual processes to fully automated systems.</p>
-                            {% for phase_key, phase_data in adoption_data.automation_adoption.items() %}
-                            <h4>{{ phase_data.title }} ({{ phase_data.status }})</h4>
-                            <ul class="step-list">
-                                {% for example in phase_data.examples %}
-                                <li>{{ example|safe }}</li>
-                                {% endfor %}
-                            </ul>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-
-                        {% if implementation_data and implementation_data.implementation_assessment %}
-                        <div class="process-section">
-                            <h3>Current Implementation Levels</h3>
-                            <p>The table below shows the current automation levels across different scales:</p>
-                            <table class="automation-table">
-                                <thead>
-                                    <tr>
-                                        <th>Process Step</th>
-                                        <th>Small Scale</th>
-                                        <th>Medium Scale</th>
-                                        <th>Large Scale</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for step in implementation_data.implementation_assessment.process_steps %}
-                                    <tr>
-                                        <td>{{ step.step_name }}</td>
-                                        <td>{{ step.automation_levels.low_scale }}</td>
-                                        <td>{{ step.automation_levels.medium_scale }}</td>
-                                        <td>{{ step.automation_levels.high_scale }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        {% endif %}
-
-                        {% if roi_data and roi_data.roi_analysis %}
-                        <div class="process-section">
-                            <h3>Automation ROI Analysis</h3>
-                            <p>The return on investment for automation depends on scale and production volume:</p>
-                            {% if roi_data.roi_analysis.roi_analysis %}
-                                {% for scale_key, scale_data in roi_data.roi_analysis.roi_analysis.items() %}
-                                <h4>{{ scale_key | replace('_', ' ') | capitalize }}</h4>
-                                <ul class="step-list">
-                                    <li><strong>Timeframe:</strong> {{ scale_data.timeframe }}</li>
-                                    <li><strong>Initial Investment:</strong> {{ scale_data.initial_investment }}</li>
-                                    <li><strong>Annual Savings:</strong> {{ scale_data.annual_savings }}</li>
-                                    <li><strong>Key Considerations:</strong>
-                                        <ul>
-                                        {% for consideration in scale_data.key_considerations %}
-                                            <li>{{ consideration }}</li>
-                                        {% endfor %}
-                                        </ul>
-                                    </li>
-                                </ul>
-                                {% endfor %}
-                            {% endif %}
-                            {% if roi_data.roi_analysis.key_benefits %}
-                                <h4>Key Benefits</h4>
-                                <ul class="step-list">
-                                {% for benefit in roi_data.roi_analysis.key_benefits %}
-                                    <li>{{ benefit }}</li>
-                                {% endfor %}
-                                </ul>
-                            {% endif %}
-                            {% if roi_data.roi_analysis.barriers %}
-                                <h4>Barriers</h4>
-                                <ul class="step-list">
-                                {% for barrier in roi_data.roi_analysis.barriers %}
-                                    <li>{{ barrier }}</li>
-                                {% endfor %}
-                                </ul>
-                            {% endif %}
-                            {% if roi_data.roi_analysis.recommendation %}
-                                <h4>Recommendation</h4>
-                                <p>{{ roi_data.roi_analysis.recommendation }}</p>
-                            {% endif %}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Technical Details Tab Content -->
-                    <div id="technical-details" class="tab-content">
-                        {% if future_tech_data and future_tech_data.future_technology %}
-                        <div class="process-section">
-                            <h3>Automation Technologies</h3>
-                            <p>This section details the underlying technologies enabling automation.</p>
-                            {% if future_tech_data.future_technology.sensory_systems %}
-                            <h4>Sensory Systems</h4>
-                            <ul class="step-list">
-                                {% for item in future_tech_data.future_technology.sensory_systems %}
-                                <li><strong>{{ item.name }}:</strong> {{ item.description }}</li>
-                                {% endfor %}
-                            </ul>
-                            {% endif %}
-                            {% if future_tech_data.future_technology.control_systems %}
-                            <h4>Control Systems</h4>
-                            <ul class="step-list">
-                                {% for item in future_tech_data.future_technology.control_systems %}
-                                <li><strong>{{ item.name }}:</strong> {{ item.description }}</li>
-                                {% endfor %}
-                            </ul>
-                            {% endif %}
-                            {% if future_tech_data.future_technology.mechanical_systems %}
-                            <h4>Mechanical Systems</h4>
-                            <ul class="step-list">
-                                {% for item in future_tech_data.future_technology.mechanical_systems %}
-                                <li><strong>{{ item.name }}:</strong> {{ item.description }}</li>
-                                {% endfor %}
-                            </ul>
-                            {% endif %}
-                            {% if future_tech_data.future_technology.software_integration %}
-                            <h4>Software Integration</h4>
-                            <ul class="step-list">
-                                {% for item in future_tech_data.future_technology.software_integration %}
-                                <li><strong>{{ item.name }}:</strong> {{ item.description }}</li>
-                                {% endfor %}
-                            </ul>
-                            {% endif %}
-                        </div>
-                        {% endif %}
-
-                        {% if industrial_spec_data and industrial_spec_data.industrial_specifications %}
-                        <div class="process-section">
-                            <h3>Technical Specifications for Commercial Automation</h3>
-                            <p>Standard parameters for industrial production:</p>
-                            {% if industrial_spec_data.industrial_specifications.performance_metrics %}
-                            <h4>Performance Metrics</h4>
-                            <ul class="step-list">
-                                {% for metric in industrial_spec_data.industrial_specifications.performance_metrics %}
-                                <li><strong>{{ metric.name }}:</strong> {{ metric.value }} - {{ metric.description }}</li>
-                                {% endfor %}
-                            </ul>
-                            {% endif %}
-                            {% if industrial_spec_data.industrial_specifications.implementation_requirements %}
-                            <h4>Implementation Requirements</h4>
-                            <ul class="step-list">
-                                {% for req in industrial_spec_data.industrial_specifications.implementation_requirements %}
-                                <li><strong>{{ req.name }}:</strong> {{ req.specifications }} - {{ req.description }}</li>
-                                {% endfor %}
-                            </ul>
-                            {% endif %}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Competing Approaches Tab Content -->
-                    <div id="competing-approaches" class="tab-content">
-                        <div class="process-section">
-                            <h3>Alternative Approaches</h3>
-                            <p>These are alternative automation trees generated by different versions of our Iterative AI algorithm. Browse these competing models and vote for approaches you find most effective.</p>
-                        </div>
-                        {% if alternative_approaches %}
-                        <div class="approaches-grid">
-                            {% for approach in alternative_approaches %}
-                            <div class="approach-card">
-                                <h4>{{ approach.input_data.approach_name }}</h4>
-                                <p>{{ approach.input_data.approach_description }}</p>
-                                <div class="approach-preview">
-                                    {{ approach.tree_preview_html|safe if approach.tree_preview_html else "Preview not available" }}
-                                </div>
-                                <div class="approach-meta">
-                                    <p>Created by: {{ approach.creator | default("Iterative AI Alpha") }}</p>
-                                    <p>Votes: <span class="vote-count">{{ approach.votes | default(0) }}</span></p>
-                                </div>
-                                <div class="approach-actions">
-                                    <button class="button secondary vote-button">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M12 4L18 10H6L12 4Z" fill="currentColor"/>
-                                        </svg>
-                                        Vote Up
+                    <div class="article-content-area">
+                        {% if all_content_sections %}
+                            {% for section in all_content_sections %}
+                            {# Make first section expanded by default, others collapsed #}
+                            {% set is_first_section = loop.first %}
+                            <div class="content-section {% if not is_first_section %}collapsed{% endif %}"
+                                 data-section-id="{{ section.id }}"
+                                 data-relevant-personas='{{ section.relevant_personas_json }}'>
+                                <h3 class="section-header" id="section-header-{{ section.id }}"> {# Changed h3 to have class for styling button #}
+                                    <button class="section-toggle-button"
+                                            aria-expanded="{{ 'true' if is_first_section else 'false' }}"
+                                            aria-controls="section-body-{{ section.id }}">
+                                        <span class="section-title-text">{{ section.title_text | safe if section.title_text else section.title_html | safe }}</span>
+                                        <span class="toggle-indicator">{% if is_first_section %}▼{% else %}►{% endif %}</span>
                                     </button>
-                                    <a href="{{ approach.full_tree_url | default('#') }}" class="button secondary">View Full Tree</a>
+                                    {# Metrics icon moved next to the toggle button, within the h3 #}
+                                    <button class="metrics-icon"
+                                            aria-label="View metrics for {{ section.title_text | default('this section') }}"
+                                            data-section-id="{{ section.id }}"
+                                            data-metrics='{{ section.metrics_data_json }}'>
+                                        📊
+                                    </button>
+                                </h3>
+                                <div class="section-body"
+                                     id="section-body-{{ section.id }}"
+                                     {% if not is_first_section %}hidden{% endif %}>
+                                    {{ section.content_html | safe if section.content_html else section.content_html_output | safe }} {# Use content_html or fallback #}
                                 </div>
                             </div>
                             {% endfor %}
-                        </div>
+                        {% else %}
+                            <p><em>No content sections available for display. Please check the data source.</em></p>
                         {% endif %}
-                        <div class="process-section">
-                            <h3>Why Multiple Approaches?</h3>
-                            <p>Different methodologies offer unique advantages depending on context:</p>
-                            <ul class="step-list">
-                                <li><strong>Scale considerations:</strong> Some approaches work better for large-scale production, while others are more suitable for specialized applications</li>
-                                <li><strong>Resource constraints:</strong> Different methods optimize for different resources (time, computing power, energy)</li>
-                                <li><strong>Quality objectives:</strong> Approaches vary in their emphasis on safety, efficiency, adaptability, and reliability</li>
-                                <li><strong>Automation potential:</strong> Some approaches are more easily adapted to full automation than others</li>
-                            </ul>
-                            <p>By voting for approaches you find most effective, you help our community identify the most promising automation pathways.</p>
-                        </div>
                     </div>
                     
                     <div class="contributors-section">
                         <h3>Contributors</h3>
                         <p>This workflow was developed using Iterative AI analysis of {{ page_metadata.title | lower }} processes with input from professional engineers and automation experts.</p>
-                        <p><em>Last updated: {{ generation_date | default("Current Date") }}</em></p>
+                        <p><em>Last updated: {{ page_metadata.last_updated | default("Current Date") }}</em></p>
                         <a href="#" class="button secondary" id="suggest-improvements">Suggest Improvements</a>
                         
                         <div id="feedback-form-container" class="feedback-form-container">
@@ -363,8 +128,20 @@
                             <div id="feedback-message" class="feedback-message"></div>
                         </div>
                     </div>
-                </div> <!-- wiki-content -->
-            </div> <!-- container -->
+                </div> <!-- This now correctly closes wiki-content-main -->
+
+                <aside class="wiki-sidebar">
+                    <div id="persona-selector-widget" class="sticky-widget">
+                        <label for="persona-selector">Persona:</label>
+                        <select id="persona-selector" name="persona">
+                            {% for persona_key, persona_name in core_personas.items() %}
+                            <option value="{{ persona_key }}">{{ persona_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </aside>
+
+            </div> <!-- This now correctly closes container article-layout-container -->
         </section>
     </main>
 
@@ -373,7 +150,23 @@
     
     <script src="/assets/js/components.js"></script>
     <script src="/assets/js/main.js"></script>
-    <script src="/assets/js/tabbed-content.js"></script>
+    {# <script src="/assets/js/tabbed-content.js"></script> #} <!-- Tabbed content JS is no longer needed -->
     <script src="/assets/js/feedback.js"></script>
 </body>
 </html>
+<!-- Metrics Modal Structure -->
+    <div id="metrics-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="metrics-modal-title">
+        <div class="modal-overlay" tabindex="-1" data-micromodal-close></div>
+        <div class="modal-container" role="document">
+            <header class="modal-header">
+                <h2 id="metrics-modal-title" class="modal-title">Section Metrics</h2>
+                <button class="modal-close" aria-label="Close modal" data-micromodal-close>&#x2715;</button>
+            </header>
+            <main class="modal-content" id="metrics-modal-content">
+                <p>Loading metrics...</p>
+            </main>
+            <footer class="modal-footer">
+                <button class="button" data-micromodal-close aria-label="Close this dialog window">Close</button>
+            </footer>
+        </div>
+    </div>

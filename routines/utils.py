@@ -2,9 +2,10 @@ import json
 import ollama
 import uuid
 import sys
-from datetime import datetime
+from datetime import datetime # Corrected import
 import os
 import re
+from json_repair import repair_json # Added for robust JSON fixing
 
 def load_json(filepath):
     """Load JSON input file."""
@@ -107,17 +108,19 @@ def parse_llm_json_response(response_text, include_children=False):
     cleaned_text = clean_llm_json_response(response_text)
     
     try:
+        # First attempt: standard JSON parsing
         return json.loads(cleaned_text)
-    except json.JSONDecodeError:
-        # Fallback: return each line as a separate item
-        if include_children:
-            return [{"step": s.strip(), "children": []} 
-                    for s in cleaned_text.split("\n") 
-                    if s.strip() and not s.strip().startswith('#')]
-        else:
-            return [{"step": s.strip()} 
-                    for s in cleaned_text.split("\n") 
-                    if s.strip() and not s.strip().startswith('#')]
+    except json.JSONDecodeError as e_initial:
+        # If standard parsing fails, try to repair it using json_repair
+        print(f"utils.py: Initial JSONDecodeError: {e_initial}. Attempting to repair JSON. Problematic text (first 200 chars): '{cleaned_text[:200]}'")
+        try:
+            repaired_json_string = repair_json(cleaned_text)
+            # print(f"utils.py: JSON repaired. Repaired string (first 200 chars): '{repaired_json_string[:200]}'")
+            return json.loads(repaired_json_string) # Try parsing the repaired string
+        except Exception as e_repair:
+            # If repair also fails, or parsing the repaired string fails
+            print(f"utils.py: JSON repair failed or parsing repaired JSON failed: {e_repair}. Original error: {e_initial}. Problematic text (first 200 chars): '{cleaned_text[:200]}'")
+            raise e_initial # Re-raise the *original* JSONDecodeError to signal fundamental unparsability
 
 def create_output_metadata(task_name, start_time, output_uuid=None):
     """Create standard metadata for output files."""

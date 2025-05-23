@@ -1,0 +1,105 @@
+{
+    "uuid": null,
+    "date_created": "2025-05-23T19:21:39.393345",
+    "task": "Industrial Specifications Analysis",
+    "time_taken": "0:00:10.344524",
+    "industrial_specifications": {
+        "performance_metrics": [
+            {
+                "name": "Bread Volume (per Batch)",
+                "value": "1200 - 1800 kg",
+                "unit": "kg",
+                "description": "Total volume of bread produced per batch, accounting for various bread types (loaf, rolls, etc.)."
+            },
+            {
+                "name": "Yield Rate (kg/hour)",
+                "value": "80 - 120",
+                "unit": "kg/hour",
+                "description": "The amount of bread produced per hour, taking into account downtime and maintenance."
+            },
+            {
+                "name": "Crumb Volume (per Loaf - 800g)",
+                "value": "250 - 350",
+                "unit": "cm³",
+                "description": "Internal volume of the bread loaf, a key indicator of texture and quality."
+            },
+            {
+                "name": "Moisture Content (Finished Product)",
+                "value": "65 - 75",
+                "unit": "%",
+                "description": "Percentage of water in the finished bread product; impacts shelf life and texture."
+            },
+            {
+                "name": "Cell Count (per gram)",
+                "value": "300 - 500",
+                "unit": "cells/g",
+                "description": "Number of gas bubbles (cells) per unit of bread, affecting texture and volume."
+            },
+            {
+                "name": "First-Pass Yield",
+                "value": "95 - 98",
+                "unit": "%",
+                "description": "Percentage of batches that meet quality standards on the first attempt – minimizing rework."
+            }
+        ],
+        "implementation_requirements": [
+            {
+                "name": "Dough Mixer Capacity",
+                "specification": "200 - 400 liters",
+                "description": "Capacity for mixing large batches of dough; agitator type: Planetary for optimal dough development."
+            },
+            {
+                "name": "Proofing Cabinet Temperature",
+                "specification": "27 - 32 °C",
+                "description": "Precise temperature control for optimal yeast activity during the first proofing stage."
+            },
+            {
+                "name": "Retarding Cabinet Temperature",
+                "specification": "5 - 10 °C",
+                "description": "Controlled temperature for slowing yeast activity during the final proofing."
+            },
+            {
+                "name": "Steam Injection System",
+                "specification": "Minimum 100 kg/hour",
+                "description": "For creating steam during baking to generate a crust and improve volume."
+            },
+            {
+                "name": "Oven Temperature Profile",
+                "specification": "Stage 1: 250°C (3 minutes), Stage 2: 230°C (10 minutes), Stage 3: 210°C (5 minutes)",
+                "description": "Customizable temperature profile to achieve desired crust color and crumb structure."
+            },
+            {
+                "name": "Belt Conveyor Length",
+                "specification": "Minimum 15 meters",
+                "description": "Transporting baked bread efficiently and consistently."
+            },
+            {
+                "name": "Cooling System Temperature",
+                "specification": "15 - 20°C",
+                "description": "Rapid cooling to prevent over-proofing and maintain quality."
+            }
+        ],
+        "industry_standards": [
+            "ISO 9001: Quality Management Systems",
+            "HACCP (Hazard Analysis and Critical Control Points)",
+            "IFS Food (International Featured Standards)",
+            "BRC Food Safety Standards (British Retail Consortium)",
+            "EU Regulations (2015/2283 - Food Information to Consumers)"
+        ],
+        "key_suppliers": [
+            " Brabender Technologies",
+            "Rheon",
+            "Edding Elektrogeräte",
+            "Bute Food",
+            "Friend Bread Machines"
+        ],
+        "operational_considerations": [
+            "Raw Material Storage (Wheat Flour, Yeast, Water): Temperature and humidity control are crucial.",
+            "Hygiene and Sanitation: Strict adherence to food safety regulations is essential.",
+            "Preventive Maintenance: Regular maintenance of equipment to minimize downtime.",
+            "Energy Efficiency: Optimization of energy consumption for cost reduction.",
+            "Batch Tracking and Traceability: Implementing a system for tracking each batch of bread from raw materials to finished product.",
+            "Staff Training: Proper training of personnel on baking techniques, equipment operation, and food safety protocols."
+        ]
+    }
+}
