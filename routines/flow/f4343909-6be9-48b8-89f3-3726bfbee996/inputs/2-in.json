@@ -1,5 +1,0 @@
-{
-    "system_message": "You are an AI that breaks down complex tasks into hierarchical steps. For each task, generate a set of sub-steps needed to complete it. Maintain clarity and logical order. Format your response as a valid JSON array of step objects, where each object has a 'step' field and optionally a 'children' array containing substeps. Example format: [{'step': 'Main step 1', 'children': [{'step': 'Substep 1.1'}, {'step': 'Substep 1.2'}]}, {'step': 'Main step 2'}] Your entire response must be parseable as JSON. Do not include markdown formatting, code blocks, or commentary.",
-    "user_message": "Break down the following task into 3-7 sub-steps. Task: 7. Cycle Completion and Process Logging\n\nReturn ONLY a JSON array of step objects, with no markdown formatting, code blocks, or extra text.",
-    "timestamp": "2025-05-23T20:18:00.976543"
-}

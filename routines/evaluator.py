@@ -8,9 +8,9 @@ def load_metric_definitions():
     with open(Path(__file__).parent.parent / "metrics" / "definitions.json", "r") as f:
         return json.load(f)
 
-def load_metric_profile(profile_name):
+def load_profile(profile_name, param):
     with open(Path(__file__).parent.parent / "metrics" / f"{profile_name}.json", "r") as f:
-        return json.load(f)["metrics"]
+        return json.load(f)[param]
 
 # Run classification prompt using local LLM via Ollama
 def run_metric_check_with_llm(metric_description, section_text):
@@ -29,29 +29,78 @@ Content:
     return response.lower().startswith("true")
 
 # Check if section is relevant to a persona using LLM
-def is_section_relevant_to_persona(profile_name, section_text):
-    system_message = "You are a classifier. Given a section of an article and a user type, decide if this section would be useful for that user. Respond only with 'True' or 'False'."
+def is_section_relevant_to_persona(profile_name, biography, section_text):
+    system_message = """You are an expert relevance classifier. Given a section of an article, a user type, and a user biography, decide if this section would be useful and relevant for that user.
+Consider the user's interests, expertise level, and goals as described in their biography.
+If a user is less interested in a specific topic, or if the content is too basic/advanced for them, they may not find that section relevant.
+
+Respond with a JSON object containing two keys:
+1. "is_relevant": A boolean (true or false).
+2. "reasoning": A brief explanation (1-2 sentences) for your decision.
+
+Example response:
+{
+  "is_relevant": true,
+  "reasoning": "This section is relevant because it directly addresses the user's stated interest in practical applications."
+}
+"""
     
     user_message = f"""User type: {profile_name}
+    
+User biography:
+\"\"\"
+{biography}
+\"\""
 
-Section:
+Section content:
 \"\"\"
 {section_text}
 \"\""
+
+Is this section relevant to the user? Provide your answer as a JSON object.
 """
     
-    response = chat_with_llm("gemma3", system_message, user_message)
-    return response.lower().startswith("true")
+    response_text = chat_with_llm("gemma3", system_message, user_message)
+    
+    try:
+        # Attempt to find JSON within potentially larger response
+        json_start = response_text.find('{')
+        json_end = response_text.rfind('}') + 1
+        if json_start != -1 and json_end != 0:
+            json_str = response_text[json_start:json_end]
+            data = json.loads(json_str)
+            is_relevant = data.get("is_relevant", False)
+            reasoning = data.get("reasoning", "No reasoning provided by LLM.")
+            if not isinstance(is_relevant, bool):
+                is_relevant = False # Default to False if type is incorrect
+                reasoning += " (LLM returned non-boolean for is_relevant)"
+            return is_relevant, reasoning
+        else:
+            # Fallback if no JSON object is found, try to interpret as True/False
+            is_relevant_fallback = response_text.lower().strip().startswith("true")
+            reasoning_fallback = "LLM did not return a valid JSON object. Relevance determined by simple True/False check."
+            if not is_relevant_fallback and not response_text.lower().strip().startswith("false"):
+                 reasoning_fallback += f" Raw LLM response: '{response_text[:100]}...'" # Add raw response if ambiguous
+            return is_relevant_fallback, reasoning_fallback
+
+    except json.JSONDecodeError:
+        return False, f"Error: LLM response was not valid JSON. Response: '{response_text[:200]}...'"
+    except Exception as e:
+        return False, f"An unexpected error occurred while parsing LLM response: {str(e)}"
 
 # Evaluate all relevant metrics for a section given a persona
 def evaluate_section(section_text, profile_name):
     definitions = load_metric_definitions()
-    metrics_to_check = load_metric_profile(profile_name)
+    metrics_to_check = load_profile(profile_name, "metrics")
+    profile_biography = load_profile(profile_name, "biography")
 
-    # First check if the section is relevant
-    if not is_section_relevant_to_persona(profile_name, section_text):
+    # First check if the section is relevant and get reasoning
+    is_relevant, relevance_reasoning = is_section_relevant_to_persona(profile_name, profile_biography, section_text)
+
+    if not is_relevant:
         return {
             "relevant": False,
+            "relevance_reasoning": relevance_reasoning, # Add reasoning here
             "metrics": {metric: None for metric in metrics_to_check}
         }
 
@@ -63,12 +112,13 @@ def evaluate_section(section_text, profile_name):
 
     return {
         "relevant": True,
+        "relevance_reasoning": relevance_reasoning, # relevance_reasoning is now defined
         "metrics": results
     }
 
 def load_json_file(file_path):
     """Load and return JSON content from the specified file path."""
-    with open(file_path, "r") as f:
+    with open(file_path, "r", encoding="utf-8") as f: # Specify UTF-8 encoding
         return json.load(f)
 
 def main():

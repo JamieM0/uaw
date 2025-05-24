@@ -97,26 +97,28 @@ def get_section_metrics_and_relevance(id_suffix, article_metrics_data, metric_de
         # Get the persona-specific block (e.g., content of "hobbyist" under "2.json")
         persona_data_block = section_metrics_content_from_file.get(persona_slug, {})
         
-        is_relevant_for_persona = persona_data_block.get("is_relevant", False) # Crucial: Read the flag
+        # Read the relevance flag and reasoning
+        # flow-maker.py now saves "is_relevant_to_persona" and "relevance_reasoning"
+        is_relevant_for_persona = persona_data_block.get("is_relevant_to_persona", False)
+        relevance_reasoning = persona_data_block.get("relevance_reasoning", "No reasoning provided.")
         
-        evaluated_metrics_list = []
+        # evaluated_metrics is now a list of objects from flow-maker.py
+        # Each object should have: "id", "name", "passed", "description"
+        evaluated_metrics_list = persona_data_block.get("evaluated_metrics", [])
         
         if is_relevant_for_persona:
             if persona_slug not in relevant_personas_list:
                 relevant_personas_list.append(persona_slug)
-            
-            # Iterate over the nested "metrics" object
-            for metric_key, passed_value in persona_data_block.get("metrics", {}).items():
-                metric_def = metric_definitions_data.get(metric_key, {}) # Look up description
-                evaluated_metrics_list.append({
-                    "name": metric_def.get("name", metric_key.replace('_', ' ').capitalize()),
-                    "passed": bool(passed_value),
-                    "description": metric_def.get("description", "No description available.")
-                })
-        
+            # No need to iterate and build evaluated_metrics_list here anymore,
+            # as flow-maker.py should have already structured it correctly.
+            # We just need to ensure the structure is what the modal expects.
+            # The modal expects: name, passed, description.
+            # flow-maker now provides: id, name, passed, description. This is compatible.
+
         detailed_metrics_for_modal_by_persona[persona_slug] = {
             "is_relevant_to_persona": is_relevant_for_persona,
-            "evaluated_metrics": evaluated_metrics_list
+            "relevance_reasoning": relevance_reasoning, # Add the reasoning here
+            "evaluated_metrics": evaluated_metrics_list # Use the pre-structured list
         }
     
     if not relevant_personas_list and metrics_key_for_file:

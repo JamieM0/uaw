@@ -300,6 +300,11 @@ function populateMetricsModal(metrics, currentPersona, modalContentElement) {
                 ${personaSpecificMetrics.is_relevant_to_persona ?
                     '<span class="metric-pass">Relevant</span>' :
                     '<span class="metric-fail">Not Relevant</span>'}</p>`;
+
+    // Add relevance reasoning if available
+    if (personaSpecificMetrics.relevance_reasoning) {
+        html += `<p class="metric-relevance-reasoning"><strong>Reasoning:</strong> ${personaSpecificMetrics.relevance_reasoning}</p>`;
+    }
     
     if (personaSpecificMetrics.evaluated_metrics && personaSpecificMetrics.evaluated_metrics.length > 0) {
         html += '<h4>Evaluated Metrics:</h4><ul>';

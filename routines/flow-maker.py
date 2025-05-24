@@ -148,8 +148,28 @@ def run_program(program_name, input_path, output_path, step_info="Running script
 
 PROFILES = ["hobbyist", "educator", "field_expert", "investor", "researcher"]
 
+# Function to load metric definitions (similar to evaluator.py)
+def load_metric_definitions_for_flow_maker():
+    # Assuming metrics/definitions.json is relative to this script's parent's sibling "metrics" dir
+    # i.e. ../metrics/definitions.json if script is in routines/
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    definitions_path = os.path.join(script_dir, "..", "metrics", "definitions.json")
+    try:
+        with open(definitions_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"{Colors.RED}Error: Metric definitions file not found at {definitions_path}{Colors.ENDC}")
+        return {} # Return empty dict to avoid crashing, but metrics will lack names/descriptions
+    except json.JSONDecodeError:
+        print(f"{Colors.RED}Error: Could not decode JSON from metric definitions file at {definitions_path}{Colors.ENDC}")
+        return {}
+
+
 def main():
     """Main function to run the flow of programs."""
+    global metric_definitions_data # Make it accessible in the metrics processing loop
+    metric_definitions_data = load_metric_definitions_for_flow_maker()
+
     usage_msg = "Usage: python flow-maker.py <input_json> [breadcrumbs]"
     
     if len(sys.argv) < 2:
@@ -317,7 +337,7 @@ def main():
 
                 for profile_name in PROFILES:
                     # Using sys.stdout.write for more control over newlines if needed
-                    sys.stdout.write(f"\n  Evaluating for Profile: {Colors.BOLD}{profile_name.capitalize()}{Colors.ENDC}... ")
+                    sys.stdout.write(f"  Evaluating for Profile: {Colors.BOLD}{profile_name.capitalize()}{Colors.ENDC}... ") # Removed \n from the start
                     sys.stdout.flush()
                     
                     eval_command = [
@@ -340,6 +360,7 @@ def main():
                             sys.stdout.write(f"{Colors.GREEN}Done.{Colors.ENDC}\n")
                             sys.stdout.flush()
                             actual_json_str = eval_result_proc.stdout.strip()
+                            # print(f"\n    DEBUG: Raw STDOUT from evaluator.py for profile {profile_name} on {output_filename}:\n>>>>\n{actual_json_str}\n<<<<") # ADDED DEBUG
                             if not actual_json_str:
                                 print(f"    {Colors.RED}ERROR: No output received from evaluator.py for profile {profile_name}.{Colors.ENDC}")
                                 eval_results_list = []
@@ -374,46 +395,69 @@ def main():
 
                     for item_index, section_eval_result in enumerate(eval_results_list):
                         evaluation_details = section_eval_result.get("evaluation", {})
-                        is_relevant = evaluation_details.get("relevant", False)
+                        is_relevant = evaluation_details.get("relevant", False) # Key from evaluator.py is "relevant"
+                        # Extract relevance_reasoning
+                        relevance_reasoning = evaluation_details.get("relevance_reasoning", "No reasoning provided.")
 
-                        print(f"\n    Sub-section {item_index + 1} (from {output_filename}, Profile: {profile_name.capitalize()}):")
-                        print(f"      Relevant: {is_relevant}")
+                        # print(f"\n    Sub-section {item_index + 1} (from {output_filename}, Profile: {profile_name.capitalize()}):")
+                        # print(f"      Relevant: {is_relevant}")
+                        # # Print relevance_reasoning
+                        # print(f"      Reasoning: {relevance_reasoning}")
 
                         if output_filename not in all_flow_metrics["sections"]:
                             all_flow_metrics["sections"][output_filename] = {}
                         if profile_name not in all_flow_metrics["sections"][output_filename]:
                             all_flow_metrics["sections"][output_filename][profile_name] = {
-                                "is_relevant": is_relevant,
-                                "metrics": {}
+                                "is_relevant_to_persona": is_relevant,
+                                "relevance_reasoning": relevance_reasoning,
+                                "evaluated_metrics_dict": {}, # For raw metric_id:passed_status from evaluator
+                                "evaluated_metrics": []      # For final list of metric objects (populated at the end)
                             }
                         else:
-                            all_flow_metrics["sections"][output_filename][profile_name]["is_relevant"] = is_relevant
-                            if "metrics" not in all_flow_metrics["sections"][output_filename][profile_name]:
-                                 all_flow_metrics["sections"][output_filename][profile_name]["metrics"] = {}
+                            # Ensure existing entries also have these keys if they were from an older structure
+                            profile_entry_for_update = all_flow_metrics["sections"][output_filename][profile_name]
+                            profile_entry_for_update["is_relevant_to_persona"] = is_relevant
+                            profile_entry_for_update["relevance_reasoning"] = relevance_reasoning
+                            if "evaluated_metrics_dict" not in profile_entry_for_update:
+                                 profile_entry_for_update["evaluated_metrics_dict"] = {}
+                            if "evaluated_metrics" not in profile_entry_for_update: # Should be there from initial creation
+                                 profile_entry_for_update["evaluated_metrics"] = []
 
 
                         if is_relevant:
-                            metrics_results = evaluation_details.get("metrics", {})
+                            metrics_results = evaluation_details.get("metrics", {}) # This is a dict {metric_id: passed_status}
                             if metrics_results:
-                                print("      Metrics:")
+                                # print("      Metrics:")
+                                # Get a direct reference to the specific profile's data dictionary
+                                profile_data_entry = all_flow_metrics["sections"][output_filename][profile_name]
+
+                                # Store the raw metrics dictionary {metric_id: passed_status}
+                                # This will be processed at the end to build the final list of metric objects.
+                                profile_data_entry["evaluated_metrics_dict"] = metrics_results
+
+                                # Loop through metrics_results just for console printing and summary counts
                                 for metric_name, passed_status in metrics_results.items():
                                     status_str = f"{Colors.GREEN}Passed{Colors.ENDC}" if passed_status else \
                                                  (f"{Colors.RED}Failed{Colors.ENDC}" if passed_status is False else "Not Applicable/Checked")
-                                    print(f"        - {metric_name}: {status_str}")
+                                    # print(f"        - {metric_name}: {status_str}")
                                     if passed_status is not None:
                                         evaluation_summary[profile_name]["total_relevant_checks"] += 1
                                         if passed_status:
                                             evaluation_summary[profile_name]["passed"] += 1
-                                        
-                                        all_flow_metrics["sections"][output_filename][profile_name]["metrics"][metric_name] = bool(passed_status)
+                                # The direct population of profile_data_entry["evaluated_metrics"] (the list of objects)
+                                # is now REMOVED from this section. It will be handled by the
+                                # restructuring loop at the end of the main() function.
                             else:
                                 print("      No specific metrics evaluated for this relevant section.")
-                        elif evaluation_details:
-                            all_flow_metrics["sections"][output_filename][profile_name]["is_relevant"] = False
-                            if "metrics" not in all_flow_metrics["sections"][output_filename][profile_name]:
-                                 all_flow_metrics["sections"][output_filename][profile_name]["metrics"] = {}
+                        elif evaluation_details: # Not relevant
+                            # Ensure structure is consistent even if not relevant
+                            all_flow_metrics["sections"][output_filename][profile_name]["is_relevant_to_persona"] = False
+                            all_flow_metrics["sections"][output_filename][profile_name]["relevance_reasoning"] = relevance_reasoning # Store reasoning even if not relevant
+                            if "evaluated_metrics" not in all_flow_metrics["sections"][output_filename][profile_name]:
+                                 all_flow_metrics["sections"][output_filename][profile_name]["evaluated_metrics"] = []
                             print("      Section deemed not relevant. No metrics applied by evaluator.")
-                print(f"--- Finished Evaluation for output of {program} ---")
+
+                print(f"--- Finished Evaluation for output of {program} ---") # Adjusted indentation
         
         program_idx += 1 # Move to next program
 
@@ -498,6 +542,39 @@ def main():
 
     # Save all collected metrics to metrics.json
     metrics_file_path = os.path.join(flow_dir, "metrics.json")
+    
+    # Load metric definitions to build the final evaluated_metrics list
+    definitions_for_metrics = {}
+    try:
+        # Construct path relative to script_dir for metrics/definitions.json
+        definitions_path = os.path.join(script_dir, "..", "metrics", "definitions.json")
+        with open(definitions_path, "r", encoding="utf-8") as def_f:
+            definitions_for_metrics = json.load(def_f)
+    except Exception as e:
+        print(f"  {Colors.YELLOW}Warning: Could not load metric definitions.json for enriching metrics.json: {e}{Colors.ENDC}")
+
+    # Restructure metrics before saving
+    for section_file, profiles_data in all_flow_metrics.get("sections", {}).items():
+        for profile, data_for_profile in profiles_data.items():
+            # Get the temporary dict and remove it
+            raw_metrics_dict = data_for_profile.pop("evaluated_metrics_dict", {})
+            data_for_profile["evaluated_metrics"] = [] # Initialize the final list
+            if isinstance(raw_metrics_dict, dict):
+                for metric_id, passed_status in raw_metrics_dict.items():
+                    metric_definition = definitions_for_metrics.get(metric_id, {})
+                    data_for_profile["evaluated_metrics"].append({
+                        "id": metric_id,
+                        "name": metric_definition.get("name", metric_id), # Use ID as name if not found
+                        "passed": bool(passed_status) if passed_status is not None else None, # Ensure boolean or None
+                        "description": metric_definition.get("description", "Description not found.")
+                    })
+            elif raw_metrics_dict is None and not data_for_profile["is_relevant_to_persona"]:
+                 # If not relevant, evaluated_metrics should be an empty list
+                 pass # Already initialized to []
+            else:
+                print(f"  {Colors.YELLOW}Warning: 'evaluated_metrics_dict' for {section_file}/{profile} was not a dict or was unexpected: {raw_metrics_dict}{Colors.ENDC}")
+
+
     try:
         with open(metrics_file_path, "w", encoding="utf-8") as mf:
             json.dump(all_flow_metrics, mf, indent=2)
