@@ -498,3 +498,147 @@ ul, ol {
     font-size: var(--font-size-sm);
     color: var(--text-lighter);
 }
+/* Audio Banner Styles */
+.audio-banner {
+    position: relative;
+    background-color: var(--primary-color);
+    color: white;
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-family: var(--font-family);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: var(--spacing-lg);
+}
+
+.audio-banner p {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.audio-player-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    max-width: 500px;
+    flex-grow: 1;
+}
+
+.audio-banner button#play-pause-btn { /* Increased specificity */
+    background: white;
+    color: var(--primary-color); /* #0A5E95 */
+    border: none;
+    padding: var(--spacing-xs) var(--spacing-sm); /* 8px 12px */
+    border-radius: var(--border-radius-sm); /* 5px */
+    cursor: pointer;
+    font-size: var(--font-size-sm); /* 0.9em */
+    font-family: var(--font-family);
+    line-height: normal; /* Reset line-height */
+}
+
+.audio-banner button#play-pause-btn:hover {
+    background: var(--bg-light); /* #f0f0f0 */
+}
+
+.audio-banner input[type="range"]#seek-bar { /* Increased specificity */
+    flex-grow: 1;
+    cursor: pointer;
+    height: 8px;
+    background: var(--border-color); /* #ddd Light grey track */
+    border-radius: var(--border-radius-sm); /* 4px */
+    -webkit-appearance: none; /* Override default appearance */
+    appearance: none;
+}
+
+/* Webkit (Chrome, Safari, Edge) */
+.audio-banner input[type="range"]#seek-bar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: white; /* White thumb */
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.audio-banner input[type="range"]#seek-bar::-webkit-slider-runnable-track {
+    height: 8px;
+    background: var(--primary-light); /* #77AADD Lighter blue track */
+    border-radius: var(--border-radius-sm); /* 4px */
+}
+
+/* Firefox */
+.audio-banner input[type="range"]#seek-bar::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+.audio-banner input[type="range"]#seek-bar::-moz-range-track {
+    height: 8px;
+    background: var(--primary-light); /* #77AADD */
+    border-radius: var(--border-radius-sm); /* 4px */
+}
+
+.audio-banner .time-display {
+    font-size: var(--font-size-sm); /* 0.9em */
+    min-width: 90px; /* To prevent layout shift */
+    text-align: right;
+    font-variant-numeric: tabular-nums; /* Ensures numbers take up same space */
+}
+
+@media (max-width: 600px) {
+    .audio-banner {
+        padding: var(--spacing-sm) var(--spacing-md); /* 10px 15px */
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        text-align: center;
+    }
+    .audio-banner p {
+        font-size: var(--font-size-md); /* 1em */
+    }
+    .audio-player-container {
+        flex-direction: column;
+        gap: var(--spacing-sm); /* 10px */
+        width: 100%;
+    }
+    .audio-banner input[type="range"]#seek-bar {
+        width: 80%; /* Make seek bar take more width on mobile */
+    }
+    .audio-banner .time-display {
+        text-align: center;
+    }
+    .audio-banner button#close-btn {
+        position: absolute;
+        right: var(--spacing-sm);
+        top: var(--spacing-sm);
+        transform: none;
+    }
+}
+/* Close button for audio banner */
+.audio-banner button#close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    position: absolute;
+    right: var(--spacing-md);
+    top: 50%;
+    transform: translateY(-50%);
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius-sm);
+    transition: background-color var(--transition-normal);
+}
+
+.audio-banner button#close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}

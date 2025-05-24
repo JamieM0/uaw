@@ -398,3 +398,128 @@ function initializeCollapsibleSections() {
         });
     });
 }
+// Audio Banner Logic
+document.addEventListener('DOMContentLoaded', () => {
+    const audio = document.getElementById('banner-audio');
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const seekBar = document.getElementById('seek-bar');
+    const timeDisplay = document.getElementById('time-display');
+    const closeBtn = document.getElementById('close-btn');
+    const audioBanner = document.querySelector('.audio-banner');
+
+    // Check if all elements exist before proceeding
+    if (!audio || !playPauseBtn || !seekBar || !timeDisplay) {
+        // console.warn("Audio player elements not found. Skipping audio banner initialization.");
+        return; 
+    }
+
+    // Constants for localStorage
+    const AUDIO_BANNER_STORAGE_KEY = 'uawAudioBannerClosed';
+
+    // Check if banner was previously closed and hide it if so
+    if (audioBanner && localStorage.getItem(AUDIO_BANNER_STORAGE_KEY) === 'true') {
+        audioBanner.style.display = 'none';
+        return; // Exit early since banner is hidden
+    }
+
+    // Close button functionality
+    if (closeBtn && audioBanner) {
+        closeBtn.addEventListener('click', () => {
+            audioBanner.style.display = 'none';
+            // Remember that the banner was closed
+            localStorage.setItem(AUDIO_BANNER_STORAGE_KEY, 'true');
+            // Pause audio if playing
+            if (!audio.paused) {
+                audio.pause();
+            }
+        });
+    }
+
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    audio.addEventListener('loadedmetadata', () => {
+        if (audio.duration && isFinite(audio.duration)) {
+            seekBar.max = audio.duration;
+            timeDisplay.textContent = `${formatTime(0)} / ${formatTime(audio.duration)}`;
+        } else {
+            // Fallback if duration is not available or invalid
+            timeDisplay.textContent = `0:00 / --:--`;
+        }
+    });
+
+    playPauseBtn.addEventListener('click', () => {
+        if (audio.paused || audio.ended) {
+            audio.play().catch(error => console.error("Error playing audio:", error));
+            // playPauseBtn.textContent = 'Pause'; // Updated in 'play' event
+        } else {
+            audio.pause();
+            // playPauseBtn.textContent = 'Play'; // Updated in 'pause' event
+        }
+    });
+
+    audio.addEventListener('play', () => {
+        playPauseBtn.innerHTML = '<span id="pause-icon">&#10074;&#10074;</span>';
+        playPauseBtn.setAttribute('aria-label', 'Pause audio');
+    });
+
+    audio.addEventListener('pause', () => {
+        playPauseBtn.innerHTML = '<span id="play-icon">&#9654;</span>';
+        playPauseBtn.setAttribute('aria-label', 'Play audio');
+    });
+    
+    audio.addEventListener('ended', () => {
+        playPauseBtn.innerHTML = '<span id="play-icon">&#9654;</span>';
+        playPauseBtn.setAttribute('aria-label', 'Play audio');
+        seekBar.value = 0; // Reset seek bar to beginning
+        // Update time display to show 0:00 / total_duration
+        if (audio.duration && isFinite(audio.duration)) {
+            timeDisplay.textContent = `${formatTime(0)} / ${formatTime(audio.duration)}`;
+        }
+    });
+
+    audio.addEventListener('timeupdate', () => {
+        if (audio.duration && isFinite(audio.duration)) {
+            seekBar.value = audio.currentTime;
+            timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+        }
+    });
+
+    seekBar.addEventListener('input', () => {
+        if (audio.duration && isFinite(audio.duration)) {
+            audio.currentTime = seekBar.value;
+        }
+    });
+
+    // Ensure duration is available for the initial time display if metadata loads quickly
+    // and also handle cases where it might not be available immediately
+    if (audio.readyState >= 1) { // HAVE_METADATA or higher
+         if (audio.duration && isFinite(audio.duration)) {
+            seekBar.max = audio.duration;
+            timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+        } else if (audio.duration === Infinity || isNaN(audio.duration)) {
+            // Handle live streams or unknown durations gracefully
+            timeDisplay.textContent = `${formatTime(audio.currentTime)} / --:--`;
+            seekBar.disabled = true; // Disable seek bar if duration is unknown/infinite
+        }
+    } else {
+        // If metadata is not yet loaded, set a placeholder or wait for 'loadedmetadata'
+        timeDisplay.textContent = `0:00 / --:--`;
+    }
+
+    // Error handling for audio element
+    audio.addEventListener('error', (e) => {
+        console.error("Error with audio element:", e);
+        playPauseBtn.disabled = true;
+        seekBar.disabled = true;
+        timeDisplay.textContent = "Error";
+        // Optionally, display a user-friendly message in the banner
+        const bannerText = document.querySelector('.audio-banner p');
+        if (bannerText) {
+            bannerText.textContent = "Audio could not be loaded.";
+        }
+    });
+});

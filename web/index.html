@@ -27,6 +27,18 @@
     <div id="header-placeholder"></div>
 
     <main>
+        
+        <!-- Audio Banner -->
+        <section class="audio-banner">
+            <p>Get an overview of the project</p>
+            <div class="audio-player-container">
+                <audio id="banner-audio" src="/assets/audio/podcast.mp3" preload="metadata"></audio>
+                <button id="play-pause-btn" aria-label="Play audio"><span id="play-icon">&#9654;</span></button>
+                <input type="range" id="seek-bar" value="0" aria-label="Audio seek bar">
+                <span id="time-display" class="time-display" aria-live="polite">0:00 / 0:00</span>
+            </div>
+            <button id="close-btn" aria-label="Close audio banner">&#10005;</button>
+        </section>
         <section class="hero">
             <div class="container">
                 <h1>Mapping the Future of Automation</h1>
