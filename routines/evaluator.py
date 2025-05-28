@@ -29,12 +29,16 @@ Content:
     return response.lower().startswith("true")
 
 # Check if section is relevant to a persona using LLM
-def is_section_relevant_to_persona(profile_name, biography, section_text):
-    system_message = """You are an expert relevance classifier. Given a section of an article, a user type, and a user biography, decide if this section would be useful and relevant for that user.
-Consider the user's interests, expertise level, and goals as described in their biography.
-If a user is less interested in a specific topic, or if the content is too basic/advanced for them, they may not find that section relevant.
+def is_section_relevant_to_persona(profile_name, biography, section_text, article_title):
+    system_message = """
+    You are a relevance classifier. You will be given:
+1. A user persona description
+2. The topic of the article the user is reading
+3. The content of a specific section from that article
 
-Respond with a JSON object containing two keys:
+    Your task is to determine whether the section is relevant to the user's likely interests, assuming they are currently reading an article about that topic.
+
+    Respond with a JSON object containing two keys:
 1. "is_relevant": A boolean (true or false).
 2. "reasoning": A brief explanation (1-2 sentences) for your decision.
 
@@ -45,9 +49,13 @@ Example response:
 }
 """
     
-    user_message = f"""User type: {profile_name}
+    user_message = f"""
+    Persona: {profile_name}
+
+    Article topic:
+    "{article_title}"
     
-User biography:
+Persona biography:
 \"\"\"
 {biography}
 \"\""
@@ -89,13 +97,13 @@ Is this section relevant to the user? Provide your answer as a JSON object.
         return False, f"An unexpected error occurred while parsing LLM response: {str(e)}"
 
 # Evaluate all relevant metrics for a section given a persona
-def evaluate_section(section_text, profile_name):
+def evaluate_section(section_text, profile_name, article_title):
     definitions = load_metric_definitions()
     metrics_to_check = load_profile(profile_name, "metrics")
     profile_biography = load_profile(profile_name, "biography")
 
     # First check if the section is relevant and get reasoning
-    is_relevant, relevance_reasoning = is_section_relevant_to_persona(profile_name, profile_biography, section_text)
+    is_relevant, relevance_reasoning = is_section_relevant_to_persona(profile_name, profile_biography, section_text, article_title)
 
     if not is_relevant:
         return {
@@ -126,6 +134,7 @@ def main():
     parser = argparse.ArgumentParser(description='Evaluate text sections based on a profile.')
     parser.add_argument('input_file', type=str, help='Path to the JSON file containing text to evaluate')
     parser.add_argument('profile_name', type=str, help='Name of the profile to use for evaluation (e.g., "hobbyist")')
+    parser.add_argument('article_title', type=str, help='Title of the article being evaluated')
     
     args = parser.parse_args()
     
@@ -151,8 +160,8 @@ def main():
     # Evaluate each section
     results = []
     for i, section_text in enumerate(sections):
-        print(f"Evaluating section {i+1}/{len(sections)} for profile '{args.profile_name}'...", file=sys.stderr)
-        result = evaluate_section(section_text, args.profile_name)
+        print(f"Evaluating section {i+1}/{len(sections)} for profile '{args.profile_name}' regarding article '{args.article_title}'...", file=sys.stderr)
+        result = evaluate_section(section_text, args.profile_name, args.article_title)
         results.append({
             "section": section_text, # section_text should be a string or JSON-serializable
             "evaluation": result
@@ -161,11 +170,5 @@ def main():
     # Print the final JSON results to stdout
     print(json.dumps(results, indent=2))
 
-# Example usage
-# if __name__ == "__main__":
-#     section = "This section explains how to use a commercial-grade dough kneader and where to purchase it online."
-#     profile = "hobbyist"
-#     result = evaluate_section(section, profile)
-#     print(json.dumps(result, indent=2))
 if __name__ == "__main__":
     main()

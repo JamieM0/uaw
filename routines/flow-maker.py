@@ -344,7 +344,8 @@ def main():
                         sys.executable,
                         evaluator_script_path,
                         section_source_file_path,
-                        profile_name
+                        profile_name,
+                        breadcrumbs # Use breadcrumbs as article_title
                     ]
                     
                     try:
