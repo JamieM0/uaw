@@ -303,23 +303,24 @@ def get_transparency_data_for_section(id_suffix, files_dir_path):
         return None
     
     try:
-        # Load input data (common for all sections)
-        input_path = os.path.join(files_dir_path, "input.json")
-        input_data = read_json_file(input_path, is_critical=False)
-        
-        # Load step output data
+        # Load step data
         step_path = os.path.join(files_dir_path, f"{step_id}.json")
         step_data = read_json_file(step_path, is_critical=False)
         
+        if not step_data:
+            return None
+        
+        # Extract input data from the step's input key (contains actual LLM prompts)
+        input_data = step_data.get('input', {})
+        
         # Filter out 'input' and 'process_metadata' keys from step_data to create output
         output_data = {}
-        if step_data:
-            for key, value in step_data.items():
-                if key not in ['input', 'process_metadata']:
-                    output_data[key] = value
+        for key, value in step_data.items():
+            if key not in ['input', 'process_metadata']:
+                output_data[key] = value
         
         return {
-            'input': input_data or {},
+            'input': input_data,
             'output': output_data
         }
     
