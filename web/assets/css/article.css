@@ -389,6 +389,113 @@ input:checked + .toggle-slider:before {
     opacity: 0.7;
 }
 
+/* Transparency Icon Styles - matching metrics icon */
+.transparency-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em; /* Same size as metrics icon */
+    padding: 0 var(--spacing-xs);
+    margin-left: var(--spacing-xs);
+    vertical-align: middle;
+}
+
+.transparency-icon:hover {
+    opacity: 0.7;
+}
+
+/* Transparency Modal Content Styles */
+.transparency-content {
+    padding: var(--spacing-md, 15px) 0;
+}
+
+.step-info {
+    margin-bottom: var(--spacing-lg, 20px);
+    padding: var(--spacing-md, 15px);
+    background-color: var(--bg-light, #f8f9fa);
+    border-radius: var(--border-radius-md, 6px);
+    border-left: 4px solid var(--primary-color, #007bff);
+}
+
+.step-info h4 {
+    margin: 0 0 var(--spacing-sm, 10px) 0;
+    color: var(--primary-color, #007bff);
+}
+
+.step-info p {
+    margin: 0;
+    color: var(--text-muted, #666);
+    line-height: 1.5;
+}
+
+.input-output-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg, 20px);
+    margin-top: var(--spacing-lg, 20px);
+}
+
+@media (max-width: 768px) {
+    .input-output-container {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md, 15px);
+    }
+}
+
+.input-section, .output-section {
+    background-color: var(--bg-light, #f8f9fa);
+    border-radius: var(--border-radius-md, 6px);
+    padding: var(--spacing-md, 15px);
+    border: 1px solid var(--border-color, #dee2e6);
+}
+
+.input-section h4, .output-section h4 {
+    margin: 0 0 var(--spacing-sm, 10px) 0;
+    padding-bottom: var(--spacing-xs, 5px);
+    border-bottom: 1px solid var(--border-color, #dee2e6);
+}
+
+.input-section h4 {
+    color: var(--info-color, #17a2b8);
+}
+
+.output-section h4 {
+    color: var(--success-color, #28a745);
+}
+
+.json-data {
+    background-color: var(--code-bg, #f4f4f4);
+    border: 1px solid var(--border-color, #dee2e6);
+    border-radius: var(--border-radius-sm, 4px);
+    padding: var(--spacing-sm, 10px);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.85em;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 400px;
+    overflow-y: auto;
+    margin: 0;
+}
+
+.no-data {
+    padding: var(--spacing-md, 15px);
+    text-align: center;
+    color: var(--text-muted, #666);
+    font-style: italic;
+    background-color: var(--bg-lighter, #fafbfc);
+    border-radius: var(--border-radius-sm, 4px);
+    border: 1px dashed var(--border-color, #dee2e6);
+}
+
+.error {
+    padding: var(--spacing-md, 15px);
+    background-color: var(--danger-bg, #f8d7da);
+    color: var(--danger-color, #721c24);
+    border: 1px solid var(--danger-border, #f1aeb5);
+    border-radius: var(--border-radius-sm, 4px);
+}
+
 /* Styles for Content Sections in the new flat layout */
 .content-section {
     background-color: var(--bg-light, #f8f9fa); /* Contrasting background with fallback */
@@ -584,7 +691,6 @@ input:checked + .toggle-slider:before {
     /* Adding margin-left to push it right if main content doesn't fill space,
        though with flex-grow on main, this might not be needed if layout works.
        This is more of a fallback if the flex isn't distributing space as expected.
-       A better solution is to ensure the flex layout itself works.
     */
     /* margin-left: auto; */ /* This would push it to the far right if there's space, but might not be what we want if main content should take up slack */
 }
@@ -671,35 +777,321 @@ input:checked + .toggle-slider:before {
 }
 
 .content-section.collapsed .section-body {
-     /* display: none; -- JS will toggle 'hidden' attribute */
+    display: none;
 }
 
-/* Responsive adjustments for sidebar */
-@media (max-width: 992px) {
-    .article-layout-container {
+/* Transparency Modal Specific Styles */
+.transparency-modal-container {
+    max-width: 1080px !important; /* Expanded by 20% from 900px - using !important to override general modal-container */
+    width: 95%;
+    max-height: 90vh;
+}
+
+.transparency-modal .modal-content {
+    padding: 0;
+}
+
+/* Prevent background scrolling when modal is open */
+body.modal-open {
+    overflow: hidden;
+}
+
+/* Tab Navigation */
+.tab-navigation {
+    display: flex;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: var(--spacing-lg);
+    background-color: var(--bg-light, #f8f9fa);
+    border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+}
+
+.tab-button {
+    flex: 1;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: var(--font-size-md);
+    font-weight: 500;
+    color: var(--text-light);
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
+}
+
+.tab-button:hover {
+    background-color: var(--bg-surface);
+    color: var(--text-color);
+}
+
+.tab-button.active {
+    background-color: var(--bg-surface);
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+/* Tab Content */
+.tab-content {
+    min-height: 400px;
+    padding: var(--spacing-lg);
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* Flow Overview Styles */
+.flow-diagram {
+    background: var(--bg-light, #f8f9fa);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    overflow-x: auto;
+}
+
+.flow-step {
+    display: inline-block;
+    background: var(--bg-surface);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    margin: var(--spacing-sm);
+    min-width: 120px;
+    text-align: center;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.flow-step:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.flow-step.completed {
+    border-color: var(--success-color, #28a745);
+    background-color: rgba(40, 167, 69, 0.05);
+}
+
+.flow-step.failed {
+    border-color: var(--error-color, #dc3545);
+    background-color: rgba(220, 53, 69, 0.05);
+}
+
+.flow-step-title {
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+}
+
+.flow-step-status {
+    font-size: var(--font-size-xs);
+    color: var(--text-light);
+}
+
+.flow-arrow {
+    display: inline-block;
+    font-size: var(--font-size-lg);
+    color: var(--text-light);
+    margin: 0 var(--spacing-sm);
+    vertical-align: middle;
+}
+
+/* Step Details Styles */
+.step-selector-container {
+    margin-bottom: var(--spacing-lg);
+}
+
+.step-selector-container label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-color);
+}
+
+.step-selector {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background-color: var(--bg-surface);
+    font-size: var(--font-size-md);
+    color: var(--text-color);
+}
+
+.step-data-container {
+    display: grid;
+    grid-template-columns: 1fr; /* Stack vertically instead of horizontally */
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+/* Input/Output Container for Transparency Modal */
+.input-output-container {
+    display: grid;
+    grid-template-columns: 1fr; /* Stack vertically - input on top, output below */
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.input-section,
+.output-section {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+}
+
+.input-section h4,
+.output-section h4 {
+    background: var(--bg-light, #f8f9fa);
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    color: var(--primary-color); /* Use primary color for Input Data and Output Data labels */
+    margin: 0;
+}
+
+.input-section div,
+.output-section div {
+    padding: var(--spacing-md);
+    max-height: 400px;
+    overflow-y: auto;
+    background: var(--bg-surface);
+}
+
+.data-panel {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+}
+
+.data-panel-header {
+    background: var(--bg-light, #f8f9fa);
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    color: var(--primary-color); /* Use primary color for labels */
+}
+
+.data-panel-content {
+    padding: var(--spacing-md);
+    max-height: 400px;
+    overflow-y: auto;
+    background: var(--bg-surface);
+}
+
+.json-display {
+    background: #f6f8fa;
+    border: 1px solid #e1e4e8;
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-md);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-x: auto;
+}
+
+.loading-message {
+    text-align: center;
+    color: var(--text-light);
+    font-style: italic;
+    padding: var(--spacing-lg);
+}
+
+.error-message {
+    text-align: center;
+    color: var(--error-color, #dc3545);
+    padding: var(--spacing-lg);
+    background: rgba(220, 53, 69, 0.05);
+    border: 1px solid rgba(220, 53, 69, 0.2);
+    border-radius: var(--border-radius-sm);
+}
+
+/* No data message */
+.no-data-message {
+    text-align: center;
+    color: var(--text-light);
+    font-style: italic;
+    padding: var(--spacing-xl);
+    background: var(--bg-light, #f8f9fa);
+    border-radius: var(--border-radius-sm);
+}
+
+/* Responsive adjustments for transparency modal */
+@media (max-width: 768px) {
+    .transparency-modal .modal-container {
+        width: 98%;
+        margin: var(--spacing-sm);
+        max-height: 95vh;
+    }
+    
+    .tab-navigation {
         flex-direction: column;
     }
-    .wiki-sidebar {
-        order: -1;
-        width: 100%;
-        max-width: none;
-        margin-bottom: var(--spacing-lg);
+    
+    .tab-button {
+        border-bottom: 1px solid var(--border-color);
+        border-radius: 0;
     }
-    #persona-selector-widget {
-        position: static;
-        width: auto; /* Allow it to take natural width or be styled by its container */
+    
+    .tab-button:last-child {
+        border-bottom: none;
+    }
+    
+    .step-data-container {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .tab-content {
+        padding: var(--spacing-md);
+    }
+    
+    .flow-diagram {
+        padding: var(--spacing-md);
+    }
+    
+    .flow-step {
+        display: block;
+        margin: var(--spacing-sm) 0;
+    }
+    
+    .flow-arrow {
+        display: block;
+        transform: rotate(90deg);
+        margin: var(--spacing-xs) auto;
     }
 }
 
-@media (max-width: 768px) {
-    .content-section h3, .content-section .section-header { /* Ensure metrics icon doesn't cause overflow on small screens */
-        flex-wrap: wrap; /* Allow items to wrap if needed */
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    .json-display {
+        background: #1e1e1e;
+        border-color: #444;
+        color: #f0f0f0;
     }
-    .section-toggle-button {
-        margin-right: 0; /* Remove right margin if metrics icon wraps */
-        margin-bottom: var(--spacing-xs, 5px); /* Add some space if it wraps */
+    
+    .flow-step {
+        background: var(--bg-dark, #2d3748);
     }
-    .metrics-icon {
-        margin-left: 0; /* Adjust if it wraps */
+    
+    .flow-step.completed {
+        background-color: rgba(40, 167, 69, 0.1);
+    }
+    
+    .flow-step.failed {
+        background-color: rgba(220, 53, 69, 0.1);
     }
 }
+
+/* Style to prevent body scroll when modal is open */
+body.modal-open {
+    overflow: hidden;
+}
+
+/* End of new Content Section Styles */

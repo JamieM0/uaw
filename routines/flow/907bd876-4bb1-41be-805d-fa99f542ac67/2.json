@@ -1,0 +1,201 @@
+{
+    "metadata": {
+        "uuid": "6d4cb8eb-9ee6-4b73-b767-f61b4e5e2829",
+        "date_created": "2025-05-28T20:13:13.899712",
+        "task": "Hallucinate Tree",
+        "time_taken": "0:00:47.621052"
+    },
+    "tree": {
+        "step": "Coffee Brewing",
+        "children": [
+            {
+                "step": "Gather Supplies: Collect coffee beans, grinder (if applicable), coffee maker, water, and desired accessories (e.g., filters, mug).",
+                "children": [
+                    {
+                        "step": "Identify Required Supplies"
+                    },
+                    {
+                        "step": "Locate Coffee Beans"
+                    },
+                    {
+                        "step": "Determine Grinder Needs",
+                        "children": [
+                            {
+                                "step": "Check for Existing Grinder"
+                            },
+                            {
+                                "step": "Purchase a Grinder (if needed)"
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Select a Coffee Maker"
+                    },
+                    {
+                        "step": "Acquire Water"
+                    },
+                    {
+                        "step": "Gather Accessories",
+                        "children": [
+                            {
+                                "step": "Identify Filter Type"
+                            },
+                            {
+                                "step": "Purchase Filters (if needed)"
+                            },
+                            {
+                                "step": "Select a Mug"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "step": "Grind Coffee Beans (if necessary): Grind the coffee beans to the appropriate coarseness for your coffee maker.",
+                "children": [
+                    {
+                        "step": "Select Coffee Beans"
+                    },
+                    {
+                        "step": "Determine Grind Size",
+                        "children": [
+                            {
+                                "step": "Consider Coffee Maker Type"
+                            },
+                            {
+                                "step": "Consult Grind Size Recommendations"
+                            },
+                            {
+                                "step": "Adjust Grind Size Based on Preference"
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Grind Coffee Beans"
+                    },
+                    {
+                        "step": "Check Grind Coarseness"
+                    },
+                    {
+                        "step": "Adjust Grind if Necessary"
+                    }
+                ]
+            },
+            {
+                "step": "Heat Water: Heat water to the ideal brewing temperature (typically around 200°F or 93°C).",
+                "children": [
+                    {
+                        "step": "Gather Necessary Equipment"
+                    },
+                    {
+                        "step": "Measure Water Volume"
+                    },
+                    {
+                        "step": "Heat Water on a Stove"
+                    },
+                    {
+                        "step": "Monitor Water Temperature"
+                    },
+                    {
+                        "step": "Adjust Heat as Needed"
+                    },
+                    {
+                        "step": "Verify Temperature (Optional)"
+                    }
+                ]
+            },
+            {
+                "step": "Prepare Coffee Maker: Insert a filter into the coffee maker if required.",
+                "children": [
+                    {
+                        "step": "Locate the coffee maker."
+                    },
+                    {
+                        "step": "Check if a filter is already present."
+                    },
+                    {
+                        "step": "If no filter is present, locate the filter compartment."
+                    },
+                    {
+                        "step": "Retrieve the appropriate size filter from its storage location."
+                    },
+                    {
+                        "step": "Insert the filter into the filter basket of the coffee maker."
+                    }
+                ]
+            },
+            {
+                "step": "Add Coffee Grounds: Measure and add the appropriate amount of coffee grounds to the filter or brewing chamber.",
+                "children": [
+                    {
+                        "step": "Locate Coffee Grounds Container"
+                    },
+                    {
+                        "step": "Determine Coffee-to-Water Ratio"
+                    },
+                    {
+                        "step": "Measure Coffee Grounds"
+                    },
+                    {
+                        "step": "Add Coffee Grounds to Filter/Chamber"
+                    },
+                    {
+                        "step": "Level Coffee Grounds (Optional)"
+                    }
+                ]
+            },
+            {
+                "step": "Pour Water: Slowly pour the heated water over the coffee grounds.",
+                "children": [
+                    {
+                        "step": "Position the Pouring Device: Ensure the pouring device (e.g., cara, gooseneck kettle) is directly above the coffee grounds."
+                    },
+                    {
+                        "step": "Initiate Pour: Begin pouring the heated water from the pouring device."
+                    },
+                    {
+                        "step": "Maintain Slow Pour: Continue pouring the water at a consistent, steady pace."
+                    },
+                    {
+                        "step": "Distribute Water Evenly: Move the pouring device slightly to ensure the water is distributed evenly over the coffee grounds."
+                    },
+                    {
+                        "step": "Observe Water Level: Monitor the water level in the coffee grounds, adding more water as needed to reach the desired level."
+                    }
+                ]
+            },
+            {
+                "step": "Brew Coffee: Allow the coffee to brew according to the coffee maker's instructions.",
+                "children": [
+                    {
+                        "step": "Prepare the Coffee Maker"
+                    },
+                    {
+                        "step": "Add Water to the Reservoir"
+                    },
+                    {
+                        "step": "Insert a Filter into the Filter Basket"
+                    },
+                    {
+                        "step": "Add Ground Coffee to the Filter"
+                    },
+                    {
+                        "step": "Close the Coffee Maker Lid"
+                    },
+                    {
+                        "step": "Start the Coffee Maker"
+                    },
+                    {
+                        "step": "Allow the Coffee to Brew According to Instructions"
+                    }
+                ]
+            }
+        ],
+        "uuid": "6d4cb8eb-9ee6-4b73-b767-f61b4e5e2829"
+    },
+    "input": {
+        "system_message": "You are an AI that breaks down complex tasks into hierarchical steps. For each task, generate a set of sub-steps needed to complete it. Maintain clarity and logical order. Format your response as a valid JSON array of step objects, where each object has a 'step' field and optionally a 'children' array containing substeps. Example format: [{'step': 'Main step 1', 'children': [{'step': 'Substep 1.1'}, {'step': 'Substep 1.2'}]}, {'step': 'Main step 2'}] Your entire response must be parseable as JSON. Do not include markdown formatting, code blocks, or commentary.",
+        "user_message": "Break down the following task into 3-7 sub-steps. Task: Brew Coffee: Allow the coffee to brew according to the coffee maker's instructions.\n\nReturn ONLY a JSON array of step objects, with no markdown formatting, code blocks, or extra text.",
+        "timestamp": "2025-05-28T20:13:08.161021"
+    }
+}

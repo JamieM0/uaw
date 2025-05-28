@@ -6,6 +6,12 @@ from datetime import datetime # Corrected import
 import os
 import re
 from json_repair import repair_json # Added for robust JSON fixing
+import requests
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 def load_json(filepath):
     """Load JSON input file."""
@@ -68,6 +74,38 @@ def chat_with_llm(model, system_message, user_message, parameters=None):
         options=parameters
     )
     return response["message"]["content"].strip()
+
+# def chat_with_llm_google_ai_studio(model, system_message, user_message, parameters=None):
+#     """Generic function to interact with LLMs via Google AI Studio."""
+#     if parameters is None:
+#         parameters = {}
+    
+#     # Get API key from environment
+#     api_key = os.getenv("GOOGLE_AI_STUDIO_API_KEY")
+#     if not api_key:
+#         raise ValueError("GOOGLE_AI_STUDIO_API_KEY environment variable not set")
+    
+#     # Configure the Google AI client
+#     genai.configure(api_key=api_key)
+    
+#     # Model mapping for compatibility
+#     model_mapping = {
+#         "gemma3": "gemma-3n-e4b-it"
+#     }
+    
+#     # Use mapped model if available, otherwise use the provided model
+#     api_model = model_mapping.get(model, model)
+    
+#     # Create the generative model
+#     ai_model = genai.GenerativeModel(api_model)
+    
+#     # Combine system and user messages for Gemini
+#     combined_prompt = f"{system_message}\n\nUser: {user_message}"
+    
+#     # Generate response
+#     response = ai_model.generate_content(combined_prompt)
+    
+#     return response.text.strip()
 
 def clean_llm_json_response(response_text):
     """Clean an LLM response to extract valid JSON, removing markdown fences."""

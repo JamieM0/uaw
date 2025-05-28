@@ -281,6 +281,52 @@ def process_breadcrumbs(breadcrumbs_str):
 
     return result
 
+def get_transparency_data_for_section(id_suffix, files_dir_path):
+    """
+    Get transparency data for a specific section based on the section-to-step mapping.
+    Returns a dictionary with input and output data for the transparency modal.
+    """
+    # Section to step mapping (same as in main.js)
+    section_step_map = {
+        'process-steps': '2',
+        'timeline': '3',
+        'challenges': '4',
+        'adoption-framework': '5',
+        'implementation-levels': '6',
+        'roi-analysis': '7',
+        'automation-technologies': '8',
+        'technical-specifications': '9'
+    }
+    
+    step_id = section_step_map.get(id_suffix)
+    if not step_id:
+        return None
+    
+    try:
+        # Load input data (common for all sections)
+        input_path = os.path.join(files_dir_path, "input.json")
+        input_data = read_json_file(input_path, is_critical=False)
+        
+        # Load step output data
+        step_path = os.path.join(files_dir_path, f"{step_id}.json")
+        step_data = read_json_file(step_path, is_critical=False)
+        
+        # Filter out 'input' and 'process_metadata' keys from step_data to create output
+        output_data = {}
+        if step_data:
+            for key, value in step_data.items():
+                if key not in ['input', 'process_metadata']:
+                    output_data[key] = value
+        
+        return {
+            'input': input_data or {},
+            'output': output_data
+        }
+    
+    except Exception as e:
+        print(f"Warning: Could not load transparency data for section {id_suffix}: {e}", file=sys.stderr)
+        return None
+
 def main():
     # Correct argument check: script name + 2 arguments = 3
     if len(sys.argv) != 3:
@@ -395,6 +441,9 @@ def main():
             # Pass the id_suffix to get_section_metrics_and_relevance for mapping
             metrics_info = get_section_metrics_and_relevance(id_suffix, article_metrics_data, metric_definitions_data)
             
+            # Create transparency data for this section
+            transparency_data = get_transparency_data_for_section(id_suffix, files_dir_path)
+            
             content_html_output = ""
             if is_html:
                 content_html_output = template_str_or_html # Already HTML
@@ -409,7 +458,8 @@ def main():
                 "title_html": title,
                 "content_html": content_html_output,
                 "relevant_personas_json": json.dumps(metrics_info["relevant_personas_list"]),
-                "metrics_data_json": metrics_info["metrics_data_for_section_json"]
+                "metrics_data_json": metrics_info["metrics_data_for_section_json"],
+                "transparency_data_json": json.dumps(transparency_data) if transparency_data else "{}"
             })
 
         # 1. Standard Process Steps (from tree_data)
@@ -618,6 +668,17 @@ def main():
         add_section("why-multiple-approaches", "Why Multiple Approaches?", None, why_multiple_html, is_html=True)
 
 
+        # --- Extract Flow UUID from Directory Path ---
+        flow_uuid = None
+        if files_dir_path:
+            # Extract UUID from path like "flow/uuid-here" or just "uuid-here"
+            path_parts = files_dir_path.strip('/').split('/')
+            for part in reversed(path_parts):  # Check from the end
+                # UUID pattern: 8-4-4-4-12 characters separated by hyphens
+                if len(part) == 36 and part.count('-') == 4:
+                    flow_uuid = part
+                    break
+
         # --- Final Jinja2 Context for page-template.html ---
         context = {
             'page_metadata': page_level_metadata, # Renamed from 'metadata' for clarity in template
@@ -625,7 +686,8 @@ def main():
             'breadcrumbs': processed_breadcrumbs,
             'metric_definitions': metric_definitions_data, # Pass global definitions
             # 'article_metrics': article_metrics_data, # This is now processed into each section's metrics_data_json
-            'core_personas': CORE_PERSONAS_DICT # Pass the pre-defined dictionary
+            'core_personas': CORE_PERSONAS_DICT, # Pass the pre-defined dictionary
+            'flow_uuid': flow_uuid # Add flow UUID for transparency modal
         }
 
         # --- Render Main Template ---

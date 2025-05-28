@@ -1,0 +1,905 @@
+{
+  "flow_uuid": "907bd876-4bb1-41be-805d-fa99f542ac67",
+  "sections": {
+    "1.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses automation in coffee brewing, which aligns perfectly with the hobbyist's interest in DIY projects and affordable automation solutions. The discussion of bottlenecks like the 'bloom' phase and future sensor technology would be highly appealing to someone focused on practical, hands-on experimentation.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": true,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": true,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": true,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": true,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": true,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses automated brewing processes, which aligns perfectly with the educator's interest in automation and its applications within a technical topic like coffee brewing. The discussion of current limitations and future advancements is particularly relevant for a curriculum design perspective.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": true,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses automated brewing processes and techniques, which aligns with the field expert's interest in precision, implementation-ready detail, and automation advancements within a technical domain.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": true,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": true,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": true,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": true,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section details the current state of automation in coffee brewing, specifically highlighting the 'bloom' phase as a bottleneck and discussing future advancements \u2013 all of which directly align with an investor's interest in scalability, ROI, and disruptive automation methods.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": false,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": true,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": true,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses the scientific principles and technical challenges involved in coffee brewing, aligning with the researcher's focus on rigorous sourcing, methodological transparency, and identifying gaps in knowledge related to automation technologies.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": false,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": false,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": true,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "2.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "educator": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "field_expert": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "investor": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "researcher": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      }
+    },
+    "3.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "educator": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": false,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": false,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": false,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": false,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": false,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": false,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "researcher": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      }
+    },
+    "4.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": true,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "investor": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "researcher": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      }
+    },
+    "5.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "educator": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "field_expert": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "investor": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": false,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": false,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": false,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": false,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": false,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": false,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "6.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "educator": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "field_expert": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "investor": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "researcher": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      }
+    },
+    "7.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed ROI analysis for different automation scales, which directly aligns with the hobbyist's interest in practical applications and understanding the financial implications of DIY automation projects within the coffee brewing context.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": true,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": true,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": true,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": true,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": true,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed ROI analysis for automation in coffee production, aligning directly with the educator's interest in understanding the financial implications and practical applications of automation, particularly for a topic like coffee brewing.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": true,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed ROI analysis for automation across different scales, which aligns directly with the field expert's interest in quantifiable data and investment considerations for implementation-ready solutions.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": true,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": true,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": true,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": true,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed ROI analysis for automation in coffee brewing across different scales (small, medium, and large), which directly aligns with the investor's interest in cost estimates, profitability, and scalability of automation technologies.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": true,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": true,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": true,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed ROI analysis for automation at different scales, including the initial investment, timeframe, and key considerations \u2013 aligning directly with the researcher's focus on rigorous analysis and methodological transparency.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": false,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": false,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": false,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": true,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "8.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "educator": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "field_expert": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "investor": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "researcher": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      }
+    },
+    "9.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": false,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": false,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": false,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": false,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": false,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": false,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": false,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": false,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": false,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": false,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": false,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": false,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": false,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": false,
+        "relevance_reasoning": "No reasoning provided by LLM.",
+        "evaluated_metrics": []
+      }
+    }
+  }
+}

@@ -75,6 +75,13 @@
                                             data-metrics='{{ section.metrics_data_json }}'>
                                         📊
                                     </button>
+                                    {# Transparency icon next to metrics icon #}
+                                    <button class="transparency-icon"
+                                            aria-label="View transparency data for {{ section.title_text | default('this section') }}"
+                                            data-section-id="{{ section.id }}"
+                                            data-transparency='{{ section.transparency_data_json }}'>
+                                        📚
+                                    </button>
                                 </h3>
                                 <div class="section-body"
                                      id="section-body-{{ section.id }}"
@@ -92,7 +99,9 @@
                         <h3>Contributors</h3>
                         <p>This workflow was developed using Iterative AI analysis of {{ page_metadata.title | lower }} processes with input from professional engineers and automation experts.</p>
                         <p><em>Last updated: {{ page_metadata.last_updated | default("Current Date") }}</em></p>
-                        <a href="#" class="button secondary" id="suggest-improvements">Suggest Improvements</a>
+                        <div class="action-buttons">
+                            <a href="#" class="button secondary" id="suggest-improvements">Suggest Improvements</a>
+                        </div>
                         
                         <div id="feedback-form-container" class="feedback-form-container">
                             <h4>Suggest Improvements</h4>
@@ -152,6 +161,9 @@
     <script id="core-personas-data" type="application/json">
         {{ core_personas | tojson | safe }}
     </script>
+    <script id="flow-uuid-data" type="application/json">
+        "{{ flow_uuid | default('') }}"
+    </script>
     <script src="/assets/js/components.js"></script>
     <script src="/assets/js/main.js"></script>
     {# <script src="/assets/js/tabbed-content.js"></script> #} <!-- Tabbed content JS is no longer needed -->
@@ -168,6 +180,34 @@
             </header>
             <main class="modal-content" id="metrics-modal-content">
                 <p>Loading metrics...</p>
+            </main>
+            <footer class="modal-footer">
+                <button class="button" data-micromodal-close aria-label="Close this dialog window">Close</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Transparency Modal Structure -->
+    <div id="transparency-modal" class="modal transparency-modal" aria-hidden="true" role="dialog" aria-labelledby="transparency-modal-title">
+        <div class="modal-overlay" tabindex="-1" data-micromodal-close></div>
+        <div class="modal-container transparency-modal-container" role="document">
+            <header class="modal-header">
+                <h2 id="transparency-modal-title" class="modal-title">Section Transparency Data</h2>
+                <button class="modal-close" aria-label="Close modal" data-micromodal-close>&#x2715;</button>
+            </header>
+            <main class="modal-content" id="transparency-modal-content">
+                <div class="transparency-content">
+                    <div class="input-output-container">
+                        <div class="input-section">
+                            <h4>Input Data</h4>
+                            <div id="step-input">Loading input data...</div>
+                        </div>
+                        <div class="output-section">
+                            <h4>Output Data</h4>
+                            <div id="step-output">Loading output data...</div>
+                        </div>
+                    </div>
+                </div>
             </main>
             <footer class="modal-footer">
                 <button class="button" data-micromodal-close aria-label="Close this dialog window">Close</button>

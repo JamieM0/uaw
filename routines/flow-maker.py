@@ -110,6 +110,14 @@ def run_program(program_name, input_path, output_path, step_info="Running script
     # Print initial running message (no newline)
     sys.stdout.write(f"{step_info}{program_name}... ")
     sys.stdout.flush()
+    
+    # Capture input data before running the program (skip for assemble.py which uses directories)
+    input_data = None
+    if program_name != "assemble.py":
+        try:
+            input_data = load_json(input_path)
+        except Exception as e:
+            print(f"Warning: Could not load input data from {input_path}: {e}")
 
     try:
         result = subprocess.run(
@@ -123,8 +131,44 @@ def run_program(program_name, input_path, output_path, step_info="Running script
         if result.returncode == 0:
             sys.stdout.write(f"\r{step_info}{program_name}... {Colors.GREEN}Completed!{Colors.ENDC}\n")
             sys.stdout.flush()
-            # Generic message, actual saving happens in sub-scripts
-            print("  Saved inputs and outputs.")
+            
+            # Capture output data and add transparency data (skip for assemble.py)
+            if program_name != "assemble.py":
+                try:
+                    output_data = load_json(output_path)
+                    
+                    # Determine the step number from output_path to find corresponding input file
+                    step_number = None
+                    if output_path.endswith('.json'):
+                        filename = os.path.basename(output_path)
+                        if filename.split('.')[0].isdigit():
+                            step_number = filename.split('.')[0]
+                    
+                    # Try to load the corresponding input file from inputs directory
+                    llm_input_data = None
+                    if step_number:
+                        flow_dir = os.path.dirname(output_path)
+                        input_file_path = os.path.join(flow_dir, "inputs", f"{step_number}-in.json")
+                        try:
+                            llm_input_data = load_json(input_file_path)
+                        except Exception as e:
+                            print(f"  Warning: Could not load LLM input data from {input_file_path}: {e}")
+                    
+                    # Add input and output to the JSON for transparency
+                    if isinstance(output_data, dict):
+                        if llm_input_data:
+                            output_data['input'] = llm_input_data
+                        else:
+                            # Fallback to the input file data if LLM input not found
+                            output_data['input'] = input_data
+                        
+                        # Save the updated file with transparency data (file itself is the output)
+                        save_output(output_data, output_path)
+                        
+                except Exception as e:
+                    print(f"  Warning: Could not add transparency data to {output_path}: {e}")
+                
+                print("  Saved inputs and outputs.")
             return {"status": "success"}
         else:
             sys.stdout.write(f"\r{step_info}{program_name}... {Colors.RED}Failed!{Colors.ENDC}\n")
@@ -466,6 +510,10 @@ def main():
     num_alternatives = input_data.get("alternatives", 0)
     if num_alternatives > 0:
         print(f"\nGenerating {num_alternatives} alternative trees...")
+        
+        # Create inputs directory for alternatives
+        inputs_dir = os.path.join(flow_dir, "inputs")
+        os.makedirs(inputs_dir, exist_ok=True)
         
         # Create variations of the input with different model parameters for diversity
         alternative_inputs = []
