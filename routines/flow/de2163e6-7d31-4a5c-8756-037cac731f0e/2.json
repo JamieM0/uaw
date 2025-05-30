@@ -1,0 +1,208 @@
+{
+    "metadata": {
+        "uuid": "ee221554-dfa5-429c-9938-84c411969afe",
+        "date_created": "2025-05-30T22:13:07.628002",
+        "task": "Hallucinate Tree",
+        "time_taken": "0:00:10.792406"
+    },
+    "tree": {
+        "step": "Breadmaking",
+        "children": [
+            {
+                "step": "Gather Ingredients",
+                "children": [
+                    {
+                        "step": "Determine Recipe Requirements"
+                    },
+                    {
+                        "step": "Create a Detailed Ingredient List"
+                    },
+                    {
+                        "step": "Check Pantry and Existing Supplies"
+                    },
+                    {
+                        "step": "Identify Missing Ingredients"
+                    },
+                    {
+                        "step": "Determine Quantities Needed"
+                    },
+                    {
+                        "step": "Plan Shopping Route"
+                    },
+                    {
+                        "step": "Purchase Ingredients"
+                    }
+                ]
+            },
+            {
+                "step": "Activate Yeast",
+                "children": [
+                    {
+                        "step": "Heat Water to Proper Temperature"
+                    },
+                    {
+                        "step": "Add Sugar and Yeast to Water"
+                    },
+                    {
+                        "step": "Let Sit for 5-10 Minutes"
+                    }
+                ]
+            },
+            {
+                "step": "Mix Dough",
+                "children": [
+                    {
+                        "step": "Gather Ingredients"
+                    },
+                    {
+                        "step": "Combine Dry Ingredients"
+                    },
+                    {
+                        "step": "Add Wet Ingredients"
+                    },
+                    {
+                        "step": "Mix Dough"
+                    },
+                    {
+                        "step": "Check Dough Consistency"
+                    },
+                    {
+                        "step": "Cover and Rest Dough"
+                    }
+                ]
+            },
+            {
+                "step": "First Rise",
+                "children": [
+                    {
+                        "step": "Prepare the Dough"
+                    },
+                    {
+                        "step": "Mix Ingredients",
+                        "children": [
+                            {
+                                "step": "Combine Flour and Yeast"
+                            },
+                            {
+                                "step": "Add Liquids (Water, Milk, etc.)"
+                            },
+                            {
+                                "step": "Incorporate Other Ingredients (Sugar, Salt, etc.)"
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Form Dough into a Ball"
+                    },
+                    {
+                        "step": "Place Dough in a Greased Bowl"
+                    },
+                    {
+                        "step": "Cover Bowl with Plastic Wrap or Damp Cloth"
+                    },
+                    {
+                        "step": "Let Dough Rise in a Warm Place"
+                    },
+                    {
+                        "step": "Check Dough for Rising (Approx. 1-2 Hours)"
+                    }
+                ]
+            },
+            {
+                "step": "Shape Dough",
+                "children": [
+                    {
+                        "step": "Prepare Dough Ingredients"
+                    },
+                    {
+                        "step": "Combine Ingredients",
+                        "children": [
+                            {
+                                "step": "Measure Flour"
+                            },
+                            {
+                                "step": "Measure Liquid (Water, Milk, etc.)"
+                            },
+                            {
+                                "step": "Add Yeast (if applicable)"
+                            },
+                            {
+                                "step": "Add Salt"
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Mix Dough"
+                    },
+                    {
+                        "step": "Knead Dough"
+                    },
+                    {
+                        "step": "Rest Dough"
+                    },
+                    {
+                        "step": "Shape Dough"
+                    }
+                ]
+            },
+            {
+                "step": "Second Rise",
+                "children": [
+                    {
+                        "step": "Prepare the Dough: Ensure the dough is properly proofed and at the correct temperature."
+                    },
+                    {
+                        "step": "Gently Fold in Yeast: Incorporate the yeast mixture into the dough without overmixing."
+                    },
+                    {
+                        "step": "Cover and Rest: Cover the dough with a damp cloth or plastic wrap."
+                    },
+                    {
+                        "step": "Monitor Rise: Observe the dough for signs of rising, typically 30-60 minutes."
+                    },
+                    {
+                        "step": "Check for Doubling: Verify the dough has at least doubled in size."
+                    },
+                    {
+                        "step": "Optional: Gently Deflate: If necessary, gently deflate the dough to redistribute it."
+                    }
+                ]
+            },
+            {
+                "step": "Bake Bread",
+                "children": [
+                    {
+                        "step": "Gather Ingredients and Equipment"
+                    },
+                    {
+                        "step": "Activate Yeast (if applicable)"
+                    },
+                    {
+                        "step": "Combine Ingredients"
+                    },
+                    {
+                        "step": "Knead the Dough"
+                    },
+                    {
+                        "step": "First Rise"
+                    },
+                    {
+                        "step": "Shape the Dough"
+                    },
+                    {
+                        "step": "Second Rise"
+                    },
+                    {
+                        "step": "Bake the Bread"
+                    }
+                ]
+            }
+        ],
+        "uuid": "ee221554-dfa5-429c-9938-84c411969afe"
+    },
+    "input": {
+        "system_message": "You are an AI that breaks down complex tasks into hierarchical steps. For each task, generate a set of sub-steps needed to complete it. Maintain clarity and logical order. Format your response as a valid JSON array of step objects, where each object has a 'step' field and optionally a 'children' array containing substeps. Example format: [{'step': 'Main step 1', 'children': [{'step': 'Substep 1.1'}, {'step': 'Substep 1.2'}]}, {'step': 'Main step 2'}] Your entire response must be parseable as JSON. Do not include markdown formatting, code blocks, or commentary.",
+        "user_message": "Break down the following task into 3-7 sub-steps. Task: Bake Bread\n\nReturn ONLY a JSON array of step objects, with no markdown formatting, code blocks, or extra text.",
+        "timestamp": "2025-05-30T22:13:06.209858"
+    }
+}

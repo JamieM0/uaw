@@ -379,75 +379,70 @@ def main():
                 print(f"\n--- Starting Evaluation for output of {program} ({output_filename}) ---")
                 section_source_file_path = abs_output_path
 
-                for profile_name in PROFILES:
-                    # Using sys.stdout.write for more control over newlines if needed
-                    sys.stdout.write(f"  Evaluating for Profile: {Colors.BOLD}{profile_name.capitalize()}{Colors.ENDC}... ") # Removed \n from the start
-                    sys.stdout.flush()
+                # Run evaluation for all profiles in a single call
+                sys.stdout.write(f"  Evaluating for all profiles... ")
+                sys.stdout.flush()
+                
+                eval_command = [
+                    sys.executable,
+                    evaluator_script_path,
+                    section_source_file_path,
+                ] + PROFILES + [
+                    breadcrumbs # Use breadcrumbs as article_title
+                ]
+                
+                try:
+                    eval_result_proc = subprocess.run(
+                        eval_command,
+                        capture_output=True,
+                        text=True,
+                        check=False, # Check manually
+                        cwd=script_dir
+                    )
                     
-                    eval_command = [
-                        sys.executable,
-                        evaluator_script_path,
-                        section_source_file_path,
-                        profile_name,
-                        breadcrumbs # Use breadcrumbs as article_title
-                    ]
-                    
-                    try:
-                        eval_result_proc = subprocess.run(
-                            eval_command,
-                            capture_output=True,
-                            text=True,
-                            check=False, # Check manually
-                            cwd=script_dir
-                        )
-                        
-                        if eval_result_proc.returncode == 0:
-                            sys.stdout.write(f"{Colors.GREEN}Done.{Colors.ENDC}\n")
-                            sys.stdout.flush()
-                            actual_json_str = eval_result_proc.stdout.strip()
-                            # print(f"\n    DEBUG: Raw STDOUT from evaluator.py for profile {profile_name} on {output_filename}:\n>>>>\n{actual_json_str}\n<<<<") # ADDED DEBUG
-                            if not actual_json_str:
-                                print(f"    {Colors.RED}ERROR: No output received from evaluator.py for profile {profile_name}.{Colors.ENDC}")
-                                eval_results_list = []
-                            else:
-                                eval_results_list = json.loads(actual_json_str)
+                    if eval_result_proc.returncode == 0:
+                        sys.stdout.write(f"{Colors.GREEN}Done.{Colors.ENDC}\n")
+                        sys.stdout.flush()
+                        actual_json_str = eval_result_proc.stdout.strip()
+                        if not actual_json_str:
+                            print(f"    {Colors.RED}ERROR: No output received from evaluator.py.{Colors.ENDC}")
+                            all_eval_results = {}
                         else:
-                            sys.stdout.write(f"{Colors.RED}Failed.{Colors.ENDC}\n")
-                            sys.stdout.flush()
-                            print(f"    {Colors.RED}ERROR running evaluator.py for profile {profile_name}. Return code: {eval_result_proc.returncode}{Colors.ENDC}")
-                            if eval_result_proc.stdout.strip():
-                                 print(f"    {Colors.YELLOW}STDOUT from evaluator:{Colors.ENDC}\n{eval_result_proc.stdout.strip()}")
-                            if eval_result_proc.stderr.strip():
-                                 print(f"    {Colors.YELLOW}STDERR from evaluator:{Colors.ENDC}\n{eval_result_proc.stderr.strip()}")
-                            eval_results_list = []
-
-                    except json.JSONDecodeError as e_json:
-                        sys.stdout.write(f"{Colors.RED}Failed (JSON Error).{Colors.ENDC}\n") # Overwrite "Done."
+                            all_eval_results = json.loads(actual_json_str)
+                    else:
+                        sys.stdout.write(f"{Colors.RED}Failed.{Colors.ENDC}\n")
                         sys.stdout.flush()
-                        print(f"    {Colors.RED}ERROR decoding JSON from evaluator.py for profile {profile_name}: {e_json}{Colors.ENDC}")
-                        raw_output_for_error = eval_result_proc.stdout.strip() if 'eval_result_proc' in locals() and hasattr(eval_result_proc, 'stdout') else "N/A"
-                        print(f"    Raw STDOUT from evaluator for JSON parsing: '{raw_output_for_error}'")
-                        eval_results_list = []
-                    except Exception as e_eval_general: # Catch other potential errors
-                        sys.stdout.write(f"{Colors.RED}Failed (General Error).{Colors.ENDC}\n")
-                        sys.stdout.flush()
-                        print(f"    {Colors.RED}An unexpected error occurred running evaluator.py for {profile_name}: {e_eval_general}{Colors.ENDC}")
-                        eval_results_list = []
+                        print(f"    {Colors.RED}ERROR running evaluator.py. Return code: {eval_result_proc.returncode}{Colors.ENDC}")
+                        if eval_result_proc.stdout.strip():
+                             print(f"    {Colors.YELLOW}STDOUT from evaluator:{Colors.ENDC}\n{eval_result_proc.stdout.strip()}")
+                        if eval_result_proc.stderr.strip():
+                             print(f"    {Colors.YELLOW}STDERR from evaluator:{Colors.ENDC}\n{eval_result_proc.stderr.strip()}")
+                        all_eval_results = {}
 
+                except json.JSONDecodeError as e_json:
+                    sys.stdout.write(f"{Colors.RED}Failed (JSON Error).{Colors.ENDC}\n")
+                    sys.stdout.flush()
+                    print(f"    {Colors.RED}ERROR decoding JSON from evaluator.py: {e_json}{Colors.ENDC}")
+                    raw_output_for_error = eval_result_proc.stdout.strip() if 'eval_result_proc' in locals() and hasattr(eval_result_proc, 'stdout') else "N/A"
+                    print(f"    Raw STDOUT from evaluator for JSON parsing: '{raw_output_for_error}'")
+                    all_eval_results = {}
+                except Exception as e_eval_general:
+                    sys.stdout.write(f"{Colors.RED}Failed (General Error).{Colors.ENDC}\n")
+                    sys.stdout.flush()
+                    print(f"    {Colors.RED}An unexpected error occurred running evaluator.py: {e_eval_general}{Colors.ENDC}")
+                    all_eval_results = {}
 
+                # Process results for each profile
+                for profile_name in PROFILES:
+                    eval_results_list = all_eval_results.get(profile_name, [])
+                    
                     if not eval_results_list:
                         print(f"    No evaluation results processed for profile {profile_name} from {output_filename}.")
 
                     for item_index, section_eval_result in enumerate(eval_results_list):
                         evaluation_details = section_eval_result.get("evaluation", {})
-                        is_relevant = evaluation_details.get("relevant", False) # Key from evaluator.py is "relevant"
-                        # Extract relevance_reasoning
+                        is_relevant = evaluation_details.get("relevant", False)
                         relevance_reasoning = evaluation_details.get("relevance_reasoning", "No reasoning provided.")
-
-                        # print(f"\n    Sub-section {item_index + 1} (from {output_filename}, Profile: {profile_name.capitalize()}):")
-                        # print(f"      Relevant: {is_relevant}")
-                        # # Print relevance_reasoning
-                        # print(f"      Reasoning: {relevance_reasoning}")
 
                         if output_filename not in all_flow_metrics["sections"]:
                             all_flow_metrics["sections"][output_filename] = {}
@@ -455,55 +450,39 @@ def main():
                             all_flow_metrics["sections"][output_filename][profile_name] = {
                                 "is_relevant_to_persona": is_relevant,
                                 "relevance_reasoning": relevance_reasoning,
-                                "evaluated_metrics_dict": {}, # For raw metric_id:passed_status from evaluator
-                                "evaluated_metrics": []      # For final list of metric objects (populated at the end)
+                                "evaluated_metrics_dict": {},
+                                "evaluated_metrics": []
                             }
                         else:
-                            # Ensure existing entries also have these keys if they were from an older structure
                             profile_entry_for_update = all_flow_metrics["sections"][output_filename][profile_name]
                             profile_entry_for_update["is_relevant_to_persona"] = is_relevant
                             profile_entry_for_update["relevance_reasoning"] = relevance_reasoning
                             if "evaluated_metrics_dict" not in profile_entry_for_update:
                                  profile_entry_for_update["evaluated_metrics_dict"] = {}
-                            if "evaluated_metrics" not in profile_entry_for_update: # Should be there from initial creation
+                            if "evaluated_metrics" not in profile_entry_for_update:
                                  profile_entry_for_update["evaluated_metrics"] = []
 
-
                         if is_relevant:
-                            metrics_results = evaluation_details.get("metrics", {}) # This is a dict {metric_id: passed_status}
+                            metrics_results = evaluation_details.get("metrics", {})
                             if metrics_results:
-                                # print("      Metrics:")
-                                # Get a direct reference to the specific profile's data dictionary
                                 profile_data_entry = all_flow_metrics["sections"][output_filename][profile_name]
-
-                                # Store the raw metrics dictionary {metric_id: passed_status}
-                                # This will be processed at the end to build the final list of metric objects.
                                 profile_data_entry["evaluated_metrics_dict"] = metrics_results
 
-                                # Loop through metrics_results just for console printing and summary counts
                                 for metric_name, passed_status in metrics_results.items():
-                                    status_str = f"{Colors.GREEN}Passed{Colors.ENDC}" if passed_status else \
-                                                 (f"{Colors.RED}Failed{Colors.ENDC}" if passed_status is False else "Not Applicable/Checked")
-                                    # print(f"        - {metric_name}: {status_str}")
                                     if passed_status is not None:
                                         evaluation_summary[profile_name]["total_relevant_checks"] += 1
                                         if passed_status:
                                             evaluation_summary[profile_name]["passed"] += 1
-                                # The direct population of profile_data_entry["evaluated_metrics"] (the list of objects)
-                                # is now REMOVED from this section. It will be handled by the
-                                # restructuring loop at the end of the main() function.
                             else:
                                 print("      No specific metrics evaluated for this relevant section.")
-                        elif evaluation_details: # Not relevant
-                            # Ensure structure is consistent even if not relevant
+                        elif evaluation_details:
                             all_flow_metrics["sections"][output_filename][profile_name]["is_relevant_to_persona"] = False
-                            all_flow_metrics["sections"][output_filename][profile_name]["relevance_reasoning"] = relevance_reasoning # Store reasoning even if not relevant
+                            all_flow_metrics["sections"][output_filename][profile_name]["relevance_reasoning"] = relevance_reasoning
                             if "evaluated_metrics" not in all_flow_metrics["sections"][output_filename][profile_name]:
                                  all_flow_metrics["sections"][output_filename][profile_name]["evaluated_metrics"] = []
-                            print("      Section deemed not relevant. No metrics applied by evaluator.")
 
-                print(f"--- Finished Evaluation for output of {program} ---") # Adjusted indentation
-        
+                print(f"--- Finished Evaluation for output of {program} ---")
+
         program_idx += 1 # Move to next program
 
     # Generate alternative trees if specified in the input

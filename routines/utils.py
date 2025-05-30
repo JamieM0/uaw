@@ -7,11 +7,11 @@ import os
 import re
 from json_repair import repair_json # Added for robust JSON fixing
 import requests
-import google.generativeai as genai
-from dotenv import load_dotenv
+# import google.generativeai as genai
+# from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+# load_dotenv()
 
 def load_json(filepath):
     """Load JSON input file."""

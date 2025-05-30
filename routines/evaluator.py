@@ -131,9 +131,9 @@ def load_json_file(file_path):
 
 def main():
     """Process command line arguments and run evaluation."""
-    parser = argparse.ArgumentParser(description='Evaluate text sections based on a profile.')
+    parser = argparse.ArgumentParser(description='Evaluate text sections based on one or more profiles.')
     parser.add_argument('input_file', type=str, help='Path to the JSON file containing text to evaluate')
-    parser.add_argument('profile_name', type=str, help='Name of the profile to use for evaluation (e.g., "hobbyist")')
+    parser.add_argument('profiles', type=str, nargs='+', help='One or more profile names to use for evaluation (e.g., "hobbyist educator")')
     parser.add_argument('article_title', type=str, help='Title of the article being evaluated')
     
     args = parser.parse_args()
@@ -157,18 +157,21 @@ def main():
         print(f"Error loading input file: {e}")
         return
     
-    # Evaluate each section
-    results = []
-    for i, section_text in enumerate(sections):
-        print(f"Evaluating section {i+1}/{len(sections)} for profile '{args.profile_name}' regarding article '{args.article_title}'...", file=sys.stderr)
-        result = evaluate_section(section_text, args.profile_name, args.article_title)
-        results.append({
-            "section": section_text, # section_text should be a string or JSON-serializable
-            "evaluation": result
-        })
+    # Evaluate each section for all profiles
+    all_results = {}
+    for profile_name in args.profiles:
+        print(f"Evaluating all sections for profile '{profile_name}' regarding article '{args.article_title}'...", file=sys.stderr)
+        profile_results = []
+        for i, section_text in enumerate(sections):
+            result = evaluate_section(section_text, profile_name, args.article_title)
+            profile_results.append({
+                "section": section_text,
+                "evaluation": result
+            })
+        all_results[profile_name] = profile_results
     
     # Print the final JSON results to stdout
-    print(json.dumps(results, indent=2))
+    print(json.dumps(all_results, indent=2))
 
 if __name__ == "__main__":
     main()

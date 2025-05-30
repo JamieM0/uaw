@@ -196,18 +196,26 @@ def process_metadata(metadata, breadcrumb_str):
     """Process metadata, add contributors/date, and incorporate breadcrumbs."""
     result = metadata.get('page_metadata', {})
 
-    # Handle progress percentage (use existing logic)
-    if 'automation_progress' in result:
+    # Handle progress percentage (updated logic to match actual JSON structure)
+    progress_text = None
+    if 'percentage_progress' in result:
+        progress_text = result['percentage_progress']
+    elif 'automation_progress' in result:
         progress_text = result['automation_progress']
     elif 'progress_percentage' in result:
         progress_text = result['progress_percentage']
     else:
-        progress_text = "0"  # Default fallback to 0 if missing
+        progress_text = "0%"  # Default fallback
 
-    # Extract numeric value from progress text
+    # Extract numeric value from progress text (handle percentage strings)
     try:
-        result['progress_percentage'] = int(''.join(filter(str.isdigit, str(progress_text))))
-    except ValueError:
+        if isinstance(progress_text, str):
+            # Remove % symbol and any other non-numeric characters except digits
+            numeric_part = ''.join(filter(str.isdigit, progress_text))
+            result['progress_percentage'] = int(numeric_part) if numeric_part else 0
+        else:
+            result['progress_percentage'] = int(progress_text)
+    except (ValueError, TypeError):
         result['progress_percentage'] = 0 # Fallback if conversion fails
 
     # Process summary: Use 'explanatory_text' as fallback for 'summary'
