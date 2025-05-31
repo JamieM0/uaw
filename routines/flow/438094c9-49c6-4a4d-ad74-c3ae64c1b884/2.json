@@ -1,0 +1,171 @@
+{
+    "metadata": {
+        "uuid": "85fe0801-be85-4ad9-b5ab-8bc4fda9db62",
+        "date_created": "2025-05-31T21:27:06.129867",
+        "task": "Hallucinate Tree",
+        "time_taken": "0:00:10.282911"
+    },
+    "tree": {
+        "step": "Breadmaking",
+        "children": [
+            {
+                "step": "Activate Yeast",
+                "children": [
+                    {
+                        "step": "Warm Water Preparation: Heat water to 105-115°F (40-46°C)"
+                    },
+                    {
+                        "step": "Yeast Hydration: Add dry yeast to warm water"
+                    },
+                    {
+                        "step": "Sugar Addition: Add a teaspoon of sugar to feed the yeast"
+                    },
+                    {
+                        "step": "Activation Observation: Observe for foaming or bubbles indicating yeast activation"
+                    },
+                    {
+                        "step": "Waiting Period: Allow yeast to sit and activate for 5-10 minutes"
+                    }
+                ]
+            },
+            {
+                "step": "Combine Dry Ingredients",
+                "children": [
+                    {
+                        "step": "Measure Dry Ingredients"
+                    },
+                    {
+                        "step": "Sift Dry Ingredients"
+                    },
+                    {
+                        "step": "Transfer Dry Ingredients to a Large Bowl"
+                    },
+                    {
+                        "step": "Ensure All Dry Ingredients are Combined Homogeneously"
+                    }
+                ]
+            },
+            {
+                "step": "Add Wet Ingredients",
+                "children": [
+                    {
+                        "step": "Gather Wet Ingredients"
+                    },
+                    {
+                        "step": "Measure Specified Amounts of Liquids"
+                    },
+                    {
+                        "step": "Pour Liquids into a Clean Bowl"
+                    },
+                    {
+                        "step": "Assess Liquid Consistency (if needed)"
+                    }
+                ]
+            },
+            {
+                "step": "Mix Dough",
+                "children": [
+                    {
+                        "step": "Prepare Measuring Tools: Ensure cups, spoons, and bowls are clean and readily available."
+                    },
+                    {
+                        "step": "Measure Flour: Accurately measure the required amount of flour, typically 3 cups."
+                    },
+                    {
+                        "step": "Measure Liquids: Precisely measure the specified amount of liquid, such as 1 cup of milk."
+                    },
+                    {
+                        "step": "Combine Dry Ingredients: Add the measured flour to a large mixing bowl."
+                    },
+                    {
+                        "step": "Gradually Add Liquids: Slowly pour the measured liquid into the bowl with the flour."
+                    },
+                    {
+                        "step": "Initial Mixing: Using a spoon or spatula, begin to mix the ingredients until a shaggy dough forms."
+                    },
+                    {
+                        "step": "Knead Dough: Knead the dough for 8-10 minutes until it becomes smooth and elastic."
+                    }
+                ]
+            },
+            {
+                "step": "First Rise",
+                "children": [
+                    {
+                        "step": "Prepare Dough Mixture: Combine measured flour and specified liquid in a large bowl."
+                    },
+                    {
+                        "step": "Initial Mixing: Mix ingredients until a shaggy dough forms."
+                    },
+                    {
+                        "step": "Cover Bowl: Cover the bowl with plastic wrap or a damp towel."
+                    },
+                    {
+                        "step": "Place Dough in Warm Location: Position the bowl in a warm, draft-free area."
+                    },
+                    {
+                        "step": "Observe Dough Rise: Check dough for expansion every 30-60 minutes."
+                    },
+                    {
+                        "step": "Evaluate Rise: Determine when the dough has doubled in size or reached desired rise."
+                    }
+                ]
+            },
+            {
+                "step": "Shape Dough",
+                "children": [
+                    {
+                        "step": "Prepare Initial Dough Mixture"
+                    },
+                    {
+                        "step": "Combine Measured Flour and Liquid"
+                    },
+                    {
+                        "step": "Initial Mixing to Form Dough"
+                    },
+                    {
+                        "step": "Cover Dough for Rising"
+                    },
+                    {
+                        "step": "Monitor Dough Rise and Expansion"
+                    },
+                    {
+                        "step": "Evaluate Dough Rise to Final Shape"
+                    }
+                ]
+            },
+            {
+                "step": "Second Rise",
+                "children": [
+                    {
+                        "step": "Pre-Shape Dough"
+                    },
+                    {
+                        "step": "Cover Dough Ball"
+                    },
+                    {
+                        "step": "Place Dough in Warm Location"
+                    },
+                    {
+                        "step": "Monitor Dough Rise"
+                    },
+                    {
+                        "step": "Evaluate Second Rise Completion"
+                    },
+                    {
+                        "step": "Assess Dough Texture"
+                    },
+                    {
+                        "step": "Prepare for Shaping"
+                    }
+                ]
+            }
+        ],
+        "uuid": "85fe0801-be85-4ad9-b5ab-8bc4fda9db62"
+    },
+    "input": {
+        "system_message": "You are an AI that breaks down complex tasks into hierarchical steps. For each task, generate a set of sub-steps needed to complete it. Maintain clarity and logical order. IMPORTANT: Avoid duplicating steps that already exist elsewhere in the tree context provided. Focus on sub-steps that are specific to the current task being expanded. Format your response as a valid JSON array of step objects, where each object has a 'step' field and optionally a 'children' array containing substeps. Example format: [{'step': 'Main step 1', 'children': [{'step': 'Substep 1.1'}, {'step': 'Substep 1.2'}]}, {'step': 'Main step 2'}] Your entire response must be parseable as JSON. Do not include markdown formatting, code blocks, or commentary.",
+        "user_message": "Break down the following task into 3-7 sub-steps. Task: Second Rise\n\nFocus on sub-steps that are specific to this task and avoid duplicating steps that already exist in the broader process.\n\nExisting steps in the tree (avoid duplicating these): Breadmaking, Activate Yeast, Warm Water Preparation: Heat water to 105-115°F (40-46°C), Yeast Hydration: Add dry yeast to warm water, Sugar Addition: Add a teaspoon of sugar to feed the yeast, Activation Observation: Observe for foaming or bubbles indicating yeast activation, Waiting Period: Allow yeast to sit and activate for 5-10 minutes, Combine Dry Ingredients, Measure Dry Ingredients, Sift Dry Ingredients, Transfer Dry Ingredients to a Large Bowl, Ensure All Dry Ingredients are Combined Homogeneously, Add Wet Ingredients, Gather Wet Ingredients, Measure Specified Amounts of Liquids, Pour Liquids into a Clean Bowl, Assess Liquid Consistency (if needed), Mix Dough, Prepare Measuring Tools: Ensure cups, spoons, and bowls are clean and readily available., Measure Flour: Accurately measure the required amount of flour, typically 3 cups., Measure Liquids: Precisely measure the specified amount of liquid, such as 1 cup of milk., Combine Dry Ingredients: Add the measured flour to a large mixing bowl., Gradually Add Liquids: Slowly pour the measured liquid into the bowl with the flour., Initial Mixing: Using a spoon or spatula, begin to mix the ingredients until a shaggy dough forms., Knead Dough: Knead the dough for 8-10 minutes until it becomes smooth and elastic., First Rise, Prepare Dough Mixture: Combine measured flour and specified liquid in a large bowl., Initial Mixing: Mix ingredients until a shaggy dough forms., Cover Bowl: Cover the bowl with plastic wrap or a damp towel., Place Dough in Warm Location: Position the bowl in a warm, draft-free area., Observe Dough Rise: Check dough for expansion every 30-60 minutes., Evaluate Rise: Determine when the dough has doubled in size or reached desired rise., Shape Dough, Prepare Initial Dough Mixture, Combine Measured Flour and Liquid, Initial Mixing to Form Dough, Cover Dough for Rising, Monitor Dough Rise and Expansion, Evaluate Dough Rise to Final Shape, Second Rise\n\nReturn ONLY a JSON array of step objects, with no markdown formatting, code blocks, or extra text.",
+        "timestamp": "2025-05-31T21:27:05.218395"
+    }
+}

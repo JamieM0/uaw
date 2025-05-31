@@ -102,19 +102,51 @@ def generate_task_tree(input_data, save_inputs=False):
         "You are an AI that breaks down complex tasks into hierarchical steps. "
         "For each task, generate a set of sub-steps needed to complete it. "
         "Maintain clarity and logical order. "
+        "IMPORTANT: Avoid duplicating steps that already exist elsewhere in the tree context provided. "
+        "Focus on sub-steps that are specific to the current task being expanded. "
         "Format your response as a valid JSON array of step objects, where each object has a 'step' field "
         "and optionally a 'children' array containing substeps. "
         "Example format: [{'step': 'Main step 1', 'children': [{'step': 'Substep 1.1'}, {'step': 'Substep 1.2'}]}, {'step': 'Main step 2'}] "
         "Your entire response must be parseable as JSON. Do not include markdown formatting, code blocks, or commentary."
     )
 
-    def expand_step(step, current_depth):
+    def get_existing_steps_from_tree(tree_node, steps_list=None):
+        """Recursively extract all step names from the existing tree structure."""
+        if steps_list is None:
+            steps_list = []
+        
+        if isinstance(tree_node, dict) and "step" in tree_node:
+            steps_list.append(tree_node["step"])
+            
+            # Recursively get steps from children
+            for child in tree_node.get("children", []):
+                get_existing_steps_from_tree(child, steps_list)
+        elif isinstance(tree_node, list):
+            # Handle case where tree_node is a list of steps
+            for item in tree_node:
+                get_existing_steps_from_tree(item, steps_list)
+                
+        return steps_list
+
+    def expand_step(step, current_depth, existing_tree=None):
         if current_depth >= depth:
             return {"step": step, "children": []}
 
+        # Get context of existing steps to avoid duplication
+        existing_steps = []
+        if existing_tree:
+            existing_steps = get_existing_steps_from_tree(existing_tree)
+        
+        # Create context string for the LLM
+        context_str = ""
+        if existing_steps:
+            context_str = f"\n\nExisting steps in the tree (avoid duplicating these): {', '.join(existing_steps)}"
+
         user_msg = (
-            "Break down the following task into 3-7 sub-steps. "
+            f"Break down the following task into 3-7 sub-steps. "
             f"Task: {step}\n\n"
+            f"Do NOT repeat steps that have already been created in the tree unless ABSOLUTELY NECESSARY.\n"
+            f"Focus on sub-steps that are specific to this task and avoid duplicating steps that already exist in the broader process.\n{context_str}\n\n"
             "Return ONLY a JSON array of step objects, with no markdown formatting, code blocks, or extra text."
         )
         
@@ -137,7 +169,9 @@ def generate_task_tree(input_data, save_inputs=False):
                     for substep in parsed_steps:
                         if isinstance(substep, dict) and "step" in substep and "children" not in substep:
                             substep_text = substep["step"]
-                            child_tree = expand_step(substep_text, current_depth + 1)
+                            # Pass the current tree context including this step and its siblings
+                            current_context = {"step": step, "children": parsed_steps}
+                            child_tree = expand_step(substep_text, current_depth + 1, existing_tree or current_context)
                             substep["children"] = child_tree.get("children", [])
                 return {"step": step, "children": parsed_steps}
             else:
@@ -149,9 +183,29 @@ def generate_task_tree(input_data, save_inputs=False):
             # Fallback: create a simple structure
             return {"step": step, "children": [{"step": response_text, "children": []}]}
 
+    # Start with the root expansion
     tree = expand_step(task, 0)
     # Generate UUID for root node
     tree["uuid"] = str(uuid.uuid4())
+    
+    # Now do a second pass for deeper levels, providing full tree context
+    def expand_with_full_context(node, current_depth, full_tree):
+        if current_depth >= depth or not node.get("children"):
+            return
+            
+        for child in node.get("children", []):
+            if current_depth + 1 < depth and not child.get("children"):
+                # Re-expand this child with full tree context
+                expanded_child = expand_step(child["step"], current_depth + 1, full_tree)
+                child["children"] = expanded_child.get("children", [])
+            
+            # Recursively process deeper levels
+            expand_with_full_context(child, current_depth + 1, full_tree)
+    
+    # Apply full context expansion for depth > 1
+    if depth > 1:
+        expand_with_full_context(tree, 0, tree)
+    
     return tree
 
 def main():

@@ -193,6 +193,8 @@ def process_metadata(metadata, breadcrumb_str):
         progress_text = result['automation_progress']
     elif 'progress_percentage' in result:
         progress_text = result['progress_percentage']
+    elif 'progress_estimate' in result:
+        progress_text = result['progress_percentage']
     else:
         progress_text = "0%"  # Default fallback
 
@@ -466,9 +468,7 @@ def main():
                     {% for step_item in data.tree.children %}
                     <div class="process-section-item"> {# Changed from process-section to avoid nesting issues if original styles are kept #}
                         <h4>{{ loop.index }}. {{ step_item.step }}</h4>
-                        <p>This step involves {{ step_item.step | lower }}.</p>
                         {% if step_item.children %}
-                        <h5>Key Sub-Steps:</h5>
                         <ul class="step-list">
                             {% for sub_step in step_item.children %}
                             <li>{{ sub_step.step }}

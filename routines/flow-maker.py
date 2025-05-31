@@ -299,16 +299,17 @@ def main():
     global metric_definitions_data # Make it accessible in the metrics processing loop
     metric_definitions_data = load_metric_definitions_for_flow_maker()
 
-    usage_msg = "Usage: python flow-maker.py <input_json> [breadcrumbs] [--model model_name]"
+    usage_msg = "Usage: python flow-maker.py <topic> [breadcrumbs] [--model=model_name]"
     
     if len(sys.argv) < 2:
         print(usage_msg)
         sys.exit(1)
         
-    input_filepath = sys.argv[1]
+    # First argument is now the topic directly
+    topic = sys.argv[1]
     
     # Get breadcrumbs if provided, otherwise use a default empty value
-    breadcrumbs = sys.argv[2] if len(sys.argv) > 2 else ""
+    breadcrumbs = sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].startswith("--") else ""
     
     # Parse model name from command line arguments
     model_name = "gemma3"  # default
@@ -326,6 +327,7 @@ def main():
                     pass
     
     print("Starting flow process...")
+    print(f"Topic: {topic}")
     print(f"Using model: {model_name}")
     start_time = datetime.now()
     
@@ -343,8 +345,14 @@ def main():
             else:
                 print("Please enter Y or N.")
     
-    # Load the input data
-    input_data = load_json(input_filepath)
+    # Create input data structure instead of loading from file
+    input_data = {
+        "topic": topic,
+        "model": model_name,
+        "depth": 2,
+        "parameters": {},
+        "alternatives": 0  # Default to no alternatives
+    }
     
     # Generate a UUID for this flow
     flow_uuid = str(uuid.uuid4())
@@ -354,7 +362,7 @@ def main():
     flow_dir = os.path.join("flow", flow_uuid)
     os.makedirs(flow_dir, exist_ok=True)
     
-    # Save a copy of the input file in the flow directory
+    # Save the generated input data to the flow directory for transparency
     input_copy_path = os.path.join(flow_dir, "input.json")
     with open(input_copy_path, "w", encoding="utf-8") as f:
         json.dump(input_data, f, indent=4)
@@ -663,7 +671,8 @@ def main():
         "date_created": end_time.isoformat(),
         "task": "Complete Automation Flow",
         "time_taken": str(time_taken),
-        "input_file": input_filepath,
+        "topic": topic,  # Use the topic parameter instead of input_filepath
+        "model": model_name,  # Add model information
         "programs_run": [p[0] for p in programs]
     }
     
