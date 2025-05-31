@@ -3,6 +3,8 @@ import sys
 import uuid
 import json
 import subprocess
+import requests
+import time
 from datetime import datetime
 from utils import (
     load_json, save_output, create_output_metadata,
@@ -95,9 +97,89 @@ def validate_challenges_structure(data):
             
     return True, "Challenges structure appears valid."
 
-def run_program(program_name, input_path, output_path, step_info="Running script", extra_args=None):
+def preload_ollama_model(model_name="gemma3", max_retries=3, retry_delay=2):
+    """
+    Preload the Ollama model to keep it in memory for the duration of the flow.
+    Returns True if successful, False otherwise.
+    """
+    print(f"Preloading Ollama model '{model_name}'...")
+    
+    for attempt in range(max_retries):
+        try:
+            # Make a simple request to load the model
+            response = requests.post(
+                "http://localhost:11434/api/generate",
+                json={
+                    "model": model_name,
+                    "prompt": "Hello",
+                    "stream": False,
+                    "options": {
+                        "num_predict": 1  # Minimal generation to just load model
+                    }
+                },
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                print(f"{Colors.GREEN}Model '{model_name}' preloaded successfully.{Colors.ENDC}")
+                return True
+            else:
+                print(f"{Colors.YELLOW}Attempt {attempt + 1}/{max_retries}: HTTP {response.status_code}{Colors.ENDC}")
+                
+        except requests.exceptions.ConnectionError:
+            print(f"{Colors.YELLOW}Attempt {attempt + 1}/{max_retries}: Ollama server not responding{Colors.ENDC}")
+        except requests.exceptions.Timeout:
+            print(f"{Colors.YELLOW}Attempt {attempt + 1}/{max_retries}: Request timed out{Colors.ENDC}")
+        except Exception as e:
+            print(f"{Colors.YELLOW}Attempt {attempt + 1}/{max_retries}: {str(e)}{Colors.ENDC}")
+        
+        if attempt < max_retries - 1:
+            print(f"Retrying in {retry_delay} seconds...")
+            time.sleep(retry_delay)
+    
+    print(f"{Colors.RED}Failed to preload model '{model_name}' after {max_retries} attempts.{Colors.ENDC}")
+    return False
+
+def keep_model_warm(model_name="gemma3"):
+    """
+    Send a minimal request to keep the model loaded in memory.
+    This prevents Ollama from unloading it due to inactivity.
+    """
+    try:
+        requests.post(
+            "http://localhost:11434/api/generate",
+            json={
+                "model": model_name,
+                "prompt": ".",
+                "stream": False,
+                "options": {
+                    "num_predict": 1
+                }
+            },
+            timeout=10
+        )
+    except Exception:
+        # Silently fail - this is just a keep-alive
+        pass
+
+def cleanup_ollama_model(model_name="gemma3"):
+    """
+    Optionally unload the model from memory after the flow completes.
+    Note: Ollama will naturally unload models after a period of inactivity.
+    """
+    try:
+        # Send a request to unload the model (this is optional)
+        # Ollama doesn't have a direct "unload" API, but we can let it naturally timeout
+        print(f"Model '{model_name}' will be unloaded by Ollama after inactivity timeout.")
+        return True
+    except Exception as e:
+        print(f"{Colors.YELLOW}Note: Could not explicitly unload model: {e}{Colors.ENDC}")
+        return False
+
+def run_program(program_name, input_path, output_path, step_info="Running script", extra_args=None, model_name="gemma3"):
     """
     Run a program with specified input/output, enhanced console output, and error handling.
+    Now includes model keep-alive functionality.
     Returns a dictionary with 'status': 'success' or 'failure', and 'error_info' if failed.
     """
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -110,6 +192,9 @@ def run_program(program_name, input_path, output_path, step_info="Running script
     # Print initial running message (no newline)
     sys.stdout.write(f"{step_info}{program_name}... ")
     sys.stdout.flush()
+    
+    # Keep model warm before running the program
+    keep_model_warm(model_name)
     
     # Capture input data before running the program (skip for assemble.py which uses directories)
     input_data = None
@@ -214,7 +299,7 @@ def main():
     global metric_definitions_data # Make it accessible in the metrics processing loop
     metric_definitions_data = load_metric_definitions_for_flow_maker()
 
-    usage_msg = "Usage: python flow-maker.py <input_json> [breadcrumbs]"
+    usage_msg = "Usage: python flow-maker.py <input_json> [breadcrumbs] [--model model_name]"
     
     if len(sys.argv) < 2:
         print(usage_msg)
@@ -225,8 +310,38 @@ def main():
     # Get breadcrumbs if provided, otherwise use a default empty value
     breadcrumbs = sys.argv[2] if len(sys.argv) > 2 else ""
     
+    # Parse model name from command line arguments
+    model_name = "gemma3"  # default
+    for arg in sys.argv:
+        if arg.startswith("--model"):
+            if "=" in arg:
+                model_name = arg.split("=", 1)[1]
+            else:
+                # Look for next argument
+                try:
+                    model_idx = sys.argv.index(arg)
+                    if model_idx + 1 < len(sys.argv):
+                        model_name = sys.argv[model_idx + 1]
+                except (ValueError, IndexError):
+                    pass
+    
     print("Starting flow process...")
+    print(f"Using model: {model_name}")
     start_time = datetime.now()
+    
+    # Preload the model before starting the flow
+    model_preloaded = preload_ollama_model(model_name)
+    if not model_preloaded:
+        print(f"{Colors.YELLOW}Warning: Model preloading failed. Scripts may run slower as model loads for each step.{Colors.ENDC}")
+        while True:
+            choice = input(f"Continue anyway? [Y/N]: ").upper()
+            if choice == 'Y':
+                break
+            elif choice == 'N':
+                print("Flow cancelled.")
+                sys.exit(1)
+            else:
+                print("Please enter Y or N.")
     
     # Load the input data
     input_data = load_json(input_filepath)
@@ -295,7 +410,7 @@ def main():
         
         abs_output_path = os.path.abspath(output_path)
         
-        run_result = run_program(program, abs_current_input_path, abs_output_path, step_info_prefix, extra_args)
+        run_result = run_program(program, abs_current_input_path, abs_output_path, step_info_prefix, extra_args, model_name)
 
         if run_result["status"] == "failure":
             print(run_result["error_info"])
@@ -532,13 +647,13 @@ def main():
                 json.dump(alt_input, f, indent=4)
             
             # Run hallucinate-tree.py with the alternative input
-            alt_success = run_program("hallucinate-tree.py", alt_input_path, alt_output_path, ["-flat"])
+            run_result = run_program("hallucinate-tree.py", alt_input_path, alt_output_path, f"  Alternative {i+1}: ", ["-flat"], model_name)
             
-            if alt_success:
+            if run_result["status"] == "success":
                 print(f"  Alternative tree {i+1} generated successfully at {alt_output_path}")
             else:
                 print(f"  Warning: Failed to generate alternative tree {i+1}")
-    
+
     # Create flow metadata
     end_time = datetime.now()
     time_taken = end_time - start_time
@@ -614,10 +729,14 @@ def main():
     output_path = flow_dir
     abs_current_input_path = os.path.abspath(flow_dir)
     extra_args = None
-    run_result = run_program("assemble.py", abs_current_input_path, output_path, "Assembling HTML output... ", extra_args)
+    run_result = run_program("assemble.py", abs_current_input_path, output_path, "Assembling HTML output... ", extra_args, model_name)
     if run_result["status"] == "failure":
         print(run_result["error_info"])
         sys.exit(1)
+    
+    # Cleanup: Allow model to unload naturally
+    cleanup_ollama_model(model_name)
+    
     print(f"\nFlow process completed in {time_taken}")
     print(f"Output files saved to: {os.path.abspath(flow_dir)}")
 

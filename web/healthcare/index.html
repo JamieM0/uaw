@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder {
+            min-height: 70px; /* Match header height */
+        }
+        #footer-placeholder {
+            min-height: 250px; /* Approximate height of footer */
+        }
+    </style>
+</head>
+<body>
+    <!-- Header placeholder to be filled by components.js -->
+    <div id="header-placeholder"></div>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Healthcare</h1>
+                <p class="hero-subtitle">Exploring automation possibilities in Healthcare systems</p>
+            </div>
+        </section>
+
+        <section class="category-section">
+            <div class="container">
+                <div class="category-container">
+                    <!-- Breadcrumbs - populated by JavaScript -->
+                    <div class="breadcrumbs" data-breadcrumbs='[
+                        {"title": "Home", "url": "/"},
+                        {"title": "Healthcare", "url": "/healthcare/"}
+                    ]'></div>
+                    
+                    <div class="category-header">
+                        <p class="category-description">Healthcare encompasses all processes involved in automating healthcare systems. Explore the categories below to learn about automation in various Healthcare domains.</p>
+                    </div>
+                    
+                    <!-- Category Grid - populated by JavaScript -->
+                    <div class="category-grid" id="category-items" 
+                        data-category-title="Healthcare" 
+                        data-category-items='[
+                            {
+                                "title": "Clinical Procedures",
+                                "description": "Surgical workflows, diagnostic tests, and direct patient care routines.",
+                                "url": "/healthcare/clinical-procedures"
+                            },
+                            {
+                                "title": "Medical Administration",
+                                "description": "Patient intake, records management, billing, and insurance handling.",
+                                "url": "/healthcare/medical-administration"
+                            },
+                            {
+                                "title": "Pharmaceutical Processes",
+                                "description": "Drug development, compounding, testing, and dispensing.",
+                                "url": "/healthcare/pharmaceutical-processes"
+                            },
+                            {
+                                "title": "Medical Imaging & Diagnostics",
+                                "description": "Radiology, lab testing, scan interpretation, AI-assisted diagnostics.",
+                                "url": "/healthcare/medical-imaging-diagnostics"
+                            },
+                            {
+                                "title": "Hospital Logistics",
+                                "description": "Inventory, equipment sterilization, internal transport, and scheduling.",
+                                "url": "/healthcare/hospital-logistics"
+                            },
+                            {
+                                "title": "Telehealth & Remote Care",
+                                "description": "Virtual consultations, patient monitoring, and remote triage.",
+                                "url": "/healthcare/telehealth-remote-care"
+                            },
+                            {
+                                "title": "Healthcare Data Management",
+                                "description": "EMRs, interoperability, regulatory compliance, and data privacy.",
+                                "url": "/healthcare/healthcare-data-management"
+                            }
+                        ]'>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer placeholder to be filled by components.js -->
+    <div id="footer-placeholder"></div>
+    
+    <!-- Load components.js first, then category-template.js -->
+    <script src="/assets/js/components.js"></script>
+    <script src="/assets/js/category-template.js"></script>
+</body>
+</html>

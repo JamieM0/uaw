@@ -83,14 +83,6 @@ def get_section_metrics_and_relevance(id_suffix, article_metrics_data, metric_de
     section_metrics_content_from_file = {} # This will hold the content of e.g. "2.json"
     if metrics_key_for_file and article_metrics_data.get("sections"):
         section_metrics_content_from_file = article_metrics_data["sections"].get(metrics_key_for_file, {})
-    else:
-        # If no mapping or "sections" key, this id_suffix won't have specific metrics.
-        # It will default to not relevant for any persona unless handled differently.
-        print(f"DEBUG: No metrics mapping or 'sections' in article_metrics_data for id_suffix: {id_suffix}")
-
-    if not section_metrics_content_from_file and metrics_key_for_file: # Check if the specific file key yielded data
-        print(f"DEBUG: No metrics content found in article_metrics_data['sections'] for key: {metrics_key_for_file} (from id_suffix: {id_suffix})")
-
 
     # Use the slugs for internal logic
     for persona_slug in CORE_PERSONAS: # Use the list of slugs
@@ -121,9 +113,6 @@ def get_section_metrics_and_relevance(id_suffix, article_metrics_data, metric_de
             "evaluated_metrics": evaluated_metrics_list # Use the pre-structured list
         }
     
-    if not relevant_personas_list and metrics_key_for_file:
-         print(f"DEBUG: id_suffix '{id_suffix}' (metrics key '{metrics_key_for_file}') is not relevant for any persona based on 'is_relevant' flags in metrics file.")
-
     return {
         "relevant_personas_list": relevant_personas_list,
         "metrics_data_for_section_json": json.dumps(detailed_metrics_for_modal_by_persona)
@@ -445,7 +434,6 @@ def main():
                 page_slug = "article"
             
             section_id_for_html = f"{page_slug}-{id_suffix}" # Used for HTML element IDs
-            print(f"DEBUG: HTML section_id: {section_id_for_html}, using id_suffix '{id_suffix}' for metrics lookup.")
             
             # Pass the id_suffix to get_section_metrics_and_relevance for mapping
             metrics_info = get_section_metrics_and_relevance(id_suffix, article_metrics_data, metric_definitions_data)
@@ -681,12 +669,25 @@ def main():
         flow_uuid = None
         if files_dir_path:
             # Extract UUID from path like "flow/uuid-here" or just "uuid-here"
-            path_parts = files_dir_path.strip('/').split('/')
+            # Normalize path separators and remove any trailing separators
+            normalized_path = files_dir_path.replace('\\', '/').rstrip('/')
+            path_parts = normalized_path.split('/')
+            
             for part in reversed(path_parts):  # Check from the end
                 # UUID pattern: 8-4-4-4-12 characters separated by hyphens
                 if len(part) == 36 and part.count('-') == 4:
-                    flow_uuid = part
-                    break
+                    # Validate it looks like a UUID
+                    try:
+                        # Try to parse as UUID to validate format
+                        import uuid as uuid_module
+                        uuid_module.UUID(part)
+                        flow_uuid = part
+                        break
+                    except ValueError:
+                        # Not a valid UUID, continue looking
+                        continue
+        
+        print(f"DEBUG: Extracted flow_uuid: {flow_uuid} from path: {files_dir_path}")
 
         # --- Final Jinja2 Context for page-template.html ---
         context = {
@@ -696,7 +697,7 @@ def main():
             'metric_definitions': metric_definitions_data, # Pass global definitions
             # 'article_metrics': article_metrics_data, # This is now processed into each section's metrics_data_json
             'core_personas': CORE_PERSONAS_DICT, # Pass the pre-defined dictionary
-            'flow_uuid': flow_uuid # Add flow UUID for transparency modal
+            'flow_uuid': flow_uuid # Add flow UUID for transparency modal and origin tracking
         }
 
         # --- Render Main Template ---
