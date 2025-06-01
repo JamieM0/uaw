@@ -1,0 +1,2243 @@
+{
+  "flow_uuid": "b3d0ed35-3d78-4c5f-bb4a-74fc0e2dea54",
+  "sections": {
+    "1.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content describes a Security Orchestration, Automation, and Response (SOAR) system, which aligns perfectly with the user's request to create metadata for a Universal Automation Wiki page about it.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": false,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": false,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": false,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          },
+          {
+            "id": "suggests_alternatives_reasoning",
+            "name": "suggests_alternatives_reasoning",
+            "passed": true,
+            "description": "Description not found."
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content is directly related to the topic of Security Orchestration, Automation, and Response (SOAR) and is aimed at an educator persona who would benefit from understanding the principles and implementation strategies.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content focuses on Security Orchestration, Automation, and Response (SOAR), aligning perfectly with the user's request to create metadata for a Universal Automation Wiki page about this topic.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": true,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": true,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": false,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": true,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content is directly about Security Orchestration, Automation, and Response (SOAR), making it highly relevant for an investor evaluating automation opportunities in this area.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": true,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": false,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": false,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a comprehensive overview of SOAR, which aligns directly with the topic of a Universal Automation Wiki page. The detailed description and breakdown of different automation approaches (No Automation, Support Automation, etc.) would be highly valuable for a knowledge base focusing on automation methodologies.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": false,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": true,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": false,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "2.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses the task of 'Continuously Improve and Update Playbooks,' which is a core component of a SOAR implementation and relevant for a hobbyist interested in automation.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": true,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": null,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": null,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          },
+          {
+            "id": "suggests_alternatives_reasoning",
+            "name": "suggests_alternatives_reasoning",
+            "passed": true,
+            "description": "Description not found."
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section, 'Continuously Improve and Update Playbooks,' is highly relevant to a teacher or trainer who utilizes SOAR for automation and response. It directly addresses the ongoing maintenance and optimization of a critical SOAR implementation component.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": false,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": false,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant for a field expert involved in SOAR implementation and ongoing optimization. The steps detail the process of continuously improving playbooks, which is a core operational activity for anyone managing and refining a SOAR environment.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": false,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": false,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": false,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content focuses on continuously improving and updating playbooks, which is a critical aspect of SOAR implementation and maintenance for an investment perspective, particularly in assessing efficiency and ROI.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": true,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": null,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": null,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content section focuses on the ongoing process of continuously improving and updating SOAR playbooks, which is highly relevant to a researcher studying automation methodologies and outcomes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": null,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": null,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": null,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": null,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": null,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": null,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "3.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to a hobbyist interested in automation, specifically in the context of security. The timeline details the evolution of SOAR, which aligns directly with a hobbyist's potential projects and interests in building and automating security solutions.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": false,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": false,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": false,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section is highly relevant to a teacher or academic specializing in automation processes, particularly in cybersecurity. It provides a detailed historical and predictive timeline specifically focused on the evolution of SOAR technologies.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to a field expert in cybersecurity, specifically concerning the evolution and future of SOAR. It provides a detailed historical timeline and forward-looking predictions, addressing core technical aspects of the domain.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": null,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": null,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": false,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": false,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": false,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to an investor evaluating automation opportunities in the security space. It provides a detailed historical and predictive timeline of SOAR technology development, which directly relates to investment potential.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": null,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the topic of Security Orchestration, Automation, and Response (SOAR), making it highly relevant to an academic or industry researcher studying automation methodologies and outcomes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": null,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": true,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "4.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses automation challenges within the Security Orchestration, Automation, and Response (SOAR) field, aligning perfectly with a hobbyist's interest in this area. The detailed explanations provide valuable insight into the complexities involved.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by-step_instructions",
+            "name": "has_step_by-step_instructions",
+            "passed": false,
+            "description": "Description not found."
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": false,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": false,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses the challenges associated with Security Orchestration, Automation, and Response (SOAR), making it highly relevant for a teacher or trainer educating others about automation processes in cybersecurity.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": null,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": null,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses automation challenges within the Security Orchestration, Automation, and Response (SOAR) field, making it highly relevant to a field expert.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": null,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": null,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": true,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": null,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": null,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": null,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses automation challenges within the SOAR field, making it highly relevant to an investor evaluating automation opportunities in cybersecurity.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": null,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses automation challenges within the SOAR domain, making it highly relevant for a researcher studying automation methodologies and outcomes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": null,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": null,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": null,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": null,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "5.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a detailed breakdown of automation adoption phases within the SOAR domain, aligning perfectly with the persona of a hobbyist interested in automation.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": false,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": false,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": false,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content provides a detailed breakdown of automation adoption phases, specifically within the SOAR (Security Orchestration, Automation, and Response) domain. It aligns perfectly with the user's request for a phased explanation, including specific examples and increasing complexity.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content provides a detailed breakdown of automation adoption phases within the SOAR domain, aligning perfectly with the user's request for a phased approach to security orchestration and automation.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": false,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": false,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": false,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": false,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a detailed breakdown of automation adoption phases specifically within Security Orchestration, Automation, and Response (SOAR), making it highly relevant for an investor evaluating automation opportunities in this area.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": null,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a detailed breakdown of automation adoption phases within Security Orchestration, Automation, and Response (SOAR), making it highly relevant for a researcher specializing in this field.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": true,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "6.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses a 'Current Implementations Assessment' of SOAR, targeting a hobbyist interested in automation. The detailed breakdown of steps and automation levels aligns perfectly with someone exploring and understanding SOAR implementations.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": true,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": null,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": null,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": null,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": null,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": null,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to a cybersecurity educator seeking to understand current SOAR implementations and their automation levels. It provides a detailed breakdown of key process steps and their varying automation approaches.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses SOAR implementation, making it highly relevant for a field expert seeking to understand current practices and automation levels.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": null,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": null,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": null,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": null,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": null,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is directly relevant to an investor persona evaluating automation opportunities, particularly within cybersecurity and SOAR implementations. It details various stages of security operations and the degree of automation at each stage, which is crucial for assessing potential ROI and investment decisions.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": false,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses automation methodologies and outcomes, aligning with the interests of an academic or industry researcher studying automation, particularly within the context of SOAR.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": null,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": null,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": null,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": null,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": null,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": null,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "7.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a detailed ROI analysis of SOAR implementation across different scales, which aligns directly with the interests and goals of a hobbyist automation enthusiast. It offers valuable insights into the costs, benefits, and considerations involved in automating security operations.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by-step_instructions",
+            "name": "has_step_by-step_instructions",
+            "passed": false,
+            "description": "Description not found."
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": false,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": true,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed ROI analysis of SOAR implementation, which is directly relevant to a teacher or trainer educating others on automation processes, particularly in cybersecurity.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the ROI analysis of SOAR implementations, a topic highly relevant to a field expert seeking to understand the financial implications and operational considerations of deploying these technologies.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": null,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": null,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": true,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": null,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": null,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": null,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the investment perspective, which is critical for an investor evaluating automation opportunities within cybersecurity.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": true,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": true,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": false,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": false,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the ROI analysis of automation methodologies, specifically focusing on Security Orchestration, Automation, and Response (SOAR). This aligns perfectly with the profile of an academic or industry researcher studying automation outcomes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": null,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": null,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": null,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": null,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": null,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": null,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "8.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a highly detailed overview of future automation technologies, particularly within the security domain. It aligns perfectly with the persona of a hobbyist interested in forecasting and understanding emerging automation trends.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by-step_instructions",
+            "name": "has_step_by-step_instructions",
+            "passed": false,
+            "description": "Description not found."
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": false,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": false,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": false,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a highly detailed overview of future technologies relevant to automated security orchestration, specifically addressing the components needed for full automation. It's structured in a way that aligns with the input prompt's requested categories.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a highly detailed and technically focused overview of future technologies for security orchestration, automation, and response, aligning perfectly with the persona's expertise as a field expert.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": false,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": false,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": true,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": false,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the prompt's request for a detailed overview of future technologies needed for full automation of security orchestration, automation, and response. It provides a categorized breakdown of technologies with specifications and accuracy metrics, aligning with the desired output format.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the prompt's request for a detailed overview of future technologies needed for full automation in security orchestration, automation, and response. It provides a structured breakdown categorized by system type (sensory, control, mechanical, software) and includes relevant specifications and accuracy metrics, aligning closely with the requested JSON format and depth of detail.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": false,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "9.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the hobbyist's interest in automation, specifically within the SOAR domain. The detailed specifications and considerations are highly relevant to someone pursuing a hands-on project involving automation and security orchestration.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": true,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by-step_instructions",
+            "name": "has_step_by-step_instructions",
+            "passed": false,
+            "description": "Description not found."
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": false,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": false,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": false,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a highly detailed overview of industrial specifications for SOAR platforms, aligning perfectly with the persona of an educator focusing on automation processes. It's a technical specification suitable for training and understanding.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content provides a detailed breakdown of industrial specifications for SOAR, aligning perfectly with the user persona's expertise in industrial engineering and specifications. It delivers precisely the type of technical detail expected for professionals in this field.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": true,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": false,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": false,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": true,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the request for detailed industrial specifications for Security Orchestration, Automation, and Response (SOAR), making it highly relevant for an investor evaluating automation opportunities.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": null,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a highly detailed breakdown of industrial specifications for SOAR, aligning perfectly with a researcher's need for concrete technical details and performance metrics. The level of granularity is ideal for a researcher studying automation methodologies and outcomes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": null,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": null,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": null,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": null,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": null,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    }
+  }
+}

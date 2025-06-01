@@ -1,0 +1,2237 @@
+{
+  "flow_uuid": "262f94e2-4854-4a91-a339-13342cb65aee",
+  "sections": {
+    "1.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a comprehensive overview of automated warehousing technologies, including various automation levels (No Automation, Scripted Automation, etc.). Given the user's persona as a hobbyist interested in automation projects, this detailed explanation of different automation approaches and their characteristics would be highly relevant and useful for their experimentation and learning.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": true,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": true,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": true,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": false,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": true,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": true,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": true,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section details the automation technologies used in modern warehousing, including robots, WMS, and digital twins \u2013 aligning perfectly with the user's role as an educator seeking to explain automation to students. The detailed breakdown of different automation levels (No Automation, Scripted Automation, etc.) offers valuable material for modular curriculum development.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": true,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a comprehensive overview of automated warehousing, detailing various technologies, automation status definitions, and challenges \u2013 directly aligning with the user\u2019s role as a field expert seeking precise, implementation-ready details for the 'Automated Warehousing' topic. The detailed automation status definitions are particularly pertinent.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": false,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": true,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": true,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": true,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": true,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section details various automation technologies within warehousing, including robotic and digital systems, which directly aligns with the investor's interest in disruptive automation methods and their potential for profit. The inclusion of details about AMRs, WMS, and cost considerations makes it highly relevant to their focus on scalability, ROI, and market adoption.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": true,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": true,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": true,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed overview of automated warehousing, including various technologies, implementation strategies, and challenges \u2013 directly aligning with the user's interest in 'automated warehousing' and the persona's focus on understanding automation technologies, particularly with the inclusion of detailed definitions of automation types like 'Self-Managing Automation'.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": false,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": true,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": true,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "2.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section breaks down training personnel on automated systems, which directly aligns with the hobbyist's interest in hands-on experimentation and learning about automated warehousing technologies. The detailed steps \u2013 from developing training materials to conducting practical sessions \u2013 cater to their desire for accessible, step-by-step guidance.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": false,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": false,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": false,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": false,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section breaks down training personnel on automated systems, directly aligning with the educator's interest in modularity, age-appropriateness, and providing clear steps for teaching concepts. The detailed sub-steps focus on practical training and operational procedures, which would be valuable for a curriculum design or educational content creation project.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": false,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": false,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": false,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": false,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": false,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": false,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses the practical steps involved in training personnel on an automated system, aligning with the field expert's focus on implementation-ready detail and verifiable processes. The sub-steps are precisely the type of information this user would seek when planning and executing an operational change.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": false,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": false,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": false,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": false,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": false,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": false,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses the investor's key interest in training personnel on automated systems, encompassing operational procedures, maintenance, and quality control\u2014all critical for assessing the system's profitability, scalability, and risk mitigation.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": false,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": false,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": false,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": false,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": false,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": false,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": false,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses the critical step of training personnel on the operation and maintenance of the automated system, aligning with the researcher's focus on methodological transparency and practical implementation details. It\u2019s a key element for successful adoption and ongoing support of the technology.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": false,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": false,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": false,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": false,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": false,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": false,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "3.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section is highly relevant to the hobbyist user. It provides a detailed historical timeline of automation technology in warehousing, starting from the 1920s and extending to future predictions. The chronological breakdown of advancements, including specific technologies like AS/RS, AGVs, and AMRs, directly aligns with the user's interest in understanding the evolution of automation and its potential future developments \u2013 all within the context of hands-on experimentation and DIY projects.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": true,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": true,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": true,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": false,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": true,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": true,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed historical timeline of automation in warehousing, broken down by decade. Given the user is an educator researching this topic, the chronological progression of advancements and key technologies (AS/RS, AGVs, WMS, etc.) aligns perfectly with their needs for curriculum design, explanation, and understanding the evolution of automation.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": false,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": false,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed historical timeline of automation technologies in warehousing, starting from the 1920s and extending to potential future developments. This aligns perfectly with the field expert's interest in understanding the evolution of automation and its future trajectory, making it highly relevant to their needs for precision and implementation-ready detail.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": false,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": true,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": true,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": true,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": true,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a historical timeline of automation technologies in warehousing, including key developments by decade \u2013 exactly the kind of detailed information an investor would be looking for to assess the potential of these methods and compare them against competitors. The timeline covers significant advancements and future predictions, aligning perfectly with the investor's stated interest in scalability, profitability, and disruptive opportunities.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": false,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": false,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": true,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed historical timeline of automation technologies in warehousing, aligning directly with the researcher's interest in understanding the evolution of automation and its key developments across decades. The level of detail, including specific technologies like AS/RS, AGVs, and WMS, is precisely what a researcher would be seeking.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": false,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": true,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": true,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "4.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses technical challenges associated with automated warehousing, focusing on issues like dynamic slotting, handling diverse product characteristics, and integration complexities \u2013 all of which align with a hobbyist's hands-on interest in practical automation projects and overcoming real-world limitations.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": true,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": true,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": true,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": false,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": true,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": true,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses technical challenges in automated warehousing, including issues with dynamic layouts, handling diverse product types, integration complexities, and safety considerations \u2013 all of which are highly relevant to an educator seeking to explain these difficulties to students or the public.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": true,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": false,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses the challenges of implementing automated warehousing systems, focusing on technical limitations, integration complexities, and practical difficulties \u2013 precisely the concerns a field expert would prioritize.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": true,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": true,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": true,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": true,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses the investor's core interests by outlining significant technical and financial challenges associated with automated warehousing \u2013 specifically concerning ROI, integration costs, and operational complexities, which are all factors an investor would consider when evaluating the commercial viability of such a technology.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": true,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": true,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": true,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses technical challenges in automated warehousing, focusing on limitations of current systems like dynamic slotting, handling complex item characteristics, and integration difficulties \u2013 all of which align with a researcher's need for rigorous analysis of methodological constraints.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": false,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": true,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "5.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section is highly relevant to the hobbyist user. It details the different phases of automation adoption in automated warehousing, providing specific examples of technologies (AGVs, AMRs, AS/RS, etc.) that would be of particular interest to someone interested in building and experimenting with automation projects, particularly those focused on practical implementation and relatively accessible technologies.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": true,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": true,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": true,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": true,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": true,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": true,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": true,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section is highly relevant to the educator persona. It provides a detailed breakdown of automation phases within automated warehousing, including specific examples and increasing levels of complexity, which directly aligns with the persona's need for structured learning materials and adaptable content for explaining automation concepts.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": true,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section is highly relevant to the field expert persona. It provides a detailed breakdown of automation phases in warehousing, specifically focusing on concrete examples of technologies and their increasing complexity, aligning perfectly with the expert\u2019s interest in implementation-ready detail and domain-specific terminology.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": true,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": true,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": true,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": true,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": true,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed breakdown of automation adoption phases specifically for automated warehousing, aligning perfectly with the investor's interest in scalable, profitable automation methods within the logistics and supply chain sector. The examples and descriptions directly address the investor's need for understanding different levels of automation complexity and potential ROI.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": true,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": true,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": true,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section is highly relevant to the researcher persona. It provides a detailed breakdown of automation adoption phases specifically within automated warehousing, including numerous examples and increasing levels of complexity, aligning perfectly with the researcher's interest in understanding technological evolution and methodological transparency.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": true,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": true,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "6.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section details the various stages of automated warehousing with specific automation levels for different scales, which directly aligns with the hobbyist's interest in practical implementation and exploring different automation technologies.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": true,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": true,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": true,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": true,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": true,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": true,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": true,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed breakdown of automated warehousing processes \u2013 receiving, inventory management, order fulfillment, and shipping \u2013 categorized by automation levels (Low, Medium, High). This aligns directly with an educator's need to explain automation concepts and adapt them to different learning levels and contexts.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": true,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed breakdown of automation implementations across different warehouse scales (low, medium, high), aligning directly with the field expert's need for precision, implementation-ready detail, and data supporting technical analysis.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": true,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": true,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": true,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": true,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": true,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed analysis of automation implementations within various warehouse processes (Receiving, Inventory Management, Order Fulfillment, etc.) and assesses the levels of automation across different scales (Low, Medium, High). This aligns directly with the investor's interest in understanding scalability, profitability, and competitive advantages related to automation methods, as well as cost projections.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": true,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": true,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": true,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed breakdown of automation implementations across different scales of warehousing operations, including specific technologies and their associated automation levels. This aligns directly with the researcher's interest in understanding and comparing current methodologies and technological advancements within automated warehousing.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": false,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": true,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": true,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "7.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed ROI analysis of automation in warehousing, which directly aligns with the hobbyist's interest in practical automation projects and assessing the cost-effectiveness of DIY solutions. The breakdown by scale (small, medium, large) offers insights into investment levels and potential savings, appealing to their hands-on approach.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": true,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": true,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": true,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": false,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": true,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": true,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": true,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed ROI analysis of automation in warehousing, which directly aligns with an educator's interest in understanding the practical implications and cost-benefit considerations of automation technologies for potential teaching applications and curriculum design.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": true,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": false,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed ROI analysis for different automation scales within automated warehousing, directly aligning with the field expert's interest in quantifiable data and implementation-ready details for assessing investment strategies.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": true,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": true,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": true,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": true,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": true,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed ROI analysis for different automation scales within automated warehousing, including investment costs, savings projections, and key considerations \u2013 directly aligning with an investor's interest in understanding the financial viability and potential return on automation investments.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": true,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": true,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": true,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed ROI analysis of automation implementations across different scales, including investment ranges, expected savings, and key considerations. This aligns directly with the researcher's focus on rigorous analysis and understanding the economic viability of automation technologies.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": false,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": false,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "8.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a highly detailed overview of future technologies for automated warehousing, including specific sensor types (LiDAR, computer vision, tactile sensing), control systems (MPC, swarm robotics), mechanical systems (cobots, AMRs), and software integrations (digital twins, AI-powered WMS). Given the user's persona as a hobbyist deeply interested in automation, this level of technical detail and future-focused analysis aligns perfectly with their interests and desire to understand emerging technologies.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": true,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": true,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": true,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": true,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": true,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": true,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": true,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a highly detailed overview of future technologies relevant to automated warehousing, including sensor systems, control systems, mechanical systems, and software integration. The inclusion of accuracy metrics and timelines aligns perfectly with the educator's interest in understanding technological advancements and their potential implementation.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": true,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section is highly relevant to the 'field_expert' persona. It provides a detailed breakdown of future technology advancements \u2013 including sensor systems, control mechanisms, and mechanical components \u2013 with specific technical specifications and accuracy metrics, aligning perfectly with the expert's need for precision and implementation-ready detail within the automated warehousing domain.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": true,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": true,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": true,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": true,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": true,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed overview of future technologies relevant to automated warehousing, including sensor systems (LiDAR, computer vision, tactile sensing, acoustic sensing), control systems (MPC with RL, swarm robotics, hybrid architectures), mechanical systems (cobots, AMRs, miniature conveyor systems), and software integration (digital twins, AI-powered WMS, blockchain). The inclusion of accuracy metrics, specifications, and timeline estimates aligns directly with the investor's stated interest in scalability, profitability, and ROI projections.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": true,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": true,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": true,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a highly detailed overview of future sensing technologies (LiDAR, Computer Vision, Tactile Sensing, Acoustic Sensing) with specific accuracy metrics and timelines, aligning perfectly with the researcher's interest in rigorous, technologically-focused automation advancements and detailed specifications. The inclusion of control systems, mechanical systems, and software integration further reinforces its relevance to the topic of full automation in warehousing.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": true,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": true,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "9.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section details industrial specifications for automated warehousing, including performance metrics and implementation requirements \u2013 directly aligning with the hobbyist's interest in hands-on automation projects and practical technical details for building or modifying warehouse systems.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": true,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": true,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": false,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": true,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": true,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": true,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed breakdown of industrial specifications for automated warehousing, including performance metrics, implementation requirements, and supplier information \u2013 directly aligning with the educator\u2019s interest in technical details for teaching purposes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": true,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a highly detailed breakdown of industrial specifications for automated warehousing, including performance metrics, implementation requirements, industry standards, key suppliers, and operational considerations \u2013 directly aligning with the field expert's stated need for precision, technical details, and practical deployability.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": true,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": true,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": true,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": true,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": true,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides detailed industrial specifications \u2013 performance metrics, implementation requirements, industry standards, key suppliers, and operational considerations \u2013 directly aligning with the investor persona's interest in scalable, profitable automation methods and associated technical details.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": true,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": true,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": true,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a highly detailed breakdown of industrial specifications for automated warehousing, including performance metrics, implementation requirements, and supplier information \u2013 precisely aligning with the researcher's focus on rigorous technical details and current industry standards.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": false,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": true,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": true,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    }
+  }
+}

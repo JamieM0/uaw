@@ -185,7 +185,7 @@ def process_metadata(metadata, breadcrumb_str):
     """Process metadata, add contributors/date, and incorporate breadcrumbs."""
     result = metadata.get('page_metadata', {})
 
-    # Handle progress percentage (updated logic to match actual JSON structure)
+    # Handle progress percentage
     progress_text = None
     if 'percentage_progress' in result:
         progress_text = result['percentage_progress']

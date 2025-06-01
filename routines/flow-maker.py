@@ -100,18 +100,24 @@ def validate_challenges_structure(data):
 def preload_ollama_model(model_name="gemma3", max_retries=3, retry_delay=2):
     """
     Preload the Ollama model to keep it in memory for the duration of the flow.
+    Uses /api/chat to match the same API that scripts will use.
     Returns True if successful, False otherwise.
     """
     print(f"Preloading Ollama model '{model_name}'...")
     
     for attempt in range(max_retries):
         try:
-            # Make a simple request to load the model
+            # Use /api/chat instead of /api/generate to match what scripts use
             response = requests.post(
-                "http://localhost:11434/api/generate",
+                "http://localhost:11434/api/chat",
                 json={
                     "model": model_name,
-                    "prompt": "Hello",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": "Hello"
+                        }
+                    ],
                     "stream": False,
                     "options": {
                         "num_predict": 1  # Minimal generation to just load model
@@ -143,14 +149,20 @@ def preload_ollama_model(model_name="gemma3", max_retries=3, retry_delay=2):
 def keep_model_warm(model_name="gemma3"):
     """
     Send a minimal request to keep the model loaded in memory.
+    Uses /api/chat to match the same API that scripts use.
     This prevents Ollama from unloading it due to inactivity.
     """
     try:
         requests.post(
-            "http://localhost:11434/api/generate",
+            "http://localhost:11434/api/chat",
             json={
                 "model": model_name,
-                "prompt": ".",
+                "messages": [
+                    {
+                        "role": "user", 
+                        "content": "."
+                    }
+                ],
                 "stream": False,
                 "options": {
                     "num_predict": 1
@@ -253,7 +265,6 @@ def run_program(program_name, input_path, output_path, step_info="Running script
                 except Exception as e:
                     print(f"  Warning: Could not add transparency data to {output_path}: {e}")
                 
-                print("  Saved inputs and outputs.")
             return {"status": "success"}
         else:
             sys.stdout.write(f"\r{step_info}{program_name}... {Colors.RED}Failed!{Colors.ENDC}\n")
@@ -499,7 +510,6 @@ def main():
             # If validation passed (or was not applicable for this file type)
             # AND program is not assemble.py, then run evaluations.
             if validation_passed_for_current_file and program != "assemble.py":
-                print(f"\n--- Starting Evaluation for output of {program} ({output_filename}) ---")
                 section_source_file_path = abs_output_path
 
                 # Run evaluation for all profiles in a single call
@@ -603,8 +613,6 @@ def main():
                             all_flow_metrics["sections"][output_filename][profile_name]["relevance_reasoning"] = relevance_reasoning
                             if "evaluated_metrics" not in all_flow_metrics["sections"][output_filename][profile_name]:
                                  all_flow_metrics["sections"][output_filename][profile_name]["evaluated_metrics"] = []
-
-                print(f"--- Finished Evaluation for output of {program} ---")
 
         program_idx += 1 # Move to next program
 

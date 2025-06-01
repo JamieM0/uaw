@@ -27,7 +27,7 @@ def generate_page_metadata(input_data, save_inputs=False):
         "- A descriptive title (using the topic name) MAXIMUM 2-3 WORDS DO NOT INCLDUE A SUBTITLE (e.g., ANYTHING AFTER A SEMICOLON) "
         "- A subtitle that explains the scope "
         "- Current automation status (You MUST use one of the below defined terms for automation status. Include ONLY the name, for example, No Automation is a valid response, if it is appropriate for the given topic of course). "
-        "- Percentage estimate of progress toward full automation (as a percentage). BE CRITICAL, do not exaggerate current status. E.g., '25%' would be appropriate for topics where some partial automation is POSSIBLE."
+        "- Percentage estimate of progress toward full automation (as a percentage). The key MUST be 'progress_percentage'. BE CRITICAL, do not exaggerate current status. E.g., '25%' would be appropriate for topics where some partial automation is POSSIBLE."
         "- Explanatory text (2-3 FULL paragraphs) that describes the topic and its automation journey."
         "Format your response as a JSON object with these fields."
         "Automation status options:"

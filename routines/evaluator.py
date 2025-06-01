@@ -1,8 +1,17 @@
 import json
 import argparse
 from pathlib import Path
-from utils import chat_with_llm
+from utils import chat_with_llm, parse_llm_json_response
 import sys
+
+# Define persona definitions here since they're referenced in the main function
+PERSONA_DEFINITIONS = {
+    "hobbyist": "Individual who pursues automation as a personal interest or hobby project",
+    "educator": "Teacher, trainer, or academic who educates others about automation processes", 
+    "field_expert": "Professional with deep technical expertise in the specific domain being automated",
+    "investor": "Individual or entity evaluating automation opportunities for financial investment",
+    "researcher": "Academic or industry researcher studying automation methodologies and outcomes"
+}
 
 def load_metric_definitions():
     with open(Path(__file__).parent.parent / "metrics" / "definitions.json", "r") as f:
@@ -12,165 +21,134 @@ def load_profile(profile_name, param):
     with open(Path(__file__).parent.parent / "metrics" / f"{profile_name}.json", "r") as f:
         return json.load(f)[param]
 
-# Run classification prompt using local LLM via Ollama
-def run_metric_check_with_llm(metric_description, section_text):
-    system_message = "You are a strict binary classifier. Based on the following content, determine if the given condition is met. Respond only with 'True' or 'False'."
-    
-    user_message = f"""Condition:
-"{metric_description}"
-
-Content:
-\"\"\"
-{section_text}
-\"\""
-"""
-    
-    response = chat_with_llm("gemma3", system_message, user_message)
-    return response.lower().startswith("true")
-
-# Check if section is relevant to a persona using LLM
-def is_section_relevant_to_persona(profile_name, biography, section_text, article_title):
-    system_message = """
-    You are a relevance classifier. You will be given:
-1. A user persona description
-2. The topic of the article the user is reading
-3. The content of a specific section from that article
-
-    Your task is to determine whether the section is relevant to the user's likely interests, assuming they are currently reading an article about that topic.
-
-    Respond with a JSON object containing two keys:
-1. "is_relevant": A boolean (true or false).
-2. "reasoning": A brief explanation (1-2 sentences) for your decision.
-
-Example response:
-{
-  "is_relevant": true,
-  "reasoning": "This section is relevant because it directly addresses the user's stated interest in practical applications."
-}
-"""
-    
-    user_message = f"""
-    Persona: {profile_name}
-
-    Article topic:
-    "{article_title}"
-    
-Persona biography:
-\"\"\"
-{biography}
-\"\""
-
-Section content:
-\"\"\"
-{section_text}
-\"\""
-
-Is this section relevant to the user? Provide your answer as a JSON object.
-"""
-    
-    response_text = chat_with_llm("gemma3", system_message, user_message)
-    
-    try:
-        # Attempt to find JSON within potentially larger response
-        json_start = response_text.find('{')
-        json_end = response_text.rfind('}') + 1
-        if json_start != -1 and json_end != 0:
-            json_str = response_text[json_start:json_end]
-            data = json.loads(json_str)
-            is_relevant = data.get("is_relevant", False)
-            reasoning = data.get("reasoning", "No reasoning provided by LLM.")
-            if not isinstance(is_relevant, bool):
-                is_relevant = False # Default to False if type is incorrect
-                reasoning += " (LLM returned non-boolean for is_relevant)"
-            return is_relevant, reasoning
-        else:
-            # Fallback if no JSON object is found, try to interpret as True/False
-            is_relevant_fallback = response_text.lower().strip().startswith("true")
-            reasoning_fallback = "LLM did not return a valid JSON object. Relevance determined by simple True/False check."
-            if not is_relevant_fallback and not response_text.lower().strip().startswith("false"):
-                 reasoning_fallback += f" Raw LLM response: '{response_text[:100]}...'" # Add raw response if ambiguous
-            return is_relevant_fallback, reasoning_fallback
-
-    except json.JSONDecodeError:
-        return False, f"Error: LLM response was not valid JSON. Response: '{response_text[:200]}...'"
-    except Exception as e:
-        return False, f"An unexpected error occurred while parsing LLM response: {str(e)}"
-
-# Evaluate all relevant metrics for a section given a persona
-def evaluate_section(section_text, profile_name, article_title):
-    definitions = load_metric_definitions()
-    metrics_to_check = load_profile(profile_name, "metrics")
-    profile_biography = load_profile(profile_name, "biography")
-
-    # First check if the section is relevant and get reasoning
-    is_relevant, relevance_reasoning = is_section_relevant_to_persona(profile_name, profile_biography, section_text, article_title)
-
-    if not is_relevant:
-        return {
-            "relevant": False,
-            "relevance_reasoning": relevance_reasoning, # Add reasoning here
-            "metrics": {metric: None for metric in metrics_to_check}
-        }
-
-    # Run all metrics
-    results = {}
-    for metric in metrics_to_check:
-        desc = definitions[metric]["description"]
-        results[metric] = run_metric_check_with_llm(desc, section_text)
-
-    return {
-        "relevant": True,
-        "relevance_reasoning": relevance_reasoning, # relevance_reasoning is now defined
-        "metrics": results
-    }
-
 def load_json_file(file_path):
     """Load and return JSON content from the specified file path."""
-    with open(file_path, "r", encoding="utf-8") as f: # Specify UTF-8 encoding
+    with open(file_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def main():
-    """Process command line arguments and run evaluation."""
-    parser = argparse.ArgumentParser(description='Evaluate text sections based on one or more profiles.')
-    parser.add_argument('input_file', type=str, help='Path to the JSON file containing text to evaluate')
-    parser.add_argument('profiles', type=str, nargs='+', help='One or more profile names to use for evaluation (e.g., "hobbyist educator")')
-    parser.add_argument('article_title', type=str, help='Title of the article being evaluated')
-    
-    args = parser.parse_args()
-    
-    # Load the input text from the provided JSON file
+def evaluate_section_for_persona_batch(section_data, persona_name, persona_description, article_title, metric_definitions):
+    """
+    Evaluate a section for a specific persona using a single batched LLM call.
+    This combines relevance checking and all metric evaluations into one request.
+    """
+    # Get the metrics this persona cares about
     try:
-        input_data = load_json_file(args.input_file)
-        if isinstance(input_data, str):
-            # If the JSON file contains a single string
-            sections = [input_data]
-        elif isinstance(input_data, list):
-            # If the JSON file contains a list of strings
-            sections = input_data
-        elif isinstance(input_data, dict) and "sections" in input_data:
-            # If the JSON file has a sections key
-            sections = input_data["sections"]
-        else:
-            # Default case
-            sections = [str(input_data)]
+        metrics_to_check = load_profile(persona_name, "metrics")
     except Exception as e:
-        print(f"Error loading input file: {e}")
-        return
+        print(f"Error loading metrics for {persona_name}: {e}", file=sys.stderr)
+        metrics_to_check = []
+
+    # Build the evaluation prompt that handles both relevance and metrics in one call
+    system_prompt = f"""You are an expert evaluator assessing content relevance and quality metrics for different user personas.
+
+PERSONA: {persona_name}
+DESCRIPTION: {persona_description}
+
+Your task is to evaluate the provided content section and return a structured JSON response with:
+1. Relevance assessment (is this section useful for this persona?)
+2. Evaluation of specific quality metrics (only if relevant)
+
+Return your response as valid JSON in this exact format:
+{{
+    "relevant": true/false,
+    "relevance_reasoning": "Brief explanation of why this is/isn't relevant",
+    "metrics": {{
+        "metric_id_1": true/false/null,
+        "metric_id_2": true/false/null
+    }}
+}}
+
+If not relevant, set "metrics" to an empty object {{}}.
+If relevant, evaluate each metric as true (passes), false (fails), or null (cannot determine).
+"""
+
+    # Build the metrics description for the prompt
+    metrics_descriptions = []
+    for metric_id in metrics_to_check:
+        metric_info = metric_definitions.get(metric_id, {})
+        metrics_descriptions.append(f"- {metric_id}: {metric_info.get('name', metric_id)} - {metric_info.get('description', 'No description')}")
     
-    # Evaluate each section for all profiles
+    metrics_text = "\n".join(metrics_descriptions) if metrics_descriptions else "No specific metrics to evaluate."
+    
+    user_prompt = f"""Article: {article_title}
+
+METRICS TO EVALUATE (only if content is relevant):
+{metrics_text}
+
+CONTENT TO EVALUATE:
+{json.dumps(section_data, indent=2)}
+
+Provide your evaluation as JSON."""
+
+    try:
+        response = chat_with_llm("gemma3", system_prompt, user_prompt, {})
+        
+        # Parse the JSON response
+        evaluation_result = parse_llm_json_response(response)
+        
+        if not isinstance(evaluation_result, dict):
+            raise ValueError("Response is not a valid JSON object")
+            
+        # Ensure required fields exist
+        evaluation_result.setdefault("relevant", False)
+        evaluation_result.setdefault("relevance_reasoning", "No reasoning provided")
+        evaluation_result.setdefault("metrics", {})
+        
+        return evaluation_result
+        
+    except Exception as e:
+        print(f"Error in batched evaluation for {persona_name}: {e}", file=sys.stderr)
+        # Fallback to basic structure
+        return {
+            "relevant": False,
+            "relevance_reasoning": f"Evaluation failed: {str(e)}",
+            "metrics": {}
+        }
+
+def main():
+    """Main function for the evaluator."""
+    if len(sys.argv) < 3:
+        print("Usage: python evaluator.py <section_file_path> <persona1> [persona2] ... [article_title]")
+        sys.exit(1)
+    
+    section_file_path = sys.argv[1]
+    personas = sys.argv[2:-1] if len(sys.argv) > 3 else sys.argv[2:]
+    article_title = sys.argv[-1] if len(sys.argv) > 3 and not sys.argv[-1] in PERSONA_DEFINITIONS else "Unknown Article"
+    
+    # Load metric definitions
+    metric_definitions = load_metric_definitions()
+    
+    # Load section data
+    try:
+        section_data = load_json_file(section_file_path)
+    except Exception as e:
+        print(f"Error loading section file: {e}", file=sys.stderr)
+        sys.exit(1)
+    
+    # Results structure: {persona_name: [evaluation_result]}
     all_results = {}
-    for profile_name in args.profiles:
-        print(f"Evaluating all sections for profile '{profile_name}' regarding article '{args.article_title}'...", file=sys.stderr)
-        profile_results = []
-        for i, section_text in enumerate(sections):
-            result = evaluate_section(section_text, profile_name, args.article_title)
-            profile_results.append({
-                "section": section_text,
-                "evaluation": result
-            })
-        all_results[profile_name] = profile_results
     
-    # Print the final JSON results to stdout
+    # Process each persona with batched evaluation
+    for persona_name in personas:
+        if persona_name not in PERSONA_DEFINITIONS:
+            print(f"Warning: Unknown persona '{persona_name}'. Skipping.", file=sys.stderr)
+            continue
+            
+        persona_description = PERSONA_DEFINITIONS[persona_name]
+        
+        # Use batched evaluation (single API call per persona)
+        evaluation_result = evaluate_section_for_persona_batch(
+            section_data, persona_name, persona_description, article_title, metric_definitions
+        )
+        
+        # Format the result to match expected structure
+        formatted_result = {
+            "evaluation": evaluation_result
+        }
+        
+        all_results[persona_name] = [formatted_result]
+    
+    # Output results as JSON
     print(json.dumps(all_results, indent=2))
 
 if __name__ == "__main__":
