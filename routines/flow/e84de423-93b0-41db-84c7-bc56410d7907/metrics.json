@@ -1,0 +1,2231 @@
+{
+  "flow_uuid": "e84de423-93b0-41db-84c7-bc56410d7907",
+  "sections": {
+    "1.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content focuses on Automated Signal Processing, aligning perfectly with the topic specified in the user's prompt for the Universal Automation Wiki page.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": null,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": null,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": null,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": null,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          },
+          {
+            "id": "suggests_alternatives_reasoning",
+            "name": "suggests_alternatives_reasoning",
+            "passed": true,
+            "description": "Description not found."
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content is directly related to Automated Signal Processing, making it highly relevant for a teacher or trainer educating others about automation processes in this domain.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content focuses on Automated Signal Processing, a technical topic directly related to the page's title and description. It includes key concepts and automation techniques, making it highly relevant for a field expert.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": false,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": false,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": false,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": false,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed overview of Automated Signal Processing, focusing on its technical aspects and automation techniques, which aligns perfectly with the persona of an investor evaluating automation opportunities.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is directly relevant to a researcher studying automation methodologies and outcomes, particularly in the context of signal processing. The detailed descriptions of key concepts, techniques, and challenges align with the persona's interests.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": false,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "2.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a detailed breakdown of documenting an automated signal processing system, aligning with a hobbyist's interest in understanding and potentially replicating complex systems.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": true,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": null,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": null,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": false,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content describes the steps involved in documenting an automated signal processing system, which aligns perfectly with the persona of an educator who needs to explain and teach this process.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": false,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": false,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content represents a detailed breakdown of the steps involved in documenting an automated signal processing system, directly addressing the persona's need for comprehensive technical guidance.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": null,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": null,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": null,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": null,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": null,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a detailed breakdown of the steps involved in implementing an automated signal processing system. This aligns directly with the needs of an investor evaluating automation opportunities, particularly in a technology/telecommunications context.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": null,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content describes a hierarchical breakdown of the steps involved in implementing an automated signal processing system. This aligns with the persona of an academic or industry researcher studying automation methodologies and outcomes, as they would require detailed understanding of the process.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": null,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": null,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": null,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": null,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": null,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "3.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to a hobbyist interested in automated signal processing. It provides a detailed historical overview and future predictions, aligning with the persona's likely interest in understanding the evolution and potential of this technology.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": null,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by-step_instructions",
+            "name": "has_step_by-step_instructions",
+            "passed": null,
+            "description": "Description not found."
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": null,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": null,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": null,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": null,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": null,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses the topic of automated signal processing and its historical and future developments, making it highly relevant for an educator specializing in automation processes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content provides a detailed historical timeline of signal processing automation, covering key technological advancements across decades, aligning perfectly with the persona of a field expert seeking a comprehensive understanding of the evolution of the technology.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": null,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": null,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": null,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": null,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": null,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": null,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to an investor persona evaluating automation opportunities in financial investment. The timeline details the historical evolution of signal processing technologies, which are increasingly critical for applications like voice recognition (for fraud detection), audio analysis (for market sentiment), and potentially even for analyzing the audio characteristics of financial communications.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": null,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the topic of automated signal processing by providing a historical timeline and future predictions, aligning with the persona of a researcher studying automation methodologies and outcomes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": false,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": false,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": false,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "4.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the topic of \"Automated Signal Processing,\" making it highly relevant for a hobbyist interested in automation challenges in this field.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": null,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": null,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": null,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": null,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": false,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": null,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": null,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": null,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to a teacher or trainer specializing in automation processes, particularly within the context of signal processing. It directly addresses the difficulties and limitations of automating this complex field.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses the challenges of automating signal processing, a field highly relevant to a field expert.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": null,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": null,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": true,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": null,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": null,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": null,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to an investor persona evaluating automation opportunities in financial investment, specifically within the context of technology and telecommunications. The challenges outlined directly relate to the complexity and potential ROI (or lack thereof) of automating signal processing, a core component of many investment strategies (e.g., algorithmic trading, commodity price prediction).",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": false,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses automation challenges within the field of automated signal processing, making it highly relevant for a researcher studying automation methodologies and outcomes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": false,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "5.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content provides a detailed breakdown of automation adoption phases in automated signal processing, aligning perfectly with the persona of a hobbyist interested in automation projects. It offers a progressive exploration of increasing complexity, making it highly relevant to someone with a personal interest in this domain.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": false,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": false,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": false,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content is highly relevant to an educator specializing in automation processes, particularly those related to signal processing. It provides a detailed, phased breakdown of automation adoption, aligning directly with the user's stated area of expertise.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to a field expert in automated signal processing. It provides a detailed, phased breakdown of automation adoption within this domain, progressing from early mechanical solutions to advanced AI-powered systems.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": false,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": false,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": false,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": false,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the topic of automation adoption phases specifically within automated signal processing, making it highly relevant to an investor evaluating automation opportunities in this field. The detailed breakdown and examples align perfectly with an investor's need to understand the progression of technology and its potential ROI.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": null,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to a researcher studying automation methodologies, particularly in the context of signal processing. It provides a detailed, phased breakdown of automation evolution, aligning with a researcher's need for a structured understanding of technological advancements.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": true,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "6.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content section directly addresses automated signal processing, which aligns perfectly with the interests of a hobbyist looking to explore automation projects. The detailed breakdown of implementation levels provides valuable information for a hands-on learner.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": true,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": null,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": null,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to a teacher or trainer educating others about automation processes, specifically within the context of automated signal processing. The detailed breakdown of process steps and automation levels provides a solid foundation for understanding the evolution and implementation of automated systems.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to a field expert in automated signal processing. It provides a detailed breakdown of common signal processing steps and assesses the current automation levels across different production scales, which is precisely the type of information a field expert would be seeking.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": null,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": null,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": null,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": null,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": null,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to an investor evaluating automation opportunities for financial investment in signal processing. It details specific implementation stages, automation levels, and potential return on investment areas, providing actionable insights for investment decisions.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": false,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses automated signal processing, a topic of significant interest to a researcher studying automation methodologies and outcomes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": true,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": false,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "7.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses ROI analysis for automated signal processing, aligning perfectly with the profile of a hobbyist interested in automation projects. The scale-based breakdown (small, medium, large) provides a practical framework for a project with varying levels of investment and complexity, which would appeal to someone pursuing automation as a personal interest.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": false,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": false,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": false,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed ROI analysis of automating signal processing, which directly aligns with the educational needs of a teacher or trainer focused on automation processes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": false,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a detailed ROI analysis specifically for 'Automated Signal Processing,' aligning directly with the field expert persona's interest in the economic and practical implications of automation technologies within a technical domain.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": null,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": null,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": false,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": false,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": false,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the ROI analysis of automation, specifically for automated signal processing, which is precisely what an investor would be interested in evaluating for investment opportunities.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": true,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": true,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": false,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": false,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a practical ROI analysis for automation, specifically in the context of automated signal processing. This aligns directly with the needs of an academic or industry researcher studying automation methodologies and outcomes, offering a tangible framework for evaluating automation investments.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": null,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": null,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": null,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": null,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": null,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": null,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "8.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content section directly addresses the persona of a hobbyist interested in automation, providing a detailed technical roadmap for advancements in automated signal processing. The level of detail and technical specifications are highly relevant to someone pursuing such projects as a personal interest.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": false,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": false,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": true,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": false,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to a teacher or trainer specializing in automation processes, particularly in the context of signal processing. It provides a detailed technological roadmap, outlining specific advancements and their associated metrics, which is precisely the kind of information an educator would need to explain and teach about this complex field.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the request to provide a detailed overview of technologies needed for full automation in automated signal processing, focusing on realistic advancements within the next 5-15 years. It aligns perfectly with the persona's expertise as a field expert.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": false,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": false,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": true,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": false,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the request for a comprehensive overview of technologies needed for full automation in automated signal processing, aligning with the persona of an investor evaluating automation opportunities.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": false,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": false,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content section directly addresses the request to analyze future technologies needed for full automation in automated signal processing, aligning perfectly with the persona's research focus.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": true,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "9.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content section directly addresses the user's request for detailed industrial specifications for automated signal processing, providing a comprehensive breakdown of performance metrics, implementation requirements, industry standards, suppliers, and operational considerations \u2013 aligning perfectly with a hobbyist's interest in automation projects.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": true,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by-step_instructions",
+            "name": "has_step_by-step_instructions",
+            "passed": false,
+            "description": "Description not found."
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": false,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": false,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": false,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a highly detailed technical overview of industrial signal processing specifications, making it directly relevant to a teacher or trainer educating about automation processes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": false,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content comprehensively details industrial specifications for automated signal processing, aligning perfectly with the user's request for a detailed technical overview.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": null,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": true,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": null,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": true,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": null,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": null,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the prompt's request for 'detailed industrial specifications for: Automated Signal Processing'. The provided JSON object fulfills all the required categories and includes specific technical details relevant to an investor evaluating automation opportunities.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": null,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the topic of 'Automated Signal Processing' and provides a detailed specification document, aligning perfectly with the persona of a researcher studying automation methodologies and outcomes. The technical depth and inclusion of performance metrics, implementation requirements, and industry standards makes it highly relevant.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": null,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": null,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": null,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": null,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": null,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": null,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,192 @@
+{
+    "metadata": {
+        "uuid": "b16450d3-1c86-40cf-91ff-ce07f6ed2187",
+        "date_created": "2025-06-01T20:21:25.825148",
+        "task": "Hallucinate Tree",
+        "time_taken": "0:00:33.992128"
+    },
+    "tree": {
+        "step": "Server Management",
+        "children": [
+            {
+                "step": "Define Server Requirements",
+                "children": [
+                    {
+                        "step": "Identify Server Purpose and Functionality"
+                    },
+                    {
+                        "step": "Determine Required Operating System"
+                    },
+                    {
+                        "step": "Assess CPU and Memory Requirements"
+                    },
+                    {
+                        "step": "Establish Storage Capacity Needs"
+                    },
+                    {
+                        "step": "Specify Network Bandwidth Requirements"
+                    },
+                    {
+                        "step": "Determine Security Compliance Needs"
+                    }
+                ]
+            },
+            {
+                "step": "Provision Server Instance",
+                "children": [
+                    {
+                        "step": "Select Server Instance Type"
+                    },
+                    {
+                        "step": "Allocate Server Resources (CPU, Memory, Storage)"
+                    },
+                    {
+                        "step": "Configure Network Settings (IP Address, DNS)"
+                    },
+                    {
+                        "step": "Set Up Initial Server Account and Credentials"
+                    },
+                    {
+                        "step": "Install Base Operating System"
+                    },
+                    {
+                        "step": "Apply Initial Security Patch"
+                    }
+                ]
+            },
+            {
+                "step": "Configure Server Security",
+                "children": [
+                    {
+                        "step": "Implement Firewall Rules"
+                    },
+                    {
+                        "step": "Configure User Access Controls"
+                    },
+                    {
+                        "step": "Enable Intrusion Detection System (IDS) / Intrusion Prevention System (IPS)"
+                    },
+                    {
+                        "step": "Set Up Multi-Factor Authentication (MFA)"
+                    },
+                    {
+                        "step": "Configure SSH Security Settings"
+                    },
+                    {
+                        "step": "Review and Harden System Services"
+                    },
+                    {
+                        "step": "Regularly Scan for Vulnerabilities"
+                    }
+                ]
+            },
+            {
+                "step": "Install Necessary Software",
+                "children": [
+                    {
+                        "step": "Identify Software Packages"
+                    },
+                    {
+                        "step": "Verify Software Compatibility"
+                    },
+                    {
+                        "step": "Download Software Packages"
+                    },
+                    {
+                        "step": "Install Software Packages"
+                    },
+                    {
+                        "step": "Verify Software Installation"
+                    },
+                    {
+                        "step": "Configure Software Settings"
+                    },
+                    {
+                        "step": "Test Software Functionality"
+                    }
+                ]
+            },
+            {
+                "step": "Monitor Server Performance",
+                "children": [
+                    {
+                        "step": "Collect Baseline Performance Metrics"
+                    },
+                    {
+                        "step": "Establish Performance Thresholds"
+                    },
+                    {
+                        "step": "Monitor CPU Utilization"
+                    },
+                    {
+                        "step": "Monitor Memory Usage"
+                    },
+                    {
+                        "step": "Monitor Disk I/O Performance"
+                    },
+                    {
+                        "step": "Monitor Network Latency and Throughput"
+                    },
+                    {
+                        "step": "Analyze Performance Data for Anomalies"
+                    }
+                ]
+            },
+            {
+                "step": "Perform Regular Server Maintenance",
+                "children": [
+                    {
+                        "step": "Schedule Maintenance Window"
+                    },
+                    {
+                        "step": "Update Server Operating System"
+                    },
+                    {
+                        "step": "Review and Update Server Logs"
+                    },
+                    {
+                        "step": "Run System Health Checks"
+                    },
+                    {
+                        "step": "Optimize Server Performance"
+                    },
+                    {
+                        "step": "Review and Update Security Configurations"
+                    }
+                ]
+            },
+            {
+                "step": "Backup Server Data",
+                "children": [
+                    {
+                        "step": "Select Backup Method (e.g., full, incremental, differential)"
+                    },
+                    {
+                        "step": "Configure Backup Software"
+                    },
+                    {
+                        "step": "Define Backup Schedule"
+                    },
+                    {
+                        "step": "Test Backup Process"
+                    },
+                    {
+                        "step": "Verify Backup Integrity"
+                    },
+                    {
+                        "step": "Store Backup Data Securely (Offsite or Separate Location)"
+                    },
+                    {
+                        "step": "Document Backup Procedures"
+                    }
+                ]
+            }
+        ],
+        "uuid": "b16450d3-1c86-40cf-91ff-ce07f6ed2187"
+    },
+    "input": {
+        "system_message": "You are an AI that breaks down complex tasks into hierarchical steps. For each task, generate a set of sub-steps needed to complete it. Maintain clarity and logical order. IMPORTANT: Avoid duplicating steps that already exist elsewhere in the tree context provided. Focus on sub-steps that are specific to the current task being expanded. Format your response as a valid JSON array of step objects, where each object has a 'step' field and optionally a 'children' array containing substeps. Example format: [{'step': 'Main step 1', 'children': [{'step': 'Substep 1.1'}, {'step': 'Substep 1.2'}]}, {'step': 'Main step 2'}] Your entire response must be parseable as JSON. Do not include markdown formatting, code blocks, or commentary.",
+        "user_message": "Break down the following task into 3-7 sub-steps. Task: Backup Server Data\n\nDo NOT repeat steps that have already been created in the tree unless ABSOLUTELY NECESSARY.\nFocus on sub-steps that are specific to this task and avoid duplicating steps that already exist in the broader process.\n\n\nExisting steps in the tree (avoid duplicating these): Server Management, Define Server Requirements, Identify Server Purpose and Functionality, Determine Required Operating System, Assess CPU and Memory Requirements, Establish Storage Capacity Needs, Specify Network Bandwidth Requirements, Determine Security Compliance Needs, Provision Server Instance, Select Server Instance Type, Allocate Server Resources (CPU, Memory, Storage), Configure Network Settings (IP Address, DNS), Set Up Initial Server Account and Credentials, Install Base Operating System, Apply Initial Security Patch, Configure Server Security, Implement Firewall Rules, Configure User Access Controls, Enable Intrusion Detection System (IDS) / Intrusion Prevention System (IPS), Set Up Multi-Factor Authentication (MFA), Configure SSH Security Settings, Review and Harden System Services, Regularly Scan for Vulnerabilities, Install Necessary Software, Identify Software Packages, Verify Software Compatibility, Download Software Packages, Install Software Packages, Verify Software Installation, Configure Software Settings, Test Software Functionality, Monitor Server Performance, Collect Baseline Performance Metrics, Establish Performance Thresholds, Monitor CPU Utilization, Monitor Memory Usage, Monitor Disk I/O Performance, Monitor Network Latency and Throughput, Analyze Performance Data for Anomalies, Perform Regular Server Maintenance, Schedule Maintenance Window, Update Server Operating System, Review and Update Server Logs, Run System Health Checks, Optimize Server Performance, Review and Update Security Configurations, Backup Server Data\n\nReturn ONLY a JSON array of step objects, with no markdown formatting, code blocks, or extra text.",
+        "timestamp": "2025-06-01T20:21:19.075897"
+    }
+}

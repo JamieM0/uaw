@@ -705,9 +705,24 @@ def main():
         output_html = main_template.render(context)
 
         # --- Write Output File ---
-        slug_base = page_level_metadata.get('slug', page_level_metadata.get('title', 'output').lower().replace(' ', '-'))
-        safe_slug = "".join(c for c in slug_base if c.isalnum() or c in ('-', '_')).rstrip() or "output"
-        output_path = Path(output_dir) / f"{safe_slug}.html"
+        # Use the final part of breadcrumbs if available, otherwise fall back to slug
+        output_filename = None
+        
+        if breadcrumb_string:
+            # Extract the final part of the breadcrumbs for the filename
+            breadcrumb_parts = breadcrumb_string.strip('/').split('/')
+            if breadcrumb_parts and breadcrumb_parts[-1]:
+                # Use the last part of breadcrumbs as the filename
+                final_breadcrumb = breadcrumb_parts[-1]
+                # Sanitize the breadcrumb part for use as filename
+                output_filename = "".join(c for c in final_breadcrumb if c.isalnum() or c in ('-', '_')).rstrip()
+        
+        # Fallback to existing slug logic if no valid breadcrumb filename
+        if not output_filename:
+            slug_base = page_level_metadata.get('slug', page_level_metadata.get('title', 'output').lower().replace(' ', '-'))
+            output_filename = "".join(c for c in slug_base if c.isalnum() or c in ('-', '_')).rstrip() or "output"
+        
+        output_path = Path(output_dir) / f"{output_filename}.html"
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(output_path, 'w', encoding='utf-8') as f:

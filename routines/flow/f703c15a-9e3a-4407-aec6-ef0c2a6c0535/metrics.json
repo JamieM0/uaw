@@ -1,0 +1,2213 @@
+{
+  "flow_uuid": "f703c15a-9e3a-4407-aec6-ef0c2a6c0535",
+  "sections": {
+    "1.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content is directly about SMT automation, aligning perfectly with the task of generating metadata for a technical wiki page on the topic.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": true,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": false,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": null,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": null,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": null,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": null,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": null,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          },
+          {
+            "id": "suggests_automation_definitions",
+            "name": "suggests_automation_definitions",
+            "passed": true,
+            "description": "Description not found."
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content is directly related to SMT automation, a key topic for an educator specializing in automation processes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": false,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content directly addresses the topic of SMT automation, as requested in the user message. It details the various aspects of automation and provides a suitable explanation of the current state of the technology.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": false,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": false,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": false,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": false,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content focuses on SMT automation, detailing its various aspects, levels of automation, and future trends. This aligns directly with the persona's interest in evaluating automation opportunities for financial investment, particularly in manufacturing.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": null,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content directly addresses Surface Mount Technology (SMT) automation, aligning perfectly with the topic described in the input prompt.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": true,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "2.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content breaks down the task of training personnel on SMT equipment operation, which aligns directly with the hobbyist's interest in automation and learning new technologies. The level of detail is appropriate for someone pursuing this as a personal project.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": true,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": null,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": null,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section outlines the steps involved in training personnel on SMT equipment operation, which is directly relevant to a teacher/trainer who needs to understand the operational aspects of automation processes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": false,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed breakdown of training personnel on SMT equipment, which is directly relevant to the overarching goal of SMT automation. The sub-steps are specific and actionable, making it a valuable addition to the process.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": true,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": false,
+            "description": "Identifies known failure modes or edge case conditions"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content section provides a detailed breakdown of the steps involved in training personnel on SMT equipment operation. This aligns directly with the investor's interest in automation efficiency and operational readiness for new equipment.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": null,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": null,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed breakdown of the training personnel on SMT equipment operation, which is highly relevant to a researcher studying automation methodologies and outcomes. The steps are granular and focus on practical aspects of training, aligning well with the persona's interests.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": null,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": null,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": null,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": null,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": null,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "3.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content section is highly relevant to a hobbyist interested in SMT automation. It provides a detailed historical timeline and future predictions, covering significant developments and technological advancements in the field.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": null,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by-step_instructions",
+            "name": "has_step_by-step_instructions",
+            "passed": null,
+            "description": "Description not found."
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": null,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": null,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": null,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": null,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": null,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section is highly relevant to a teacher or academic specializing in automation processes, specifically Surface Mount Technology (SMT). It provides a detailed historical timeline and future predictions, which would be valuable for instruction and research.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content section is highly relevant to a field expert in surface mount technology automation. It provides a detailed historical timeline of SMT development, coupled with future predictions, directly addressing the technical domain.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": null,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": null,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": null,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": null,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": null,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to an investor evaluating automation opportunities for financial investment in SMT. It provides a detailed historical and future outlook on a critical technology used in electronics manufacturing, which directly impacts the cost, efficiency, and scalability of production.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": null,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content section provides a detailed historical and predictive timeline for SMT automation, directly aligning with the needs of a researcher studying automation methodologies and outcomes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": true,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": null,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "4.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the challenges of automating Surface Mount Technology (SMT) processes, aligning perfectly with the persona of a hobbyist interested in automation projects. The detailed explanations of technical hurdles provide valuable information for someone exploring this topic as a personal interest.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": null,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by-step_instructions",
+            "name": "has_step_by-step_instructions",
+            "passed": null,
+            "description": "Description not found."
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": null,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": null,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": null,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": null,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses automation challenges within Surface Mount Technology (SMT) which aligns perfectly with the persona of a teacher/trainer educating others about automation processes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": false,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the topic of SMT automation challenges, making it highly relevant for a field expert.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": null,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": null,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": true,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": null,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": null,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": null,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses automation challenges within Surface Mount Technology (SMT) which aligns with the persona of an investor evaluating automation opportunities.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": null,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to a researcher studying automation methodologies and outcomes in SMT. The detailed explanations of challenges \u2013 component placement accuracy, solder paste jetting, reflow oven control, inspection, human dexterity replication, and adaptive control \u2013 directly address the complex technical issues involved in automating this process.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": false,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "5.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to a hobbyist interested in SMT automation. It provides a detailed breakdown of the phases of automation adoption, offering specific examples at each stage, which aligns perfectly with a hobbyist's desire to understand the evolution of the technology and potential projects.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": false,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": false,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": false,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content directly addresses the requested breakdown of SMT automation adoption phases, providing detailed examples for each stage as specified in the input prompt.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": false,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "The content provides a detailed breakdown of SMT automation adoption phases, aligning perfectly with the user's request and persona as a field expert.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": null,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": null,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": null,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": null,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": null,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a detailed breakdown of SMT automation adoption phases, which directly aligns with the persona of an investor evaluating automation opportunities. The phased approach, with increasing levels of complexity and technological integration, is a key factor for investment decisions.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": null,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content section provides a detailed breakdown of SMT automation phases, including specific examples and a progressive increase in automation complexity. This aligns perfectly with the persona of a researcher studying automation methodologies and outcomes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": true,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": false,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "6.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to a hobbyist interested in SMT automation. It provides a detailed breakdown of automation levels for various SMT processes, aligning with the interests of someone pursuing automation projects.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": null,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": true,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": null,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": null,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": true,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": null,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": null,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": null,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a detailed breakdown of SMT automation processes and levels, making it directly relevant to a teacher or trainer educating others on automation processes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": false,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content is highly relevant to a field expert in surface mount technology automation. It details the implementation steps, automation levels, and considerations for different production scales, providing a technical assessment that would be useful for someone with deep expertise in this area.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": false,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": false,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": false,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": false,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses automation opportunities for financial investment by detailing the current state of SMT automation across different production scales. It provides a granular breakdown of processes and automation levels, which aligns perfectly with an investor\u2019s interest in understanding potential return on investment and scalability.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses SMT automation methodologies, which aligns perfectly with the needs of an academic or industry researcher studying automation methodologies and outcomes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": null,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": null,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": null,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": null,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": null,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": null,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "7.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the ROI analysis of SMT automation, which aligns perfectly with a hobbyist's interest in understanding the potential benefits and costs of such a project. The detailed breakdown of investment, savings, and considerations makes it highly relevant.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": null,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": null,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": null,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": null,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": false,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": null,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": null,
+            "description": "Includes images, diagrams, or video links"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section directly addresses the ROI analysis of SMT automation, making it highly relevant for a teacher or trainer educating others about automation processes. It provides a practical framework for understanding the financial implications of implementing such systems.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the ROI analysis of SMT automation, aligning with the expertise of a field expert in this domain. The detailed breakdown by scale (small, medium, large) provides crucial information for strategic investment decisions.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": null,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": null,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": true,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": null,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": null,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": null,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content directly addresses the ROI analysis of SMT automation, a key consideration for an investor evaluating automation opportunities.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": true,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": true,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": true,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a detailed ROI analysis of SMT automation across different production scales, directly aligning with the needs of a researcher studying automation methodologies and outcomes.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": null,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": null,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": null,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": null,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": null,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": null,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "8.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a highly detailed overview of future technologies for SMT automation, aligning perfectly with the persona of a hobbyist interested in automation projects. The level of technical detail is appropriate for someone with a passion for this field.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": false,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by-step_instructions",
+            "name": "has_step_by-step_instructions",
+            "passed": false,
+            "description": "Description not found."
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": false,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": true,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": false,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a detailed technological overview of future advancements in SMT automation, aligning perfectly with an educator's need to understand and explain emerging technologies in automation.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a highly detailed and forward-looking assessment of potential future technologies for SMT automation, aligning perfectly with the persona's focus on future technology analysis.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": true,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": false,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": false,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": true,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": false,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": false,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a highly detailed exploration of future technologies needed for SMT automation, directly addressing the persona's focus on evaluating automation opportunities.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": true,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": true,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": false,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": false,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a highly detailed breakdown of potential future technologies for SMT automation, aligning perfectly with the persona of an academic or industry researcher studying automation methodologies and outcomes. It offers specific technical specifications and timelines, making it a valuable resource for research and analysis.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": true,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": true,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": true,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": false,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": false,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": true,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    },
+    "9.json": {
+      "hobbyist": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a detailed breakdown of industrial specifications for SMT automation, which directly aligns with the interests of a hobbyist automation enthusiast looking to understand the technical requirements of such systems.",
+        "evaluated_metrics": [
+          {
+            "id": "has_equipment_sources",
+            "name": "has_equipment_sources",
+            "passed": true,
+            "description": "Contains links or info on where to buy required tools/materials"
+          },
+          {
+            "id": "has_step_by_step_instructions",
+            "name": "has_step_by_step_instructions",
+            "passed": false,
+            "description": "Task is broken down clearly and sequentially"
+          },
+          {
+            "id": "has_difficulty_rating",
+            "name": "has_difficulty_rating",
+            "passed": false,
+            "description": "Indicates how hard the task is"
+          },
+          {
+            "id": "has_time_estimates",
+            "name": "has_time_estimates",
+            "passed": false,
+            "description": "Specifies how long the task or steps take"
+          },
+          {
+            "id": "uses_accessible_language",
+            "name": "uses_accessible_language",
+            "passed": false,
+            "description": "Avoids jargon and uses everyday terms"
+          },
+          {
+            "id": "includes_troubleshooting_tips",
+            "name": "includes_troubleshooting_tips",
+            "passed": false,
+            "description": "Provides common errors or fixes"
+          },
+          {
+            "id": "has_visual_aids",
+            "name": "has_visual_aids",
+            "passed": false,
+            "description": "Includes images, diagrams, or video links"
+          },
+          {
+            "id": "suggests_alternatives",
+            "name": "suggests_alternatives",
+            "passed": false,
+            "description": "Offers substitutions for unavailable tools or ingredients"
+          }
+        ]
+      },
+      "educator": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This section provides a highly detailed breakdown of SMT automation specifications, aligning perfectly with the persona of an educator specializing in automation processes. The granular data and technical details make it suitable for teaching and learning.",
+        "evaluated_metrics": [
+          {
+            "id": "has_learning_objectives",
+            "name": "has_learning_objectives",
+            "passed": true,
+            "description": "States what the reader should learn from the section"
+          },
+          {
+            "id": "is_age_appropriate",
+            "name": "is_age_appropriate",
+            "passed": true,
+            "description": "Content is suitable for a defined educational level"
+          },
+          {
+            "id": "uses_clear_definitions",
+            "name": "uses_clear_definitions",
+            "passed": true,
+            "description": "Defines technical terms or concepts"
+          },
+          {
+            "id": "has_review_questions",
+            "name": "has_review_questions",
+            "passed": false,
+            "description": "Includes quiz questions or reflection prompts"
+          },
+          {
+            "id": "includes_interdisciplinary_links",
+            "name": "includes_interdisciplinary_links",
+            "passed": true,
+            "description": "Connects the topic to other subject areas"
+          },
+          {
+            "id": "has_real_world_examples",
+            "name": "has_real_world_examples",
+            "passed": true,
+            "description": "Uses relatable scenarios or analogies"
+          },
+          {
+            "id": "is_modular",
+            "name": "is_modular",
+            "passed": true,
+            "description": "Section can be used as a standalone teaching chunk"
+          }
+        ]
+      },
+      "field_expert": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a highly detailed specification document for SMT automation, aligning perfectly with the persona of a field expert in the telecommunications/surface mount technology domain. It offers specific technical details, performance metrics, and implementation requirements expected by such an expert.",
+        "evaluated_metrics": [
+          {
+            "id": "details_implementation_steps",
+            "name": "details_implementation_steps",
+            "passed": null,
+            "description": "Lists precise technical actions or parameters"
+          },
+          {
+            "id": "references_industry_standards",
+            "name": "references_industry_standards",
+            "passed": true,
+            "description": "Mentions industry regulations or standards like ISO, IEEE, FDA"
+          },
+          {
+            "id": "uses_domain_specific_terms",
+            "name": "uses_domain_specific_terms",
+            "passed": true,
+            "description": "Includes discipline-specific language and acronyms"
+          },
+          {
+            "id": "notes_risks_or_edge_cases",
+            "name": "notes_risks_or_edge_cases",
+            "passed": null,
+            "description": "Identifies known failure modes or edge case conditions"
+          },
+          {
+            "id": "includes_component_specs",
+            "name": "includes_component_specs",
+            "passed": null,
+            "description": "Provides part numbers, specifications, or supplier information"
+          },
+          {
+            "id": "supports_verifiability",
+            "name": "supports_verifiability",
+            "passed": null,
+            "description": "Steps can be replicated or benchmarked independently"
+          },
+          {
+            "id": "details_interoperability",
+            "name": "details_interoperability",
+            "passed": null,
+            "description": "Explains how the automation integrates with other systems or processes"
+          }
+        ]
+      },
+      "investor": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content section provides a highly detailed technical specification document for SMT automation, directly addressing the persona of an investor evaluating automation opportunities. The granular data and specifications would be invaluable for assessing the feasibility and potential ROI of such a system.",
+        "evaluated_metrics": [
+          {
+            "id": "has_cost_estimate",
+            "name": "has_cost_estimate",
+            "passed": null,
+            "description": "Provides monetary cost of implementation"
+          },
+          {
+            "id": "includes_roi_analysis",
+            "name": "includes_roi_analysis",
+            "passed": null,
+            "description": "Gives an estimate or discussion of return on investment"
+          },
+          {
+            "id": "mentions_market_trends",
+            "name": "mentions_market_trends",
+            "passed": null,
+            "description": "Relates to current market data or economic context"
+          },
+          {
+            "id": "identifies_scalability",
+            "name": "identifies_scalability",
+            "passed": null,
+            "description": "Discusses whether the solution scales efficiently"
+          },
+          {
+            "id": "compares_to_competitors",
+            "name": "compares_to_competitors",
+            "passed": null,
+            "description": "Mentions other solutions and how this compares"
+          },
+          {
+            "id": "has_adoption_barriers",
+            "name": "has_adoption_barriers",
+            "passed": null,
+            "description": "Identifies legal, logistical, or cultural blockers"
+          },
+          {
+            "id": "mentions_automation_efficiency",
+            "name": "mentions_automation_efficiency",
+            "passed": true,
+            "description": "Highlights automation gains compared to human labor"
+          }
+        ]
+      },
+      "researcher": {
+        "is_relevant_to_persona": true,
+        "relevance_reasoning": "This content provides a highly detailed specification document for SMT automation, which aligns perfectly with the persona of a researcher studying automation methodologies and outcomes. It presents a comprehensive overview of the technical requirements, standards, and considerations for such a system.",
+        "evaluated_metrics": [
+          {
+            "id": "has_primary_research_refs",
+            "name": "has_primary_research_refs",
+            "passed": null,
+            "description": "Includes citations to academic papers or published studies"
+          },
+          {
+            "id": "has_recent_sources",
+            "name": "has_recent_sources",
+            "passed": null,
+            "description": "References material from the last 5 years"
+          },
+          {
+            "id": "includes_theoretical_basis",
+            "name": "includes_theoretical_basis",
+            "passed": null,
+            "description": "Explains why the automation approach works from a theoretical perspective"
+          },
+          {
+            "id": "compares_alternative_methods",
+            "name": "compares_alternative_methods",
+            "passed": null,
+            "description": "Compares the main method to others in literature"
+          },
+          {
+            "id": "has_data_links_or_datasets",
+            "name": "has_data_links_or_datasets",
+            "passed": null,
+            "description": "Links to datasets, code, or supporting research data"
+          },
+          {
+            "id": "mentions_open_challenges",
+            "name": "mentions_open_challenges",
+            "passed": null,
+            "description": "Notes unsolved problems or open research questions"
+          },
+          {
+            "id": "uses_standard_terminology",
+            "name": "uses_standard_terminology",
+            "passed": true,
+            "description": "Aligns with recognized scientific terms or taxonomies"
+          }
+        ]
+      }
+    }
+  }
+}

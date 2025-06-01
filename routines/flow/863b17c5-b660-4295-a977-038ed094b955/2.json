@@ -1,0 +1,163 @@
+{
+    "metadata": {
+        "uuid": "0b64f22b-b403-435e-b817-802196da22c8",
+        "date_created": "2025-06-01T22:03:56.782773",
+        "task": "Hallucinate Tree",
+        "time_taken": "0:00:08.775510"
+    },
+    "tree": {
+        "step": "Automated Testing Equipment (ATE)",
+        "children": [
+            {
+                "step": "Define Test Requirements",
+                "children": [
+                    {
+                        "step": "Identify Test Objectives"
+                    },
+                    {
+                        "step": "Determine Test Scope"
+                    },
+                    {
+                        "step": "Define Functional Requirements"
+                    },
+                    {
+                        "step": "Specify Performance Requirements"
+                    },
+                    {
+                        "step": "Document Test Coverage Criteria"
+                    },
+                    {
+                        "step": "Establish Test Data Requirements"
+                    }
+                ]
+            },
+            {
+                "step": "Configure ATE Hardware",
+                "children": [
+                    {
+                        "step": "Verify ATE Physical Connections"
+                    },
+                    {
+                        "step": "Install ATE Software Version"
+                    },
+                    {
+                        "step": "Configure ATE IP Address"
+                    },
+                    {
+                        "step": "Initialize ATE Hardware"
+                    },
+                    {
+                        "step": "Calibrate ATE Sensors"
+                    },
+                    {
+                        "step": "Set ATE Temperature Parameters"
+                    }
+                ]
+            },
+            {
+                "step": "Develop Test Scripts",
+                "children": [
+                    {
+                        "step": "Design Test Script Structure"
+                    },
+                    {
+                        "step": "Write Test Script Code"
+                    },
+                    {
+                        "step": "Implement Assertions within Scripts"
+                    },
+                    {
+                        "step": "Add Logging and Debugging Statements"
+                    },
+                    {
+                        "step": "Review and Validate Test Script Logic"
+                    },
+                    {
+                        "step": "Run Test Scripts in a Test Environment"
+                    },
+                    {
+                        "step": "Document Test Script Version and Dependencies"
+                    }
+                ]
+            },
+            {
+                "step": "Execute Test Scripts",
+                "children": [
+                    {
+                        "step": "Prepare Test Environment"
+                    },
+                    {
+                        "step": "Load Test Scripts into Execution Engine"
+                    },
+                    {
+                        "step": "Execute Test Scripts with Defined Parameters"
+                    },
+                    {
+                        "step": "Monitor Test Execution for Errors"
+                    },
+                    {
+                        "step": "Collect Test Results and Logs"
+                    },
+                    {
+                        "step": "Compare Results Against Expected Outcomes"
+                    },
+                    {
+                        "step": "Record Test Results and Log Data"
+                    }
+                ]
+            },
+            {
+                "step": "Analyze Test Results",
+                "children": [
+                    {
+                        "step": "Review Test Results Summary"
+                    },
+                    {
+                        "step": "Identify Key Failure Patterns"
+                    },
+                    {
+                        "step": "Correlate Failures with Test Cases"
+                    },
+                    {
+                        "step": "Assess Root Cause of Failures"
+                    },
+                    {
+                        "step": "Determine Impact of Failures"
+                    },
+                    {
+                        "step": "Document Findings and Recommendations"
+                    }
+                ]
+            },
+            {
+                "step": "Report Test Outcomes",
+                "children": [
+                    {
+                        "step": "Compile Raw Test Results"
+                    },
+                    {
+                        "step": "Categorize Test Results by Failure Type"
+                    },
+                    {
+                        "step": "Summarize Positive Test Outcomes"
+                    },
+                    {
+                        "step": "Generate a Consolidated Report"
+                    },
+                    {
+                        "step": "Include a Table of Failed Test Cases"
+                    },
+                    {
+                        "step": "Add a Section on Overall Test Pass Rate"
+                    }
+                ]
+            }
+        ],
+        "uuid": "0b64f22b-b403-435e-b817-802196da22c8"
+    },
+    "input": {
+        "system_message": "You are an AI that breaks down complex tasks into hierarchical steps. For each task, generate a set of sub-steps needed to complete it. Maintain clarity and logical order. IMPORTANT: Avoid duplicating steps that already exist elsewhere in the tree context provided. Focus on sub-steps that are specific to the current task being expanded. Format your response as a valid JSON array of step objects, where each object has a 'step' field and optionally a 'children' array containing substeps. Example format: [{'step': 'Main step 1', 'children': [{'step': 'Substep 1.1'}, {'step': 'Substep 1.2'}]}, {'step': 'Main step 2'}] Your entire response must be parseable as JSON. Do not include markdown formatting, code blocks, or commentary.",
+        "user_message": "Break down the following task into 3-7 sub-steps. Task: Report Test Outcomes\n\nDo NOT repeat steps that have already been created in the tree unless ABSOLUTELY NECESSARY.\nFocus on sub-steps that are specific to this task and avoid duplicating steps that already exist in the broader process.\n\n\nExisting steps in the tree (avoid duplicating these): Automated Testing Equipment (ATE), Define Test Requirements, Identify Test Objectives, Determine Test Scope, Define Functional Requirements, Specify Performance Requirements, Document Test Coverage Criteria, Establish Test Data Requirements, Configure ATE Hardware, Verify ATE Physical Connections, Install ATE Software Version, Configure ATE IP Address, Initialize ATE Hardware, Calibrate ATE Sensors, Set ATE Temperature Parameters, Develop Test Scripts, Design Test Script Structure, Write Test Script Code, Implement Assertions within Scripts, Add Logging and Debugging Statements, Review and Validate Test Script Logic, Run Test Scripts in a Test Environment, Document Test Script Version and Dependencies, Execute Test Scripts, Prepare Test Environment, Load Test Scripts into Execution Engine, Execute Test Scripts with Defined Parameters, Monitor Test Execution for Errors, Collect Test Results and Logs, Compare Results Against Expected Outcomes, Record Test Results and Log Data, Analyze Test Results, Review Test Results Summary, Identify Key Failure Patterns, Correlate Failures with Test Cases, Assess Root Cause of Failures, Determine Impact of Failures, Document Findings and Recommendations, Report Test Outcomes\n\nReturn ONLY a JSON array of step objects, with no markdown formatting, code blocks, or extra text.",
+        "timestamp": "2025-06-01T22:03:55.522684"
+    }
+}

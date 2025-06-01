@@ -1,0 +1,225 @@
+{
+    "metadata": {
+        "uuid": "1d45768f-61e3-404f-8ef7-3c99538b4c44",
+        "date_created": "2025-06-01T20:22:40.896763",
+        "task": "Hallucinate Tree",
+        "time_taken": "0:00:52.753894"
+    },
+    "tree": {
+        "step": "Automated Compliance Management",
+        "children": [
+            {
+                "step": "Define Compliance Requirements",
+                "children": [
+                    {
+                        "step": "Identify Key Stakeholders"
+                    },
+                    {
+                        "step": "Determine Scope of Compliance"
+                    },
+                    {
+                        "step": "Research Relevant Regulatory Frameworks"
+                    },
+                    {
+                        "step": "Document Specific Compliance Requirements"
+                    },
+                    {
+                        "step": "Prioritize Requirements Based on Risk"
+                    },
+                    {
+                        "step": "Define Measurement Criteria for Each Requirement"
+                    }
+                ]
+            },
+            {
+                "step": "Identify Applicable Regulations",
+                "children": [
+                    {
+                        "step": "Conduct Initial Regulatory Screening"
+                    },
+                    {
+                        "step": "Identify Regulatory Bodies Relevant to the Industry"
+                    },
+                    {
+                        "step": "Search Regulatory Databases for Applicable Laws"
+                    },
+                    {
+                        "step": "Analyze Regulatory Text for Keywords and Clauses"
+                    },
+                    {
+                        "step": "Assess Regulatory Applicability Based on Business Activities"
+                    },
+                    {
+                        "step": "Document Regulatory Findings with Justification"
+                    }
+                ]
+            },
+            {
+                "step": "Establish Data Collection Processes",
+                "children": [
+                    {
+                        "step": "Determine Data Collection Methods (e.g., surveys, logs, sensors)",
+                        "children": [
+                            {
+                                "step": "Select appropriate data collection tools",
+                                "children": [
+                                    {
+                                        "step": "Evaluate tool capabilities"
+                                    },
+                                    {
+                                        "step": "Assess tool costs and integration needs"
+                                    }
+                                ]
+                            },
+                            {
+                                "step": "Define data collection frequency",
+                                "children": [
+                                    {
+                                        "step": "Establish time intervals for collection"
+                                    },
+                                    {
+                                        "step": "Consider real-time vs. periodic collection needs"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Design Data Collection Templates & Formats",
+                        "children": [
+                            {
+                                "step": "Create standardized data collection forms"
+                            },
+                            {
+                                "step": "Define data fields and data types"
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Train Personnel on Data Collection Procedures",
+                        "children": [
+                            {
+                                "step": "Develop training materials"
+                            },
+                            {
+                                "step": "Conduct training sessions"
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Implement Data Collection Systems",
+                        "children": [
+                            {
+                                "step": "Deploy data collection tools"
+                            },
+                            {
+                                "step": "Configure systems for data capture"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "step": "Automate Data Monitoring",
+                "children": [
+                    {
+                        "step": "Select Data Sources to Monitor"
+                    },
+                    {
+                        "step": "Configure Monitoring Alerts for Key Metrics"
+                    },
+                    {
+                        "step": "Establish Baseline Data Performance"
+                    },
+                    {
+                        "step": "Create Dashboards for Real-Time Monitoring"
+                    },
+                    {
+                        "step": "Set Up Automated Data Sampling"
+                    },
+                    {
+                        "step": "Define Alert Thresholds Based on Historical Data"
+                    },
+                    {
+                        "step": "Implement Alert Routing to Designated Teams"
+                    }
+                ]
+            },
+            {
+                "step": "Generate Compliance Reports",
+                "children": [
+                    {
+                        "step": "Select Reporting Period"
+                    },
+                    {
+                        "step": "Gather Relevant Data"
+                    },
+                    {
+                        "step": "Analyze Data Against Compliance Requirements"
+                    },
+                    {
+                        "step": "Generate Report Draft"
+                    },
+                    {
+                        "step": "Review Report for Accuracy"
+                    },
+                    {
+                        "step": "Finalize Report and Distribution"
+                    }
+                ]
+            },
+            {
+                "step": "Implement Exception Handling Procedures",
+                "children": [
+                    {
+                        "step": "Develop Exception Handling Logic"
+                    },
+                    {
+                        "step": "Create Exception Handling Templates"
+                    },
+                    {
+                        "step": "Define Exception Escalation Paths"
+                    },
+                    {
+                        "step": "Establish Procedures for Exception Investigation"
+                    },
+                    {
+                        "step": "Create a Log of All Exceptions"
+                    },
+                    {
+                        "step": "Define Criteria for Resolving Exceptions"
+                    },
+                    {
+                        "step": "Document Exception Resolution Steps"
+                    }
+                ]
+            },
+            {
+                "step": "Regularly Review and Update Compliance Rules",
+                "children": [
+                    {
+                        "step": "Analyze Changes in Regulatory Landscape"
+                    },
+                    {
+                        "step": "Assess Impact of Regulatory Changes on Existing Rules"
+                    },
+                    {
+                        "step": "Update Rule Definitions to Reflect New Regulations"
+                    },
+                    {
+                        "step": "Review and Revise Existing Rule Documentation"
+                    },
+                    {
+                        "step": "Document Approved Rule Updates with Rationale"
+                    }
+                ]
+            }
+        ],
+        "uuid": "1d45768f-61e3-404f-8ef7-3c99538b4c44"
+    },
+    "input": {
+        "system_message": "You are an AI that breaks down complex tasks into hierarchical steps. For each task, generate a set of sub-steps needed to complete it. Maintain clarity and logical order. IMPORTANT: Avoid duplicating steps that already exist elsewhere in the tree context provided. Focus on sub-steps that are specific to the current task being expanded. Format your response as a valid JSON array of step objects, where each object has a 'step' field and optionally a 'children' array containing substeps. Example format: [{'step': 'Main step 1', 'children': [{'step': 'Substep 1.1'}, {'step': 'Substep 1.2'}]}, {'step': 'Main step 2'}] Your entire response must be parseable as JSON. Do not include markdown formatting, code blocks, or commentary.",
+        "user_message": "Break down the following task into 3-7 sub-steps. Task: Regularly Review and Update Compliance Rules\n\nDo NOT repeat steps that have already been created in the tree unless ABSOLUTELY NECESSARY.\nFocus on sub-steps that are specific to this task and avoid duplicating steps that already exist in the broader process.\n\n\nExisting steps in the tree (avoid duplicating these): Automated Compliance Management, Define Compliance Requirements, Identify Key Stakeholders, Determine Scope of Compliance, Research Relevant Regulatory Frameworks, Document Specific Compliance Requirements, Prioritize Requirements Based on Risk, Define Measurement Criteria for Each Requirement, Identify Applicable Regulations, Conduct Initial Regulatory Screening, Identify Regulatory Bodies Relevant to the Industry, Search Regulatory Databases for Applicable Laws, Analyze Regulatory Text for Keywords and Clauses, Assess Regulatory Applicability Based on Business Activities, Document Regulatory Findings with Justification, Establish Data Collection Processes, Determine Data Collection Methods (e.g., surveys, logs, sensors), Select appropriate data collection tools, Evaluate tool capabilities, Assess tool costs and integration needs, Define data collection frequency, Establish time intervals for collection, Consider real-time vs. periodic collection needs, Design Data Collection Templates & Formats, Create standardized data collection forms, Define data fields and data types, Train Personnel on Data Collection Procedures, Develop training materials, Conduct training sessions, Implement Data Collection Systems, Deploy data collection tools, Configure systems for data capture, Automate Data Monitoring, Select Data Sources to Monitor, Configure Monitoring Alerts for Key Metrics, Establish Baseline Data Performance, Create Dashboards for Real-Time Monitoring, Set Up Automated Data Sampling, Define Alert Thresholds Based on Historical Data, Implement Alert Routing to Designated Teams, Generate Compliance Reports, Select Reporting Period, Gather Relevant Data, Analyze Data Against Compliance Requirements, Generate Report Draft, Review Report for Accuracy, Finalize Report and Distribution, Implement Exception Handling Procedures, Develop Exception Handling Logic, Create Exception Handling Templates, Define Exception Escalation Paths, Establish Procedures for Exception Investigation, Create a Log of All Exceptions, Define Criteria for Resolving Exceptions, Document Exception Resolution Steps, Regularly Review and Update Compliance Rules\n\nReturn ONLY a JSON array of step objects, with no markdown formatting, code blocks, or extra text.",
+        "timestamp": "2025-06-01T20:22:36.010310"
+    }
+}

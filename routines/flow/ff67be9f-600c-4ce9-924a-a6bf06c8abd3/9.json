@@ -1,0 +1,103 @@
+{
+    "uuid": null,
+    "date_created": "2025-06-01T22:14:41.200483",
+    "task": "Industrial Specifications Analysis",
+    "time_taken": "0:00:10.347640",
+    "industrial_specifications": {
+        "performance_metrics": [
+            {
+                "name": "Wafer Throughput (WPH)",
+                "value": "500-1500 WPH",
+                "description": "Number of wafers processed per hour. This is a primary metric reflecting overall equipment effectiveness. Higher throughput generally correlates with lower unit costs."
+            },
+            {
+                "name": "Wafer Yield",
+                "value": "99.5-99.9%",
+                "description": "Percentage of wafers successfully processed without critical defects. Critical defects include those affecting electrical performance or structural integrity."
+            },
+            {
+                "name": "Defect Density (per wafer)",
+                "value": "≤ 10 defects/mm²",
+                "description": "Number of defects per square millimeter on the wafer surface. Lower density indicates higher quality processing. Categorized by severity (critical, major, minor)."
+            },
+            {
+                "name": "Cycle Time (per wafer)",
+                "value": "45-90 seconds",
+                "description": "Time taken to complete a single processing step. Optimized through process control and automation."
+            },
+            {
+                "name": "Equipment Uptime",
+                "value": "98-99%",
+                "description": "Percentage of time the equipment is available for operation. Primarily determined by maintenance schedules and component reliability."
+            },
+            {
+                "name": "Process Stability (Sigma)",
+                "value": "σ ≤ 1.5",
+                "description": "Standard deviation of key process parameters (e.g., etch rate, deposition time). Lower sigma indicates greater process control and repeatability."
+            }
+        ],
+        "implementation_requirements": [
+            {
+                "name": "Robotic Handling System",
+                "specifications": "6-Axis Robotic Arm, Payload: 15-30 kg, Repeatability: ± 0.02 mm, Workspace: 1.5-2.5 m",
+                "description": "Required for precise wafer positioning and handling during various processing steps."
+            },
+            {
+                "name": "Automated Chemical Delivery System",
+                "specifications": "Precision Pumps: ± 0.1% accuracy, Flow Rate Range: 1-100 mL/min, Material Compatibility: Stainless Steel 316L",
+                "description": "Ensures consistent chemical delivery for etching, cleaning, and deposition processes."
+            },
+            {
+                "name": "Cleanroom Environment",
+                "specifications": "Class ISO 8 or better, Humidity Control: 40-60%, Temperature Control: 22-25°C",
+                "description": "Critical for minimizing contamination and maintaining wafer integrity."
+            },
+            {
+                "name": "Process Control System (PCS)",
+                "specifications": "Real-time Monitoring, Statistical Process Control (SPC), Integration with MES/ERP, Data Logging Capacity: 100 GB/day",
+                "description": "Centralized system for monitoring, controlling, and optimizing all process parameters."
+            },
+            {
+                "name": "WAFER TEMPERATURE MONITORING",
+                "specifications": " ±0.1°C Accuracy, Multiple Sensors Per Wafer (3-5)",
+                "description": "Precise temperature control crucial for deposition and etching processes."
+            },
+            {
+                "name": "Vision Inspection System",
+                "specifications": "Resolution: 1280 x 1024 pixels, Frame Rate: 60 Hz, Detection Range: 50-100 mm",
+                "description": "Automated defect detection and measurement."
+            }
+        ],
+        "industry_standards": [
+            "ISO 9001 (Quality Management)",
+            "ISO 14001 (Environmental Management)",
+            "IEC 61010 (Electrical Safety)",
+            "SEMCO (Semiconductor Manufacturing Council) Standards",
+            "ASML Standards (for specific equipment)",
+            "IPC-2220 (Connectors and Interfaces)"
+        ],
+        "key_suppliers": [
+            "ASML",
+            "KLA Corporation",
+            "Applied Materials",
+            "Lam Research",
+            "Tokyo Electron (TEL)",
+            "SPG Technology",
+            "Cognex"
+        ],
+        "operational_considerations": [
+            "Preventative Maintenance Schedules (based on equipment hours)",
+            "Spare Parts Inventory Management (critical components)",
+            "Operator Training (advanced process control and troubleshooting)",
+            "Process Analytical Technology (PAT) implementation",
+            "Waste Management and Chemical Recycling Programs",
+            "Energy Consumption Monitoring and Optimization",
+            "Contamination Control Protocols – rigorous documented procedures"
+        ]
+    },
+    "input": {
+        "system_message": "You are an AI assistant specialized in industrial engineering and specifications. For the given topic, provide a comprehensive overview of industrial/commercial specifications including performance metrics and implementation requirements. Be precise with numerical values and include ranges where appropriate. Focus on practical technical details that would be relevant to professionals in the field.",
+        "user_message": "Create detailed industrial specifications for: Semiconductor Fabrication Automation\n\nFormat your response as a JSON object with these categories:\n1. performance_metrics: An array of metrics with names, values/ranges, and descriptions\n2. implementation_requirements: An array of requirements with names, specifications, and descriptions\n3. industry_standards: An array of relevant standards and certifications\n4. key_suppliers: An array of major equipment/technology suppliers for this industry\n5. operational_considerations: An array of important operational factors\n\nPlease provide realistic values for industrial/commercial scale implementations.\n\nReturn ONLY valid JSON without any additional text, explanation, or code block formatting.",
+        "timestamp": "2025-06-01T22:14:30.853843"
+    }
+}

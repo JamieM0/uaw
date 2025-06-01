@@ -1,0 +1,246 @@
+{
+    "metadata": {
+        "uuid": "c63c66a7-3bb9-48da-ba75-851d5f8a0234",
+        "date_created": "2025-06-01T20:08:49.647302",
+        "task": "Hallucinate Tree",
+        "time_taken": "0:00:57.798407"
+    },
+    "tree": {
+        "step": "Cloud Infrastructure",
+        "children": [
+            {
+                "step": "Define Cloud Infrastructure Requirements",
+                "children": [
+                    {
+                        "step": "Identify Business Needs and Workloads"
+                    },
+                    {
+                        "step": "Determine Application Requirements (CPU, Memory, Storage)"
+                    },
+                    {
+                        "step": "Assess Network Bandwidth and Latency Requirements"
+                    },
+                    {
+                        "step": "Evaluate Data Storage Needs (Volume, Type, Access Frequency)"
+                    },
+                    {
+                        "step": "Determine Security and Compliance Requirements"
+                    },
+                    {
+                        "step": "Establish Budgetary Constraints"
+                    }
+                ]
+            },
+            {
+                "step": "Select Cloud Provider",
+                "children": [
+                    {
+                        "step": "Research Potential Cloud Providers"
+                    },
+                    {
+                        "step": "Compare Cloud Provider Pricing Models"
+                    },
+                    {
+                        "step": "Evaluate Cloud Provider Service Offerings (IaaS, PaaS, SaaS)"
+                    },
+                    {
+                        "step": "Assess Cloud Provider Support Options"
+                    },
+                    {
+                        "step": "Review Cloud Provider Security and Compliance Certifications"
+                    },
+                    {
+                        "step": "Determine Cloud Provider Geographic Regions Available"
+                    }
+                ]
+            },
+            {
+                "step": "Configure Virtual Network",
+                "children": [
+                    {
+                        "step": "Define Virtual Network Scope - Determine IP Address Range, Subnet Design, and Routing Requirements."
+                    },
+                    {
+                        "step": "Configure Virtual Network Address Space - Assign IP Address Blocks to Subnets."
+                    },
+                    {
+                        "step": "Establish Network Connectivity - Configure Route Tables for Internal and External Communication."
+                    },
+                    {
+                        "step": "Configure Virtual Network Gateways - Set up NAT Gateways or VPN Gateways as Needed."
+                    },
+                    {
+                        "step": "Implement Network Security Rules - Define Firewall Rules and Network Security Groups."
+                    },
+                    {
+                        "step": "Verify Network Connectivity - Test Communication Between Virtual Network Resources."
+                    }
+                ]
+            },
+            {
+                "step": "Provision Compute Instances",
+                "children": [
+                    {
+                        "step": "Select Compute Instance Type (e.g., General Purpose, Memory Optimized, Compute Optimized)"
+                    },
+                    {
+                        "step": "Choose Operating System for Compute Instance (e.g., Windows, Linux)"
+                    },
+                    {
+                        "step": "Specify Instance Size (e.g., Number of vCPUs, Memory Amount)"
+                    },
+                    {
+                        "step": "Configure Instance Boot Options (e.g., Image Selection, Initial Configuration)"
+                    },
+                    {
+                        "step": "Review Instance Configuration for Accuracy"
+                    },
+                    {
+                        "step": "Initiate Compute Instance Provisioning through the Cloud Provider's Console or API"
+                    },
+                    {
+                        "step": "Confirm Instance Provisioning and Verify Instance Status"
+                    }
+                ]
+            },
+            {
+                "step": "Set up Storage Solutions",
+                "children": [
+                    {
+                        "step": "Determine Storage Needs Based on Application Requirements",
+                        "children": [
+                            {
+                                "step": "Identify Storage Types Required (e.g., Block Storage, Object Storage, File Storage)",
+                                "children": [
+                                    {
+                                        "step": "Assess Data Access Patterns (Read/Write Frequency, Data Size)"
+                                    }
+                                ]
+                            },
+                            {
+                                "step": "Calculate Storage Volume Requirements (Current and Future Growth)"
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Select Appropriate Storage Services",
+                        "children": [
+                            {
+                                "step": "Evaluate Storage Service Features (e.g., Replication, Backup, Disaster Recovery)"
+                            },
+                            {
+                                "step": "Compare Storage Service Costs and Pricing Models"
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Configure Storage Accounts/Volumes",
+                        "children": [
+                            {
+                                "step": "Create Storage Accounts or Volumes within the Chosen Cloud Provider"
+                            },
+                            {
+                                "step": "Define Storage Account Names and Regions"
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Implement Data Access Policies",
+                        "children": [
+                            {
+                                "step": "Set Permissions and Access Controls"
+                            },
+                            {
+                                "step": "Configure Data Encryption (if required)"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "step": "Configure Security Measures",
+                "children": [
+                    {
+                        "step": "Develop a Security Policy Framework",
+                        "children": [
+                            {
+                                "step": "Identify Potential Threats and Vulnerabilities"
+                            },
+                            {
+                                "step": "Define Security Controls Based on Risk Assessment"
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Implement Identity and Access Management (IAM)",
+                        "children": [
+                            {
+                                "step": "Create User Accounts and Groups"
+                            },
+                            {
+                                "step": "Establish Role-Based Access Control (RBAC)"
+                            },
+                            {
+                                "step": "Enforce Multi-Factor Authentication (MFA)"
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Configure Data Encryption",
+                        "children": [
+                            {
+                                "step": "Determine Data Sensitivity Levels"
+                            },
+                            {
+                                "step": "Implement Encryption at Rest and in Transit"
+                            },
+                            {
+                                "step": "Manage Encryption Keys Securely"
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Implement Network Security Controls",
+                        "children": [
+                            {
+                                "step": "Configure Firewalls and Network Security Groups"
+                            },
+                            {
+                                "step": "Set Up Intrusion Detection and Prevention Systems (IDS/IPS)"
+                            },
+                            {
+                                "step": "Implement Network Segmentation"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "step": "Monitor and Optimize Performance",
+                "children": [
+                    {
+                        "step": "Analyze Performance Metrics"
+                    },
+                    {
+                        "step": "Identify Performance Bottlenecks"
+                    },
+                    {
+                        "step": "Implement Optimization Strategies"
+                    },
+                    {
+                        "step": "Test and Validate Optimization Changes"
+                    },
+                    {
+                        "step": "Document Performance Tuning Decisions"
+                    }
+                ]
+            }
+        ],
+        "uuid": "c63c66a7-3bb9-48da-ba75-851d5f8a0234"
+    },
+    "input": {
+        "system_message": "You are an AI that breaks down complex tasks into hierarchical steps. For each task, generate a set of sub-steps needed to complete it. Maintain clarity and logical order. IMPORTANT: Avoid duplicating steps that already exist elsewhere in the tree context provided. Focus on sub-steps that are specific to the current task being expanded. Format your response as a valid JSON array of step objects, where each object has a 'step' field and optionally a 'children' array containing substeps. Example format: [{'step': 'Main step 1', 'children': [{'step': 'Substep 1.1'}, {'step': 'Substep 1.2'}]}, {'step': 'Main step 2'}] Your entire response must be parseable as JSON. Do not include markdown formatting, code blocks, or commentary.",
+        "user_message": "Break down the following task into 3-7 sub-steps. Task: Monitor and Optimize Performance\n\nDo NOT repeat steps that have already been created in the tree unless ABSOLUTELY NECESSARY.\nFocus on sub-steps that are specific to this task and avoid duplicating steps that already exist in the broader process.\n\n\nExisting steps in the tree (avoid duplicating these): Cloud Infrastructure, Define Cloud Infrastructure Requirements, Identify Business Needs and Workloads, Determine Application Requirements (CPU, Memory, Storage), Assess Network Bandwidth and Latency Requirements, Evaluate Data Storage Needs (Volume, Type, Access Frequency), Determine Security and Compliance Requirements, Establish Budgetary Constraints, Select Cloud Provider, Research Potential Cloud Providers, Compare Cloud Provider Pricing Models, Evaluate Cloud Provider Service Offerings (IaaS, PaaS, SaaS), Assess Cloud Provider Support Options, Review Cloud Provider Security and Compliance Certifications, Determine Cloud Provider Geographic Regions Available, Configure Virtual Network, Define Virtual Network Scope - Determine IP Address Range, Subnet Design, and Routing Requirements., Configure Virtual Network Address Space - Assign IP Address Blocks to Subnets., Establish Network Connectivity - Configure Route Tables for Internal and External Communication., Configure Virtual Network Gateways - Set up NAT Gateways or VPN Gateways as Needed., Implement Network Security Rules - Define Firewall Rules and Network Security Groups., Verify Network Connectivity - Test Communication Between Virtual Network Resources., Provision Compute Instances, Select Compute Instance Type (e.g., General Purpose, Memory Optimized, Compute Optimized), Choose Operating System for Compute Instance (e.g., Windows, Linux), Specify Instance Size (e.g., Number of vCPUs, Memory Amount), Configure Instance Boot Options (e.g., Image Selection, Initial Configuration), Review Instance Configuration for Accuracy, Initiate Compute Instance Provisioning through the Cloud Provider's Console or API, Confirm Instance Provisioning and Verify Instance Status, Set up Storage Solutions, Determine Storage Needs Based on Application Requirements, Identify Storage Types Required (e.g., Block Storage, Object Storage, File Storage), Assess Data Access Patterns (Read/Write Frequency, Data Size), Calculate Storage Volume Requirements (Current and Future Growth), Select Appropriate Storage Services, Evaluate Storage Service Features (e.g., Replication, Backup, Disaster Recovery), Compare Storage Service Costs and Pricing Models, Configure Storage Accounts/Volumes, Create Storage Accounts or Volumes within the Chosen Cloud Provider, Define Storage Account Names and Regions, Implement Data Access Policies, Set Permissions and Access Controls, Configure Data Encryption (if required), Configure Security Measures, Develop a Security Policy Framework, Identify Potential Threats and Vulnerabilities, Define Security Controls Based on Risk Assessment, Implement Identity and Access Management (IAM), Create User Accounts and Groups, Establish Role-Based Access Control (RBAC), Enforce Multi-Factor Authentication (MFA), Configure Data Encryption, Determine Data Sensitivity Levels, Implement Encryption at Rest and in Transit, Manage Encryption Keys Securely, Implement Network Security Controls, Configure Firewalls and Network Security Groups, Set Up Intrusion Detection and Prevention Systems (IDS/IPS), Implement Network Segmentation, Monitor and Optimize Performance\n\nReturn ONLY a JSON array of step objects, with no markdown formatting, code blocks, or extra text.",
+        "timestamp": "2025-06-01T20:08:44.776110"
+    }
+}

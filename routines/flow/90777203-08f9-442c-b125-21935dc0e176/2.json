@@ -1,0 +1,194 @@
+{
+    "metadata": {
+        "uuid": "b28bca7c-d561-4195-a5cf-ad4cbd69b154",
+        "date_created": "2025-06-01T22:15:33.804548",
+        "task": "Hallucinate Tree",
+        "time_taken": "0:00:10.829758"
+    },
+    "tree": {
+        "step": "Automated Server Provisioning",
+        "children": [
+            {
+                "step": "Define Server Requirements",
+                "children": [
+                    {
+                        "step": "Identify Server Purpose and Use Case"
+                    },
+                    {
+                        "step": "Determine Minimum Required Resources (CPU, RAM, Storage)"
+                    },
+                    {
+                        "step": "Assess Application Requirements"
+                    },
+                    {
+                        "step": "Define Operating System Requirements"
+                    },
+                    {
+                        "step": "Specify Security Needs (Compliance, Data Sensitivity)"
+                    },
+                    {
+                        "step": "Document Performance Expectations (Response Times, Throughput)"
+                    }
+                ]
+            },
+            {
+                "step": "Select Server Image",
+                "children": [
+                    {
+                        "step": "Browse Available Server Images"
+                    },
+                    {
+                        "step": "Filter Server Images Based on Operating System Requirements"
+                    },
+                    {
+                        "step": "Evaluate Server Images Based on Performance Expectations"
+                    },
+                    {
+                        "step": "Assess Server Image Security Features"
+                    },
+                    {
+                        "step": "Compare Server Image Pricing Options"
+                    },
+                    {
+                        "step": "Select Preferred Server Image"
+                    }
+                ]
+            },
+            {
+                "step": "Configure Network Settings",
+                "children": [
+                    {
+                        "step": "Determine Network Topology (LAN, WAN, VPN)"
+                    },
+                    {
+                        "step": "Identify Network Interface Card (NIC) Configuration Requirements"
+                    },
+                    {
+                        "step": "Configure Static or Dynamic IP Addressing"
+                    },
+                    {
+                        "step": "Set Up Default Gateway"
+                    },
+                    {
+                        "step": "Configure DNS Servers"
+                    },
+                    {
+                        "step": "Establish Firewall Rules"
+                    },
+                    {
+                        "step": "Configure Network Routing Protocols (if applicable)"
+                    }
+                ]
+            },
+            {
+                "step": "Assign Server IP Address",
+                "children": [
+                    {
+                        "step": "Determine IP Address Range",
+                        "children": [
+                            {
+                                "step": "Identify Available IP Blocks"
+                            },
+                            {
+                                "step": "Allocate IP Address within the Range"
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Configure DHCP or Static IP Settings",
+                        "children": [
+                            {
+                                "step": "Choose IP Addressing Method (Static or DHCP)",
+                                "children": [
+                                    {
+                                        "step": "For Static IP: Enter IP Address, Netmask, Gateway, DNS Servers"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Assign IP Address to Server Interface",
+                        "children": [
+                            {
+                                "step": "Locate the Server's Network Interface"
+                            },
+                            {
+                                "step": "Associate the Assigned IP Address with the NIC"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "step": "Install Necessary Software",
+                "children": [
+                    {
+                        "step": "Download Software Installer Packages"
+                    },
+                    {
+                        "step": "Verify Downloaded Files Integrity (Checksum Verification)"
+                    },
+                    {
+                        "step": "Install Software Packages Using Installer"
+                    },
+                    {
+                        "step": "Configure Software Settings"
+                    },
+                    {
+                        "step": "Test Software Functionality"
+                    }
+                ]
+            },
+            {
+                "step": "Configure Security Settings",
+                "children": [
+                    {
+                        "step": "Review Security Policy Requirements"
+                    },
+                    {
+                        "step": "Configure Firewall Rules"
+                    },
+                    {
+                        "step": "Enable Multi-Factor Authentication"
+                    },
+                    {
+                        "step": "Implement Intrusion Detection/Prevention System (IDS/IPS)"
+                    },
+                    {
+                        "step": "Configure SSH Access Restrictions"
+                    },
+                    {
+                        "step": "Enable and Configure Logging"
+                    }
+                ]
+            },
+            {
+                "step": "Verify Server Functionality",
+                "children": [
+                    {
+                        "step": "Initiate Server Connectivity Test"
+                    },
+                    {
+                        "step": "Execute Basic Command-Line Tests"
+                    },
+                    {
+                        "step": "Verify Network Connectivity"
+                    },
+                    {
+                        "step": "Confirm Application Access"
+                    },
+                    {
+                        "step": "Monitor Server Resource Utilization"
+                    }
+                ]
+            }
+        ],
+        "uuid": "b28bca7c-d561-4195-a5cf-ad4cbd69b154"
+    },
+    "input": {
+        "system_message": "You are an AI that breaks down complex tasks into hierarchical steps. For each task, generate a set of sub-steps needed to complete it. Maintain clarity and logical order. IMPORTANT: Avoid duplicating steps that already exist elsewhere in the tree context provided. Focus on sub-steps that are specific to the current task being expanded. Format your response as a valid JSON array of step objects, where each object has a 'step' field and optionally a 'children' array containing substeps. Example format: [{'step': 'Main step 1', 'children': [{'step': 'Substep 1.1'}, {'step': 'Substep 1.2'}]}, {'step': 'Main step 2'}] Your entire response must be parseable as JSON. Do not include markdown formatting, code blocks, or commentary.",
+        "user_message": "Break down the following task into 3-7 sub-steps. Task: Verify Server Functionality\n\nDo NOT repeat steps that have already been created in the tree unless ABSOLUTELY NECESSARY.\nFocus on sub-steps that are specific to this task and avoid duplicating steps that already exist in the broader process.\n\n\nExisting steps in the tree (avoid duplicating these): Automated Server Provisioning, Define Server Requirements, Identify Server Purpose and Use Case, Determine Minimum Required Resources (CPU, RAM, Storage), Assess Application Requirements, Define Operating System Requirements, Specify Security Needs (Compliance, Data Sensitivity), Document Performance Expectations (Response Times, Throughput), Select Server Image, Browse Available Server Images, Filter Server Images Based on Operating System Requirements, Evaluate Server Images Based on Performance Expectations, Assess Server Image Security Features, Compare Server Image Pricing Options, Select Preferred Server Image, Configure Network Settings, Determine Network Topology (LAN, WAN, VPN), Identify Network Interface Card (NIC) Configuration Requirements, Configure Static or Dynamic IP Addressing, Set Up Default Gateway, Configure DNS Servers, Establish Firewall Rules, Configure Network Routing Protocols (if applicable), Assign Server IP Address, Determine IP Address Range, Identify Available IP Blocks, Allocate IP Address within the Range, Configure DHCP or Static IP Settings, Choose IP Addressing Method (Static or DHCP), For Static IP: Enter IP Address, Netmask, Gateway, DNS Servers, Assign IP Address to Server Interface, Locate the Server's Network Interface, Associate the Assigned IP Address with the NIC, Install Necessary Software, Download Software Installer Packages, Verify Downloaded Files Integrity (Checksum Verification), Install Software Packages Using Installer, Configure Software Settings, Test Software Functionality, Configure Security Settings, Review Security Policy Requirements, Configure Firewall Rules, Enable Multi-Factor Authentication, Implement Intrusion Detection/Prevention System (IDS/IPS), Configure SSH Access Restrictions, Enable and Configure Logging, Verify Server Functionality\n\nReturn ONLY a JSON array of step objects, with no markdown formatting, code blocks, or extra text.",
+        "timestamp": "2025-06-01T22:15:32.773762"
+    }
+}

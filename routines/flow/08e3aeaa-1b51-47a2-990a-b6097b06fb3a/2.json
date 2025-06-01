@@ -1,0 +1,191 @@
+{
+    "metadata": {
+        "uuid": "4789b2df-377f-4518-8886-0b71e06454f6",
+        "date_created": "2025-06-01T21:28:47.127762",
+        "task": "Hallucinate Tree",
+        "time_taken": "0:00:12.142769"
+    },
+    "tree": {
+        "step": "Code Generation",
+        "children": [
+            {
+                "step": "Define Function Requirements",
+                "children": [
+                    {
+                        "step": "Identify the Core Purpose of the Function"
+                    },
+                    {
+                        "step": "Determine the Expected Inputs"
+                    },
+                    {
+                        "step": "Define the Function's Output"
+                    },
+                    {
+                        "step": "Specify Any Constraints or Limitations"
+                    },
+                    {
+                        "step": "Document Expected Behavior for Different Inputs"
+                    }
+                ]
+            },
+            {
+                "step": "Determine Input Parameters",
+                "children": [
+                    {
+                        "step": "Gather Initial Requirements for Input Data"
+                    },
+                    {
+                        "step": "Identify Data Types for Each Parameter"
+                    },
+                    {
+                        "step": "Determine Valid Ranges for Numeric Parameters"
+                    },
+                    {
+                        "step": "Establish Data Formatting Requirements (e.g., strings, dates)"
+                    },
+                    {
+                        "step": "Document Parameter Names and Descriptions"
+                    }
+                ]
+            },
+            {
+                "step": "Choose Programming Language",
+                "children": [
+                    {
+                        "step": "Research Programming Language Options"
+                    },
+                    {
+                        "step": "Evaluate Languages Based on Project Needs"
+                    },
+                    {
+                        "step": "Assess Language Learning Curve"
+                    },
+                    {
+                        "step": "Consider Available Libraries and Frameworks"
+                    },
+                    {
+                        "step": "Evaluate Community Support and Documentation"
+                    }
+                ]
+            },
+            {
+                "step": "Design Algorithm/Logic",
+                "children": [
+                    {
+                        "step": "Develop a High-Level Algorithm Outline",
+                        "children": [
+                            {
+                                "step": "Break Down the Core Purpose into Smaller Stages"
+                            },
+                            {
+                                "step": "Sequence the Stages Logically"
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Define Algorithm Pseudocode",
+                        "children": [
+                            {
+                                "step": "Translate Logical Steps into Formal Pseudocode"
+                            },
+                            {
+                                "step": "Use Clear and Concise Language"
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Consider Edge Cases and Error Handling",
+                        "children": [
+                            {
+                                "step": "Identify Potential Problematic Inputs"
+                            },
+                            {
+                                "step": "Plan for Handling Invalid Inputs"
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Review Algorithm for Efficiency and Scalability",
+                        "children": [
+                            {
+                                "step": "Analyze Algorithm Complexity"
+                            },
+                            {
+                                "step": "Identify Potential Bottlenecks"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "step": "Write Code Snippet",
+                "children": [
+                    {
+                        "step": "Write Initial Code Skeleton"
+                    },
+                    {
+                        "step": "Implement Core Logic within Skeleton"
+                    },
+                    {
+                        "step": "Add Error Handling for Invalid Inputs"
+                    },
+                    {
+                        "step": "Test Code Snippet with Various Inputs"
+                    },
+                    {
+                        "step": "Debug and Correct Any Errors Identified During Testing"
+                    }
+                ]
+            },
+            {
+                "step": "Test Code Snippet",
+                "children": [
+                    {
+                        "step": "Prepare Test Data"
+                    },
+                    {
+                        "step": "Execute Test Code Snippet"
+                    },
+                    {
+                        "step": "Verify Output Against Expected Results"
+                    },
+                    {
+                        "step": "Analyze Test Results"
+                    },
+                    {
+                        "step": "Repeat Testing with Different Inputs"
+                    }
+                ]
+            },
+            {
+                "step": "Refine Code Based on Test Results",
+                "children": [
+                    {
+                        "step": "Analyze Test Results: Examine the failed test cases and identify patterns in the errors."
+                    },
+                    {
+                        "step": "Prioritize Bug Fixes: Determine the most critical bugs to address first based on impact and frequency."
+                    },
+                    {
+                        "step": "Locate Code Changes: Trace the code modifications that led to the failing test cases."
+                    },
+                    {
+                        "step": "Implement Bug Fixes: Modify the code to resolve the identified bugs."
+                    },
+                    {
+                        "step": "Re-test Fixed Code: Execute the test suite to confirm that the bugs have been resolved."
+                    },
+                    {
+                        "step": "Iterate on Fixes: If tests still fail, repeat the analysis and fixing process."
+                    }
+                ]
+            }
+        ],
+        "uuid": "4789b2df-377f-4518-8886-0b71e06454f6"
+    },
+    "input": {
+        "system_message": "You are an AI that breaks down complex tasks into hierarchical steps. For each task, generate a set of sub-steps needed to complete it. Maintain clarity and logical order. IMPORTANT: Avoid duplicating steps that already exist elsewhere in the tree context provided. Focus on sub-steps that are specific to the current task being expanded. Format your response as a valid JSON array of step objects, where each object has a 'step' field and optionally a 'children' array containing substeps. Example format: [{'step': 'Main step 1', 'children': [{'step': 'Substep 1.1'}, {'step': 'Substep 1.2'}]}, {'step': 'Main step 2'}] Your entire response must be parseable as JSON. Do not include markdown formatting, code blocks, or commentary.",
+        "user_message": "Break down the following task into 3-7 sub-steps. Task: Refine Code Based on Test Results\n\nDo NOT repeat steps that have already been created in the tree unless ABSOLUTELY NECESSARY.\nFocus on sub-steps that are specific to this task and avoid duplicating steps that already exist in the broader process.\n\n\nExisting steps in the tree (avoid duplicating these): Code Generation, Define Function Requirements, Identify the Core Purpose of the Function, Determine the Expected Inputs, Define the Function's Output, Specify Any Constraints or Limitations, Document Expected Behavior for Different Inputs, Determine Input Parameters, Gather Initial Requirements for Input Data, Identify Data Types for Each Parameter, Determine Valid Ranges for Numeric Parameters, Establish Data Formatting Requirements (e.g., strings, dates), Document Parameter Names and Descriptions, Choose Programming Language, Research Programming Language Options, Evaluate Languages Based on Project Needs, Assess Language Learning Curve, Consider Available Libraries and Frameworks, Evaluate Community Support and Documentation, Design Algorithm/Logic, Develop a High-Level Algorithm Outline, Break Down the Core Purpose into Smaller Stages, Sequence the Stages Logically, Define Algorithm Pseudocode, Translate Logical Steps into Formal Pseudocode, Use Clear and Concise Language, Consider Edge Cases and Error Handling, Identify Potential Problematic Inputs, Plan for Handling Invalid Inputs, Review Algorithm for Efficiency and Scalability, Analyze Algorithm Complexity, Identify Potential Bottlenecks, Write Code Snippet, Write Initial Code Skeleton, Implement Core Logic within Skeleton, Add Error Handling for Invalid Inputs, Test Code Snippet with Various Inputs, Debug and Correct Any Errors Identified During Testing, Test Code Snippet, Prepare Test Data, Execute Test Code Snippet, Verify Output Against Expected Results, Analyze Test Results, Repeat Testing with Different Inputs, Refine Code Based on Test Results\n\nReturn ONLY a JSON array of step objects, with no markdown formatting, code blocks, or extra text.",
+        "timestamp": "2025-06-01T21:28:45.028101"
+    }
+}

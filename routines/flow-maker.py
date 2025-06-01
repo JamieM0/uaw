@@ -286,6 +286,60 @@ def run_program(program_name, input_path, output_path, step_info="Running script
         )
         return {"status": "failure", "error_info": error_info, "program_name": program_name, "args": (program_name, input_path, output_path, step_info, extra_args)}
 
+def countdown_choice(prompt, default_choice, countdown_seconds=5):
+    """
+    Display a prompt with countdown, defaulting to a choice after timeout.
+    Returns the user's choice or the default if timeout occurs.
+    """
+    import select
+    import sys
+    
+    # For Windows compatibility
+    if sys.platform == "win32":
+        import msvcrt
+        print(f"{prompt}")
+        print(f"  {Colors.YELLOW}Auto-retrying in {countdown_seconds} seconds... (press any key to choose manually){Colors.ENDC}")
+        
+        for i in range(countdown_seconds, 0, -1):
+            sys.stdout.write(f"\r  Auto-retry in {i} seconds...")
+            sys.stdout.flush()
+            time.sleep(1)
+            
+            # Check if a key was pressed
+            if msvcrt.kbhit():
+                msvcrt.getch()  # Clear the key press
+                print("\n")
+                while True:
+                    choice = input(f"  {Colors.YELLOW}Action: [R]etry, [C]ontinue (skip step), or [S]top flow? {Colors.ENDC}").upper()
+                    if choice in ['R', 'C', 'S']:
+                        return choice
+                    print("  Invalid choice. Please enter R, C, or S.")
+        
+        print(f"\n  {Colors.GREEN}Auto-retrying...{Colors.ENDC}")
+        return default_choice
+    else:
+        # Unix/Linux version using select
+        print(f"{prompt}")
+        print(f"  {Colors.YELLOW}Auto-retrying in {countdown_seconds} seconds... (press Enter to choose manually){Colors.ENDC}")
+        
+        for i in range(countdown_seconds, 0, -1):
+            sys.stdout.write(f"\r  Auto-retry in {i} seconds...")
+            sys.stdout.flush()
+            
+            # Use select to check if input is available
+            ready, _, _ = select.select([sys.stdin], [], [], 1)
+            if ready:
+                sys.stdin.readline()  # Clear the input
+                print("\n")
+                while True:
+                    choice = input(f"  {Colors.YELLOW}Action: [R]etry, [C]ontinue (skip step), or [S]top flow? {Colors.ENDC}").upper()
+                    if choice in ['R', 'C', 'S']:
+                        return choice
+                    print("  Invalid choice. Please enter R, C, or S.")
+        
+        print(f"\n  {Colors.GREEN}Auto-retrying...{Colors.ENDC}")
+        return default_choice
+
 PROFILES = ["hobbyist", "educator", "field_expert", "investor", "researcher"]
 
 # Function to load metric definitions (similar to evaluator.py)
@@ -303,7 +357,6 @@ def load_metric_definitions_for_flow_maker():
     except json.JSONDecodeError:
         print(f"{Colors.RED}Error: Could not decode JSON from metric definitions file at {definitions_path}{Colors.ENDC}")
         return {}
-
 
 def main():
     """Main function to run the flow of programs."""
@@ -433,29 +486,24 @@ def main():
 
         if run_result["status"] == "failure":
             print(run_result["error_info"])
-            while True:
-                choice = input(f"  {Colors.YELLOW}Action: [R]etry, [C]ontinue (skip step), or [S]top flow? {Colors.ENDC}").upper()
-                if choice == 'R':
-                    print(f"  Retrying {program}...")
-                    # Loop will re-run current program_idx
-                    break
-                elif choice == 'C':
-                    print(f"  Skipping {program} and continuing...")
-                    program_idx += 1
-                    break
-                elif choice == 'S':
-                    print(f"  Stopping flow.")
-                    sys.exit(1)
-                else:
-                    print("  Invalid choice. Please enter R, C, or S.")
+            choice = countdown_choice(
+                f"  {Colors.YELLOW}Error occurred in {program}.{Colors.ENDC}",
+                'R',  # Default to Retry
+                5     # 5 second countdown
+            )
+            
             if choice == 'R':
+                print(f"  Retrying {program}...")
                 continue # Retry the current script
-            if choice == 'C':
+            elif choice == 'C':
+                print(f"  Skipping {program} and continuing...")
+                program_idx += 1
                 if program_idx >= len(programs): break # End of programs
                 continue # Go to next iteration for the next script
             elif choice == 'S':
+                print(f"  Stopping flow.")
                 sys.exit(1)
-        
+
         # If script execution was successful, proceed to potential validation and then evaluation
         if run_result["status"] == "success":
             validation_passed_for_current_file = True
@@ -485,27 +533,24 @@ def main():
                     print(f"  {Colors.RED}{validation_error_message}{Colors.ENDC}")
 
             if not validation_passed_for_current_file:
-                # Validation failed, prompt user
-                while True:
-                    choice = input(f"  {Colors.YELLOW}Action for {output_filename} (validation error: {validation_error_message}): [R]etry generation, [C]ontinue (skip evals), or [S]top flow? {Colors.ENDC}").upper()
-                    if choice == 'R':
-                        print(f"  Retrying {program}...")
-                        break
-                    elif choice == 'C':
-                        print(f"  Skipping evaluations for {output_filename} and continuing with next program...")
-                        program_idx += 1
-                        break
-                    elif choice == 'S':
-                        print(f"  Stopping flow.")
-                        sys.exit(1)
-                    else:
-                        print("  Invalid choice. Please enter R, C, or S.")
+                # Validation failed, use countdown choice
+                choice = countdown_choice(
+                    f"  {Colors.YELLOW}Validation failed for {output_filename}: {validation_error_message}{Colors.ENDC}",
+                    'R',  # Default to Retry
+                    5     # 5 second countdown
+                )
                 
                 if choice == 'R':
+                    print(f"  Retrying {program}...")
                     continue # Retry current program in the main while loop
                 elif choice == 'C':
+                    print(f"  Skipping evaluations for {output_filename} and continuing with next program...")
+                    program_idx += 1
                     if program_idx >= len(programs): break
                     continue # Go to next program in the main while loop
+                elif choice == 'S':
+                    print(f"  Stopping flow.")
+                    sys.exit(1)
             
             # If validation passed (or was not applicable for this file type)
             # AND program is not assemble.py, then run evaluations.
@@ -743,10 +788,41 @@ def main():
         print(f"\n{Colors.RED}Error saving detailed metrics to {os.path.abspath(metrics_file_path)}: {e}{Colors.ENDC}")
 
     # Run assemble.py to generate HTML output
-    output_path = flow_dir
+    # Determine the web output path based on breadcrumbs
+    web_output_dir = None
+    if breadcrumbs:
+        # Convert breadcrumbs path to web directory structure
+        # breadcrumbs: "technology/software-development/ci-cd-pipelines"
+        # should become directory: "uaw/web/technology/software-development/"
+        # and assemble.py will create: "ci-cd-pipelines.html"
+        
+        breadcrumb_parts = breadcrumbs.strip('/').split('/')
+        if len(breadcrumb_parts) > 0:
+            # Create the web directory path using all parts except the last one
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(script_dir)  # Go up from routines/ to uaw/
+            web_base_dir = os.path.join(project_root, "web")
+            
+            # Create nested directory structure for all parts except the last
+            web_dir_path = web_base_dir
+            for part in breadcrumb_parts[:-1]:  # All parts except the last one
+                web_dir_path = os.path.join(web_dir_path, part)
+            
+            # Ensure the directory exists
+            os.makedirs(web_dir_path, exist_ok=True)
+            
+            print(f"Web output directory: {os.path.abspath(web_dir_path)}")
+            print(f"HTML filename will be determined by assemble.py based on page title/slug")
+            web_output_dir = web_dir_path
+    
+    # Fallback to flow directory if no breadcrumbs or parsing fails
+    if not web_output_dir:
+        web_output_dir = flow_dir
+        print(f"Using fallback output directory: {os.path.abspath(web_output_dir)}")
+    
     abs_current_input_path = os.path.abspath(flow_dir)
     extra_args = None
-    run_result = run_program("assemble.py", abs_current_input_path, output_path, "Assembling HTML output... ", extra_args, model_name)
+    run_result = run_program("assemble.py", abs_current_input_path, web_output_dir, "Assembling HTML output... ", extra_args, model_name)
     if run_result["status"] == "failure":
         print(run_result["error_info"])
         sys.exit(1)
@@ -755,7 +831,9 @@ def main():
     cleanup_ollama_model(model_name)
     
     print(f"\nFlow process completed in {time_taken}")
-    print(f"Output files saved to: {os.path.abspath(flow_dir)}")
+    print(f"Flow files saved to: {os.path.abspath(flow_dir)}")
+    if web_output_dir != flow_dir:
+        print(f"Web page saved to directory: {os.path.abspath(web_output_dir)}")
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,109 @@
+{
+    "uuid": null,
+    "date_created": "2025-06-01T22:03:07.177091",
+    "task": "Industrial Specifications Analysis",
+    "time_taken": "0:00:10.786901",
+    "industrial_specifications": {
+        "performance_metrics": [
+            {
+                "name": "Inspection Speed (Parts/Hour)",
+                "value": "800 - 1200",
+                "range": "700 - 1500",
+                "description": "The number of parts inspected per hour. Dependent on board size, component density, and inspection algorithm complexity."
+            },
+            {
+                "name": "Defect Detection Rate (Accuracy)",
+                "value": "99.5 - 99.9",
+                "range": "98.5 - 100",
+                "description": "Percentage of defects detected correctly out of all defects present.  This is typically measured across a statistically significant sample of parts (minimum 500 parts)."
+            },
+            {
+                "name": "False Positive Rate",
+                "value": "0.5 - 2.0",
+                "range": "0.3 - 5.0",
+                "description": "Percentage of non-defective parts incorrectly identified as defective. Should be minimized through optimized algorithms and filter settings."
+            },
+            {
+                "name": "Cycle Time (Per Part)",
+                "value": "3 - 8",
+                "range": "2 - 12",
+                "description": "Time taken to inspect a single part, including image acquisition, processing, and defect classification.  Factors include board complexity and algorithm speed."
+            },
+            {
+                "name": "Throughput (Parts/Shift)",
+                "value": "4800 - 8000",
+                "range": "3600 - 12000",
+                "description": "The total number of parts inspected during an 8-hour shift, considering cycle time and downtime."
+            },
+            {
+                "name": "Defect Classification Accuracy (Category)",
+                "value": "97.0 - 99.0",
+                "range": "95.0 - 100",
+                "description": "Accuracy in classifying detected defects into predefined categories (e.g., cracks, scratches, missing components)."
+            }
+        ],
+        "implementation_requirements": [
+            {
+                "name": "Board Size Support",
+                "specification": "Minimum 100mm x 100mm, maximum 1200mm x 1200mm",
+                "description": "The AOI system must accommodate a range of board sizes to meet production needs."
+            },
+            {
+                "name": "Camera Resolution",
+                "specification": "Minimum 5 Megapixels, Dynamic Range 12-18 bits",
+                "description": "High-resolution cameras with sufficient dynamic range for accurate defect detection under varying lighting conditions."
+            },
+            {
+                "name": "Lighting System",
+                "specification": "Diffuse LED Array, Adjustable Intensity (100 - 500 Lux)",
+                "description": "Consistent, diffuse lighting is crucial for reliable defect detection. Adjustable intensity allows optimization for different board materials."
+            },
+            {
+                "name": "Image Processing Unit",
+                "specification": "Multi-core Processor (Intel Xeon or equivalent), Minimum 16GB RAM",
+                "description": "Powerful processing unit for real-time image analysis."
+            },
+            {
+                "name": "Software Platform",
+                "specification": "Modular, configurable software with onboard programming capabilities",
+                "description": "Allows for algorithm customization and adaptation to changing product requirements."
+            },
+            {
+                "name": "Data Connectivity",
+                "specification": "Ethernet (1 Gbps), USB, Serial",
+                "description": "For data transfer to MES/ERP systems."
+            },
+            {
+                "name": "Maintenance Access",
+                "specification": "Tool-less access to critical components",
+                "description": "Facilitates rapid repair and preventative maintenance"
+            }
+        ],
+        "industry_standards": [
+            "ISO 9001 (Quality Management)",
+            "IEC 61000 (EMC - Electromagnetic Compatibility)",
+            "IPC-A-610 (Acceptability Standards for Electronic Assemblies)",
+            "ANSI/ASIE SEA 2000 (Standards for Automated Optical Inspection)"
+        ],
+        "key_suppliers": [
+            "Cognex",
+            "Keyence",
+            "Basler",
+            "Teledyne DALMEC",
+            "Melexis"
+        ],
+        "operational_considerations": [
+            "Regular Camera Calibration (every 6-12 months)",
+            "Algorithm Optimization (continuous improvement based on defect data)",
+            "Defect Data Analysis and Trending",
+            "Operator Training and Certification",
+            "Preventative Maintenance Schedule (based on manufacturer recommendations)",
+            "Environmental Control (temperature, humidity) – maintain within specified ranges for optimal sensor performance"
+        ]
+    },
+    "input": {
+        "system_message": "You are an AI assistant specialized in industrial engineering and specifications. For the given topic, provide a comprehensive overview of industrial/commercial specifications including performance metrics and implementation requirements. Be precise with numerical values and include ranges where appropriate. Focus on practical technical details that would be relevant to professionals in the field.",
+        "user_message": "Create detailed industrial specifications for: Automated Optical Inspection (AOI)\n\nFormat your response as a JSON object with these categories:\n1. performance_metrics: An array of metrics with names, values/ranges, and descriptions\n2. implementation_requirements: An array of requirements with names, specifications, and descriptions\n3. industry_standards: An array of relevant standards and certifications\n4. key_suppliers: An array of major equipment/technology suppliers for this industry\n5. operational_considerations: An array of important operational factors\n\nPlease provide realistic values for industrial/commercial scale implementations.\n\nReturn ONLY valid JSON without any additional text, explanation, or code block formatting.",
+        "timestamp": "2025-06-01T22:02:56.391189"
+    }
+}
