@@ -1108,3 +1108,18 @@ function clearStepDetails() {
         stepOutputDiv.innerHTML = '<div class="placeholder">Select a step to view its output data</div>';
     }
 }
+
+// Utility function to escape HTML characters
+function escapeHtml(text) {
+    if (typeof text !== 'string') {
+        return text;
+    }
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
