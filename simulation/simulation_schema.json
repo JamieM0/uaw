@@ -1,0 +1,35 @@
+{
+  "simulation": {
+    "type": "object",
+    "properties": {
+      "time_unit": { "type": "string" },
+      "start_time": { "type": "string", "pattern": "^[0-2][0-9]:[0-5][0-9]$" },
+      "actors": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "role": { "type": "string" },
+            "cost_per_hour": { "type": "number" }
+          },
+          "required": ["id", "role"]
+        }
+      },
+      "tasks": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "actor_id": { "type": "string" },
+            "start": { "type": "string" },
+            "duration": { "type": "number" }
+          },
+          "required": ["id", "actor_id", "start", "duration"]
+        }
+      }
+    },
+    "required": ["time_unit", "start_time", "actors", "tasks"]
+  }
+}

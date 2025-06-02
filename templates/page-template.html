@@ -52,31 +52,78 @@
                         {{ page_metadata.explanatory_text|safe }}
                     </div>
                     
-                    {# Persona selector is now in the sidebar #}
-                    
                     <div class="article-content-area">
-                        {% if all_content_sections %}
-                            {% for section in all_content_sections %}
-                            {# Make first section expanded by default, others collapsed #}
-                            {% set is_first_section = loop.first %}
-                            <div class="content-section {% if not is_first_section %}collapsed{% endif %}"
-                                 data-section-id="{{ section.id }}"
-                                 data-relevant-personas='{{ section.relevant_personas_json }}'>
-                                <h3 class="section-header" id="section-header-{{ section.id }}"> {# Changed h3 to have class for styling button #}
+                        {% if simulation_data %}
+                            <div class="content-section expanded" 
+                                 data-section-id="simulation" 
+                                 data-relevant-personas='["hobbyist", "researcher", "investor", "educator", "field_expert"]'>
+                                <h3 class="section-header" id="section-header-simulation">
                                     <button class="section-toggle-button"
-                                            aria-expanded="{{ 'true' if is_first_section else 'false' }}"
+                                            aria-expanded="true"
+                                            aria-controls="section-body-simulation">
+                                        <span class="section-title-text">Process Simulation</span>
+                                        <span class="toggle-indicator">▼</span>
+                                    </button>
+                                </h3>
+                                <div class="section-body" id="section-body-simulation">
+                                    <div id="simulation-container">
+                                        <div class="simulation-controls">
+                                            <div class="controls-row">
+                                                <button id="play-pause-btn" class="control-btn">⏸️ Pause</button>
+                                                <button id="reset-btn" class="control-btn">🔄 Reset</button>
+                                                <div class="speed-control">
+                                                    <label for="speed-slider">Speed:</label>
+                                                    <input type="range" id="speed-slider" min="0.1" max="3" step="0.1" value="1">
+                                                    <span id="speed-display">1x</span>
+                                                </div>
+                                            </div>
+                                            <div class="controls-row">
+                                                <div class="time-control">
+                                                    <label for="time-slider">Time:</label>
+                                                    <input type="range" id="time-slider" min="0" max="100" value="0">
+                                                    <span id="time-display">07:00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="simulation-content">
+                                            <div class="timeline-section">
+                                                <h4>Process Timeline</h4>
+                                                <div id="timeline-container"></div>
+                                            </div>
+                                            
+                                            <div class="actors-section">
+                                                <h4>Actors Status</h4>
+                                                <div id="actors-container"></div>
+                                            </div>
+                                            
+                                            <div class="resources-section">
+                                                <h4>Resources</h4>
+                                                <div id="resources-container"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% for section in all_content_sections %}
+                            <div class="content-section collapsed"
+                                 data-section-id="{{ section.id }}"
+                                 data-relevant-personas='{{ section.relevant_personas_json | safe }}'>
+                                <h3 class="section-header" id="section-header-{{ section.id }}">
+                                    <button class="section-toggle-button"
+                                            aria-expanded="false"
                                             aria-controls="section-body-{{ section.id }}">
                                         <span class="section-title-text">{{ section.title_text | safe if section.title_text else section.title_html | safe }}</span>
-                                        <span class="toggle-indicator">{% if is_first_section %}▼{% else %}►{% endif %}</span>
+                                        <span class="toggle-indicator">►</span>
                                     </button>
-                                    {# Metrics icon moved next to the toggle button, within the h3 #}
                                     <button class="metrics-icon"
                                             aria-label="View metrics for {{ section.title_text | default('this section') }}"
                                             data-section-id="{{ section.id }}"
                                             data-metrics='{{ section.metrics_data_json }}'>
                                         📊
                                     </button>
-                                    {# Transparency icon next to metrics icon #}
                                     <button class="transparency-icon"
                                             aria-label="View transparency data for {{ section.title_text | default('this section') }}"
                                             data-section-id="{{ section.id }}"
@@ -86,14 +133,11 @@
                                 </h3>
                                 <div class="section-body"
                                      id="section-body-{{ section.id }}"
-                                     {% if not is_first_section %}hidden{% endif %}>
-                                    {{ section.content_html | safe if section.content_html else section.content_html_output | safe }} {# Use content_html or fallback #}
+                                     hidden>
+                                    {{ section.content_html | safe if section.content_html else section.content_html_output | safe }}
                                 </div>
                             </div>
-                            {% endfor %}
-                        {% else %}
-                            <p><em>No content sections available for display. Please check the data source.</em></p>
-                        {% endif %}
+                        {% endfor %}
                     </div>
                     
                     <div class="contributors-section">
@@ -165,12 +209,17 @@
     <script id="flow-uuid-data" type="application/json">
         "{{ flow_uuid | default('') }}"
     </script>
+    <script id="simulation-data" type="application/json">
+        {{ simulation_data | tojson | safe if simulation_data else '{}' }}
+    </script>
     <script src="/assets/js/components.js"></script>
     <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/simulation-viewer.js"></script>
     {# <script src="/assets/js/tabbed-content.js"></script> #} <!-- Tabbed content JS is no longer needed -->
     <script src="/assets/js/feedback.js"></script>
 </body>
 </html>
+
 <!-- Metrics Modal Structure -->
     <div id="metrics-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="metrics-modal-title">
         <div class="modal-overlay" tabindex="-1" data-micromodal-close></div>

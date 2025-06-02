@@ -1,0 +1,302 @@
+{
+  "simulation": {
+    "time_unit": "minute",
+    "start_time": "07:00",
+    "end_time": "18:00",
+    "actors": [
+      {
+        "id": "Baker_1",
+        "role": "Baker - Breadmaking Specialist",
+        "cost_per_hour": 20.0,
+        "availability": [
+          {
+            "from": "07:00",
+            "to": "17:30"
+          }
+        ]
+      },
+      {
+        "id": "Assistant_1",
+        "role": "Assistant - Breadmaking Support",
+        "cost_per_hour": 12.0,
+        "availability": [
+          {
+            "from": "07:00",
+            "to": "17:30"
+          }
+        ]
+      }
+    ],
+    "resources": [
+      {
+        "id": "Water_1",
+        "unit": "liter",
+        "starting_stock": 5.0
+      },
+      {
+        "id": "Yeast_1",
+        "unit": "gram",
+        "starting_stock": 200.0
+      },
+      {
+        "id": "Sugar_1",
+        "unit": "gram",
+        "starting_stock": 100.0
+      },
+      {
+        "id": "Flour_1",
+        "unit": "kilogram",
+        "starting_stock": 3.0
+      },
+      {
+        "id": "Milk_1",
+        "unit": "liter",
+        "starting_stock": 2.0
+      },
+      {
+        "id": "Eggs_1",
+        "unit": "count",
+        "starting_stock": 12
+      },
+      {
+        "id": "Salt_1",
+        "unit": "gram",
+        "starting_stock": 50.0
+      },
+      {
+        "id": "Oven_1",
+        "unit": "unit",
+        "starting_stock": 1
+      },
+      {
+        "id": "Waste_Heat",
+        "unit": "unit",
+        "starting_stock": 0.1
+      }
+    ],
+    "tasks": [
+      {
+        "id": "activate_yeast_1",
+        "actor_id": "Baker_1",
+        "start": "07:00",
+        "duration": 15,
+        "consumes": {
+          "Water_1": 0.5
+        },
+        "produces": {
+          "Yeast_1": -50
+        },
+        "location": "Mixing Station",
+        "depends_on": []
+      },
+      {
+        "id": "measure_dry_ingredients_1",
+        "actor_id": "Assistant_1",
+        "start": "07:15",
+        "duration": 10,
+        "consumes": {},
+        "produces": {},
+        "location": "Mixing Station",
+        "depends_on": [
+          "activate_yeast_1"
+        ]
+      },
+      {
+        "id": "sift_dry_ingredients_1",
+        "actor_id": "Assistant_1",
+        "start": "07:25",
+        "duration": 5,
+        "consumes": {},
+        "produces": {},
+        "location": "Mixing Station",
+        "depends_on": [
+          "measure_dry_ingredients_1"
+        ]
+      },
+      {
+        "id": "transfer_dry_ingredients_1",
+        "actor_id": "Assistant_1",
+        "start": "07:30",
+        "duration": 5,
+        "consumes": {},
+        "produces": {},
+        "location": "Mixing Station",
+        "depends_on": [
+          "sift_dry_ingredients_1"
+        ]
+      },
+      {
+        "id": "ensure_dry_ingredients_evenly_distributed_1",
+        "actor_id": "Assistant_1",
+        "start": "07:35",
+        "duration": 5,
+        "consumes": {},
+        "produces": {},
+        "location": "Mixing Station",
+        "depends_on": [
+          "transfer_dry_ingredients_1"
+        ]
+      },
+      {
+        "id": "prepare_wet_ingredients_1",
+        "actor_id": "Assistant_1",
+        "start": "07:40",
+        "duration": 10,
+        "consumes": {
+          "Milk_1": 0.2
+        },
+        "produces": {},
+        "location": "Mixing Station",
+        "depends_on": [
+          "ensure_dry_ingredients_evenly_distributed_1"
+        ]
+      },
+      {
+        "id": "warm_water_preparation_1",
+        "actor_id": "Baker_1",
+        "start": "07:45",
+        "duration": 10,
+        "consumes": {
+          "Water_1": 0.5
+        },
+        "produces": {},
+        "location": "Mixing Station",
+        "depends_on": [
+          "prepare_wet_ingredients_1"
+        ]
+      },
+      {
+        "id": "yeast_hydration_1",
+        "actor_id": "Baker_1",
+        "start": "07:55",
+        "duration": 5,
+        "consumes": {
+          "Yeast_1": 20
+        },
+        "produces": {},
+        "location": "Mixing Station",
+        "depends_on": [
+          "warm_water_preparation_1"
+        ]
+      },
+      {
+        "id": "sugar_addition_1",
+        "actor_id": "Baker_1",
+        "start": "07:60",
+        "duration": 5,
+        "consumes": {
+          "Sugar_1": 10
+        },
+        "produces": {},
+        "location": "Mixing Station",
+        "depends_on": [
+          "yeast_hydration_1"
+        ]
+      },
+      {
+        "id": "activation_1",
+        "actor_id": "Baker_1",
+        "start": "07:65",
+        "duration": 10,
+        "consumes": {},
+        "produces": {},
+        "location": "Mixing Station",
+        "depends_on": [
+          "sugar_addition_1"
+        ]
+      },
+      {
+        "id": "check_yeast_activity_1",
+        "actor_id": "Baker_1",
+        "start": "07:75",
+        "duration": 10,
+        "consumes": {},
+        "produces": {},
+        "location": "Mixing Station",
+        "depends_on": [
+          "activation_1"
+        ]
+      },
+      {
+        "id": "measure_wet_ingredients_1",
+        "actor_id": "Assistant_1",
+        "start": "07:85",
+        "duration": 10,
+        "consumes": {
+          "Eggs_1": 3
+        },
+        "produces": {},
+        "location": "Mixing Station",
+        "depends_on": [
+          "check_yeast_activity_1"
+        ]
+      },
+      {
+        "id": "mix_ingredients_1",
+        "actor_id": "Baker_1",
+        "start": "07:95",
+        "duration": 20,
+        "consumes": {},
+        "produces": {},
+        "location": "Mixing Station",
+        "depends_on": [
+          "measure_wet_ingredients_1"
+        ]
+      },
+      {
+        "id": "add_salt_1",
+        "actor_id": "Baker_1",
+        "start": "08:05",
+        "duration": 5,
+        "consumes": {
+          "Salt_1": 5
+        },
+        "produces": {},
+        "location": "Mixing Station",
+        "depends_on": [
+          "mix_ingredients_1"
+        ]
+      },
+      {
+        "id": "shape_dough_1",
+        "actor_id": "Baker_1",
+        "start": "08:10",
+        "duration": 20,
+        "consumes": {},
+        "produces": {},
+        "location": "Mixing Station",
+        "depends_on": [
+          "add_salt_1"
+        ]
+      },
+      {
+        "id": "bake_bread_1",
+        "actor_id": "Baker_1",
+        "start": "08:30",
+        "duration": 60,
+        "consumes": {
+          "Oven_1": 1
+        },
+        "produces": {
+          "Waste_Heat": 0.5
+        },
+        "location": "Oven_1",
+        "depends_on": [
+          "shape_dough_1"
+        ]
+      },
+      {
+        "id": "cool_bread_1",
+        "actor_id": "Baker_1",
+        "start": "08:40",
+        "duration": 30,
+        "consumes": {},
+        "produces": {},
+        "location": "Mixing Station",
+        "depends_on": [
+          "bake_bread_1"
+        ]
+      }
+    ]
+  }
+}

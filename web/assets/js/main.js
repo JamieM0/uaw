@@ -261,25 +261,29 @@ function initializePersonaFeatures() {
 
 function filterContentByPersona(persona) {
     document.querySelectorAll('.content-section').forEach(section => {
-        try {
-            const relevantPersonasJson = section.dataset.relevantPersonas;
-            if (!relevantPersonasJson) {
-                console.warn('Relevant personas data missing for section:', section.dataset.sectionId);
-                section.style.display = 'none'; // Hide if data is missing
-                return;
+        const relevantPersonasAttr = section.getAttribute('data-relevant-personas');
+        const sectionId = section.getAttribute('data-section-id');
+        
+        // Always show simulation section regardless of persona
+        if (sectionId && sectionId.includes('simulation')) {
+            section.style.display = 'block';
+            return;
+        }
+        
+        if (relevantPersonasAttr) {
+            try {
+                const relevantPersonas = JSON.parse(relevantPersonasAttr);
+                if (relevantPersonas.includes(persona)) {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            } catch (e) {
+                console.warn('Could not parse relevant personas for section:', section);
+                section.style.display = 'block'; // Show by default if parsing fails
             }
-            const relevantPersonas = JSON.parse(relevantPersonasJson);
-            if (relevantPersonas.includes(persona)) {
-                section.style.display = 'block';
-                section.removeAttribute('hidden');
-            } else {
-                section.style.display = 'none';
-                section.setAttribute('hidden', true);
-            }
-        } catch (e) {
-            console.error('Error parsing relevant personas for section:', section.dataset.sectionId, e);
-            section.style.display = 'none'; // Hide on error
-            section.setAttribute('hidden', true);
+        } else {
+            section.style.display = 'block'; // Show sections without persona data
         }
     });
 }
@@ -838,12 +842,6 @@ function displayTransparencyError(message) {
     if (stepOutputElement) {
         stepOutputElement.innerHTML = errorHtml;
     }
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
 }
 
 function loadSectionFlowOverview(flowUuid, sectionId, stepId) {

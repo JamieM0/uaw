@@ -1,0 +1,241 @@
+{
+  "simulation": {
+    "uuid": "98bf79eb-c175-493f-b023-e25175d32a29",
+    "time_unit": "minute",
+    "start_time": "07:00",
+    "end_time": "18:00",
+    "actors": [
+      {
+        "id": "Baker_1",
+        "role": "Professional Baker",
+        "cost_per_hour": 25.0,
+        "availability": [
+          {
+            "from": "07:00",
+            "to": "18:00"
+          }
+        ]
+      },
+      {
+        "id": "Assistant_1",
+        "role": "Bakery Assistant",
+        "cost_per_hour": 18.0,
+        "availability": [
+          {
+            "from": "07:00",
+            "to": "18:00"
+          }
+        ]
+      }
+    ],
+    "resources": [
+      {
+        "id": "Flour_Type_1",
+        "unit": "kg",
+        "starting_stock": 5.0
+      },
+      {
+        "id": "Yeast_Active",
+        "unit": "g",
+        "starting_stock": 200.0
+      },
+      {
+        "id": "Water_Filtered",
+        "unit": "L",
+        "starting_stock": 10.0
+      },
+      {
+        "id": "Salt_Iodized",
+        "unit": "g",
+        "starting_stock": 50.0
+      },
+      {
+        "id": "Milk_Whole",
+        "unit": "L",
+        "starting_stock": 3.0
+      },
+      {
+        "id": "Eggs_Large",
+        "unit": "count",
+        "starting_stock": 12
+      },
+      {
+        "id": "Oil_Vegetable",
+        "unit": "L",
+        "starting_stock": 1.0
+      },
+      {
+        "id": "Loaf_Pan_Steel",
+        "unit": "count",
+        "starting_stock": 4
+      },
+      {
+        "id": "Sifter",
+        "unit": "count",
+        "starting_stock": 1
+      },
+      {
+        "id": "Measuring_Cups_Spoons",
+        "unit": "count",
+        "starting_stock": 1
+      }
+    ],
+    "tasks": [
+      {
+        "id": "gather_dry_ingredients",
+        "actor_id": "Baker_1",
+        "start": "07:00",
+        "duration": 30,
+        "consumes": {
+          "Salt_Iodized": 0.05
+        },
+        "produces": {
+          "Salt_Iodized": 0.05
+        },
+        "location": "Mixing Station",
+        "depends_on": []
+      },
+      {
+        "id": "measure_dry_ingredients",
+        "actor_id": "Assistant_1",
+        "start": "07:30",
+        "duration": 60,
+        "consumes": {
+          "Flour_Type_1": 1.0,
+          "Salt_Iodized": 0.05
+        },
+        "produces": {
+          "Flour_Type_1": 1.0,
+          "Salt_Iodized": 0.05
+        },
+        "location": "Mixing Station",
+        "depends_on": [
+          "gather_dry_ingredients"
+        ]
+      },
+      {
+        "id": "activate_yeast",
+        "actor_id": "Assistant_1",
+        "start": "08:30",
+        "duration": 45,
+        "consumes": {
+          "Water_Filtered": 0.5,
+          "Yeast_Active": 50.0
+        },
+        "produces": {
+          "Yeast_Solution": {
+            "Yeast_Active": 50.0,
+            "Water_Filtered": 0.5
+          }
+        },
+        "location": "Mixing Station",
+        "depends_on": [
+          "measure_dry_ingredients"
+        ]
+      },
+      {
+        "id": "prepare_wet_ingredients",
+        "actor_id": "Assistant_1",
+        "start": "09:30",
+        "duration": 30,
+        "consumes": {
+          "Water_Filtered": 1.0,
+          "Milk_Whole": 0.5,
+          "Eggs_Large": 2
+        },
+        "produces": {
+          "Wet_Ingredients": {
+            "Water_Filtered": 0.5,
+            "Milk_Whole": 0.5,
+            "Eggs_Large": 2
+          }
+        },
+        "location": "Mixing Station",
+        "depends_on": [
+          "activate_yeast"
+        ]
+      },
+      {
+        "id": "add_wet_ingredients",
+        "actor_id": "Baker_1",
+        "start": "10:00",
+        "duration": 30,
+        "consumes": {
+          "Wet_Ingredients": 1.0
+        },
+        "produces": {
+          "Dough_Mix": 1.0
+        },
+        "location": "Mixing Station",
+        "depends_on": [
+          "prepare_wet_ingredients"
+        ]
+      },
+      {
+        "id": "knead_dough",
+        "actor_id": "Baker_1",
+        "start": "10:30",
+        "duration": 60,
+        "consumes": {
+          "Dough_Mix": 1.0
+        },
+        "produces": {
+          "Dough": 1.0
+        },
+        "location": "Mixing Station",
+        "depends_on": [
+          "add_wet_ingredients"
+        ]
+      },
+      {
+        "id": "shape_dough",
+        "actor_id": "Baker_1",
+        "start": "11:30",
+        "duration": 45,
+        "consumes": {
+          "Dough": 1.0
+        },
+        "produces": {
+          "Loaves_Dough": 2.0
+        },
+        "location": "Mixing Station",
+        "depends_on": [
+          "knead_dough"
+        ]
+      },
+      {
+        "id": "bake_bread",
+        "actor_id": "Baker_1",
+        "start": "12:15",
+        "duration": 60,
+        "consumes": {
+          "Loaves_Dough": 2.0,
+          "Loaf_Pan_Steel": 1
+        },
+        "produces": {
+          "Baked_Bread": 2.0
+        },
+        "location": "Oven",
+        "depends_on": [
+          "shape_dough"
+        ]
+      },
+      {
+        "id": "cool_bread",
+        "actor_id": "Assistant_1",
+        "start": "13:15",
+        "duration": 60,
+        "consumes": {
+          "Baked_Bread": 2.0
+        },
+        "produces": {
+          "Cool_Bread": 2.0
+        },
+        "location": "Cooling Rack",
+        "depends_on": [
+          "bake_bread"
+        ]
+      }
+    ]
+  }
+}
