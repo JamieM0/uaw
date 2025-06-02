@@ -59,7 +59,7 @@ def find_html_files_in_category(web_dir, category_path):
     html_files = []
     for root, dirs, files in os.walk(category_dir):
         for file in files:
-            if file.endswith('.html'):
+            if file.endswith('.html') and file != 'index.html':  # Skip index.html files
                 html_files.append(os.path.join(root, file))
     
     return html_files
@@ -69,7 +69,7 @@ def find_all_html_files(web_dir):
     html_files = []
     for root, dirs, files in os.walk(web_dir):
         for file in files:
-            if file.endswith('.html'):
+            if file.endswith('.html') and file != 'index.html':  # Skip index.html files
                 html_files.append(os.path.join(root, file))
     
     return html_files

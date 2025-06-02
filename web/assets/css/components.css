@@ -361,3 +361,269 @@
     background-color: var(--bg-light);
     padding: var(--spacing-xxl) 0;
 }
+
+/* Simulation Viewer Styles */
+.simulation-controls {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.controls-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.controls-row:last-child {
+    margin-bottom: 0;
+}
+
+.control-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.control-btn:hover {
+    background: #0056b3;
+}
+
+.speed-control, .time-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.speed-control input, .time-control input {
+    min-width: 100px;
+}
+
+#speed-display, #time-display {
+    font-weight: 600;
+    min-width: 3rem;
+}
+
+.simulation-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .simulation-content {
+        grid-template-columns: 2fr 1fr;
+        grid-template-rows: auto auto;
+    }
+    
+    .timeline-section {
+        grid-column: 1 / -1;
+    }
+    
+    .actors-section {
+        grid-column: 1;
+    }
+    
+    .resources-section {
+        grid-column: 2;
+    }
+}
+
+/* Timeline Styles */
+.timeline-track {
+    position: relative;
+    height: 60px;
+    background: #e9ecef;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.timeline-task {
+    position: absolute;
+    top: 10px;
+    height: 40px;
+    background: #17a2b8;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding: 0 0.5rem;
+    color: white;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.timeline-task:hover {
+    background: #138496;
+    transform: translateY(-2px);
+}
+
+.timeline-task.active {
+    background: #28a745;
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+}
+
+.timeline-task.completed {
+    background: #6c757d;
+}
+
+.task-label {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.timeline-cursor {
+    position: absolute;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: #dc3545;
+    z-index: 10;
+    transition: left 0.1s ease;
+}
+
+.timeline-axis {
+    position: relative;
+    height: 20px;
+    border-top: 1px solid #dee2e6;
+}
+
+.time-marker {
+    position: absolute;
+    font-size: 0.75rem;
+    color: #6c757d;
+    transform: translateX(-50%);
+}
+
+/* Actor Cards */
+.actor-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.actor-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.actor-header h5 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.actor-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.actor-status.idle {
+    background: #f8f9fa;
+    color: #6c757d;
+}
+
+.actor-status.working {
+    background: #d4edda;
+    color: #155724;
+}
+
+.actor-details {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.actor-details > div {
+    margin-bottom: 0.25rem;
+}
+
+.current-task {
+    font-weight: 500;
+    color: #495057 !important;
+}
+
+/* Resource Cards */
+.resource-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.resource-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.resource-header h5 {
+    margin: 0;
+    font-size: 0.9rem;
+    text-transform: capitalize;
+}
+
+.resource-unit {
+    font-size: 0.75rem;
+    color: #6c757d;
+    background: #f8f9fa;
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+}
+
+.resource-bar {
+    position: relative;
+    height: 20px;
+    background: #e9ecef;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+}
+
+.resource-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.resource-fill.high {
+    background: linear-gradient(90deg, #28a745, #20c997);
+}
+
+.resource-fill.medium {
+    background: linear-gradient(90deg, #ffc107, #fd7e14);
+}
+
+.resource-fill.low {
+    background: linear-gradient(90deg, #dc3545, #e74c3c);
+}
+
+.resource-amount {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #495057;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.resource-starting {
+    font-size: 0.75rem;
+    color: #6c757d;
+}

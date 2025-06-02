@@ -449,7 +449,8 @@ def main():
         ("return-analysis.py", "7.json"),  # 7. return-analysis.py
         ("future-technology.py", "8.json"),  # 8. future-technology.py
         ("specifications-industrial.py", "9.json"),  # 9. specifications-industrial.py
-        # 10. assemble.py - Run after metrics evaluation
+        ("simulation.py", "simulation.json"),  # 10. simulation.py - Generate process simulation
+        # 11. assemble.py - Run after all content generation including simulation
     ]
     
     evaluation_summary = {
@@ -471,9 +472,13 @@ def main():
         program, output_filename = programs[program_idx]
         step_info_prefix = f"Step {program_idx + 1}/{len(programs)}: "
 
-        current_input_path = input_copy_path
-        abs_current_input_path = os.path.abspath(current_input_path)
+        # For simulation.py, use 2.json (the tree) as input instead of the previous output
+        if program == "simulation.py":
+            current_input_path = os.path.join(flow_dir, "2.json")
+        else:
+            current_input_path = input_copy_path
         
+        abs_current_input_path = os.path.abspath(current_input_path)
         
         output_path = os.path.join(flow_dir, output_filename)
         extra_args = ["-saveInputs", "-flow_uuid="+flow_uuid]
@@ -553,8 +558,8 @@ def main():
                     sys.exit(1)
             
             # If validation passed (or was not applicable for this file type)
-            # AND program is not assemble.py, then run evaluations.
-            if validation_passed_for_current_file and program != "assemble.py":
+            # AND program is not assemble.py or simulation.py, then run evaluations.
+            if validation_passed_for_current_file and program not in ["assemble.py", "simulation.py"]:
                 section_source_file_path = abs_output_path
 
                 # Run evaluation for all profiles in a single call

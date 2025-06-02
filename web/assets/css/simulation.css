@@ -1,0 +1,480 @@
+.simulation-container {
+    max-width: 100%;
+    margin: 1rem 0;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.simulation-header {
+    background: #f5f5f5;
+    padding: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.simulation-header h4 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+}
+
+.simulation-header p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.simulation-controls {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    padding: 1rem;
+    background: #fafafa;
+    border-bottom: 1px solid #e0e0e0;
+    flex-wrap: wrap;
+}
+
+.playback-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.control-button {
+    background: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.control-button:hover {
+    background: #1976D2;
+}
+
+.control-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.time-scrubber {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 200px;
+}
+
+.time-scrubber label {
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.slider {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: #ddd;
+    outline: none;
+    cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #2196F3;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #2196F3;
+    cursor: pointer;
+    border: none;
+}
+
+.speed-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.speed-control .slider {
+    width: 80px;
+}
+
+#current-time-display, #speed-display {
+    font-weight: 500;
+    color: #333;
+    min-width: 50px;
+}
+
+.simulation-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.gantt-chart-container {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.gantt-chart-container h5 {
+    margin: 0;
+    padding: 0.75rem;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.gantt-chart {
+    position: relative;
+    background: white;
+    min-height: 300px;
+    overflow-x: auto;
+}
+
+.timeline-header {
+    position: relative;
+    height: 30px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.time-marker {
+    position: absolute;
+    font-size: 0.75rem;
+    color: #666;
+    transform: translateX(-50%);
+    padding: 0.25rem;
+    white-space: nowrap;
+}
+
+.gantt-actor-row {
+    display: flex;
+    border-bottom: 1px solid #f0f0f0;
+    min-height: 40px;
+}
+
+.actor-label {
+    width: 150px;
+    padding: 0.5rem;
+    font-weight: 500;
+    background: #f5f5f5;
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.task-lane {
+    flex: 1;
+    position: relative;
+    background: white;
+}
+
+.task-bar {
+    position: absolute;
+    height: 32px;
+    top: 4px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    padding: 0 0.5rem;
+    font-size: 0.75rem;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.task-bar.task-pending {
+    opacity: 0.5;
+    border-color: #ccc;
+}
+
+.task-bar.task-active {
+    border-color: #FFD700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+}
+
+.task-bar.task-completed {
+    opacity: 0.8;
+}
+
+.task-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+
+.time-indicator {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #FF5722;
+    z-index: 10;
+    box-shadow: 0 0 4px rgba(255, 87, 34, 0.5);
+}
+
+.resource-panel {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.resource-panel h5 {
+    margin: 0;
+    padding: 0.75rem;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.resource-counters {
+    padding: 0.5rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.resource-item {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    background: white;
+}
+
+.resource-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.resource-name {
+    font-weight: 500;
+    color: #333;
+}
+
+.resource-unit {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.resource-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.resource-bar {
+    flex: 1;
+    height: 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.resource-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+.resource-fill.resource-high {
+    background: #4CAF50;
+}
+
+.resource-fill.resource-medium {
+    background: #FF9800;
+}
+
+.resource-fill.resource-low {
+    background: #F44336;
+}
+
+.resource-amount {
+    font-size: 0.8rem;
+    white-space: nowrap;
+    color: #666;
+}
+
+.resource-status {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.resource-status.ok {
+    color: #4CAF50;
+}
+
+.resource-status.low {
+    color: #FF9800;
+}
+
+.resource-status.shortage {
+    color: #F44336;
+}
+
+.efficiency-panel {
+    grid-column: 1 / -1;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    margin-top: 1rem;
+    overflow: hidden;
+}
+
+.efficiency-panel h5 {
+    margin: 0;
+    padding: 0.75rem;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.efficiency-metrics {
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.metric-item {
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    padding: 0.75rem;
+    background: white;
+}
+
+.metric-label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.actor-utilization-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.actor-name {
+    width: 120px;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.utilization-bar {
+    flex: 1;
+    height: 6px;
+    background: #f0f0f0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.utilization-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 3px;
+}
+
+.utilization-fill.utilization-low {
+    background: #F44336;
+}
+
+.utilization-fill.utilization-medium {
+    background: #FF9800;
+}
+
+.utilization-fill.utilization-high {
+    background: #4CAF50;
+}
+
+.utilization-percentage {
+    font-size: 0.8rem;
+    color: #666;
+    min-width: 40px;
+    text-align: right;
+}
+
+.efficiency-indicators {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.efficiency-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.indicator-label {
+    flex: 1;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.indicator-value {
+    font-weight: 500;
+    color: #333;
+}
+
+.indicator-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+}
+
+.indicator-dot.low {
+    background: #4CAF50;
+    color: #4CAF50;
+}
+
+.indicator-dot.medium {
+    background: #FF9800;
+    color: #FF9800;
+}
+
+.indicator-dot.high {
+    background: #F44336;
+    color: #F44336;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .simulation-controls {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .simulation-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .efficiency-metrics {
+        grid-template-columns: 1fr;
+    }
+    
+    .actor-label {
+        width: 100px;
+        font-size: 0.8rem;
+    }
+    
+    .actor-name {
+        width: 80px;
+    }
+}

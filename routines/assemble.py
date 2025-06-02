@@ -5,6 +5,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from datetime import datetime
 import re # Ensure re is imported at the top level
+from typing import Dict, Any, Optional
 
 # Define Core Personas
 CORE_PERSONAS = ['hobbyist', 'researcher', 'investor', 'educator', 'field_expert'] # List of slugs
@@ -50,7 +51,6 @@ def read_json_file(file_path, is_critical=True):
         else:
             print(f"Warning: An unexpected error occurred while reading {file_path} - {e}", file=sys.stderr)
             return {}
-
 
 # Mapping from id_suffix to the keys in metrics.json's "sections" object
 SECTION_ID_SUFFIX_TO_METRICS_KEY_MAP = {
@@ -327,6 +327,140 @@ def get_transparency_data_for_section(id_suffix, files_dir_path):
         print(f"Warning: Could not load transparency data for section {id_suffix}: {e}", file=sys.stderr)
         return None
 
+def load_simulation_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
+    """
+    Load simulation data from simulation.json in the files directory.
+    
+    Args:
+        files_dir_path: Path to the directory containing simulation.json
+        
+    Returns:
+        Processed simulation data ready for template rendering, or None if not found
+    """
+    simulation_path = os.path.join(files_dir_path, "simulation.json")
+    
+    if not os.path.exists(simulation_path):
+        print(f"No simulation.json found at {simulation_path}")
+        return None
+    
+    try:
+        with open(simulation_path, "r", encoding="utf-8") as f:
+            simulation_data = json.load(f)
+        
+        print(f"Loaded simulation.json with keys: {list(simulation_data.keys())}")
+        
+        # Extract the simulation object
+        sim = simulation_data.get("simulation", {})
+        
+        if not sim:
+            print("No 'simulation' key found in simulation.json")
+            return None
+        
+        print(f"Simulation object has keys: {list(sim.keys())}")
+        
+        # Convert time strings to minutes for easier JavaScript processing
+        start_time = sim.get("start_time", "06:00")
+        end_time = sim.get("end_time", "18:00")
+        
+        start_hour, start_min = map(int, start_time.split(':'))
+        end_hour, end_min = map(int, end_time.split(':'))
+        
+        start_time_minutes = start_hour * 60 + start_min
+        end_time_minutes = end_hour * 60 + end_min
+        
+        # Process tasks to include computed timing information
+        processed_tasks = []
+        for task in sim.get("tasks", []):
+            task_start = task.get("start", "00:00")
+            
+            # Handle time format issues (some tasks might have invalid times like "07:60")
+            try:
+                if ':' in task_start:
+                    time_parts = task_start.split(':')
+                    task_hour = int(time_parts[0])
+                    task_min = int(time_parts[1])
+                    
+                    # Fix invalid minutes (60+ minutes should roll over to next hour)
+                    if task_min >= 60:
+                        additional_hours = task_min // 60
+                        task_hour += additional_hours
+                        task_min = task_min % 60
+                        
+                    task_start_minutes = task_hour * 60 + task_min
+                else:
+                    # If no colon, assume it's already in minutes or invalid
+                    task_start_minutes = start_time_minutes
+                    
+            except (ValueError, IndexError):
+                # If time parsing fails, default to start time
+                task_start_minutes = start_time_minutes
+                print(f"Warning: Invalid start time '{task_start}' for task {task.get('id')}, using default")
+                
+            task_duration = task.get("duration", 0)
+            task_end_minutes = task_start_minutes + task_duration
+            
+            processed_task = task.copy()
+            processed_task["start_minutes"] = task_start_minutes
+            processed_task["end_minutes"] = task_end_minutes
+            
+            # Calculate percentages for timeline visualization
+            total_duration = end_time_minutes - start_time_minutes
+            if total_duration > 0:
+                processed_task["start_percentage"] = ((task_start_minutes - start_time_minutes) / total_duration) * 100
+                processed_task["duration_percentage"] = (task_duration / total_duration) * 100
+            else:
+                processed_task["start_percentage"] = 0
+                processed_task["duration_percentage"] = 0
+            
+            processed_tasks.append(processed_task)
+        
+        # Calculate actor workloads for efficiency analysis
+        actor_workloads = {}
+        total_available_time = end_time_minutes - start_time_minutes
+        
+        for task in processed_tasks:
+            actor_id = task.get("actor_id")
+            duration = task.get("duration", 0)
+            
+            if actor_id not in actor_workloads:
+                actor_workloads[actor_id] = 0
+            actor_workloads[actor_id] += duration
+        
+        # Add utilization percentages to actors
+        processed_actors = []
+        for actor in sim.get("actors", []):
+            actor_copy = actor.copy()
+            actor_id = actor["id"]
+            workload = actor_workloads.get(actor_id, 0)
+            utilization = (workload / total_available_time) * 100 if total_available_time > 0 else 0
+            actor_copy["utilization_percentage"] = round(utilization, 1)
+            actor_copy["total_work_minutes"] = workload
+            processed_actors.append(actor_copy)
+        
+        # Build the processed simulation data
+        processed_simulation = {
+            "time_unit": sim.get("time_unit", "minute"),
+            "start_time": start_time,
+            "end_time": end_time,
+            "start_time_minutes": start_time_minutes,
+            "end_time_minutes": end_time_minutes,
+            "total_duration_minutes": end_time_minutes - start_time_minutes,
+            "actors": processed_actors,
+            "resources": sim.get("resources", []),
+            "tasks": processed_tasks,
+            "article_title": sim.get("article_title", "Process Simulation"),
+            "domain": sim.get("domain", "General")
+        }
+        
+        print(f"Processed simulation data: {len(processed_tasks)} tasks, {len(processed_actors)} actors, {len(sim.get('resources', []))} resources")
+        return processed_simulation
+        
+    except Exception as e:
+        print(f"Error loading simulation data: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
+
 def main():
     # Correct argument check: script name + 2 arguments = 3
     if len(sys.argv) != 3:
@@ -350,6 +484,13 @@ def main():
     try:
         # --- Load Core Data Files ---
         metadata_raw = read_json_file(metadata_path, is_critical=True)
+        
+        # --- Load Simulation Data ---
+        simulation_data = load_simulation_data(files_dir_path)
+        if simulation_data:
+            print("Simulation data loaded successfully")
+        else:
+            print("No simulation data available for this flow")
         
         # --- Load Metrics Data ---
         # Article-specific metrics
@@ -461,12 +602,14 @@ def main():
                 "transparency_data_json": json.dumps(transparency_data) if transparency_data else "{}"
             })
 
+        # --- REMOVE MANUAL SIMULATION SECTION - Template handles this automatically ---
+
         # 1. Standard Process Steps (from tree_data)
         if tree_data and tree_data.get('tree', {}).get('children'):
             process_steps_content = """
                 {% if data.tree and data.tree.children %}
                     {% for step_item in data.tree.children %}
-                    <div class="process-section-item"> {# Changed from process-section to avoid nesting issues if original styles are kept #}
+                    <div class="process-section-item">
                         <h4>{{ loop.index }}. {{ step_item.step }}</h4>
                         {% if step_item.children %}
                         <ul class="step-list">
@@ -697,7 +840,8 @@ def main():
             'metric_definitions': metric_definitions_data, # Pass global definitions
             # 'article_metrics': article_metrics_data, # This is now processed into each section's metrics_data_json
             'core_personas': CORE_PERSONAS_DICT, # Pass the pre-defined dictionary
-            'flow_uuid': flow_uuid # Add flow UUID for transparency modal and origin tracking
+            'flow_uuid': flow_uuid, # Add flow UUID for transparency modal and origin tracking
+            'simulation_data': simulation_data # Add simulation data to context
         }
 
         # --- Render Main Template ---
