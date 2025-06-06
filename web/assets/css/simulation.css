@@ -453,7 +453,153 @@
     color: #F44336;
 }
 
-/* Responsive design */
+/* Actor-based timeline styling */
+.timeline-container {
+    width: 100%;
+    margin: 20px 0;
+}
+
+.timeline-header {
+    position: relative;
+    height: 30px;
+    margin-bottom: 10px;
+}
+
+.timeline-time-axis {
+    position: relative;
+    height: 20px;
+    background: linear-gradient(to right, #f0f0f0 0%, #f0f0f0 100%);
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.timeline-time-markers {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5px;
+    font-size: 10px;
+    color: #666;
+}
+
+.timeline-actors {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.actor-timeline-row {
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: #fafafa;
+    padding: 5px;
+}
+
+.actor-label {
+    min-width: 120px;
+    max-width: 120px;
+    padding: 8px 12px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 12px;
+    text-align: center;
+    margin-right: 10px;
+    border: 1px solid #ddd;
+}
+
+.actor-tasks-container {
+    flex: 1;
+    position: relative;
+    height: 30px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.task-block {
+    position: absolute;
+    height: 28px;
+    background: #4CAF50;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid #45a049;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.task-block:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.task-block.active {
+    background: #FF5722 !important;
+    border-color: #D84315 !important;
+    color: white !important;
+    animation: pulse 1.5s infinite;
+    box-shadow: 0 0 10px rgba(255, 87, 34, 0.5);
+    z-index: 10;
+}
+
+.task-block.completed {
+    background: #757575 !important;
+    border-color: #616161 !important;
+    color: #e0e0e0 !important;
+    animation: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+@keyframes pulse {
+    0% { 
+        opacity: 1; 
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.8; 
+        transform: scale(1.02);
+    }
+    100% { 
+        opacity: 1; 
+        transform: scale(1);
+    }
+}
+
+/* Actor color coding with improved specificity */
+.actor-timeline-row .task-block:not(.active):not(.completed) {
+    background: #2196F3;
+    border-color: #2196F3;
+}
+
+/* Ensure completed and active states override actor colors */
+.actor-timeline-row .task-block.completed {
+    background: #757575 !important;
+    border-color: #616161 !important;
+    color: #e0e0e0 !important;
+}
+
+.actor-timeline-row .task-block.active {
+    background: #FF5722 !important;
+    border-color: #D84315 !important;
+    color: white !important;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
     .simulation-controls {
         flex-direction: column;
@@ -476,5 +622,21 @@
     
     .actor-name {
         width: 80px;
+    }
+    
+    .actor-label {
+        min-width: 80px;
+        max-width: 80px;
+        font-size: 10px;
+        padding: 2px 4px;
+    }
+    
+    .task-block {
+        font-size: 9px;
+        height: 24px;
+    }
+    
+    .actor-tasks-container {
+        height: 26px;
     }
 }

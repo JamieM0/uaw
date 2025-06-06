@@ -87,9 +87,24 @@ class SimulationViewer {
         
         if (speedSlider) {
             speedSlider.addEventListener('input', (e) => {
-                this.speed = parseFloat(e.target.value);
-                document.getElementById('speed-display').textContent = `${this.speed}x`;
+                // Scale the speed so that 1x on the slider equals the old 0.2x speed
+                const sliderValue = parseFloat(e.target.value);
+                this.speed = sliderValue * 0.2;
+                
+                const speedDisplay = document.getElementById('speed-display');
+                if (speedDisplay) {
+                    speedDisplay.textContent = `${sliderValue}x`;
+                }
             });
+            
+            // Initialize speed display
+            const speedDisplay = document.getElementById('speed-display');
+            if (speedDisplay) {
+                speedDisplay.textContent = `${speedSlider.value}x`;
+            }
+            
+            // Set initial playback speed (1x on slider = 0.2x actual speed)
+            this.speed = parseFloat(speedSlider.value) * 0.2;
         }
         
         if (timeSlider) {
@@ -107,27 +122,135 @@ class SimulationViewer {
     }
     
     renderTimeline() {
-        const container = document.getElementById('timeline-container');
-        if (!container || !this.simulationData.tasks) return;
+        const container = document.getElementById('timeline-actors-container');
+        if (!container) return;
+
+        const { actors, tasks, start_time_minutes, end_time_minutes } = this.simulationData;
+        const totalDuration = end_time_minutes - start_time_minutes;
+
+        // Clear existing content
+        container.innerHTML = '';
+
+        // Create time axis markers
+        const timeAxisContainer = document.querySelector('.timeline-time-axis');
+        if (timeAxisContainer) {
+            timeAxisContainer.innerHTML = '';
+            const markersDiv = document.createElement('div');
+            markersDiv.className = 'timeline-time-markers';
+            
+            // Add time markers (every 2 hours)
+            for (let i = 0; i <= totalDuration; i += 120) {
+                const timeMinutes = start_time_minutes + i;
+                const hours = Math.floor(timeMinutes / 60);
+                const minutes = timeMinutes % 60;
+                const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                
+                const marker = document.createElement('span');
+                marker.textContent = timeStr;
+                marker.style.position = 'absolute';
+                marker.style.left = `${(i / totalDuration) * 100}%`;
+                marker.style.transform = 'translateX(-50%)';
+                markersDiv.appendChild(marker);
+            }
+            
+            timeAxisContainer.appendChild(markersDiv);
+        }
+
+        // Group tasks by actor
+        const tasksByActor = {};
+        actors.forEach(actor => {
+            tasksByActor[actor.id] = {
+                actor: actor,
+                tasks: tasks.filter(task => task.actor_id === actor.id)
+            };
+        });
+
+        // Create timeline row for each actor
+        Object.values(tasksByActor).forEach(({ actor, tasks: actorTasks }) => {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'actor-timeline-row';
+            rowDiv.setAttribute('data-actor', actor.id);
+
+            // Actor label
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'actor-label';
+            labelDiv.textContent = actor.role || actor.id;
+            rowDiv.appendChild(labelDiv);
+
+            // Tasks container
+            const tasksContainer = document.createElement('div');
+            tasksContainer.className = 'actor-tasks-container';
+
+            // Add tasks for this actor
+            actorTasks.forEach(task => {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = 'task-block';
+                taskDiv.setAttribute('data-task-id', task.id);
+
+                // Calculate position and width
+                const startPercent = ((task.start_minutes - start_time_minutes) / totalDuration) * 100;
+                const widthPercent = (task.duration / totalDuration) * 100;
+
+                taskDiv.style.left = `${startPercent}%`;
+                taskDiv.style.width = `${widthPercent}%`;
+
+                // Task content
+                const taskName = task.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                taskDiv.textContent = taskName;
+
+                // Set task state based on current time
+                if (this.currentTime >= task.end_minutes) {
+                    taskDiv.classList.add('completed');
+                } else if (this.currentTime >= task.start_minutes && this.currentTime < task.end_minutes) {
+                    taskDiv.classList.add('active');
+                }
+
+                // Add tooltip on hover
+                taskDiv.addEventListener('mouseenter', (e) => {
+                    this.showTaskTooltip(e, task);
+                });
+
+                taskDiv.addEventListener('mouseleave', this.hideTaskTooltip);
+
+                tasksContainer.appendChild(taskDiv);
+            });
+
+            rowDiv.appendChild(tasksContainer);
+            container.appendChild(rowDiv);
+        });
+    }
+
+    showTaskTooltip(event, task) {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'task-tooltip show';
         
-        const html = `
-            <div class="timeline-track">
-                ${this.simulationData.tasks.map(task => `
-                    <div class="timeline-task" 
-                         data-task-id="${task.id}"
-                         style="left: ${task.start_percentage}%; width: ${task.duration_percentage}%;"
-                         title="${task.id}: ${task.start} - ${this.formatTime(task.end_minutes)} (${task.duration}min)">
-                        <span class="task-label">${task.id}</span>
-                    </div>
-                `).join('')}
-                <div class="timeline-cursor" id="timeline-cursor"></div>
-            </div>
-            <div class="timeline-axis">
-                ${this.generateTimeMarkers()}
-            </div>
+        const startTime = this.formatTime(task.start_minutes);
+        const endTime = this.formatTime(task.end_minutes);
+        const duration = task.duration;
+        
+        tooltip.innerHTML = `
+            <strong>${task.id.replace(/_/g, ' ')}</strong><br>
+            Time: ${startTime} - ${endTime}<br>
+            Duration: ${duration} minutes<br>
+            Location: ${task.location || 'N/A'}
         `;
         
-        container.innerHTML = html;
+        document.body.appendChild(tooltip);
+        
+        const rect = event.target.getBoundingClientRect();
+        tooltip.style.left = `${rect.left + (rect.width / 2)}px`;
+        tooltip.style.top = `${rect.top - tooltip.offsetHeight - 5}px`;
+        tooltip.style.transform = 'translateX(-50%)';
+        
+        // Store reference for cleanup
+        event.target._tooltip = tooltip;
+    }
+
+    hideTaskTooltip(event) {
+        if (event.target._tooltip) {
+            event.target._tooltip.remove();
+            delete event.target._tooltip;
+        }
     }
     
     renderActors() {
@@ -236,8 +359,10 @@ class SimulationViewer {
     }
     
     formatTime(minutes) {
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
+        // Round minutes to prevent excessive decimal places
+        const roundedMinutes = Math.round(minutes);
+        const hours = Math.floor(roundedMinutes / 60);
+        const mins = roundedMinutes % 60;
         return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
     }
     
@@ -246,37 +371,135 @@ class SimulationViewer {
     }
     
     updateSimulation() {
-        const currentMinutes = this.getCurrentTimeMinutes();
+        if (!this.simulationData) return;
+        
+        const totalDuration = this.simulationData.end_time_minutes - this.simulationData.start_time_minutes;
+        const progress = this.currentTime / 100;
+        // Round the current time calculation to prevent excessive decimal places
+        const currentTime = Math.round(this.simulationData.start_time_minutes + (progress * totalDuration));
+        
+        // Update timeline with playhead
+        this.renderTimeline(currentTime);
+        
+        // Update actors status
+        this.updateActorsStatus(currentTime);
+        
+        // Update resources display
+        this.updateResourcesDisplay(currentTime);
         
         // Update time display
         const timeDisplay = document.getElementById('time-display');
         if (timeDisplay) {
-            timeDisplay.textContent = this.formatTime(Math.floor(currentMinutes));
+            timeDisplay.textContent = this.formatTime(currentTime);
         }
         
         // Update time slider
         const timeSlider = document.getElementById('time-slider');
-        if (timeSlider && !timeSlider.matches(':focus')) {
+        if (timeSlider && timeSlider.value != this.currentTime) {
             timeSlider.value = this.currentTime;
         }
-        
-        // Update timeline cursor
-        const cursor = document.getElementById('timeline-cursor');
-        if (cursor) {
-            cursor.style.left = `${this.currentTime}%`;
-        }
-        
-        // Update actor statuses
-        this.updateActorStatuses(currentMinutes);
-        
-        // Update resource levels
-        this.updateResourceLevels(currentMinutes);
-        
-        // Update task highlights
-        this.updateTaskHighlights(currentMinutes);
     }
-    
-    updateActorStatuses(currentMinutes) {
+
+    renderTimeline(currentTime) {
+        const container = document.getElementById('timeline-actors-container');
+        if (!container) return;
+
+        const { actors, tasks, start_time_minutes, end_time_minutes } = this.simulationData;
+        const totalDuration = end_time_minutes - start_time_minutes;
+
+        // Clear existing content
+        container.innerHTML = '';
+
+        // Create time axis markers
+        const timeAxisContainer = document.querySelector('.timeline-time-axis');
+        if (timeAxisContainer) {
+            timeAxisContainer.innerHTML = '';
+            const markersDiv = document.createElement('div');
+            markersDiv.className = 'timeline-time-markers';
+            
+            // Add time markers (every 2 hours)
+            for (let i = 0; i <= totalDuration; i += 120) {
+                const timeMinutes = start_time_minutes + i;
+                const hours = Math.floor(timeMinutes / 60);
+                const minutes = timeMinutes % 60;
+                const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                
+                const marker = document.createElement('span');
+                marker.textContent = timeStr;
+                marker.style.position = 'absolute';
+                marker.style.left = `${(i / totalDuration) * 100}%`;
+                marker.style.transform = 'translateX(-50%)';
+                markersDiv.appendChild(marker);
+            }
+            
+            timeAxisContainer.appendChild(markersDiv);
+        }
+
+        // Group tasks by actor
+        const tasksByActor = {};
+        actors.forEach(actor => {
+            tasksByActor[actor.id] = {
+                actor: actor,
+                tasks: tasks.filter(task => task.actor_id === actor.id)
+            };
+        });
+
+        // Create timeline row for each actor
+        Object.values(tasksByActor).forEach(({ actor, tasks: actorTasks }) => {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'actor-timeline-row';
+            rowDiv.setAttribute('data-actor', actor.id);
+
+            // Actor label
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'actor-label';
+            labelDiv.textContent = actor.role || actor.id;
+            rowDiv.appendChild(labelDiv);
+
+            // Tasks container
+            const tasksContainer = document.createElement('div');
+            tasksContainer.className = 'actor-tasks-container';
+
+            // Add tasks for this actor
+            actorTasks.forEach(task => {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = 'task-block';
+                taskDiv.setAttribute('data-task-id', task.id);
+
+                // Calculate position and width
+                const startPercent = ((task.start_minutes - start_time_minutes) / totalDuration) * 100;
+                const widthPercent = (task.duration / totalDuration) * 100;
+
+                taskDiv.style.left = `${startPercent}%`;
+                taskDiv.style.width = `${widthPercent}%`;
+
+                // Task content
+                const taskName = task.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                taskDiv.textContent = taskName;
+
+                // Set task state based on current time
+                if (currentTime >= task.end_minutes) {
+                    taskDiv.classList.add('completed');
+                } else if (currentTime >= task.start_minutes && currentTime < task.end_minutes) {
+                    taskDiv.classList.add('active');
+                }
+
+                // Add tooltip on hover
+                taskDiv.addEventListener('mouseenter', (e) => {
+                    this.showTaskTooltip(e, task);
+                });
+
+                taskDiv.addEventListener('mouseleave', this.hideTaskTooltip);
+
+                tasksContainer.appendChild(taskDiv);
+            });
+
+            rowDiv.appendChild(tasksContainer);
+            container.appendChild(rowDiv);
+        });
+    }
+
+    updateActorsStatus(currentTime) {
         if (!this.simulationData.actors || !this.simulationData.tasks) return;
         
         this.simulationData.actors.forEach(actor => {
@@ -286,8 +509,8 @@ class SimulationViewer {
             // Find current task for this actor
             const currentTask = this.simulationData.tasks.find(task => 
                 task.actor_id === actor.id && 
-                currentMinutes >= task.start_minutes && 
-                currentMinutes <= task.end_minutes
+                currentTime >= task.start_minutes && 
+                currentTime <= task.end_minutes
             );
             
             if (currentTask) {
@@ -310,7 +533,7 @@ class SimulationViewer {
         });
     }
     
-    updateResourceLevels(currentMinutes) {
+    updateResourcesDisplay(currentTime) {
         if (!this.simulationData.resources) return;
         
         this.simulationData.resources.forEach(resource => {
@@ -319,7 +542,7 @@ class SimulationViewer {
             // Apply all usage changes up to current time
             if (resource.usageHistory) {
                 resource.usageHistory.forEach(change => {
-                    if (change.time <= currentMinutes) {
+                    if (change.time <= currentTime) {
                         currentStock += change.change;
                     }
                 });
@@ -352,23 +575,13 @@ class SimulationViewer {
         });
     }
     
-    updateTaskHighlights(currentMinutes) {
-        if (!this.simulationData.tasks) return;
+    reset() {
+        this.pause();
+        this.currentTime = 0;
+        this.updateSimulation();
         
-        this.simulationData.tasks.forEach(task => {
-            const taskElement = document.querySelector(`[data-task-id="${task.id}"]`);
-            if (taskElement) {
-                const isActive = currentMinutes >= task.start_minutes && currentMinutes <= task.end_minutes;
-                const isCompleted = currentMinutes > task.end_minutes;
-                
-                taskElement.className = 'timeline-task';
-                if (isActive) {
-                    taskElement.classList.add('active');
-                } else if (isCompleted) {
-                    taskElement.classList.add('completed');
-                }
-            }
-        });
+        const btn = document.getElementById('play-pause-btn');
+        if (btn) btn.textContent = '▶️ Play';
     }
     
     togglePlayPause() {
@@ -393,15 +606,6 @@ class SimulationViewer {
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
         }
-    }
-    
-    reset() {
-        this.pause();
-        this.currentTime = 0;
-        this.updateSimulation();
-        
-        const btn = document.getElementById('play-pause-btn');
-        if (btn) btn.textContent = '▶️ Play';
     }
     
     animate() {
@@ -432,3 +636,4 @@ document.addEventListener('DOMContentLoaded', function() {
         new SimulationViewer();
     }
 });
+

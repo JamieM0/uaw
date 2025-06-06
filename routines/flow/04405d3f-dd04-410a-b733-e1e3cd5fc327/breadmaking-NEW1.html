@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/assets/css/components.css">
     <link rel="stylesheet" href="/assets/css/responsive.css">
     <link rel="stylesheet" href="/assets/css/article.css">
+    <link rel="stylesheet" href="/assets/css/simulation.css">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -83,7 +84,14 @@
                                         <div class="simulation-content">
                                             <div class="timeline-section">
                                                 <h4>Process Timeline</h4>
-                                                <div id="timeline-container"></div>
+                                                <div id="timeline-container">
+                                                    <div class="timeline-header">
+                                                        <div class="timeline-time-axis"></div>
+                                                    </div>
+                                                    <div class="timeline-actors" id="timeline-actors-container">
+                                                        <!-- Actor timeline rows will be generated here -->
+                                                    </div>
+                                                </div>
                                             </div>
                                             
                                             <div class="actors-section">
@@ -712,7 +720,7 @@
                     <div class="contributors-section">
                         <h3>Contributors</h3>
                         <p>This workflow was developed using Iterative AI analysis of breadmaking automation processes with input from professional engineers and automation experts.</p>
-                        <p><em>Last updated: June 02, 2025</em></p>
+                        <p><em>Last updated: June 06, 2025</em></p>
                         <div class="action-buttons">
                             <a href="#" class="button secondary" id="suggest-improvements">Suggest Improvements</a>
                         </div>
