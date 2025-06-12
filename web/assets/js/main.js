@@ -294,32 +294,35 @@ function populateMetricsModal(metrics, currentPersona, modalContentElement) {
         return;
     }
 
-    const personaSpecificMetrics = metrics[currentPersona];
-
     if (!personaSpecificMetrics) {
-        modalContentElement.innerHTML = `<p>No metrics data available for persona: ${currentPersona.replace('_', ' ')}.</p>`;
+        const escPersona = escapeHtml(currentPersona.replace('_', ' '));
+        modalContentElement.innerHTML = `<p>No metrics data available for persona: ${escPersona}.</p>`;
         return;
     }
 
-    let html = `<p><strong>Relevance for ${currentPersona.replace('_', ' ')}:</strong>
+    const escPersona = escapeHtml(currentPersona.replace('_', ' '));
+    let html = `<p><strong>Relevance for ${escPersona}:</strong>
                 ${personaSpecificMetrics.is_relevant_to_persona ?
                     '<span class="metric-pass">Relevant</span>' :
                     '<span class="metric-fail">Not Relevant</span>'}</p>`;
 
     // Add relevance reasoning if available
     if (personaSpecificMetrics.relevance_reasoning) {
-        html += `<p class="metric-relevance-reasoning"><strong>Reasoning:</strong> ${personaSpecificMetrics.relevance_reasoning}</p>`;
+        const escReasoning = escapeHtml(personaSpecificMetrics.relevance_reasoning);
+        html += `<p class="metric-relevance-reasoning"><strong>Reasoning:</strong> ${escReasoning}</p>`;
     }
     
     if (personaSpecificMetrics.evaluated_metrics && personaSpecificMetrics.evaluated_metrics.length > 0) {
         html += '<h4>Evaluated Metrics:</h4><ul>';
         personaSpecificMetrics.evaluated_metrics.forEach(metric => {
+            const escName = escapeHtml(metric.name || '');
+            const escDescription = metric.description ? escapeHtml(metric.description) : '';
             html += `<li>
-                        <strong>${metric.name}:</strong>
+                        <strong>${escName}:</strong>
                         ${metric.passed ?
                             '<span class="metric-pass">True</span>' :
                             '<span class="metric-fail">False</span>'}
-                        ${metric.description ? `<p class="metric-description">${metric.description}</p>` : ''}
+                        ${metric.description ? `<p class="metric-description">${escDescription}</p>` : ''}
                      </li>`;
         });
         html += '</ul>';
@@ -826,7 +829,8 @@ function formatJsonData(data) {
         const formatted = JSON.stringify(data, null, 2);
         return `<pre class="json-data">${escapeHtml(formatted)}</pre>`;
     } catch (error) {
-        return `<p class="error">Error formatting data: ${error.message}</p>`;
+        const escError = escapeHtml(error.message);
+        return `<p class="error">Error formatting data: ${escError}</p>`;
     }
 }
 
@@ -1089,11 +1093,13 @@ function displayStepError(message) {
     const stepInputDiv = document.getElementById('step-input');
     const stepOutputDiv = document.getElementById('step-output');
     
+    const escMessage = escapeHtml(message);
+    
     if (stepInputDiv) {
-        stepInputDiv.innerHTML = `<div class="error">Error: ${message}</div>`;
+        stepInputDiv.innerHTML = `<div class="error">Error: ${escMessage}</div>`;
     }
     if (stepOutputDiv) {
-        stepOutputDiv.innerHTML = `<div class="error">Error: ${message}</div>`;
+        stepOutputDiv.innerHTML = `<div class="error">Error: ${escMessage}</div>`;
     }
 }
 
