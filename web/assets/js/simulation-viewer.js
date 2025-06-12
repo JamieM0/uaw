@@ -13,6 +13,21 @@ class SimulationViewer {
         this.init();
     }
     
+    // Helper function to escape HTML to prevent XSS
+    escapeHtml(text) {
+        if (typeof text !== 'string') {
+            return text;
+        }
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+    
     init() {
         // Load simulation data from script tag
         this.loadSimulationData();
@@ -228,11 +243,18 @@ class SimulationViewer {
         const endTime = this.formatTime(task.end_minutes);
         const duration = task.duration;
         
+        // Escape all user-controlled data to prevent XSS
+        const escTaskId = this.escapeHtml(task.id.replace(/_/g, ' '));
+        const escStartTime = this.escapeHtml(startTime);
+        const escEndTime = this.escapeHtml(endTime);
+        const escDuration = this.escapeHtml(duration);
+        const escLocation = this.escapeHtml(task.location || 'N/A');
+        
         tooltip.innerHTML = `
-            <strong>${task.id.replace(/_/g, ' ')}</strong><br>
-            Time: ${startTime} - ${endTime}<br>
-            Duration: ${duration} minutes<br>
-            Location: ${task.location || 'N/A'}
+            <strong>${escTaskId}</strong><br>
+            Time: ${escStartTime} - ${escEndTime}<br>
+            Duration: ${escDuration} minutes<br>
+            Location: ${escLocation}
         `;
         
         document.body.appendChild(tooltip);
@@ -257,19 +279,27 @@ class SimulationViewer {
         const container = document.getElementById('actors-container');
         if (!container || !this.simulationData.actors) return;
         
-        const html = this.simulationData.actors.map(actor => `
-            <div class="actor-card" data-actor-id="${actor.id}">
-                <div class="actor-header">
-                    <h5>${actor.role}</h5>
-                    <span class="actor-status" id="status-${actor.id}">Idle</span>
+        const html = this.simulationData.actors.map(actor => {
+            // Escape all user-controlled data to prevent XSS
+            const escActorId = this.escapeHtml(actor.id);
+            const escRole = this.escapeHtml(actor.role);
+            const escCostPerHour = this.escapeHtml(actor.cost_per_hour || 0);
+            const escUtilization = this.escapeHtml(actor.utilization_percentage || 0);
+            
+            return `
+                <div class="actor-card" data-actor-id="${escActorId}">
+                    <div class="actor-header">
+                        <h5>${escRole}</h5>
+                        <span class="actor-status" id="status-${escActorId}">Idle</span>
+                    </div>
+                    <div class="actor-details">
+                        <div>Cost: $${escCostPerHour}/hr</div>
+                        <div>Utilization: ${escUtilization}%</div>
+                        <div class="current-task" id="task-${escActorId}">No active task</div>
+                    </div>
                 </div>
-                <div class="actor-details">
-                    <div>Cost: $${actor.cost_per_hour}/hr</div>
-                    <div>Utilization: ${actor.utilization_percentage || 0}%</div>
-                    <div class="current-task" id="task-${actor.id}">No active task</div>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
         
         container.innerHTML = html;
     }
@@ -281,23 +311,31 @@ class SimulationViewer {
         // Calculate resource consumption over time
         this.calculateResourceUsage();
         
-        const html = this.simulationData.resources.map(resource => `
-            <div class="resource-card" data-resource-id="${resource.id}">
-                <div class="resource-header">
-                    <h5>${resource.id.replace(/_/g, ' ')}</h5>
-                    <span class="resource-unit">${resource.unit}</span>
+        const html = this.simulationData.resources.map(resource => {
+            // Escape all user-controlled data to prevent XSS
+            const escResourceId = this.escapeHtml(resource.id);
+            const escResourceName = this.escapeHtml(resource.id.replace(/_/g, ' '));
+            const escUnit = this.escapeHtml(resource.unit);
+            const escStartingStock = this.escapeHtml(resource.starting_stock);
+            
+            return `
+                <div class="resource-card" data-resource-id="${escResourceId}">
+                    <div class="resource-header">
+                        <h5>${escResourceName}</h5>
+                        <span class="resource-unit">${escUnit}</span>
+                    </div>
+                    <div class="resource-bar">
+                        <div class="resource-fill" id="fill-${escResourceId}"></div>
+                        <span class="resource-amount" id="amount-${escResourceId}">
+                            ${escStartingStock} ${escUnit}
+                        </span>
+                    </div>
+                    <div class="resource-starting">
+                        Starting: ${escStartingStock} ${escUnit}
+                    </div>
                 </div>
-                <div class="resource-bar">
-                    <div class="resource-fill" id="fill-${resource.id}"></div>
-                    <span class="resource-amount" id="amount-${resource.id}">
-                        ${resource.starting_stock} ${resource.unit}
-                    </span>
-                </div>
-                <div class="resource-starting">
-                    Starting: ${resource.starting_stock} ${resource.unit}
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
         
         container.innerHTML = html;
     }
@@ -519,7 +557,9 @@ class SimulationViewer {
                     statusElement.className = 'actor-status working';
                 }
                 if (taskElement) {
-                    taskElement.textContent = `Task: ${currentTask.id}`;
+                    // Escape task ID to prevent XSS
+                    const escTaskId = this.escapeHtml(currentTask.id);
+                    taskElement.textContent = `Task: ${escTaskId}`;
                 }
             } else {
                 if (statusElement) {
