@@ -20,13 +20,31 @@ document.addEventListener('DOMContentLoaded', function() {
         return div.innerHTML;
     }
     
-    // Helper function to validate URLs
+    // Helper function to validate and sanitize URLs
     function isValidUrl(url) {
+        if (typeof url !== 'string') return false;
+        
+        // Only allow safe URL schemes and relative URLs
+        if (url.startsWith('/') || url.startsWith('#')) {
+            return true;
+        }
+        
         try {
-            // Allow relative URLs and absolute URLs
-            return url.startsWith('/') || url.startsWith('#') || new URL(url);
+            const urlObj = new URL(url);
+            // Only allow http and https protocols
+            return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
         } catch {
             return false;
+        }
+    }
+    
+    // Helper function to safely set URL attributes
+    function setSafeHref(element, url) {
+        if (isValidUrl(url)) {
+            // Use setAttribute to avoid potential XSS issues with direct property assignment
+            element.setAttribute('href', url);
+        } else {
+            element.setAttribute('href', '#');
         }
     }
     
@@ -60,9 +78,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const description = document.createElement('p');
         description.textContent = item.description;
         
-        // Create and append link (with validated URL)
+        // Create and append link (with safely set URL)
         const link = document.createElement('a');
-        link.href = safeUrl;
+        setSafeHref(link, safeUrl);
         link.className = 'category-link';
         link.textContent = 'View Details';
         
@@ -92,11 +110,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 const safeUrl = isValidUrl(crumb.url) ? crumb.url : '#';
                 
                 const link = document.createElement('a');
-                link.href = safeUrl;
-                link.textContent = crumb.title;
+                setSafeHref(link, safeUrl);
+                link.textContent = escapeHtml(crumb.title);
                 span.appendChild(link);
             } else {
-                span.textContent = crumb.title;
+                span.textContent = escapeHtml(crumb.title);
             }
             
             breadcrumbsContainer.appendChild(span);

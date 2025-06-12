@@ -873,27 +873,85 @@ function loadSectionFlowOverview(flowUuid, sectionId, stepId) {
         return;
     }
     
-    const diagramHtml = `
-        <div class="flow-diagram">
-            <h4>Section Processing Details</h4>
-            <div class="flow-steps">
-                <div class="flow-step current-step" data-step="${currentStep.id}">
-                    <div class="step-number">${currentStep.id}</div>
-                    <div class="step-name">${currentStep.name}</div>
-                    <div class="step-file">${currentStep.file}</div>
-                    <div class="step-status">Current Section</div>
-                </div>
-            </div>
-            <div class="flow-info">
-                <p><strong>Section:</strong> ${sectionId}</p>
-                <p><strong>Processing Step:</strong> ${currentStep.name}</p>
-                <p><strong>Flow UUID:</strong> <code>${flowUuid}</code></p>
-                <p>This section was generated using step ${currentStep.id} of the processing pipeline.</p>
-            </div>
-        </div>
-    `;
+    // Clear existing content
+    overviewContent.innerHTML = '';
     
-    overviewContent.innerHTML = diagramHtml;
+    // Create diagram container using DOM methods to prevent XSS
+    const diagramDiv = document.createElement('div');
+    diagramDiv.className = 'flow-diagram';
+    
+    // Create and append title
+    const title = document.createElement('h4');
+    title.textContent = 'Section Processing Details';
+    diagramDiv.appendChild(title);
+    
+    // Create steps container
+    const stepsDiv = document.createElement('div');
+    stepsDiv.className = 'flow-steps';
+    
+    // Create flow step using DOM methods
+    const stepDiv = document.createElement('div');
+    stepDiv.className = 'flow-step current-step';
+    stepDiv.setAttribute('data-step', currentStep.id);
+    
+    const stepNumber = document.createElement('div');
+    stepNumber.className = 'step-number';
+    stepNumber.textContent = currentStep.id;
+    
+    const stepName = document.createElement('div');
+    stepName.className = 'step-name';
+    stepName.textContent = currentStep.name;
+    
+    const stepFile = document.createElement('div');
+    stepFile.className = 'step-file';
+    stepFile.textContent = currentStep.file;
+    
+    const stepStatus = document.createElement('div');
+    stepStatus.className = 'step-status';
+    stepStatus.textContent = 'Current Section';
+    
+    stepDiv.appendChild(stepNumber);
+    stepDiv.appendChild(stepName);
+    stepDiv.appendChild(stepFile);
+    stepDiv.appendChild(stepStatus);
+    
+    stepsDiv.appendChild(stepDiv);
+    diagramDiv.appendChild(stepsDiv);
+    
+    // Create flow info section using DOM methods
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'flow-info';
+    
+    const sectionPara = document.createElement('p');
+    const sectionStrong = document.createElement('strong');
+    sectionStrong.textContent = 'Section: ';
+    sectionPara.appendChild(sectionStrong);
+    sectionPara.appendChild(document.createTextNode(escapeHtml(sectionId)));
+    
+    const stepPara = document.createElement('p');
+    const stepStrong = document.createElement('strong');
+    stepStrong.textContent = 'Processing Step: ';
+    stepPara.appendChild(stepStrong);
+    stepPara.appendChild(document.createTextNode(currentStep.name));
+    
+    const uuidPara = document.createElement('p');
+    const uuidStrong = document.createElement('strong');
+    uuidStrong.textContent = 'Flow UUID: ';
+    const uuidCode = document.createElement('code');
+    uuidCode.textContent = escapeHtml(flowUuid); // Escape the UUID
+    uuidPara.appendChild(uuidStrong);
+    uuidPara.appendChild(uuidCode);
+    
+    const descPara = document.createElement('p');
+    descPara.textContent = `This section was generated using step ${currentStep.id} of the processing pipeline.`;
+    
+    infoDiv.appendChild(sectionPara);
+    infoDiv.appendChild(stepPara);
+    infoDiv.appendChild(uuidPara);
+    infoDiv.appendChild(descPara);
+    
+    diagramDiv.appendChild(infoDiv);
+    overviewContent.appendChild(diagramDiv);
 }
 
 function loadTransparencyData(flowUuid) {
@@ -923,27 +981,76 @@ function loadFlowOverview(flowUuid) {
         { id: '9', name: 'Specifications', file: '9.json' }
     ];
     
-    const diagramHtml = `
-        <div class="flow-diagram">
-            <h4>Processing Pipeline</h4>
-            <div class="flow-steps">
-                ${flowSteps.map(step => `
-                    <div class="flow-step" data-step="${step.id}">
-                        <div class="step-number">${step.id}</div>
-                        <div class="step-name">${step.name}</div>
-                        <div class="step-file">${step.file}</div>
-                    </div>
-                `).join('')}
-            </div>
-            <div class="flow-info">
-                <p><strong>Flow UUID:</strong> <code>${flowUuid}</code></p>
-                <p><strong>Total Steps:</strong> ${flowSteps.length}</p>
-                <p>Each step takes the input.json and produces its respective output file with captured input/output data for transparency.</p>
-            </div>
-        </div>
-    `;
+    // Clear existing content
+    overviewContent.innerHTML = '';
     
-    overviewContent.innerHTML = diagramHtml;
+    // Create diagram container using DOM methods to prevent XSS
+    const diagramDiv = document.createElement('div');
+    diagramDiv.className = 'flow-diagram';
+    
+    // Create and append title
+    const title = document.createElement('h4');
+    title.textContent = 'Processing Pipeline';
+    diagramDiv.appendChild(title);
+    
+    // Create steps container
+    const stepsDiv = document.createElement('div');
+    stepsDiv.className = 'flow-steps';
+    
+    // Create flow steps using DOM methods
+    flowSteps.forEach(step => {
+        const stepDiv = document.createElement('div');
+        stepDiv.className = 'flow-step';
+        stepDiv.setAttribute('data-step', step.id);
+        
+        const stepNumber = document.createElement('div');
+        stepNumber.className = 'step-number';
+        stepNumber.textContent = step.id;
+        
+        const stepName = document.createElement('div');
+        stepName.className = 'step-name';
+        stepName.textContent = step.name;
+        
+        const stepFile = document.createElement('div');
+        stepFile.className = 'step-file';
+        stepFile.textContent = step.file;
+        
+        stepDiv.appendChild(stepNumber);
+        stepDiv.appendChild(stepName);
+        stepDiv.appendChild(stepFile);
+        
+        stepsDiv.appendChild(stepDiv);
+    });
+    
+    diagramDiv.appendChild(stepsDiv);
+    
+    // Create flow info section using DOM methods
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'flow-info';
+    
+    const uuidPara = document.createElement('p');
+    const uuidStrong = document.createElement('strong');
+    uuidStrong.textContent = 'Flow UUID: ';
+    const uuidCode = document.createElement('code');
+    uuidCode.textContent = escapeHtml(flowUuid); // Escape the UUID
+    uuidPara.appendChild(uuidStrong);
+    uuidPara.appendChild(uuidCode);
+    
+    const stepsPara = document.createElement('p');
+    const stepsStrong = document.createElement('strong');
+    stepsStrong.textContent = 'Total Steps: ';
+    stepsPara.appendChild(stepsStrong);
+    stepsPara.appendChild(document.createTextNode(flowSteps.length.toString()));
+    
+    const descPara = document.createElement('p');
+    descPara.textContent = 'Each step takes the input.json and produces its respective output file with captured input/output data for transparency.';
+    
+    infoDiv.appendChild(uuidPara);
+    infoDiv.appendChild(stepsPara);
+    infoDiv.appendChild(descPara);
+    
+    diagramDiv.appendChild(infoDiv);
+    overviewContent.appendChild(diagramDiv);
     
     // Add click handlers to flow steps
     document.querySelectorAll('.flow-step').forEach(step => {
