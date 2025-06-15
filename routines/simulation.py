@@ -161,33 +161,34 @@ Create a simulation template for this task with appropriate actors and resources
                     "availability": [{"from": "07:00", "to": "18:00"}]
                 },
                 {
-                    "id": "assistant_1", 
+                    "id": "assistant_1",
                     "role": "Baker Assistant",
                     "cost_per_hour": 18.0,
                     "availability": [{"from": "07:00", "to": "18:00"}]
                 }
             ],
             "resources": [
-                {
-                    "id": "flour",
-                    "unit": "kg",
-                    "starting_stock": 50
-                },
-                {
-                    "id": "water",
-                    "unit": "liters",
-                    "starting_stock": 20
-                },
-                {
-                    "id": "yeast",
-                    "unit": "grams",
-                    "starting_stock": 500
-                },
-                {
-                    "id": "salt",
-                    "unit": "grams", 
-                    "starting_stock": 200
-                }
+                {"id": "flour", "unit": "kg", "starting_stock": 50},
+                {"id": "water", "unit": "liters", "starting_stock": 20},
+                {"id": "yeast", "unit": "grams", "starting_stock": 500},
+                {"id": "salt", "unit": "grams", "starting_stock": 200},
+                {"id": "sugar", "unit": "grams", "starting_stock": 300},
+                {"id": "clean_workspace", "unit": "units", "starting_stock": 2},
+                {"id": "dirty_workspace", "unit": "units", "starting_stock": 0},
+                {"id": "clean_mixer", "unit": "units", "starting_stock": 1},
+                {"id": "dirty_mixer", "unit": "units", "starting_stock": 0},
+                {"id": "clean_surface", "unit": "units", "starting_stock": 2},
+                {"id": "dirty_surface", "unit": "units", "starting_stock": 0},
+                {"id": "cold_oven", "unit": "units", "starting_stock": 1},
+                {"id": "preheated_oven", "unit": "units", "starting_stock": 0},
+                {"id": "used_oven", "unit": "units", "starting_stock": 0},
+                {"id": "measured_ingredients", "unit": "batches", "starting_stock": 0},
+                {"id": "activated_yeast", "unit": "batches", "starting_stock": 0},
+                {"id": "dough", "unit": "batches", "starting_stock": 0},
+                {"id": "kneaded_dough", "unit": "batches", "starting_stock": 0},
+                {"id": "risen_dough", "unit": "batches", "starting_stock": 0},
+                {"id": "shaped_loaves", "unit": "loaves", "starting_stock": 0},
+                {"id": "finished_bread", "unit": "loaves", "starting_stock": 0}
             ]
         }
 
@@ -214,13 +215,39 @@ RESOURCE RULES:
 - produces: Use POSITIVE numbers to indicate resource production
 - Resource IDs must exactly match those in the template
 - Ensure realistic consumption amounts based on starting stock
+- EVERY task must consume AND produce at least one resource (e.g., cleaning consumes "dirty_spoon" and produces "clean_spoon")
+- Include intermediate resources like "dirty_equipment", "clean_equipment", "mixed_ingredients", "prepared_workspace", etc.
+
+SCHEDULING CONSTRAINTS:
+- Tasks assigned to the same actor MUST NEVER overlap in time
+- Each actor can only do one task at a time
+- Different actors CAN and SHOULD work simultaneously for efficiency
+- Include realistic preparation and cleanup tasks
+- Equipment must be cleaned between uses (e.g., "clean_mixer 🔸🧽" after mixing)
+- Workspace preparation tasks should precede main tasks
+
+REALISM REQUIREMENTS:
+- Include equipment cleaning tasks between uses
+- Add workspace preparation and cleanup
+- Consider realistic workflow patterns (prep → work → clean → next task)
+- Include safety checks and quality control tasks
+- Add resource preparation tasks (e.g., "warm_water 🔸🌡️", "measure_ingredients 🔸⚖️")
+
+TASK ID FORMAT RULES:
+- Each task id must end with " 🔸[EMOJI]" where [EMOJI] is a single relevant emoji that represents the task
+- Choose emojis that clearly represent the action (e.g., "mix_ingredients 🔸🥄", "bake_bread 🔸🔥", "clean_mixer 🔸🧽")
+- Use only one emoji per task, choose the most representative one
+- The emoji should be intuitive and help users quickly identify the task type
 
 Generate a complete simulation JSON with tasks that:
 1. Follow the logical sequence from the task tree
-2. Assign realistic actors to each task
+2. Assign realistic actors to each task with NO TIME OVERLAPS per actor
 3. Include realistic timing with VALID HH:MM format
-4. Show resource consumption and production with correct amounts
+4. Show resource consumption and production with correct amounts for ALL tasks
 5. Use realistic locations/stations
+6. Include equipment cleaning and workspace preparation tasks
+7. Maximize efficiency through parallel work by different actors
+8. Include descriptive emojis in task IDs for better visualization
 
 Return the complete simulation JSON with the tasks array populated."""
 
@@ -243,34 +270,134 @@ Create a complete simulation with detailed tasks. Ensure all times are valid HH:
                 **simulation_template,
                 "tasks": [
                     {
-                        "id": "mix_ingredients",
+                        "id": "prepare_workspace 🔸🧹",
                         "start": "07:00",
-                        "duration": 15,
-                        "actor_id": simulation_template["actors"][0]["id"] if simulation_template.get("actors") else "baker_1",
+                        "duration": 10,
+                        "actor_id": simulation_template["actors"][1]["id"] if len(simulation_template.get("actors", [])) > 1 else "assistant_1",
                         "location": "Mixing Station",
-                        "consumes": {"flour": 0.5, "water": 0.3, "yeast": 10, "salt": 5},
-                        "produces": {"dough": 1},
+                        "consumes": {"dirty_workspace": 1},
+                        "produces": {"clean_workspace": 1},
                         "depends_on": []
                     },
                     {
-                        "id": "knead_dough",
-                        "start": "07:15", 
-                        "duration": 10,
+                        "id": "measure_ingredients 🔸⚖️",
+                        "start": "07:00",
+                        "duration": 15,
                         "actor_id": simulation_template["actors"][0]["id"] if simulation_template.get("actors") else "baker_1",
-                        "location": "Mixing Station",
-                        "consumes": {"dough": 1},
-                        "produces": {"kneaded_dough": 1},
-                        "depends_on": ["mix_ingredients"]
+                        "location": "Prep Station",
+                        "consumes": {"flour": 0.5, "water": 0.3, "yeast": 10, "salt": 5},
+                        "produces": {"measured_ingredients": 1},
+                        "depends_on": []
                     },
                     {
-                        "id": "bake_bread",
+                        "id": "activate_yeast 🔸🦠",
+                        "start": "07:10",
+                        "duration": 10,
+                        "actor_id": simulation_template["actors"][1]["id"] if len(simulation_template.get("actors", [])) > 1 else "assistant_1",
+                        "location": "Prep Station",
+                        "consumes": {"yeast": 5, "water": 0.1, "sugar": 10},
+                        "produces": {"activated_yeast": 1},
+                        "depends_on": ["prepare_workspace 🔸🧹"]
+                    },
+                    {
+                        "id": "mix_ingredients 🔸🥄",
+                        "start": "07:15",
+                        "duration": 15,
+                        "actor_id": simulation_template["actors"][0]["id"] if simulation_template.get("actors") else "baker_1",
+                        "location": "Mixing Station",
+                        "consumes": {"measured_ingredients": 1, "activated_yeast": 1, "clean_workspace": 1},
+                        "produces": {"dough": 1, "dirty_mixer": 1},
+                        "depends_on": ["measure_ingredients 🔸⚖️", "activate_yeast 🔸🦠"]
+                    },
+                    {
+                        "id": "clean_mixer 🔸🧽",
+                        "start": "07:20",
+                        "duration": 10,
+                        "actor_id": simulation_template["actors"][1]["id"] if len(simulation_template.get("actors", [])) > 1 else "assistant_1",
+                        "location": "Cleaning Station",
+                        "consumes": {"dirty_mixer": 1},
+                        "produces": {"clean_mixer": 1},
+                        "depends_on": ["activate_yeast 🔸🦠"]
+                    },
+                    {
+                        "id": "knead_dough 🔸👐",
+                        "start": "07:30",
+                        "duration": 15,
+                        "actor_id": simulation_template["actors"][0]["id"] if simulation_template.get("actors") else "baker_1",
+                        "location": "Kneading Area",
+                        "consumes": {"dough": 1},
+                        "produces": {"kneaded_dough": 1, "dirty_surface": 1},
+                        "depends_on": ["mix_ingredients 🔸🥄"]
+                    },
+                    {
+                        "id": "clean_surface 🔸🧽",
+                        "start": "07:30",
+                        "duration": 15,
+                        "actor_id": simulation_template["actors"][1]["id"] if len(simulation_template.get("actors", [])) > 1 else "assistant_1",
+                        "location": "Cleaning Station",
+                        "consumes": {"dirty_surface": 1},
+                        "produces": {"clean_surface": 1},
+                        "depends_on": ["clean_mixer 🔸🧽"]
+                    },
+                    {
+                        "id": "prepare_oven 🔸🔥",
+                        "start": "07:45",
+                        "duration": 15,
+                        "actor_id": simulation_template["actors"][1]["id"] if len(simulation_template.get("actors", [])) > 1 else "assistant_1",
+                        "location": "Oven Area",
+                        "consumes": {"cold_oven": 1},
+                        "produces": {"preheated_oven": 1},
+                        "depends_on": ["clean_surface 🔸🧽"]
+                    },
+                    {
+                        "id": "first_rise 🔸⏰",
+                        "start": "07:45",
+                        "duration": 60,
+                        "actor_id": simulation_template["actors"][0]["id"] if simulation_template.get("actors") else "baker_1",
+                        "location": "Proofing Area",
+                        "consumes": {"kneaded_dough": 1},
+                        "produces": {"risen_dough": 1},
+                        "depends_on": ["knead_dough 🔸👐"]
+                    },
+                    {
+                        "id": "shape_loaves 🔸🖐️",
+                        "start": "08:45",
+                        "duration": 20,
+                        "actor_id": simulation_template["actors"][0]["id"] if simulation_template.get("actors") else "baker_1",
+                        "location": "Shaping Area",
+                        "consumes": {"risen_dough": 1},
+                        "produces": {"shaped_loaves": 2, "dirty_surface": 1},
+                        "depends_on": ["first_rise 🔸⏰"]
+                    },
+                    {
+                        "id": "clean_workspace_final 🔸🧹",
                         "start": "08:00",
-                        "duration": 30,
+                        "duration": 20,
+                        "actor_id": simulation_template["actors"][1]["id"] if len(simulation_template.get("actors", [])) > 1 else "assistant_1",
+                        "location": "General Area",
+                        "consumes": {"dirty_surface": 1},
+                        "produces": {"clean_workspace": 1},
+                        "depends_on": ["prepare_oven 🔸🔥"]
+                    },
+                    {
+                        "id": "bake_bread 🔸🔥",
+                        "start": "09:05",
+                        "duration": 45,
                         "actor_id": simulation_template["actors"][0]["id"] if simulation_template.get("actors") else "baker_1",
                         "location": "Oven Area",
-                        "consumes": {"kneaded_dough": 1},
-                        "produces": {"finished_bread": 2},
-                        "depends_on": ["knead_dough"]
+                        "consumes": {"shaped_loaves": 2, "preheated_oven": 1},
+                        "produces": {"finished_bread": 2, "used_oven": 1},
+                        "depends_on": ["shape_loaves 🔸🖐️", "prepare_oven 🔸🔥"]
+                    },
+                    {
+                        "id": "cool_bread 🔸❄️",
+                        "start": "09:50",
+                        "duration": 30,
+                        "actor_id": simulation_template["actors"][1]["id"] if len(simulation_template.get("actors", [])) > 1 else "assistant_1",
+                        "location": "Cooling Area",
+                        "consumes": {"finished_bread": 2},
+                        "produces": {"cooled_bread": 2},
+                        "depends_on": ["bake_bread 🔸🔥"]
                     }
                 ]
             }
@@ -319,6 +446,59 @@ def validate_simulation_logic(sim: Dict[str, Any]) -> List[str]:
         if task.get("actor_id") not in actor_ids:
             errors.append(f"Task {task.get('id')}: Invalid actor_id {task.get('actor_id')}")
     
+    # Validate no overlapping tasks per actor
+    tasks_by_actor = {}
+    for task in sim.get("tasks", []):
+        actor_id = task.get("actor_id")
+        if actor_id not in tasks_by_actor:
+            tasks_by_actor[actor_id] = []
+        
+        # Parse start time and calculate end time
+        try:
+            start_time = task.get("start", "00:00")
+            duration = task.get("duration", 0)
+            
+            if ":" in start_time:
+                hours, minutes = map(int, start_time.split(":"))
+                start_minutes = hours * 60 + minutes
+                end_minutes = start_minutes + duration
+                
+                tasks_by_actor[actor_id].append({
+                    "id": task.get("id"),
+                    "start": start_minutes,
+                    "end": end_minutes
+                })
+        except (ValueError, TypeError):
+            errors.append(f"Task {task.get('id')}: Invalid time format")
+    
+    # Check for overlaps within each actor's tasks
+    for actor_id, actor_tasks in tasks_by_actor.items():
+        # Sort tasks by start time
+        actor_tasks.sort(key=lambda x: x["start"])
+        
+        for i in range(len(actor_tasks) - 1):
+            current_task = actor_tasks[i]
+            next_task = actor_tasks[i + 1]
+            
+            if current_task["end"] > next_task["start"]:
+                errors.append(
+                    f"Actor {actor_id}: Task overlap detected between "
+                    f"'{current_task['id']}' (ends at {current_task['end']//60:02d}:{current_task['end']%60:02d}) "
+                    f"and '{next_task['id']}' (starts at {next_task['start']//60:02d}:{next_task['start']%60:02d})"
+                )
+    
+    # Validate resource consumption/production
+    for task in sim.get("tasks", []):
+        consumes = task.get("consumes", {})
+        produces = task.get("produces", {})
+        
+        if not consumes and not produces:
+            errors.append(f"Task {task.get('id')}: Must consume and/or produce at least one resource")
+        elif not consumes:
+            errors.append(f"Task {task.get('id')}: Must consume at least one resource")
+        elif not produces:
+            errors.append(f"Task {task.get('id')}: Must produce at least one resource")
+    
     return errors
 
 def refine_simulation(simulation_errors: List[str], simulation_template: Dict[str, Any], tree_json: Dict[str, Any]) -> str:
@@ -326,7 +506,14 @@ def refine_simulation(simulation_errors: List[str], simulation_template: Dict[st
     
     system_prompt = """You are a simulation refinement expert. Fix the issues in the simulation JSON based on the provided errors.
 
-Return a corrected simulation JSON that addresses all the errors listed."""
+CRITICAL CONSTRAINTS TO ENFORCE:
+- Tasks assigned to the same actor MUST NOT overlap in time
+- Each actor can only do one task at a time
+- All tasks must consume AND produce at least one resource
+- Include realistic cleaning and preparation tasks
+- Ensure proper workflow sequencing
+
+Return a corrected simulation JSON that addresses all the errors listed and enforces these constraints."""
 
     user_prompt = f"""Errors to fix:
 {chr(10).join(simulation_errors)}

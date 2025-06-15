@@ -403,6 +403,24 @@ def load_simulation_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
             processed_task["start_minutes"] = task_start_minutes
             processed_task["end_minutes"] = task_end_minutes
             
+            # Extract emoji from task ID for enhanced visualization
+            task_id = task.get("id", "")
+            if "🔸" in task_id:
+                # Split the task name and emoji
+                parts = task_id.split("🔸", 1)
+                if len(parts) == 2:
+                    task_name, emoji_part = parts
+                    processed_task["display_name"] = task_name.strip()
+                    processed_task["emoji"] = emoji_part.strip()
+                else:
+                    # Fallback if split doesn't work as expected
+                    processed_task["display_name"] = task_id
+                    processed_task["emoji"] = "⚙️"
+            else:
+                # No emoji found, use the full ID as display name
+                processed_task["display_name"] = task_id
+                processed_task["emoji"] = "⚙️"  # Default emoji for tasks without emojis
+            
             # Calculate percentages for timeline visualization
             total_duration = end_time_minutes - start_time_minutes
             if total_duration > 0:
@@ -776,9 +794,9 @@ def main():
             <div class="approaches-grid">
                 {% for approach in data %}
                 <div class="approach-card">
-                    <h4>{{ approach.input_data.approach_name | default(approach.title) }}</h4>
-                    <p>{{ approach.input_data.approach_description | default("No description available.") }}</p>
-                    <div class="approach-preview">{{ approach.preview_text | default("Preview not available") }}</div>
+                    <h4>{{ approach.get('input', {}).get('approach_name', approach.get('title', 'Unnamed Approach')) }}</h4>
+                    <p>{{ approach.get('input', {}).get('approach_description', 'No description available.') }}</p>
+                    <div class="approach-preview">{{ approach.get('preview_text', 'Preview not available') }}</div>
                     <div class="approach-meta">
                         <p>Created by: {{ approach.creator | default("Iterative AI Alpha") }}</p>
                         <p>Votes: <span class="vote-count">{{ approach.votes | default(0) }}</span></p>

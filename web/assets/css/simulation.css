@@ -221,9 +221,10 @@
     top: 0;
     bottom: 0;
     width: 2px;
-    background: #FF5722;
-    z-index: 10;
-    box-shadow: 0 0 4px rgba(255, 87, 34, 0.5);
+    background: #FF0000;
+    z-index: 100;
+    box-shadow: 0 0 4px rgba(255, 0, 0, 0.5);
+    pointer-events: none;
 }
 
 .resource-panel {
@@ -457,6 +458,7 @@
 .timeline-container {
     width: 100%;
     margin: 20px 0;
+    position: relative;
 }
 
 .timeline-header {
@@ -471,12 +473,13 @@
     background: linear-gradient(to right, #f0f0f0 0%, #f0f0f0 100%);
     border: 1px solid #ddd;
     border-radius: 4px;
+    display: flex;
 }
 
 .timeline-time-markers {
     position: absolute;
     top: 0;
-    left: 0;
+    left: 130px; /* Offset by actor label width */
     right: 0;
     height: 100%;
     display: flex;
@@ -528,28 +531,27 @@
 .task-block {
     position: absolute;
     height: 28px;
-    background: #4CAF50;
     border-radius: 3px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 10px;
+    font-size: 24px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
-    border: 2px solid #45a049;
+    border: 2px solid var(--primary-color);
     box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
 .task-block:hover {
-    background: #45a049;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    border-color: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    filter: brightness(1.1);
 }
 
 .task-block.active {
-    background: #FF5722 !important;
     border-color: #D84315 !important;
     color: white !important;
     animation: pulse 1.5s infinite;
@@ -582,19 +584,17 @@
 
 /* Actor color coding with improved specificity */
 .actor-timeline-row .task-block:not(.active):not(.completed) {
-    background: #2196F3;
-    border-color: #2196F3;
+    border-color: var(--primary-color);
 }
 
 /* Ensure completed and active states override actor colors */
 .actor-timeline-row .task-block.completed {
-    background: #757575 !important;
-    border-color: #616161 !important;
+    background: #cecece !important;
+    border-color: #8d8d8d !important;
     color: #e0e0e0 !important;
 }
 
 .actor-timeline-row .task-block.active {
-    background: #FF5722 !important;
     border-color: #D84315 !important;
     color: white !important;
 }

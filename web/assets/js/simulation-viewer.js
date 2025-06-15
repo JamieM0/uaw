@@ -129,11 +129,13 @@ class SimulationViewer {
             });
         }
     }
-    
-    initializeDisplay() {
+      initializeDisplay() {
         this.renderTimeline();
         this.renderActors();
         this.renderResources();
+        
+        // Initialize the time indicator
+        this.updateTimeIndicator(this.getCurrentTimeMinutes());
     }
     
     renderTimeline() {
@@ -209,9 +211,15 @@ class SimulationViewer {
                 taskDiv.style.left = `${startPercent}%`;
                 taskDiv.style.width = `${widthPercent}%`;
 
-                // Task content
-                const taskName = task.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                taskDiv.textContent = taskName;
+                // Task content - use emoji if available, otherwise formatted task name
+                let taskDisplayContent;
+                if (task.emoji) {
+                    taskDisplayContent = task.emoji;
+                    taskDiv.title = task.display_name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                } else {
+                    taskDisplayContent = task.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                }
+                taskDiv.textContent = taskDisplayContent;
 
                 // Set task state based on current time
                 if (this.currentTime >= task.end_minutes) {
@@ -244,7 +252,9 @@ class SimulationViewer {
         const duration = task.duration;
         
         // Escape all user-controlled data to prevent XSS
-        const escTaskId = this.escapeHtml(task.id.replace(/_/g, ' '));
+        // Use display_name if available (without emoji), otherwise use full id
+        const taskDisplayName = task.display_name ? task.display_name.replace(/_/g, ' ') : task.id.replace(/_/g, ' ');
+        const escTaskId = this.escapeHtml(taskDisplayName);
         const escStartTime = this.escapeHtml(startTime);
         const escEndTime = this.escapeHtml(endTime);
         const escDuration = this.escapeHtml(duration);
@@ -407,8 +417,7 @@ class SimulationViewer {
     getCurrentTimeMinutes() {
         return this.startTimeMinutes + (this.currentTime / 100) * this.totalDurationMinutes;
     }
-    
-    updateSimulation() {
+      updateSimulation() {
         if (!this.simulationData) return;
         
         const totalDuration = this.simulationData.end_time_minutes - this.simulationData.start_time_minutes;
@@ -511,11 +520,15 @@ class SimulationViewer {
                 taskDiv.style.left = `${startPercent}%`;
                 taskDiv.style.width = `${widthPercent}%`;
 
-                // Task content
-                const taskName = task.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                taskDiv.textContent = taskName;
-
-                // Set task state based on current time
+                // Task content - use emoji if available, otherwise formatted task name
+                let taskDisplayContent;
+                if (task.emoji) {
+                    taskDisplayContent = task.emoji;
+                    taskDiv.title = task.display_name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                } else {
+                    taskDisplayContent = task.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                }
+                taskDiv.textContent = taskDisplayContent;                // Set task state based on current time
                 if (currentTime >= task.end_minutes) {
                     taskDiv.classList.add('completed');
                 } else if (currentTime >= task.start_minutes && currentTime < task.end_minutes) {
@@ -529,14 +542,55 @@ class SimulationViewer {
 
                 taskDiv.addEventListener('mouseleave', this.hideTaskTooltip);
 
+                // Add click functionality to jump to task start time
+                taskDiv.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.jumpToTime(task.start_minutes);
+                });
+
                 tasksContainer.appendChild(taskDiv);
             });
 
             rowDiv.appendChild(tasksContainer);
             container.appendChild(rowDiv);
         });
-    }
 
+        // Add the red time indicator line
+        this.updateTimeIndicator(currentTime);
+    }    updateTimeIndicator(currentTime) {
+        // Remove existing time indicators from all task containers
+        const existingIndicators = document.querySelectorAll('.time-indicator');
+        existingIndicators.forEach(indicator => indicator.remove());
+
+        const { start_time_minutes, end_time_minutes } = this.simulationData;
+        const totalDuration = end_time_minutes - start_time_minutes;
+
+        // Calculate position of current time
+        const timePercent = ((currentTime - start_time_minutes) / totalDuration) * 100;
+        
+        // Only show indicator if time is within range
+        if (timePercent >= 0 && timePercent <= 100) {
+            // Add time indicator to each task container row
+            const taskContainers = document.querySelectorAll('.actor-tasks-container');
+            taskContainers.forEach(container => {
+                const indicator = document.createElement('div');
+                indicator.className = 'time-indicator';
+                indicator.style.left = `${timePercent}%`;
+                container.appendChild(indicator);
+            });            // Also add to the time axis header
+            const timeAxisContainer = document.querySelector('.timeline-time-axis');
+            if (timeAxisContainer) {
+                const headerIndicator = document.createElement('div');
+                headerIndicator.className = 'time-indicator';
+                // Position with offset for actor label area (130px) + percentage of remaining width
+                const offsetPosition = 130 + (timePercent / 100) * (timeAxisContainer.offsetWidth - 130);
+                headerIndicator.style.left = `${offsetPosition}px`;
+                headerIndicator.style.height = '100%';
+                timeAxisContainer.appendChild(headerIndicator);
+            }
+        }
+    }
+    
     updateActorsStatus(currentTime) {
         if (!this.simulationData.actors || !this.simulationData.tasks) return;
         
@@ -557,9 +611,14 @@ class SimulationViewer {
                     statusElement.className = 'actor-status working';
                 }
                 if (taskElement) {
-                    // Escape task ID to prevent XSS
-                    const escTaskId = this.escapeHtml(currentTask.id);
-                    taskElement.textContent = `Task: ${escTaskId}`;
+                    // Use emoji and display name if available, otherwise format the full id
+                    let taskDisplay;
+                    if (currentTask.emoji && currentTask.display_name) {
+                        taskDisplay = `${currentTask.emoji} ${currentTask.display_name.replace(/_/g, ' ')}`;
+                    } else {
+                        taskDisplay = currentTask.id.replace(/_/g, ' ');
+                    }
+                    taskElement.textContent = `Task: ${this.escapeHtml(taskDisplay)}`;
                 }
             } else {
                 if (statusElement) {
@@ -662,10 +721,29 @@ class SimulationViewer {
         }
         
         this.updateSimulation();
-        
-        if (this.isPlaying) {
+          if (this.isPlaying) {
             this.animationId = requestAnimationFrame(() => this.animate());
         }
+    }
+    
+    jumpToTime(targetTimeMinutes) {
+        // Pause the simulation if it's playing
+        this.pause();
+        
+        // Convert the target time to percentage
+        const { start_time_minutes, end_time_minutes } = this.simulationData;
+        const totalDuration = end_time_minutes - start_time_minutes;
+        const timePercent = ((targetTimeMinutes - start_time_minutes) / totalDuration) * 100;
+        
+        // Clamp the percentage to valid range
+        this.currentTime = Math.max(0, Math.min(100, timePercent));
+        
+        // Update the simulation display
+        this.updateSimulation();
+        
+        // Update the play/pause button
+        const btn = document.getElementById('play-pause-btn');
+        if (btn) btn.textContent = '▶️ Play';
     }
 }
 

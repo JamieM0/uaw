@@ -390,9 +390,8 @@ def main():
                 except (ValueError, IndexError):
                     pass
     
-    print("Starting flow process...")
+    print("UAW Flow Maker")
     print(f"Topic: {topic}")
-    print(f"Using model: {model_name}")
     start_time = datetime.now()
     
     # Preload the model before starting the flow

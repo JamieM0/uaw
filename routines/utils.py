@@ -73,7 +73,20 @@ def chat_with_llm(model, system_message, user_message, parameters=None):
         ],
         options=parameters
     )
-    return response["message"]["content"].strip()
+    
+    # Get the response content
+    content = response["message"]["content"].strip()
+    
+    # Remove <think>...</think> blocks from the response
+    # This handles both single-line and multi-line think blocks
+    import re
+    content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL)
+    
+    # Clean up any extra whitespace that might be left after removing think blocks
+    content = re.sub(r'\n\s*\n', '\n\n', content)  # Replace multiple blank lines with double newlines
+    content = content.strip()
+    
+    return content
 
 # def chat_with_llm_google_ai_studio(model, system_message, user_message, parameters=None):
 #     """Generic function to interact with LLMs via Google AI Studio."""
