@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple, Any, Optional
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils import chat_with_llm, parse_llm_json_response, load_json, saveToFile
+from utils import chat_with_llm, parse_llm_json_response, load_json, saveToFile, chat_with_llm_openrouter
 import jsonschema
 
 
@@ -140,7 +140,7 @@ Task Tree Structure:
 Create a simulation template for this task with appropriate actors and comprehensive resources using consistent snake_case naming."""
 
     try:
-        response = chat_with_llm("gemma3", system_prompt, user_prompt)
+        response = chat_with_llm_openrouter("meta-llama/llama-4-maverick:free", system_prompt, user_prompt)
         template = parse_llm_json_response(response)
         
         # Merge with defaults and ensure we have comprehensive resources
@@ -346,7 +346,7 @@ Simulation Template:
 Create a complete simulation with detailed tasks following ALL the requirements above. Ensure every resource reference exactly matches the template resource IDs (snake_case only)."""
 
     try:
-        response = chat_with_llm("gemma3", system_prompt, user_prompt)
+        response = chat_with_llm_openrouter("meta-llama/llama-4-maverick:free", system_prompt, user_prompt)
         return response
     except Exception as e:
         print(f"Error generating schedule: {e}")
@@ -499,6 +499,16 @@ def parse_and_validate_simulation(raw_json_str: str) -> Tuple[Optional[Dict[str,
     try:
         simulation_dict = parse_llm_json_response(raw_json_str)
         
+        # Handle case where JSON parsing completely failed
+        if simulation_dict is None:
+            errors.append("Failed to parse JSON response - response is None")
+            return None, errors
+        
+        # Handle case where parsed result is not a dictionary
+        if not isinstance(simulation_dict, dict):
+            errors.append(f"Expected JSON object, got {type(simulation_dict)}")
+            return None, errors
+        
         # Check for unwanted nested structure
         if "simulation" in simulation_dict:
             if isinstance(simulation_dict["simulation"], dict) and any(key in simulation_dict["simulation"] for key in ["time_unit", "actors", "resources", "tasks"]):
@@ -576,10 +586,14 @@ def standardize_resource_names(simulation_dict: Dict[str, Any]) -> Dict[str, Any
             
             resource_mapping[original_id] = standardized_id
             
+            # Check for required fields with defaults
+            unit = resource.get("unit", "units")
+            starting_stock = resource.get("starting_stock", 0)
+            
             standardized_resources.append({
                 "id": standardized_id,
-                "unit": resource["unit"].lower(),
-                "starting_stock": resource["starting_stock"]
+                "unit": unit.lower() if isinstance(unit, str) else "units",
+                "starting_stock": starting_stock
             })
         
         simulation_dict["resources"] = standardized_resources
@@ -755,13 +769,13 @@ Task Tree:
 Fix ALL the listed errors and provide a complete, valid simulation JSON with proper structure (no nested simulation objects)."""
 
     try:
-        response = chat_with_llm("gemma3", system_prompt, user_prompt)
+        response = chat_with_llm_openrouter("meta-llama/llama-4-maverick:free", system_prompt, user_prompt)
         return response
     except Exception as e:
         print(f"Error refining simulation: {e}")
         return ask_llm_for_schedule(simulation_template, tree_json)
 
-def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, Any]) -> Dict[str, Any]:
+def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, Any], output_dir: Optional[str] = None) -> Dict[str, Any]:
     """Main function to generate simulation from task tree with strict validation."""
     
     max_attempts = 3
@@ -781,6 +795,9 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
         
         # Step 3: Parse and validate structure
         simulation_dict, parse_errors = parse_and_validate_simulation(raw_schedule)
+          # Save failed attempt if there are parse errors and output_dir is provided
+        if parse_errors and output_dir:
+            save_failed_attempt(raw_schedule, parse_errors, attempt + 1, output_dir, "parse")
         
         if parse_errors:
             print(f"Parse errors (attempt {attempt + 1}): {parse_errors}")
@@ -789,10 +806,23 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
         
         if simulation_dict:
             # Step 4: Standardize resource names
-            simulation_dict = standardize_resource_names(simulation_dict)
+            try:
+                simulation_dict = standardize_resource_names(simulation_dict)
+            except Exception as e:
+                print(f"Error standardizing resource names (attempt {attempt + 1}): {e}")
+                if output_dir:
+                    save_failed_attempt(simulation_dict, [f"Standardization error: {e}"], attempt + 1, output_dir, "standardization")
+                if attempt < max_attempts - 1:
+                    continue
+                else:
+                    return None
             
             # Step 5: Validate logic
             logic_errors = validate_simulation_logic(simulation_dict)
+            
+            # Save failed attempt if there are logic errors and output_dir is provided
+            if logic_errors and output_dir:
+                save_failed_attempt(simulation_dict, logic_errors, attempt + 1, output_dir, "logic")
             
             if logic_errors:
                 print(f"Logic errors (attempt {attempt + 1}): {logic_errors}")
@@ -930,7 +960,7 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
                 "location": "oven_area",
                 "consumes": {"shaped_loaves": 2, "preheated_oven": 1},
                 "produces": {"finished_bread": 2, "used_oven": 1},
-                "depends_on": ["shape_loaves 🔸🖐️"]
+                "depends_on": ["shape_loaves 🔸🖐️", "prepare_oven 🔸🔥"]
             },
             {
                 "id": "cool_bread 🔸❄️",
@@ -957,6 +987,41 @@ def save_simulation_json(simulation_dict: Dict[str, Any], output_dir: str) -> st
     
     return output_path
 
+def save_failed_attempt(data: Any, errors: List[str], attempt_num: int, output_dir: str, error_type: str) -> None:
+    """Save a failed simulation attempt to a JSON file for debugging purposes."""
+    try:
+        # Determine the output directory
+        if output_dir.endswith('simulation.json'):
+            # Extract directory from file path
+            actual_output_dir = os.path.dirname(output_dir)
+        else:
+            actual_output_dir = output_dir
+        
+        # Ensure output directory exists
+        os.makedirs(actual_output_dir, exist_ok=True)
+        
+        # Create filename for failed attempt
+        fail_filename = f"simulation-fail{attempt_num}.json"
+        fail_path = os.path.join(actual_output_dir, fail_filename)
+        
+        # Prepare the failure data
+        fail_data = {
+            "attempt": attempt_num,
+            "error_type": error_type,
+            "errors": errors,
+            "timestamp": json.dumps({"timestamp": "2025-06-17"}),  # Could use actual timestamp
+            "failed_data": data
+        }
+        
+        # Save the failed attempt
+        with open(fail_path, "w", encoding="utf-8") as f:
+            json.dump(fail_data, f, indent=2, ensure_ascii=False)
+        
+        print(f"Failed attempt {attempt_num} saved to: {fail_path}")
+        
+    except Exception as e:
+        print(f"Error saving failed attempt {attempt_num}: {e}")
+
 def main():
     """
     Standalone testing function for simulation generation.
@@ -981,10 +1046,9 @@ def main():
             "article_title": metadata.get("task", "Unknown Task"),
             "domain": "General",  # Could be enhanced to detect domain from tree content
         }
-        
-        # Generate simulation
+          # Generate simulation
         print("Generating simulation...")
-        simulation_dict = generate_simulation(tree_json, article_metadata)
+        simulation_dict = generate_simulation(tree_json, article_metadata, output_dir)
         
         # Check if output_dir is actually a file path ending with simulation.json
         # This happens when called from flow-maker.py

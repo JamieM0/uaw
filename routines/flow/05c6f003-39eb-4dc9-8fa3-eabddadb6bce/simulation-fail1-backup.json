@@ -1,0 +1,405 @@
+{
+  "attempt": 1,
+  "error_type": "logic",
+  "errors": [
+    "Task add_sugar 🔸🧂: Unknown produced resource: sugar_water_mixture",
+    "Task activate_yeast 🔸🧪: Unknown consumed resource: sugar_water_mixture",
+    "Task combine_wet_and_dry 🔸🥄: Unknown produced resource: combined_mixture",
+    "Task knead_dough 🔸💪: Unknown consumed resource: combined_mixture",
+    "Task warm_water_preparation 🔸🌡️: Unknown dependency: measure_ingredients",
+    "Task add_sugar 🔸🧂: Unknown dependency: warm_water_preparation",
+    "Task activate_yeast 🔸🧪: Unknown dependency: add_sugar",
+    "Task combine_wet_ingredients 🔸🥛: Unknown dependency: measure_ingredients",
+    "Task mix_dry_ingredients 🔸🥄: Unknown dependency: measure_ingredients",
+    "Task combine_wet_and_dry 🔸🥄: Unknown dependency: combine_wet_ingredients",
+    "Task combine_wet_and_dry 🔸🥄: Unknown dependency: mix_dry_ingredients",
+    "Task knead_dough 🔸💪: Unknown dependency: combine_wet_and_dry",
+    "Task first_rise 🔸🌞: Unknown dependency: knead_dough",
+    "Task shape_dough 🔸🍞: Unknown dependency: first_rise",
+    "Task preheat_oven 🔸🔥: Unknown dependency: shape_dough",
+    "Task bake_bread 🔸🔥: Unknown dependency: preheat_oven",
+    "Task cool_bread 🔸🧊: Unknown dependency: bake_bread",
+    "Task clean_mixer 🔸🧼: Unknown dependency: mix_dry_ingredients",
+    "Task clean_workspace 🔸🧼: Unknown dependency: combine_wet_ingredients"
+  ],
+  "timestamp": "{\"timestamp\": \"2025-06-17\"}",
+  "failed_data": {
+    "time_unit": "minute",
+    "start_time": "06:00",
+    "end_time": "18:00",
+    "actors": [
+      {
+        "id": "baker",
+        "role": "Breadmaker",
+        "cost_per_hour": 15.0,
+        "availability": [
+          {
+            "from": "06:00",
+            "to": "18:00"
+          }
+        ]
+      }
+    ],
+    "resources": [
+      {
+        "id": "flour",
+        "unit": "kg",
+        "starting_stock": 10
+      },
+      {
+        "id": "water",
+        "unit": "liters",
+        "starting_stock": 5
+      },
+      {
+        "id": "yeast",
+        "unit": "grams",
+        "starting_stock": 100
+      },
+      {
+        "id": "sugar",
+        "unit": "grams",
+        "starting_stock": 500
+      },
+      {
+        "id": "clean_mixer",
+        "unit": "units",
+        "starting_stock": 1
+      },
+      {
+        "id": "dirty_mixer",
+        "unit": "units",
+        "starting_stock": 0
+      },
+      {
+        "id": "cold_oven",
+        "unit": "units",
+        "starting_stock": 1
+      },
+      {
+        "id": "preheated_oven",
+        "unit": "units",
+        "starting_stock": 0
+      },
+      {
+        "id": "used_oven",
+        "unit": "units",
+        "starting_stock": 0
+      },
+      {
+        "id": "clean_workspace",
+        "unit": "units",
+        "starting_stock": 1
+      },
+      {
+        "id": "dirty_workspace",
+        "unit": "units",
+        "starting_stock": 0
+      },
+      {
+        "id": "measured_ingredients",
+        "unit": "batches",
+        "starting_stock": 0
+      },
+      {
+        "id": "activated_yeast",
+        "unit": "batches",
+        "starting_stock": 0
+      },
+      {
+        "id": "mixed_dough",
+        "unit": "batches",
+        "starting_stock": 0
+      },
+      {
+        "id": "kneaded_dough",
+        "unit": "batches",
+        "starting_stock": 0
+      },
+      {
+        "id": "risen_dough",
+        "unit": "batches",
+        "starting_stock": 0
+      },
+      {
+        "id": "shaped_loaves",
+        "unit": "loaves",
+        "starting_stock": 0
+      },
+      {
+        "id": "finished_bread",
+        "unit": "loaves",
+        "starting_stock": 0
+      },
+      {
+        "id": "cooled_bread",
+        "unit": "loaves",
+        "starting_stock": 0
+      },
+      {
+        "id": "clean_surface",
+        "unit": "units",
+        "starting_stock": 1
+      },
+      {
+        "id": "dirty_surface",
+        "unit": "units",
+        "starting_stock": 0
+      }
+    ],
+    "tasks": [
+      {
+        "id": "measure_ingredients 🔸⚖️",
+        "start": "06:00",
+        "duration": 15,
+        "actor_id": "baker",
+        "location": "prep_station",
+        "consumes": {
+          "flour": 0.5,
+          "water": 0.3,
+          "yeast": 10
+        },
+        "produces": {
+          "measured_ingredients": 1
+        },
+        "depends_on": []
+      },
+      {
+        "id": "warm_water_preparation 🔸🌡️",
+        "start": "06:20",
+        "duration": 10,
+        "actor_id": "baker",
+        "location": "prep_station",
+        "consumes": {
+          "water": 0.2,
+          "clean_workspace": 0.1
+        },
+        "produces": {
+          "water": 0.2,
+          "dirty_workspace": 0.1
+        },
+        "depends_on": [
+          "measure_ingredients"
+        ]
+      },
+      {
+        "id": "add_sugar 🔸🧂",
+        "start": "06:30",
+        "duration": 5,
+        "actor_id": "baker",
+        "location": "prep_station",
+        "consumes": {
+          "sugar": 20
+        },
+        "produces": {
+          "sugar_water_mixture": 1
+        },
+        "depends_on": [
+          "warm_water_preparation"
+        ]
+      },
+      {
+        "id": "activate_yeast 🔸🧪",
+        "start": "06:35",
+        "duration": 10,
+        "actor_id": "baker",
+        "location": "prep_station",
+        "consumes": {
+          "yeast": 5,
+          "sugar_water_mixture": 1
+        },
+        "produces": {
+          "activated_yeast": 1
+        },
+        "depends_on": [
+          "add_sugar"
+        ]
+      },
+      {
+        "id": "combine_wet_ingredients 🔸🥛",
+        "start": "06:45",
+        "duration": 5,
+        "actor_id": "baker",
+        "location": "mixing_area",
+        "consumes": {
+          "measured_ingredients": 1
+        },
+        "produces": {
+          "mixed_dough": 1
+        },
+        "depends_on": [
+          "measure_ingredients"
+        ]
+      },
+      {
+        "id": "mix_dry_ingredients 🔸🥄",
+        "start": "06:50",
+        "duration": 10,
+        "actor_id": "baker",
+        "location": "mixing_area",
+        "consumes": {
+          "flour": 0.5,
+          "clean_mixer": 1
+        },
+        "produces": {
+          "mixed_dough": 1,
+          "dirty_mixer": 1
+        },
+        "depends_on": [
+          "measure_ingredients"
+        ]
+      },
+      {
+        "id": "combine_wet_and_dry 🔸🥄",
+        "start": "07:00",
+        "duration": 10,
+        "actor_id": "baker",
+        "location": "mixing_area",
+        "consumes": {
+          "measured_ingredients": 1,
+          "mixed_dough": 1
+        },
+        "produces": {
+          "combined_mixture": 1
+        },
+        "depends_on": [
+          "combine_wet_ingredients",
+          "mix_dry_ingredients"
+        ]
+      },
+      {
+        "id": "knead_dough 🔸💪",
+        "start": "07:10",
+        "duration": 10,
+        "actor_id": "baker",
+        "location": "workbench",
+        "consumes": {
+          "combined_mixture": 1,
+          "clean_surface": 1
+        },
+        "produces": {
+          "kneaded_dough": 1,
+          "dirty_surface": 1
+        },
+        "depends_on": [
+          "combine_wet_and_dry"
+        ]
+      },
+      {
+        "id": "first_rise 🔸🌞",
+        "start": "07:20",
+        "duration": 60,
+        "actor_id": "baker",
+        "location": "rising_area",
+        "consumes": {
+          "kneaded_dough": 1
+        },
+        "produces": {
+          "risen_dough": 1
+        },
+        "depends_on": [
+          "knead_dough"
+        ]
+      },
+      {
+        "id": "shape_dough 🔸🍞",
+        "start": "08:20",
+        "duration": 10,
+        "actor_id": "baker",
+        "location": "workbench",
+        "consumes": {
+          "risen_dough": 1
+        },
+        "produces": {
+          "shaped_loaves": 1
+        },
+        "depends_on": [
+          "first_rise"
+        ]
+      },
+      {
+        "id": "preheat_oven 🔸🔥",
+        "start": "08:30",
+        "duration": 15,
+        "actor_id": "baker",
+        "location": "oven",
+        "consumes": {
+          "cold_oven": 1
+        },
+        "produces": {
+          "preheated_oven": 1
+        },
+        "depends_on": [
+          "shape_dough"
+        ]
+      },
+      {
+        "id": "bake_bread 🔸🔥",
+        "start": "08:45",
+        "duration": 30,
+        "actor_id": "baker",
+        "location": "oven",
+        "consumes": {
+          "shaped_loaves": 1,
+          "preheated_oven": 1
+        },
+        "produces": {
+          "finished_bread": 1,
+          "used_oven": 1
+        },
+        "depends_on": [
+          "preheat_oven"
+        ]
+      },
+      {
+        "id": "cool_bread 🔸🧊",
+        "start": "09:15",
+        "duration": 30,
+        "actor_id": "baker",
+        "location": "cooling_rack",
+        "consumes": {
+          "finished_bread": 1
+        },
+        "produces": {
+          "cooled_bread": 1
+        },
+        "depends_on": [
+          "bake_bread"
+        ]
+      },
+      {
+        "id": "clean_mixer 🔸🧼",
+        "start": "09:45",
+        "duration": 10,
+        "actor_id": "baker",
+        "location": "sink",
+        "consumes": {
+          "dirty_mixer": 1
+        },
+        "produces": {
+          "clean_mixer": 1
+        },
+        "depends_on": [
+          "mix_dry_ingredients"
+        ]
+      },
+      {
+        "id": "clean_workspace 🔸🧼",
+        "start": "10:00",
+        "duration": 10,
+        "actor_id": "baker",
+        "location": "prep_station",
+        "consumes": {
+          "dirty_workspace": 1
+        },
+        "produces": {
+          "clean_workspace": 1
+        },
+        "depends_on": [
+          "combine_wet_ingredients"
+        ]
+      }
+    ],
+    "article_title": "Breadmaking Process Simulation"
+  }
+}

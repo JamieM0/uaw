@@ -5,9 +5,9 @@
     "end_time": "18:00",
     "actors": [
       {
-        "id": "baker_actor",
-        "role": "Baker",
-        "cost_per_hour": 15.0,
+        "id": "baker",
+        "role": "Bread Maker",
+        "cost_per_hour": 18.0,
         "availability": [
           {
             "from": "06:00",
@@ -16,8 +16,19 @@
         ]
       },
       {
-        "id": "mixer_operator_actor",
+        "id": "mixer_operator",
         "role": "Mixer Operator",
+        "cost_per_hour": 12.0,
+        "availability": [
+          {
+            "from": "06:00",
+            "to": "18:00"
+          }
+        ]
+      },
+      {
+        "id": "shopping_assistant",
+        "role": "Grocery Shopping Assistant",
         "cost_per_hour": 10.0,
         "availability": [
           {
@@ -36,86 +47,116 @@
       {
         "id": "water",
         "unit": "liters",
-        "starting_stock": 20.0
+        "starting_stock": 100.0
       },
       {
         "id": "yeast",
         "unit": "grams",
-        "starting_stock": 10.0
+        "starting_stock": 500.0
+      },
+      {
+        "id": "sugar",
+        "unit": "grams",
+        "starting_stock": 2000.0
+      },
+      {
+        "id": "milk",
+        "unit": "liters",
+        "starting_stock": 50.0
+      },
+      {
+        "id": "salt",
+        "unit": "grams",
+        "starting_stock": 1000.0
+      },
+      {
+        "id": "baking_powder",
+        "unit": "grams",
+        "starting_stock": 500.0
+      },
+      {
+        "id": "clean_mixing_bowl",
+        "unit": "units",
+        "starting_stock": 5
+      },
+      {
+        "id": "dirty_mixing_bowl",
+        "unit": "units",
+        "starting_stock": 0
       },
       {
         "id": "clean_mixer",
-        "unit": "unit",
-        "starting_stock": 1
+        "unit": "units",
+        "starting_stock": 2
       },
       {
         "id": "dirty_mixer",
-        "unit": "unit",
+        "unit": "units",
         "starting_stock": 0
       },
       {
         "id": "cold_oven",
-        "unit": "unit",
-        "starting_stock": 1
+        "unit": "units",
+        "starting_stock": 3
       },
       {
         "id": "preheated_oven",
-        "unit": "unit",
+        "unit": "units",
         "starting_stock": 0
       },
       {
-        "id": "used_oven",
-        "unit": "unit",
+        "id": "measured_wet_ingredients",
+        "unit": "batches",
         "starting_stock": 0
       },
       {
-        "id": "clean_workspace",
-        "unit": "unit",
-        "starting_stock": 1
-      },
-      {
-        "id": "dirty_workspace",
-        "unit": "unit",
-        "starting_stock": 0
-      },
-      {
-        "id": "measured_ingredients",
-        "unit": "unit",
+        "id": "measured_dry_ingredients",
+        "unit": "batches",
         "starting_stock": 0
       },
       {
         "id": "activated_yeast",
-        "unit": "unit",
+        "unit": "batches",
         "starting_stock": 0
       },
       {
         "id": "mixed_dough",
-        "unit": "unit",
+        "unit": "batches",
         "starting_stock": 0
       },
       {
         "id": "kneaded_dough",
-        "unit": "unit",
+        "unit": "batches",
         "starting_stock": 0
       },
       {
         "id": "risen_dough",
-        "unit": "unit",
+        "unit": "batches",
         "starting_stock": 0
       },
       {
         "id": "shaped_loaves",
-        "unit": "unit",
+        "unit": "loaves",
         "starting_stock": 0
       },
       {
         "id": "finished_bread",
-        "unit": "unit",
+        "unit": "loaves",
         "starting_stock": 0
       },
       {
         "id": "cooled_bread",
-        "unit": "unit",
+        "unit": "loaves",
+        "starting_stock": 0
+      },
+      {
+        "id": "clean_workspace",
+        "unit": "units",
+        "starting_stock": 5
+      },
+      {
+        "id": "dirty_workspace",
+        "unit": "units",
         "starting_stock": 0
       },
       {
@@ -127,67 +168,107 @@
         "id": "dirty_surface",
         "unit": "units",
         "starting_stock": 0
+      },
+      {
+        "id": "used_oven",
+        "unit": "units",
+        "starting_stock": 0
+      },
+      {
+        "id": "measured_ingredients",
+        "unit": "batches",
+        "starting_stock": 0
       }
     ],
-    "article_title": "Hallucinate Tree",
     "tasks": [
       {
-        "id": "prepare_workspace 🔸🧹",
-        "start": "07:00",
-        "duration": 10,
-        "actor_id": "mixer_operator_actor",
-        "location": "prep_area",
+        "id": "gather_ingredients 🔸📝",
+        "actor_id": "shopping_assistant",
+        "start": "06:00",
+        "duration": 60,
+        "location": "grocery store",
         "consumes": {
-          "dirty_workspace": 1
-        },
-        "produces": {
           "clean_workspace": 1
         },
+        "produces": {
+          "flour": 2,
+          "water": 1,
+          "yeast": 10,
+          "sugar": 50,
+          "milk": 1,
+          "salt": 20,
+          "baking_powder": 10
+        },
         "depends_on": []
       },
       {
-        "id": "measure_ingredients 🔸⚖️",
+        "id": "activate_yeast 🔸⚗️",
+        "actor_id": "baker",
         "start": "07:00",
         "duration": 15,
-        "actor_id": "baker_actor",
-        "location": "prep_station",
+        "location": "kitchen",
         "consumes": {
-          "flour": 0.5,
-          "water": 0.3,
-          "yeast": 10,
-          "salt": 5
-        },
-        "produces": {
-          "measured_ingredients": 1
-        },
-        "depends_on": []
-      },
-      {
-        "id": "activate_yeast 🔸🦠",
-        "start": "07:10",
-        "duration": 10,
-        "actor_id": "mixer_operator_actor",
-        "location": "prep_station",
-        "consumes": {
-          "yeast": 5,
           "water": 0.1,
-          "sugar": 10
+          "sugar": 10,
+          "yeast": 5,
+          "clean_mixing_bowl": 1
         },
         "produces": {
-          "activated_yeast": 1
+          "activated_yeast": 1,
+          "dirty_mixing_bowl": 1
         },
         "depends_on": [
-          "prepare_workspace 🔸🧹"
+          "gather_ingredients 🔸📝"
         ]
       },
       {
-        "id": "mix_ingredients 🔸🥄",
-        "start": "07:15",
-        "duration": 15,
-        "actor_id": "baker_actor",
-        "location": "mixing_station",
+        "id": "measure_wet_ingredients 🔸📏",
+        "actor_id": "baker",
+        "start": "07:20",
+        "duration": 10,
+        "location": "kitchen",
         "consumes": {
-          "measured_ingredients": 1,
+          "water": 0.5,
+          "milk": 0.5,
+          "clean_mixing_bowl": 1
+        },
+        "produces": {
+          "measured_wet_ingredients": 1,
+          "dirty_mixing_bowl": 1
+        },
+        "depends_on": [
+          "activate_yeast 🔸⚗️"
+        ]
+      },
+      {
+        "id": "measure_dry_ingredients 🔸📏",
+        "actor_id": "baker",
+        "start": "07:30",
+        "duration": 10,
+        "location": "kitchen",
+        "consumes": {
+          "flour": 1,
+          "salt": 10,
+          "baking_powder": 5,
+          "clean_mixing_bowl": 1
+        },
+        "produces": {
+          "measured_dry_ingredients": 1,
+          "dirty_mixing_bowl": 1
+        },
+        "depends_on": [
+          "measure_wet_ingredients 🔸📏"
+        ]
+      },
+      {
+        "id": "mix_dough 🔸🍞",
+        "actor_id": "mixer_operator",
+        "start": "07:40",
+        "duration": 15,
+        "location": "kitchen",
+        "consumes": {
+          "measured_wet_ingredients": 1,
+          "measured_dry_ingredients": 1,
           "activated_yeast": 1,
           "clean_mixer": 1
         },
@@ -196,16 +277,17 @@
           "dirty_mixer": 1
         },
         "depends_on": [
-          "measure_ingredients 🔸⚖️",
-          "activate_yeast 🔸🦠"
+          "measure_dry_ingredients 🔸📏",
+          "activate_yeast 🔸⚗️",
+          "measure_wet_ingredients 🔸📏"
         ]
       },
       {
-        "id": "knead_dough 🔸👐",
-        "start": "07:30",
-        "duration": 15,
-        "actor_id": "baker_actor",
-        "location": "kneading_area",
+        "id": "knead_dough 🔸🍞",
+        "actor_id": "baker",
+        "start": "07:55",
+        "duration": 20,
+        "location": "kitchen",
         "consumes": {
           "mixed_dough": 1,
           "clean_surface": 1
@@ -215,124 +297,25 @@
           "dirty_surface": 1
         },
         "depends_on": [
-          "mix_ingredients 🔸🥄"
-        ]
-      },
-      {
-        "id": "clean_mixer 🔸🧽",
-        "start": "07:20",
-        "duration": 10,
-        "actor_id": "mixer_operator_actor",
-        "location": "cleaning_station",
-        "consumes": {
-          "dirty_mixer": 1
-        },
-        "produces": {
-          "clean_mixer": 1
-        },
-        "depends_on": [
-          "activate_yeast 🔸🦠"
-        ]
-      },
-      {
-        "id": "prepare_oven 🔸🔥",
-        "start": "07:30",
-        "duration": 15,
-        "actor_id": "mixer_operator_actor",
-        "location": "oven_area",
-        "consumes": {
-          "cold_oven": 1
-        },
-        "produces": {
-          "preheated_oven": 1
-        },
-        "depends_on": [
-          "clean_mixer 🔸🧽"
+          "mix_dough 🔸🍞"
         ]
       },
       {
         "id": "first_rise 🔸⏰",
-        "start": "07:45",
-        "duration": 60,
-        "actor_id": "baker_actor",
-        "location": "proofing_area",
+        "actor_id": "baker",
+        "start": "08:15",
+        "duration": 120,
+        "location": "warm area",
         "consumes": {
-          "kneaded_dough": 1
+          "kneaded_dough": 1,
+          "clean_workspace": 1
         },
         "produces": {
-          "risen_dough": 1
-        },
-        "depends_on": [
-          "knead_dough 🔸👐"
-        ]
-      },
-      {
-        "id": "clean_surface 🔸🧽",
-        "start": "07:45",
-        "duration": 15,
-        "actor_id": "mixer_operator_actor",
-        "location": "cleaning_station",
-        "consumes": {
-          "dirty_surface": 1
-        },
-        "produces": {
-          "clean_surface": 1
-        },
-        "depends_on": [
-          "prepare_oven 🔸🔥"
-        ]
-      },
-      {
-        "id": "shape_loaves 🔸🖐️",
-        "start": "08:45",
-        "duration": 20,
-        "actor_id": "baker_actor",
-        "location": "shaping_area",
-        "consumes": {
           "risen_dough": 1,
-          "clean_surface": 1
-        },
-        "produces": {
-          "shaped_loaves": 2,
-          "dirty_surface": 1
+          "dirty_workspace": 1
         },
         "depends_on": [
-          "first_rise 🔸⏰",
-          "clean_surface 🔸🧽"
-        ]
-      },
-      {
-        "id": "bake_bread 🔸🔥",
-        "start": "09:05",
-        "duration": 45,
-        "actor_id": "baker_actor",
-        "location": "oven_area",
-        "consumes": {
-          "shaped_loaves": 2,
-          "preheated_oven": 1
-        },
-        "produces": {
-          "finished_bread": 2,
-          "used_oven": 1
-        },
-        "depends_on": [
-          "shape_loaves 🔸🖐️"
-        ]
-      },
-      {
-        "id": "cool_bread 🔸❄️",
-        "start": "09:50",
-        "duration": 30,
-        "actor_id": "mixer_operator_actor",
-        "location": "cooling_area",
-        "consumes": {
-          "finished_bread": 2
-        },
-        "produces": {
-          "cooled_bread": 2
-        },
-        "depends_on": [
-          "bake_bread 🔸🔥"
+          "knead_dough 🔸🍞"
         ]
       }
     ]

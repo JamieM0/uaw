@@ -8,10 +8,10 @@ import re
 from json_repair import repair_json # Added for robust JSON fixing
 import requests
 # import google.generativeai as genai
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 # Load environment variables from .env file
-# load_dotenv()
+load_dotenv()
 
 def load_json(filepath):
     """Load JSON input file."""
@@ -78,7 +78,6 @@ def chat_with_llm(model, system_message, user_message, parameters=None):
     content = response["message"]["content"].strip()
     
     # Remove <think>...</think> blocks from the response
-    # This handles both single-line and multi-line think blocks
     import re
     content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL)
     
@@ -87,6 +86,60 @@ def chat_with_llm(model, system_message, user_message, parameters=None):
     content = content.strip()
     
     return content
+
+def chat_with_llm_openrouter(model, system_message, user_message, parameters=None):
+    """Generic function to interact with LLMs via OpenRouter API."""
+    if parameters is None:
+        parameters = {}
+    
+    # Get API key from environment
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        raise ValueError("OPENROUTER_API_KEY environment variable not set")
+    
+    # OpenRouter API endpoint
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    
+    # Prepare headers
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    # Prepare the payload
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": user_message}
+        ]
+    }
+    
+    # Add any additional parameters to the payload
+    payload.update(parameters)
+    
+    try:
+        # Make the API request
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()  # Raise an exception for bad status codes
+        
+        # Parse the response
+        response_data = response.json()
+        content = response_data["choices"][0]["message"]["content"].strip()
+        
+        # Remove <think>...</think> blocks from the response
+        # This handles both single-line and multi-line think blocks
+        content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL)
+        
+        content = re.sub(r'\n\s*\n', '\n\n', content)  # Replace multiple blank lines with double newlines
+        content = content.strip()
+        
+        return content
+        
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"OpenRouter API request failed: {e}")
+    except KeyError as e:
+        raise Exception(f"Unexpected OpenRouter API response format: {e}")
 
 # def chat_with_llm_google_ai_studio(model, system_message, user_message, parameters=None):
 #     """Generic function to interact with LLMs via Google AI Studio."""
