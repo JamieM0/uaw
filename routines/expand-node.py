@@ -96,36 +96,48 @@ def count_leaf_nodes(node):
     return count
 
 def handle_expand_node_args():
-    """Custom argument handling for expand-node.py to support JSON file paths."""
-    usage_msg = """Usage: python expand-node.py <json_file_path> [output_file_path]
+    """Custom argument handling for expand-node.py to support both standalone and flow-maker usage."""
+    usage_msg = """Usage: python expand-node.py <json_file_path> [output_file_path] [additional_args...]
     
     <json_file_path>: Path to JSON file containing tree structure (e.g., 'routines/flow/05c6f003-39eb-4dc9-8fa3-eabddadb6bce/2.json')
     [output_file_path]: Optional - Path to save expanded tree (defaults to 'expanded-tree.json' in same directory)
+    [additional_args]: Additional arguments (e.g., -saveInputs, -flow_uuid=xxx)
     
     Examples:
       python expand-node.py routines/flow/05c6f003-39eb-4dc9-8fa3-eabddadb6bce/2.json
       python expand-node.py routines/flow/05c6f003-39eb-4dc9-8fa3-eabddadb6bce/2.json my-expanded-tree.json
+      python expand-node.py input.json output.json -saveInputs -flow_uuid=12345
     """
     
-    if len(sys.argv) < 2 or len(sys.argv) > 3:
+    if len(sys.argv) < 2:
         print(usage_msg)
         sys.exit(1)
         
     json_file_path = sys.argv[1]
     output_file_path = None
     
-    if len(sys.argv) >= 3:
+    if len(sys.argv) >= 3 and not sys.argv[2].startswith('-'):
         output_file_path = sys.argv[2]
     else:
         # Default output path: same directory as input, named 'expanded-tree.json'
         input_dir = os.path.dirname(json_file_path)
         output_file_path = os.path.join(input_dir, "expanded-tree.json")
     
-    return json_file_path, output_file_path
+    # Parse additional arguments
+    save_inputs = False
+    flow_uuid = None
+    
+    for arg in sys.argv[2:]:
+        if arg == "-saveInputs":
+            save_inputs = True
+        elif arg.startswith("-flow_uuid="):
+            flow_uuid = arg.split("=", 1)[1]
+    
+    return json_file_path, output_file_path, save_inputs, flow_uuid
 
 def main():
     """Main function to run the tree expansion routine."""
-    json_file_path, output_file_path = handle_expand_node_args()
+    json_file_path, output_file_path, save_inputs, flow_uuid = handle_expand_node_args()
     
     print("Working...")
     start_time = datetime.now()
@@ -186,11 +198,31 @@ def main():
     output_data["metadata"]["expanded_leaf_count"] = final_leaf_count
     output_data["metadata"]["expansion_model"] = model
     
+    # Save input data to inputs directory if requested (for flow-maker transparency)
+    if save_inputs and flow_uuid:
+        try:
+            # Determine step number from output filename for input saving
+            step_number = None
+            output_filename = os.path.basename(output_file_path)
+            if output_filename == "expanded-tree.json":
+                step_number = "3"  # expand-node.py is step 3 in the flow
+            
+            if step_number:
+                flow_dir = os.path.dirname(output_file_path)
+                inputs_dir = os.path.join(flow_dir, "inputs")
+                os.makedirs(inputs_dir, exist_ok=True)
+                
+                input_save_path = os.path.join(inputs_dir, f"{step_number}-in.json")
+                save_output(input_data, input_save_path)
+                print(f"Input data saved to: {input_save_path}")
+        except Exception as e:
+            print(f"Warning: Could not save input data: {e}")
+    
     # Save the expanded tree
     try:
         save_output(output_data, output_file_path)
         print(f"Expanded tree saved to: {output_file_path}")
-        print(f"Expansion complete: {initial_leaf_count} → {final_leaf_count} leaf nodes")
+        print(f"Expansion complete: {initial_leaf_count} -> {final_leaf_count} leaf nodes")
     except Exception as e:
         print(f"Error saving output: {e}")
         sys.exit(1)

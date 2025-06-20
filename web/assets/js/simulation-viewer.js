@@ -747,11 +747,71 @@ class SimulationViewer {
     }
 }
 
+// Tree Collapse Functionality
+class TreeCollapseManager {
+    constructor() {
+        this.init();
+    }
+    
+    init() {
+        // Initialize collapse functionality for the expanded tree
+        this.initializeTreeCollapse();
+    }
+    
+    initializeTreeCollapse() {
+        // Find all collapse buttons in the expanded tree
+        const collapseButtons = document.querySelectorAll('.tree-collapse-btn');
+        
+        collapseButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.toggleNode(button);
+            });
+        });
+    }
+    
+    toggleNode(button) {
+        const targetId = button.getAttribute('data-target');
+        const targetElement = document.getElementById(targetId);
+        const icon = button.querySelector('.collapse-icon');
+        const isExpanded = button.getAttribute('aria-expanded') === 'true';
+        
+        if (!targetElement) return;
+        
+        if (isExpanded) {
+            // Collapse
+            targetElement.style.maxHeight = targetElement.scrollHeight + 'px';
+            // Force reflow
+            targetElement.offsetHeight;
+            targetElement.style.maxHeight = '0';
+            targetElement.classList.add('collapsed');
+            button.setAttribute('aria-expanded', 'false');
+        } else {
+            // Expand
+            targetElement.classList.remove('collapsed');
+            targetElement.style.maxHeight = targetElement.scrollHeight + 'px';
+            button.setAttribute('aria-expanded', 'true');
+            
+            // Remove max-height after animation completes
+            setTimeout(() => {
+                if (button.getAttribute('aria-expanded') === 'true') {
+                    targetElement.style.maxHeight = 'none';
+                }
+            }, 300);
+        }
+    }
+}
+
 // Initialize simulation viewer when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Only initialize if simulation container exists
     if (document.getElementById('simulation-container')) {
         new SimulationViewer();
+    }
+    
+    // Initialize tree collapse functionality
+    if (document.querySelector('.expanded-tree-content')) {
+        new TreeCollapseManager();
     }
 });
 

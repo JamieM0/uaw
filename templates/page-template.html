@@ -98,6 +98,53 @@
                                                         <!-- Actor timeline rows will be generated here -->
                                                     </div>
                                                 </div>
+                                                
+                                                {% if expanded_tree_data %}
+                                                    <div class="expanded-timeline-section">
+                                                        <h5>Expanded Process Timeline</h5>
+                                                        <div class="expanded-tree-content">
+                                                            {% macro render_tree_node(node, depth=0, skip_root=false, node_id="", index=0) %}
+                                                                {% if not skip_root %}
+                                                                    {% set has_children = node.children and node.children|length > 0 %}
+                                                                    {% set current_node_id = node_id + "_" + index|string if node_id else "node_" + depth|string + "_" + index|string %}
+                                                                    
+                                                                    <div class="tree-node indent-{{ depth }}" style="margin-left: {{ (depth * 2) }}em;">
+                                                                        {% if has_children %}
+                                                                            <div class="tree-step-header">
+                                                                                <button class="tree-collapse-btn"
+                                                                                        data-target="{{ current_node_id }}"
+                                                                                        aria-expanded="true"
+                                                                                        aria-controls="{{ current_node_id }}">
+                                                                                    <span class="collapse-icon">▼</span>
+                                                                                </button>
+                                                                                <p class="tree-step collapsible">{{ node.step }}</p>
+                                                                            </div>
+                                                                            <div class="tree-children" id="{{ current_node_id }}">
+                                                                                {% for child in node.children %}
+                                                                                    {{ render_tree_node(child, depth + 1, false, current_node_id, loop.index0) }}
+                                                                                {% endfor %}
+                                                                            </div>
+                                                                        {% else %}
+                                                                            <p class="tree-step">{{ node.step }}</p>
+                                                                        {% endif %}
+                                                                    </div>
+                                                                {% else %}
+                                                                    {% if node.children %}
+                                                                        {% for child in node.children %}
+                                                                            {{ render_tree_node(child, depth, false, "root", loop.index0) }}
+                                                                        {% endfor %}
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                            {% endmacro %}
+                                                            
+                                                            {% if expanded_tree_data.tree.children %}
+                                                                {% for child in expanded_tree_data.tree.children %}
+                                                                    {{ render_tree_node(child, 0, false, "", loop.index0) }}
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
                                             </div>
                                             
                                             <div class="actors-section">

@@ -441,15 +441,16 @@ def main():
     programs = [
         ("generate-metadata.py", "1.json"),  # 1. metadata.py
         ("hallucinate-tree.py", "2.json"),   # 2. hallucinate-tree.py
-        ("generate-automation-timeline.py", "3.json"),  # 3. generate-automation-timeline.py
-        ("generate-automation-challenges.py", "4.json"), # 4. generate-automation-challenges.py
-        ("automation-adoption.py", "5.json"),  # 5. automation-adoption.py
-        ("current-implementations.py", "6.json"),  # 6. current-implementations.py
-        ("return-analysis.py", "7.json"),  # 7. return-analysis.py
-        ("future-technology.py", "8.json"),  # 8. future-technology.py
-        ("specifications-industrial.py", "9.json"),  # 9. specifications-industrial.py
-        ("simulation.py", "simulation.json"),  # 10. simulation.py - Generate process simulation
-        # 11. assemble.py - Run after all content generation including simulation
+        ("expand-node.py", "expanded-tree.json"),  # 3. expand-node.py - Expand the tree with detailed substeps
+        ("generate-automation-timeline.py", "3.json"),  # 4. generate-automation-timeline.py
+        ("generate-automation-challenges.py", "4.json"), # 5. generate-automation-challenges.py
+        ("automation-adoption.py", "5.json"),  # 6. automation-adoption.py
+        ("current-implementations.py", "6.json"),  # 7. current-implementations.py
+        ("return-analysis.py", "7.json"),  # 8. return-analysis.py
+        ("future-technology.py", "8.json"),  # 9. future-technology.py
+        ("specifications-industrial.py", "9.json"),  # 10. specifications-industrial.py
+        ("simulation.py", "simulation.json"),  # 11. simulation.py - Generate process simulation
+        # 12. assemble.py - Run after all content generation including simulation
     ]
     
     evaluation_summary = {
@@ -471,8 +472,11 @@ def main():
         program, output_filename = programs[program_idx]
         step_info_prefix = f"Step {program_idx + 1}/{len(programs)}: "
 
+        # For expand-node.py, use 2.json (the tree) as input from hallucinate-tree.py
+        if program == "expand-node.py":
+            current_input_path = os.path.join(flow_dir, "2.json")
         # For simulation.py, use 2.json (the tree) as input instead of the previous output
-        if program == "simulation.py":
+        elif program == "simulation.py":
             current_input_path = os.path.join(flow_dir, "2.json")
         else:
             current_input_path = input_copy_path
@@ -557,8 +561,8 @@ def main():
                     sys.exit(1)
             
             # If validation passed (or was not applicable for this file type)
-            # AND program is not assemble.py or simulation.py, then run evaluations.
-            if validation_passed_for_current_file and program not in ["assemble.py", "simulation.py"]:
+            # AND program is not assemble.py, simulation.py, or expand-node.py, then run evaluations.
+            if validation_passed_for_current_file and program not in ["assemble.py", "simulation.py", "expand-node.py"]:
                 section_source_file_path = abs_output_path
 
                 # Run evaluation for all profiles in a single call

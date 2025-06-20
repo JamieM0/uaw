@@ -1,0 +1,159 @@
+{
+    "metadata": {
+        "uuid": "9b88ffe3-af87-4b8f-8e46-248f35dad00e",
+        "date_created": "2025-06-20T15:41:28.662980",
+        "task": "Hallucinate Tree",
+        "time_taken": "0:00:09.457260"
+    },
+    "tree": {
+        "step": "Breadmaking",
+        "children": [
+            {
+                "step": "Activate Yeast",
+                "children": [
+                    {
+                        "step": "Check Yeast Expiry Date"
+                    },
+                    {
+                        "step": "Warm Water Preparation"
+                    },
+                    {
+                        "step": "Measure Yeast"
+                    },
+                    {
+                        "step": "Add Yeast to Warm Water"
+                    },
+                    {
+                        "step": "Wait for Yeast to Bloom"
+                    }
+                ]
+            },
+            {
+                "step": "Combine Dry Ingredients",
+                "children": [
+                    {
+                        "step": "Gather Dry Ingredients"
+                    },
+                    {
+                        "step": "Assess Ingredient Quality"
+                    },
+                    {
+                        "step": "Sift Dry Ingredients"
+                    },
+                    {
+                        "step": "Ensure No Foreign Objects"
+                    },
+                    {
+                        "step": "Transfer to Mixing Bowl"
+                    }
+                ]
+            },
+            {
+                "step": "Add Wet Ingredients",
+                "children": [
+                    {
+                        "step": "Determine Wet Ingredient Quantities"
+                    },
+                    {
+                        "step": "Prepare Wet Ingredients (e.g., soften butter, whisk eggs)"
+                    },
+                    {
+                        "step": "Measure Wet Ingredients Accurately"
+                    },
+                    {
+                        "step": "Combine Wet Ingredients in Bowl"
+                    }
+                ]
+            },
+            {
+                "step": "Mix Dough",
+                "children": [
+                    {
+                        "step": "Prepare Mixing Bowl"
+                    },
+                    {
+                        "step": "Measure Flour Accurately"
+                    },
+                    {
+                        "step": "Measure Liquid Ingredients (e.g., milk, water)"
+                    },
+                    {
+                        "step": "Combine Dry Ingredients in Bowl"
+                    },
+                    {
+                        "step": "Gradually Add Liquid to Dry Ingredients"
+                    },
+                    {
+                        "step": "Mix Dough Until Smooth and Elastic"
+                    }
+                ]
+            },
+            {
+                "step": "First Rise",
+                "children": [
+                    {
+                        "step": "Prepare Dough Mixture: Combine dry ingredients in a large bowl."
+                    },
+                    {
+                        "step": "Activate Yeast: Add warm water to the dry ingredients."
+                    },
+                    {
+                        "step": "Allow Dough to Bloom: Let the dough rest for 5-10 minutes."
+                    },
+                    {
+                        "step": "Cover Dough: Place a damp cloth over the dough to prevent drying."
+                    },
+                    {
+                        "step": "Monitor Dough Rise: Observe the dough for signs of rising (e.g., volume increase, bubbles)."
+                    }
+                ]
+            },
+            {
+                "step": "Shape Dough",
+                "children": [
+                    {
+                        "step": "Prepare Dough Surface"
+                    },
+                    {
+                        "step": "Divide Dough into Portions"
+                    },
+                    {
+                        "step": "Press Dough into Desired Shape"
+                    },
+                    {
+                        "step": "Roll Out Dough to Thickness"
+                    },
+                    {
+                        "step": "Adjust Shape as Needed"
+                    }
+                ]
+            },
+            {
+                "step": "Second Rise",
+                "children": [
+                    {
+                        "step": "Observe Dough for Increased Volume"
+                    },
+                    {
+                        "step": "Check Dough Texture for Bubbles"
+                    },
+                    {
+                        "step": "Assess Dough Rise Rate"
+                    },
+                    {
+                        "step": "Note Dough Height and Shape"
+                    },
+                    {
+                        "step": "Determine if Second Rise is Complete"
+                    }
+                ]
+            }
+        ],
+        "uuid": "9b88ffe3-af87-4b8f-8e46-248f35dad00e"
+    },
+    "input": {
+        "system_message": "You are an AI that breaks down complex tasks into hierarchical steps. For each task, generate a set of sub-steps needed to complete it. Maintain clarity and logical order. IMPORTANT: Avoid duplicating steps that already exist elsewhere in the tree context provided. Focus on sub-steps that are specific to the current task being expanded. Format your response as a valid JSON array of step objects, where each object has a 'step' field and optionally a 'children' array containing substeps. Example format: [{'step': 'Main step 1', 'children': [{'step': 'Substep 1.1'}, {'step': 'Substep 1.2'}]}, {'step': 'Main step 2'}] Your entire response must be parseable as JSON. Do not include markdown formatting, code blocks, or commentary.",
+        "user_message": "Break down the following task into 3-7 sub-steps. Task: Second Rise\n\nDo NOT repeat steps that have already been created in the tree unless ABSOLUTELY NECESSARY.\nFocus on sub-steps that are specific to this task and avoid duplicating steps that already exist in the broader process.\n\n\nExisting steps in the tree (avoid duplicating these): Breadmaking, Activate Yeast, Check Yeast Expiry Date, Warm Water Preparation, Measure Yeast, Add Yeast to Warm Water, Wait for Yeast to Bloom, Combine Dry Ingredients, Gather Dry Ingredients, Assess Ingredient Quality, Sift Dry Ingredients, Ensure No Foreign Objects, Transfer to Mixing Bowl, Add Wet Ingredients, Determine Wet Ingredient Quantities, Prepare Wet Ingredients (e.g., soften butter, whisk eggs), Measure Wet Ingredients Accurately, Combine Wet Ingredients in Bowl, Mix Dough, Prepare Mixing Bowl, Measure Flour Accurately, Measure Liquid Ingredients (e.g., milk, water), Combine Dry Ingredients in Bowl, Gradually Add Liquid to Dry Ingredients, Mix Dough Until Smooth and Elastic, First Rise, Prepare Dough Mixture: Combine dry ingredients in a large bowl., Activate Yeast: Add warm water to the dry ingredients., Allow Dough to Bloom: Let the dough rest for 5-10 minutes., Cover Dough: Place a damp cloth over the dough to prevent drying., Monitor Dough Rise: Observe the dough for signs of rising (e.g., volume increase, bubbles)., Shape Dough, Prepare Dough Surface, Divide Dough into Portions, Press Dough into Desired Shape, Roll Out Dough to Thickness, Adjust Shape as Needed, Second Rise\n\nReturn ONLY a JSON array of step objects, with no markdown formatting, code blocks, or extra text.",
+        "timestamp": "2025-06-20T15:41:27.597478"
+    }
+}

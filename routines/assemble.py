@@ -327,6 +327,76 @@ def get_transparency_data_for_section(id_suffix, files_dir_path):
         print(f"Warning: Could not load transparency data for section {id_suffix}: {e}", file=sys.stderr)
         return None
 
+def load_expanded_tree_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
+    """
+    Load expanded tree data from expanded-tree.json in the files directory.
+    
+    Args:
+        files_dir_path: Path to the directory containing expanded-tree.json
+        
+    Returns:
+        Processed expanded tree data ready for template rendering, or None if not found
+    """
+    expanded_tree_path = os.path.join(files_dir_path, "expanded-tree.json")
+    
+    if not os.path.exists(expanded_tree_path):
+        print(f"No expanded-tree.json found at {expanded_tree_path}")
+        return None
+    
+    try:
+        with open(expanded_tree_path, "r", encoding="utf-8") as f:
+            expanded_tree_data = json.load(f)
+        
+        print(f"Loaded expanded-tree.json with keys: {list(expanded_tree_data.keys())}")
+        
+        # Extract the tree object
+        tree = expanded_tree_data.get("tree", {})
+        metadata = expanded_tree_data.get("metadata", {})
+        
+        if not tree:
+            print("No 'tree' key found in expanded-tree.json")
+            return None
+        
+        print(f"Tree object has keys: {list(tree.keys())}")
+        
+        # Process the tree to add indentation levels for rendering
+        def process_tree_node(node, level=0):
+            """Recursively process tree nodes to add indentation levels."""
+            processed_node = node.copy()
+            processed_node["indentation_level"] = level
+            processed_node["indentation_tabs"] = "\t" * level  # For CSS/styling
+            processed_node["indentation_class"] = f"indent-{level}"  # CSS class for indentation
+            
+            if "children" in processed_node and processed_node["children"]:
+                processed_children = []
+                for child in processed_node["children"]:
+                    processed_children.append(process_tree_node(child, level + 1))
+                processed_node["children"] = processed_children
+            
+            return processed_node
+        
+        # Process the root tree
+        processed_tree = process_tree_node(tree, 0)
+        
+        # Build the processed expanded tree data
+        processed_expanded_tree = {
+            "metadata": metadata,
+            "tree": processed_tree,
+            "original_leaf_count": metadata.get("original_leaf_count", 0),
+            "expanded_leaf_count": metadata.get("expanded_leaf_count", 0),
+            "expansion_model": metadata.get("expansion_model", "unknown"),
+            "expansion_date": metadata.get("expansion_date", "unknown")
+        }
+        
+        print(f"Processed expanded tree data with {processed_expanded_tree.get('expanded_leaf_count', 0)} expanded leaves")
+        return processed_expanded_tree
+        
+    except Exception as e:
+        print(f"Error loading expanded tree data: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
+
 def load_simulation_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
     """
     Load simulation data from simulation.json in the files directory.
@@ -509,6 +579,13 @@ def main():
             print("Simulation data loaded successfully")
         else:
             print("No simulation data available for this flow")
+        
+        # --- Load Expanded Tree Data ---
+        expanded_tree_data = load_expanded_tree_data(files_dir_path)
+        if expanded_tree_data:
+            print("Expanded tree data loaded successfully")
+        else:
+            print("No expanded tree data available for this flow")
         
         # --- Load Metrics Data ---
         # Article-specific metrics
@@ -859,7 +936,8 @@ def main():
             # 'article_metrics': article_metrics_data, # This is now processed into each section's metrics_data_json
             'core_personas': CORE_PERSONAS_DICT, # Pass the pre-defined dictionary
             'flow_uuid': flow_uuid, # Add flow UUID for transparency modal and origin tracking
-            'simulation_data': simulation_data # Add simulation data to context
+            'simulation_data': simulation_data, # Add simulation data to context
+            'expanded_tree_data': expanded_tree_data # Add expanded tree data to context
         }
 
         # --- Render Main Template ---

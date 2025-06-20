@@ -1,0 +1,33 @@
+{
+  "attempt": 1,
+  "error_type": "parse",
+  "errors": [
+    "Task 0 (initial_setup): Missing required field: location",
+    "Task 0 (initial_setup): Missing required field: depends_on",
+    "Task 0: ID must end with ' 🔸[EMOJI]' format, got: initial_setup",
+    "Task 0 (initial_setup): Must produce at least one resource",
+    "Task 1 (measure_flour): Missing required field: location",
+    "Task 1 (measure_flour): Missing required field: depends_on",
+    "Task 1: ID must end with ' 🔸[EMOJI]' format, got: measure_flour",
+    "Task 2 (add_yeast): Missing required field: location",
+    "Task 2 (add_yeast): Missing required field: depends_on",
+    "Task 2: ID must end with ' 🔸[EMOJI]' format, got: add_yeast",
+    "Task 3 (knead_dough): Missing required field: location",
+    "Task 3 (knead_dough): Missing required field: depends_on",
+    "Task 3: ID must end with ' 🔸[EMOJI]' format, got: knead_dough",
+    "Task 4 (let_dough_rise): Missing required field: location",
+    "Task 4 (let_dough_rise): Missing required field: depends_on",
+    "Task 4: ID must end with ' 🔸[EMOJI]' format, got: let_dough_rise",
+    "Task 5 (shape_loaves): Missing required field: location",
+    "Task 5 (shape_loaves): Missing required field: depends_on",
+    "Task 5: ID must end with ' 🔸[EMOJI]' format, got: shape_loaves",
+    "Task 6 (bake_bread): Missing required field: location",
+    "Task 6 (bake_bread): Missing required field: depends_on",
+    "Task 6: ID must end with ' 🔸[EMOJI]' format, got: bake_bread",
+    "Task 7 (cool_bread): Missing required field: location",
+    "Task 7 (cool_bread): Missing required field: depends_on",
+    "Task 7: ID must end with ' 🔸[EMOJI]' format, got: cool_bread"
+  ],
+  "timestamp": "{\"timestamp\": \"2025-06-17\"}",
+  "failed_data": "```json\n{\n  \"time_unit\": \"minute\",\n  \"start_time\": \"06:00\",\n  \"end_time\": \"18:00\",\n  \"actors\": [\n    {\n      \"id\": \"baker_johnson\",\n      \"role\": \"Baker\",\n      \"cost_per_hour\": 20.0,\n      \"availability\": [\n        {\n          \"from\": \"06:00\",\n          \"to\": \"18:00\"\n        }\n      ]\n    },\n    {\n      \"id\": \"mixer_operator_sue\",\n      \"role\": \"Mixer Operator\",\n      \"cost_per_hour\": 12.0,\n      \"availability\": [\n        {\n          \"from\": \"06:00\",\n          \"to\": \"18:00\"\n        }\n      ]\n    }\n  ],\n  \"resources\": [\n    {\n      \"id\": \"flour\",\n      \"unit\": \"kg\",\n      \"starting_stock\": 50.0\n    },\n    {\n      \"id\": \"water\",\n      \"unit\": \"liters\",\n      \"starting_stock\": 20.0\n    },\n    {\n      \"id\": \"yeast\",\n      \"unit\": \"grams\",\n      \"starting_stock\": 100.0\n    },\n    {\n      \"id\": \"clean_mixer\",\n      \"unit\": \"unit\",\n      \"starting_stock\": 1\n    },\n    {\n      \"id\": \"dirty_mixer\",\n      \"unit\": \"unit\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"preheated_oven\",\n      \"unit\": \"unit\",\n      \"starting_stock\": 1\n    },\n    {\n      \"id\": \"shaped_loaves\",\n      \"unit\": \"unit\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"finished_bread\",\n      \"unit\": \"unit\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"activated_yeast\",\n      \"unit\": \"grams\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"mixed_dough\",\n      \"unit\": \"unit\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"risen_dough\",\n      \"unit\": \"unit\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"clean_workspace\",\n      \"unit\": \"unit\",\n      \"starting_stock\": 1\n    },\n    {\n      \"id\": \"dirty_workspace\",\n      \"unit\": \"unit\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"clean_surface\",\n      \"unit\": \"units\",\n      \"starting_stock\": 1\n    },\n    {\n      \"id\": \"dirty_surface\",\n      \"unit\": \"units\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"cold_oven\",\n      \"unit\": \"units\",\n      \"starting_stock\": 1\n    },\n    {\n      \"id\": \"used_oven\",\n      \"unit\": \"units\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"measured_ingredients\",\n      \"unit\": \"batches\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"kneaded_dough\",\n      \"unit\": \"batches\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"cooled_bread\",\n      \"unit\": \"loaves\",\n      \"starting_stock\": 0\n    }\n  ],\n  \"tasks\": [\n    {\n      \"id\": \"initial_setup\",\n      \"actor_id\": \"baker_johnson\",\n      \"start\": \"06:00\",\n      \"duration\": 30,\n      \"consumes\": {\n        \"clean_workspace\": 1\n      },\n      \"produces\": {}\n    },\n    {\n      \"id\": \"measure_flour\",\n      \"actor_id\": \"baker_johnson\",\n      \"start\": \"06:30\",\n      \"duration\": 15,\n      \"consumes\": {\n        \"flour\": 3.0\n      },\n      \"produces\": {\n        \"mixed_dough\": 1\n      }\n    },\n    {\n      \"id\": \"add_yeast\",\n      \"actor_id\": \"baker_johnson\",\n      \"start\": \"06:50\",\n      \"duration\": 10,\n      \"consumes\": {\n        \"activated_yeast\": 20.0\n      },\n      \"produces\": {\n        \"mixed_dough\": 1\n      }\n    },\n    {\n      \"id\": \"knead_dough\",\n      \"actor_id\": \"baker_johnson\",\n      \"start\": \"07:00\",\n      \"duration\": 20,\n      \"consumes\": {\n        \"mixed_dough\": 1\n      },\n      \"produces\": {\n        \"kneaded_dough\": 1\n      }\n    },\n    {\n      \"id\": \"let_dough_rise\",\n      \"actor_id\": \"baker_johnson\",\n      \"start\": \"07:20\",\n      \"duration\": 60,\n      \"consumes\": {\n        \"kneaded_dough\": 1\n      },\n      \"produces\": {\n        \"risen_dough\": 1\n      }\n    },\n    {\n      \"id\": \"shape_loaves\",\n      \"actor_id\": \"baker_johnson\",\n      \"start\": \"07:40\",\n      \"duration\": 30,\n      \"consumes\": {\n        \"risen_dough\": 1\n      },\n      \"produces\": {\n        \"shaped_loaves\": 2\n      }\n    },\n    {\n      \"id\": \"bake_bread\",\n      \"actor_id\": \"baker_johnson\",\n      \"start\": \"08:00\",\n      \"duration\": 60,\n      \"consumes\": {\n        \"shaped_loaves\": 2,\n        \"preheated_oven\": 1\n      },\n      \"produces\": {\n        \"finished_bread\": 2\n      }\n    },\n    {\n      \"id\": \"cool_bread\",\n      \"actor_id\": \"baker_johnson\",\n      \"start\": \"08:30\",\n      \"duration\": 45,\n      \"consumes\": {\n        \"finished_bread\": 2,\n        \"cold_oven\": 1\n      },\n      \"produces\": {\n        \"cooled_bread\": 2\n      }\n    }\n  ]\n}\n```"
+}

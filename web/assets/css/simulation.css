@@ -640,3 +640,198 @@
         height: 26px;
     }
 }
+
+/* Expanded Tree Timeline Styles */
+.expanded-timeline-section {
+    margin-top: 2rem;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 1rem;
+}
+
+.expanded-timeline-section h5 {
+    margin: 0 0 1rem 0;
+    color: #333;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.expanded-tree-content {
+    max-height: 600px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background: white;
+    padding: 0.25rem;
+}
+
+.tree-node {
+    margin: 0.25rem 0;
+    transition: background-color 0.2s ease;
+}
+
+.tree-node:hover {
+    background-color: #f8f9fa;
+    border-radius: 3px;
+}
+
+.tree-step {
+    margin: 0;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #333;
+    border-left: 4px solid transparent;
+    border-radius: 2px;
+}
+
+/* Collapsible tree step header layout */
+.tree-step-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.tree-collapse-btn {
+    background: none;
+    border: none;
+    padding: 0.2rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: #666;
+    border-radius: 2px;
+    transition: background-color 0.15s ease;
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+}
+
+.tree-collapse-btn:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.tree-collapse-btn:focus {
+    outline: 2px solid #2196F3;
+    outline-offset: 1px;
+}
+
+.collapse-icon {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.tree-collapse-btn[aria-expanded="false"] .collapse-icon {
+    transform: rotate(-90deg);
+}
+
+.tree-step.collapsible {
+    flex: 1;
+    margin: 0;
+}
+
+.tree-children {
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+    max-height: none;
+}
+
+.tree-children.collapsed {
+    max-height: 0 !important;
+}
+
+/* Ensure proper spacing for tree children */
+.tree-children > .tree-node {
+    margin-top: 0.2rem;
+}
+
+.tree-children > .tree-node:first-child {
+    margin-top: 0.4rem;
+}
+
+.tree-children > .tree-node:last-child {
+    margin-bottom: 0.4rem;
+}
+
+/* Indentation classes for different levels with progressive color bars */
+.tree-node.indent-0 .tree-step {
+    font-weight: 600;
+    font-size: 1rem;
+    border-left-color: #2196F3;
+    background-color: #f0f7ff;
+    border-left-width: 6px;
+}
+
+.tree-node.indent-1 .tree-step {
+    font-weight: 500;
+    border-left-color: #4CAF50;
+    border-left-width: 5px;
+    background-color: #f8fff8;
+}
+
+.tree-node.indent-2 .tree-step {
+    border-left-color: #FF9800;
+    border-left-width: 4px;
+    font-size: 0.85rem;
+    background-color: #fff8f0;
+}
+
+.tree-node.indent-3 .tree-step {
+    border-left-color: #9C27B0;
+    border-left-width: 4px;
+    font-size: 0.8rem;
+    color: #555;
+    background-color: #faf5ff;
+}
+
+.tree-node.indent-4 .tree-step {
+    border-left-color: #607D8B;
+    border-left-width: 3px;
+    font-size: 0.75rem;
+    color: #666;
+    background-color: #f5f7f8;
+}
+
+.tree-node.indent-5 .tree-step,
+.tree-node.indent-6 .tree-step,
+.tree-node.indent-7 .tree-step,
+.tree-node.indent-8 .tree-step,
+.tree-node.indent-9 .tree-step {
+    border-left-color: #795548;
+    border-left-width: 3px;
+    font-size: 0.7rem;
+    color: #777;
+    background-color: #f7f6f5;
+}
+
+/* Remove distracting hover animations - only subtle feedback */
+.tree-node:hover .tree-step:not(.collapsible) {
+    background-color: #f8f9fa;
+}
+
+/* Responsive design for expanded tree */
+@media (max-width: 768px) {
+    .expanded-tree-content {
+        max-height: 300px;
+    }
+    
+    .tree-step {
+        font-size: 0.8rem;
+    }
+    
+    .tree-node.indent-0 .tree-step {
+        font-size: 0.9rem;
+    }
+    
+    .tree-node.indent-2 .tree-step,
+    .tree-node.indent-3 .tree-step,
+    .tree-node.indent-4 .tree-step {
+        font-size: 0.75rem;
+    }
+    
+    .tree-node.indent-5 .tree-step,
+    .tree-node.indent-6 .tree-step,
+    .tree-node.indent-7 .tree-step,
+    .tree-node.indent-8 .tree-step,
+    .tree-node.indent-9 .tree-step {
+        font-size: 0.65rem;
+    }
+}

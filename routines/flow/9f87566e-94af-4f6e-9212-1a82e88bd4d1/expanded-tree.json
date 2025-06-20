@@ -1,0 +1,1468 @@
+{
+    "metadata": {
+        "uuid": "6a7ca30c-1ada-4987-afae-3b810c50e3bc",
+        "date_created": "2025-06-20T15:30:52.239207",
+        "task": "Hallucinate Tree",
+        "time_taken": "0:00:08.637377",
+        "expanded": true,
+        "expansion_date": "2025-06-20T15:38:27.672782",
+        "original_leaf_count": 33,
+        "expanded_leaf_count": 311,
+        "expansion_model": "gemma3"
+    },
+    "tree": {
+        "step": "Breadmaking",
+        "children": [
+            {
+                "step": "Gather Ingredients",
+                "children": [
+                    {
+                        "step": "Determine Recipe Requirements",
+                        "children": [
+                            {
+                                "step": "Initiate Visual Scan: Activate optical sensors. Calibrate sensor range to 1.5 meters. Begin scanning for document labeled 'Chocolate Chip Cookie Recipe'. Duration: 3 seconds. Success criteria: Document detected with confidence level of 95%.",
+                                "children": []
+                            },
+                            {
+                                "step": "Document Acquisition: Extend robotic arm. Position manipulator arm to precisely 30 centimeters from the detected document. Lower manipulator arm until tip is 5 centimeters above the document surface. Lower manipulator arm to contact the document surface. Apply a downward force of 0.5 Newtons for 0.2 seconds to secure contact. Verify contact through tactile sensor feedback.",
+                                "children": []
+                            },
+                            {
+                                "step": "Text Extraction – Line 1: Activate OCR software. Focus optical sensors on the top 10 centimeters of the document. Extract text from the first line, identifying the ingredient list. Capture and store the text string: '1 cup butter, softened' into memory slot A. Timestamp extraction: Record date and time in memory slot B.",
+                                "children": []
+                            },
+                            {
+                                "step": "Unit Conversion – Butter: Identify the measurement '1 cup'. Utilize built-in unit conversion library to convert '1 cup' to grams. Perform conversion using a standard US cup volume as 236.59 milliliters. Store the calculated value, in grams, as 236.59 into memory slot C. Verify conversion accuracy using a tolerance of +/- 1 gram.",
+                                "children": []
+                            },
+                            {
+                                "step": "Ingredient Parsing – Butter: Identify the ingredient 'butter'. Parse the ingredient string 'butter' and categorize it as a 'fat' ingredient. Assign a priority level of 3 for this ingredient during subsequent calculations. Record the category assignment in memory slot D.",
+                                "children": []
+                            },
+                            {
+                                "step": "Repeat for Line 2: Repeat steps 3 & 4 for the second line of the document, identifying '2 cups granulated sugar'. Capture text string '2 cups granulated sugar' into memory slot E. Calculate equivalent grams (approximately 473.18g) and store in memory slot F. Verify accuracy to +/- 1 gram.",
+                                "children": []
+                            },
+                            {
+                                "step": "Data Consolidation: Merge all ingredient data stored in memory slots E, F, and G (representing '2 cups granulated sugar') into a unified ingredient record. Store the combined ingredient record including name, quantity, and unit of measurement into memory slot H.",
+                                "children": []
+                            },
+                            {
+                                "step": "Recipe Analysis – Sugar: Analyze the consolidated sugar ingredient record. Determine the total sugar quantity required based on the ingredient list. Calculate total sugar quantity in grams. Store the result in memory slot I.",
+                                "children": []
+                            },
+                            {
+                                "step": "Report Generation: Generate a digital report containing all extracted ingredient data, including name, quantity, and unit of measurement for each ingredient. Export the report as a .csv file labeled 'ChocolateChipCookieRecipe.csv'. Save file to designated storage directory: /data/recipes/.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Create a Shopping List",
+                        "children": [
+                            {
+                                "step": "Initialize Robot Arm: Activate Servo Motors to 50% Power. Verify positional accuracy within +/- 0.5mm across all three axes (X, Y, Z) using integrated laser rangefinder. Record initial coordinates as (0.0mm, 0.0mm, 0.0mm).",
+                                "children": []
+                            },
+                            {
+                                "step": "Navigate to Digital Tablet: Move Robot Arm to a position 150mm directly above the digital tablet surface. Lower Robot Arm Z-axis by 75mm. Verify position using laser rangefinder, adjusting Z-axis by +/- 5mm until target is achieved.",
+                                "children": []
+                            },
+                            {
+                                "step": "Activate Tablet Touchscreen: Using Robot Arm’s manipulator, gently apply a consistent force of 2N to the tablet’s touchscreen surface at the center point (100mm, 100mm). Maintain this force for 0.5 seconds. Release force.",
+                                "children": []
+                            },
+                            {
+                                "step": "Execute Search Query: Input the text string 'milk, eggs, bread' into the tablet’s search bar using the robotic manipulator. Utilize the stylus attachment to mimic human typing, maintaining a typing speed of 30 characters per second. Confirm completion with a visual confirmation indicator on the tablet screen.",
+                                "children": []
+                            },
+                            {
+                                "step": "Parse Search Results: The tablet displays a list of search results. The robot manipulator adjusts its position to focus on the first item in the list, identified as '2% Milk - Whole'. Ensure the item is centered within the robot’s field of view.",
+                                "children": []
+                            },
+                            {
+                                "step": "Add Item to List: Using the manipulator, select the 'Add' button associated with the item. Confirm selection visually with a color change on the tablet screen. Record this action as a successful item addition.",
+                                "children": []
+                            },
+                            {
+                                "step": "Repeat for Remaining Items: Repeat steps 5 & 6 for the remaining items: 'Eggs (1 dozen)', and 'Whole Wheat Bread (1 loaf)'. Maintain a 1-second delay between each item addition to ensure the tablet's processing time is accounted for.",
+                                "children": []
+                            },
+                            {
+                                "step": "Generate List: Initiate the tablet's list generation function. Observe the screen to confirm successful list creation. Record the final list as: '2% Milk - Whole', 'Eggs (1 dozen)', 'Whole Wheat Bread (1 loaf)'.",
+                                "children": []
+                            },
+                            {
+                                "step": "Print List: Navigate Robot Arm to the printer location 300mm from the tablet. Initiate printer activation sequence. Ensure paper feed is initiated for one sheet of standard A4 paper. Print the generated shopping list.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Check Pantry for Existing Ingredients",
+                        "children": [
+                            {
+                                "step": "Initialize Robotic Arm: Activate Robotic Arm designated 'PantryChecker-01'. Verify joint angles are within acceptable range: Shoulder Roll: 0.0 degrees, Elbow Flexion: -10.0 degrees, Wrist Rotation: 5.0 degrees. Confirm gripper pressure is at 0.5 PSI. Record initial arm position: X: 0.0 meters, Y: 0.0 meters, Z: 1.8 meters.",
+                                "children": []
+                            },
+                            {
+                                "step": "Approach Pantry Door: Execute forward movement command. Target distance to pantry door: 2.5 meters. Speed: 0.3 meters per second. Monitor distance sensor readings every 0.1 seconds. Halt movement when distance sensor reading indicates proximity to the pantry door (within 0.1 meters).",
+                                "children": []
+                            },
+                            {
+                                "step": "Open Pantry Door: Extend robotic arm segment 1 (arm section between base and shoulder joint) to a forward position. Joint angle: Shoulder Roll: 5.0 degrees, Elbow Flexion: -5.0 degrees. Apply a rotational force of 2.0 Nm to the pantry door handle for 2.0 seconds. Verify door opens by monitoring hinge rotation sensor reading, target rotation: 90 degrees.",
+                                "children": []
+                            },
+                            {
+                                "step": "Enter Pantry: Advance Robotic Arm: Execute forward movement command. Target distance to interior of pantry: 0.8 meters. Speed: 0.2 meters per second. Monitor distance sensor readings every 0.1 seconds. Halt movement when distance sensor reading indicates proximity to the pantry shelves (within 0.1 meters).",
+                                "children": []
+                            },
+                            {
+                                "step": "Scan Shelf 1 (Top Shelf): Position Robotic Arm: Joint angle: Shoulder Roll: 10.0 degrees, Elbow Flexion: -15.0 degrees, Wrist Rotation: 8.0 degrees. Extend gripper to a length of 0.15 meters. Scan shelf 1 visually using onboard camera. Record color data of shelf surface and any visible items within a 30cm x 30cm area. Confirm no obstructions within 0.1 meters of the gripper.",
+                                "children": []
+                            },
+                            {
+                                "step": "Retrieve Item (Can of Tomatoes): Extend gripper to a length of 0.2 meters. Apply a force of 10.0 N to grasp the can of tomatoes. Maintain grip pressure at 8.0 N. Record item weight: 250 grams. Retract gripper 0.1 meters. Move Robotic Arm: Joint angle: Shoulder Roll: 15.0 degrees, Elbow Flexion: -20.0 degrees, Wrist Rotation: 10.0 degrees. Move item to designated collection zone (X: 0.5 meters, Y: 0.2 meters, Z: 1.8 meters). Maintain a stable position.",
+                                "children": []
+                            },
+                            {
+                                "step": "Repeat Steps 3 & 4 for Shelf 2 & 3: Repeat the actions described in Steps 3 & 4 for shelves 2 and 3, ensuring each item is scanned and collected with the same parameters.",
+                                "children": []
+                            },
+                            {
+                                "step": "Close Pantry Door: Execute backward movement command. Target distance to pantry door: 2.5 meters. Speed: 0.3 meters per second. Monitor distance sensor readings every 0.1 seconds. Halt movement when distance sensor reading indicates proximity to the pantry door (within 0.1 meters). Extend robotic arm segment 1 to a rear position. Joint angle: Shoulder Roll: -5.0 degrees, Elbow Flexion: 5.0 degrees. Apply a rotational force of 2.0 Nm to the pantry door handle for 2.0 seconds. Verify door closes by monitoring hinge rotation sensor reading, target rotation: -90 degrees.",
+                                "children": []
+                            },
+                            {
+                                "step": "Return to Initial Position: Execute forward movement command. Target distance to initial arm position: 2.5 meters. Speed: 0.3 meters per second. Monitor distance sensor readings every 0.1 seconds. Halt movement when distance sensor reading indicates proximity to the initial arm position (within 0.1 meters). Return Robotic Arm to initial joint angles and position recorded in Step 1.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Go to Grocery Store",
+                        "children": [
+                            {
+                                "step": "Initiate Navigation Mode: Activate internal GPS module. Confirm signal acquisition with three distinct audio beeps, each 100 milliseconds in duration. Verify GPS coordinates are within a 5-meter radius. Halt movement.",
+                                "children": []
+                            },
+                            {
+                                "step": "Execute Forward Movement – Phase 1: Extend right arm 1.5 meters. Rotate torso 15 degrees clockwise. Advance forward 3 meters at a speed of 0.3 meters per second for 10 seconds. Monitor visual sensor data for obstacles within 2 meters. Halt if obstacle detected.",
+                                "children": []
+                            },
+                            {
+                                "step": "Execute Forward Movement – Phase 2: Rotate torso 10 degrees counter-clockwise. Extend left arm 1.8 meters. Advance forward 4 meters at a speed of 0.3 meters per second for 12 seconds. Monitor visual sensor data for obstacles within 2 meters. Halt if obstacle detected.",
+                                "children": []
+                            },
+                            {
+                                "step": "Reach Lateral Positioning: Rotate torso 30 degrees clockwise. Extend right arm 2.1 meters. Move laterally 1.2 meters to the right at a speed of 0.25 meters per second for 8 seconds. Monitor visual sensor data for obstacles within 2 meters. Halt if obstacle detected.",
+                                "children": []
+                            },
+                            {
+                                "step": "Approach Store Entrance: Adjust speed to 0.15 meters per second. Navigate towards the main entrance of the ‘Fresh Foods Market’ based on visual identification of a blue awning and digital signage. Maintain a visual lock-on to the store entrance. Halt when within 1.5 meters of the entrance.",
+                                "children": []
+                            },
+                            {
+                                "step": "Enter Store – Phase 1: Open right door manually (using integrated manipulator arm). Push door open 90 degrees. Maintain a forward trajectory within the store corridor for 3 seconds at a speed of 0.2 meters per second. Monitor visual sensor data for obstacles within 1 meter.",
+                                "children": []
+                            },
+                            {
+                                "step": "Enter Store – Phase 2:  Adjust speed to 0.25 meters per second. Navigate to aisle 3 based on visual confirmation of aisle markers (painted lines on the floor) and signage. Maintain a visual lock-on to the designated aisle. Halt when within 1 meter of the aisle’s center line.",
+                                "children": []
+                            },
+                            {
+                                "step": "Locate Product: Execute visual scan of shelf labels. Identify ‘Organic Bananas’ based on barcode number [Barcode: 789123456789].  Adjust arm position to be 0.8 meters from the selected product.  Verify product visual match with stored image data.  Execute pick-up sequence.",
+                                "children": []
+                            },
+                            {
+                                "step": "Return to Store Entrance:  Reverse movement along aisle 3 for 5 meters at a speed of 0.2 meters per second.  Pause momentarily at 2.5 meters.  Initiate forward movement towards the store entrance at 0.2 meters per second. Halt upon reaching the store entrance.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Select Ingredients Based on List",
+                        "children": [
+                            {
+                                "step": "Initialize Robotic Arm Position: Extend arm to 1.2 meters horizontally from designated workspace. Shoulder joint angle: 32 degrees. Elbow joint angle: 90 degrees. Wrist rotation: 0 degrees. Gripper open to 15 degrees.",
+                                "children": []
+                            },
+                            {
+                                "step": "Locate Item 1 (Canned Tomatoes - 400g) on Shelf 1, Level 2. Calculate trajectory: Arm extension to 1.5 meters, Shoulder angle: 35 degrees, Elbow angle: 88 degrees. Execute movement with a velocity of 0.3 meters per second for 2.1 seconds. Precise gripper closure to 10 degrees upon reaching target.",
+                                "children": []
+                            },
+                            {
+                                "step": "Verify Item 1 Acquisition: Utilize integrated visual sensor to confirm object color matches the specified color profile (red-orange hue, 0.2-0.4 saturation). Grip pressure: 8 Newtons. Maintain grip for 0.5 seconds. Record sensor data for quality assurance.",
+                                "children": []
+                            },
+                            {
+                                "step": "Move Robotic Arm to Shelf 2, Level 1. Calculate trajectory: Retract arm to 0.9 meters horizontally. Shoulder joint angle: 28 degrees. Elbow joint angle: 85 degrees. Wrist rotation: 2 degrees. Execute movement with a velocity of 0.25 meters per second for 1.8 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Locate Item 2 (Onion - 200g) on Shelf 2, Level 1. Calculate trajectory: Arm extension to 1.3 meters. Shoulder joint angle: 30 degrees. Elbow joint angle: 87 degrees. Wrist rotation: 1 degree. Execute movement with a velocity of 0.3 meters per second for 2.0 seconds. Precise gripper closure to 12 degrees upon reaching target.",
+                                "children": []
+                            },
+                            {
+                                "step": "Verify Item 2 Acquisition: Utilize integrated visual sensor to confirm object color matches the specified color profile (white, 0.8-1.0 saturation). Grip pressure: 9 Newtons. Maintain grip for 0.6 seconds. Record sensor data for quality assurance.",
+                                "children": []
+                            },
+                            {
+                                "step": "Move Robotic Arm to Countertop, Central Location. Calculate trajectory: Retract arm to 0.5 meters horizontally. Shoulder joint angle: 25 degrees. Elbow joint angle: 82 degrees. Wrist rotation: 3 degrees. Execute movement with a velocity of 0.2 meters per second for 1.5 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Place Item 1 (Canned Tomatoes) onto Countertop, 20 centimeters from the edge. Adjust gripper position to 5 degrees. Lower object to a height of 15 centimeters. Maintain grip for 0.3 seconds. Release grip. Record drop height and velocity.",
+                                "children": []
+                            },
+                            {
+                                "step": "Place Item 2 (Onion) onto Countertop, 25 centimeters from the edge. Adjust gripper position to 8 degrees. Lower object to a height of 18 centimeters. Maintain grip for 0.4 seconds. Release grip. Record drop height and velocity.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Purchase Ingredients",
+                        "children": [
+                            {
+                                "step": "Initiate Navigation to Grocery Store: Execute motor control sequence Alpha-7. Target coordinates: 34.0678° N, 118.2437° W. Maintain a velocity of 1.5 meters per second. Monitor distance to target using LIDAR sensor 3. Confirm arrival within 1.2 meters of designated store entrance.",
+                                "children": []
+                            },
+                            {
+                                "step": "Approach Store Entrance: Reduce velocity to 0.8 meters per second. Adjust lateral position to align with doorway center. Execute visual scan utilizing camera module 2. Verify doorway width is within 0.9 meters +/- 0.02 meters. Maintain this position for 2 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Enter Store: Activate door opening mechanism (sequence Delta-9). Ensure door opens smoothly and fully. Monitor door closing speed – target speed: 0.4 meters per second. Upon door closure, initiate movement towards Produce Section (coordinates: 45.23° angle relative to entrance).",
+                                "children": []
+                            },
+                            {
+                                "step": "Locate Tomatoes: Utilize visual recognition software (Tomato_ID_1). Scan aisle 3, section B, searching for product labeled 'Roma Tomatoes'. Confirm product size: 150-180 grams per tomato. Identify one tomato exhibiting a color range of 0.8 - 1.0 on the RGB scale.  Acquire precise coordinates of selected tomato (X: 0.75 meters, Y: 0.2 meters, Z: 0.1 meters).",
+                                "children": []
+                            },
+                            {
+                                "step": "Retrieve Tomato: Extend robotic arm (Sequence Gamma-3). Adjust arm length to 0.8 meters. Execute precise movement to acquire tomato. Confirm contact with tomato surface using tactile sensor 1. Apply a gentle grasping force of 1.2 Newtons for 0.5 seconds. Lift tomato 0.1 meters from the surface.",
+                                "children": []
+                            },
+                            {
+                                "step": "Transport Tomato to Cart: Rotate robotic arm to 180 degree angle. Transport tomato to designated shopping cart location (Cart_ID_1). Maintain a velocity of 1.0 meters per second. Upon arrival, lower tomato to a height of 0.2 meters above cart surface. Release tomato.  Monitor for successful transfer using visual confirmation.",
+                                "children": []
+                            },
+                            {
+                                "step": "Repeat Steps 3-6: Execute steps 3 through 6 three times, acquiring three Roma Tomatoes, each meeting the specified size and color criteria.",
+                                "children": []
+                            },
+                            {
+                                "step": "Navigate to Dairy Section: Execute motor control sequence Beta-5. Target coordinates: 15.1 meters from store entrance. Maintain a velocity of 1.3 meters per second. Monitor distance to target using LIDAR sensor 4. Confirm arrival within 0.8 meters of designated dairy section.",
+                                "children": []
+                            },
+                            {
+                                "step": "Acquire Milk: Locate product labeled '1% Milk, Half Gallon'. Confirm product volume is 1.35 liters. Acquire precise coordinates of selected milk container (X: 0.5 meters, Y: 0.3 meters, Z: 0.15 meters). Execute motor control sequence Alpha-2 to retrieve the milk. Ensure stable grip with 1.8 Newtons of force. Lift milk container 0.1 meters from the surface.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "step": "Activate Yeast",
+                "children": [
+                    {
+                        "step": "Warm Water Preparation",
+                        "children": [
+                            {
+                                "step": "Initiate Water Source Activation: Engage Valve Control Unit 734. Verify pressure reading on Gauge 219 is within the range of 30-40 PSI. Confirm visual indicator light associated with Valve 734 is illuminated solid green.",
+                                "children": []
+                            },
+                            {
+                                "step": "Water Temperature Acquisition: Deploy Temperature Probe Unit RP-42. Position probe tip precisely 1.2 centimeters above the bottom of the Stainless Steel Mixing Vessel 38B. Maintain probe orientation with a vertical axis relative to the vessel surface.",
+                                "children": []
+                            },
+                            {
+                                "step": "Heating Element Activation: Activate Electrical Heating Element 101. Increase current flow to the element by 5.8 Amperes. Monitor temperature reading on Sensor 57A; target initial temperature is 38 degrees Celsius. Maintain activation for 60 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Temperature Monitoring and Adjustment: Continuously monitor temperature reading on Sensor 57A. Upon reaching 38 degrees Celsius, reduce current flow to the Heating Element 101 by 2.9 Amperes. Maintain this current level for 15 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Verification of Target Temperature: Deploy Temperature Probe Unit RP-42 again. Position probe tip precisely 1.2 centimeters above the bottom of the Stainless Steel Mixing Vessel 38B. Record temperature reading from Sensor 57A. Verify temperature is within the range of 37.5-38.5 degrees Celsius.  If outside this range, adjust Heating Element 101 current by +/- 1.7 Amperes in 0.5-second increments until target range is achieved.",
+                                "children": []
+                            },
+                            {
+                                "step": "Water Circulation Initiation: Activate Magnetic Drive Pump 92B. Set pump speed to 120 RPM. Maintain pump operation for 30 seconds to ensure uniform temperature distribution within the vessel.",
+                                "children": []
+                            },
+                            {
+                                "step": "Final Temperature Stabilization: Continuously monitor temperature reading on Sensor 57A. Halt operation when temperature reading remains stable for 10 consecutive seconds at 38.0 degrees Celsius +/- 0.2 degrees Celsius.",
+                                "children": []
+                            },
+                            {
+                                "step": "Water Level Verification: Deploy Level Sensor Unit LS-11. Position sensor tip 2.3 centimeters above the bottom of the Stainless Steel Mixing Vessel 38B. Record water level height from Sensor 11A. Verify water level height is within the range of 20.0-22.0 centimeters.",
+                                "children": []
+                            },
+                            {
+                                "step": "System Shutdown: Deactivate Magnetic Drive Pump 92B. Deactivate Electrical Heating Element 101. Confirm visual indicator light associated with Valve 734 is illuminated solid red.  Record total heating element activation time in seconds.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Measure Warm Water",
+                        "children": [
+                            {
+                                "step": "Initialize Thermometer: Extend thermometer probe (Type: Digital Thermometer, Model: ThermoTech 3000) to 0.00 centimeters. Verify calibration indicator (green LED) is illuminated. Activate power supply – confirm 5.0 volts detected via internal voltage sensor. Record initial timestamp: 2024-10-27 10:00:00 UTC.",
+                                "children": []
+                            },
+                            {
+                                "step": "Position Thermometer: Move robotic arm (Joint 1: Shoulder, Rotation: 0 degrees; Joint 2: Elbow, Rotation: 0 degrees) to a position 30.00 centimeters from the target water surface. Verify alignment with surface using integrated laser rangefinder – target distance: 29.98 centimeters ± 0.01 cm. Maintain arm stability at 0.1 degrees of angular deviation.",
+                                "children": []
+                            },
+                            {
+                                "step": "Probe Immersion: Extend thermometer probe by 2.00 centimeters. Initiate probe lowering sequence – speed: 1.00 centimeter per second. Monitor probe depth via ultrasonic sensor – confirm 1.00 centimeter immersion at 0.50 seconds. Transition to constant speed of 1.00 cm/s.",
+                                "children": []
+                            },
+                            {
+                                "step": "Stabilization: Upon reaching 2.00 centimeters, pause probe movement for 0.50 seconds. Maintain probe depth at 2.00 centimeters using minimal arm adjustments (Joint 1: Shoulder Rotation – ± 0.05 degrees; Joint 2: Elbow Rotation – ± 0.03 degrees). Stabilize probe until temperature reading stabilizes.",
+                                "children": []
+                            },
+                            {
+                                "step": "Data Acquisition: Activate temperature sensor. Record temperature reading every 0.10 seconds for a duration of 60.00 seconds. Log timestamp for each temperature reading to a local data buffer. Monitor ambient temperature via internal sensor – maintain at 22.00 ± 0.50 degrees Celsius.",
+                                "children": []
+                            },
+                            {
+                                "step": "Retraction: Initiate probe retraction sequence – speed: 1.00 centimeter per second. Monitor probe depth via ultrasonic sensor. Upon reaching 0.00 centimeters, immediately cease retraction movement.",
+                                "children": []
+                            },
+                            {
+                                "step": "Data Transmission: Transmit all recorded temperature data (timestamp and temperature value) to central server via secure wireless connection (Protocol: MQTT, Topic: WaterTemperature/Sensor1). Verify data transmission completion via acknowledgement message received from server.",
+                                "children": []
+                            },
+                            {
+                                "step": "System Shutdown: Disable temperature sensor. Reduce power supply to 0.00 volts. Record final timestamp: 2024-10-27 10:60:00 UTC. Initiate system self-diagnostic routine – report any detected anomalies.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Add Sugar to Water",
+                        "children": [
+                            {
+                                "step": "Robot arm initializes to neutral position, with manipulator end effector positioned 30.0 centimeters directly above the interior surface of a standard 1-liter plastic water bottle. Arm joint angles are recorded: Shoulder Roll: 2.7 degrees, Elbow Flexion: 15.3 degrees, Wrist Rotation: 0.1 degrees.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends vertically, increasing height by 15.0 centimeters. Arm joint angles are recorded: Shoulder Roll: 3.1 degrees, Elbow Flexion: 18.5 degrees, Wrist Rotation: 0.2 degrees. Verify height at target point using integrated laser rangefinder, confirming distance to 45.0 centimeters.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm rotates 90.0 degrees clockwise around its vertical axis. Arm joint angles are recorded: Shoulder Roll: 3.5 degrees, Elbow Flexion: 19.2 degrees, Wrist Rotation: 0.3 degrees.  Maintain constant vertical position at 45.0 centimeters.",
+                                "children": []
+                            },
+                            {
+                                "step": "Locate and acquire a single, standard 10.0-gram granulated sugar packet. The packet is a rectangular prism with dimensions 6.0 cm x 3.0 cm x 1.5 cm.  Robot arm adjusts its position to grasp the packet at a point 2.0 centimeters below the packet's top edge, ensuring a 0.75 cm overlap with the gripper fingers.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot gripper closes with a force of 1.5 Newtons for 0.5 seconds.  Immediately upon closure, robot arm retracts vertically by 5.0 centimeters. Arm joint angles are recorded: Shoulder Roll: 2.9 degrees, Elbow Flexion: 16.8 degrees, Wrist Rotation: 0.1 degrees. Verify sugar packet is held securely.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends vertically by 20.0 centimeters. Arm joint angles are recorded: Shoulder Roll: 3.3 degrees, Elbow Flexion: 20.1 degrees, Wrist Rotation: 0.2 degrees. Maintain height at 65.0 centimeters.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm rotates 90.0 degrees counter-clockwise around its vertical axis. Arm joint angles are recorded: Shoulder Roll: 3.1 degrees, Elbow Flexion: 19.8 degrees, Wrist Rotation: 0.1 degrees. Maintain height at 65.0 centimeters.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends vertically by 10.0 centimeters. Arm joint angles are recorded: Shoulder Roll: 2.8 degrees, Elbow Flexion: 18.7 degrees, Wrist Rotation: 0.1 degrees.  Total height reached: 75.0 centimeters.  Maintain position.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm lowers the sugar packet vertically by 5.0 centimeters. Arm joint angles are recorded: Shoulder Roll: 2.6 degrees, Elbow Flexion: 17.3 degrees, Wrist Rotation: 0.05 degrees.  Position the sugar packet directly over the center of the water bottle's opening.  Maintain height at 70.0 centimeters.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot gripper opens with a force of 0.8 Newtons for 1.0 seconds.  Simultaneously, robot arm extends vertically by 15.0 centimeters. Arm joint angles are recorded: Shoulder Roll: 3.0 degrees, Elbow Flexion: 20.0 degrees, Wrist Rotation: 0.2 degrees.  Position the water bottle at 75.0 centimeters.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Sprinkle Yeast on Top",
+                        "children": [
+                            {
+                                "step": "Robot arm initializes to position X: 25.0 cm, Y: 0.0 cm, Z: 45.0 cm. Rotation of end effector to 0.0 degrees (horizontal plane). Gripper closed.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends vertically to position X: 25.0 cm, Y: 0.0 cm, Z: 55.0 cm. Linear velocity: 50 mm/s. Duration: 1.0 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm maintains position at X: 25.0 cm, Y: 0.0 cm, Z: 55.0 cm. Rotation of end effector to 0.0 degrees. Gripper remains closed.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm opens gripper. Gripper extends 2.0 mm. Gripper closure velocity: 30 mm/s. Duration: 0.5 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm precisely locates yeast container. Coordinates: X: 26.5 cm, Y: 0.3 cm, Z: 60.0 cm. Adjust Z-axis by +0.5 cm to ensure direct contact.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm lowers the end effector to X: 26.5 cm, Y: 0.3 cm, Z: 62.0 cm. Linear velocity: 20 mm/s. Duration: 1.0 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm maintains position at X: 26.5 cm, Y: 0.3 cm, Z: 62.0 cm. Rotation of end effector to 0.0 degrees. Gripper remains open.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm activates dispensing mechanism. Dispensing volume: 0.100 grams. Dispensing speed: 5.0 mm/s. Duration: 2.0 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm retracts end effector to original position: X: 25.0 cm, Y: 0.0 cm, Z: 45.0 cm. Linear velocity: 50 mm/s. Duration: 1.0 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm closes gripper. Gripper extends 2.0 mm. Gripper closure velocity: 30 mm/s. Duration: 0.5 seconds. Gripper remains closed.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Let Yeast Bloom",
+                        "children": [
+                            {
+                                "step": "Initiate Environment Scan: Activate optical sensors. Scan the immediate vicinity (2.0 meters radius) for suitable surface. Identify and mark a flat, clean surface with a UV light (wavelength 365nm, intensity 500 lux) for 3.0 seconds. Record coordinates of identified surface as X=1.2m, Y=0.8m, Z=0.0m. Log scan completion.",
+                                "children": []
+                            },
+                            {
+                                "step": "Surface Preparation: Extend manipulator arm (joint 1: 90 degrees, joint 2: 60 degrees, joint 3: 45 degrees). Position sensor arm tip 10.0 cm directly above the marked surface. Activate suction cup (vacuum pressure: 150 kPa) for 1.0 second to secure the suction cup to the surface. Verify suction cup adhesion with force sensor (maximum 5.0 N). Maintain suction for 5.0 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Yeast Suspension Deployment: Retrieve yeast suspension (concentration: 1.0g/ml, temperature: 25°C) from storage container (location: designated shelf 3, level 2). Extend manipulator arm (joint 1: 45 degrees, joint 2: 30 degrees, joint 3: 20 degrees). Position sensor arm tip 2.0 cm above the secured yeast. Dispense 1.0 ml of yeast suspension onto the surface. Use precision dispensing nozzle (volume accuracy +/- 0.05 ml). Monitor dispensing duration: 2.0 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Expansion Monitoring: Activate optical sensors. Monitor yeast surface area for expansion. Record initial yeast surface area at time t=0 seconds (value: 1.5 cm²). Continuously monitor yeast surface area every 1.0 second for a total of 30.0 seconds. Log all surface area measurements with corresponding timestamps (t=0, 1, 2, ..., 30).",
+                                "children": []
+                            },
+                            {
+                                "step": "Environmental Control Activation: Activate heating element (temperature: 30°C) for 10.0 cm surrounding the yeast suspension. Maintain temperature within +/- 0.5°C. Activate gentle air circulation fan (speed: 50 RPM) for 10.0 seconds to ensure even distribution of heat and nutrients. Monitor temperature via thermocouple (accuracy: +/- 0.1°C).",
+                                "children": []
+                            },
+                            {
+                                "step": "Data Collection Completion: Halt all active sensors. Record final yeast surface area measurement at t=30.0 seconds. Log all collected sensor data (surface area, temperature, fan speed, timestamps) into the central database. Signal completion.",
+                                "children": []
+                            },
+                            {
+                                "step": "Sensor Shutdown: Deactivate all optical sensors, heating element, air circulation fan, and thermocouple. Power down all actuators. Verify power is off. Record power-down completion.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "step": "Combine Wet Ingredients",
+                "children": [
+                    {
+                        "step": "Pour Water into Mixing Bowl",
+                        "children": [
+                            {
+                                "step": "Robot arm initiates movement sequence. Target the location of the water source (pitcher) 1.5 meters to the left and 0.7 meters forward. Confirm target lock with visual sensor data. Arm speed: 0.3 meters per second.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm adjusts its grip. Gripper width: 3.0 centimeters. Gripper pressure: 5.0 Newtons. Ensure secure but gentle grip on the pitcher handle. Verify grip stability with force sensor reading – must remain above 3.5 Newtons.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm raises pitcher vertically by 0.8 meters. Rotation angle relative to horizontal: 0 degrees. Duration of lift: 2.5 seconds. Maintain a stable, level orientation during the lift.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm lowers pitcher horizontally, aligning the pitcher's spout directly above the center of the mixing bowl. Horizontal displacement: 0.0 centimeters. Vertical displacement from initial position: 0.0 centimeters. Duration: 1.0 second. Precise alignment confirmed via visual servoing system.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm activates pitcher release mechanism. Gripper pressure decreases to 0.1 Newtons. Initiate a smooth retraction of the gripper 0.2 meters. Duration: 0.8 seconds. Monitor gripper release to prevent splashing.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm pauses for 0.3 seconds. This pause allows for a slight settling effect of the water before it begins to flow. No movement permitted during this interval.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm initiates water pouring sequence. Arm speed: 0.2 meters per second. Lift pitcher vertically by 0.3 meters. Maintain a pour angle of 30 degrees relative to the horizontal. Duration: 3.0 seconds. Monitor water flow rate via optical sensor – target flow rate: 15 milliliters per second.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm maintains pour angle and speed for 5.0 seconds. Continuously adjust arm position to compensate for any slight deviations in the bowl's surface level. Visual servoing system updates arm position every 0.1 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm ceases water pouring sequence. Arm speed: 0.0 meters per second. Lower pitcher vertically by 0.1 meters. Duration: 0.5 seconds. Grip pitcher for 0.2 seconds to ensure complete water discharge.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm releases pitcher. Gripper pressure: 0.0 Newtons. Initiate a smooth retraction of the gripper 0.2 meters. Duration: 0.8 seconds. Verify pitcher is completely clear of water. Confirm with visual sensor data.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Add Liquids (Milk, Juice, etc.) to Bowl",
+                        "children": [
+                            {
+                                "step": "Robot arm initiates movement to designated liquid container (Milk). Position arm 35.2 cm horizontally and 21.8 cm vertically from the bowl’s center. Arm angle: 12.7 degrees relative to the bowl's surface.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends dispensing nozzle 18.9 cm from the bowl's edge. Confirm nozzle orientation is precisely 6.3 degrees clockwise relative to the bowl's longitudinal axis.",
+                                "children": []
+                            },
+                            {
+                                "step": "Activate pump to dispense 65 ml of liquid. Pump operation duration: 3.2 seconds. Monitor liquid flow rate via optical sensor – target flow rate: 1.9 ml/second.",
+                                "children": []
+                            },
+                            {
+                                "step": "Immediately after liquid dispensing completes (verified by optical sensor trigger), retract dispensing nozzle 11.5 cm vertically. Maintain arm angle at 12.7 degrees.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm initiates movement to designated juice container. Position arm 48.1 cm horizontally and 28.9 cm vertically from the bowl’s center. Arm angle: 18.4 degrees relative to the bowl’s surface.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends dispensing nozzle 22.7 cm from the bowl’s edge. Confirm nozzle orientation is precisely 9.1 degrees clockwise relative to the bowl’s longitudinal axis.",
+                                "children": []
+                            },
+                            {
+                                "step": "Activate pump to dispense 120 ml of liquid. Pump operation duration: 4.8 seconds. Monitor liquid flow rate via optical sensor – target flow rate: 25.0 ml/second.",
+                                "children": []
+                            },
+                            {
+                                "step": "Immediately after liquid dispensing completes (verified by optical sensor trigger), retract dispensing nozzle 14.3 cm vertically. Maintain arm angle at 18.4 degrees.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm halts all movements. Position arm directly above the center of the bowl. Confirm arm angle is 0 degrees relative to the bowl’s surface.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm initiates final stabilization sequence. Maintain arm position with a force of 0.8 Newtons. Duration: 2.1 seconds.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Ensure All Liquids are Fully Incorporated",
+                        "children": [
+                            {
+                                "step": "Robot arm initializes to position X: 0.5 meters, Y: -0.2 meters, Z: 1.8 meters. Gripper sensor activated. Visual confirmation: Target object identified via color analysis – RGB: 255, 192, 203. Timestamp: 00:00:00.000",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm moves vertically along Z-axis by 0.05 meters. New Z coordinate: 1.85 meters. Gripper sensor continuously monitors liquid surface height. Measurement interval: 0.01 seconds. Timestamp: 00:00:00.050",
+                                "children": []
+                            },
+                            {
+                                "step": "Gripper sensor detects liquid surface height is below 95% of target volume (target volume: 1.0 liters). Gripper sensor sends command to 'Apply Gentle Pressure'. Pressure applied for 0.2 seconds. Force applied: 5 Newtons. Timestamp: 00:00:00.300",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm maintains position X: 0.5 meters, Y: -0.2 meters. Gripper sensor continuously monitors liquid surface height. Measurement interval: 0.01 seconds. Target surface height: 1.8 meters. Timestamp: 00:00:00.500",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm executes a circular motion with a radius of 0.1 meters around the target object, completing 360 degrees. Rotation speed: 1 revolution per 5 seconds. Gripper sensor continuously monitors liquid surface height. Timestamp: 00:00:10.000",
+                                "children": []
+                            },
+                            {
+                                "step": "Gripper sensor detects liquid surface height is below 98% of target volume (target volume: 1.0 liters). Gripper sensor sends command to 'Increase Pressure' by 1 Newton. New pressure: 6 Newtons. Duration: 0.1 seconds. Timestamp: 00:00:15.000",
+                                "children": []
+                            },
+                            {
+                                "step": "Repeat steps 5 & 6 until the Gripper sensor detects liquid surface height is above 99% of the target volume (target volume: 1.0 liters). Measurement interval: 0.01 seconds. Timestamp: 00:00:30.000",
+                                "children": []
+                            },
+                            {
+                                "step": "Gripper sensor sends command to 'Reduce Pressure' to 4 Newtons. Duration: 0.2 seconds. Timestamp: 00:00:32.000",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm executes a single, straight vertical movement along the Z-axis of 0.02 meters. New Z coordinate: 1.82 meters. Gripper sensor continuously monitors liquid surface height. Measurement interval: 0.01 seconds. Timestamp: 00:00:33.000",
+                                "children": []
+                            },
+                            {
+                                "step": "Gripper sensor sends command to 'Maintain Position'. Gripper sensor continuously monitors liquid surface height. Measurement interval: 0.01 seconds. Confirm liquid is fully incorporated. Timestamp: 00:00:35.000",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "step": "Mix Dry Ingredients",
+                "children": [
+                    {
+                        "step": "Identify Dry Ingredients",
+                        "children": [
+                            {
+                                "step": "Robot arm initializes to Home Position: X-axis = 0.0 cm, Y-axis = 0.0 cm, Z-axis = 15.0 cm. Gripper closed, force at 0.0 Newtons.",
+                                "children": []
+                            },
+                            {
+                                "step": "Visual sensor activates. Target identified: 100.0 gram container of all-purpose flour. Verify visual target acquisition within +/- 1.0 cm margin of error. Confirmation signal: Green LED activation.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends vertically along Z-axis by 7.5 cm. New Z-axis position: 22.5 cm. Gripper opens to 80% extension. Target acquisition confirmed via visual sensor. Maintain gripper force at 0.0 Newtons.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends horizontally along X-axis by 5.0 cm. New X-axis position: 5.0 cm. Precise movement duration: 1.2 seconds. Verify X-axis position via encoder reading. Gripper remains at 80% extension.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends horizontally along Y-axis by 2.5 cm. New Y-axis position: 2.5 cm. Precise movement duration: 0.8 seconds. Verify Y-axis position via encoder reading. Gripper remains at 80% extension.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm halts. Precise positioning achieved. Verify final X and Y coordinates via encoder data (tolerance +/- 0.2 mm). Gripper remains at 80% extension. Activate force sensor to measure contact force - target: 1.5 Newtons.",
+                                "children": []
+                            },
+                            {
+                                "step": "Gripper closes to 100% extension. Maintain grip force at 1.8 Newtons. Verify grip force via force sensor. Record force sensor reading. Duration: 0.3 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm retracts vertically along Z-axis by 7.5 cm. New Z-axis position: 15.0 cm. Precise movement duration: 1.5 seconds. Verify Z-axis position via encoder reading. Maintain grip force at 1.8 Newtons.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm retracts horizontally along X-axis by 5.0 cm. New X-axis position: 0.0 cm. Precise movement duration: 1.2 seconds. Verify X-axis position via encoder reading. Maintain grip force at 1.8 Newtons.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm retracts horizontally along Y-axis by 2.5 cm. New Y-axis position: 0.0 cm. Precise movement duration: 0.8 seconds. Verify Y-axis position via encoder reading. Maintain grip force at 1.8 Newtons. Gripper opens to 80% extension.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm halts. Precise positioning achieved. Verify final X and Y coordinates via encoder data (tolerance +/- 0.2 mm). Gripper opens to 80% extension. Record data: Ingredient identified - All-Purpose Flour - 100.0 grams.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Measure Dry Ingredients Accurately",
+                        "children": [
+                            {
+                                "step": "Robot arm initializes to standby position: Arm joint 1 (wrist) at 0.0 degrees, Arm joint 2 (shoulder) at 30.0 degrees, Arm joint 3 (elbow) at 90.0 degrees, Arm joint 4 (forearm) at 0.0 degrees. Confirm position via visual sensor data analysis.",
+                                "children": []
+                            },
+                            {
+                                "step": "Retrieve measuring cup (standard 1 cup, 8 fl oz) from storage container. Verify container location via RFID scan. Robot arm lifts container 0.1 meters vertically.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm positions cup's base at the center of the countertop surface. Verify position via laser rangefinder: Distance to surface within +/- 1.0 mm. Adjust arm position to maintain this distance.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm lowers cup until the cup's rim is 2.0 cm above the countertop surface. Verify position via visual sensor data analysis: Cup rim must be within +/- 0.5 mm of the surface. Implement corrective movements until desired position is achieved.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm activates integrated scoop mechanism. Scoop mechanism extends 15.0 cm from the cup's rim. Verify extension via force sensor – measured force must be between 1.0 and 1.5 Newtons.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm lowers scoop into 50.0 grams of all-purpose flour. Utilize force sensor to control scoop depth. Stop scoop movement when resistance measured from force sensor indicates 50.0 grams of flour are contained within the scoop. Record this data.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm raises scoop 5.0 cm vertically. Verify position via visual sensor data analysis: Scoop height within +/- 0.3 cm. Corrective movement if necessary.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm deposits the scoop of flour into the designated measuring bowl. Confirm bowl location via visual sensor data analysis: Bowl must be within 1.0 cm of the scoop's position. Adjust robot arm movement to ensure precise deposit.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm retracts scoop mechanism 5.0 cm. Verify retraction via force sensor – force must drop below 0.5 Newtons. Confirm scoop is fully retracted.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm returns to standby position: Arm joint 1 at 0.0 degrees, Arm joint 2 at 30.0 degrees, Arm joint 3 at 90.0 degrees, Arm joint 4 at 0.0 degrees. Confirm position via visual sensor data analysis.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Thoroughly Combine Dry Ingredients",
+                        "children": [
+                            {
+                                "step": "Robot arm (Unit 734) extends manipulator arm to 37.2 centimeters from the center of the mixing bowl to a vertical position, angle of inclination 2.1 degrees relative to the horizontal. Confirm position with visual sensor array 3. Calibration check: Verify visual sensor array 3 alignment with the bowl center using cross-hair targeting system. Lock target.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm (Unit 734) adjusts manipulator arm angle to 18.8 degrees relative to the bowl's vertical axis. Precise adjustment using servo motor control, target position confirmed via visual sensor array 3. Maintain this angle throughout the following steps. Duration: 0.3 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm (Unit 734) selects 120.0 grams of all-purpose flour from the designated flour container (Container ID: FLOUR-001). Using the scoop tool (Tool ID: SCOOP-002), the robot arm lowers the scoop into the flour container. Scoop depth: 3.5 centimeters. Lift scoop 1.2 seconds, bringing it to the mixing bowl. Duration: 2.8 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm (Unit 734) deposits the collected flour into the mixing bowl, at the center of the bowl. Maintain scoop position at 37.2 centimeters. Duration: 0.7 seconds. Verify flour distribution via visual sensor array 3 - identify any unevenness and adjust scoop position by +/- 1.0 centimeter to achieve uniform distribution. Repeat scoop and deposit process three times.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm (Unit 734) extends manipulator arm to 45.1 centimeters from the center of the mixing bowl. Angle of inclination 3.8 degrees. Confirm position with visual sensor array 3. Lock target. Initiate operation of the sugar dispenser (Tool ID: DISP-001).",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm (Unit 734) Dispenses 85.5 grams of granulated sugar into the mixing bowl, maintaining a consistent dispensing rate of 1.7 grams per second, as measured by integrated flow sensor. Monitor with visual sensor array 3 for accurate delivery. Duration: 5.0 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm (Unit 734) retracts manipulator arm to 37.2 centimeters. Angle of inclination 2.1 degrees. Confirm position with visual sensor array 3. Lock target. Initiate operation of the baking powder dispenser (Tool ID: DISP-003).",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm (Unit 734) Dispenses 7.0 grams of baking powder into the mixing bowl, maintaining a consistent dispensing rate of 0.9 grams per second, as measured by integrated flow sensor. Monitor with visual sensor array 3 for accurate delivery. Duration: 7.5 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm (Unit 734) retracts manipulator arm to 37.2 centimeters. Angle of inclination 2.1 degrees. Confirm position with visual sensor array 3. Lock target.  Execute a final 0.5 second static hold.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm (Unit 734)  Signals completion.  Retract manipulator arm. Record operation data: Flour: 120.0g, Sugar: 85.5g, Baking Powder: 7.0g.  Initiate data logging protocol.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "step": "Combine Wet and Dry Ingredients",
+                "children": [
+                    {
+                        "step": "Assess Wet Ingredients for Texture",
+                        "children": [
+                            {
+                                "step": "Robot arm initializes to standby position: Arm base at X=1.2 meters, Y=0.5 meters, Z=-0.1 meters. Gripper closed, force setting 1N. Monitor display active, showing target measurement parameters: Target Viscosity: 200 Pa·s, Temperature Tolerance: +/- 0.5°C, Measurement Frequency: 1 Hz.",
+                                "children": []
+                            },
+                            {
+                                "step": "Locate specimen container: Identify container designated ‘Specimen Alpha’. Confirm container is present and stable on the designated workbench surface (Z=0.0 meters). Verify container dimensions: Diameter 10.0 cm, Height 8.0 cm. Record visual confirmation: Capture a 360-degree image of the container and store for future reference.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm approach: Move robot arm to X=1.5 meters, Y=0.7 meters, Z=-0.2 meters. Adjust arm trajectory to minimize contact with workbench surface.  Execute a smooth, linear movement with a velocity of 0.2 m/s. Duration: 2 seconds. Confirm arm position via visual sensor feedback.",
+                                "children": []
+                            },
+                            {
+                                "step": "Specimen Acquisition: Extend gripper to Z=-0.4 meters. Lower gripper to contact the specimen surface. Apply downward force of 5N for 0.5 seconds.  Record gripper force reading. Lift specimen vertically by 2.0 cm (Z = -0.2 meters). Hold specimen stationary for 1 second.  Capture a high-resolution image of the specimen's surface texture. Record image data and store.",
+                                "children": []
+                            },
+                            {
+                                "step": "Viscosity Measurement – Initial Reading: Rotate specimen at 30 RPM for 10 seconds. Utilize inline viscometer (Model VX-700) positioned 5.0 cm from the specimen surface.  Record viscosity reading from viscometer display. Note: Viscometer must remain level and temperature-controlled at 25°C +/- 0.1°C.",
+                                "children": []
+                            },
+                            {
+                                "step": "Specimen Rotation – Cycle 1: Rotate specimen at 30 RPM for 10 seconds. Record viscosity reading from viscometer display. Note: Viscometer must remain level and temperature-controlled at 25°C +/- 0.1°C.  Record timestamp and reading.",
+                                "children": []
+                            },
+                            {
+                                "step": "Specimen Rotation – Cycle 2: Rotate specimen at 30 RPM for 10 seconds. Record viscosity reading from viscometer display. Note: Viscometer must remain level and temperature-controlled at 25°C +/- 0.1°C.  Record timestamp and reading.",
+                                "children": []
+                            },
+                            {
+                                "step": "Specimen Rotation – Cycle 3: Rotate specimen at 30 RPM for 10 seconds. Record viscosity reading from viscometer display. Note: Viscometer must remain level and temperature-controlled at 25°C +/- 0.1°C.  Record timestamp and reading.",
+                                "children": []
+                            },
+                            {
+                                "step": "Data Logging and Archive: Transfer all recorded data (viscosity readings, timestamps, images) to central server database. Assign file name: ‘SpecimenAlpha_ViscosityData_Cycle1.csv’. Confirm data transfer completion via server status indicator.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm return to standby position: Move robot arm to X=1.2 meters, Y=0.5 meters, Z=-0.1 meters. Gripper closed, force setting 1N. Monitor display active, ready for next measurement.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Assess Dry Ingredients for Consistency",
+                        "children": [
+                            {
+                                "step": "Robot arm initiates movement. Precise movement: Extend arm segment 1 to a horizontal position. Angle of segment 1 relative to vertical axis: 0.0 degrees. Arm length (segment 1): 30.0 centimeters. Maintain arm position steady for 1.0 second. Confirmation: Visual marker (red LED) illuminates on arm base.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm initiates movement. Precise movement: Extend arm segment 2 to a horizontal position. Angle of segment 2 relative to segment 1: 90.0 degrees. Arm length (segment 2): 20.0 centimeters. Maintain arm position steady for 1.0 second. Confirmation: Visual marker (green LED) illuminates on arm base.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm initiates movement. Precise movement: Lower arm segment 2 to contact the top surface of the dry ingredient container (e.g., a 250-gram container of flour). Vertical distance from arm endpoint to container surface: 1.0 centimeter. Contact force applied: 0.5 Newtons. Maintain contact for 0.5 seconds. Confirmation: Force sensor reading stabilizes at 0.5 Newtons.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm initiates movement. Precise movement: Rotate arm segment 2 clockwise by 15.0 degrees. Rotation speed: 2.0 degrees per second. Maintain rotation for 3.0 seconds. Confirmation: Visual marker (blue LED) illuminates on arm base.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm initiates movement. Precise movement: Lift arm segment 2 upwards by 5.0 centimeters. Maintain lift for 1.0 second. Confirmation: Force sensor reading returns to 0.0 Newtons.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm initiates movement. Precise movement: Lower arm segment 2 downwards to contact the top surface of the next dry ingredient container (e.g., a 100-gram container of sugar). Vertical distance from arm endpoint to container surface: 2.5 centimeters. Contact force applied: 0.7 Newtons. Maintain contact for 0.5 seconds. Confirmation: Force sensor reading stabilizes at 0.7 Newtons.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm initiates movement. Precise movement: Rotate arm segment 2 counter-clockwise by 20.0 degrees. Rotation speed: 3.0 degrees per second. Maintain rotation for 4.0 seconds. Confirmation: Visual marker (red LED) illuminates on arm base.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm initiates movement. Precise movement: Lift arm segment 2 upwards by 7.0 centimeters. Maintain lift for 1.0 second. Confirmation: Force sensor reading returns to 0.0 Newtons.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm initiates movement. Precise movement: Repeat steps 1-5 with the third dry ingredient (e.g., 50-gram container of baking powder).",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm initiates movement. Precise movement. Repeat steps 1-5 with the fourth dry ingredient (e.g., 25-gram container of salt).",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Gradually Add Dry Ingredients to Wet Ingredients",
+                        "children": [
+                            {
+                                "step": "Initiate Arm Movement: Extend Robotic Arm to Mixing Bowl (Designated Location A). Precise Arm Extension: 0.7 meters. Angular Deviation: ±0.02 degrees. Temporal Duration: 1.2 seconds. Confirm Position via Visual Sensor Array – Target Acquisition Confirmation: Green Indicator.",
+                                "children": []
+                            },
+                            {
+                                "step": "Ingredient Acquisition: Retrieve Container of All-Purpose Flour (Designated Container B). Reach Distance: 0.5 meters. Grip Force: 5 Newtons. Ensure Container Stability: Maintain 3-point contact with arm and surface. Temporal Duration: 0.8 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Flour Dispensing - Initial Load: Open Container B. Position Robotic Arm Tip Directly Above Mixing Bowl (Designated Location A). Lower Arm Height: 15 centimeters. Dispense 30 grams of All-Purpose Flour. Dispense Rate: 1.5 grams per second. Monitor Flour Level via Integrated Scale - Trigger Discharge at 30 grams. Temporal Duration: 3.5 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Mixing - Initial Incorporation: Activate Mixing Attachment (Designated Attachment C). Set Mixing Speed to Level 2 (Pre-programmed). Initiate Mixing Cycle for 5 seconds. Monitor Mixing Speed via Encoder Feedback – Maintain 150 RPM ± 5 RPM. Visual Confirmation: Observe flour integrating into liquid mixture – Color Shift Analysis: Target Change of 0.1 Delta E Value.",
+                                "children": []
+                            },
+                            {
+                                "step": "Ingredient Acquisition: Retrieve Container of Baking Soda (Designated Container D). Reach Distance: 0.6 meters. Grip Force: 4 Newtons. Ensure Container Stability: Maintain 3-point contact with arm and surface. Temporal Duration: 1.0 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Baking Soda Dispensing - Initial Load: Open Container D. Position Robotic Arm Tip Directly Above Mixing Bowl (Designated Location A). Lower Arm Height: 16 centimeters. Dispense 5 grams of Baking Soda. Dispense Rate: 1.0 grams per second. Monitor Baking Soda Level via Integrated Scale - Trigger Discharge at 5 grams. Temporal Duration: 4.0 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Mixing - Incorporate Baking Soda: Activate Mixing Attachment (Designated Attachment C). Maintain Mixing Speed at Level 2 (150 RPM ± 5 RPM). Continue Mixing for 3 seconds. Monitor Mixing Speed via Encoder Feedback – Maintain 150 RPM ± 5 RPM. Visual Confirmation: Observe baking soda integrating into liquid mixture – Color Shift Analysis: Target Change of 0.08 Delta E Value.",
+                                "children": []
+                            },
+                            {
+                                "step": "Ingredient Acquisition: Retrieve Container of Granulated Sugar (Designated Container E). Reach Distance: 0.7 meters. Grip Force: 6 Newtons. Ensure Container Stability: Maintain 3-point contact with arm and surface. Temporal Duration: 1.3 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Sugar Dispensing - Initial Load: Open Container E. Position Robotic Arm Tip Directly Above Mixing Bowl (Designated Location A). Lower Arm Height: 17 centimeters. Dispense 80 grams of Granulated Sugar. Dispense Rate: 1.3 grams per second. Monitor Sugar Level via Integrated Scale - Trigger Discharge at 80 grams. Temporal Duration: 6.0 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Mixing - Incorporate Sugar: Activate Mixing Attachment (Designated Attachment C). Maintain Mixing Speed at Level 2 (150 RPM ± 5 RPM). Continue Mixing for 4 seconds. Monitor Mixing Speed via Encoder Feedback – Maintain 150 RPM ± 5 RPM. Visual Confirmation: Observe sugar integrating into liquid mixture – Color Shift Analysis: Target Change of 0.12 Delta E Value.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Mix Until Just Combined – Avoid Overmixing",
+                        "children": [
+                            {
+                                "step": "Initialize Mixing Vessel: Position mixing vessel on stable, level surface. Ensure surface dimensions are 25.0 cm x 20.0 cm x 15.0 cm. Verify surface cleanliness with a laser scanner; if contaminants are detected exceeding 0.01mm in any direction, initiate surface cleaning cycle (protocol: ultrasonic cleaning with 30ml distilled water for 60 seconds, followed by 5-second air dry).",
+                                "children": []
+                            },
+                            {
+                                "step": "Ingredient Placement – Batch 1: Using a robotic arm with a 100mm diameter gripper, precisely position 120.0g of dry ingredient A (specified as ‘Flour – Type 1’ – measured by weight) within the mixing vessel. Maintain gripper height at 10.0 cm above the vessel floor. Achieve placement accuracy within +/- 1.0 mm of the vessel center point (25.0 cm, 10.0 cm, 7.5 cm).",
+                                "children": []
+                            },
+                            {
+                                "step": "Ingredient Placement – Batch 2: Using the same robotic arm, precisely position 60.0g of dry ingredient B (specified as ‘Sugar – Granulated’ – measured by weight) within the same vessel. Maintain gripper height at 10.0 cm above the vessel floor. Achieve placement accuracy within +/- 1.0 mm of the vessel center point (25.0 cm, 10.0 cm, 7.5 cm). Ensure a minimum separation distance of 5.0 cm between ingredient B and ingredient A.",
+                                "children": []
+                            },
+                            {
+                                "step": "Liquid Addition – Batch 1: Activate the dispensing unit. Program the unit to dispense 75.0ml of liquid ingredient C (specified as ‘Water – Distilled’ – measured by volume) into the vessel. Dispense over a period of 3.0 seconds, maintaining a constant flow rate of 2.5 ml/second. Monitor visual confirmation of liquid level reaching 80% of the vessel’s maximum height (determined by integrated sensor).",
+                                "children": []
+                            },
+                            {
+                                "step": "Mixing Initiation – Phase 1: Activate the mixer motor at a speed of 150 RPM. Maintain this speed for 10.0 seconds. Utilize a torque sensor to verify motor output is within 2.0 Nm of the target value. Monitor mixer blade rotation visually via high-resolution camera; verify all blades are rotating consistently.",
+                                "children": []
+                            },
+                            {
+                                "step": "Mixing Continuation – Phase 2: Reduce mixer motor speed to 80 RPM. Continue mixing for 15.0 seconds. Monitor mixing time and speed continuously. Employ a vibration sensor to detect any irregular movements; if vibration exceeds 0.5g, immediately halt the mixing process and initiate diagnostic cycle (protocol: motor inspection and lubrication).",
+                                "children": []
+                            },
+                            {
+                                "step": "Visual Inspection – Mixing Stage: Initiate high-resolution video recording.  Maintain camera position at 90 degrees relative to the vessel’s longitudinal axis, focused on the mixing surface. Record for 5.0 seconds, capturing visual data of the mixture’s homogeneity. Evaluate visual data for signs of segregation or overmixing (e.g., distinct layers, excessive foam).",
+                                "children": []
+                            },
+                            {
+                                "step": "Mixing Termination: Immediately reduce mixer motor speed to 0 RPM. Verify motor has stopped rotating within 0.5 seconds. Confirm visual observation of a uniform mixture with no visible streaks or clumps.",
+                                "children": []
+                            },
+                            {
+                                "step": "Post-Mixing Verification – Density: Utilize a pressure sensor to measure the mixture’s density at the vessel center. Record density value. Compare to target density (3.0 g/cm³). If the measured density deviates by more than 0.1g/cm³, initiate second mixing cycle (steps 1-8).",
+                                "children": []
+                            },
+                            {
+                                "step": "Clean Up:  Initiate automated cleaning cycle for the mixing vessel (protocol: 30ml distilled water rinse followed by 15-second air dry).",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Check for Lumps and Address Them",
+                        "children": [
+                            {
+                                "step": "Initialize Robotic Arm to Position Alpha: Extend arm segment 1 to a length of 0.7 meters. Rotate arm segment 1 counterclockwise by 15 degrees. Confirm joint 1 rotation using onboard gyroscope reading; target: 15.0 degrees ± 0.1 degrees. Maintain arm stability using built-in balancing mechanism; power output: 25%.",
+                                "children": []
+                            },
+                            {
+                                "step": "Navigate to Target Point Beta: Using arm segment 1’s positional feedback, precisely move the end effector to coordinates X=10.2 cm, Y=5.8 cm, Z=2.1 cm. Verify position using onboard laser scanner; target tolerance: 0.3 cm in all dimensions.",
+                                "children": []
+                            },
+                            {
+                                "step": "Activate Tactile Sensor Array: Initiate sequence to activate all 16 tactile sensors on the end effector. Sensors must report a baseline pressure of 0.05 Newtons across all sensors. Monitor sensor readings for stability – no fluctuation above 0.02 Newtons allowed.",
+                                "children": []
+                            },
+                            {
+                                "step": "Apply Gentle Pressure: Slowly increase applied force via robotic arm joint 2 by 0.01 Newtons per second, monitoring all 16 tactile sensors. Continue applying force until one or more tactile sensors register a force exceeding 0.3 Newtons. Record the force reading at the moment of exceeding 0.3 Newtons. Time duration: 3.2 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Identify Lumps (Tactile Mapping): Once a tactile sensor reading exceeds 0.3 Newtons, pause force application.  Analyze tactile sensor data for a consistent region of elevated pressure.  Define the region's boundaries using the sensor data; minimum sensor value threshold: 0.28 Newtons.  Log the X, Y, and Z coordinates of the center of this region.",
+                                "children": []
+                            },
+                            {
+                                "step": "Confirm Lumps (Visual Verification): Activate onboard camera system. Adjust camera focus to the identified lump region. Capture a high-resolution image (384x288 pixels) of the area.  Confirm visual presence of a discernible lump based on image analysis; threshold: minimum average pixel intensity of 150.",
+                                "children": []
+                            },
+                            {
+                                "step": "Record Lumps: Store the identified lump's coordinates (X, Y, Z), tactile sensor reading (force value), and visual image data in the robot's memory. Timestamp data: Current system time.",
+                                "children": []
+                            },
+                            {
+                                "step": "Retract Arm to Position Delta: Slowly retract arm segment 1 to a length of 1.2 meters. Rotate arm segment 1 clockwise by -30 degrees. Confirm joint 1 rotation using onboard gyroscope reading; target: -30.0 degrees ± 0.1 degrees. Maintain arm stability using built-in balancing mechanism; power output: 15%.",
+                                "children": []
+                            },
+                            {
+                                "step": "Repeat Steps 1-4: Initiate tactile sensing and force application at a new, randomly selected point within a 0.5 meter radius of the last identified lump. Maintain a minimum separation distance of 0.2 meters from the previous lump's location. Repeat the tactile mapping and force application procedure for 5 iterations.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "step": "Knead Dough",
+                "children": [
+                    {
+                        "step": "Prepare Dough Surface",
+                        "children": [
+                            {
+                                "step": "Robot arm initiates movement towards preparation surface. Target coordinates: X = 123.45 cm, Y = 67.89 cm, Z = 21.50 cm. Arm velocity: 0.3 m/s. Maintain a 3-degree visual lock on the preparation surface. Confirm visual lock via sensor data analysis. Duration: 2.1 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm adjusts its Z-axis position to achieve a Z-coordinate of 21.70 cm. Adjustment velocity: 0.15 m/s. Monitor Z-axis position using laser rangefinder. Error tolerance: +/- 0.02 cm. Duration: 1.5 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends its primary manipulation tool (designated 'Tool A') to a position 10.00 cm directly above the center of the preparation surface. Tool A's Z-coordinate: 21.70 cm. Tool A's orientation: 0 degrees. Duration: 1.8 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm executes a circular motion with Tool A, covering a 15.00 cm radius centered on the preparation surface's center. Rotation speed: 3.0 revolutions per minute. Maintain a constant distance of 10.00 cm from the preparation surface. Duration: 10.0 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm reduces its velocity to 0.1 m/s. Tool A’s position: X = 123.45 cm, Y = 67.89 cm, Z = 21.70 cm. Perform a 90-degree counter-clockwise rotation of Tool A. Duration: 3.0 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends Tool A to a position 20.00 cm directly above the preparation surface's center. Tool A’s Z-coordinate: 21.70 cm. Tool A's orientation: 90 degrees. Duration: 2.0 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm executes a circular motion with Tool A, covering a 15.00 cm radius centered on the preparation surface's center. Rotation speed: 3.0 revolutions per minute. Maintain a constant distance of 20.00 cm from the preparation surface. Duration: 10.0 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm reduces its velocity to 0.1 m/s. Tool A’s position: X = 123.45 cm, Y = 67.89 cm, Z = 21.70 cm. Perform a 90-degree counter-clockwise rotation of Tool A. Duration: 3.0 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends Tool A to a position 10.00 cm directly above the preparation surface's center. Tool A’s Z-coordinate: 21.70 cm. Tool A's orientation: 0 degrees. Duration: 2.0 seconds.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Add Flour to Mixing Bowl",
+                        "children": [
+                            {
+                                "step": "Robot arm initializes to neutral position, with wrist rotation at 0 degrees and elbow angle at 90 degrees. Confirm position via visual sensor input (target: blue marker on countertop). Maintain this position for 0.5 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends forward, reaching a distance of 0.7 meters from the countertop. Confirm position via visual sensor input (target: blue marker on countertop). Maintain this position for 0.2 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm rotates wrist rotation to 15 degrees clockwise. Confirm rotation via gyroscope reading. Maintain this rotation for 0.3 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends forward an additional 0.1 meters, totaling 0.8 meters from the countertop. Confirm position via visual sensor input (target: red marker on flour bag). Maintain this position for 0.1 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm opens the flour bag. Specifically, grasp the bag's handle with the gripper. Apply a force of 2.5 Newtons to the handle. Hold for 0.8 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm lifts the flour bag upwards, raising its height by 0.3 meters. Confirm height via ultrasonic sensor (target: 0.3 meters). Maintain this height for 0.5 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm rotates wrist rotation to -15 degrees counter-clockwise. Confirm rotation via gyroscope reading. Maintain this rotation for 0.3 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm lowers the flour bag downwards, reducing its height to 0.2 meters from the countertop. Confirm height via ultrasonic sensor (target: 0.2 meters). Maintain this height for 0.5 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm opens the flour bag further, increasing the opening angle to 45 degrees. Confirm opening angle via visual sensor input (target: change in light reflection). Maintain this angle for 0.3 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends the gripper an additional 0.1 meters, totaling 0.2 meters into the mixing bowl. Confirm distance via laser rangefinder (target: mixing bowl center). Maintain this position for 1 second. Monitor bowl depth via tactile sensor.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Create a Well in the Center of the Flour",
+                        "children": [
+                            {
+                                "step": "Initialize Robotic Arm: Ensure robotic arm joint angles are at 0 degrees for all axes. Verify gripper pressure sensor is at 0 PSI. Confirm visual servoing system is initialized with target image of the flour surface.",
+                                "children": []
+                            },
+                            {
+                                "step": "Flour Surface Scan: Initiate laser scanner. Capture a 3D point cloud of the flour surface within a 5cm radius of the intended well center. Record data at 100Hz. Save data as ‘FlourScan_Initial.ply’.",
+                                "children": []
+                            },
+                            {
+                                "step": "Calculate Well Center: Analyze ‘FlourScan_Initial.ply’ using algorithms to identify the centroid of the point cloud. Determine the X, Y, and Z coordinates of the well center with an accuracy of +/- 0.2mm. Record these coordinates as ‘WellCenter_XYZ’.",
+                                "children": []
+                            },
+                            {
+                                "step": "Gripper Positioning: Move the robotic arm’s gripper to a Z-height of 3cm above the calculated well center (WellCenter_XYZ). Maintain gripper orientation: Roll: 0 degrees, Pitch: 0 degrees, Yaw: 0 degrees. Verify gripper position using visual servoing system. Record coordinates: ‘Gripper_XYZ_Z3cm’.",
+                                "children": []
+                            },
+                            {
+                                "step": "Material Acquisition: Activate the flour dispensing mechanism. Initiate a controlled release of flour. Target volume: 10cm³ of all-purpose flour. Maintain dispensing rate at 2cm³/second. Monitor flour density using a pressure sensor integrated within the dispensing nozzle. Record flow rate and pressure readings every 0.5 seconds. Store data as ‘FlourDispense_Data.csv’.",
+                                "children": []
+                            },
+                            {
+                                "step": "Controlled Deposition: While dispensing flour, adjust the robotic arm’s X and Y coordinates in small, incremental movements. Move X axis by -1mm, Y axis by -1mm, then pause for 1 second. Repeat this cycle 10 times, resulting in a flour pile with an approximate base diameter of 5cm centered on the initial gripper position. Maintain gripper pressure at 0.5 PSI during deposition.",
+                                "children": []
+                            },
+                            {
+                                "step": "Depth Measurement: Utilizing a contact microphone positioned directly above the center of the flour pile, record the sound signature produced by the flour settling. Analyze the recorded signal to determine the height of the flour pile. Record height as ‘PileHeight’ (accuracy +/- 0.5mm).",
+                                "children": []
+                            },
+                            {
+                                "step": "Final Adjustment: Based on ‘PileHeight’ and ‘WellCenter_XYZ’, adjust the robotic arm’s X and Y coordinates to precisely center the top surface of the flour pile within the 5cm diameter circle defined by the well center. Execute a final movement of 0.5mm in X and 0.5mm in Y. Monitor visual servoing feedback throughout this adjustment.",
+                                "children": []
+                            },
+                            {
+                                "step": "Stabilization: Hold the robotic arm in place, with the gripper at Z=3cm, for 5 seconds to allow the flour pile to fully stabilize. Monitor visual servoing system for any movement. Record final position as ‘Final_WellCenter_XYZ’.",
+                                "children": []
+                            },
+                            {
+                                "step": "System Shutdown: Deactivate all robotic arm motors. Return gripper pressure sensor to 0 PSI. Disengage visual servoing system. Record completion status as ‘Task_Complete’.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Pour Wet Ingredients into Well",
+                        "children": [
+                            {
+                                "step": "Robot arm to approach mixing station. Confirm coordinates: X = 1.23 meters, Y = 0.45 meters, Z = 0.87 meters. Execute movement sequence: Move forward 0.3 meters, rotate clockwise 15 degrees, move forward 0.4 meters. Verify position using visual sensor data and adjust if deviation exceeds 0.01 meters.",
+                                "children": []
+                            },
+                            {
+                                "step": "Activate dispensing nozzle. Verify nozzle is oriented precisely 90 degrees to the mixing vessel. Confirm nozzle center point is within 0.005 meters of the marked well center (X = 0.50 meters, Y = 0.50 meters, Z = 0.92 meters). Adjust nozzle orientation using rotational servo motors.",
+                                "children": []
+                            },
+                            {
+                                "step": "Retrieve container of wet ingredient (tomato sauce). Confirm container type: Plastic, 250ml. Measure container distance from well center: 0.6 meters. Move robot arm to coordinate X = 0.60 meters, Y = 0.50 meters, Z = 0.95 meters. Maintain a vertical alignment of 0.1 meters above the well surface.",
+                                "children": []
+                            },
+                            {
+                                "step": "Initiate pouring sequence. Extend dispensing nozzle 0.03 meters into the wet ingredient container. Activate pump motor. Set pump speed to 50ml/second. Monitor liquid flow using optical sensor. Maintain consistent flow rate within ±2ml/second.",
+                                "children": []
+                            },
+                            {
+                                "step": "Continue pouring until 120ml of wet ingredient has been dispensed into the well. Utilize optical sensor data to precisely track volume dispensed. Monitor filling level within the well (Diameter = 0.15 meters). Pause dispensing when liquid level reaches 0.98 meters from the bottom of the well.",
+                                "children": []
+                            },
+                            {
+                                "step": "Retract dispensing nozzle 0.02 meters. Deactivate pump motor. Verify nozzle is fully retracted. Execute movement sequence: Move robot arm back to original position (X = 1.23 meters, Y = 0.45 meters, Z = 0.87 meters).",
+                                "children": []
+                            },
+                            {
+                                "step": "Record pouring event. Log timestamp, dispensed volume (120ml), and nozzle position coordinates. Update database entry for mixing station procedure.",
+                                "children": []
+                            },
+                            {
+                                "step": "Execute visual inspection. Activate high-resolution camera. Capture image of well contents. Analyze image for visual anomalies (e.g., spills, uneven filling). Record image data for quality control.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Begin Kneading Dough",
+                        "children": [
+                            {
+                                "step": "Robot arm initiates movement. Arm joint 1 (shoulder) rotates 15 degrees clockwise. Arm joint 2 (elbow) maintains a fixed 90-degree angle. Arm joint 3 (wrist) remains stationary at 0 degrees. Arm approach distance to flour container: 75 centimeters.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends its reach. Precise extension of arm segment 1: 45 centimeters. Confirm extension with laser rangefinder – target distance: 45 centimeters. Maintain arm stability with minimal vibration (<0.5mm).",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot gripper opens to 90 degrees. Gripper force: 1 Newton. Gripper opening time: 0.5 seconds. Visual confirmation of open gripper – verify that the palm area is clearly exposed.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot gripper contacts the flour container. Precise target location: Center of the container’s top surface. Apply a gentle downward force of 0.2 Newtons for 0.1 seconds to ensure secure contact. Monitor force sensor readings continuously.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm begins to scoop flour. Arm segment 1 retracts 20 centimeters. Arm segment 2 rotates 30 degrees clockwise. Arm segment 3 maintains 0 degrees. Scoop volume: 150 milliliters. Scoop time: 1.2 seconds. Track scoop depth with a visual marker (red dot) positioned at the center of the container.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm returns to initial flour contact position. Arm segment 1 retracts 20 centimeters. Arm segment 2 rotates 30 degrees clockwise. Arm segment 3 maintains 0 degrees. Scoop volume: 150 milliliters. Scoop time: 1.2 seconds. Track scoop depth with a visual marker (red dot) positioned at the center of the container.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm returns to initial flour contact position. Arm segment 1 retracts 20 centimeters. Arm segment 2 rotates 30 degrees clockwise. Arm segment 3 maintains 0 degrees. Scoop volume: 150 milliliters. Scoop time: 1.2 seconds. Track scoop depth with a visual marker (red dot) positioned at the center of the container.",
+                                "children": []
+                            },
+                            {
+                                "step": "Repeat steps 1-4 a total of three times, ensuring a cumulative flour volume of 450 milliliters (150 ml per scoop). Monitor flour level in the container using a visual sensor.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm returns to initial flour contact position. Arm segment 1 retracts 20 centimeters. Arm segment 2 rotates 30 degrees clockwise. Arm segment 3 maintains 0 degrees. Scoop volume: 150 milliliters. Scoop time: 1.2 seconds. Track scoop depth with a visual marker (red dot) positioned at the center of the container.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Evaluate Dough Texture During Kneading",
+                        "children": [
+                            {
+                                "step": "Initiate Visual Recording: Activate high-resolution camera (resolution 1920x1080 at 30fps) and position it 30 centimeters directly above the dough. Ensure camera focal length is set to 50mm. Record a 5-second video loop of the dough during kneading.",
+                                "children": []
+                            },
+                            {
+                                "step": "Dough Positioning: Using robotic arm, precisely position the center of the dough within the camera's field of view. Center coordinates: X = 960 pixels, Y = 540 pixels. Maintain a stable position, ensuring the dough occupies 60% of the vertical field of view.",
+                                "children": []
+                            },
+                            {
+                                "step": "Texture Assessment - Initial Observation: Capture a single still image. Utilize camera’s autofocus and exposure settings to achieve an average brightness level of 128 lux. Image resolution: 1920x1080. Save image as 'Dough_Image_01.jpg'.",
+                                "children": []
+                            },
+                            {
+                                "step": "Measurement - Surface Roughness: Utilizing the camera’s depth sensing capabilities (if available), obtain a single point depth measurement at the center of the dough’s surface. Record depth as 2.3 millimeters. Store measurement as ‘Depth_2_3mm.txt’.",
+                                "children": []
+                            },
+                            {
+                                "step": "Movement - Robotic Arm – Gentle Rotation: Initiate robotic arm movement. Rotate the arm joint connected to the camera a 10-degree counter-clockwise rotation. Duration: 1.5 seconds. Maintain a constant linear velocity of 10 centimeters per second during the rotation.",
+                                "children": []
+                            },
+                            {
+                                "step": "Texture Assessment - Rotation Observation: Capture a new still image after rotation. Ensure the camera remains focused on the same point on the dough. Save image as ‘Dough_Image_02.jpg’.",
+                                "children": []
+                            },
+                            {
+                                "step": "Measurement - Surface Roughness (Rotation): Utilize the camera’s depth sensing capabilities to obtain a single point depth measurement at the same point on the dough surface as the previous measurement. Record depth as 2.5 millimeters. Store measurement as ‘Depth_2_5mm.txt’.",
+                                "children": []
+                            },
+                            {
+                                "step": "Movement - Robotic Arm – Gentle Rotation (Reverse): Initiate robotic arm movement. Rotate the arm joint connected to the camera a 10-degree clockwise rotation. Duration: 1.5 seconds. Maintain a constant linear velocity of 10 centimeters per second during the rotation.",
+                                "children": []
+                            },
+                            {
+                                "step": "Texture Assessment - Rotation Observation (Reverse): Capture a new still image after reverse rotation. Ensure the camera remains focused on the same point on the dough. Save image as ‘Dough_Image_03.jpg’.",
+                                "children": []
+                            },
+                            {
+                                "step": "Measurement - Surface Roughness (Reverse Rotation): Utilize the camera’s depth sensing capabilities to obtain a single point depth measurement at the same point on the dough surface as the previous measurement. Record depth as 2.1 millimeters. Store measurement as ‘Depth_2_1mm.txt’.",
+                                "children": []
+                            },
+                            {
+                                "step": "Data Compilation: Save all three images (Dough_Image_01.jpg, Dough_Image_02.jpg, Dough_Image_03.jpg) and the three depth measurements (Depth_2_3mm.txt, Depth_2_5mm.txt, Depth_2_1mm.txt) into a single directory named ‘Dough_Texture_Data’.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "step": "First Proof (Rise)",
+                "children": [
+                    {
+                        "step": "Observe Dough Consistency After Initial Mixing",
+                        "children": [
+                            {
+                                "step": "Robot arm initializes to neutral position. Joint 1 (shoulder) angle: 0 degrees. Joint 2 (elbow) angle: 0 degrees. Joint 3 (wrist) rotation: 0 degrees. Gripper 1 closed, 0.02 meters.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm advances forward 0.3 meters along the designated mixing surface. Maintain a vertical axis angle of 90 degrees to the surface. Confirm position via laser rangefinder: 0.300 meters +/- 0.001 meters.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends Gripper 1 to a length of 0.15 meters. Ensure Gripper 1 is perpendicular to the mixing surface. Verify using visual marker recognition: Marker A must be within 1 millimeter of Gripper 1's tip.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm applies a force of 5 Newtons to the dough mass at the center of the mixing bowl (coordinates: X=0.1 meters, Y=0.2 meters, Z=-0.05 meters). Maintain this force for 3 seconds. Monitor force sensor readings continuously.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm retracts Gripper 1 0.05 meters. Verify gripper position via visual marker recognition: Marker B must be within 1 millimeter of Gripper 1’s tip.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm advances forward 0.2 meters along the designated mixing surface. Maintain a vertical axis angle of 90 degrees to the surface. Confirm position via laser rangefinder: 0.200 meters +/- 0.001 meters.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm extends Gripper 2 to a length of 0.15 meters. Ensure Gripper 2 is perpendicular to the mixing surface. Verify using visual marker recognition: Marker C must be within 1 millimeter of Gripper 2’s tip.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm applies a force of 5 Newtons to the dough mass at the center of the mixing bowl (coordinates: X=0.1 meters, Y=0.2 meters, Z=-0.05 meters). Maintain this force for 3 seconds. Monitor force sensor readings continuously.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm retracts Gripper 2 0.05 meters. Verify gripper position via visual marker recognition: Marker C must be within 1 millimeter of Gripper 2’s tip.",
+                                "children": []
+                            },
+                            {
+                                "step": "Robot arm returns to neutral position. Joint 1 (shoulder) angle: 0 degrees. Joint 2 (elbow) angle: 0 degrees. Joint 3 (wrist) rotation: 0 degrees. Gripper 1 closed, 0.02 meters.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Assess Dough for Proper Rise",
+                        "children": [
+                            {
+                                "step": "Initialize Measurement Tools: Calibrate digital caliper to 0.00 mm. Ensure laser distance sensor is calibrated to 0.1 mm accuracy. Confirm visual inspection camera is focused on the dough surface at a distance of 150 mm.",
+                                "children": []
+                            },
+                            {
+                                "step": "Locate Dough Center Point: Using the visual inspection camera, identify the center of the dough mass. Record the X, Y, and Z coordinates of the center point to within ±1 mm. Store these values as ‘DoughCenterX’, ‘DoughCenterY’, and ‘DoughCenterZ’ respectively.",
+                                "children": []
+                            },
+                            {
+                                "step": "Measure Dough Diameter: Using the laser distance sensor, measure the distance from the DoughCenterX coordinate to the furthest point on the circumference of the dough. Record this distance as ‘DiameterMeasurement’ in millimeters. Ensure measurement is taken along the longest axis of the dough mass.",
+                                "children": []
+                            },
+                            {
+                                "step": "Measure Dough Height: Using the digital caliper, measure the vertical distance from the dough surface at the DoughCenterX coordinate to the highest point of the dough mass. Record this distance as ‘HeightMeasurement’ in millimeters. Take measurement with the caliper jaws parallel to the dough surface.",
+                                "children": []
+                            },
+                            {
+                                "step": "Calculate Theoretical Diameter: Calculate the theoretical diameter of the dough mass using the formula: TheoreticalDiameter = DiameterMeasurement + (HeightMeasurement / π). Record this value as ‘TheoreticalDiameter’.",
+                                "children": []
+                            },
+                            {
+                                "step": "Calculate Percentage Rise: Calculate the percentage rise of the dough mass using the formula: PercentageRise = ((TheoreticalDiameter - DiameterMeasurement) / TheoreticalDiameter) * 100. Record this value as ‘PercentageRise’.",
+                                "children": []
+                            },
+                            {
+                                "step": "Visual Inspection – Air Cell Assessment: Using the visual inspection camera, examine the dough surface within a 30-degree arc centered on the DoughCenterX coordinate. Document the presence and approximate size (diameter) of any air cells visible, recording the center coordinates of at least three air cells, noting their diameters as ‘AirCell1Diameter’, ‘AirCell2Diameter’, and ‘AirCell3Diameter’ respectively.",
+                                "children": []
+                            },
+                            {
+                                "step": "Record Environmental Data: Log current ambient temperature (±0.1°C) and relative humidity (±1%) using the internal sensors. Store these values as ‘Temperature’ and ‘Humidity’.",
+                                "children": []
+                            },
+                            {
+                                "step": "Final Report Generation: Compile all recorded data (DiameterMeasurement, HeightMeasurement, TheoreticalDiameter, PercentageRise, Temperature, Humidity, AirCell1Diameter, AirCell2Diameter, AirCell3Diameter) into a single data file named ‘DoughRiseAssessment.csv’.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Check Dough Temperature",
+                        "children": [
+                            {
+                                "step": "Initialize Thermometer: Extend probe of digital thermometer 5.0 centimeters vertically from the center of the dough surface. Maintain probe orientation with a 3.2-degree angle relative to the horizontal. Confirm thermometer display reads 'Initializing...' for a duration of 2.5 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Dough Contact: Using the manipulator arm, precisely position the thermometer probe directly in the center of the dough. Ensure the probe surface makes full contact with the dough. Apply a downward force of 0.7 Newtons for 0.3 seconds to establish initial contact. Monitor the display reading for a change.",
+                                "children": []
+                            },
+                            {
+                                "step": "Data Acquisition - Phase 1: Maintain constant downward force of 0.7 Newtons on the probe. Record the digital thermometer display value every 0.1 seconds for a duration of 10 seconds. Store each reading as a floating-point number with 3 decimal places.",
+                                "children": []
+                            },
+                            {
+                                "step": "Data Acquisition - Phase 2: After 10 seconds of continuous data collection, halt the downward force on the probe. Hold the probe in place for 1.0 second. Monitor the thermometer display for stabilization.",
+                                "children": []
+                            },
+                            {
+                                "step": "Stabilization Check: Verify that the thermometer display reading has not fluctuated by more than 0.2 degrees Celsius over a period of 0.5 seconds. If the fluctuation exceeds this threshold, repeat steps 1-4.",
+                                "children": []
+                            },
+                            {
+                                "step": "Record Final Value: Record the final thermometer display reading as a floating-point number with 3 decimal places. Log the reading alongside a timestamp in ISO 8601 format (YYYY-MM-DDTHH:MM:SSZ).",
+                                "children": []
+                            },
+                            {
+                                "step": "Probe Retraction: Using the manipulator arm, retract the thermometer probe 5.0 centimeters vertically from the dough surface. Return to initial position. Confirm probe is 5.0 centimeters above the surface.",
+                                "children": []
+                            },
+                            {
+                                "step": "Clean Probe: Activate integrated air blast system on the manipulator arm, directed at the thermometer probe, for a duration of 0.3 seconds. Ensure the probe surface is free of any residual dough particles.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Determine if Dough has Reached Desired Volume",
+                        "children": [
+                            {
+                                "step": "Initialize Volume Measurement System: Activate visual sensors (camera 1) and tactile sensors (pressure pads A and B) calibrated to measure volume. Sensor 1 calibration target: 500 milliliters. Sensor 2 calibration target: 500 milliliters. Confirm calibration with visual feedback display indicating 500 ml.",
+                                "children": []
+                            },
+                            {
+                                "step": "Position Dough Sample: Using robotic arm (Arm 1) with precision gripper (Grip 1), carefully lift the dough sample from its initial resting position. Raise the dough sample vertically 15 centimeters above the surface. Maintain a stable position for 3 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Capture Initial Volume Data: Lower the dough sample onto the calibrated pressure pads (A and B). Ensure consistent contact across both pads. Record pressure reading from pad A and pad B. Record time from start of lowering to stable contact: 1.2 seconds. Log pressure reading A: 350 Pascals. Log pressure reading B: 365 Pascals.",
+                                "children": []
+                            },
+                            {
+                                "step": "Capture Final Volume Data: Using robotic arm (Arm 1) with precision gripper (Grip 1), carefully lift the dough sample from its initial resting position. Raise the dough sample vertically 15 centimeters above the surface. Maintain a stable position for 3 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Capture Final Volume Data: Using robotic arm (Arm 1) with precision gripper (Grip 1), carefully lift the dough sample from its initial resting position. Raise the dough sample vertically 15 centimeters above the surface. Maintain a stable position for 3 seconds. Carefully lower the dough sample onto the calibrated pressure pads (A and B). Ensure consistent contact across both pads. Record pressure reading from pad A and pad B. Record time from start of lowering to stable contact: 1.2 seconds. Log pressure reading A: 355 Pascals. Log pressure reading B: 360 Pascals.",
+                                "children": []
+                            },
+                            {
+                                "step": "Calculate Volume Difference: Subtract Initial Volume (Pad A: 350 Pascals, Pad B: 365 Pascals) from Final Volume (Pad A: 355 Pascals, Pad B: 360 Pascals). Calculate and record the difference in volume: 0.05 milliliters.",
+                                "children": []
+                            },
+                            {
+                                "step": "Compare to Tolerance: Compare the calculated volume difference (0.05 milliliters) to the defined tolerance level (±0.1 milliliters). Visual confirmation: Display a green indicator if volume difference is within tolerance, a yellow indicator if it’s slightly outside tolerance, and a red indicator if it exceeds the tolerance.",
+                                "children": []
+                            },
+                            {
+                                "step": "Record Result: Log the final result: 'Volume within tolerance (±0.1 ml)' or 'Volume outside tolerance (±0.1 ml)' to the central data log.",
+                                "children": []
+                            },
+                            {
+                                "step": "System Shutdown: Deactivate visual sensors (camera 1) and tactile sensors (pressure pads A and B). Power down robotic arm (Arm 1) and gripper (Grip 1).",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "step": "Record Initial Rise Time and Volume",
+                        "children": [
+                            {
+                                "step": "Initialize Data Logging: Activate Data Logger Unit 734. Confirm data logging is set to 'Time' and 'Volume' modes. Verify data logger resolution is set to 0.001 seconds for time and 0.001 liters for volume. Power supply to Data Logger Unit 734 at 12.0 volts DC.",
+                                "children": []
+                            },
+                            {
+                                "step": "Position Robot Arm: Move Robot Arm Segment 1 to X coordinate 100.0 cm, Y coordinate 50.0 cm, Z coordinate 15.0 cm. Verify arm orientation: Shoulder roll -3 degrees, Elbow pitch +10 degrees.",
+                                "children": []
+                            },
+                            {
+                                "step": "Locate Target Vessel: Using Robot Arm Segment 1 position, visually identify the target vessel. Confirm vessel is a cylindrical container with a diameter of 10.0 cm and a height of 20.0 cm. Vessel material is translucent polypropylene.",
+                                "children": []
+                            },
+                            {
+                                "step": "Position Sensor Probe: Move Robot Arm Segment 2 from its initial position (Z = 0.0 cm) to Z coordinate 8.0 cm. Maintain Robot Arm Segment 1 position at X = 100.0 cm, Y = 50.0 cm, Z = 15.0 cm. Verify Sensor Probe is 3.0 cm above the vessel's top surface.",
+                                "children": []
+                            },
+                            {
+                                "step": "Initiate Fluid Introduction: Activate Fluid Pump Unit Alpha. Set flow rate to 1.0 ml/second. Begin fluid introduction into the target vessel via the designated fluid inlet port. Monitor inlet port temperature – maintain at 25.0 ± 0.5 °C.",
+                                "children": []
+                            },
+                            {
+                                "step": "Record Initial Volume: Activate Volume Sensor Unit 12. Record volume reading. Verify reading is displayed on the Volume Sensor Unit 12 screen. Data logging continues for 60 seconds.",
+                                "children": []
+                            },
+                            {
+                                "step": "Monitor Rise Rate: Continuously monitor Volume Sensor Unit 12. Record volume reading every 0.1 seconds. Note the volume reading and timestamp simultaneously.",
+                                "children": []
+                            },
+                            {
+                                "step": "Pause Fluid Introduction: After 60 seconds, deactivate Fluid Pump Unit Alpha. Immediately cease fluid introduction. Confirm fluid flow has stopped.",
+                                "children": []
+                            },
+                            {
+                                "step": "Final Volume Measurement: Record final volume reading from Volume Sensor Unit 12. Store final volume reading alongside initial volume and timestamp. Data Logger Unit 734 continues to record ambient temperature: 23.0 ± 0.3 °C.",
+                                "children": []
+                            },
+                            {
+                                "step": "System Shutdown: Deactivate Fluid Pump Unit Alpha. Power down Data Logger Unit 734. Verify power supply to Data Logger Unit 734 is off. Retract Robot Arm Segment 1 to its initial position: X = 0.0 cm, Y = 0.0 cm, Z = 0.0 cm.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "uuid": "6a7ca30c-1ada-4987-afae-3b810c50e3bc"
+    },
+    "input": {
+        "system_message": "You are an AI that breaks down complex tasks into hierarchical steps. For each task, generate a set of sub-steps needed to complete it. Maintain clarity and logical order. IMPORTANT: Avoid duplicating steps that already exist elsewhere in the tree context provided. Focus on sub-steps that are specific to the current task being expanded. Format your response as a valid JSON array of step objects, where each object has a 'step' field and optionally a 'children' array containing substeps. Example format: [{'step': 'Main step 1', 'children': [{'step': 'Substep 1.1'}, {'step': 'Substep 1.2'}]}, {'step': 'Main step 2'}] Your entire response must be parseable as JSON. Do not include markdown formatting, code blocks, or commentary.",
+        "user_message": "Break down the following task into 3-7 sub-steps. Task: First Proof (Rise)\n\nDo NOT repeat steps that have already been created in the tree unless ABSOLUTELY NECESSARY.\nFocus on sub-steps that are specific to this task and avoid duplicating steps that already exist in the broader process.\n\n\nExisting steps in the tree (avoid duplicating these): Breadmaking, Gather Ingredients, Determine Recipe Requirements, Create a Shopping List, Check Pantry for Existing Ingredients, Go to Grocery Store, Select Ingredients Based on List, Purchase Ingredients, Activate Yeast, Warm Water Preparation, Measure Warm Water, Add Sugar to Water, Sprinkle Yeast on Top, Let Yeast Bloom, Combine Wet Ingredients, Pour Water into Mixing Bowl, Add Liquids (Milk, Juice, etc.) to Bowl, Ensure All Liquids are Fully Incorporated, Mix Dry Ingredients, Identify Dry Ingredients, Measure Dry Ingredients Accurately, Thoroughly Combine Dry Ingredients, Combine Wet and Dry Ingredients, Assess Wet Ingredients for Texture, Assess Dry Ingredients for Consistency, Gradually Add Dry Ingredients to Wet Ingredients, Mix Until Just Combined – Avoid Overmixing, Check for Lumps and Address Them, Knead Dough, Prepare Dough Surface, Add Flour to Mixing Bowl, Create a Well in the Center of the Flour, Pour Wet Ingredients into Well, Begin Kneading Dough, Evaluate Dough Texture During Kneading, First Proof (Rise)\n\nReturn ONLY a JSON array of step objects, with no markdown formatting, code blocks, or extra text.",
+        "timestamp": "2025-06-20T15:30:51.086243"
+    }
+}

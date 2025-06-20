@@ -140,7 +140,7 @@ Task Tree Structure:
 Create a simulation template for this task with appropriate actors and comprehensive resources using consistent snake_case naming."""
 
     try:
-        response = chat_with_llm_openrouter("meta-llama/llama-4-maverick:free", system_prompt, user_prompt)
+        response = chat_with_llm("gemma3", system_prompt, user_prompt)
         template = parse_llm_json_response(response)
         
         # Merge with defaults and ensure we have comprehensive resources
@@ -346,7 +346,7 @@ Simulation Template:
 Create a complete simulation with detailed tasks following ALL the requirements above. Ensure every resource reference exactly matches the template resource IDs (snake_case only)."""
 
     try:
-        response = chat_with_llm_openrouter("meta-llama/llama-4-maverick:free", system_prompt, user_prompt)
+        response = chat_with_llm("gemma3", system_prompt, user_prompt)
         return response
     except Exception as e:
         print(f"Error generating schedule: {e}")
@@ -769,7 +769,7 @@ Task Tree:
 Fix ALL the listed errors and provide a complete, valid simulation JSON with proper structure (no nested simulation objects)."""
 
     try:
-        response = chat_with_llm_openrouter("meta-llama/llama-4-maverick:free", system_prompt, user_prompt)
+        response = chat_with_llm("gemma3", system_prompt, user_prompt)
         return response
     except Exception as e:
         print(f"Error refining simulation: {e}")
