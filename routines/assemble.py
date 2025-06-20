@@ -329,73 +329,113 @@ def get_transparency_data_for_section(id_suffix, files_dir_path):
 
 def load_expanded_tree_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
     """
-    Load expanded tree data from expanded-tree.json in the files directory.
+    Load dual expanded tree data from both robotic and human formats.
     
     Args:
-        files_dir_path: Path to the directory containing expanded-tree.json
+        files_dir_path: Path to the directory containing expanded tree files
         
     Returns:
-        Processed expanded tree data ready for template rendering, or None if not found
+        Processed expanded tree data with both robotic and human datasets, or None if neither found
     """
-    expanded_tree_path = os.path.join(files_dir_path, "expanded-tree.json")
+    # Define file paths for both formats
+    robotic_path = os.path.join(files_dir_path, "expanded-tree-robotic.json")
+    human_path = os.path.join(files_dir_path, "expanded-tree-human.json")
+    fallback_path = os.path.join(files_dir_path, "expanded-tree.json")
     
-    if not os.path.exists(expanded_tree_path):
-        print(f"No expanded-tree.json found at {expanded_tree_path}")
+    robotic_data = None
+    human_data = None
+    
+    # Try to load robotic format
+    if os.path.exists(robotic_path):
+        try:
+            with open(robotic_path, "r", encoding="utf-8") as f:
+                robotic_data = json.load(f)
+            print(f"Loaded expanded-tree-robotic.json with keys: {list(robotic_data.keys())}")
+        except Exception as e:
+            print(f"Error loading robotic expanded tree data: {e}")
+    
+    # Try to load human format
+    if os.path.exists(human_path):
+        try:
+            with open(human_path, "r", encoding="utf-8") as f:
+                human_data = json.load(f)
+            print(f"Loaded expanded-tree-human.json with keys: {list(human_data.keys())}")
+        except Exception as e:
+            print(f"Error loading human expanded tree data: {e}")
+    
+    # Fallback to single expanded-tree.json (treat as robotic format)
+    if not robotic_data and not human_data and os.path.exists(fallback_path):
+        try:
+            with open(fallback_path, "r", encoding="utf-8") as f:
+                robotic_data = json.load(f)
+            print(f"Loaded fallback expanded-tree.json as robotic format with keys: {list(robotic_data.keys())}")
+        except Exception as e:
+            print(f"Error loading fallback expanded tree data: {e}")
+    
+    # Return None if no data could be loaded
+    if not robotic_data and not human_data:
+        print(f"No expanded tree data found at {robotic_path}, {human_path}, or {fallback_path}")
         return None
     
-    try:
-        with open(expanded_tree_path, "r", encoding="utf-8") as f:
-            expanded_tree_data = json.load(f)
+    def process_tree_node(node, level=0):
+        """Recursively process tree nodes to add indentation levels."""
+        processed_node = node.copy()
+        processed_node["indentation_level"] = level
+        processed_node["indentation_tabs"] = "\t" * level  # For CSS/styling
+        processed_node["indentation_class"] = f"indent-{level}"  # CSS class for indentation
         
-        print(f"Loaded expanded-tree.json with keys: {list(expanded_tree_data.keys())}")
+        if "children" in processed_node and processed_node["children"]:
+            processed_children = []
+            for child in processed_node["children"]:
+                processed_children.append(process_tree_node(child, level + 1))
+            processed_node["children"] = processed_children
         
-        # Extract the tree object
-        tree = expanded_tree_data.get("tree", {})
-        metadata = expanded_tree_data.get("metadata", {})
-        
-        if not tree:
-            print("No 'tree' key found in expanded-tree.json")
-            return None
-        
-        print(f"Tree object has keys: {list(tree.keys())}")
-        
-        # Process the tree to add indentation levels for rendering
-        def process_tree_node(node, level=0):
-            """Recursively process tree nodes to add indentation levels."""
-            processed_node = node.copy()
-            processed_node["indentation_level"] = level
-            processed_node["indentation_tabs"] = "\t" * level  # For CSS/styling
-            processed_node["indentation_class"] = f"indent-{level}"  # CSS class for indentation
-            
-            if "children" in processed_node and processed_node["children"]:
-                processed_children = []
-                for child in processed_node["children"]:
-                    processed_children.append(process_tree_node(child, level + 1))
-                processed_node["children"] = processed_children
-            
-            return processed_node
-        
-        # Process the root tree
-        processed_tree = process_tree_node(tree, 0)
-        
-        # Build the processed expanded tree data
-        processed_expanded_tree = {
-            "metadata": metadata,
-            "tree": processed_tree,
-            "original_leaf_count": metadata.get("original_leaf_count", 0),
-            "expanded_leaf_count": metadata.get("expanded_leaf_count", 0),
-            "expansion_model": metadata.get("expansion_model", "unknown"),
-            "expansion_date": metadata.get("expansion_date", "unknown")
-        }
-        
-        print(f"Processed expanded tree data with {processed_expanded_tree.get('expanded_leaf_count', 0)} expanded leaves")
-        return processed_expanded_tree
-        
-    except Exception as e:
-        print(f"Error loading expanded tree data: {e}")
-        import traceback
-        traceback.print_exc()
-        return None
+        return processed_node
+    
+    # Process robotic data if available
+    processed_robotic_tree = None
+    robotic_metadata = {}
+    if robotic_data:
+        robotic_tree = robotic_data.get("tree", {})
+        robotic_metadata = robotic_data.get("metadata", {})
+        if robotic_tree:
+            processed_robotic_tree = process_tree_node(robotic_tree, 0)
+            print(f"Processed robotic tree with {robotic_metadata.get('expanded_leaf_count', 0)} expanded leaves")
+    
+    # Process human data if available
+    processed_human_tree = None
+    human_metadata = {}
+    if human_data:
+        human_tree = human_data.get("tree", {})
+        human_metadata = human_data.get("metadata", {})
+        if human_tree:
+            processed_human_tree = process_tree_node(human_tree, 0)
+            print(f"Processed human tree with {human_metadata.get('expanded_leaf_count', 0)} expanded leaves")
+    
+    # Use robotic metadata as primary, fallback to human metadata
+    primary_metadata = robotic_metadata if robotic_metadata else human_metadata
+    
+    # Build the processed expanded tree data with both formats
+    processed_expanded_tree = {
+        "metadata": primary_metadata,
+        "robotic_tree": processed_robotic_tree,
+        "human_tree": processed_human_tree,
+        "has_robotic": processed_robotic_tree is not None,
+        "has_human": processed_human_tree is not None,
+        "original_leaf_count": primary_metadata.get("original_leaf_count", 0),
+        "expanded_leaf_count": primary_metadata.get("expanded_leaf_count", 0),
+        "expansion_model": primary_metadata.get("expansion_model", "unknown"),
+        "expansion_date": primary_metadata.get("expansion_date", "unknown")
+    }
+    
+    # Maintain backward compatibility by setting 'tree' to robotic format if available
+    if processed_robotic_tree:
+        processed_expanded_tree["tree"] = processed_robotic_tree
+    elif processed_human_tree:
+        processed_expanded_tree["tree"] = processed_human_tree
+    
+    print(f"Processed dual expanded tree data - Robotic: {processed_expanded_tree['has_robotic']}, Human: {processed_expanded_tree['has_human']}")
+    return processed_expanded_tree
 
 def load_simulation_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
     """

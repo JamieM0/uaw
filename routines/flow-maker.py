@@ -5,6 +5,7 @@ import json
 import subprocess
 import requests
 import time
+import shutil
 from datetime import datetime
 from utils import (
     load_json, save_output, create_output_metadata,
@@ -472,25 +473,66 @@ def main():
         program, output_filename = programs[program_idx]
         step_info_prefix = f"Step {program_idx + 1}/{len(programs)}: "
 
-        # For expand-node.py, use 2.json (the tree) as input from hallucinate-tree.py
+        # Special handling for expand-node.py - run it twice with different modes
         if program == "expand-node.py":
             current_input_path = os.path.join(flow_dir, "2.json")
+            abs_current_input_path = os.path.abspath(current_input_path)
+            
+            # First run: robotic mode
+            robotic_output_path = os.path.join(flow_dir, "expanded-tree-robotic.json")
+            abs_robotic_output_path = os.path.abspath(robotic_output_path)
+            robotic_extra_args = ["-saveInputs", "-flow_uuid="+flow_uuid, "-mode=robotic"]
+            
+            print(f"  Running expand-node.py in robotic mode...")
+            robotic_result = run_program(program, abs_current_input_path, abs_robotic_output_path,
+                                       f"{step_info_prefix}Robotic ", robotic_extra_args, model_name)
+            
+            if robotic_result["status"] == "failure":
+                print(f"  {Colors.RED}Failed to generate robotic expanded tree{Colors.ENDC}")
+                run_result = robotic_result  # Use this result for error handling below
+            else:
+                # Second run: human mode
+                human_output_path = os.path.join(flow_dir, "expanded-tree-human.json")
+                abs_human_output_path = os.path.abspath(human_output_path)
+                human_extra_args = ["-saveInputs", "-flow_uuid="+flow_uuid, "-mode=human"]
+                
+                print(f"  Running expand-node.py in human mode...")
+                human_result = run_program(program, abs_current_input_path, abs_human_output_path,
+                                         f"{step_info_prefix}Human ", human_extra_args, model_name)
+                
+                if human_result["status"] == "failure":
+                    print(f"  {Colors.YELLOW}Warning: Failed to generate human expanded tree, but robotic version succeeded{Colors.ENDC}")
+                    run_result = robotic_result  # Consider it successful if at least robotic worked
+                else:
+                    print(f"  {Colors.GREEN}Both robotic and human expanded trees generated successfully{Colors.ENDC}")
+                    run_result = human_result  # Use human result as the final result
+                
+                # Also create backward-compatible expanded-tree.json (using robotic version)
+                fallback_output_path = os.path.join(flow_dir, "expanded-tree.json")
+                try:
+                    import shutil
+                    shutil.copy2(abs_robotic_output_path, fallback_output_path)
+                    print(f"  Created backward-compatible expanded-tree.json")
+                except Exception as e:
+                    print(f"  {Colors.YELLOW}Warning: Could not create fallback expanded-tree.json: {e}{Colors.ENDC}")
+        
         # For simulation.py, use 2.json (the tree) as input instead of the previous output
         elif program == "simulation.py":
             current_input_path = os.path.join(flow_dir, "2.json")
+            abs_current_input_path = os.path.abspath(current_input_path)
+            output_path = os.path.join(flow_dir, output_filename)
+            extra_args = ["-saveInputs", "-flow_uuid="+flow_uuid]
+            abs_output_path = os.path.abspath(output_path)
+            run_result = run_program(program, abs_current_input_path, abs_output_path, step_info_prefix, extra_args, model_name)
         else:
             current_input_path = input_copy_path
-        
-        abs_current_input_path = os.path.abspath(current_input_path)
-        
-        output_path = os.path.join(flow_dir, output_filename)
-        extra_args = ["-saveInputs", "-flow_uuid="+flow_uuid]
-        if program == "hallucinate-tree.py":
-            extra_args += ["-flat"]
-        
-        abs_output_path = os.path.abspath(output_path)
-        
-        run_result = run_program(program, abs_current_input_path, abs_output_path, step_info_prefix, extra_args, model_name)
+            abs_current_input_path = os.path.abspath(current_input_path)
+            output_path = os.path.join(flow_dir, output_filename)
+            extra_args = ["-saveInputs", "-flow_uuid="+flow_uuid]
+            if program == "hallucinate-tree.py":
+                extra_args += ["-flat"]
+            abs_output_path = os.path.abspath(output_path)
+            run_result = run_program(program, abs_current_input_path, abs_output_path, step_info_prefix, extra_args, model_name)
 
         if run_result["status"] == "failure":
             print(run_result["error_info"])

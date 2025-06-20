@@ -101,7 +101,18 @@
                                                 
                                                 {% if expanded_tree_data %}
                                                     <div class="expanded-timeline-section">
-                                                        <h5>Expanded Process Timeline</h5>
+                                                        <div class="expanded-timeline-header">
+                                                            <h5>Expanded Process Timeline</h5>
+                                                            {% if expanded_tree_data.has_robotic and expanded_tree_data.has_human %}
+                                                                <div class="robot-mode-toggle">
+                                                                    <label class="toggle-switch">
+                                                                        <input type="checkbox" id="robot-mode-toggle" checked>
+                                                                        <span class="toggle-slider"></span>
+                                                                    </label>
+                                                                    <span class="toggle-label">Robot Mode</span>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
                                                         <div class="expanded-tree-content">
                                                             {% macro render_tree_node(node, depth=0, skip_root=false, node_id="", index=0) %}
                                                                 {% if not skip_root %}
@@ -137,10 +148,26 @@
                                                                 {% endif %}
                                                             {% endmacro %}
                                                             
-                                                            {% if expanded_tree_data.tree.children %}
-                                                                {% for child in expanded_tree_data.tree.children %}
-                                                                    {{ render_tree_node(child, 0, false, "", loop.index0) }}
-                                                                {% endfor %}
+                                                            <div id="robotic-tree-content" class="tree-dataset active">
+                                                                {% if expanded_tree_data.robotic_tree and expanded_tree_data.robotic_tree.children %}
+                                                                    {% for child in expanded_tree_data.robotic_tree.children %}
+                                                                        {{ render_tree_node(child, 0, false, "robotic", loop.index0) }}
+                                                                    {% endfor %}
+                                                                {% elif expanded_tree_data.tree and expanded_tree_data.tree.children %}
+                                                                    {% for child in expanded_tree_data.tree.children %}
+                                                                        {{ render_tree_node(child, 0, false, "fallback", loop.index0) }}
+                                                                    {% endfor %}
+                                                                {% endif %}
+                                                            </div>
+                                                            
+                                                            {% if expanded_tree_data.has_human %}
+                                                                <div id="human-tree-content" class="tree-dataset">
+                                                                    {% if expanded_tree_data.human_tree and expanded_tree_data.human_tree.children %}
+                                                                        {% for child in expanded_tree_data.human_tree.children %}
+                                                                            {{ render_tree_node(child, 0, false, "human", loop.index0) }}
+                                                                        {% endfor %}
+                                                                    {% endif %}
+                                                                </div>
                                                             {% endif %}
                                                         </div>
                                                     </div>
@@ -266,6 +293,9 @@
     </script>
     <script id="simulation-data" type="application/json">
         {{ simulation_data | tojson | safe if simulation_data else '{}' }}
+    </script>
+    <script id="expanded-tree-data" type="application/json">
+        {{ expanded_tree_data | tojson | safe if expanded_tree_data else '{}' }}
     </script>
     <script src="/assets/js/components.js"></script>
     <script src="/assets/js/main.js"></script>

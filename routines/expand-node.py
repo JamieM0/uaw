@@ -9,7 +9,7 @@ from utils import (
     create_output_metadata, get_output_filepath, translate_to_basic_english
 )
 
-def expand_node_with_llm(node, model, parameters=None):
+def expand_node_with_llm_robotic(node, model, parameters=None):
     """Expand a single node using the LLM to generate robot-level detail."""
     if parameters is None:
         parameters = {}
@@ -60,24 +60,89 @@ def expand_node_with_llm(node, model, parameters=None):
     
     return expanded_children
 
-def expand_tree_recursively(node, model, parameters=None):
+def expand_node_with_llm_human(node, model, parameters=None):
+    """Expand a single node using the LLM to generate exact human-level detail."""
+    if parameters is None:
+        parameters = {}
+    
+    step = node.get("step", "Unknown step")
+    
+    print(f"Expanding node: '{step}'")
+    
+    system_msg = (
+        "You are an AI that breaks down tasks into extremely detailed steps. "
+        "Each step should be so specific that a human could follow it without any ambiguity. "
+        "Think 'game cutscene level of specificity' - every movement, every measurement, every action. "
+        "Format your response as a valid JSON array of step objects, where each object has a 'step' field. "
+        "Example format: [{'step': 'First extremely detailed step'}, {'step': 'Second extremely detailed step'}] "
+        "Your entire response must be parseable as JSON. Do not include markdown formatting or commentary."
+    )
+    
+    user_msg = (
+        f"Break down the following task into 5-10 extremely detailed, human-level substeps:\n\n"
+        f"Task: {step}\n\n"
+        "Each step should be detailed enough that a human could follow it without any interpretation. "
+        "Include specific measurements, exact movements, precise timings, and clear indicators. "
+        "Return ONLY a JSON array of step objects, with no markdown formatting, code blocks, or extra text."
+    )
+    
+    response_text = chat_with_llm(model, system_msg, user_msg, parameters)
+    
+    # Parse the LLM response
+    substeps = parse_llm_json_response(response_text)
+    
+    if not isinstance(substeps, list) or len(substeps) == 0:
+        print(f"Error: No valid substeps could be generated for '{step}'")
+        return []
+    
+    # Convert substeps to the expected format with children arrays
+    expanded_children = []
+    for substep in substeps:
+        if isinstance(substep, dict) and "step" in substep:
+            expanded_children.append({
+                "step": substep["step"],
+                "children": []
+            })
+        elif isinstance(substep, str):
+            expanded_children.append({
+                "step": substep,
+                "children": []
+            })
+    
+    return expanded_children
+
+def expand_tree_recursively(node, model, mode, parameters=None):
     """Recursively expand all nodes in the tree to maximum detail."""
     if not isinstance(node, dict):
         return node
     
     # If this node has no children, expand it
-    children = node.get("children", [])
-    if not children:
-        # This is a leaf node - expand it with LLM
-        expanded_children = expand_node_with_llm(node, model, parameters)
-        node["children"] = expanded_children
-    else:
-        # This node has children - recursively expand each child
-        expanded_children = []
-        for child in children:
-            expanded_child = expand_tree_recursively(child, model, parameters)
-            expanded_children.append(expanded_child)
-        node["children"] = expanded_children
+    if(mode == "robotic"):
+        children = node.get("children", [])
+        if not children:
+            # This is a leaf node - expand it with LLM
+            expanded_children = expand_node_with_llm_robotic(node, model, parameters)
+            node["children"] = expanded_children
+        else:
+            # This node has children - recursively expand each child
+            expanded_children = []
+            for child in children:
+                expanded_child = expand_tree_recursively(child, model, mode, parameters)
+                expanded_children.append(expanded_child)
+            node["children"] = expanded_children
+    elif(mode == "human"):
+        children = node.get("children", [])
+        if not children:
+            # This is a leaf node - expand it with LLM
+            expanded_children = expand_node_with_llm_human(node, model, parameters)
+            node["children"] = expanded_children
+        else:
+            # This node has children - recursively expand each child
+            expanded_children = []
+            for child in children:
+                expanded_child = expand_tree_recursively(child, model, mode, parameters)
+                expanded_children.append(expanded_child)
+            node["children"] = expanded_children
     
     return node
 
@@ -101,11 +166,11 @@ def handle_expand_node_args():
     
     <json_file_path>: Path to JSON file containing tree structure (e.g., 'routines/flow/05c6f003-39eb-4dc9-8fa3-eabddadb6bce/2.json')
     [output_file_path]: Optional - Path to save expanded tree (defaults to 'expanded-tree.json' in same directory)
-    [additional_args]: Additional arguments (e.g., -saveInputs, -flow_uuid=xxx)
+    [additional_args]: Additional arguments (e.g., -saveInputs, -flow_uuid=xxx, mode=robotic|human)
     
     Examples:
       python expand-node.py routines/flow/05c6f003-39eb-4dc9-8fa3-eabddadb6bce/2.json
-      python expand-node.py routines/flow/05c6f003-39eb-4dc9-8fa3-eabddadb6bce/2.json my-expanded-tree.json
+      python expand-node.py routines/flow/05c6f003-39eb-4dc9-8fa3-eabddadb6bce/2.json my-expanded-tree.json -mode=human
       python expand-node.py input.json output.json -saveInputs -flow_uuid=12345
     """
     
@@ -116,29 +181,39 @@ def handle_expand_node_args():
     json_file_path = sys.argv[1]
     output_file_path = None
     
-    if len(sys.argv) >= 3 and not sys.argv[2].startswith('-'):
-        output_file_path = sys.argv[2]
-    else:
-        # Default output path: same directory as input, named 'expanded-tree.json'
-        input_dir = os.path.dirname(json_file_path)
-        output_file_path = os.path.join(input_dir, "expanded-tree.json")
-    
     # Parse additional arguments
     save_inputs = False
     flow_uuid = None
+    mode = "robotic"  # Default mode for expansion
     
     for arg in sys.argv[2:]:
         if arg == "-saveInputs":
-            save_inputs = True
+            save_inputs = True#
+        elif arg.startswith("-mode="):
+            mode_arg = arg.split("=", 1)[1].lower()
+            if mode_arg in ["robotic", "human"]:
+                mode = mode_arg
+            else:
+                print(f"Error: Invalid mode '{mode_arg}'. Use 'robotic' or 'human'.")
+                sys.exit(1)
         elif arg.startswith("-flow_uuid="):
             flow_uuid = arg.split("=", 1)[1]
-    
-    return json_file_path, output_file_path, save_inputs, flow_uuid
+
+    if len(sys.argv) >= 3 and not sys.argv[2].startswith('-'):
+        output_file_path = sys.argv[2]
+    elif mode=="human":
+        input_dir = os.path.dirname(json_file_path)
+        output_file_path = os.path.join(input_dir, "expanded-tree-human.json")
+    else:
+        input_dir = os.path.dirname(json_file_path)
+        output_file_path = os.path.join(input_dir, "expanded-tree-robotic.json")
+
+    return json_file_path, output_file_path, save_inputs, flow_uuid, mode
 
 def main():
     """Main function to run the tree expansion routine."""
-    json_file_path, output_file_path, save_inputs, flow_uuid = handle_expand_node_args()
-    
+    json_file_path, output_file_path, save_inputs, flow_uuid, mode = handle_expand_node_args()
+
     print("Working...")
     start_time = datetime.now()
     
@@ -178,7 +253,7 @@ def main():
     
     # Recursively expand the entire tree
     print("Starting recursive expansion of all nodes...")
-    expanded_tree = expand_tree_recursively(tree, model, parameters)
+    expanded_tree = expand_tree_recursively(tree, model, mode, parameters)
     
     # Count final leaf nodes
     final_leaf_count = count_leaf_nodes(expanded_tree)

@@ -813,5 +813,100 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.querySelector('.expanded-tree-content')) {
         new TreeCollapseManager();
     }
+    
+    // Initialize robot mode toggle functionality
+    if (document.querySelector('.expanded-tree-content')) {
+        new RobotModeToggle();
+    }
 });
 
+
+// Robot Mode Toggle Manager for Expanded Tree Data
+class RobotModeToggle {
+    constructor() {
+        this.expandedTreeData = null;
+        this.isRobotMode = true; // Default to robot mode (enabled)
+        this.init();
+    }
+    
+    init() {
+        this.loadExpandedTreeData();
+        this.initializeToggle();
+    }
+    
+    loadExpandedTreeData() {
+        const scriptTag = document.getElementById('expanded-tree-data');
+        if (scriptTag) {
+            try {
+                this.expandedTreeData = JSON.parse(scriptTag.textContent);
+                console.log('Expanded tree data loaded:', this.expandedTreeData);
+            } catch (e) {
+                console.error('Failed to parse expanded tree data:', e);
+            }
+        }
+    }
+    
+    initializeToggle() {
+        const toggle = document.getElementById('robot-mode-toggle');
+        if (!toggle) {
+            console.log('Robot mode toggle not found - likely only one dataset available');
+            return;
+        }
+        
+        // Only initialize if we have both datasets
+        if (!this.expandedTreeData || !this.expandedTreeData.has_robotic || !this.expandedTreeData.has_human) {
+            console.log('Not enough datasets for robot mode toggle');
+            return;
+        }
+        
+        // Set initial state
+        toggle.checked = this.isRobotMode;
+        this.updateTreeDisplay();
+        
+        // Add event listener
+        toggle.addEventListener('change', (e) => {
+            this.isRobotMode = e.target.checked;
+            this.updateTreeDisplay();
+        });
+        
+        console.log('Robot mode toggle initialized');
+    }
+    
+    updateTreeDisplay() {
+        const roboticContent = document.getElementById('robotic-tree-content');
+        const humanContent = document.getElementById('human-tree-content');
+        
+        if (!roboticContent || !humanContent) {
+            console.warn('Tree content containers not found');
+            return;
+        }
+        
+        if (this.isRobotMode) {
+            // Show robotic content, hide human content
+            roboticContent.classList.add('active');
+            humanContent.classList.remove('active');
+        } else {
+            // Show human content, hide robotic content
+            roboticContent.classList.remove('active');
+            humanContent.classList.add('active');
+        }
+        
+        // Optionally trigger analytics or logging
+        console.log(`Switched to ${this.isRobotMode ? 'robotic' : 'human'} mode`);
+    }
+    
+    // Public method to get current mode
+    getCurrentMode() {
+        return this.isRobotMode ? 'robotic' : 'human';
+    }
+    
+    // Public method to set mode programmatically
+    setMode(isRobotMode) {
+        this.isRobotMode = isRobotMode;
+        const toggle = document.getElementById('robot-mode-toggle');
+        if (toggle) {
+            toggle.checked = isRobotMode;
+        }
+        this.updateTreeDisplay();
+    }
+}
