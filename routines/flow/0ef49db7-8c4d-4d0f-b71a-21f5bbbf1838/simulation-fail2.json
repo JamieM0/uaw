@@ -1,0 +1,19 @@
+{
+  "attempt": 2,
+  "error_type": "parse",
+  "errors": [
+    "Task 0 (unnamed): Missing required field: id",
+    "Task 0 (unnamed): Missing required field: start",
+    "Task 0 (unnamed): Missing required field: duration",
+    "Task 0 (unnamed): Missing required field: actor_id",
+    "Task 0 (unnamed): Missing required field: consumes",
+    "Task 0 (unnamed): Missing required field: produces",
+    "Task 0: Missing task ID",
+    "Task 0 (): Invalid start time format: ",
+    "Task 0 (): Duration must be positive number, got: None",
+    "Task 0 (): Must consume at least one resource",
+    "Task 0 (): Must produce at least one resource"
+  ],
+  "timestamp": "{\"timestamp\": \"2025-06-17\"}",
+  "failed_data": "```json\n{\n  \"time_unit\": \"minute\",\n  \"start_time\": \"06:00\",\n  \"end_time\": \"18:00\",\n  \"actors\": [\n    {\n      \"id\": \"baker_actor\",\n      \"role\": \"Baker\",\n      \"cost_per_hour\": 25.0,\n      \"availability\": [\n        {\n          \"from\": \"06:00\",\n          \"to\": \"18:00\"\n        }\n      ]\n    },\n    {\n      \"id\": \"mixer_operator_actor\",\n      \"role\": \"Mixer Operator\",\n      \"cost_per_hour\": 18.0,\n      \"availability\": [\n        {\n          \"from\": \"06:00\",\n          \"to\": \"18:00\"\n        }\n      ]\n    }\n  ],\n  \"resources\": [\n    {\n      \"id\": \"flour\",\n      \"unit\": \"kg\",\n      \"starting_stock\": 50.0\n    },\n    {\n      \"id\": \"water\",\n      \"unit\": \"liters\",\n      \"starting_stock\": 20.0\n    },\n    {\n      \"id\": \"yeast\",\n      \"unit\": \"grams\",\n      \"starting_stock\": 100.0\n    },\n    {\n      \"id\": \"clean_mixer\",\n      \"unit\": \"unit\",\n      \"starting_stock\": 1\n    },\n    {\n      \"id\": \"dirty_mixer\",\n      \"unit\": \"unit\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"shaped_loaves\",\n      \"unit\": \"units\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"finished_bread\",\n      \"unit\": \"units\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"cool_oven\",\n      \"unit\": \"unit\",\n      \"starting_stock\": 1\n    },\n    {\n      \"id\": \"preheated_oven\",\n      \"unit\": \"unit\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"clean_workspace\",\n      \"unit\": \"unit\",\n      \"starting_stock\": 1\n    },\n    {\n      \"id\": \"dirty_workspace\",\n      \"unit\": \"unit\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"measured_ingredients\",\n      \"unit\": \"grams\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"mixed_dough\",\n      \"unit\": \"units\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"kneaded_dough\",\n      \"unit\": \"units\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"risen_dough\",\n      \"unit\": \"units\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"shaped_loaves\",\n      \"unit\": \"units\",\n      \"starting_stock\": 0\n    },\n    {\n      \"id\": \"finished_bread\",\n      \"unit\": \"units\",\n      \"starting_stock\": 0\n    }\n  ],\n  \"tasks\": [\n    {\n      \"task_id\": \"Shape Dough\",\n      \"steps\": [\n        {\n          \"step\": \"Prepare Dough: Knead risen dough thoroughly.\"\n        },\n        {\n          \"step\": \"Preheat Oven: Ensure oven reaches the correct temperature.\"\n        },\n        {\n          \"step\": \"Shape Dough: Divide dough into portions for shaping.\"\n        },\n        {\n          \"step\": \"Shape Dough: Form dough into desired loaf shapes.\"\n        },\n        {\n          \"step\": \"Place Dough in Pan: Place shaped loaves into prepared pans.\"\n        },\n        {\n          \"step\": \"Prepare for Baking: Cover loaves with a towel.\"\n        }\n      ]\n    }\n  ]\n}\n```"
+}

@@ -1,0 +1,350 @@
+{
+  "attempt": 2,
+  "error_type": "logic",
+  "errors": [
+    "Task activate_yeast_add \ud83d\udd38 \ud83c\udf00: Starts before dependency prepare_water_mixture \ud83d\udd38 \ud83e\udd44 finishes",
+    "Task allow_yeast_to \ud83d\udd38 \u2699\ufe0f: Starts before dependency activate_yeast_add \ud83d\udd38 \ud83c\udf00 finishes",
+    "Task combine_wet_ingredients \ud83d\udd38 \ud83e\udd44: Starts before dependency allow_yeast_to \ud83d\udd38 \u2699\ufe0f finishes",
+    "Task combine_dry_ingredients \ud83d\udd38 \u2699\ufe0f: Starts before dependency combine_wet_ingredients \ud83d\udd38 \ud83e\udd44 finishes",
+    "Task gradually_incorporate_dry \ud83d\udd38 \ud83e\udd44: Starts before dependency combine_dry_ingredients \ud83d\udd38 \u2699\ufe0f finishes",
+    "Task mix_until_dough \ud83d\udd38 \ud83e\udd44: Starts before dependency gradually_incorporate_dry \ud83d\udd38 \ud83e\udd44 finishes",
+    "Task prepare_water_mixture \ud83d\udd38 \ud83e\udd44: Starts before dependency mix_until_dough \ud83d\udd38 \ud83e\udd44 finishes"
+  ],
+  "timestamp": "{\"timestamp\": \"2025-06-17\"}",
+  "failed_data": {
+    "time_unit": "minute",
+    "start_time": "06:00",
+    "end_time": "18:00",
+    "actors": [
+      {
+        "id": "baker_actor",
+        "role": "Baker",
+        "cost_per_hour": 25.0,
+        "availability": [
+          {
+            "from": "06:00",
+            "to": "18:00"
+          }
+        ]
+      },
+      {
+        "id": "mixer_operator_actor",
+        "role": "Mixer Operator",
+        "cost_per_hour": 18.0,
+        "availability": [
+          {
+            "from": "06:00",
+            "to": "18:00"
+          }
+        ]
+      }
+    ],
+    "resources": [
+      {
+        "id": "flour",
+        "unit": "kg",
+        "starting_stock": 10.0
+      },
+      {
+        "id": "water",
+        "unit": "liters",
+        "starting_stock": 5.0
+      },
+      {
+        "id": "yeast",
+        "unit": "grams",
+        "starting_stock": 20.0
+      },
+      {
+        "id": "clean_mixer",
+        "unit": "units",
+        "starting_stock": 1
+      },
+      {
+        "id": "dirty_mixer",
+        "unit": "units",
+        "starting_stock": 0
+      },
+      {
+        "id": "clean_workspace",
+        "unit": "units",
+        "starting_stock": 1
+      },
+      {
+        "id": "dirty_workspace",
+        "unit": "units",
+        "starting_stock": 0
+      },
+      {
+        "id": "measured_ingredients",
+        "unit": "grams",
+        "starting_stock": 0
+      },
+      {
+        "id": "activated_yeast",
+        "unit": "grams",
+        "starting_stock": 0
+      },
+      {
+        "id": "mixed_dough",
+        "unit": "units",
+        "starting_stock": 0
+      },
+      {
+        "id": "kneaded_dough",
+        "unit": "units",
+        "starting_stock": 0
+      },
+      {
+        "id": "risen_dough",
+        "unit": "units",
+        "starting_stock": 0
+      },
+      {
+        "id": "shaped_dough",
+        "unit": "units",
+        "starting_stock": 0
+      }
+    ],
+    "tasks": [
+      {
+        "id": "prepare_water_mixture \ud83d\udd38 \ud83e\udd44",
+        "start": "06:00",
+        "duration": 15,
+        "actor_id": "baker_actor",
+        "location": "mixing_station",
+        "consumes": {
+          "measured_ingredients": 1
+        },
+        "produces": {
+          "mixed_dough": 1
+        },
+        "depends_on": []
+      },
+      {
+        "id": "activate_yeast_add \ud83d\udd38 \ud83c\udf00",
+        "start": "06:15",
+        "duration": 10,
+        "actor_id": "mixer_operator_actor",
+        "location": "prep_station",
+        "consumes": {
+          "yeast": 5
+        },
+        "produces": {
+          "activated_yeast": 1
+        },
+        "depends_on": [
+          "prepare_water_mixture \ud83d\udd38 \ud83e\udd44"
+        ]
+      },
+      {
+        "id": "allow_yeast_to \ud83d\udd38 \u2699\ufe0f",
+        "start": "06:25",
+        "duration": 15,
+        "actor_id": "baker_actor",
+        "location": "workspace",
+        "consumes": {
+          "yeast": 5
+        },
+        "produces": {
+          "activated_yeast": 1
+        },
+        "depends_on": [
+          "activate_yeast_add \ud83d\udd38 \ud83c\udf00"
+        ]
+      },
+      {
+        "id": "combine_wet_ingredients \ud83d\udd38 \ud83e\udd44",
+        "start": "06:40",
+        "duration": 15,
+        "actor_id": "baker_actor",
+        "location": "mixing_station",
+        "consumes": {
+          "measured_ingredients": 1
+        },
+        "produces": {
+          "mixed_dough": 1
+        },
+        "depends_on": [
+          "allow_yeast_to \ud83d\udd38 \u2699\ufe0f"
+        ]
+      },
+      {
+        "id": "combine_dry_ingredients \ud83d\udd38 \u2699\ufe0f",
+        "start": "06:55",
+        "duration": 15,
+        "actor_id": "baker_actor",
+        "location": "workspace",
+        "consumes": {
+          "clean_workspace": 1
+        },
+        "produces": {
+          "dirty_workspace": 1
+        },
+        "depends_on": [
+          "combine_wet_ingredients \ud83d\udd38 \ud83e\udd44"
+        ]
+      },
+      {
+        "id": "gradually_incorporate_dry \ud83d\udd38 \ud83e\udd44",
+        "start": "07:10",
+        "duration": 15,
+        "actor_id": "baker_actor",
+        "location": "mixing_station",
+        "consumes": {
+          "measured_ingredients": 1
+        },
+        "produces": {
+          "mixed_dough": 1
+        },
+        "depends_on": [
+          "combine_dry_ingredients \ud83d\udd38 \u2699\ufe0f"
+        ]
+      },
+      {
+        "id": "mix_until_dough \ud83d\udd38 \ud83e\udd44",
+        "start": "07:25",
+        "duration": 15,
+        "actor_id": "baker_actor",
+        "location": "mixing_station",
+        "consumes": {
+          "measured_ingredients": 1
+        },
+        "produces": {
+          "mixed_dough": 1
+        },
+        "depends_on": [
+          "gradually_incorporate_dry \ud83d\udd38 \ud83e\udd44"
+        ]
+      },
+      {
+        "id": "prepare_water_mixture \ud83d\udd38 \ud83e\udd44",
+        "start": "07:40",
+        "duration": 15,
+        "actor_id": "baker_actor",
+        "location": "mixing_station",
+        "consumes": {
+          "measured_ingredients": 1
+        },
+        "produces": {
+          "mixed_dough": 1
+        },
+        "depends_on": [
+          "mix_until_dough \ud83d\udd38 \ud83e\udd44"
+        ]
+      },
+      {
+        "id": "activate_yeast_add \ud83d\udd38 \ud83c\udf00",
+        "start": "07:55",
+        "duration": 10,
+        "actor_id": "mixer_operator_actor",
+        "location": "prep_station",
+        "consumes": {
+          "yeast": 5
+        },
+        "produces": {
+          "activated_yeast": 1
+        },
+        "depends_on": [
+          "prepare_water_mixture \ud83d\udd38 \ud83e\udd44"
+        ]
+      },
+      {
+        "id": "allow_yeast_to \ud83d\udd38 \u2699\ufe0f",
+        "start": "08:05",
+        "duration": 15,
+        "actor_id": "baker_actor",
+        "location": "workspace",
+        "consumes": {
+          "yeast": 5
+        },
+        "produces": {
+          "activated_yeast": 1
+        },
+        "depends_on": [
+          "activate_yeast_add \ud83d\udd38 \ud83c\udf00"
+        ]
+      },
+      {
+        "id": "combine_wet_ingredients \ud83d\udd38 \ud83e\udd44",
+        "start": "08:20",
+        "duration": 15,
+        "actor_id": "baker_actor",
+        "location": "mixing_station",
+        "consumes": {
+          "measured_ingredients": 1
+        },
+        "produces": {
+          "mixed_dough": 1
+        },
+        "depends_on": [
+          "allow_yeast_to \ud83d\udd38 \u2699\ufe0f"
+        ]
+      },
+      {
+        "id": "combine_dry_ingredients \ud83d\udd38 \u2699\ufe0f",
+        "start": "08:35",
+        "duration": 15,
+        "actor_id": "baker_actor",
+        "location": "workspace",
+        "consumes": {
+          "clean_workspace": 1
+        },
+        "produces": {
+          "dirty_workspace": 1
+        },
+        "depends_on": [
+          "combine_wet_ingredients \ud83d\udd38 \ud83e\udd44"
+        ]
+      },
+      {
+        "id": "gradually_incorporate_dry \ud83d\udd38 \ud83e\udd44",
+        "start": "08:50",
+        "duration": 15,
+        "actor_id": "baker_actor",
+        "location": "mixing_station",
+        "consumes": {
+          "measured_ingredients": 1
+        },
+        "produces": {
+          "mixed_dough": 1
+        },
+        "depends_on": [
+          "combine_dry_ingredients \ud83d\udd38 \u2699\ufe0f"
+        ]
+      },
+      {
+        "id": "mix_until_dough \ud83d\udd38 \ud83e\udd44",
+        "start": "09:05",
+        "duration": 15,
+        "actor_id": "baker_actor",
+        "location": "mixing_station",
+        "consumes": {
+          "measured_ingredients": 1
+        },
+        "produces": {
+          "mixed_dough": 1
+        },
+        "depends_on": [
+          "gradually_incorporate_dry \ud83d\udd38 \ud83e\udd44"
+        ]
+      },
+      {
+        "id": "shape_dough \ud83d\udd38 \ud83d\udc50",
+        "start": "09:20",
+        "duration": 25,
+        "actor_id": "baker_actor",
+        "location": "shaping_area",
+        "consumes": {
+          "risen_dough": 1
+        },
+        "produces": {
+          "dirty_workspace": 1
+        },
+        "depends_on": [
+          "mix_until_dough \ud83d\udd38 \ud83e\udd44"
+        ]
+      }
+    ]
+  }
+}

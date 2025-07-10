@@ -1,0 +1,2264 @@
+{
+    "simulation": {
+        "time_unit": "minute",
+        "start_time": "06:00",
+        "end_time": "18:00",
+        "actors": [
+            {
+                "id": "baker_actor",
+                "role": "Baker",
+                "cost_per_hour": 25.0,
+                "availability": [
+                    {
+                        "from": "06:00",
+                        "to": "18:00"
+                    }
+                ]
+            },
+            {
+                "id": "mixer_operator_actor",
+                "role": "Mixer Operator",
+                "cost_per_hour": 18.0,
+                "availability": [
+                    {
+                        "from": "06:00",
+                        "to": "18:00"
+                    }
+                ]
+            }
+        ],
+        "resources": [
+            {
+                "id": "flour",
+                "unit": "kg",
+                "starting_stock": 10.0
+            },
+            {
+                "id": "water",
+                "unit": "liters",
+                "starting_stock": 5.0
+            },
+            {
+                "id": "yeast",
+                "unit": "grams",
+                "starting_stock": 20.0
+            },
+            {
+                "id": "clean_mixer",
+                "unit": "units",
+                "starting_stock": 1
+            },
+            {
+                "id": "dirty_mixer",
+                "unit": "units",
+                "starting_stock": 0
+            },
+            {
+                "id": "clean_workspace",
+                "unit": "units",
+                "starting_stock": 1
+            },
+            {
+                "id": "dirty_workspace",
+                "unit": "units",
+                "starting_stock": 0
+            },
+            {
+                "id": "measured_ingredients",
+                "unit": "grams",
+                "starting_stock": 0
+            },
+            {
+                "id": "activated_yeast",
+                "unit": "grams",
+                "starting_stock": 0
+            },
+            {
+                "id": "mixed_dough",
+                "unit": "units",
+                "starting_stock": 0
+            },
+            {
+                "id": "kneaded_dough",
+                "unit": "units",
+                "starting_stock": 0
+            },
+            {
+                "id": "risen_dough",
+                "unit": "units",
+                "starting_stock": 0
+            },
+            {
+                "id": "shaped_dough",
+                "unit": "units",
+                "starting_stock": 0
+            }
+        ],
+        "tasks": [
+            {
+                "id": "prepare_water_mixture 🔸 🥄",
+                "start": "06:00",
+                "duration": 15,
+                "actor_id": "baker_actor",
+                "location": "mixing_station",
+                "consumes": {
+                    "measured_ingredients": 1
+                },
+                "produces": {
+                    "mixed_dough": 1
+                },
+                "depends_on": []
+            },
+            {
+                "id": "activate_yeast_add 🔸 🌀",
+                "start": "06:15",
+                "duration": 10,
+                "actor_id": "mixer_operator_actor",
+                "location": "prep_station",
+                "consumes": {
+                    "yeast": 5
+                },
+                "produces": {
+                    "activated_yeast": 1
+                },
+                "depends_on": [
+                    "prepare_water_mixture 🔸 🥄"
+                ]
+            },
+            {
+                "id": "allow_yeast_to 🔸 ⚙️",
+                "start": "06:25",
+                "duration": 15,
+                "actor_id": "baker_actor",
+                "location": "workspace",
+                "consumes": {
+                    "yeast": 5
+                },
+                "produces": {
+                    "activated_yeast": 1
+                },
+                "depends_on": [
+                    "activate_yeast_add 🔸 🌀"
+                ]
+            },
+            {
+                "id": "combine_wet_ingredients 🔸 🥄",
+                "start": "06:45",
+                "duration": 15,
+                "actor_id": "baker_actor",
+                "location": "mixing_station",
+                "consumes": {
+                    "measured_ingredients": 1
+                },
+                "produces": {
+                    "mixed_dough": 1
+                },
+                "depends_on": [
+                    "allow_yeast_to 🔸 ⚙️"
+                ]
+            },
+            {
+                "id": "combine_dry_ingredients 🔸 ⚙️",
+                "start": "07:05",
+                "duration": 15,
+                "actor_id": "baker_actor",
+                "location": "workspace",
+                "consumes": {
+                    "clean_workspace": 1
+                },
+                "produces": {
+                    "dirty_workspace": 1
+                },
+                "depends_on": [
+                    "combine_wet_ingredients 🔸 🥄"
+                ]
+            },
+            {
+                "id": "gradually_incorporate_dry 🔸 🥄",
+                "start": "07:25",
+                "duration": 15,
+                "actor_id": "baker_actor",
+                "location": "mixing_station",
+                "consumes": {
+                    "measured_ingredients": 1
+                },
+                "produces": {
+                    "mixed_dough": 1
+                },
+                "depends_on": [
+                    "combine_dry_ingredients 🔸 ⚙️"
+                ]
+            },
+            {
+                "id": "mix_until_dough 🔸 🥄",
+                "start": "07:45",
+                "duration": 15,
+                "actor_id": "baker_actor",
+                "location": "mixing_station",
+                "consumes": {
+                    "measured_ingredients": 1
+                },
+                "produces": {
+                    "mixed_dough": 1
+                },
+                "depends_on": [
+                    "gradually_incorporate_dry 🔸 🥄"
+                ]
+            },
+            {
+                "id": "prepare_water_mixture 🔸 🥄",
+                "start": "08:05",
+                "duration": 15,
+                "actor_id": "baker_actor",
+                "location": "mixing_station",
+                "consumes": {
+                    "measured_ingredients": 1
+                },
+                "produces": {
+                    "mixed_dough": 1
+                },
+                "depends_on": [
+                    "mix_until_dough 🔸 🥄"
+                ]
+            },
+            {
+                "id": "activate_yeast_add 🔸 🌀",
+                "start": "07:55",
+                "duration": 10,
+                "actor_id": "mixer_operator_actor",
+                "location": "prep_station",
+                "consumes": {
+                    "yeast": 5
+                },
+                "produces": {
+                    "activated_yeast": 1
+                },
+                "depends_on": [
+                    "prepare_water_mixture 🔸 🥄"
+                ]
+            },
+            {
+                "id": "allow_yeast_to 🔸 ⚙️",
+                "start": "08:25",
+                "duration": 15,
+                "actor_id": "baker_actor",
+                "location": "workspace",
+                "consumes": {
+                    "yeast": 5
+                },
+                "produces": {
+                    "activated_yeast": 1
+                },
+                "depends_on": [
+                    "activate_yeast_add 🔸 🌀"
+                ]
+            },
+            {
+                "id": "combine_wet_ingredients 🔸 🥄",
+                "start": "08:45",
+                "duration": 15,
+                "actor_id": "baker_actor",
+                "location": "mixing_station",
+                "consumes": {
+                    "measured_ingredients": 1
+                },
+                "produces": {
+                    "mixed_dough": 1
+                },
+                "depends_on": [
+                    "allow_yeast_to 🔸 ⚙️"
+                ]
+            },
+            {
+                "id": "combine_dry_ingredients 🔸 ⚙️",
+                "start": "09:05",
+                "duration": 15,
+                "actor_id": "baker_actor",
+                "location": "workspace",
+                "consumes": {
+                    "clean_workspace": 1
+                },
+                "produces": {
+                    "dirty_workspace": 1
+                },
+                "depends_on": [
+                    "combine_wet_ingredients 🔸 🥄"
+                ]
+            },
+            {
+                "id": "gradually_incorporate_dry 🔸 🥄",
+                "start": "09:25",
+                "duration": 15,
+                "actor_id": "baker_actor",
+                "location": "mixing_station",
+                "consumes": {
+                    "measured_ingredients": 1
+                },
+                "produces": {
+                    "mixed_dough": 1
+                },
+                "depends_on": [
+                    "combine_dry_ingredients 🔸 ⚙️"
+                ]
+            },
+            {
+                "id": "mix_until_dough 🔸 🥄",
+                "start": "09:45",
+                "duration": 15,
+                "actor_id": "baker_actor",
+                "location": "mixing_station",
+                "consumes": {
+                    "measured_ingredients": 1
+                },
+                "produces": {
+                    "mixed_dough": 1
+                },
+                "depends_on": [
+                    "gradually_incorporate_dry 🔸 🥄"
+                ]
+            },
+            {
+                "id": "shape_dough 🔸 👐",
+                "start": "10:05",
+                "duration": 25,
+                "actor_id": "baker_actor",
+                "location": "shaping_area",
+                "consumes": {
+                    "risen_dough": 1
+                },
+                "produces": {
+                    "dirty_workspace": 1
+                },
+                "depends_on": [
+                    "mix_until_dough 🔸 🥄"
+                ]
+            }
+        ],
+        "validation_transparency": {
+            "validation_process": {
+                "configuration_loaded": {
+                    "constraint_config": true,
+                    "maintenance_rules": true
+                },
+                "processing_steps": {
+                    "resource_flow_validation": true,
+                    "maintenance_insertion": true,
+                    "conflict_resolution": true,
+                    "buffer_time_application": true
+                },
+                "resource_timeline": {
+                    "measured_ingredients": [
+                        {
+                            "quantity": 0,
+                            "timestamp": "06:00",
+                            "consumed_by": "prepare_water_mixture 🔸 🥄",
+                            "produced_by": null
+                        },
+                        {
+                            "quantity": 0,
+                            "timestamp": "06:40",
+                            "consumed_by": "combine_wet_ingredients 🔸 🥄",
+                            "produced_by": null
+                        },
+                        {
+                            "quantity": 0,
+                            "timestamp": "07:10",
+                            "consumed_by": "gradually_incorporate_dry 🔸 🥄",
+                            "produced_by": null
+                        },
+                        {
+                            "quantity": 0,
+                            "timestamp": "07:25",
+                            "consumed_by": "mix_until_dough 🔸 🥄",
+                            "produced_by": null
+                        },
+                        {
+                            "quantity": 0,
+                            "timestamp": "07:40",
+                            "consumed_by": "prepare_water_mixture 🔸 🥄",
+                            "produced_by": null
+                        },
+                        {
+                            "quantity": 0,
+                            "timestamp": "08:20",
+                            "consumed_by": "combine_wet_ingredients 🔸 🥄",
+                            "produced_by": null
+                        },
+                        {
+                            "quantity": 0,
+                            "timestamp": "08:50",
+                            "consumed_by": "gradually_incorporate_dry 🔸 🥄",
+                            "produced_by": null
+                        },
+                        {
+                            "quantity": 0,
+                            "timestamp": "09:05",
+                            "consumed_by": "mix_until_dough 🔸 🥄",
+                            "produced_by": null
+                        }
+                    ],
+                    "mixed_dough": [
+                        {
+                            "quantity": 1,
+                            "timestamp": "06:00",
+                            "consumed_by": null,
+                            "produced_by": "prepare_water_mixture 🔸 🥄"
+                        },
+                        {
+                            "quantity": 2,
+                            "timestamp": "06:40",
+                            "consumed_by": null,
+                            "produced_by": "combine_wet_ingredients 🔸 🥄"
+                        },
+                        {
+                            "quantity": 3,
+                            "timestamp": "07:10",
+                            "consumed_by": null,
+                            "produced_by": "gradually_incorporate_dry 🔸 🥄"
+                        },
+                        {
+                            "quantity": 4,
+                            "timestamp": "07:25",
+                            "consumed_by": null,
+                            "produced_by": "mix_until_dough 🔸 🥄"
+                        },
+                        {
+                            "quantity": 5,
+                            "timestamp": "07:40",
+                            "consumed_by": null,
+                            "produced_by": "prepare_water_mixture 🔸 🥄"
+                        },
+                        {
+                            "quantity": 6,
+                            "timestamp": "08:20",
+                            "consumed_by": null,
+                            "produced_by": "combine_wet_ingredients 🔸 🥄"
+                        },
+                        {
+                            "quantity": 7,
+                            "timestamp": "08:50",
+                            "consumed_by": null,
+                            "produced_by": "gradually_incorporate_dry 🔸 🥄"
+                        },
+                        {
+                            "quantity": 8,
+                            "timestamp": "09:05",
+                            "consumed_by": null,
+                            "produced_by": "mix_until_dough 🔸 🥄"
+                        }
+                    ],
+                    "yeast": [
+                        {
+                            "quantity": 15.0,
+                            "timestamp": "06:15",
+                            "consumed_by": "activate_yeast_add 🔸 🌀",
+                            "produced_by": null
+                        },
+                        {
+                            "quantity": 10.0,
+                            "timestamp": "06:25",
+                            "consumed_by": "allow_yeast_to 🔸 ⚙️",
+                            "produced_by": null
+                        },
+                        {
+                            "quantity": 5.0,
+                            "timestamp": "07:55",
+                            "consumed_by": "activate_yeast_add 🔸 🌀",
+                            "produced_by": null
+                        },
+                        {
+                            "quantity": 0,
+                            "timestamp": "08:05",
+                            "consumed_by": "allow_yeast_to 🔸 ⚙️",
+                            "produced_by": null
+                        }
+                    ],
+                    "activated_yeast": [
+                        {
+                            "quantity": 1,
+                            "timestamp": "06:15",
+                            "consumed_by": null,
+                            "produced_by": "activate_yeast_add 🔸 🌀"
+                        },
+                        {
+                            "quantity": 2,
+                            "timestamp": "06:25",
+                            "consumed_by": null,
+                            "produced_by": "allow_yeast_to 🔸 ⚙️"
+                        },
+                        {
+                            "quantity": 3,
+                            "timestamp": "07:55",
+                            "consumed_by": null,
+                            "produced_by": "activate_yeast_add 🔸 🌀"
+                        },
+                        {
+                            "quantity": 4,
+                            "timestamp": "08:05",
+                            "consumed_by": null,
+                            "produced_by": "allow_yeast_to 🔸 ⚙️"
+                        }
+                    ],
+                    "clean_workspace": [
+                        {
+                            "quantity": 0,
+                            "timestamp": "06:55",
+                            "consumed_by": "combine_dry_ingredients 🔸 ⚙️",
+                            "produced_by": null
+                        },
+                        {
+                            "quantity": 0,
+                            "timestamp": "08:35",
+                            "consumed_by": "combine_dry_ingredients 🔸 ⚙️",
+                            "produced_by": null
+                        }
+                    ],
+                    "dirty_workspace": [
+                        {
+                            "quantity": 1,
+                            "timestamp": "06:55",
+                            "consumed_by": null,
+                            "produced_by": "combine_dry_ingredients 🔸 ⚙️"
+                        },
+                        {
+                            "quantity": 2,
+                            "timestamp": "08:35",
+                            "consumed_by": null,
+                            "produced_by": "combine_dry_ingredients 🔸 ⚙️"
+                        },
+                        {
+                            "quantity": 3,
+                            "timestamp": "09:20",
+                            "consumed_by": null,
+                            "produced_by": "shape_dough 🔸 👐"
+                        }
+                    ],
+                    "risen_dough": [
+                        {
+                            "quantity": 0,
+                            "timestamp": "09:20",
+                            "consumed_by": "shape_dough 🔸 👐",
+                            "produced_by": null
+                        }
+                    ]
+                },
+                "validation_statistics": {
+                    "total_validations": 28,
+                    "by_severity": {
+                        "error": 10,
+                        "warning": 7,
+                        "info": 11
+                    },
+                    "by_category": {
+                        "resource_issues": 11,
+                        "scheduling_conflicts": 6,
+                        "optimization_suggestions": 11
+                    },
+                    "processing_summary": {
+                        "resource_flow_checked": true,
+                        "maintenance_tasks_inserted": true,
+                        "conflicts_resolved": true,
+                        "buffer_time_applied": true
+                    }
+                }
+            },
+            "business_readiness": {
+                "level": "critical",
+                "score": 0,
+                "issue_counts": {
+                    "critical_errors": 0,
+                    "resource_issues": 11,
+                    "scheduling_conflicts": 6
+                },
+                "description": "Simulation has critical issues preventing business use"
+            },
+            "recommendations": [
+                {
+                    "category": "resource_management",
+                    "priority": "high",
+                    "title": "Review Resource Planning",
+                    "description": "Multiple resource availability issues detected. Consider increasing starting stocks or adjusting consumption rates.",
+                    "issue_count": 11
+                },
+                {
+                    "category": "scheduling",
+                    "priority": "medium",
+                    "title": "Optimize Task Scheduling",
+                    "description": "Scheduling conflicts detected. Consider adding buffer time or redistributing tasks among actors.",
+                    "issue_count": 6
+                }
+            ]
+        },
+        "validation_results": [
+            {
+                "id": "insufficient_stock_measured_ingredients_prepare_water_mixture 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task prepare_water_mixture 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "prepare_water_mixture 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "06:00"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_combine_wet_ingredients 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task combine_wet_ingredients 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "combine_wet_ingredients 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "06:40"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_gradually_incorporate_dry 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task gradually_incorporate_dry 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "gradually_incorporate_dry 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "07:10"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_mix_until_dough 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task mix_until_dough 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "mix_until_dough 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "07:25"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_prepare_water_mixture 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task prepare_water_mixture 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "prepare_water_mixture 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "07:40"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_combine_wet_ingredients 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task combine_wet_ingredients 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "combine_wet_ingredients 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "08:20"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "insufficient_stock_clean_workspace_combine_dry_ingredients 🔸 ⚙️",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient clean_workspace for task combine_dry_ingredients 🔸 ⚙️. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "combine_dry_ingredients 🔸 ⚙️",
+                    "resource_id": "clean_workspace",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "08:35"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_gradually_incorporate_dry 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task gradually_incorporate_dry 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "gradually_incorporate_dry 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "08:50"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_mix_until_dough 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task mix_until_dough 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "mix_until_dough 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "09:05"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "insufficient_stock_risen_dough_shape_dough 🔸 👐",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient risen_dough for task shape_dough 🔸 👐. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "shape_dough 🔸 👐",
+                    "resource_id": "risen_dough",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "09:20"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "missing_dependency_risen_dough_kneaded_dough",
+                "severity": "warning",
+                "category": "resource_issues",
+                "message": "Task shape_dough 🔸 👐 consumes risen_dough which depends on kneaded_dough, but kneaded_dough has not been produced",
+                "details": {
+                    "task_id": "shape_dough 🔸 👐",
+                    "dependent_resource": "risen_dough",
+                    "required_resource": "kneaded_dough"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_0",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace cleaning task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "cleaning",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_1",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace sanitization task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "sanitization",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_0",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace cleaning task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "cleaning",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_1",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace sanitization task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "sanitization",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_0",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace cleaning task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "cleaning",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_1",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace sanitization task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "sanitization",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "buffer_applied_combine_wet_ingredients 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task combine_wet_ingredients 🔸 🥄",
+                "details": {
+                    "task_id": "combine_wet_ingredients 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "06:45"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "buffer_applied_combine_dry_ingredients 🔸 ⚙️",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task combine_dry_ingredients 🔸 ⚙️",
+                "details": {
+                    "task_id": "combine_dry_ingredients 🔸 ⚙️",
+                    "buffer_minutes": 5,
+                    "new_start": "07:05"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "buffer_applied_gradually_incorporate_dry 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task gradually_incorporate_dry 🔸 🥄",
+                "details": {
+                    "task_id": "gradually_incorporate_dry 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "07:25"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "buffer_applied_mix_until_dough 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task mix_until_dough 🔸 🥄",
+                "details": {
+                    "task_id": "mix_until_dough 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "07:45"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "buffer_applied_prepare_water_mixture 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task prepare_water_mixture 🔸 🥄",
+                "details": {
+                    "task_id": "prepare_water_mixture 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "08:05"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "buffer_applied_allow_yeast_to 🔸 ⚙️",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task allow_yeast_to 🔸 ⚙️",
+                "details": {
+                    "task_id": "allow_yeast_to 🔸 ⚙️",
+                    "buffer_minutes": 5,
+                    "new_start": "08:25"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "buffer_applied_combine_wet_ingredients 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task combine_wet_ingredients 🔸 🥄",
+                "details": {
+                    "task_id": "combine_wet_ingredients 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "08:45"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "buffer_applied_combine_dry_ingredients 🔸 ⚙️",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task combine_dry_ingredients 🔸 ⚙️",
+                "details": {
+                    "task_id": "combine_dry_ingredients 🔸 ⚙️",
+                    "buffer_minutes": 5,
+                    "new_start": "09:05"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "buffer_applied_gradually_incorporate_dry 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task gradually_incorporate_dry 🔸 🥄",
+                "details": {
+                    "task_id": "gradually_incorporate_dry 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "09:25"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "buffer_applied_mix_until_dough 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task mix_until_dough 🔸 🥄",
+                "details": {
+                    "task_id": "mix_until_dough 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "09:45"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            },
+            {
+                "id": "buffer_applied_shape_dough 🔸 👐",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task shape_dough 🔸 👐",
+                "details": {
+                    "task_id": "shape_dough 🔸 👐",
+                    "buffer_minutes": 5,
+                    "new_start": "10:05"
+                },
+                "timestamp": "2025-07-10T18:34:03.190637",
+                "task_id": null,
+                "resource_id": null,
+                "actor_id": null
+            }
+        ],
+        "validation_summary": {
+            "total_issues": 28,
+            "critical_errors": 0,
+            "resource_issues": 11,
+            "scheduling_conflicts": 6,
+            "optimization_suggestions": 11,
+            "business_readiness_score": 0,
+            "business_readiness_level": "critical",
+            "processing_time": 0.001,
+            "timestamp": "2025-07-10T18:34:03.190637"
+        }
+    },
+    "validation_summary": {
+        "total_issues": 28,
+        "issues_by_category": {
+            "resource_issues": 11,
+            "scheduling_conflicts": 6,
+            "optimization_suggestions": 11
+        },
+        "business_readiness": {
+            "level": "critical",
+            "score": 0,
+            "issue_counts": {
+                "critical_errors": 0,
+                "resource_issues": 11,
+                "scheduling_conflicts": 6
+            },
+            "description": "Simulation has critical issues preventing business use"
+        },
+        "has_critical_errors": true,
+        "validation_results": [
+            {
+                "id": "insufficient_stock_measured_ingredients_prepare_water_mixture 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task prepare_water_mixture 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "prepare_water_mixture 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "06:00"
+                }
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_combine_wet_ingredients 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task combine_wet_ingredients 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "combine_wet_ingredients 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "06:40"
+                }
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_gradually_incorporate_dry 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task gradually_incorporate_dry 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "gradually_incorporate_dry 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "07:10"
+                }
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_mix_until_dough 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task mix_until_dough 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "mix_until_dough 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "07:25"
+                }
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_prepare_water_mixture 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task prepare_water_mixture 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "prepare_water_mixture 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "07:40"
+                }
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_combine_wet_ingredients 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task combine_wet_ingredients 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "combine_wet_ingredients 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "08:20"
+                }
+            },
+            {
+                "id": "insufficient_stock_clean_workspace_combine_dry_ingredients 🔸 ⚙️",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient clean_workspace for task combine_dry_ingredients 🔸 ⚙️. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "combine_dry_ingredients 🔸 ⚙️",
+                    "resource_id": "clean_workspace",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "08:35"
+                }
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_gradually_incorporate_dry 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task gradually_incorporate_dry 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "gradually_incorporate_dry 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "08:50"
+                }
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_mix_until_dough 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task mix_until_dough 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "mix_until_dough 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "09:05"
+                }
+            },
+            {
+                "id": "insufficient_stock_risen_dough_shape_dough 🔸 👐",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient risen_dough for task shape_dough 🔸 👐. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "shape_dough 🔸 👐",
+                    "resource_id": "risen_dough",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "09:20"
+                }
+            },
+            {
+                "id": "missing_dependency_risen_dough_kneaded_dough",
+                "severity": "warning",
+                "category": "resource_issues",
+                "message": "Task shape_dough 🔸 👐 consumes risen_dough which depends on kneaded_dough, but kneaded_dough has not been produced",
+                "details": {
+                    "task_id": "shape_dough 🔸 👐",
+                    "dependent_resource": "risen_dough",
+                    "required_resource": "kneaded_dough"
+                }
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_0",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace cleaning task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "cleaning",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                }
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_1",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace sanitization task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "sanitization",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                }
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_0",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace cleaning task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "cleaning",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                }
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_1",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace sanitization task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "sanitization",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                }
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_0",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace cleaning task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "cleaning",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                }
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_1",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace sanitization task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "sanitization",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                }
+            },
+            {
+                "id": "buffer_applied_combine_wet_ingredients 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task combine_wet_ingredients 🔸 🥄",
+                "details": {
+                    "task_id": "combine_wet_ingredients 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "06:45"
+                }
+            },
+            {
+                "id": "buffer_applied_combine_dry_ingredients 🔸 ⚙️",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task combine_dry_ingredients 🔸 ⚙️",
+                "details": {
+                    "task_id": "combine_dry_ingredients 🔸 ⚙️",
+                    "buffer_minutes": 5,
+                    "new_start": "07:05"
+                }
+            },
+            {
+                "id": "buffer_applied_gradually_incorporate_dry 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task gradually_incorporate_dry 🔸 🥄",
+                "details": {
+                    "task_id": "gradually_incorporate_dry 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "07:25"
+                }
+            },
+            {
+                "id": "buffer_applied_mix_until_dough 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task mix_until_dough 🔸 🥄",
+                "details": {
+                    "task_id": "mix_until_dough 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "07:45"
+                }
+            },
+            {
+                "id": "buffer_applied_prepare_water_mixture 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task prepare_water_mixture 🔸 🥄",
+                "details": {
+                    "task_id": "prepare_water_mixture 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "08:05"
+                }
+            },
+            {
+                "id": "buffer_applied_allow_yeast_to 🔸 ⚙️",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task allow_yeast_to 🔸 ⚙️",
+                "details": {
+                    "task_id": "allow_yeast_to 🔸 ⚙️",
+                    "buffer_minutes": 5,
+                    "new_start": "08:25"
+                }
+            },
+            {
+                "id": "buffer_applied_combine_wet_ingredients 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task combine_wet_ingredients 🔸 🥄",
+                "details": {
+                    "task_id": "combine_wet_ingredients 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "08:45"
+                }
+            },
+            {
+                "id": "buffer_applied_combine_dry_ingredients 🔸 ⚙️",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task combine_dry_ingredients 🔸 ⚙️",
+                "details": {
+                    "task_id": "combine_dry_ingredients 🔸 ⚙️",
+                    "buffer_minutes": 5,
+                    "new_start": "09:05"
+                }
+            },
+            {
+                "id": "buffer_applied_gradually_incorporate_dry 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task gradually_incorporate_dry 🔸 🥄",
+                "details": {
+                    "task_id": "gradually_incorporate_dry 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "09:25"
+                }
+            },
+            {
+                "id": "buffer_applied_mix_until_dough 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task mix_until_dough 🔸 🥄",
+                "details": {
+                    "task_id": "mix_until_dough 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "09:45"
+                }
+            },
+            {
+                "id": "buffer_applied_shape_dough 🔸 👐",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task shape_dough 🔸 👐",
+                "details": {
+                    "task_id": "shape_dough 🔸 👐",
+                    "buffer_minutes": 5,
+                    "new_start": "10:05"
+                }
+            }
+        ]
+    },
+    "validation_transparency": {
+        "validation_process": {
+            "steps_completed": [
+                "Resource Flow Validation",
+                "Maintenance Task Insertion",
+                "Scheduling Conflict Resolution",
+                "Buffer Time Application"
+            ],
+            "configuration_used": {
+                "constraint_config": true,
+                "maintenance_rules": true
+            },
+            "resource_timeline": {
+                "measured_ingredients": [
+                    {
+                        "quantity": 0,
+                        "timestamp": "06:00",
+                        "consumed_by": "prepare_water_mixture 🔸 🥄",
+                        "produced_by": null
+                    },
+                    {
+                        "quantity": 0,
+                        "timestamp": "06:40",
+                        "consumed_by": "combine_wet_ingredients 🔸 🥄",
+                        "produced_by": null
+                    },
+                    {
+                        "quantity": 0,
+                        "timestamp": "07:10",
+                        "consumed_by": "gradually_incorporate_dry 🔸 🥄",
+                        "produced_by": null
+                    },
+                    {
+                        "quantity": 0,
+                        "timestamp": "07:25",
+                        "consumed_by": "mix_until_dough 🔸 🥄",
+                        "produced_by": null
+                    },
+                    {
+                        "quantity": 0,
+                        "timestamp": "07:40",
+                        "consumed_by": "prepare_water_mixture 🔸 🥄",
+                        "produced_by": null
+                    },
+                    {
+                        "quantity": 0,
+                        "timestamp": "08:20",
+                        "consumed_by": "combine_wet_ingredients 🔸 🥄",
+                        "produced_by": null
+                    },
+                    {
+                        "quantity": 0,
+                        "timestamp": "08:50",
+                        "consumed_by": "gradually_incorporate_dry 🔸 🥄",
+                        "produced_by": null
+                    },
+                    {
+                        "quantity": 0,
+                        "timestamp": "09:05",
+                        "consumed_by": "mix_until_dough 🔸 🥄",
+                        "produced_by": null
+                    }
+                ],
+                "mixed_dough": [
+                    {
+                        "quantity": 1,
+                        "timestamp": "06:00",
+                        "consumed_by": null,
+                        "produced_by": "prepare_water_mixture 🔸 🥄"
+                    },
+                    {
+                        "quantity": 2,
+                        "timestamp": "06:40",
+                        "consumed_by": null,
+                        "produced_by": "combine_wet_ingredients 🔸 🥄"
+                    },
+                    {
+                        "quantity": 3,
+                        "timestamp": "07:10",
+                        "consumed_by": null,
+                        "produced_by": "gradually_incorporate_dry 🔸 🥄"
+                    },
+                    {
+                        "quantity": 4,
+                        "timestamp": "07:25",
+                        "consumed_by": null,
+                        "produced_by": "mix_until_dough 🔸 🥄"
+                    },
+                    {
+                        "quantity": 5,
+                        "timestamp": "07:40",
+                        "consumed_by": null,
+                        "produced_by": "prepare_water_mixture 🔸 🥄"
+                    },
+                    {
+                        "quantity": 6,
+                        "timestamp": "08:20",
+                        "consumed_by": null,
+                        "produced_by": "combine_wet_ingredients 🔸 🥄"
+                    },
+                    {
+                        "quantity": 7,
+                        "timestamp": "08:50",
+                        "consumed_by": null,
+                        "produced_by": "gradually_incorporate_dry 🔸 🥄"
+                    },
+                    {
+                        "quantity": 8,
+                        "timestamp": "09:05",
+                        "consumed_by": null,
+                        "produced_by": "mix_until_dough 🔸 🥄"
+                    }
+                ],
+                "yeast": [
+                    {
+                        "quantity": 15.0,
+                        "timestamp": "06:15",
+                        "consumed_by": "activate_yeast_add 🔸 🌀",
+                        "produced_by": null
+                    },
+                    {
+                        "quantity": 10.0,
+                        "timestamp": "06:25",
+                        "consumed_by": "allow_yeast_to 🔸 ⚙️",
+                        "produced_by": null
+                    },
+                    {
+                        "quantity": 5.0,
+                        "timestamp": "07:55",
+                        "consumed_by": "activate_yeast_add 🔸 🌀",
+                        "produced_by": null
+                    },
+                    {
+                        "quantity": 0,
+                        "timestamp": "08:05",
+                        "consumed_by": "allow_yeast_to 🔸 ⚙️",
+                        "produced_by": null
+                    }
+                ],
+                "activated_yeast": [
+                    {
+                        "quantity": 1,
+                        "timestamp": "06:15",
+                        "consumed_by": null,
+                        "produced_by": "activate_yeast_add 🔸 🌀"
+                    },
+                    {
+                        "quantity": 2,
+                        "timestamp": "06:25",
+                        "consumed_by": null,
+                        "produced_by": "allow_yeast_to 🔸 ⚙️"
+                    },
+                    {
+                        "quantity": 3,
+                        "timestamp": "07:55",
+                        "consumed_by": null,
+                        "produced_by": "activate_yeast_add 🔸 🌀"
+                    },
+                    {
+                        "quantity": 4,
+                        "timestamp": "08:05",
+                        "consumed_by": null,
+                        "produced_by": "allow_yeast_to 🔸 ⚙️"
+                    }
+                ],
+                "clean_workspace": [
+                    {
+                        "quantity": 0,
+                        "timestamp": "06:55",
+                        "consumed_by": "combine_dry_ingredients 🔸 ⚙️",
+                        "produced_by": null
+                    },
+                    {
+                        "quantity": 0,
+                        "timestamp": "08:35",
+                        "consumed_by": "combine_dry_ingredients 🔸 ⚙️",
+                        "produced_by": null
+                    }
+                ],
+                "dirty_workspace": [
+                    {
+                        "quantity": 1,
+                        "timestamp": "06:55",
+                        "consumed_by": null,
+                        "produced_by": "combine_dry_ingredients 🔸 ⚙️"
+                    },
+                    {
+                        "quantity": 2,
+                        "timestamp": "08:35",
+                        "consumed_by": null,
+                        "produced_by": "combine_dry_ingredients 🔸 ⚙️"
+                    },
+                    {
+                        "quantity": 3,
+                        "timestamp": "09:20",
+                        "consumed_by": null,
+                        "produced_by": "shape_dough 🔸 👐"
+                    }
+                ],
+                "risen_dough": [
+                    {
+                        "quantity": 0,
+                        "timestamp": "09:20",
+                        "consumed_by": "shape_dough 🔸 👐",
+                        "produced_by": null
+                    }
+                ]
+            },
+            "validation_statistics": {
+                "total_validations": 28,
+                "by_severity": {
+                    "error": 10,
+                    "warning": 7,
+                    "info": 11
+                },
+                "by_category": {
+                    "resource_issues": 11,
+                    "scheduling_conflicts": 6,
+                    "optimization_suggestions": 11
+                },
+                "processing_summary": {
+                    "resource_flow_checked": true,
+                    "maintenance_tasks_inserted": true,
+                    "conflicts_resolved": true,
+                    "buffer_time_applied": true
+                }
+            }
+        },
+        "business_readiness": {
+            "level": "critical",
+            "score": 0,
+            "issue_counts": {
+                "critical_errors": 0,
+                "resource_issues": 11,
+                "scheduling_conflicts": 6
+            },
+            "description": "Simulation has critical issues preventing business use"
+        },
+        "recommendations": [
+            {
+                "category": "resource_management",
+                "priority": "high",
+                "title": "Review Resource Planning",
+                "description": "Multiple resource availability issues detected. Consider increasing starting stocks or adjusting consumption rates.",
+                "issue_count": 11
+            },
+            {
+                "category": "scheduling",
+                "priority": "medium",
+                "title": "Optimize Task Scheduling",
+                "description": "Scheduling conflicts detected. Consider adding buffer time or redistributing tasks among actors.",
+                "issue_count": 6
+            }
+        ],
+        "validation_results": [
+            {
+                "id": "insufficient_stock_measured_ingredients_prepare_water_mixture 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task prepare_water_mixture 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "prepare_water_mixture 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "06:00"
+                }
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_combine_wet_ingredients 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task combine_wet_ingredients 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "combine_wet_ingredients 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "06:40"
+                }
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_gradually_incorporate_dry 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task gradually_incorporate_dry 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "gradually_incorporate_dry 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "07:10"
+                }
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_mix_until_dough 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task mix_until_dough 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "mix_until_dough 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "07:25"
+                }
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_prepare_water_mixture 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task prepare_water_mixture 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "prepare_water_mixture 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "07:40"
+                }
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_combine_wet_ingredients 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task combine_wet_ingredients 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "combine_wet_ingredients 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "08:20"
+                }
+            },
+            {
+                "id": "insufficient_stock_clean_workspace_combine_dry_ingredients 🔸 ⚙️",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient clean_workspace for task combine_dry_ingredients 🔸 ⚙️. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "combine_dry_ingredients 🔸 ⚙️",
+                    "resource_id": "clean_workspace",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "08:35"
+                }
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_gradually_incorporate_dry 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task gradually_incorporate_dry 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "gradually_incorporate_dry 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "08:50"
+                }
+            },
+            {
+                "id": "insufficient_stock_measured_ingredients_mix_until_dough 🔸 🥄",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient measured_ingredients for task mix_until_dough 🔸 🥄. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "mix_until_dough 🔸 🥄",
+                    "resource_id": "measured_ingredients",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "09:05"
+                }
+            },
+            {
+                "id": "insufficient_stock_risen_dough_shape_dough 🔸 👐",
+                "severity": "error",
+                "category": "resource_issues",
+                "message": "Insufficient risen_dough for task shape_dough 🔸 👐. Required: 1, Available: 0",
+                "details": {
+                    "task_id": "shape_dough 🔸 👐",
+                    "resource_id": "risen_dough",
+                    "required": 1,
+                    "available": 0,
+                    "shortfall": 1,
+                    "start_time": "09:20"
+                }
+            },
+            {
+                "id": "missing_dependency_risen_dough_kneaded_dough",
+                "severity": "warning",
+                "category": "resource_issues",
+                "message": "Task shape_dough 🔸 👐 consumes risen_dough which depends on kneaded_dough, but kneaded_dough has not been produced",
+                "details": {
+                    "task_id": "shape_dough 🔸 👐",
+                    "dependent_resource": "risen_dough",
+                    "required_resource": "kneaded_dough"
+                }
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_0",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace cleaning task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "cleaning",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                }
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_1",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace sanitization task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "sanitization",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                }
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_0",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace cleaning task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "cleaning",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                }
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_1",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace sanitization task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "sanitization",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                }
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_0",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace cleaning task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "cleaning",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                }
+            },
+            {
+                "id": "no_actor_for_maintenance_workspace_1",
+                "severity": "warning",
+                "category": "scheduling_conflicts",
+                "message": "No available actor for workspace sanitization task",
+                "details": {
+                    "equipment_type": "workspace",
+                    "maintenance_type": "sanitization",
+                    "required_roles": [
+                        "worker",
+                        "cleaner"
+                    ]
+                }
+            },
+            {
+                "id": "buffer_applied_combine_wet_ingredients 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task combine_wet_ingredients 🔸 🥄",
+                "details": {
+                    "task_id": "combine_wet_ingredients 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "06:45"
+                }
+            },
+            {
+                "id": "buffer_applied_combine_dry_ingredients 🔸 ⚙️",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task combine_dry_ingredients 🔸 ⚙️",
+                "details": {
+                    "task_id": "combine_dry_ingredients 🔸 ⚙️",
+                    "buffer_minutes": 5,
+                    "new_start": "07:05"
+                }
+            },
+            {
+                "id": "buffer_applied_gradually_incorporate_dry 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task gradually_incorporate_dry 🔸 🥄",
+                "details": {
+                    "task_id": "gradually_incorporate_dry 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "07:25"
+                }
+            },
+            {
+                "id": "buffer_applied_mix_until_dough 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task mix_until_dough 🔸 🥄",
+                "details": {
+                    "task_id": "mix_until_dough 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "07:45"
+                }
+            },
+            {
+                "id": "buffer_applied_prepare_water_mixture 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task prepare_water_mixture 🔸 🥄",
+                "details": {
+                    "task_id": "prepare_water_mixture 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "08:05"
+                }
+            },
+            {
+                "id": "buffer_applied_allow_yeast_to 🔸 ⚙️",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task allow_yeast_to 🔸 ⚙️",
+                "details": {
+                    "task_id": "allow_yeast_to 🔸 ⚙️",
+                    "buffer_minutes": 5,
+                    "new_start": "08:25"
+                }
+            },
+            {
+                "id": "buffer_applied_combine_wet_ingredients 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task combine_wet_ingredients 🔸 🥄",
+                "details": {
+                    "task_id": "combine_wet_ingredients 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "08:45"
+                }
+            },
+            {
+                "id": "buffer_applied_combine_dry_ingredients 🔸 ⚙️",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task combine_dry_ingredients 🔸 ⚙️",
+                "details": {
+                    "task_id": "combine_dry_ingredients 🔸 ⚙️",
+                    "buffer_minutes": 5,
+                    "new_start": "09:05"
+                }
+            },
+            {
+                "id": "buffer_applied_gradually_incorporate_dry 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task gradually_incorporate_dry 🔸 🥄",
+                "details": {
+                    "task_id": "gradually_incorporate_dry 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "09:25"
+                }
+            },
+            {
+                "id": "buffer_applied_mix_until_dough 🔸 🥄",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task mix_until_dough 🔸 🥄",
+                "details": {
+                    "task_id": "mix_until_dough 🔸 🥄",
+                    "buffer_minutes": 5,
+                    "new_start": "09:45"
+                }
+            },
+            {
+                "id": "buffer_applied_shape_dough 🔸 👐",
+                "severity": "info",
+                "category": "optimization_suggestions",
+                "message": "Applied 5-minute buffer to task shape_dough 🔸 👐",
+                "details": {
+                    "task_id": "shape_dough 🔸 👐",
+                    "buffer_minutes": 5,
+                    "new_start": "10:05"
+                }
+            }
+        ]
+    },
+    "legacy_validation_errors": [
+        "Task activate_yeast_add 🔸 🌀: Starts before dependency prepare_water_mixture 🔸 🥄 finishes",
+        "Task allow_yeast_to 🔸 ⚙️: Starts before dependency activate_yeast_add 🔸 🌀 finishes",
+        "Task combine_wet_ingredients 🔸 🥄: Starts before dependency allow_yeast_to 🔸 ⚙️ finishes",
+        "Task combine_dry_ingredients 🔸 ⚙️: Starts before dependency combine_wet_ingredients 🔸 🥄 finishes",
+        "Task gradually_incorporate_dry 🔸 🥄: Starts before dependency combine_dry_ingredients 🔸 ⚙️ finishes",
+        "Task mix_until_dough 🔸 🥄: Starts before dependency gradually_incorporate_dry 🔸 🥄 finishes",
+        "Task prepare_water_mixture 🔸 🥄: Starts before dependency mix_until_dough 🔸 🥄 finishes"
+    ],
+    "input": {
+        "metadata": {
+            "uuid": "61943533-0b2e-462c-9769-d39952cbccaf",
+            "date_created": "2025-07-10T18:21:32.426165",
+            "task": "Hallucinate Tree",
+            "time_taken": "0:00:11.248150"
+        },
+        "tree": {
+            "step": "Breadmaking",
+            "children": [
+                {
+                    "step": "Gather Ingredients",
+                    "children": [
+                        {
+                            "step": "Determine Recipe Requirements"
+                        },
+                        {
+                            "step": "Create a Detailed Ingredient List"
+                        },
+                        {
+                            "step": "Check Pantry for Existing Ingredients"
+                        },
+                        {
+                            "step": "Assess Quantities Needed"
+                        },
+                        {
+                            "step": "Determine Shopping Locations"
+                        },
+                        {
+                            "step": "Purchase Ingredients"
+                        }
+                    ]
+                },
+                {
+                    "step": "Activate Yeast",
+                    "children": [
+                        {
+                            "step": "Warm Water Preparation"
+                        },
+                        {
+                            "step": "Measure Warm Water"
+                        },
+                        {
+                            "step": "Add Sugar to Water"
+                        },
+                        {
+                            "step": "Sprinkle Yeast on Top"
+                        },
+                        {
+                            "step": "Let Yeast Bloom"
+                        }
+                    ]
+                },
+                {
+                    "step": "Combine Wet Ingredients",
+                    "children": [
+                        {
+                            "step": "Pour Water into Mixing Bowl"
+                        },
+                        {
+                            "step": "Add Liquid Flavors (e.g., extracts, juices) to Water"
+                        },
+                        {
+                            "step": "Add Oil to the Water Mixture"
+                        },
+                        {
+                            "step": "Add Dairy Products (e.g., milk, yogurt) to the Bowl"
+                        }
+                    ]
+                },
+                {
+                    "step": "Combine Dry Ingredients",
+                    "children": [
+                        {
+                            "step": "Sift Dry Ingredients"
+                        },
+                        {
+                            "step": "Ensure Dry Ingredients are Free of clumps"
+                        },
+                        {
+                            "step": "Check for Foreign Objects"
+                        },
+                        {
+                            "step": "Verify Ingredient Measurements"
+                        }
+                    ]
+                },
+                {
+                    "step": "Mix Dough",
+                    "children": [
+                        {
+                            "step": "Prepare Water Mixture",
+                            "children": [
+                                {
+                                    "step": "Measure Water Volume"
+                                },
+                                {
+                                    "step": "Heat Water to Correct Temperature"
+                                }
+                            ]
+                        },
+                        {
+                            "step": "Combine Wet Ingredients",
+                            "children": [
+                                {
+                                    "step": "Add Liquid Flavors"
+                                },
+                                {
+                                    "step": "Add Oil to Water"
+                                }
+                            ]
+                        },
+                        {
+                            "step": "Combine Dry Ingredients",
+                            "children": [
+                                {
+                                    "step": "Sift Dry Ingredients"
+                                },
+                                {
+                                    "step": "Break up clumps in Dry Ingredients"
+                                }
+                            ]
+                        },
+                        {
+                            "step": "Combine Wet and Dry Ingredients",
+                            "children": [
+                                {
+                                    "step": "Gradually Add Dry Ingredients to Wet Ingredients"
+                                },
+                                {
+                                    "step": "Mix Until Dough Forms"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "step": "First Rise",
+                    "children": [
+                        {
+                            "step": "Prepare Water Mixture: Heat water to the temperature specified in the recipe."
+                        },
+                        {
+                            "step": "Activate Yeast: Add warm water to the bowl and sprinkle yeast on top."
+                        },
+                        {
+                            "step": "Allow Yeast to Bloom: Let the yeast sit undisturbed for 5-10 minutes until foamy."
+                        },
+                        {
+                            "step": "Combine Wet Ingredients: Add liquid flavors and oil to the water mixture."
+                        },
+                        {
+                            "step": "Combine Dry Ingredients: Sift dry ingredients to remove clumps."
+                        },
+                        {
+                            "step": "Gradually Incorporate Dry Ingredients: Slowly add dry ingredients to the wet ingredients, mixing gently."
+                        },
+                        {
+                            "step": "Observe Dough Development: Monitor the dough for signs of rising."
+                        }
+                    ]
+                },
+                {
+                    "step": "Shape Dough",
+                    "children": [
+                        {
+                            "step": "Prepare Water Mixture: Heat water to the temperature specified in the recipe."
+                        },
+                        {
+                            "step": "Combine Wet Ingredients: Add liquid flavors and oil to the water mixture."
+                        },
+                        {
+                            "step": "Combine Dry Ingredients: Sift dry ingredients to remove clumps."
+                        },
+                        {
+                            "step": "Gradually Incorporate Dry Ingredients: Slowly add dry ingredients to the wet ingredients, mixing gently."
+                        },
+                        {
+                            "step": "Mix Dough"
+                        }
+                    ]
+                }
+            ],
+            "uuid": "61943533-0b2e-462c-9769-d39952cbccaf"
+        },
+        "input": {
+            "system_message": "You are an AI that breaks down complex tasks into hierarchical steps. For each task, generate a set of sub-steps needed to complete it. Maintain clarity and logical order. IMPORTANT: Avoid duplicating steps that already exist elsewhere in the tree context provided. Focus on sub-steps that are specific to the current task being expanded. Format your response as a valid JSON array of step objects, where each object has a 'step' field and optionally a 'children' array containing substeps. Example format: [{'step': 'Main step 1', 'children': [{'step': 'Substep 1.1'}, {'step': 'Substep 1.2'}]}, {'step': 'Main step 2'}] Your entire response must be parseable as JSON. Do not include markdown formatting, code blocks, or commentary.",
+            "user_message": "Break down the following task into 3-7 sub-steps. Task: Shape Dough\n\nDo NOT repeat steps that have already been created in the tree unless ABSOLUTELY NECESSARY.\nFocus on sub-steps that are specific to this task and avoid duplicating steps that already exist in the broader process.\n\n\nExisting steps in the tree (avoid duplicating these): Breadmaking, Gather Ingredients, Determine Recipe Requirements, Create a Detailed Ingredient List, Check Pantry for Existing Ingredients, Assess Quantities Needed, Determine Shopping Locations, Purchase Ingredients, Activate Yeast, Warm Water Preparation, Measure Warm Water, Add Sugar to Water, Sprinkle Yeast on Top, Let Yeast Bloom, Combine Wet Ingredients, Pour Water into Mixing Bowl, Add Liquid Flavors (e.g., extracts, juices) to Water, Add Oil to the Water Mixture, Add Dairy Products (e.g., milk, yogurt) to the Bowl, Combine Dry Ingredients, Sift Dry Ingredients, Ensure Dry Ingredients are Free of clumps, Check for Foreign Objects, Verify Ingredient Measurements, Mix Dough, Prepare Water Mixture, Measure Water Volume, Heat Water to Correct Temperature, Combine Wet Ingredients, Add Liquid Flavors, Add Oil to Water, Combine Dry Ingredients, Sift Dry Ingredients, Break up clumps in Dry Ingredients, Combine Wet and Dry Ingredients, Gradually Add Dry Ingredients to Wet Ingredients, Mix Until Dough Forms, First Rise, Prepare Water Mixture: Heat water to the temperature specified in the recipe., Activate Yeast: Add warm water to the bowl and sprinkle yeast on top., Allow Yeast to Bloom: Let the yeast sit undisturbed for 5-10 minutes until foamy., Combine Wet Ingredients: Add liquid flavors and oil to the water mixture., Combine Dry Ingredients: Sift dry ingredients to remove clumps., Gradually Incorporate Dry Ingredients: Slowly add dry ingredients to the wet ingredients, mixing gently., Observe Dough Development: Monitor the dough for signs of rising., Shape Dough\n\nReturn ONLY a JSON array of step objects, with no markdown formatting, code blocks, or extra text.",
+            "timestamp": "2025-07-10T18:21:31.030904"
+        }
+    }
+}

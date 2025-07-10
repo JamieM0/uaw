@@ -152,8 +152,7 @@
                                                 <strong>Issues:</strong> {{
                                                 simulation_data.validation_summary.total_issues
                                                 }} {% if
-                                                simulation_data.validation_summary.issue_counts.critical_errors
-                                                > 0 %}
+                                                simulation_data.validation_summary.issue_counts is defined and simulation_data.validation_summary.issue_counts.critical_errors > 0 %}
                                                 <span class="error-count"
                                                     >({{
                                                     simulation_data.validation_summary.issue_counts.critical_errors
