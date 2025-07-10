@@ -423,7 +423,7 @@ FORBIDDEN FIELD NAMES: "steps", "activities", "actions", "processes", "procedure
 REQUIRED FIELD NAME: "tasks" (exactly this, lowercase)
 
 Return a complete simulation JSON with the exact structure (NO nested simulation objects):
-{
+{{
   "time_unit": "{simulation_template.get('time_unit', 'minute')}",
   "start_time": "{start_time}",
   "end_time": "{end_time}",
@@ -431,7 +431,7 @@ Return a complete simulation JSON with the exact structure (NO nested simulation
   "resources": [template resources exactly as provided],
   "tasks": [detailed task array with ALL required fields covering ALL tree steps],
   "article_title": "Generated Simulation"
-}
+}}
 
 THE FIELD MUST BE CALLED "tasks" - NOT "steps", NOT "activities", NOT anything else!
 If you use any other field name, the system will fail completely.
