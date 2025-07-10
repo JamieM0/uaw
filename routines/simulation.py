@@ -416,8 +416,14 @@ EMOJI SUGGESTIONS for different task types:
 - Cooling: ❄️ 🌬️ 🧊
 - Cleaning: 🧽 🧹 🚿
 
+ABSOLUTELY CRITICAL: You MUST return a JSON object with a "tasks" field (NOT "steps", NOT "activities", NOT anything else).
+The field MUST be called exactly "tasks" - this is not optional. Any other field name will cause system failure.
+
+FORBIDDEN FIELD NAMES: "steps", "activities", "actions", "processes", "procedures"
+REQUIRED FIELD NAME: "tasks" (exactly this, lowercase)
+
 Return a complete simulation JSON with the exact structure (NO nested simulation objects):
-{{
+{
   "time_unit": "{simulation_template.get('time_unit', 'minute')}",
   "start_time": "{start_time}",
   "end_time": "{end_time}",
@@ -425,14 +431,37 @@ Return a complete simulation JSON with the exact structure (NO nested simulation
   "resources": [template resources exactly as provided],
   "tasks": [detailed task array with ALL required fields covering ALL tree steps],
   "article_title": "Generated Simulation"
+}
+
+THE FIELD MUST BE CALLED "tasks" - NOT "steps", NOT "activities", NOT anything else!
+If you use any other field name, the system will fail completely.
+
+CRITICAL REQUIREMENTS:
+- The field MUST be called "tasks" (not "steps" or anything else)
+- DO NOT use "steps" field - it will cause system failure
+- Create task objects with: id, start, duration, actor_id, location, consumes, produces, depends_on
+- Setup and cleanup tasks may have empty produces object {{}}
+- CRITICAL: Every task ID must be in format "task_name 🔸 emoji" with the orange diamond separator
+- This format is REQUIRED for assemble.py to properly display tasks in the simulation view
+- Windows users may see emoji rendering issues but the format must still be used
+
+EXAMPLE TASK STRUCTURE - COPY THIS EXACT FORMAT:
+{{
+ "tasks": [
+   {{
+     "id": "measure_ingredients 🔸 ⚖️",
+     "start": "07:00",
+     "duration": 15,
+     "actor_id": "{actor_1_id}",
+     "location": "prep_station",
+     "consumes": {{"flour": 0.5, "water": 0.3}},
+     "produces": {{"measured_ingredients": 1}},
+     "depends_on": []
+   }}
+ ]
 }}
 
-Generate tasks that cover ALL steps from the tree with proper resource flows and logical sequencing.
-Make sure EVERY task has ALL required fields: id, start, duration, actor_id, location, consumes, produces, depends_on.
-Setup and cleanup tasks may have empty produces object {{}}.
-CRITICAL: Every task ID must be in format "task_name 🔸 emoji" with the orange diamond separator.
-This format is REQUIRED for assemble.py to properly display tasks in the simulation view.
-Windows users may see emoji rendering issues but the format must still be used.
+DO NOT return nested structures - return the flat JSON structure shown above.
 """
 
     user_prompt = f"""Task Tree:
@@ -445,10 +474,19 @@ Create a complete simulation with detailed tasks following ALL the requirements 
 
     try:
         response = chat_with_llm("gemma3", system_prompt, user_prompt)
+        safe_print(f"DEBUG: LLM response length: {len(response)} characters")
+        if "tasks" in response:
+            safe_print("DEBUG: LLM response contains 'tasks' field")
+        elif "steps" in response:
+            safe_print("DEBUG: WARNING - LLM response contains 'steps' field instead of 'tasks'")
+        else:
+            safe_print("DEBUG: WARNING - LLM response may not contain required fields")
         return response
     except Exception as e:
         print(f"Error generating schedule: {e}")
         # Return comprehensive fallback with all required fields and proper structure
+        # CRITICAL: Must use "tasks" field not "steps" or anything else
+        safe_print("DEBUG: Using fallback JSON response due to LLM error")
         return json.dumps({
             "time_unit": simulation_template.get("time_unit", "minute"),
             "start_time": start_time,
@@ -604,6 +642,55 @@ def parse_and_validate_simulation(raw_json_str: str) -> Tuple[Optional[Dict[str,
                 # Flatten the nested structure
                 simulation_dict = simulation_dict["simulation"]
 
+        # Fix LLM mistake: convert "steps" to "tasks" if needed
+        safe_print(f"DEBUG: Fields in simulation_dict: {list(simulation_dict.keys())}")
+
+        if "steps" in simulation_dict and "tasks" not in simulation_dict:
+            safe_print("Converting 'steps' field to 'tasks' field...")
+            steps_content = simulation_dict["steps"]
+            safe_print(f"DEBUG: Found {len(steps_content)} items in 'steps' field")
+            safe_print(f"DEBUG: First step content: {steps_content[0] if steps_content else 'No steps'}")
+
+            # Check if steps are just descriptions (need conversion) or already task objects
+            if steps_content and isinstance(steps_content[0], dict):
+                if "step" in steps_content[0] and "id" not in steps_content[0]:
+                    # These are step descriptions, convert to tasks
+                    safe_print("Converting step descriptions to executable tasks...")
+                    actors = simulation_dict.get("actors", [])
+                    resources = simulation_dict.get("resources", [])
+                    start_time = simulation_dict.get("start_time", "07:00")
+
+                    converted_tasks = convert_steps_to_tasks(steps_content, actors, resources, start_time)
+                    simulation_dict["tasks"] = converted_tasks
+                    safe_print(f"DEBUG: Converted {len(steps_content)} steps to {len(converted_tasks)} tasks")
+                else:
+                    # These are already task-like objects, just rename field
+                    simulation_dict["tasks"] = simulation_dict.pop("steps")
+                    safe_print("DEBUG: Renamed 'steps' to 'tasks' (already task objects)")
+            else:
+                # Empty or invalid steps
+                simulation_dict["tasks"] = []
+                safe_print("DEBUG: No valid steps found, created empty tasks array")
+
+            # Remove the steps field
+            if "steps" in simulation_dict:
+                del simulation_dict["steps"]
+            safe_print("DEBUG: Successfully converted 'steps' to 'tasks'")
+
+        # Also handle case where both exist (keep tasks, remove steps)
+        if "steps" in simulation_dict and "tasks" in simulation_dict:
+            safe_print("Removing duplicate 'steps' field (keeping 'tasks')")
+            safe_print(f"DEBUG: Tasks field has {len(simulation_dict['tasks'])} items")
+            safe_print(f"DEBUG: Steps field has {len(simulation_dict['steps'])} items")
+            del simulation_dict["steps"]
+
+        # Final verification
+        safe_print(f"DEBUG: Final fields in simulation_dict: {list(simulation_dict.keys())}")
+        if "tasks" in simulation_dict:
+            safe_print(f"DEBUG: Final tasks field has {len(simulation_dict['tasks'])} items")
+            if simulation_dict["tasks"]:
+                safe_print(f"DEBUG: First task structure: {list(simulation_dict['tasks'][0].keys()) if isinstance(simulation_dict['tasks'][0], dict) else 'Not a dict'}")
+
         # Validate required fields at root level
         required_fields = ["time_unit", "start_time", "end_time", "actors", "resources", "tasks"]
         for field in required_fields:
@@ -700,6 +787,144 @@ def parse_and_validate_simulation(raw_json_str: str) -> Tuple[Optional[Dict[str,
     except Exception as e:
         errors.append(f"JSON parsing error: {e}")
         return None, errors
+
+def convert_steps_to_tasks(steps: List[Dict[str, Any]], actors: List[Dict[str, Any]], resources: List[Dict[str, Any]], start_time: str = "07:00") -> List[Dict[str, Any]]:
+    """Convert step descriptions to executable tasks with proper structure."""
+    tasks = []
+    current_time_minutes = 0
+
+    # Parse start time
+    if ":" in start_time:
+        hours, minutes = map(int, start_time.split(":"))
+        current_time_minutes = hours * 60 + minutes
+
+    # Get actor IDs
+    actor_ids = [actor["id"] for actor in actors]
+    primary_actor = actor_ids[0] if actor_ids else "baker"
+    secondary_actor = actor_ids[1] if len(actor_ids) > 1 else primary_actor
+
+    # Get resource IDs for mapping
+    resource_ids = {resource["id"] for resource in resources}
+
+    # Define task templates based on step content
+    task_templates = {
+        "activate": {"duration": 10, "actor": secondary_actor, "location": "prep_station", "emoji": "🌀"},
+        "measure": {"duration": 15, "actor": primary_actor, "location": "prep_station", "emoji": "⚖️"},
+        "mix": {"duration": 15, "actor": primary_actor, "location": "mixing_station", "emoji": "🥄"},
+        "knead": {"duration": 20, "actor": primary_actor, "location": "kneading_area", "emoji": "👋"},
+        "rise": {"duration": 60, "actor": primary_actor, "location": "proofing_area", "emoji": "⏰"},
+        "shape": {"duration": 25, "actor": primary_actor, "location": "shaping_area", "emoji": "👐"},
+        "bake": {"duration": 45, "actor": primary_actor, "location": "oven_area", "emoji": "🍞"},
+        "cool": {"duration": 30, "actor": secondary_actor, "location": "cooling_area", "emoji": "❄️"},
+        "clean": {"duration": 10, "actor": secondary_actor, "location": "cleaning_station", "emoji": "🧽"},
+        "prepare": {"duration": 10, "actor": secondary_actor, "location": "prep_area", "emoji": "🔧"},
+    }
+
+    for i, step in enumerate(steps):
+        step_text = step.get("step", f"task_{i}")
+        step_lower = step_text.lower()
+
+        # Determine task type and template
+        template = {"duration": 15, "actor": primary_actor, "location": "workspace", "emoji": "⚙️"}
+        for keyword, tmpl in task_templates.items():
+            if keyword in step_lower:
+                template = tmpl
+                break
+
+        # Create task ID
+        task_name = step_text.replace(":", "").replace(" – ", " ").replace("(", "").replace(")", "").strip()
+        task_name = "_".join(task_name.lower().split()[:3])  # Take first 3 words
+        task_id = f"{task_name} 🔸 {template['emoji']}"
+
+        # Calculate start time
+        start_hours = current_time_minutes // 60
+        start_mins = current_time_minutes % 60
+        start_time_str = f"{start_hours:02d}:{start_mins:02d}"
+
+        # Basic resource consumption/production
+        consumes = {}
+        produces = {}
+
+        # Map common resources
+        if "yeast" in step_lower:
+            if "yeast" in resource_ids:
+                consumes["yeast"] = 5
+            if "activated_yeast" in resource_ids:
+                produces["activated_yeast"] = 1
+        elif "flour" in step_lower or "measure" in step_lower:
+            if "flour" in resource_ids:
+                consumes["flour"] = 0.5
+            if "measured_ingredients" in resource_ids:
+                produces["measured_ingredients"] = 1
+        elif "mix" in step_lower:
+            if "measured_ingredients" in resource_ids:
+                consumes["measured_ingredients"] = 1
+            if "mixed_dough" in resource_ids:
+                produces["mixed_dough"] = 1
+        elif "knead" in step_lower:
+            if "mixed_dough" in resource_ids:
+                consumes["mixed_dough"] = 1
+            if "kneaded_dough" in resource_ids:
+                produces["kneaded_dough"] = 1
+        elif "rise" in step_lower:
+            if "kneaded_dough" in resource_ids:
+                consumes["kneaded_dough"] = 1
+            if "risen_dough" in resource_ids:
+                produces["risen_dough"] = 1
+        elif "shape" in step_lower:
+            if "risen_dough" in resource_ids:
+                consumes["risen_dough"] = 1
+            if "shaped_loaves" in resource_ids:
+                produces["shaped_loaves"] = 2
+        elif "bake" in step_lower:
+            if "shaped_loaves" in resource_ids:
+                consumes["shaped_loaves"] = 2
+            if "finished_bread" in resource_ids:
+                produces["finished_bread"] = 2
+        elif "cool" in step_lower:
+            if "finished_bread" in resource_ids:
+                consumes["finished_bread"] = 2
+            if "cooled_bread" in resource_ids:
+                produces["cooled_bread"] = 2
+        elif "clean" in step_lower:
+            if "dirty_workspace" in resource_ids:
+                consumes["dirty_workspace"] = 1
+            if "clean_workspace" in resource_ids:
+                produces["clean_workspace"] = 1
+        else:
+            # Default resource consumption for generic tasks
+            if "clean_workspace" in resource_ids:
+                consumes["clean_workspace"] = 1
+            if "dirty_workspace" in resource_ids:
+                produces["dirty_workspace"] = 1
+
+        # Ensure every task has some consumption/production
+        if not consumes and "clean_workspace" in resource_ids:
+            consumes["clean_workspace"] = 1
+        if not produces and "dirty_workspace" in resource_ids:
+            produces["dirty_workspace"] = 1
+
+        # Create task object
+        task = {
+            "id": task_id,
+            "start": start_time_str,
+            "duration": template["duration"],
+            "actor_id": template["actor"],
+            "location": template["location"],
+            "consumes": consumes,
+            "produces": produces,
+            "depends_on": []
+        }
+
+        # Add simple dependencies (each task depends on previous)
+        if i > 0:
+            prev_task_id = tasks[i-1]["id"]
+            task["depends_on"] = [prev_task_id]
+
+        tasks.append(task)
+        current_time_minutes += template["duration"]
+
+    return tasks
 
 def standardize_resource_names(simulation_dict: Dict[str, Any]) -> Dict[str, Any]:
     """Standardize all resource names to snake_case and fix inconsistencies."""
@@ -1261,7 +1486,14 @@ def main():
         safe_print(f"- Time span: {sim['start_time']} to {sim['end_time']}")
         safe_print(f"- Actors: {len(sim['actors'])}")
         safe_print(f"- Resources: {len(sim['resources'])}")
-        safe_print(f"- Tasks: {len(sim['tasks'])}")
+        # Handle both 'tasks' and 'steps' fields for compatibility
+        if 'tasks' in sim:
+            safe_print(f"- Tasks: {len(sim['tasks'])}")
+        elif 'steps' in sim:
+            safe_print(f"- Steps: {len(sim['steps'])} (converted to tasks)")
+        else:
+            safe_print("- Tasks: 0 (no tasks or steps found)")
+
 
         # Validate the final output
         parse_errors = []

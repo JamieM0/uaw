@@ -152,11 +152,11 @@
                                                 <strong>Issues:</strong> {{
                                                 simulation_data.validation_summary.total_issues
                                                 }} {% if
-                                                simulation_data.validation_summary.critical_errors
+                                                simulation_data.validation_summary.issue_counts.critical_errors
                                                 > 0 %}
                                                 <span class="error-count"
                                                     >({{
-                                                    simulation_data.validation_summary.critical_errors
+                                                    simulation_data.validation_summary.issue_counts.critical_errors
                                                     }} critical)</span
                                                 >
                                                 {% endif %}

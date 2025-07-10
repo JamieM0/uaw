@@ -26,6 +26,21 @@ This document summarizes the critical fixes made to `simulation.py` to resolve t
 - **Impact**: Rich input trees were reduced to single generic tasks
 - **Fix**: Enhanced LLM prompt to explicitly require coverage of all tree steps
 
+### 5. **LLM Generating "steps" Instead of "tasks"**
+- **Problem**: LLM was generating "steps" field instead of required "tasks" field
+- **Impact**: System failures, constraint processor errors, missing task data
+- **Fix**: Aggressive prompt enforcement and automatic field conversion
+
+### 6. **Step Descriptions vs Executable Tasks**
+- **Problem**: When LLM generated "steps", they were just descriptions, not executable tasks
+- **Impact**: No task timing, resources, or execution details
+- **Fix**: Added conversion function to transform step descriptions to executable tasks
+
+### 7. **Template Structure Mismatch**
+- **Problem**: assemble.py template expected different validation_summary structure
+- **Impact**: Template rendering errors in web interface
+- **Fix**: Updated template to match actual validation_summary structure
+
 ## Specific Fixes Implemented
 
 ### 1. Emoji Format Handling
@@ -72,6 +87,35 @@ setup_cleanup_keywords = ["setup", "clean", "prepare", "initialize", "finalize"]
 is_setup_cleanup = any(keyword in task_id.lower() for keyword in setup_cleanup_keywords)
 if not produces and not is_setup_cleanup:
     errors.append("Must produce at least one resource")
+```
+
+### 5. Aggressive Field Name Enforcement
+```python
+# ADDED: Multiple enforcement layers for "tasks" field
+ABSOLUTELY CRITICAL: You MUST return a JSON object with a "tasks" field
+FORBIDDEN FIELD NAMES: "steps", "activities", "actions", "processes", "procedures"
+REQUIRED FIELD NAME: "tasks" (exactly this, lowercase)
+
+# Automatic field conversion
+if "steps" in simulation_dict and "tasks" not in simulation_dict:
+    simulation_dict["tasks"] = simulation_dict.pop("steps")
+```
+
+### 6. Step-to-Task Conversion
+```python
+# ADDED: Convert step descriptions to executable tasks
+def convert_steps_to_tasks(steps, actors, resources, start_time):
+    # Analyzes step descriptions
+    # Creates proper task objects with timing, resources, dependencies
+    # Maps step content to appropriate task templates
+    # Returns fully executable task list
+```
+
+### 7. Template Structure Fix
+```python
+# FIXED: Template validation summary access
+# BEFORE: simulation_data.validation_summary.critical_errors
+# AFTER: simulation_data.validation_summary.issue_counts.critical_errors
 ```
 
 ## Emoji Format Requirements
@@ -145,6 +189,33 @@ return {
 - Fallback usage indicates system failure that needs investigation
 - All attempts should be logged for debugging
 
+### 5. Field Name Enforcement
+- LLM responses should contain "tasks" field (never "steps")
+- Automatic conversion handles LLM mistakes
+- Debug logging shows field conversion process
+
+### 6. Step-to-Task Conversion
+- Step descriptions automatically converted to executable tasks
+- Proper timing, resources, and dependencies assigned
+- Task templates based on step content analysis
+
+## Latest Issues Fixed (Additional Update)
+
+### Critical Issues Resolved:
+1. **LLM Field Name Problem**: LLM was generating "steps" instead of "tasks"
+2. **KeyError in main()**: Accessing non-existent 'tasks' field
+3. **Template Rendering Error**: Wrong validation_summary structure access
+4. **Constraint Processor Error**: Looking for 'tasks' in data with 'steps'
+5. **Step vs Task Format**: Steps were descriptions, not executable tasks
+
+### Solutions Implemented:
+1. **Multi-layer enforcement** of "tasks" field name in LLM prompt
+2. **Automatic field conversion** from "steps" to "tasks" 
+3. **Intelligent step-to-task conversion** for description-style steps
+4. **Template structure fixes** for validation_summary access
+5. **Debug logging** to track conversion process
+6. **Error handling** in main() function for missing fields
+
 ## Testing Instructions
 
 1. **Test with the provided tree**: `uaw/routines/flow/9a7076c7-b6b1-4caf-b23c-324abf65e993/2.json`
@@ -154,8 +225,9 @@ return {
 
 ## Files Modified
 
-1. `simulation.py` - Main fixes for validation, emoji handling, and LLM prompts
-2. `SIMULATION_FIXES.md` (this file) - Documentation of changes
+1. `simulation.py` - Main fixes for validation, emoji handling, LLM prompts, field conversion
+2. `page-template.html` - Fixed validation_summary structure access
+3. `SIMULATION_FIXES.md` (this file) - Documentation of changes
 
 ## Dependencies
 
@@ -164,3 +236,13 @@ return {
 - `constraint_processor.py` - Enhanced validation processing
 
 The fixes ensure that simulations properly reflect the input tree structure while maintaining compatibility with the existing visualization system.
+
+## Debug Features Added
+
+- **Field detection logging**: Shows what fields LLM generates
+- **Conversion tracking**: Logs steps-to-tasks conversion process  
+- **Structure validation**: Verifies task object structure
+- **Error handling**: Graceful fallback for missing fields
+- **Template debugging**: Better error messages for structure mismatches
+
+These debug features help identify and resolve issues when the LLM generates unexpected formats or when the conversion process encounters problems.
