@@ -416,52 +416,132 @@ EMOJI SUGGESTIONS for different task types:
 - Cooling: ❄️ 🌬️ 🧊
 - Cleaning: 🧽 🧹 🚿
 
-ABSOLUTELY CRITICAL: You MUST return a JSON object with a "tasks" field (NOT "steps", NOT "activities", NOT anything else).
-The field MUST be called exactly "tasks" - this is not optional. Any other field name will cause system failure.
+🚨 ABSOLUTELY CRITICAL: TASK STRUCTURE REQUIREMENTS 🚨
 
-FORBIDDEN FIELD NAMES: "steps", "activities", "actions", "processes", "procedures"
-REQUIRED FIELD NAME: "tasks" (exactly this, lowercase)
+YOU MUST CREATE MULTIPLE INDIVIDUAL EXECUTABLE TASKS - NOT DESCRIPTIONS WITH NESTED STEPS!
 
-Return a complete simulation JSON with the exact structure (NO nested simulation objects):
+❌ WRONG EXAMPLES (THESE WILL FAIL - DO NOT CREATE THESE):
+
+WRONG #1 - Task with nested steps:
+{{
+  "tasks": [
+    {{
+      "id": "shape_dough",
+      "description": "Shape Dough",
+      "steps": [
+        {{"step": "Prepare the dough"}},
+        {{"step": "Divide dough"}}
+      ]
+    }}
+  ]
+}}
+
+WRONG #2 - Missing executable fields:
+{{
+  "tasks": [
+    {{
+      "id": "mix_ingredients",
+      "description": "Mix all ingredients together"
+    }}
+  ]
+}}
+
+WRONG #3 - Task without emoji format:
+{{
+  "tasks": [
+    {{
+      "id": "bake_bread",
+      "start": "08:00",
+      "duration": 45
+    }}
+  ]
+}}
+
+✅ CORRECT EXAMPLES (CREATE EXACTLY LIKE THIS):
+
+{{
+  "tasks": [
+    {{
+      "id": "measure_ingredients 🔸 ⚖️",
+      "start": "07:00",
+      "duration": 15,
+      "actor_id": "{actor_1_id}",
+      "location": "prep_station",
+      "consumes": {{"flour": 0.5, "water": 0.3}},
+      "produces": {{"measured_ingredients": 1}},
+      "depends_on": []
+    }},
+    {{
+      "id": "activate_yeast 🔸 🦠",
+      "start": "07:15",
+      "duration": 10,
+      "actor_id": "{actor_2_id}",
+      "location": "prep_station",
+      "consumes": {{"yeast": 5, "water": 0.1}},
+      "produces": {{"activated_yeast": 1}},
+      "depends_on": ["measure_ingredients 🔸 ⚖️"]
+    }},
+    {{
+      "id": "mix_dough 🔸 🥄",
+      "start": "07:25",
+      "duration": 20,
+      "actor_id": "{actor_1_id}",
+      "location": "mixing_station",
+      "consumes": {{"measured_ingredients": 1, "activated_yeast": 1}},
+      "produces": {{"mixed_dough": 1}},
+      "depends_on": ["measure_ingredients 🔸 ⚖️", "activate_yeast 🔸 🦠"]
+    }}
+  ]
+}}
+
+🔥 MANDATORY FIELDS FOR EVERY TASK (NO EXCEPTIONS):
+1. "id": "task_name 🔸 emoji" - MUST have 🔸 separator + emoji
+2. "start": "HH:MM" - exact time like "07:00", "08:30"
+3. "duration": number - minutes as integer like 15, 30, 45
+4. "actor_id": "{actor_1_id}" or "{actor_2_id}" - EXACT match to template
+5. "location": "workspace" - any location string
+6. "consumes": {{"resource": amount}} - MUST consume something
+7. "produces": {{"resource": amount}} - MUST produce something
+8. "depends_on": ["task_id"] - array of dependencies (can be empty [])
+
+🚫 FORBIDDEN FIELDS (THESE CAUSE SYSTEM FAILURE):
+- "description" - tasks are not descriptions!
+- "steps" - no nested steps allowed!
+- "task_id" - field must be called "id"!
+- "activities" - field must be called "tasks"!
+
+🎯 EMOJI SUGGESTIONS BY TASK TYPE:
+- Measuring/Prep: ⚖️ 📏 🥄 🔧
+- Mixing: 🥄 🌀 🔄
+- Kneading: 👋 💪 🤲
+- Rising/Waiting: ⏰ 🕐 ⏳
+- Shaping: 👐 🤏 ✋ 🖐️
+- Baking: 🔥 🍞 🥖
+- Cooling: ❄️ 🌬️ 🧊
+- Cleaning: 🧽 🧹 🚿
+
+🎯 FINAL OUTPUT STRUCTURE (COPY EXACTLY):
 {{
   "time_unit": "{simulation_template.get('time_unit', 'minute')}",
   "start_time": "{start_time}",
   "end_time": "{end_time}",
   "actors": [template actors exactly as provided],
   "resources": [template resources exactly as provided],
-  "tasks": [detailed task array with ALL required fields covering ALL tree steps],
+  "tasks": [
+    // CREATE 8-12 INDIVIDUAL TASKS HERE
+    // EACH TASK MUST HAVE ALL 8 MANDATORY FIELDS
+    // NO "description", NO "steps", NO NESTED OBJECTS
+  ],
   "article_title": "Generated Simulation"
 }}
 
-THE FIELD MUST BE CALLED "tasks" - NOT "steps", NOT "activities", NOT anything else!
-If you use any other field name, the system will fail completely.
-
-CRITICAL REQUIREMENTS:
-- The field MUST be called "tasks" (not "steps" or anything else)
-- DO NOT use "steps" field - it will cause system failure
-- Create task objects with: id, start, duration, actor_id, location, consumes, produces, depends_on
-- Setup and cleanup tasks may have empty produces object {{}}
-- CRITICAL: Every task ID must be in format "task_name 🔸 emoji" with the orange diamond separator
-- This format is REQUIRED for assemble.py to properly display tasks in the simulation view
-- Windows users may see emoji rendering issues but the format must still be used
-
-EXAMPLE TASK STRUCTURE - COPY THIS EXACT FORMAT:
-{{
- "tasks": [
-   {{
-     "id": "measure_ingredients 🔸 ⚖️",
-     "start": "07:00",
-     "duration": 15,
-     "actor_id": "{actor_1_id}",
-     "location": "prep_station",
-     "consumes": {{"flour": 0.5, "water": 0.3}},
-     "produces": {{"measured_ingredients": 1}},
-     "depends_on": []
-   }}
- ]
-}}
-
-DO NOT return nested structures - return the flat JSON structure shown above.
+⚠️ CRITICAL REMINDERS:
+- Create 8-12 separate task objects covering ALL tree steps
+- Each task = ONE executable action with timing/resources
+- NO task descriptions, NO nested steps, NO invalid fields
+- Every task ID must end with " 🔸 emoji"
+- Times must be realistic and sequential
+- Resources must exist in the template provided
 """
 
     user_prompt = f"""Task Tree:
@@ -475,12 +555,19 @@ Create a complete simulation with detailed tasks following ALL the requirements 
     try:
         response = chat_with_llm("gemma3", system_prompt, user_prompt)
         safe_print(f"DEBUG: LLM response length: {len(response)} characters")
-        if "tasks" in response:
+
+        # Enhanced debugging for task structure
+        if '"tasks"' in response:
             safe_print("DEBUG: LLM response contains 'tasks' field")
-        elif "steps" in response:
-            safe_print("DEBUG: WARNING - LLM response contains 'steps' field instead of 'tasks'")
+            if '"steps"' in response:
+                safe_print("DEBUG: CRITICAL WARNING - Response contains both 'tasks' and nested 'steps' - this will fail validation")
+            if '"description"' in response:
+                safe_print("DEBUG: WARNING - Response contains 'description' fields - may be wrong task structure")
+        elif '"steps"' in response:
+            safe_print("DEBUG: CRITICAL ERROR - LLM response contains 'steps' field instead of 'tasks'")
         else:
-            safe_print("DEBUG: WARNING - LLM response may not contain required fields")
+            safe_print("DEBUG: CRITICAL ERROR - LLM response missing required 'tasks' field")
+
         return response
     except Exception as e:
         print(f"Error generating schedule: {e}")
@@ -699,55 +786,69 @@ def parse_and_validate_simulation(raw_json_str: str) -> Tuple[Optional[Dict[str,
 
         # Validate tasks have required fields and provide defaults for optional ones
         for i, task in enumerate(simulation_dict.get("tasks", [])):
+            task_id = task.get("id", f"task_{i}")
+
+            # CRITICAL: Reject tasks with wrong structure immediately
+            if "steps" in task:
+                errors.append(f"Task {i} ({task_id}): INVALID STRUCTURE - contains nested 'steps' field. Tasks must be flat objects, not nested.")
+                continue
+
+            if "description" in task and len(task.keys()) <= 3:
+                errors.append(f"Task {i} ({task_id}): INVALID STRUCTURE - appears to be a description-style task instead of executable task.")
+                continue
+
+            # Check for required executable fields
             task_required = ["id", "start", "duration", "actor_id", "consumes", "produces"]
+            missing_fields = []
             for field in task_required:
                 if field not in task:
-                    errors.append(f"Task {i} ({task.get('id', 'unnamed')}): Missing required field: {field}")
+                    missing_fields.append(field)
 
-            # Provide defaults for optional fields
+            if missing_fields:
+                errors.append(f"Task {i} ({task_id}): Missing critical executable fields: {', '.join(missing_fields)}")
+                # Don't continue processing this malformed task
+                continue
+
+            # Provide defaults for optional fields only if task structure is valid
             if "location" not in task:
                 task["location"] = "workspace"
             if "depends_on" not in task:
                 task["depends_on"] = []
 
-            # Validate task ID is present and in correct format (Windows-compatible)
-            # NOTE: The 🔸 emoji format is REQUIRED for assemble.py to properly display tasks
-            # assemble.py splits task IDs on 🔸 to separate display name from emoji
-            task_id = task.get("id", "")
+            # Validate task ID format - only for valid task structures
             if not task_id:
                 errors.append(f"Task {i}: Missing task ID")
-            else:
-                # Check for emoji format more robustly to handle Windows terminal issues
-                try:
-                    # Try multiple representations of the diamond emoji for Windows compatibility
-                    diamond_variants = ["🔸", "\U0001f538", "\\U0001f538"]
-                    separator_found = None
+                continue
 
-                    for variant in diamond_variants:
-                        if variant in task_id:
-                            separator_found = variant
-                            break
+            # Check for emoji format more robustly to handle Windows terminal issues
+            try:
+                # Try multiple representations of the diamond emoji for Windows compatibility
+                diamond_variants = ["🔸", "\U0001f538", "\\U0001f538"]
+                separator_found = None
 
-                    if separator_found:
-                        # Validate the format is correct (has both parts)
-                        parts = task_id.split(separator_found)
-                        if len(parts) != 2 or not parts[0].strip() or not parts[1].strip():
-                            errors.append(f"Task {i} ({task_id}): Invalid format - should be 'task_name 🔸 emoji'")
-                    else:
-                        # No separator found - this is required for assemble.py compatibility
-                        # Check if task_id looks like it might have emoji issues (contains non-ASCII)
-                        try:
-                            task_id.encode('ascii')
-                            # Pure ASCII - definitely missing emoji format
-                            errors.append(f"Task {i} ({task_id}): Task ID should be in format 'task_name 🔸 emoji' (required for assemble.py)")
-                        except UnicodeEncodeError:
-                            # Contains non-ASCII characters - might be emoji formatting issue
-                            errors.append(f"Task {i} ({task_id}): Task ID may have emoji formatting issues - should be 'task_name 🔸 emoji'")
+                for variant in diamond_variants:
+                    if variant in task_id:
+                        separator_found = variant
+                        break
 
-                except (UnicodeError, UnicodeDecodeError, UnicodeEncodeError) as e:
-                    # Windows compatibility - allow the task but warn about potential issues
-                    # The emoji format is still required for assemble.py even if Windows has display issues
-                    errors.append(f"Task {i} ({task_id}): Warning - emoji formatting may have issues on Windows: {e}")
+                if separator_found:
+                    # Validate the format is correct (has both parts)
+                    parts = task_id.split(separator_found)
+                    if len(parts) != 2 or not parts[0].strip() or not parts[1].strip():
+                        errors.append(f"Task {i} ({task_id}): Invalid format - should be 'task_name 🔸 emoji'")
+                else:
+                    # No separator found - this is required for assemble.py compatibility
+                    try:
+                        task_id.encode('ascii')
+                        # Pure ASCII - definitely missing emoji format
+                        errors.append(f"Task {i} ({task_id}): Task ID should be in format 'task_name 🔸 emoji' (required for assemble.py)")
+                    except UnicodeEncodeError:
+                        # Contains non-ASCII characters - might be emoji formatting issue
+                        errors.append(f"Task {i} ({task_id}): Task ID may have emoji formatting issues - should be 'task_name 🔸 emoji'")
+
+            except (UnicodeError, UnicodeDecodeError, UnicodeEncodeError) as e:
+                # Windows compatibility - allow the task but warn about potential issues
+                errors.append(f"Task {i} ({task_id}): Warning - emoji formatting may have issues on Windows: {e}")
 
             # Validate time format
             start_time = task.get("start", "")
@@ -925,6 +1026,27 @@ def convert_steps_to_tasks(steps: List[Dict[str, Any]], actors: List[Dict[str, A
         current_time_minutes += template["duration"]
 
     return tasks
+
+def remove_duplicate_resources(simulation_dict: Dict[str, Any]) -> Dict[str, Any]:
+    """Remove duplicate resources from the simulation based on resource ID."""
+    if "resources" not in simulation_dict:
+        return simulation_dict
+
+    resources = simulation_dict["resources"]
+    seen_ids = set()
+    unique_resources = []
+
+    for resource in resources:
+        resource_id = resource.get("id")
+        if resource_id and resource_id not in seen_ids:
+            seen_ids.add(resource_id)
+            unique_resources.append(resource)
+        elif resource_id:
+            safe_print(f"DEBUG: Removed duplicate resource: {resource_id}")
+
+    simulation_dict["resources"] = unique_resources
+    safe_print(f"DEBUG: Cleaned resources from {len(resources)} to {len(unique_resources)} items")
+    return simulation_dict
 
 def standardize_resource_names(simulation_dict: Dict[str, Any]) -> Dict[str, Any]:
     """Standardize all resource names to snake_case and fix inconsistencies."""
@@ -1154,7 +1276,8 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
 
         # Step 3: Parse and validate structure
         simulation_dict, parse_errors = parse_and_validate_simulation(raw_schedule)
-          # Save failed attempt if there are parse errors and output_dir is provided
+
+        # Save failed attempt if there are parse errors and output_dir is provided
         if parse_errors and output_dir:
             save_failed_attempt(raw_schedule, parse_errors, attempt + 1, output_dir, "parse")
 
@@ -1163,13 +1286,21 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
             safe_print(f"Parse errors (attempt {attempt + 1}):")
             for error in parse_errors:
                 safe_print(f"  - {error}")
+
+            # Check for critical structural errors that indicate LLM is generating wrong format
+            critical_errors = [e for e in parse_errors if "INVALID STRUCTURE" in e or "nested 'steps'" in e]
+            if critical_errors:
+                safe_print(f"CRITICAL: LLM is generating wrong task structure - this will always fail")
+                safe_print("LLM needs to generate flat executable tasks, not nested step descriptions")
+
             if attempt < max_attempts - 1:
                 continue
 
         if simulation_dict:
-            # Step 4: Standardize resource names
+            # Step 4: Standardize resource names and remove duplicates
             try:
                 simulation_dict = standardize_resource_names(simulation_dict)
+                simulation_dict = remove_duplicate_resources(simulation_dict)
             except Exception as e:
                 print(f"Error standardizing resource names (attempt {attempt + 1}): {e}")
                 if output_dir:
@@ -1187,6 +1318,35 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
                 save_failed_attempt(simulation_dict, logic_errors, attempt + 1, output_dir, "logic")
 
             # Step 6: Enhanced constraint processing
+            # First check if tasks have proper executable structure
+            tasks = simulation_dict.get("tasks", [])
+            has_valid_tasks = True
+
+            for task in tasks:
+                # Check if task has required executable fields
+                required_fields = ["id", "start", "duration", "actor_id", "consumes", "produces"]
+                missing_fields = [field for field in required_fields if field not in task]
+
+                if missing_fields or "steps" in task:
+                    has_valid_tasks = False
+                    safe_print(f"Task {task.get('id', 'unknown')} has invalid structure - skipping constraint processing")
+                    break
+
+            if not has_valid_tasks:
+                safe_print("CRITICAL: Tasks have invalid structure - constraint processing cannot fix fundamental task structure issues")
+                safe_print("Skipping constraint processing due to malformed tasks")
+                return {
+                    "simulation": simulation_dict,
+                    "validation_summary": {
+                        "total_issues": len(logic_errors),
+                        "business_readiness": {"level": "failed", "score": 0},
+                        "has_critical_errors": True
+                    },
+                    "legacy_validation_errors": logic_errors,
+                    "constraint_processing_skipped": True,
+                    "reason": "Invalid task structure"
+                }
+
             try:
                 safe_print("Applying enhanced constraint processing...")
                 constraint_processor = ConstraintProcessor()

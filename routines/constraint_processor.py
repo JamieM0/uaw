@@ -768,6 +768,10 @@ class ConstraintProcessor:
 
     def _add_cleaning_supplies(self, simulation_data: Dict[str, Any]) -> None:
         """Add required cleaning supplies to resources if not present"""
+        # TEMPORARILY DISABLED: Auto-adding cleaning supplies to reduce resource clutter
+        # TODO: Re-enable once basic task structure is working
+        return
+
         cleaning_supplies = self.maintenance_rules.get('maintenance_rules', {}).get('cleaning_supplies', {})
 
         existing_resources = {r['id'] for r in simulation_data.get('resources', [])}

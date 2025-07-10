@@ -41,6 +41,26 @@ This document summarizes the critical fixes made to `simulation.py` to resolve t
 - **Impact**: Template rendering errors in web interface
 - **Fix**: Updated template to match actual validation_summary structure
 
+### 8. **F-String Braces Error**
+- **Problem**: Single braces `{` in f-string JSON templates caused formatting errors
+- **Impact**: "Invalid format specifier" errors preventing simulation generation
+- **Fix**: Changed to double braces `{{` for literal JSON in f-strings
+
+### 9. **LLM Generating Wrong Task Structure**
+- **Problem**: LLM creating tasks with nested "steps" arrays instead of flat executable tasks
+- **Impact**: Tasks missing critical fields like start, duration, actor_id, consumes, produces
+- **Fix**: Ultra-specific prompt with clear wrong vs right examples
+
+### 10. **Resource Duplication and Clutter**
+- **Problem**: Duplicate resources and excessive auto-added cleaning supplies
+- **Impact**: Cluttered resource lists making simulation hard to read
+- **Fix**: Added duplicate removal and temporarily disabled auto-cleaning supplies
+
+### 11. **Constraint Processor Processing Invalid Tasks**
+- **Problem**: Constraint processor tried to "fix" fundamentally broken task structures
+- **Impact**: Generated misleading "successful" simulations with invalid tasks
+- **Fix**: Added validation to skip constraint processing for malformed tasks
+
 ## Specific Fixes Implemented
 
 ### 1. Emoji Format Handling
@@ -116,6 +136,61 @@ def convert_steps_to_tasks(steps, actors, resources, start_time):
 # FIXED: Template validation summary access
 # BEFORE: simulation_data.validation_summary.critical_errors
 # AFTER: simulation_data.validation_summary.issue_counts.critical_errors
+```
+
+### 8. F-String Braces Fix
+```python
+# BEFORE: Single braces causing format errors
+f"""{
+  "time_unit": "{time_unit}",
+  "tasks": []
+}"""
+
+# AFTER: Double braces for literal JSON
+f"""{{
+  "time_unit": "{time_unit}",
+  "tasks": []
+}}"""
+```
+
+### 9. Ultra-Specific Task Structure Enforcement
+```python
+# ADDED: Clear wrong vs right examples in LLM prompt
+❌ WRONG EXAMPLES (THESE WILL FAIL):
+{{"id": "task", "description": "...", "steps": [...]}}
+
+✅ CORRECT EXAMPLES (CREATE EXACTLY LIKE THIS):
+{{"id": "measure_ingredients 🔸 ⚖️", "start": "07:00", "duration": 15, ...}}
+
+# Enhanced validation with immediate rejection
+if "steps" in task:
+    errors.append("INVALID STRUCTURE - contains nested 'steps' field")
+    continue
+```
+
+### 10. Resource Management
+```python
+# ADDED: Duplicate resource removal
+def remove_duplicate_resources(simulation_dict):
+    # Removes duplicate resources by ID
+    # Logs removal for debugging
+
+# TEMPORARILY DISABLED: Auto-cleaning supplies
+def _add_cleaning_supplies(self, simulation_data):
+    return  # Disabled to reduce clutter
+```
+
+### 11. Constraint Processing Protection
+```python
+# ADDED: Skip constraint processing for invalid tasks
+for task in tasks:
+    required_fields = ["id", "start", "duration", "actor_id", "consumes", "produces"]
+    if missing_fields or "steps" in task:
+        has_valid_tasks = False
+        break
+
+if not has_valid_tasks:
+    return {"constraint_processing_skipped": True, "reason": "Invalid task structure"}
 ```
 
 ## Emoji Format Requirements
@@ -199,29 +274,47 @@ return {
 - Proper timing, resources, and dependencies assigned
 - Task templates based on step content analysis
 
-## Latest Issues Fixed (Additional Update)
+## Latest Critical Issues Fixed (Final Update)
 
-### Critical Issues Resolved:
-1. **LLM Field Name Problem**: LLM was generating "steps" instead of "tasks"
-2. **KeyError in main()**: Accessing non-existent 'tasks' field
-3. **Template Rendering Error**: Wrong validation_summary structure access
-4. **Constraint Processor Error**: Looking for 'tasks' in data with 'steps'
-5. **Step vs Task Format**: Steps were descriptions, not executable tasks
+### Most Recent Problems Resolved:
+1. **F-String Format Error**: Single braces `{` caused "Invalid format specifier" errors
+2. **LLM Task Structure Problem**: LLM generating tasks with nested "steps" instead of flat executable tasks
+3. **Missing Executable Fields**: Tasks lacking start, duration, actor_id, consumes, produces
+4. **Resource Clutter**: Duplicate resources and excessive auto-added cleaning supplies
+5. **Constraint Processing Invalid Tasks**: System trying to "fix" fundamentally broken task structures
+6. **Misleading Success Reports**: System reporting "excellent" business readiness despite broken tasks
 
-### Solutions Implemented:
-1. **Multi-layer enforcement** of "tasks" field name in LLM prompt
-2. **Automatic field conversion** from "steps" to "tasks" 
-3. **Intelligent step-to-task conversion** for description-style steps
-4. **Template structure fixes** for validation_summary access
-5. **Debug logging** to track conversion process
-6. **Error handling** in main() function for missing fields
+### Comprehensive Solutions Implemented:
+1. **F-String Fix**: Changed `{` to `{{` for literal JSON braces in f-string templates
+2. **Ultra-Specific LLM Prompt**: Added clear wrong vs right examples with visual indicators
+3. **Strict Task Validation**: Immediate rejection of tasks with nested "steps" or missing fields
+4. **Resource Management**: Duplicate removal and disabled auto-cleaning supplies
+5. **Constraint Processing Protection**: Skip processing for fundamentally malformed tasks
+6. **Enhanced Error Detection**: Better debugging and critical error identification
+
+### Task Structure Requirements Enforced:
+- ✅ **Flat executable tasks**: Each task is one action with timing and resources
+- ❌ **No nested structures**: Forbidden "steps", "description", or nested objects
+- 🔸 **Emoji format required**: Every task ID must have "task_name 🔸 emoji" format
+- ⚖️ **All 8 mandatory fields**: id, start, duration, actor_id, location, consumes, produces, depends_on
+- 🎯 **Multiple tasks required**: 8-12 individual tasks covering all tree steps
 
 ## Testing Instructions
 
-1. **Test with the provided tree**: `uaw/routines/flow/9a7076c7-b6b1-4caf-b23c-324abf65e993/2.json`
-2. **Expected output**: Multiple tasks covering all tree steps (Activate Yeast, Combine Dry Ingredients, etc.)
-3. **Validation**: All tasks should have proper emoji format and pass validation
-4. **No fallback**: System should not use fallback simulation
+1. **Test with any tree file**: e.g., `flow\0ef49db7-8c4d-4d0f-b71a-21f5bbbf1838\2.json`
+2. **Expected output**: 8-12 individual executable tasks covering all tree steps
+3. **Task structure validation**: Each task must have all 8 mandatory fields
+4. **Emoji format**: All task IDs in format "task_name 🔸 emoji"
+5. **No structural errors**: No tasks with nested "steps", no missing executable fields
+6. **Resource management**: Clean resource list without duplicates or excessive cleaning supplies
+7. **No fallback**: System should generate proper tasks, not use fallback simulation
+
+### Success Criteria:
+- Multiple individual tasks (not descriptions)
+- Each task has: id, start, duration, actor_id, location, consumes, produces, depends_on
+- Task timing is realistic and sequential
+- Resources are consumed and produced appropriately
+- No validation errors about missing fields or wrong structure
 
 ## Files Modified
 
@@ -239,10 +332,18 @@ The fixes ensure that simulations properly reflect the input tree structure whil
 
 ## Debug Features Added
 
-- **Field detection logging**: Shows what fields LLM generates
-- **Conversion tracking**: Logs steps-to-tasks conversion process  
-- **Structure validation**: Verifies task object structure
-- **Error handling**: Graceful fallback for missing fields
-- **Template debugging**: Better error messages for structure mismatches
+- **Enhanced LLM response analysis**: Detects wrong task structures before validation
+- **Critical error identification**: Flags fundamental task structure problems
+- **Resource management logging**: Tracks duplicate removal and cleaning supply management
+- **Constraint processing protection**: Prevents processing of invalid task structures
+- **Detailed validation feedback**: Specific error messages for each type of structural problem
+- **F-string validation**: Test suite to prevent format string errors
 
-These debug features help identify and resolve issues when the LLM generates unexpected formats or when the conversion process encounters problems.
+### Key Debug Outputs:
+- "CRITICAL ERROR - LLM response contains 'steps' field instead of 'tasks'"
+- "INVALID STRUCTURE - contains nested 'steps' field"
+- "Missing critical executable fields: start, duration, actor_id"
+- "Removed duplicate resource: [resource_name]"
+- "Skipping constraint processing due to malformed tasks"
+
+These debug features provide clear feedback about what's wrong and help identify whether issues are from LLM generation, validation logic, or constraint processing.
