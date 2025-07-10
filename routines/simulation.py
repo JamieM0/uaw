@@ -433,6 +433,7 @@ Setup and cleanup tasks may have empty produces object {{}}.
 CRITICAL: Every task ID must be in format "task_name 🔸 emoji" with the orange diamond separator.
 This format is REQUIRED for assemble.py to properly display tasks in the simulation view.
 Windows users may see emoji rendering issues but the format must still be used.
+"""
 
     user_prompt = f"""Task Tree:
 {json.dumps(tree_json, indent=2)}
