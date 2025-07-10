@@ -9,10 +9,47 @@ equipment maintenance insertion, and validation transparency.
 import json
 import os
 import copy
+import sys
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
+
+# Windows Unicode support
+if sys.platform.startswith('win'):
+    import locale
+    import codecs
+    # Try to set UTF-8 encoding for Windows console
+    try:
+        # For Python 3.7+ on Windows
+        if hasattr(sys.stdout, 'reconfigure'):
+            sys.stdout.reconfigure(encoding='utf-8')
+            sys.stderr.reconfigure(encoding='utf-8')
+        else:
+            # Fallback for older Python versions
+            sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
+            sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
+    except (AttributeError, OSError):
+        pass  # Fallback to safe printing
+
+
+def safe_print(*args, **kwargs):
+    """Safe print function that handles Unicode encoding errors on Windows."""
+    try:
+        print(*args, **kwargs)
+    except UnicodeEncodeError:
+        # Replace problematic Unicode characters with ASCII equivalents
+        safe_args = []
+        for arg in args:
+            if isinstance(arg, str):
+                # Replace common emoji characters with ASCII equivalents
+                safe_arg = arg.replace('🔸', '[*]').replace('⚙️', '[gear]').replace('✓', '[check]').replace('⚠', '[warn]')
+                # Remove any remaining problematic Unicode characters
+                safe_arg = safe_arg.encode('ascii', errors='replace').decode('ascii')
+                safe_args.append(safe_arg)
+            else:
+                safe_args.append(str(arg).encode('ascii', errors='replace').decode('ascii'))
+        print(*safe_args, **kwargs)
 
 
 class ValidationSeverity(Enum):
@@ -81,10 +118,10 @@ class ConstraintProcessor:
             with open(config_path, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except FileNotFoundError:
-            print(f"Warning: Configuration file {filename} not found. Using defaults.")
+            safe_print(f"Warning: Configuration file {filename} not found. Using defaults.")
             return {}
         except json.JSONDecodeError as e:
-            print(f"Error parsing {filename}: {e}")
+            safe_print(f"Error parsing {filename}: {e}")
             return {}
 
     def apply_comprehensive_constraints(self, simulation_data: Dict[str, Any]) -> Dict[str, Any]:

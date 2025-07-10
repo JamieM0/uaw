@@ -525,23 +525,29 @@ def load_simulation_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
             processed_task["start_minutes"] = task_start_minutes
             processed_task["end_minutes"] = task_end_minutes
 
-            # Extract emoji from task ID for enhanced visualization
+            # Extract emoji from task ID for enhanced visualization (Windows-compatible)
             task_id = task.get("id", "")
-            if "🔸" in task_id:
-                # Split the task name and emoji
-                parts = task_id.split("🔸", 1)
-                if len(parts) == 2:
-                    task_name, emoji_part = parts
-                    processed_task["display_name"] = task_name.strip()
-                    processed_task["emoji"] = emoji_part.strip()
+            try:
+                # Try to handle emoji splitting safely
+                if "\U0001f538" in task_id or "🔸" in task_id:  # Unicode diamond emoji
+                    # Split on either Unicode representation
+                    parts = task_id.replace("\U0001f538", "🔸").split("🔸", 1)
+                    if len(parts) == 2:
+                        task_name, emoji_part = parts
+                        processed_task["display_name"] = task_name.strip()
+                        # Use ASCII fallback for emoji display
+                        processed_task["emoji"] = emoji_part.strip() if emoji_part.strip() else "[TASK]"
+                    else:
+                        processed_task["display_name"] = task_id
+                        processed_task["emoji"] = "[TASK]"
                 else:
-                    # Fallback if split doesn't work as expected
+                    # No emoji found, use the full ID as display name
                     processed_task["display_name"] = task_id
-                    processed_task["emoji"] = "⚙️"
-            else:
-                # No emoji found, use the full ID as display name
+                    processed_task["emoji"] = "[TASK]"  # ASCII fallback for Windows compatibility
+            except (UnicodeError, UnicodeDecodeError, UnicodeEncodeError):
+                # Fallback for any Unicode issues on Windows
                 processed_task["display_name"] = task_id
-                processed_task["emoji"] = "⚙️"  # Default emoji for tasks without emojis
+                processed_task["emoji"] = "[TASK]"
 
             # Calculate percentages for timeline visualization
             total_duration = end_time_minutes - start_time_minutes

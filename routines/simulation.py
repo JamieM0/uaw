@@ -6,9 +6,47 @@ from typing import Dict, List, Tuple, Any, Optional
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Windows Unicode support
+if sys.platform.startswith('win'):
+    import locale
+    import codecs
+    # Try to set UTF-8 encoding for Windows console
+    try:
+        # For Python 3.7+ on Windows
+        if hasattr(sys.stdout, 'reconfigure'):
+            sys.stdout.reconfigure(encoding='utf-8')
+            sys.stderr.reconfigure(encoding='utf-8')
+        else:
+            # Fallback for older Python versions
+            sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
+            sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
+    except (AttributeError, OSError):
+        pass  # Fallback to safe printing
+
 from utils import chat_with_llm, parse_llm_json_response, load_json, saveToFile, chat_with_llm_openrouter
 import jsonschema
 from constraint_processor import ConstraintProcessor
+
+
+
+
+def safe_print(*args, **kwargs):
+    """Safe print function that handles Unicode encoding errors on Windows."""
+    try:
+        print(*args, **kwargs)
+    except UnicodeEncodeError:
+        # Replace problematic Unicode characters with ASCII equivalents
+        safe_args = []
+        for arg in args:
+            if isinstance(arg, str):
+                # Replace common emoji characters with ASCII equivalents
+                safe_arg = arg.replace('🔸', '[*]').replace('⚙️', '[gear]').replace('✓', '[check]').replace('⚠', '[warn]')
+                # Remove any remaining problematic Unicode characters
+                safe_arg = safe_arg.encode('ascii', errors='replace').decode('ascii')
+                safe_args.append(safe_arg)
+            else:
+                safe_args.append(str(arg).encode('ascii', errors='replace').decode('ascii'))
+        print(*safe_args, **kwargs)
 
 
 def load_schema_and_defaults() -> Dict[str, Any]:
@@ -285,7 +323,7 @@ CRITICAL REQUIREMENTS - ALL MUST BE ENFORCED:
    - Include BOTH start time AND duration in minutes
 
 4. TASK STRUCTURE - EVERY task must have ALL these fields:
-   - "id": "task_name 🔸[EMOJI]" (MUST end with emoji)
+   - "id": "descriptive_task_name" (clear, descriptive task identifier)
    - "start": "HH:MM" (start time)
    - "duration": number (duration in minutes)
    - "actor_id": "{actor_1_id}" or "{actor_2_id}" (must match template)
@@ -361,7 +399,7 @@ Create a complete simulation with detailed tasks following ALL the requirements 
             "article_title": "Breadmaking Simulation",
             "tasks": [
                 {
-                    "id": "prepare_workspace 🔸🧹",
+                    "id": "prepare_workspace",
                     "start": "07:00",
                     "duration": 10,
                     "actor_id": actor_2_id,
@@ -381,114 +419,114 @@ Create a complete simulation with detailed tasks following ALL the requirements 
                     "depends_on": []
                 },
                 {
-                    "id": "activate_yeast 🔸🦠",
+                    "id": "activate_yeast",
                     "start": "07:10",
                     "duration": 10,
                     "actor_id": actor_2_id,
                     "location": "prep_station",
                     "consumes": {"yeast": 5, "water": 0.1, "sugar": 10},
                     "produces": {"activated_yeast": 1},
-                    "depends_on": ["prepare_workspace 🔸🧹"]
+                    "depends_on": ["prepare_workspace"]
                 },
                 {
-                    "id": "mix_ingredients 🔸🥄",
+                    "id": "mix_ingredients",
                     "start": "07:15",
                     "duration": 15,
                     "actor_id": actor_1_id,
                     "location": "mixing_station",
                     "consumes": {"measured_ingredients": 1, "activated_yeast": 1, "clean_mixer": 1},
                     "produces": {"mixed_dough": 1, "dirty_mixer": 1},
-                    "depends_on": ["measure_ingredients 🔸⚖️", "activate_yeast 🔸🦠"]
+                    "depends_on": ["measure_ingredients", "activate_yeast"]
                 },
                 {
-                    "id": "knead_dough 🔸👐",
+                    "id": "knead_dough",
                     "start": "07:30",
                     "duration": 15,
                     "actor_id": actor_1_id,
                     "location": "kneading_area",
                     "consumes": {"mixed_dough": 1, "clean_surface": 1},
                     "produces": {"kneaded_dough": 1, "dirty_surface": 1},
-                    "depends_on": ["mix_ingredients 🔸🥄"]
+                    "depends_on": ["mix_ingredients"]
                 },
                 {
-                    "id": "clean_mixer 🔸🧽",
+                    "id": "clean_mixer",
                     "start": "07:20",
                     "duration": 10,
                     "actor_id": actor_2_id,
                     "location": "cleaning_station",
                     "consumes": {"dirty_mixer": 1},
                     "produces": {"clean_mixer": 1},
-                    "depends_on": ["activate_yeast 🔸🦠"]
+                    "depends_on": ["activate_yeast"]
                 },
                 {
-                    "id": "prepare_oven 🔸🔥",
+                    "id": "prepare_oven",
                     "start": "07:30",
                     "duration": 15,
                     "actor_id": actor_2_id,
                     "location": "oven_area",
                     "consumes": {"cold_oven": 1},
                     "produces": {"preheated_oven": 1},
-                    "depends_on": ["clean_mixer 🔸🧽"]
+                    "depends_on": ["clean_mixer"]
                 },
                 {
-                    "id": "first_rise 🔸⏰",
+                    "id": "first_rise",
                     "start": "07:45",
                     "duration": 60,
                     "actor_id": actor_1_id,
                     "location": "proofing_area",
                     "consumes": {"kneaded_dough": 1},
                     "produces": {"risen_dough": 1},
-                    "depends_on": ["knead_dough 🔸👐"]
+                    "depends_on": ["knead_dough"]
                 },
                 {
-                    "id": "clean_surface 🔸🧽",
+                    "id": "clean_surface",
                     "start": "07:45",
                     "duration": 15,
                     "actor_id": actor_2_id,
                     "location": "cleaning_station",
                     "consumes": {"dirty_surface": 1},
                     "produces": {"clean_surface": 1},
-                    "depends_on": ["prepare_oven 🔸🔥"]
+                    "depends_on": ["prepare_oven"]
                 },
                 {
-                    "id": "shape_loaves 🔸🖐️",
+                    "id": "shape_loaves",
                     "start": "08:45",
                     "duration": 20,
                     "actor_id": actor_1_id,
                     "location": "shaping_area",
                     "consumes": {"risen_dough": 1, "clean_surface": 1},
                     "produces": {"shaped_loaves": 2, "dirty_surface": 1},
-                    "depends_on": ["first_rise 🔸⏰", "clean_surface 🔸🧽"]
+                    "depends_on": ["first_rise", "clean_surface"]
                 },
                 {
-                    "id": "bake_bread 🔸🔥",
+                    "id": "bake_bread",
                     "start": "09:05",
                     "duration": 45,
                     "actor_id": actor_1_id,
                     "location": "oven_area",
                     "consumes": {"shaped_loaves": 2, "preheated_oven": 1},
                     "produces": {"finished_bread": 2, "used_oven": 1},
-                    "depends_on": ["shape_loaves 🔸🖐️", "prepare_oven 🔸🔥"]
+                    "depends_on": ["shape_loaves", "prepare_oven"]
                 },
                 {
-                    "id": "final_cleanup 🔸🧹",
-                    "start": "08:00",
-                    "duration": 30,
+                    "id": "final_cleanup",
+                    "start": "10:20",
+                    "duration": 10,
                     "actor_id": actor_2_id,
-                    "location": "general_area",
-                    "consumes": {"dirty_workspace": 1},
+                    "location": "kitchen",
+                    "consumes": {"dirty_workspace": 1, "cleaning_supplies": 1},
                     "produces": {"clean_workspace": 1},
-                    "depends_on": ["clean_surface 🔸🧽"]
+                    "depends_on": ["clean_surface"]
                 },
                 {
-                    "id": "cool_bread 🔸❄️",
+                    "id": "cool_bread",
                     "start": "09:50",
                     "duration": 30,
                     "actor_id": actor_2_id,
                     "location": "cooling_area",
                     "consumes": {"finished_bread": 2},
                     "produces": {"cooled_bread": 2},
-                    "depends_on": ["bake_bread 🔸🔥"]
+                    "depends_on": ["bake_bread"]
                 }
             ]
         }, indent=2)
@@ -510,11 +548,12 @@ def parse_and_validate_simulation(raw_json_str: str) -> Tuple[Optional[Dict[str,
             errors.append(f"Expected JSON object, got {type(simulation_dict)}")
             return None, errors
 
-        # Check for unwanted nested structure
+        # Check for unwanted nested structure and fix it automatically
         if "simulation" in simulation_dict:
             if isinstance(simulation_dict["simulation"], dict) and any(key in simulation_dict["simulation"] for key in ["time_unit", "actors", "resources", "tasks"]):
-                errors.append("Detected nested simulation structure - remove inner 'simulation' object")
-                return None, errors
+                safe_print("Detected nested simulation structure - automatically flattening...")
+                # Flatten the nested structure
+                simulation_dict = simulation_dict["simulation"]
 
         # Validate required fields at root level
         required_fields = ["time_unit", "start_time", "end_time", "actors", "resources", "tasks"]
@@ -529,10 +568,10 @@ def parse_and_validate_simulation(raw_json_str: str) -> Tuple[Optional[Dict[str,
                 if field not in task:
                     errors.append(f"Task {i} ({task.get('id', 'unnamed')}): Missing required field: {field}")
 
-            # Validate task ID format (must end with emoji)
+            # Validate task ID format (must end with emoji) - relaxed for Windows compatibility
             task_id = task.get("id", "")
-            if not (task_id and "🔸" in task_id):
-                errors.append(f"Task {i}: ID must end with ' 🔸[EMOJI]' format, got: {task_id}")
+            if not task_id:
+                errors.append(f"Task {i}: Missing task ID")
 
             # Validate time format
             start_time = task.get("start", "")
@@ -742,7 +781,7 @@ RESOURCE REQUIREMENTS:
 - NO CamelCase or capitalized resource names
 
 MANDATORY REQUIREMENTS FOR EVERY TASK:
-1. "id": "task_name 🔸[EMOJI]" (MUST include emoji)
+1. "id": "descriptive_task_name" (clear, descriptive task identifier)
 2. "start": "HH:MM" (valid 24-hour time)
 3. "duration": positive_number (minutes)
 4. "actor_id": "{actor_1_id}" or "{actor_2_id}" (must match template)
@@ -782,7 +821,7 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
     max_attempts = 3
 
     for attempt in range(max_attempts):
-        print(f"Simulation generation attempt {attempt + 1}/{max_attempts}")
+        safe_print(f"Simulation generation attempt {attempt + 1}/{max_attempts}")
 
         # Step 1: Construct initial simulation template
         simulation_template = construct_initial_simulation(tree_json, article_metadata)
@@ -801,7 +840,10 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
             save_failed_attempt(raw_schedule, parse_errors, attempt + 1, output_dir, "parse")
 
         if parse_errors:
-            print(f"Parse errors (attempt {attempt + 1}): {parse_errors}")
+            # Safely print errors without Unicode encoding issues
+            safe_print(f"Parse errors (attempt {attempt + 1}):")
+            for error in parse_errors:
+                safe_print(f"  - {error}")
             if attempt < max_attempts - 1:
                 continue
 
@@ -827,7 +869,7 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
 
             # Step 6: Enhanced constraint processing
             try:
-                print("⚙️ Applying enhanced constraint processing...")
+                safe_print("Applying enhanced constraint processing...")
                 constraint_processor = ConstraintProcessor()
                 enhanced_simulation = constraint_processor.apply_comprehensive_constraints(simulation_dict)
 
@@ -835,7 +877,7 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
                 validation_summary = constraint_processor.get_validation_summary()
                 transparency_data = constraint_processor.get_transparency_data()
 
-                print(f"✓ Constraint processing complete. Business readiness: {validation_summary['business_readiness']['level']}")
+                safe_print(f"Constraint processing complete. Business readiness: {validation_summary['business_readiness']['level']}")
 
                 # Return enhanced simulation with validation data
                 return {
@@ -846,22 +888,22 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
                 }
 
             except Exception as e:
-                print(f"⚠ Error in constraint processing (attempt {attempt + 1}): {e}")
+                safe_print(f"Warning: Error in constraint processing (attempt {attempt + 1}): {e}")
                 if output_dir:
                     save_failed_attempt(simulation_dict, [f"Constraint processing error: {e}"], attempt + 1, output_dir, "constraint_processing")
 
                 # Fall back to basic validation if constraint processing fails
                 if not logic_errors:
-                    print("✓ Basic validation passed, using simulation without enhanced constraints")
+                    safe_print("Basic validation passed, using simulation without enhanced constraints")
                     return {"simulation": simulation_dict, "legacy_validation_errors": logic_errors}
                 elif attempt == max_attempts - 1:
-                    print("⚠ Using simulation with validation issues (final attempt)")
+                    safe_print("Using simulation with validation issues (final attempt)")
                     return {"simulation": simulation_dict, "legacy_validation_errors": logic_errors}
                 else:
                     continue
 
     # Fallback: create a comprehensive manual simulation
-    print("Creating fallback simulation with all required fields")
+    safe_print("Creating fallback simulation with all required fields")
     actors = simulation_template.get("actors", [])
     actor_1_id = actors[0]["id"] if len(actors) > 0 else "baker"
     actor_2_id = actors[1]["id"] if len(actors) > 1 else "assistant"
@@ -875,7 +917,7 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
         "article_title": article_metadata.get("article_title", "Breadmaking Simulation"),
         "tasks": [
             {
-                "id": "prepare_workspace 🔸🧹",
+                "id": "prepare_workspace",
                 "start": "07:00",
                 "duration": 10,
                 "actor_id": actor_2_id,
@@ -885,7 +927,7 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
                 "depends_on": []
             },
             {
-                "id": "measure_ingredients 🔸⚖️",
+                "id": "measure_ingredients",
                 "start": "07:00",
                 "duration": 15,
                 "actor_id": actor_1_id,
@@ -895,111 +937,111 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
                 "depends_on": []
             },
             {
-                "id": "activate_yeast 🔸🦠",
+                "id": "activate_yeast",
                 "start": "07:10",
                 "duration": 10,
                 "actor_id": actor_2_id,
                 "location": "prep_station",
                 "consumes": {"yeast": 5, "water": 0.1, "sugar": 10},
                 "produces": {"activated_yeast": 1},
-                "depends_on": ["prepare_workspace 🔸🧹"]
+                "depends_on": ["prepare_workspace"]
             },
             {
-                "id": "mix_ingredients 🔸🥄",
+                "id": "mix_ingredients",
                 "start": "07:15",
                 "duration": 15,
                 "actor_id": actor_1_id,
                 "location": "mixing_station",
                 "consumes": {"measured_ingredients": 1, "activated_yeast": 1, "clean_mixer": 1},
                 "produces": {"mixed_dough": 1, "dirty_mixer": 1},
-                "depends_on": ["measure_ingredients 🔸⚖️", "activate_yeast 🔸🦠"]
+                "depends_on": ["measure_ingredients", "activate_yeast"]
             },
             {
-                "id": "knead_dough 🔸👐",
+                "id": "knead_dough",
                 "start": "07:30",
                 "duration": 15,
                 "actor_id": actor_1_id,
                 "location": "kneading_area",
                 "consumes": {"mixed_dough": 1, "clean_surface": 1},
                 "produces": {"kneaded_dough": 1, "dirty_surface": 1},
-                "depends_on": ["mix_ingredients 🔸🥄"]
+                "depends_on": ["mix_ingredients"]
             },
             {
-                "id": "clean_mixer 🔸🧽",
+                "id": "clean_mixer",
                 "start": "07:20",
                 "duration": 10,
                 "actor_id": actor_2_id,
                 "location": "cleaning_station",
                 "consumes": {"dirty_mixer": 1},
                 "produces": {"clean_mixer": 1},
-                "depends_on": ["activate_yeast 🔸🦠"]
+                "depends_on": ["activate_yeast"]
             },
             {
-                "id": "prepare_oven 🔸🔥",
+                "id": "prepare_oven",
                 "start": "07:30",
                 "duration": 15,
                 "actor_id": actor_2_id,
                 "location": "oven_area",
                 "consumes": {"cold_oven": 1},
                 "produces": {"preheated_oven": 1},
-                "depends_on": ["clean_mixer 🔸🧽"]
+                "depends_on": ["clean_mixer"]
             },
             {
-                "id": "first_rise 🔸⏰",
+                "id": "first_rise",
                 "start": "07:45",
                 "duration": 60,
                 "actor_id": actor_1_id,
                 "location": "proofing_area",
                 "consumes": {"kneaded_dough": 1},
                 "produces": {"risen_dough": 1},
-                "depends_on": ["knead_dough 🔸👐"]
+                "depends_on": ["knead_dough"]
             },
             {
-                "id": "clean_surface 🔸🧽",
+                "id": "clean_surface",
                 "start": "07:45",
                 "duration": 15,
                 "actor_id": actor_2_id,
                 "location": "cleaning_station",
                 "consumes": {"dirty_surface": 1},
                 "produces": {"clean_surface": 1},
-                "depends_on": ["prepare_oven 🔸🔥"]
+                "depends_on": ["prepare_oven"]
             },
             {
-                "id": "shape_loaves 🔸🖐️",
+                "id": "shape_loaves",
                 "start": "08:45",
                 "duration": 20,
                 "actor_id": actor_1_id,
                 "location": "shaping_area",
                 "consumes": {"risen_dough": 1, "clean_surface": 1},
                 "produces": {"shaped_loaves": 2, "dirty_surface": 1},
-                "depends_on": ["first_rise 🔸⏰", "clean_surface 🔸🧽"]
+                "depends_on": ["first_rise", "clean_surface"]
             },
             {
-                "id": "bake_bread 🔸🔥",
+                "id": "bake_bread",
                 "start": "09:05",
                 "duration": 45,
                 "actor_id": actor_1_id,
                 "location": "oven_area",
                 "consumes": {"shaped_loaves": 2, "preheated_oven": 1},
                 "produces": {"finished_bread": 2, "used_oven": 1},
-                "depends_on": ["shape_loaves 🔸🖐️", "prepare_oven 🔸🔥"]
+                "depends_on": ["shape_loaves", "prepare_oven"]
             },
             {
-                "id": "cool_bread 🔸❄️",
+                "id": "cool_bread",
                 "start": "09:50",
                 "duration": 30,
                 "actor_id": actor_2_id,
                 "location": "cooling_area",
                 "consumes": {"finished_bread": 2},
                 "produces": {"cooled_bread": 2},
-                "depends_on": ["bake_bread 🔸🔥"]
+                "depends_on": ["bake_bread"]
             }
         ]
     }
 
     # Apply constraint processing to fallback simulation
     try:
-        print("⚙️ Applying constraint processing to fallback simulation...")
+        safe_print("Applying constraint processing to fallback simulation...")
         constraint_processor = ConstraintProcessor()
         enhanced_fallback = constraint_processor.apply_comprehensive_constraints(fallback_simulation)
 
@@ -1013,7 +1055,7 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
             "fallback_used": True
         }
     except Exception as e:
-        print(f"⚠ Error in fallback constraint processing: {e}")
+        safe_print(f"Error in fallback constraint processing: {e}")
         return {
             "simulation": fallback_simulation,
             "fallback_used": True,
@@ -1026,7 +1068,7 @@ def save_simulation_json(simulation_dict: Dict[str, Any], output_dir: str) -> st
     output_path = os.path.join(output_dir, "simulation.json")
 
     with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(simulation_dict, f, indent=2, ensure_ascii=False)
+        json.dump(simulation_dict, f, indent=2, ensure_ascii=True)
 
     return output_path
 
@@ -1056,14 +1098,14 @@ def save_failed_attempt(data: Any, errors: List[str], attempt_num: int, output_d
             "failed_data": data
         }
 
-        # Save the failed attempt
+        # Save the failed attempt with proper encoding
         with open(fail_path, "w", encoding="utf-8") as f:
-            json.dump(fail_data, f, indent=2, ensure_ascii=False)
+            json.dump(fail_data, f, indent=2, ensure_ascii=True)
 
-        print(f"Failed attempt {attempt_num} saved to: {fail_path}")
+        safe_print(f"Failed attempt {attempt_num} saved to: {fail_path}")
 
     except Exception as e:
-        print(f"Error saving failed attempt {attempt_num}: {e}")
+        safe_print(f"Error saving failed attempt {attempt_num}: {e}")
 
 def main():
     """
@@ -1071,8 +1113,8 @@ def main():
     Expects a tree JSON file as command line argument.
     """
     if len(sys.argv) < 2:
-        print("Usage: python simulation.py <tree_json_file> [output_dir]")
-        print("Example: python simulation.py ../output/breadmaking/tree.json ../output/breadmaking/")
+        safe_print("Usage: python simulation.py <tree_json_file> [output_dir]")
+        safe_print("Example: python simulation.py ../output/breadmaking/tree.json ../output/breadmaking/")
         sys.exit(1)
 
     tree_file = sys.argv[1]
@@ -1080,7 +1122,7 @@ def main():
 
     try:
         # Load tree JSON
-        print(f"Loading tree from: {tree_file}")
+        safe_print(f"Loading tree from: {tree_file}")
         tree_json = load_json(tree_file)
 
         # Extract article metadata from tree
@@ -1089,8 +1131,8 @@ def main():
             "article_title": metadata.get("task", "Unknown Task"),
             "domain": "General",  # Could be enhanced to detect domain from tree content
         }
-          # Generate simulation
-        print("Generating simulation...")
+        # Generate simulation
+        safe_print("Generating simulation...")
         simulation_dict = generate_simulation(tree_json, article_metadata, output_dir)
 
         # Check if output_dir is actually a file path ending with simulation.json
@@ -1101,24 +1143,24 @@ def main():
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
             with open(output_path, "w", encoding="utf-8") as f:
-                json.dump(simulation_dict, f, indent=2, ensure_ascii=False)
+                json.dump(simulation_dict, f, indent=2, ensure_ascii=True)
 
-            print(f"Simulation saved to: {output_path}")
+            safe_print(f"Simulation saved to: {output_path}")
         else:
             # Use the original save function for standalone usage
             output_path = save_simulation_json(simulation_dict, output_dir)
 
-        print(f"\n✓ Simulation generation complete!")
-        print(f"Input tree: {tree_file}")
-        print(f"Output simulation: {output_path}")
+        safe_print(f"\nSimulation generation complete!")
+        safe_print(f"Input tree: {tree_file}")
+        safe_print(f"Output simulation: {output_path}")
 
         # Print basic stats
         sim = simulation_dict["simulation"]
-        print(f"\nSimulation stats:")
-        print(f"- Time window: {sim['start_time']} to {sim['end_time']}")
-        print(f"- Actors: {len(sim['actors'])}")
-        print(f"- Resources: {len(sim['resources'])}")
-        print(f"- Tasks: {len(sim['tasks'])}")
+        safe_print(f"\nSimulation stats:")
+        safe_print(f"- Time span: {sim['start_time']} to {sim['end_time']}")
+        safe_print(f"- Actors: {len(sim['actors'])}")
+        safe_print(f"- Resources: {len(sim['resources'])}")
+        safe_print(f"- Tasks: {len(sim['tasks'])}")
 
         # Validate the final output
         parse_errors = []
@@ -1131,14 +1173,14 @@ def main():
             parse_errors.append(f"Final validation error: {e}")
 
         if parse_errors or logic_errors:
-            print(f"\n⚠ Validation issues detected:")
+            safe_print(f"\nValidation issues detected:")
             for error in parse_errors + logic_errors:
-                print(f"  - {error}")
+                safe_print(f"  - {error}")
         else:
-            print(f"\n✓ Final validation passed - simulation is valid!")
+            safe_print(f"\nFinal validation passed - simulation is valid!")
 
     except Exception as e:
-        print(f"Error generating simulation: {e}")
+        safe_print(f"Error generating simulation: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
