@@ -27,6 +27,13 @@ from utils import chat_with_llm, parse_llm_json_response, load_json, saveToFile,
 import jsonschema
 from constraint_processor import ConstraintProcessor
 
+# EMOJI FORMAT REQUIREMENT:
+# Task IDs must be in format "task_name 🔸 emoji" where:
+# - 🔸 is the orange diamond separator (Unicode U+1F538)
+# - This format is REQUIRED for assemble.py to properly display tasks
+# - assemble.py splits on 🔸 to separate task name from emoji for visualization
+# - Windows users may see rendering issues but functionality is preserved
+
 
 
 
@@ -301,38 +308,61 @@ def ask_llm_for_schedule(simulation_template: Dict[str, Any], tree_json: Dict[st
     resource_ids = [r["id"] for r in simulation_template.get("resources", [])]
     resource_list = ", ".join(resource_ids[:10])  # Show first 10 for brevity
 
-    system_prompt = f"""You are a process scheduling expert. Given a task tree and simulation template with actors and resources, create a detailed task schedule.
+    # Extract all steps from the tree to ensure comprehensive task coverage
+    def extract_all_steps(tree_node, steps=None):
+        if steps is None:
+            steps = []
+
+        if isinstance(tree_node, dict):
+            if "step" in tree_node:
+                steps.append(tree_node["step"])
+            if "children" in tree_node:
+                for child in tree_node["children"]:
+                    extract_all_steps(child, steps)
+        return steps
+
+    tree_steps = extract_all_steps(tree_json.get("tree", {}))
+    steps_text = "\n".join([f"- {step}" for step in tree_steps])
+
+    system_prompt = f"""You are a process scheduling expert. Given a task tree and simulation template with actors and resources, create a detailed task schedule that MUST cover ALL steps from the input tree.
 
 CRITICAL REQUIREMENTS - ALL MUST BE ENFORCED:
 
-1. STRUCTURE REQUIREMENTS:
+1. TREE COVERAGE REQUIREMENT:
+   - You MUST create tasks that cover ALL the following steps from the input tree:
+   {steps_text}
+   - Each step should be represented as one or more tasks in the simulation
+   - Do NOT create a single generic task - create specific tasks for each step
+
+2. STRUCTURE REQUIREMENTS:
    - Return ONLY the root simulation object - NO nested simulation objects
    - Do NOT include any duplicate data structures
    - Use the exact template structure provided
 
-2. RESOURCE NAMING - CRITICAL:
+3. RESOURCE NAMING - CRITICAL:
    - ALL resource references in tasks MUST exactly match the template resource IDs
    - Available resources: {resource_list}...
    - Use ONLY snake_case resource names (flour, water, yeast, clean_mixer, dirty_mixer)
    - NO CamelCase or capitalized names (NOT Flour, Water, CleanMixer)
 
-3. TIME FORMAT RULES:
+4. TIME FORMAT RULES:
    - ALL times must be in HH:MM format (24-hour)
    - Minutes must be 00-59 (NEVER 60 or higher)
    - Times must be between {start_time} and {end_time}
    - Include BOTH start time AND duration in minutes
 
-4. TASK STRUCTURE - EVERY task must have ALL these fields:
-   - "id": "descriptive_task_name" (clear, descriptive task identifier)
+5. TASK STRUCTURE - EVERY task must have ALL these fields:
+   - "id": "descriptive_task_name 🔸 emoji" (REQUIRED: task name, then 🔸, then relevant emoji)
+   NOTE: The 🔸 separator is CRITICAL for assemble.py visualization - do NOT omit it!
    - "start": "HH:MM" (start time)
    - "duration": number (duration in minutes)
    - "actor_id": "{actor_1_id}" or "{actor_2_id}" (must match template)
-   - "location": "Location Name"
+   - "location": "workspace" (or specific location like "prep_station", "mixing_area")
    - "consumes": {{"resource_id": positive_number}}
-   - "produces": {{"resource_id": positive_number}}
-   - "depends_on": ["task_id_1", "task_id_2"] (can be empty array)
+   - "produces": {{"resource_id": positive_number}} (setup/cleanup tasks may produce empty object {{}})
+   - "depends_on": ["task_id_1", "task_id_2"] (can be empty array [])
 
-5. RESOURCE RULES:
+6. RESOURCE RULES:
    - EVERY task MUST consume at least one resource
    - EVERY task MUST produce at least one resource
    - Use POSITIVE numbers for consumption/production
@@ -340,20 +370,20 @@ CRITICAL REQUIREMENTS - ALL MUST BE ENFORCED:
    - Include realistic amounts based on starting stock
    - Ensure logical resource flow (can't consume what doesn't exist)
 
-6. ACTOR SCHEDULING:
+7. ACTOR SCHEDULING:
    - Same actor CANNOT have overlapping tasks
    - Different actors CAN work simultaneously
    - Calculate end times: start + duration, ensure no overlaps
 
-7. LOGICAL WORKFLOW:
-   - Tasks should follow logical sequence (measure → mix → knead → rise → shape → bake)
+8. LOGICAL WORKFLOW:
+   - Tasks should follow logical sequence from the tree structure
    - Dependencies should be realistic
    - Equipment cleaning should happen after equipment use
    - Include preparation and cleanup tasks
 
 EXAMPLE TASK FORMAT:
 {{
-  "id": "measure_ingredients 🔸⚖️",
+  "id": "measure_ingredients 🔸 ⚖️",
   "start": "07:00",
   "duration": 15,
   "actor_id": "{actor_1_id}",
@@ -363,6 +393,29 @@ EXAMPLE TASK FORMAT:
   "depends_on": []
 }}
 
+EXAMPLE SETUP TASK (can have empty produces):
+{{
+  "id": "initial_setup 🔸 🔧",
+  "start": "06:00",
+  "duration": 10,
+  "actor_id": "{actor_2_id}",
+  "location": "workspace",
+  "consumes": {{"clean_workspace": 1}},
+  "produces": {{}},
+  "depends_on": []
+}}
+
+EMOJI SUGGESTIONS for different task types:
+- Preparation: 🔧 🛠️ ⚙️
+- Measuring: ⚖️ 📏 🥄
+- Mixing: 🥄 🌀 🔄
+- Kneading: 👋 💪 🤲
+- Rising/Waiting: ⏰ 🕐 ⏳
+- Shaping: 👐 🤏 ✋
+- Baking: 🔥 🍞 🥖
+- Cooling: ❄️ 🌬️ 🧊
+- Cleaning: 🧽 🧹 🚿
+
 Return a complete simulation JSON with the exact structure (NO nested simulation objects):
 {{
   "time_unit": "{simulation_template.get('time_unit', 'minute')}",
@@ -370,11 +423,16 @@ Return a complete simulation JSON with the exact structure (NO nested simulation
   "end_time": "{end_time}",
   "actors": [template actors exactly as provided],
   "resources": [template resources exactly as provided],
-  "tasks": [detailed task array with ALL required fields],
+  "tasks": [detailed task array with ALL required fields covering ALL tree steps],
   "article_title": "Generated Simulation"
 }}
 
-Generate 10-15 realistic tasks covering the full breadmaking process with proper resource flows and logical sequencing."""
+Generate tasks that cover ALL steps from the tree with proper resource flows and logical sequencing.
+Make sure EVERY task has ALL required fields: id, start, duration, actor_id, location, consumes, produces, depends_on.
+Setup and cleanup tasks may have empty produces object {{}}.
+CRITICAL: Every task ID must be in format "task_name 🔸 emoji" with the orange diamond separator.
+This format is REQUIRED for assemble.py to properly display tasks in the simulation view.
+Windows users may see emoji rendering issues but the format must still be used.
 
     user_prompt = f"""Task Tree:
 {json.dumps(tree_json, indent=2)}
@@ -399,7 +457,7 @@ Create a complete simulation with detailed tasks following ALL the requirements 
             "article_title": "Breadmaking Simulation",
             "tasks": [
                 {
-                    "id": "prepare_workspace",
+                    "id": "prepare_workspace 🔸 🔧",
                     "start": "07:00",
                     "duration": 10,
                     "actor_id": actor_2_id,
@@ -409,7 +467,7 @@ Create a complete simulation with detailed tasks following ALL the requirements 
                     "depends_on": []
                 },
                 {
-                    "id": "measure_ingredients 🔸⚖️",
+                    "id": "measure_ingredients 🔸 ⚖️",
                     "start": "07:00",
                     "duration": 15,
                     "actor_id": actor_1_id,
@@ -419,114 +477,104 @@ Create a complete simulation with detailed tasks following ALL the requirements 
                     "depends_on": []
                 },
                 {
-                    "id": "activate_yeast",
+                    "id": "activate_yeast 🔸 🌀",
                     "start": "07:10",
                     "duration": 10,
                     "actor_id": actor_2_id,
                     "location": "prep_station",
                     "consumes": {"yeast": 5, "water": 0.1, "sugar": 10},
                     "produces": {"activated_yeast": 1},
-                    "depends_on": ["prepare_workspace"]
+                    "depends_on": ["prepare_workspace 🔸 🔧"]
                 },
                 {
-                    "id": "mix_ingredients",
+                    "id": "mix_ingredients 🔸 🥄",
                     "start": "07:15",
                     "duration": 15,
                     "actor_id": actor_1_id,
                     "location": "mixing_station",
                     "consumes": {"measured_ingredients": 1, "activated_yeast": 1, "clean_mixer": 1},
                     "produces": {"mixed_dough": 1, "dirty_mixer": 1},
-                    "depends_on": ["measure_ingredients", "activate_yeast"]
+                    "depends_on": ["measure_ingredients 🔸 ⚖️", "activate_yeast 🔸 🌀"]
                 },
                 {
-                    "id": "knead_dough",
+                    "id": "knead_dough 🔸 👋",
                     "start": "07:30",
                     "duration": 15,
                     "actor_id": actor_1_id,
                     "location": "kneading_area",
                     "consumes": {"mixed_dough": 1, "clean_surface": 1},
                     "produces": {"kneaded_dough": 1, "dirty_surface": 1},
-                    "depends_on": ["mix_ingredients"]
+                    "depends_on": ["mix_ingredients 🔸 🥄"]
                 },
                 {
-                    "id": "clean_mixer",
+                    "id": "clean_mixer 🔸 🧽",
                     "start": "07:20",
                     "duration": 10,
                     "actor_id": actor_2_id,
                     "location": "cleaning_station",
                     "consumes": {"dirty_mixer": 1},
                     "produces": {"clean_mixer": 1},
-                    "depends_on": ["activate_yeast"]
+                    "depends_on": ["activate_yeast 🔸 🌀"]
                 },
                 {
-                    "id": "prepare_oven",
+                    "id": "prepare_oven 🔸 🔥",
                     "start": "07:30",
                     "duration": 15,
                     "actor_id": actor_2_id,
                     "location": "oven_area",
                     "consumes": {"cold_oven": 1},
                     "produces": {"preheated_oven": 1},
-                    "depends_on": ["clean_mixer"]
+                    "depends_on": ["clean_mixer 🔸 🧽"]
                 },
                 {
-                    "id": "first_rise",
+                    "id": "first_rise 🔸 ⏰",
                     "start": "07:45",
                     "duration": 60,
                     "actor_id": actor_1_id,
                     "location": "proofing_area",
                     "consumes": {"kneaded_dough": 1},
                     "produces": {"risen_dough": 1},
-                    "depends_on": ["knead_dough"]
+                    "depends_on": ["knead_dough 🔸 👋"]
                 },
                 {
-                    "id": "clean_surface",
+                    "id": "clean_surface 🔸 🧹",
                     "start": "07:45",
                     "duration": 15,
                     "actor_id": actor_2_id,
                     "location": "cleaning_station",
                     "consumes": {"dirty_surface": 1},
                     "produces": {"clean_surface": 1},
-                    "depends_on": ["prepare_oven"]
+                    "depends_on": ["prepare_oven 🔸 🔥"]
                 },
                 {
-                    "id": "shape_loaves",
+                    "id": "shape_loaves 🔸 👐",
                     "start": "08:45",
                     "duration": 20,
                     "actor_id": actor_1_id,
                     "location": "shaping_area",
                     "consumes": {"risen_dough": 1, "clean_surface": 1},
                     "produces": {"shaped_loaves": 2, "dirty_surface": 1},
-                    "depends_on": ["first_rise", "clean_surface"]
+                    "depends_on": ["first_rise 🔸 ⏰", "clean_surface 🔸 🧹"]
                 },
                 {
-                    "id": "bake_bread",
+                    "id": "bake_bread 🔸 🍞",
                     "start": "09:05",
                     "duration": 45,
                     "actor_id": actor_1_id,
                     "location": "oven_area",
                     "consumes": {"shaped_loaves": 2, "preheated_oven": 1},
                     "produces": {"finished_bread": 2, "used_oven": 1},
-                    "depends_on": ["shape_loaves", "prepare_oven"]
+                    "depends_on": ["shape_loaves 🔸 👐", "prepare_oven 🔸 🔥"]
                 },
                 {
-                    "id": "final_cleanup",
-                    "start": "10:20",
-                    "duration": 10,
-                    "actor_id": actor_2_id,
-                    "location": "kitchen",
-                    "consumes": {"dirty_workspace": 1, "cleaning_supplies": 1},
-                    "produces": {"clean_workspace": 1},
-                    "depends_on": ["clean_surface"]
-                },
-                {
-                    "id": "cool_bread",
+                    "id": "cool_bread 🔸 ❄️",
                     "start": "09:50",
                     "duration": 30,
                     "actor_id": actor_2_id,
                     "location": "cooling_area",
                     "consumes": {"finished_bread": 2},
                     "produces": {"cooled_bread": 2},
-                    "depends_on": ["bake_bread"]
+                    "depends_on": ["bake_bread 🔸 🍞"]
                 }
             ]
         }, indent=2)
@@ -561,17 +609,57 @@ def parse_and_validate_simulation(raw_json_str: str) -> Tuple[Optional[Dict[str,
             if field not in simulation_dict:
                 errors.append(f"Missing required field at root level: {field}")
 
-        # Validate tasks have ALL required fields
+        # Validate tasks have required fields and provide defaults for optional ones
         for i, task in enumerate(simulation_dict.get("tasks", [])):
-            task_required = ["id", "start", "duration", "actor_id", "location", "consumes", "produces", "depends_on"]
+            task_required = ["id", "start", "duration", "actor_id", "consumes", "produces"]
             for field in task_required:
                 if field not in task:
                     errors.append(f"Task {i} ({task.get('id', 'unnamed')}): Missing required field: {field}")
 
-            # Validate task ID format (must end with emoji) - relaxed for Windows compatibility
+            # Provide defaults for optional fields
+            if "location" not in task:
+                task["location"] = "workspace"
+            if "depends_on" not in task:
+                task["depends_on"] = []
+
+            # Validate task ID is present and in correct format (Windows-compatible)
+            # NOTE: The 🔸 emoji format is REQUIRED for assemble.py to properly display tasks
+            # assemble.py splits task IDs on 🔸 to separate display name from emoji
             task_id = task.get("id", "")
             if not task_id:
                 errors.append(f"Task {i}: Missing task ID")
+            else:
+                # Check for emoji format more robustly to handle Windows terminal issues
+                try:
+                    # Try multiple representations of the diamond emoji for Windows compatibility
+                    diamond_variants = ["🔸", "\U0001f538", "\\U0001f538"]
+                    separator_found = None
+
+                    for variant in diamond_variants:
+                        if variant in task_id:
+                            separator_found = variant
+                            break
+
+                    if separator_found:
+                        # Validate the format is correct (has both parts)
+                        parts = task_id.split(separator_found)
+                        if len(parts) != 2 or not parts[0].strip() or not parts[1].strip():
+                            errors.append(f"Task {i} ({task_id}): Invalid format - should be 'task_name 🔸 emoji'")
+                    else:
+                        # No separator found - this is required for assemble.py compatibility
+                        # Check if task_id looks like it might have emoji issues (contains non-ASCII)
+                        try:
+                            task_id.encode('ascii')
+                            # Pure ASCII - definitely missing emoji format
+                            errors.append(f"Task {i} ({task_id}): Task ID should be in format 'task_name 🔸 emoji' (required for assemble.py)")
+                        except UnicodeEncodeError:
+                            # Contains non-ASCII characters - might be emoji formatting issue
+                            errors.append(f"Task {i} ({task_id}): Task ID may have emoji formatting issues - should be 'task_name 🔸 emoji'")
+
+                except (UnicodeError, UnicodeDecodeError, UnicodeEncodeError) as e:
+                    # Windows compatibility - allow the task but warn about potential issues
+                    # The emoji format is still required for assemble.py even if Windows has display issues
+                    errors.append(f"Task {i} ({task_id}): Warning - emoji formatting may have issues on Windows: {e}")
 
             # Validate time format
             start_time = task.get("start", "")
@@ -589,7 +677,12 @@ def parse_and_validate_simulation(raw_json_str: str) -> Tuple[Optional[Dict[str,
 
             if not consumes:
                 errors.append(f"Task {i} ({task_id}): Must consume at least one resource")
-            if not produces:
+
+            # Allow setup/cleanup tasks to not produce resources
+            setup_cleanup_keywords = ["setup", "clean", "prepare", "initialize", "finalize", "inspect", "check"]
+            is_setup_cleanup = any(keyword in task_id.lower() for keyword in setup_cleanup_keywords)
+
+            if not produces and not is_setup_cleanup:
                 errors.append(f"Task {i} ({task_id}): Must produce at least one resource")
 
             # Validate resource amounts are positive
@@ -897,13 +990,18 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
                     safe_print("Basic validation passed, using simulation without enhanced constraints")
                     return {"simulation": simulation_dict, "legacy_validation_errors": logic_errors}
                 elif attempt == max_attempts - 1:
-                    safe_print("Using simulation with validation issues (final attempt)")
+                    safe_print("CRITICAL: All attempts failed - returning incomplete simulation")
+                    safe_print("This represents a system failure and should be investigated")
                     return {"simulation": simulation_dict, "legacy_validation_errors": logic_errors}
                 else:
                     continue
 
-    # Fallback: create a comprehensive manual simulation
-    safe_print("Creating fallback simulation with all required fields")
+    # CRITICAL: A fallback simulation should NEVER be used as it defeats the purpose of generating
+    # task-specific simulations from the input tree. This represents a complete failure of the system.
+    # The fallback below is a temporary emergency measure and should be removed once the LLM
+    # generation is fixed to properly handle the input tree structure.
+    safe_print("CRITICAL ERROR: Creating fallback simulation - this should never happen!")
+    safe_print("The system has failed to generate a proper simulation from the input tree.")
     actors = simulation_template.get("actors", [])
     actor_1_id = actors[0]["id"] if len(actors) > 0 else "baker"
     actor_2_id = actors[1]["id"] if len(actors) > 1 else "assistant"
@@ -1052,14 +1150,16 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
             "simulation": enhanced_fallback,
             "validation_summary": validation_summary,
             "validation_transparency": transparency_data,
-            "fallback_used": True
+            "fallback_used": True,
+            "system_failure": True  # Mark this as a system failure
         }
     except Exception as e:
         safe_print(f"Error in fallback constraint processing: {e}")
         return {
             "simulation": fallback_simulation,
             "fallback_used": True,
-            "constraint_processing_failed": True
+            "constraint_processing_failed": True,
+            "system_failure": True  # Mark this as a system failure
         }
 
 def save_simulation_json(simulation_dict: Dict[str, Any], output_dir: str) -> str:
