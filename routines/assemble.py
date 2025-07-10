@@ -79,7 +79,7 @@ def get_section_metrics_and_relevance(id_suffix, article_metrics_data, metric_de
     detailed_metrics_for_modal_by_persona = {}
 
     metrics_key_for_file = SECTION_ID_SUFFIX_TO_METRICS_KEY_MAP.get(id_suffix)
-    
+
     section_metrics_content_from_file = {} # This will hold the content of e.g. "2.json"
     if metrics_key_for_file and article_metrics_data.get("sections"):
         section_metrics_content_from_file = article_metrics_data["sections"].get(metrics_key_for_file, {})
@@ -88,16 +88,16 @@ def get_section_metrics_and_relevance(id_suffix, article_metrics_data, metric_de
     for persona_slug in CORE_PERSONAS: # Use the list of slugs
         # Get the persona-specific block (e.g., content of "hobbyist" under "2.json")
         persona_data_block = section_metrics_content_from_file.get(persona_slug, {})
-        
+
         # Read the relevance flag and reasoning
         # flow-maker.py now saves "is_relevant_to_persona" and "relevance_reasoning"
         is_relevant_for_persona = persona_data_block.get("is_relevant_to_persona", False)
         relevance_reasoning = persona_data_block.get("relevance_reasoning", "No reasoning provided.")
-        
+
         # evaluated_metrics is now a list of objects from flow-maker.py
         # Each object should have: "id", "name", "passed", "description"
         evaluated_metrics_list = persona_data_block.get("evaluated_metrics", [])
-        
+
         if is_relevant_for_persona:
             if persona_slug not in relevant_personas_list:
                 relevant_personas_list.append(persona_slug)
@@ -112,7 +112,7 @@ def get_section_metrics_and_relevance(id_suffix, article_metrics_data, metric_de
             "relevance_reasoning": relevance_reasoning, # Add the reasoning here
             "evaluated_metrics": evaluated_metrics_list # Use the pre-structured list
         }
-    
+
     return {
         "relevant_personas_list": relevant_personas_list,
         "metrics_data_for_section_json": json.dumps(detailed_metrics_for_modal_by_persona)
@@ -127,36 +127,36 @@ def generate_tree_preview_text(tree_data):
     """Generate a text representation of a tree suitable for the approach preview."""
     # Use the first level (root) and second level (main steps) of the tree for the preview
     root_name = tree_data.get("tree", {}).get("step", "approach_root").lower().replace(" ", "_")
-    
+
     # Start with the root node
     lines = [root_name]
-    
+
     # Add child nodes with ASCII art tree structure
     children = tree_data.get("tree", {}).get("children", [])
     for i, child in enumerate(children):
         # Get a shortened UUID to use in the preview
         uuid_part = child.get("uuid", "")[:4] if "uuid" in child else str(i)
-        
+
         child_step = child.get("step", "step").lower().replace(" ", "_")
         # Make the child step name and uuid shorter for the preview
         child_name = f"{child_step}_{uuid_part}"
-        
+
         # Last child has a different prefix
         if i == len(children) - 1:
             lines.append(f"└── {child_name}")
         else:
             lines.append(f"├── {child_name}")
-        
+
         # Add grandchildren for this child with proper indentation
         grandchildren = child.get("children", [])
         for j, grandchild in enumerate(grandchildren):
             # Get a shortened UUID for the grandchild
             g_uuid_part = grandchild.get("uuid", "")[:4] if "uuid" in grandchild else str(j)
-            
+
             g_step = grandchild.get("step", "substep").lower().replace(" ", "_")
             # Make the grandchild step name and uuid shorter for the preview
             g_name = f"{g_step}_{g_uuid_part}"
-            
+
             # Use different prefixes based on whether this is the last child and last grandchild
             if i == len(children) - 1:  # Last child
                 if j == len(grandchildren) - 1:  # Last grandchild
@@ -168,17 +168,17 @@ def generate_tree_preview_text(tree_data):
                     lines.append(f"│   └── {g_name}")
                 else:
                     lines.append(f"│   ├── {g_name}")
-                    
+
             # Limit the preview to a reasonable size
             if j >= 2 and len(grandchildren) > 4:
                 lines.append(f"│   └── ... ({len(grandchildren) - 3} more steps)")
                 break
-        
+
         # Limit the preview to a reasonable number of main steps
         if i >= 2 and len(children) > 4:
             lines.append(f"└── ... ({len(children) - 3} more steps)")
             break
-    
+
     return "\n".join(lines)
 
 def process_metadata(metadata, breadcrumb_str):
@@ -296,33 +296,33 @@ def get_transparency_data_for_section(id_suffix, files_dir_path):
         'automation-technologies': '8',
         'technical-specifications': '9'
     }
-    
+
     step_id = section_step_map.get(id_suffix)
     if not step_id:
         return None
-    
+
     try:
         # Load step data
         step_path = os.path.join(files_dir_path, f"{step_id}.json")
         step_data = read_json_file(step_path, is_critical=False)
-        
+
         if not step_data:
             return None
-        
+
         # Extract input data from the step's input key (contains actual LLM prompts)
         input_data = step_data.get('input', {})
-        
+
         # Filter out 'input' and 'process_metadata' keys from step_data to create output
         output_data = {}
         for key, value in step_data.items():
             if key not in ['input', 'process_metadata']:
                 output_data[key] = value
-        
+
         return {
             'input': input_data,
             'output': output_data
         }
-    
+
     except Exception as e:
         print(f"Warning: Could not load transparency data for section {id_suffix}: {e}", file=sys.stderr)
         return None
@@ -330,10 +330,10 @@ def get_transparency_data_for_section(id_suffix, files_dir_path):
 def load_expanded_tree_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
     """
     Load dual expanded tree data from both robotic and human formats.
-    
+
     Args:
         files_dir_path: Path to the directory containing expanded tree files
-        
+
     Returns:
         Processed expanded tree data with both robotic and human datasets, or None if neither found
     """
@@ -341,10 +341,10 @@ def load_expanded_tree_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
     robotic_path = os.path.join(files_dir_path, "expanded-tree-robotic.json")
     human_path = os.path.join(files_dir_path, "expanded-tree-human.json")
     fallback_path = os.path.join(files_dir_path, "expanded-tree.json")
-    
+
     robotic_data = None
     human_data = None
-    
+
     # Try to load robotic format
     if os.path.exists(robotic_path):
         try:
@@ -353,7 +353,7 @@ def load_expanded_tree_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
             print(f"Loaded expanded-tree-robotic.json with keys: {list(robotic_data.keys())}")
         except Exception as e:
             print(f"Error loading robotic expanded tree data: {e}")
-    
+
     # Try to load human format
     if os.path.exists(human_path):
         try:
@@ -362,7 +362,7 @@ def load_expanded_tree_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
             print(f"Loaded expanded-tree-human.json with keys: {list(human_data.keys())}")
         except Exception as e:
             print(f"Error loading human expanded tree data: {e}")
-    
+
     # Fallback to single expanded-tree.json (treat as robotic format)
     if not robotic_data and not human_data and os.path.exists(fallback_path):
         try:
@@ -371,27 +371,27 @@ def load_expanded_tree_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
             print(f"Loaded fallback expanded-tree.json as robotic format with keys: {list(robotic_data.keys())}")
         except Exception as e:
             print(f"Error loading fallback expanded tree data: {e}")
-    
+
     # Return None if no data could be loaded
     if not robotic_data and not human_data:
         print(f"No expanded tree data found at {robotic_path}, {human_path}, or {fallback_path}")
         return None
-    
+
     def process_tree_node(node, level=0):
         """Recursively process tree nodes to add indentation levels."""
         processed_node = node.copy()
         processed_node["indentation_level"] = level
         processed_node["indentation_tabs"] = "\t" * level  # For CSS/styling
         processed_node["indentation_class"] = f"indent-{level}"  # CSS class for indentation
-        
+
         if "children" in processed_node and processed_node["children"]:
             processed_children = []
             for child in processed_node["children"]:
                 processed_children.append(process_tree_node(child, level + 1))
             processed_node["children"] = processed_children
-        
+
         return processed_node
-    
+
     # Process robotic data if available
     processed_robotic_tree = None
     robotic_metadata = {}
@@ -401,7 +401,7 @@ def load_expanded_tree_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
         if robotic_tree:
             processed_robotic_tree = process_tree_node(robotic_tree, 0)
             print(f"Processed robotic tree with {robotic_metadata.get('expanded_leaf_count', 0)} expanded leaves")
-    
+
     # Process human data if available
     processed_human_tree = None
     human_metadata = {}
@@ -411,10 +411,10 @@ def load_expanded_tree_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
         if human_tree:
             processed_human_tree = process_tree_node(human_tree, 0)
             print(f"Processed human tree with {human_metadata.get('expanded_leaf_count', 0)} expanded leaves")
-    
+
     # Use robotic metadata as primary, fallback to human metadata
     primary_metadata = robotic_metadata if robotic_metadata else human_metadata
-    
+
     # Build the processed expanded tree data with both formats
     processed_expanded_tree = {
         "metadata": primary_metadata,
@@ -427,92 +427,104 @@ def load_expanded_tree_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
         "expansion_model": primary_metadata.get("expansion_model", "unknown"),
         "expansion_date": primary_metadata.get("expansion_date", "unknown")
     }
-    
+
     # Maintain backward compatibility by setting 'tree' to robotic format if available
     if processed_robotic_tree:
         processed_expanded_tree["tree"] = processed_robotic_tree
     elif processed_human_tree:
         processed_expanded_tree["tree"] = processed_human_tree
-    
+
     print(f"Processed dual expanded tree data - Robotic: {processed_expanded_tree['has_robotic']}, Human: {processed_expanded_tree['has_human']}")
     return processed_expanded_tree
 
 def load_simulation_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
     """
     Load simulation data from simulation.json in the files directory.
-    
+
     Args:
         files_dir_path: Path to the directory containing simulation.json
-        
+
     Returns:
         Processed simulation data ready for template rendering, or None if not found
     """
     simulation_path = os.path.join(files_dir_path, "simulation.json")
-    
+
     if not os.path.exists(simulation_path):
         print(f"No simulation.json found at {simulation_path}")
         return None
-    
+
     try:
         with open(simulation_path, "r", encoding="utf-8") as f:
             simulation_data = json.load(f)
-        
+
         print(f"Loaded simulation.json with keys: {list(simulation_data.keys())}")
-        
+
         # Extract the simulation object
         sim = simulation_data.get("simulation", {})
-        
+
         if not sim:
             print("No 'simulation' key found in simulation.json")
             return None
-        
+
         print(f"Simulation object has keys: {list(sim.keys())}")
-        
+
+        # Extract validation data if present (from enhanced simulation)
+        validation_summary = simulation_data.get("validation_summary", {})
+        validation_transparency = simulation_data.get("validation_transparency", {})
+        validation_results = sim.get("validation_results", [])
+
+        # Check if this is an enhanced simulation with validation data
+        has_validation_data = bool(validation_summary or validation_transparency or validation_results)
+        if has_validation_data:
+            print(f"Enhanced simulation detected with validation data")
+            print(f"- Business readiness: {validation_summary.get('business_readiness_level', 'unknown')}")
+            print(f"- Total issues: {validation_summary.get('total_issues', 0)}")
+
         # Convert time strings to minutes for easier JavaScript processing
         start_time = sim.get("start_time", "06:00")
         end_time = sim.get("end_time", "18:00")
-        
+
         start_hour, start_min = map(int, start_time.split(':'))
         end_hour, end_min = map(int, end_time.split(':'))
-        
+
         start_time_minutes = start_hour * 60 + start_min
         end_time_minutes = end_hour * 60 + end_min
-        
+
         # Process tasks to include computed timing information
         processed_tasks = []
         for task in sim.get("tasks", []):
             task_start = task.get("start", "00:00")
-            
+
             # Handle time format issues (some tasks might have invalid times like "07:60")
             try:
                 if ':' in task_start:
                     time_parts = task_start.split(':')
                     task_hour = int(time_parts[0])
                     task_min = int(time_parts[1])
-                    
+
                     # Fix invalid minutes (60+ minutes should roll over to next hour)
                     if task_min >= 60:
                         additional_hours = task_min // 60
                         task_hour += additional_hours
                         task_min = task_min % 60
-                        
+
                     task_start_minutes = task_hour * 60 + task_min
                 else:
                     # If no colon, assume it's already in minutes or invalid
                     task_start_minutes = start_time_minutes
-                    
+
             except (ValueError, IndexError):
                 # If time parsing fails, default to start time
                 task_start_minutes = start_time_minutes
                 print(f"Warning: Invalid start time '{task_start}' for task {task.get('id')}, using default")
-                
+
             task_duration = task.get("duration", 0)
             task_end_minutes = task_start_minutes + task_duration
-            
+
             processed_task = task.copy()
             processed_task["start_minutes"] = task_start_minutes
             processed_task["end_minutes"] = task_end_minutes
-            
+
             # Extract emoji from task ID for enhanced visualization
             task_id = task.get("id", "")
             if "🔸" in task_id:
@@ -530,7 +542,7 @@ def load_simulation_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
                 # No emoji found, use the full ID as display name
                 processed_task["display_name"] = task_id
                 processed_task["emoji"] = "⚙️"  # Default emoji for tasks without emojis
-            
+
             # Calculate percentages for timeline visualization
             total_duration = end_time_minutes - start_time_minutes
             if total_duration > 0:
@@ -539,21 +551,21 @@ def load_simulation_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
             else:
                 processed_task["start_percentage"] = 0
                 processed_task["duration_percentage"] = 0
-            
+
             processed_tasks.append(processed_task)
-        
+
         # Calculate actor workloads for efficiency analysis
         actor_workloads = {}
         total_available_time = end_time_minutes - start_time_minutes
-        
+
         for task in processed_tasks:
             actor_id = task.get("actor_id")
             duration = task.get("duration", 0)
-            
+
             if actor_id not in actor_workloads:
                 actor_workloads[actor_id] = 0
             actor_workloads[actor_id] += duration
-        
+
         # Add utilization percentages to actors
         processed_actors = []
         for actor in sim.get("actors", []):
@@ -564,7 +576,7 @@ def load_simulation_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
             actor_copy["utilization_percentage"] = round(utilization, 1)
             actor_copy["total_work_minutes"] = workload
             processed_actors.append(actor_copy)
-        
+
         # Build the processed simulation data
         processed_simulation = {
             "time_unit": sim.get("time_unit", "minute"),
@@ -577,12 +589,21 @@ def load_simulation_data(files_dir_path: str) -> Optional[Dict[str, Any]]:
             "resources": sim.get("resources", []),
             "tasks": processed_tasks,
             "article_title": sim.get("article_title", "Process Simulation"),
-            "domain": sim.get("domain", "General")
+            "domain": sim.get("domain", "General"),
+            "has_validation_data": has_validation_data,
+            "validation_summary": validation_summary,
+            "validation_transparency": validation_transparency,
+            "validation_results": validation_results,
+            "business_readiness": validation_summary.get("business_readiness", {}) if has_validation_data else {}
         }
-        
+
         print(f"Processed simulation data: {len(processed_tasks)} tasks, {len(processed_actors)} actors, {len(sim.get('resources', []))} resources")
+        if has_validation_data:
+            br_level = validation_summary.get("business_readiness_level", "unknown")
+            br_score = validation_summary.get("business_readiness_score", 0)
+            print(f"Business readiness: {br_level} (score: {br_score})")
         return processed_simulation
-        
+
     except Exception as e:
         print(f"Error loading simulation data: {e}")
         import traceback
@@ -612,21 +633,21 @@ def main():
     try:
         # --- Load Core Data Files ---
         metadata_raw = read_json_file(metadata_path, is_critical=True)
-        
+
         # --- Load Simulation Data ---
         simulation_data = load_simulation_data(files_dir_path)
         if simulation_data:
             print("Simulation data loaded successfully")
         else:
             print("No simulation data available for this flow")
-        
+
         # --- Load Expanded Tree Data ---
         expanded_tree_data = load_expanded_tree_data(files_dir_path)
         if expanded_tree_data:
             print("Expanded tree data loaded successfully")
         else:
             print("No expanded tree data available for this flow")
-        
+
         # --- Load Metrics Data ---
         # Article-specific metrics
         article_metrics_path = os.path.join(files_dir_path, "metrics.json")
@@ -710,15 +731,39 @@ def main():
             page_slug = page_level_metadata.get('slug')
             if not page_slug or not isinstance(page_slug, str):
                 page_slug = "article"
-            
+
             section_id_for_html = f"{page_slug}-{id_suffix}" # Used for HTML element IDs
-            
+
             # Pass the id_suffix to get_section_metrics_and_relevance for mapping
             metrics_info = get_section_metrics_and_relevance(id_suffix, article_metrics_data, metric_definitions_data)
-            
+
             # Create transparency data for this section
             transparency_data = get_transparency_data_for_section(id_suffix, files_dir_path)
-            
+
+            # Add simulation validation transparency if this is a simulation section
+            if id_suffix == "simulation" and simulation_data and simulation_data.get("has_validation_data"):
+                # Create enhanced transparency data for simulation validation
+                simulation_transparency = {
+                    "input": {
+                        "original_simulation": "Generated from task tree with enhanced constraint processing",
+                        "validation_enabled": True,
+                        "constraint_config": "External JSON configuration files",
+                        "processing_steps": [
+                            "Resource flow validation",
+                            "Equipment maintenance insertion",
+                            "Scheduling conflict resolution",
+                            "Buffer time application",
+                            "Business readiness assessment"
+                        ]
+                    },
+                    "output": {
+                        "validation_summary": simulation_data.get("validation_summary", {}),
+                        "business_readiness": simulation_data.get("business_readiness", {}),
+                        "validation_transparency": simulation_data.get("validation_transparency", {})
+                    }
+                }
+                transparency_data = simulation_transparency
+
             content_html_output = ""
             if is_html:
                 content_html_output = template_str_or_html # Already HTML
@@ -726,7 +771,7 @@ def main():
                 # Render content HTML using a temporary Jinja template string
                 section_template = env.from_string(template_str_or_html)
                 content_html_output = section_template.render(data=content_data, page_metadata=page_level_metadata) # Pass page_metadata for context
-            
+
             all_content_sections.append({
                 "id": section_id_for_html, # Use the slug-prefixed ID for HTML
                 "title_text": title,
@@ -788,7 +833,7 @@ def main():
                 {% endif %}
             """
             add_section("timeline", "Automation Development Timeline", timeline_data, timeline_content_template)
-            
+
         # 3. Current Automation Challenges
         if challenges_data and challenges_data.get('challenges', {}).get('challenges'):
             challenges_content_template = """
@@ -904,7 +949,7 @@ def main():
         # 9. Alternative Approaches Introduction
         alt_intro_html = ""
         add_section("alternative-approaches-intro", "Alternative Approaches", None, alt_intro_html, is_html=True)
-        
+
         # 10. Alternative Approaches Grid
         if alt_trees_data:
             alt_grid_template = """
@@ -950,7 +995,7 @@ def main():
             # Normalize path separators and remove any trailing separators
             normalized_path = files_dir_path.replace('\\', '/').rstrip('/')
             path_parts = normalized_path.split('/')
-            
+
             for part in reversed(path_parts):  # Check from the end
                 # UUID pattern: 8-4-4-4-12 characters separated by hyphens
                 if len(part) == 36 and part.count('-') == 4:
@@ -964,7 +1009,7 @@ def main():
                     except ValueError:
                         # Not a valid UUID, continue looking
                         continue
-        
+
         print(f"DEBUG: Extracted flow_uuid: {flow_uuid} from path: {files_dir_path}")
 
         # --- Final Jinja2 Context for page-template.html ---
@@ -987,7 +1032,7 @@ def main():
         # --- Write Output File ---
         # Use the final part of breadcrumbs if available, otherwise fall back to slug
         output_filename = None
-        
+
         if breadcrumb_string:
             # Extract the final part of the breadcrumbs for the filename
             breadcrumb_parts = breadcrumb_string.strip('/').split('/')
@@ -996,12 +1041,12 @@ def main():
                 final_breadcrumb = breadcrumb_parts[-1]
                 # Sanitize the breadcrumb part for use as filename
                 output_filename = "".join(c for c in final_breadcrumb if c.isalnum() or c in ('-', '_')).rstrip()
-        
+
         # Fallback to existing slug logic if no valid breadcrumb filename
         if not output_filename:
             slug_base = page_level_metadata.get('slug', page_level_metadata.get('title', 'output').lower().replace(' ', '-'))
             output_filename = "".join(c for c in slug_base if c.isalnum() or c in ('-', '_')).rstrip() or "output"
-        
+
         output_path = Path(output_dir) / f"{output_filename}.html"
         output_path.parent.mkdir(parents=True, exist_ok=True)
 

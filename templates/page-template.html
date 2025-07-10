@@ -1,351 +1,726 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ page_metadata.title }} - Universal Automation Wiki</title>
-    <!-- UAW_ORIGIN_UUID: {{ flow_uuid | default('unknown') }} -->
-    <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="stylesheet" href="/assets/css/components.css">
-    <link rel="stylesheet" href="/assets/css/responsive.css">
-    <link rel="stylesheet" href="/assets/css/article.css">
-    <link rel="stylesheet" href="/assets/css/simulation.css">
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <!-- Header placeholder to be filled by components.js -->
-    <div id="header-placeholder"></div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{{ page_metadata.title }} - Universal Automation Wiki</title>
+        <!-- UAW_ORIGIN_UUID: {{ flow_uuid | default('unknown') }} -->
+        <link rel="stylesheet" href="/assets/css/main.css" />
+        <link rel="stylesheet" href="/assets/css/components.css" />
+        <link rel="stylesheet" href="/assets/css/responsive.css" />
+        <link rel="stylesheet" href="/assets/css/article.css" />
+        <link rel="stylesheet" href="/assets/css/simulation.css" />
+        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <!-- Header placeholder to be filled by components.js -->
+        <div id="header-placeholder"></div>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>{{ page_metadata.title }}</h1>
-                <p class="hero-subtitle">{{ page_metadata.subtitle }}</p>
-            </div>
-        </section>
+        <main>
+            <section class="hero">
+                <div class="container">
+                    <h1>{{ page_metadata.title }}</h1>
+                    <p class="hero-subtitle">{{ page_metadata.subtitle }}</p>
+                </div>
+            </section>
 
-        <section class="wiki-article">
-            <div class="container article-layout-container"> {# This div is now the flex container #}
-                
-                <div class="wiki-content-main"> {# Wrapper for the main content column #}
-                    <div class="breadcrumbs">
-                        {% if breadcrumbs %}
-                            {% for crumb in breadcrumbs[:-1] %}
-                                <span><a href="{{ crumb.url }}">{{ crumb.name }}</a></span>
+            <section class="wiki-article">
+                <div class="container article-layout-container">
+                    {# This div is now the flex container #}
+
+                    <div class="wiki-content-main">
+                        {# Wrapper for the main content column #}
+                        <div class="breadcrumbs">
+                            {% if breadcrumbs %} {% for crumb in
+                            breadcrumbs[:-1] %}
+                            <span
+                                ><a href="{{ crumb.url }}"
+                                    >{{ crumb.name }}</a
+                                ></span
+                            >
                             {% endfor %}
-                            <span>{{ breadcrumbs[-1].name }}</span> {# Last item is current page, not linked #}
-                        {% endif %}
-                    </div>
-                    
-                    <div class="status-indicator">
-                        <div class="dot"></div>
-                        <span>{{ page_metadata.automation_status }} <a href="/docs/standards/automation-status.html" title="More information on automation status"><img src="/assets/images/info-icon.svg" alt="info" style="width: 1em; height: 1em; vertical-align: middle; margin-left: 4px;"></a></span>
-                    </div>
-                    
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: {{ page_metadata.progress_percentage }}%;"></div>
-                    </div>
-                    
-                    <div class="article-summary">
-                        {{ page_metadata.explanatory_text|safe }}
-                    </div>
-                    
-                    <div class="article-content-area">
-                        {% if simulation_data %}
-                            <div class="content-section expanded" 
-                                 data-section-id="simulation" 
-                                 data-relevant-personas='["hobbyist", "researcher", "investor", "educator", "field_expert"]'>
-                                <h3 class="section-header" id="section-header-simulation">
-                                    <button class="section-toggle-button"
-                                            aria-expanded="true"
-                                            aria-controls="section-body-simulation">
-                                        <span class="section-title-text">Process Simulation</span>
+                            <span>{{ breadcrumbs[-1].name }}</span> {# Last item
+                            is current page, not linked #} {% endif %}
+                        </div>
+
+                        <div class="status-indicator">
+                            <div class="dot"></div>
+                            <span
+                                >{{ page_metadata.automation_status }}
+                                <a
+                                    href="/docs/standards/automation-status.html"
+                                    title="More information on automation status"
+                                    ><img
+                                        src="/assets/images/info-icon.svg"
+                                        alt="info"
+                                        style="
+                                            width: 1em;
+                                            height: 1em;
+                                            vertical-align: middle;
+                                            margin-left: 4px;
+                                        " /></a
+                            ></span>
+                        </div>
+
+                        <div class="progress-bar">
+                            <div
+                                class="progress-fill"
+                                style="width: {{ page_metadata.progress_percentage }}%;"
+                            ></div>
+                        </div>
+
+                        <div class="article-summary">
+                            {{ page_metadata.explanatory_text|safe }}
+                        </div>
+
+                        <div class="article-content-area">
+                            {% if simulation_data %}
+                            <div
+                                class="content-section expanded"
+                                data-section-id="simulation"
+                                data-relevant-personas='["hobbyist", "researcher", "investor", "educator", "field_expert"]'
+                            >
+                                <h3
+                                    class="section-header"
+                                    id="section-header-simulation"
+                                >
+                                    <button
+                                        class="section-toggle-button"
+                                        aria-expanded="true"
+                                        aria-controls="section-body-simulation"
+                                    >
+                                        <span class="section-title-text"
+                                            >Process Simulation</span
+                                        >
+                                        {% if
+                                        simulation_data.has_validation_data %}
+                                        <span
+                                            class="validation-status-badge {{ simulation_data.business_readiness.level or 'unknown' }}"
+                                        >
+                                            {{
+                                            simulation_data.business_readiness.level|title
+                                            or 'Unvalidated' }}
+                                        </span>
+                                        {% endif %}
                                         <span class="toggle-indicator">▼</span>
                                     </button>
+                                    {% if simulation_data.has_validation_data %}
+                                    <button
+                                        class="transparency-icon"
+                                        aria-label="View validation transparency data"
+                                        data-section-id="simulation-validation"
+                                        data-transparency="{{ simulation_data.validation_transparency|tojson }}"
+                                    >
+                                        🔍
+                                    </button>
+                                    {% endif %}
                                 </h3>
-                                <div class="section-body" id="section-body-simulation">
+                                <div
+                                    class="section-body"
+                                    id="section-body-simulation"
+                                >
+                                    {% if simulation_data.has_validation_data %}
+                                    <div class="validation-summary">
+                                        <div class="validation-info">
+                                            <span class="business-readiness">
+                                                <strong
+                                                    >Business Readiness:</strong
+                                                >
+                                                <span
+                                                    class="readiness-level {{ simulation_data.business_readiness.level or 'unknown' }}"
+                                                >
+                                                    {{
+                                                    simulation_data.business_readiness.level|title
+                                                    or 'Unknown' }}
+                                                </span>
+                                                {% if
+                                                simulation_data.validation_summary.business_readiness_score
+                                                %} ({{
+                                                simulation_data.validation_summary.business_readiness_score
+                                                }}%) {% endif %}
+                                            </span>
+                                            {% if
+                                            simulation_data.validation_summary.total_issues
+                                            > 0 %}
+                                            <span class="validation-issues">
+                                                <strong>Issues:</strong> {{
+                                                simulation_data.validation_summary.total_issues
+                                                }} {% if
+                                                simulation_data.validation_summary.critical_errors
+                                                > 0 %}
+                                                <span class="error-count"
+                                                    >({{
+                                                    simulation_data.validation_summary.critical_errors
+                                                    }} critical)</span
+                                                >
+                                                {% endif %}
+                                            </span>
+                                            {% else %}
+                                            <span class="validation-success"
+                                                >✓ No validation issues</span
+                                            >
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
                                     <div id="simulation-container">
                                         <div class="simulation-controls">
                                             <div class="controls-row">
-                                                <button id="play-pause-btn" class="control-btn">⏸️ Pause</button>
-                                                <button id="reset-btn" class="control-btn">🔄 Reset</button>
+                                                <button
+                                                    id="play-pause-btn"
+                                                    class="control-btn"
+                                                >
+                                                    ⏸️ Pause
+                                                </button>
+                                                <button
+                                                    id="reset-btn"
+                                                    class="control-btn"
+                                                >
+                                                    🔄 Reset
+                                                </button>
                                                 <div class="speed-control">
-                                                    <label for="speed-slider">Speed:</label>
-                                                    <input type="range" id="speed-slider" min="0.1" max="3" step="0.1" value="1">
-                                                    <span id="speed-display">1x</span>
+                                                    <label for="speed-slider"
+                                                        >Speed:</label
+                                                    >
+                                                    <input
+                                                        type="range"
+                                                        id="speed-slider"
+                                                        min="0.1"
+                                                        max="3"
+                                                        step="0.1"
+                                                        value="1"
+                                                    />
+                                                    <span id="speed-display"
+                                                        >1x</span
+                                                    >
                                                 </div>
                                             </div>
                                             <div class="controls-row">
                                                 <div class="time-control">
-                                                    <label for="time-slider">Time:</label>
-                                                    <input type="range" id="time-slider" min="0" max="100" value="0">
-                                                    <span id="time-display">07:00</span>
+                                                    <label for="time-slider"
+                                                        >Time:</label
+                                                    >
+                                                    <input
+                                                        type="range"
+                                                        id="time-slider"
+                                                        min="0"
+                                                        max="100"
+                                                        value="0"
+                                                    />
+                                                    <span id="time-display"
+                                                        >07:00</span
+                                                    >
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="simulation-content">
                                             <div class="timeline-section">
                                                 <h4>Process Timeline</h4>
                                                 <div id="timeline-container">
-                                                    <div class="timeline-header">
-                                                        <div class="timeline-time-axis"></div>
+                                                    <div
+                                                        class="timeline-header"
+                                                    >
+                                                        <div
+                                                            class="timeline-time-axis"
+                                                        ></div>
                                                     </div>
-                                                    <div class="timeline-actors" id="timeline-actors-container">
+                                                    <div
+                                                        class="timeline-actors"
+                                                        id="timeline-actors-container"
+                                                    >
                                                         <!-- Actor timeline rows will be generated here -->
                                                     </div>
                                                 </div>
-                                                
+
                                                 {% if expanded_tree_data %}
-                                                    <div class="expanded-timeline-section">
-                                                        <div class="expanded-timeline-header">
-                                                            <h5>Expanded Process Timeline</h5>
-                                                            {% if expanded_tree_data.has_robotic and expanded_tree_data.has_human %}
-                                                                <div class="robot-mode-toggle">
-                                                                    <label class="toggle-switch">
-                                                                        <input type="checkbox" id="robot-mode-toggle" checked>
-                                                                        <span class="toggle-slider"></span>
-                                                                    </label>
-                                                                    <span class="toggle-label">Robot Mode</span>
-                                                                </div>
-                                                            {% endif %}
+                                                <div
+                                                    class="expanded-timeline-section"
+                                                >
+                                                    <div
+                                                        class="expanded-timeline-header"
+                                                    >
+                                                        <h5>
+                                                            Expanded Process
+                                                            Timeline
+                                                        </h5>
+                                                        {% if
+                                                        expanded_tree_data.has_robotic
+                                                        and
+                                                        expanded_tree_data.has_human
+                                                        %}
+                                                        <div
+                                                            class="robot-mode-toggle"
+                                                        >
+                                                            <label
+                                                                class="toggle-switch"
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    id="robot-mode-toggle"
+                                                                    checked
+                                                                />
+                                                                <span
+                                                                    class="toggle-slider"
+                                                                ></span>
+                                                            </label>
+                                                            <span
+                                                                class="toggle-label"
+                                                                >Robot
+                                                                Mode</span
+                                                            >
                                                         </div>
-                                                        <div class="expanded-tree-content">
-                                                            {% macro render_tree_node(node, depth=0, skip_root=false, node_id="", index=0) %}
-                                                                {% if not skip_root %}
-                                                                    {% set has_children = node.children and node.children|length > 0 %}
-                                                                    {% set current_node_id = node_id + "_" + index|string if node_id else "node_" + depth|string + "_" + index|string %}
-                                                                    
-                                                                    <div class="tree-node indent-{{ depth }}" style="margin-left: {{ (depth * 2) }}em;">
-                                                                        {% if has_children %}
-                                                                            <div class="tree-step-header">
-                                                                                <button class="tree-collapse-btn"
-                                                                                        data-target="{{ current_node_id }}"
-                                                                                        aria-expanded="true"
-                                                                                        aria-controls="{{ current_node_id }}">
-                                                                                    <span class="collapse-icon">▼</span>
-                                                                                </button>
-                                                                                <p class="tree-step collapsible">{{ node.step }}</p>
-                                                                            </div>
-                                                                            <div class="tree-children" id="{{ current_node_id }}">
-                                                                                {% for child in node.children %}
-                                                                                    {{ render_tree_node(child, depth + 1, false, current_node_id, loop.index0) }}
-                                                                                {% endfor %}
-                                                                            </div>
-                                                                        {% else %}
-                                                                            <p class="tree-step">{{ node.step }}</p>
-                                                                        {% endif %}
-                                                                    </div>
-                                                                {% else %}
-                                                                    {% if node.children %}
-                                                                        {% for child in node.children %}
-                                                                            {{ render_tree_node(child, depth, false, "root", loop.index0) }}
-                                                                        {% endfor %}
-                                                                    {% endif %}
-                                                                {% endif %}
-                                                            {% endmacro %}
-                                                            
-                                                            <div id="robotic-tree-content" class="tree-dataset active">
-                                                                {% if expanded_tree_data.robotic_tree and expanded_tree_data.robotic_tree.children %}
-                                                                    {% for child in expanded_tree_data.robotic_tree.children %}
-                                                                        {{ render_tree_node(child, 0, false, "robotic", loop.index0) }}
-                                                                    {% endfor %}
-                                                                {% elif expanded_tree_data.tree and expanded_tree_data.tree.children %}
-                                                                    {% for child in expanded_tree_data.tree.children %}
-                                                                        {{ render_tree_node(child, 0, false, "fallback", loop.index0) }}
-                                                                    {% endfor %}
-                                                                {% endif %}
-                                                            </div>
-                                                            
-                                                            {% if expanded_tree_data.has_human %}
-                                                                <div id="human-tree-content" class="tree-dataset">
-                                                                    {% if expanded_tree_data.human_tree and expanded_tree_data.human_tree.children %}
-                                                                        {% for child in expanded_tree_data.human_tree.children %}
-                                                                            {{ render_tree_node(child, 0, false, "human", loop.index0) }}
-                                                                        {% endfor %}
-                                                                    {% endif %}
-                                                                </div>
-                                                            {% endif %}
-                                                        </div>
+                                                        {% endif %}
                                                     </div>
+                                                    <div
+                                                        class="expanded-tree-content"
+                                                    >
+                                                        {% macro
+                                                        render_tree_node(node,
+                                                        depth=0,
+                                                        skip_root=false,
+                                                        node_id="", index=0) %}
+                                                        {% if not skip_root %}
+                                                        {% set has_children =
+                                                        node.children and
+                                                        node.children|length > 0
+                                                        %} {% set
+                                                        current_node_id =
+                                                        node_id + "_" +
+                                                        index|string if node_id
+                                                        else "node_" +
+                                                        depth|string + "_" +
+                                                        index|string %}
+
+                                                        <div
+                                                            class="tree-node indent-{{ depth }}"
+                                                            style="margin-left: {{ (depth * 2) }}em;"
+                                                        >
+                                                            {% if has_children
+                                                            %}
+                                                            <div
+                                                                class="tree-step-header"
+                                                            >
+                                                                <button
+                                                                    class="tree-collapse-btn"
+                                                                    data-target="{{ current_node_id }}"
+                                                                    aria-expanded="true"
+                                                                    aria-controls="{{ current_node_id }}"
+                                                                >
+                                                                    <span
+                                                                        class="collapse-icon"
+                                                                        >▼</span
+                                                                    >
+                                                                </button>
+                                                                <p
+                                                                    class="tree-step collapsible"
+                                                                >
+                                                                    {{ node.step
+                                                                    }}
+                                                                </p>
+                                                            </div>
+                                                            <div
+                                                                class="tree-children"
+                                                                id="{{ current_node_id }}"
+                                                            >
+                                                                {% for child in
+                                                                node.children %}
+                                                                {{
+                                                                render_tree_node(child,
+                                                                depth + 1,
+                                                                false,
+                                                                current_node_id,
+                                                                loop.index0) }}
+                                                                {% endfor %}
+                                                            </div>
+                                                            {% else %}
+                                                            <p
+                                                                class="tree-step"
+                                                            >
+                                                                {{ node.step }}
+                                                            </p>
+                                                            {% endif %}
+                                                        </div>
+                                                        {% else %} {% if
+                                                        node.children %} {% for
+                                                        child in node.children
+                                                        %} {{
+                                                        render_tree_node(child,
+                                                        depth, false, "root",
+                                                        loop.index0) }} {%
+                                                        endfor %} {% endif %} {%
+                                                        endif %} {% endmacro %}
+
+                                                        <div
+                                                            id="robotic-tree-content"
+                                                            class="tree-dataset active"
+                                                        >
+                                                            {% if
+                                                            expanded_tree_data.robotic_tree
+                                                            and
+                                                            expanded_tree_data.robotic_tree.children
+                                                            %} {% for child in
+                                                            expanded_tree_data.robotic_tree.children
+                                                            %} {{
+                                                            render_tree_node(child,
+                                                            0, false, "robotic",
+                                                            loop.index0) }} {%
+                                                            endfor %} {% elif
+                                                            expanded_tree_data.tree
+                                                            and
+                                                            expanded_tree_data.tree.children
+                                                            %} {% for child in
+                                                            expanded_tree_data.tree.children
+                                                            %} {{
+                                                            render_tree_node(child,
+                                                            0, false,
+                                                            "fallback",
+                                                            loop.index0) }} {%
+                                                            endfor %} {% endif
+                                                            %}
+                                                        </div>
+
+                                                        {% if
+                                                        expanded_tree_data.has_human
+                                                        %}
+                                                        <div
+                                                            id="human-tree-content"
+                                                            class="tree-dataset"
+                                                        >
+                                                            {% if
+                                                            expanded_tree_data.human_tree
+                                                            and
+                                                            expanded_tree_data.human_tree.children
+                                                            %} {% for child in
+                                                            expanded_tree_data.human_tree.children
+                                                            %} {{
+                                                            render_tree_node(child,
+                                                            0, false, "human",
+                                                            loop.index0) }} {%
+                                                            endfor %} {% endif
+                                                            %}
+                                                        </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
                                                 {% endif %}
                                             </div>
-                                            
+
                                             <div class="actors-section">
                                                 <h4>Actors Status</h4>
-                                                <div id="actors-container"></div>
+                                                <div
+                                                    id="actors-container"
+                                                ></div>
                                             </div>
-                                            
+
                                             <div class="resources-section">
                                                 <h4>Resources</h4>
-                                                <div id="resources-container"></div>
+                                                <div
+                                                    id="resources-container"
+                                                ></div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        {% endif %}
-
-                        {% for section in all_content_sections %}
-                            <div class="content-section collapsed"
-                                 data-section-id="{{ section.id }}"
-                                 data-relevant-personas='{{ section.relevant_personas_json | safe }}'>
-                                <h3 class="section-header" id="section-header-{{ section.id }}">
-                                    <button class="section-toggle-button"
-                                            aria-expanded="false"
-                                            aria-controls="section-body-{{ section.id }}">
-                                        <span class="section-title-text">{{ section.title_text | safe if section.title_text else section.title_html | safe }}</span>
+                            {% endif %} {% for section in all_content_sections
+                            %}
+                            <div
+                                class="content-section collapsed"
+                                data-section-id="{{ section.id }}"
+                                data-relevant-personas="{{ section.relevant_personas_json | safe }}"
+                            >
+                                <h3
+                                    class="section-header"
+                                    id="section-header-{{ section.id }}"
+                                >
+                                    <button
+                                        class="section-toggle-button"
+                                        aria-expanded="false"
+                                        aria-controls="section-body-{{ section.id }}"
+                                    >
+                                        <span class="section-title-text"
+                                            >{{ section.title_text | safe if
+                                            section.title_text else
+                                            section.title_html | safe }}</span
+                                        >
                                         <span class="toggle-indicator">►</span>
                                     </button>
-                                    <button class="metrics-icon"
-                                            aria-label="View metrics for {{ section.title_text | default('this section') }}"
-                                            data-section-id="{{ section.id }}"
-                                            data-metrics='{{ section.metrics_data_json }}'>
+                                    <button
+                                        class="metrics-icon"
+                                        aria-label="View metrics for {{ section.title_text | default('this section') }}"
+                                        data-section-id="{{ section.id }}"
+                                        data-metrics="{{ section.metrics_data_json }}"
+                                    >
                                         📊
                                     </button>
-                                    <button class="transparency-icon"
-                                            aria-label="View transparency data for {{ section.title_text | default('this section') }}"
-                                            data-section-id="{{ section.id }}"
-                                            data-transparency='{{ section.transparency_data_json }}'>
+                                    <button
+                                        class="transparency-icon"
+                                        aria-label="View transparency data for {{ section.title_text | default('this section') }}"
+                                        data-section-id="{{ section.id }}"
+                                        data-transparency="{{ section.transparency_data_json }}"
+                                    >
                                         📚
                                     </button>
                                 </h3>
-                                <div class="section-body"
-                                     id="section-body-{{ section.id }}"
-                                     hidden>
-                                    {{ section.content_html | safe if section.content_html else section.content_html_output | safe }}
+                                <div
+                                    class="section-body"
+                                    id="section-body-{{ section.id }}"
+                                    hidden
+                                >
+                                    {{ section.content_html | safe if
+                                    section.content_html else
+                                    section.content_html_output | safe }}
                                 </div>
                             </div>
-                        {% endfor %}
-                    </div>
-                    
-                    <div class="contributors-section">
-                        <h3>Contributors</h3>
-                        <p>This workflow was developed using Iterative AI analysis of {{ page_metadata.title | lower }} processes with input from professional engineers and automation experts.</p>
-                        <p><em>Last updated: {{ page_metadata.last_updated | default("Current Date") }}</em></p>
-                        <div class="action-buttons">
-                            <a href="#" class="button secondary" id="suggest-improvements">Suggest Improvements</a>
-                        </div>
-                        
-                        <div id="feedback-form-container" class="feedback-form-container">
-                            <h4>Suggest Improvements</h4>
-                            <p>We value your input on how to improve this {{ page_metadata.title | lower }} workflow. Please provide your suggestions below.</p>
-                            
-                            <form id="feedback-form" class="feedback-form">
-                                <div class="feedback-form-field">
-                                    <label for="feedback-name">Name (optional)</label>
-                                    <input type="text" id="feedback-name" name="name" placeholder="Your name">
-                                </div>
-                                
-                                <div class="feedback-form-field">
-                                    <label for="feedback-email">Email (optional)</label>
-                                    <input type="email" id="feedback-email" name="email" placeholder="your@email.com">
-                                </div>
-                                
-                                <div class="feedback-form-field">
-                                    <label for="feedback-subject">Subject</label>
-                                    <input type="text" id="feedback-subject" name="subject" placeholder="Brief description of your suggestion" required>
-                                </div>
-                                
-                                <div class="feedback-form-field">
-                                    <label for="feedback-body">Feedback Details</label>
-                                    <textarea id="feedback-body" name="message" placeholder="Please describe your suggestion in detail..." required></textarea>
-                                </div>
-                                
-                                <div class="feedback-actions">
-                                    <button type="button" id="cancel-feedback" class="button secondary">Cancel</button>
-                                    <button type="submit" id="send-feedback" class="button primary">Send Feedback</button>
-                                </div>
-                            </form>
-                            
-                            <div id="feedback-message" class="feedback-message"></div>
-                        </div>
-                    </div>
-                </div> <!-- This now correctly closes wiki-content-main -->
-
-                {# <aside class="wiki-sidebar">
-                    <div id="persona-selector-widget" class="sticky-widget">
-                        <label for="persona-selector">Persona:</label>
-                        <select id="persona-selector" name="persona">
-                            {% for persona_key, persona_name in core_personas.items() %}
-                            <option value="{{ persona_key }}">{{ persona_name }}</option>
                             {% endfor %}
-                        </select>
+                        </div>
+
+                        <div class="contributors-section">
+                            <h3>Contributors</h3>
+                            <p>
+                                This workflow was developed using Iterative AI
+                                analysis of {{ page_metadata.title | lower }}
+                                processes with input from professional engineers
+                                and automation experts.
+                            </p>
+                            <p>
+                                <em
+                                    >Last updated: {{ page_metadata.last_updated
+                                    | default("Current Date") }}</em
+                                >
+                            </p>
+                            <div class="action-buttons">
+                                <a
+                                    href="#"
+                                    class="button secondary"
+                                    id="suggest-improvements"
+                                    >Suggest Improvements</a
+                                >
+                            </div>
+
+                            <div
+                                id="feedback-form-container"
+                                class="feedback-form-container"
+                            >
+                                <h4>Suggest Improvements</h4>
+                                <p>
+                                    We value your input on how to improve this
+                                    {{ page_metadata.title | lower }} workflow.
+                                    Please provide your suggestions below.
+                                </p>
+
+                                <form id="feedback-form" class="feedback-form">
+                                    <div class="feedback-form-field">
+                                        <label for="feedback-name"
+                                            >Name (optional)</label
+                                        >
+                                        <input
+                                            type="text"
+                                            id="feedback-name"
+                                            name="name"
+                                            placeholder="Your name"
+                                        />
+                                    </div>
+
+                                    <div class="feedback-form-field">
+                                        <label for="feedback-email"
+                                            >Email (optional)</label
+                                        >
+                                        <input
+                                            type="email"
+                                            id="feedback-email"
+                                            name="email"
+                                            placeholder="your@email.com"
+                                        />
+                                    </div>
+
+                                    <div class="feedback-form-field">
+                                        <label for="feedback-subject"
+                                            >Subject</label
+                                        >
+                                        <input
+                                            type="text"
+                                            id="feedback-subject"
+                                            name="subject"
+                                            placeholder="Brief description of your suggestion"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div class="feedback-form-field">
+                                        <label for="feedback-body"
+                                            >Feedback Details</label
+                                        >
+                                        <textarea
+                                            id="feedback-body"
+                                            name="message"
+                                            placeholder="Please describe your suggestion in detail..."
+                                            required
+                                        ></textarea>
+                                    </div>
+
+                                    <div class="feedback-actions">
+                                        <button
+                                            type="button"
+                                            id="cancel-feedback"
+                                            class="button secondary"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            id="send-feedback"
+                                            class="button primary"
+                                        >
+                                            Send Feedback
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div
+                                    id="feedback-message"
+                                    class="feedback-message"
+                                ></div>
+                            </div>
+                        </div>
                     </div>
-                </aside> #}
-                <!-- Sidebar and old persona selector removed -->
+                    <!-- This now correctly closes wiki-content-main -->
 
-            </div> <!-- This now correctly closes container article-layout-container -->
-        </section>
-    </main>
+                    {#
+                    <aside class="wiki-sidebar">
+                        <div id="persona-selector-widget" class="sticky-widget">
+                            <label for="persona-selector">Persona:</label>
+                            <select id="persona-selector" name="persona">
+                                {% for persona_key, persona_name in
+                                core_personas.items() %}
+                                <option value="{{ persona_key }}">
+                                    {{ persona_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </aside>
+                    #}
+                    <!-- Sidebar and old persona selector removed -->
+                </div>
+                <!-- This now correctly closes container article-layout-container -->
+            </section>
+        </main>
 
-    <!-- Footer placeholder to be filled by components.js -->
-    <div id="footer-placeholder"></div>
-    
-    <script id="core-personas-data" type="application/json">
-        {{ core_personas | tojson | safe }}
-    </script>
-    <script id="flow-uuid-data" type="application/json">
-        "{{ flow_uuid | default('') }}"
-    </script>
-    <script id="simulation-data" type="application/json">
-        {{ simulation_data | tojson | safe if simulation_data else '{}' }}
-    </script>
-    <script id="expanded-tree-data" type="application/json">
-        {{ expanded_tree_data | tojson | safe if expanded_tree_data else '{}' }}
-    </script>
-    <script src="/assets/js/components.js"></script>
-    <script src="/assets/js/main.js"></script>
-    <script src="/assets/js/simulation-viewer.js"></script>
-    {# <script src="/assets/js/tabbed-content.js"></script> #} <!-- Tabbed content JS is no longer needed -->
-    <script src="/assets/js/feedback.js"></script>
-</body>
+        <!-- Footer placeholder to be filled by components.js -->
+        <div id="footer-placeholder"></div>
+
+        <script id="core-personas-data" type="application/json">
+            {{ core_personas | tojson | safe }}
+        </script>
+        <script id="flow-uuid-data" type="application/json">
+            "{{ flow_uuid | default('') }}"
+        </script>
+        <script id="simulation-data" type="application/json">
+            {{ simulation_data | tojson | safe if simulation_data else '{}' }}
+        </script>
+        <script id="expanded-tree-data" type="application/json">
+            {{ expanded_tree_data | tojson | safe if expanded_tree_data else '{}' }}
+        </script>
+        <script src="/assets/js/components.js"></script>
+        <script src="/assets/js/main.js"></script>
+        <script src="/assets/js/simulation-viewer.js"></script>
+        {#
+        <script src="/assets/js/tabbed-content.js"></script>
+        #}
+        <!-- Tabbed content JS is no longer needed -->
+        <script src="/assets/js/feedback.js"></script>
+    </body>
 </html>
 
 <!-- Metrics Modal Structure -->
-    <div id="metrics-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="metrics-modal-title">
-        <div class="modal-overlay" tabindex="-1" data-micromodal-close></div>
-        <div class="modal-container" role="document">
-            <header class="modal-header">
-                <h2 id="metrics-modal-title" class="modal-title">Section Metrics</h2>
-                <button class="modal-close" aria-label="Close modal" data-micromodal-close>&#x2715;</button>
-            </header>
-            <main class="modal-content" id="metrics-modal-content">
-                <p>Loading metrics...</p>
-            </main>
-            <footer class="modal-footer">
-                <button class="button" data-micromodal-close aria-label="Close this dialog window">Close</button>
-            </footer>
-        </div>
+<div
+    id="metrics-modal"
+    class="modal"
+    aria-hidden="true"
+    role="dialog"
+    aria-labelledby="metrics-modal-title"
+>
+    <div class="modal-overlay" tabindex="-1" data-micromodal-close></div>
+    <div class="modal-container" role="document">
+        <header class="modal-header">
+            <h2 id="metrics-modal-title" class="modal-title">
+                Section Metrics
+            </h2>
+            <button
+                class="modal-close"
+                aria-label="Close modal"
+                data-micromodal-close
+            >
+                &#x2715;
+            </button>
+        </header>
+        <main class="modal-content" id="metrics-modal-content">
+            <p>Loading metrics...</p>
+        </main>
+        <footer class="modal-footer">
+            <button
+                class="button"
+                data-micromodal-close
+                aria-label="Close this dialog window"
+            >
+                Close
+            </button>
+        </footer>
     </div>
+</div>
 
-    <!-- Transparency Modal Structure -->
-    <div id="transparency-modal" class="modal transparency-modal" aria-hidden="true" role="dialog" aria-labelledby="transparency-modal-title">
-        <div class="modal-overlay" tabindex="-1" data-micromodal-close></div>
-        <div class="modal-container transparency-modal-container" role="document">
-            <header class="modal-header">
-                <h2 id="transparency-modal-title" class="modal-title">Section Transparency Data</h2>
-                <button class="modal-close" aria-label="Close modal" data-micromodal-close>&#x2715;</button>
-            </header>
-            <main class="modal-content" id="transparency-modal-content">
-                <div class="transparency-content">
-                    <div class="input-output-container">
-                        <div class="input-section">
-                            <h4>Input Data</h4>
-                            <div id="step-input">Loading input data...</div>
-                        </div>
-                        <div class="output-section">
-                            <h4>Output Data</h4>
-                            <div id="step-output">Loading output data...</div>
-                        </div>
+<!-- Transparency Modal Structure -->
+<div
+    id="transparency-modal"
+    class="modal transparency-modal"
+    aria-hidden="true"
+    role="dialog"
+    aria-labelledby="transparency-modal-title"
+>
+    <div class="modal-overlay" tabindex="-1" data-micromodal-close></div>
+    <div class="modal-container transparency-modal-container" role="document">
+        <header class="modal-header">
+            <h2 id="transparency-modal-title" class="modal-title">
+                Section Transparency Data
+            </h2>
+            <button
+                class="modal-close"
+                aria-label="Close modal"
+                data-micromodal-close
+            >
+                &#x2715;
+            </button>
+        </header>
+        <main class="modal-content" id="transparency-modal-content">
+            <div class="transparency-content">
+                <div class="input-output-container">
+                    <div class="input-section">
+                        <h4>Input Data</h4>
+                        <div id="step-input">Loading input data...</div>
+                    </div>
+                    <div class="output-section">
+                        <h4>Output Data</h4>
+                        <div id="step-output">Loading output data...</div>
                     </div>
                 </div>
-            </main>
-            <footer class="modal-footer">
-                <button class="button" data-micromodal-close aria-label="Close this dialog window">Close</button>
-            </footer>
-        </div>
+            </div>
+        </main>
+        <footer class="modal-footer">
+            <button
+                class="button"
+                data-micromodal-close
+                aria-label="Close this dialog window"
+            >
+                Close
+            </button>
+        </footer>
     </div>
+</div>

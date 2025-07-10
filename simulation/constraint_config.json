@@ -1,0 +1,259 @@
+{
+  "stock_validation": {
+    "enabled": true,
+    "track_minute_by_minute": true,
+    "allow_negative_stock": false,
+    "minimum_stock_threshold": 0.0,
+    "resource_dependencies": {
+      "activated_yeast": ["yeast", "water", "sugar"],
+      "mixed_dough": ["flour", "water", "activated_yeast", "salt"],
+      "kneaded_dough": ["mixed_dough"],
+      "risen_dough": ["kneaded_dough"],
+      "shaped_loaves": ["risen_dough"],
+      "finished_bread": ["shaped_loaves"],
+      "cooled_bread": ["finished_bread"]
+    },
+    "validation_rules": [
+      {
+        "id": "negative_stock_check",
+        "description": "Ensure resources never go below minimum threshold",
+        "severity": "error",
+        "enabled": true
+      },
+      {
+        "id": "resource_availability_check",
+        "description": "Verify resources are available when consumed",
+        "severity": "error",
+        "enabled": true
+      },
+      {
+        "id": "dependency_order_check",
+        "description": "Check that dependent resources are produced before consumption",
+        "severity": "warning",
+        "enabled": true
+      },
+      {
+        "id": "stock_depletion_warning",
+        "description": "Warn when stock levels approach minimum threshold",
+        "severity": "warning",
+        "enabled": true,
+        "threshold_percentage": 10
+      }
+    ]
+  },
+  "equipment_maintenance": {
+    "enabled": true,
+    "auto_insert_cleaning": true,
+    "auto_insert_cooldown": true,
+    "maintenance_rules": [
+      {
+        "equipment_type": "mixer",
+        "triggers": ["after_use"],
+        "cleaning_task": {
+          "duration": 10,
+          "actor_required": true,
+          "resources_consumed": {
+            "water": 0.05,
+            "detergent": 0.01
+          },
+          "resources_produced": {
+            "clean_mixer": 1
+          }
+        }
+      },
+      {
+        "equipment_type": "oven",
+        "triggers": ["after_use"],
+        "cooldown_task": {
+          "duration": 30,
+          "actor_required": false,
+          "resources_consumed": {
+            "used_oven": 1
+          },
+          "resources_produced": {
+            "cold_oven": 1
+          }
+        }
+      },
+      {
+        "equipment_type": "surface",
+        "triggers": ["after_use"],
+        "cleaning_task": {
+          "duration": 5,
+          "actor_required": true,
+          "resources_consumed": {
+            "water": 0.02,
+            "cleaning_cloth": 0.1
+          },
+          "resources_produced": {
+            "clean_surface": 1
+          }
+        }
+      }
+    ]
+  },
+  "multi_batch_optimization": {
+    "enabled": false,
+    "max_batches": 3,
+    "batch_stagger_minutes": 30,
+    "equipment_sharing": true,
+    "actor_sharing": true,
+    "optimization_rules": [
+      {
+        "id": "maximize_throughput",
+        "priority": 1,
+        "description": "Optimize for maximum output per time unit"
+      },
+      {
+        "id": "minimize_idle_time",
+        "priority": 2,
+        "description": "Reduce actor and equipment idle time"
+      },
+      {
+        "id": "balance_resource_usage",
+        "priority": 3,
+        "description": "Spread resource consumption evenly"
+      }
+    ]
+  },
+  "constraint_resolution": {
+    "enabled": true,
+    "auto_resolve_conflicts": true,
+    "resolution_strategies": [
+      {
+        "conflict_type": "actor_overlap",
+        "strategy": "shift_later_task",
+        "max_shift_minutes": 60,
+        "priority": 1
+      },
+      {
+        "conflict_type": "resource_shortage",
+        "strategy": "insert_restocking",
+        "auto_restock_threshold": 0.1,
+        "priority": 2
+      },
+      {
+        "conflict_type": "equipment_conflict",
+        "strategy": "queue_tasks",
+        "max_queue_time": 120,
+        "priority": 3
+      }
+    ],
+    "buffer_time": {
+      "enabled": true,
+      "default_buffer_minutes": 5,
+      "critical_task_buffer_minutes": 10,
+      "equipment_transition_buffer_minutes": 2
+    }
+  },
+  "validation_transparency": {
+    "enabled": true,
+    "generate_detailed_reports": true,
+    "include_warnings_in_transparency": true,
+    "categorize_validation_results": true,
+    "validation_categories": [
+      {
+        "id": "critical_errors",
+        "name": "Critical Errors",
+        "description": "Issues that make the simulation unusable",
+        "severity": "error",
+        "color": "#dc3545"
+      },
+      {
+        "id": "resource_issues",
+        "name": "Resource Issues",
+        "description": "Problems with resource management",
+        "severity": "warning",
+        "color": "#ffc107"
+      },
+      {
+        "id": "scheduling_conflicts",
+        "name": "Scheduling Conflicts",
+        "description": "Actor or equipment scheduling problems",
+        "severity": "warning",
+        "color": "#fd7e14"
+      },
+      {
+        "id": "optimization_suggestions",
+        "name": "Optimization Suggestions",
+        "description": "Recommendations for improving efficiency",
+        "severity": "info",
+        "color": "#0dcaf0"
+      }
+    ]
+  },
+  "business_readiness": {
+    "enabled": true,
+    "readiness_thresholds": {
+      "excellent": {
+        "max_critical_errors": 0,
+        "max_resource_issues": 0,
+        "max_scheduling_conflicts": 0,
+        "score": 95
+      },
+      "good": {
+        "max_critical_errors": 0,
+        "max_resource_issues": 2,
+        "max_scheduling_conflicts": 1,
+        "score": 80
+      },
+      "acceptable": {
+        "max_critical_errors": 0,
+        "max_resource_issues": 5,
+        "max_scheduling_conflicts": 3,
+        "score": 60
+      },
+      "needs_improvement": {
+        "max_critical_errors": 1,
+        "max_resource_issues": 10,
+        "max_scheduling_conflicts": 5,
+        "score": 40
+      }
+    },
+    "readiness_indicators": [
+      {
+        "id": "resource_flow_accuracy",
+        "name": "Resource Flow Accuracy",
+        "weight": 30,
+        "description": "All resource flows are mathematically correct"
+      },
+      {
+        "id": "scheduling_feasibility",
+        "name": "Scheduling Feasibility",
+        "weight": 25,
+        "description": "All tasks can be executed without conflicts"
+      },
+      {
+        "id": "equipment_maintenance",
+        "name": "Equipment Maintenance",
+        "weight": 20,
+        "description": "Proper maintenance tasks are included"
+      },
+      {
+        "id": "temporal_consistency",
+        "name": "Temporal Consistency",
+        "weight": 15,
+        "description": "All dependencies respect time constraints"
+      },
+      {
+        "id": "resource_availability",
+        "name": "Resource Availability",
+        "weight": 10,
+        "description": "Sufficient resources are available throughout"
+      }
+    ]
+  },
+  "post_processing": {
+    "enabled": true,
+    "processing_order": [
+      "validate_resource_flow",
+      "insert_maintenance_tasks",
+      "resolve_scheduling_conflicts",
+      "apply_buffer_time",
+      "generate_transparency_data"
+    ],
+    "fallback_on_errors": true,
+    "preserve_original_on_processing": true,
+    "generate_comparison_report": true
+  }
+}

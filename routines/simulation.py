@@ -8,18 +8,19 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils import chat_with_llm, parse_llm_json_response, load_json, saveToFile, chat_with_llm_openrouter
 import jsonschema
+from constraint_processor import ConstraintProcessor
 
 
 def load_schema_and_defaults() -> Dict[str, Any]:
     """
     Load and parse simulation_schema.json and defaults.json.
-    
+
     Returns:
         Dict containing 'schema' and 'defaults' keys with their respective JSON data
     """
     schema_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "simulation", "simulation_schema.json")
     defaults_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "simulation", "defaults.json")
-    
+
     try:
         # Minimal defaults only
         default_defaults = {
@@ -30,27 +31,27 @@ def load_schema_and_defaults() -> Dict[str, Any]:
             "resources": [],
             "tasks": []
         }
-        
+
         schema = {"type": "object"}
         defaults = default_defaults
-        
+
         if os.path.exists(schema_path):
             with open(schema_path, "r", encoding="utf-8") as f:
                 schema = json.load(f)
-        
+
         if os.path.exists(defaults_path):
             with open(defaults_path, "r", encoding="utf-8") as f:
                 defaults = json.load(f)
-        
+
         return {"schema": schema, "defaults": defaults}
-        
+
     except Exception as e:
         print(f"Error loading schema/defaults: {e}")
         return {
             "schema": {"type": "object"},
             "defaults": {
                 "time_unit": "minute",
-                "start_time": "06:00", 
+                "start_time": "06:00",
                 "end_time": "18:00",
                 "actors": [],
                 "resources": [],
@@ -61,21 +62,21 @@ def load_schema_and_defaults() -> Dict[str, Any]:
 def construct_initial_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, Any]) -> Dict[str, Any]:
     """
     Use LLM to intelligently construct initial simulation template based on task tree content.
-    
+
     Args:
         tree_json: The task tree JSON from hallucinate-tree.py
         article_metadata: Article metadata containing title, domain, and optional overrides
-        
+
     Returns:
         Simulation template dict with domain-appropriate actors and resources
     """
     # Load defaults as a starting reference
     config = load_schema_and_defaults()
     defaults = config["defaults"]
-    
+
     # Extract task information
     task_name = tree_json.get("tree", {}).get("step", "Unknown Task")
-    
+
     # Build system prompt for LLM to create appropriate simulation template
     system_prompt = """You are an AI simulation planner. Given a task tree, you need to determine what actors (people/machines) and resources would be needed to perform this work in a realistic setting.
 
@@ -109,7 +110,7 @@ STARTING STOCK LOGIC:
 Return ONLY a JSON object with this structure:
 {
   "time_unit": "minute",
-  "start_time": "06:00", 
+  "start_time": "06:00",
   "end_time": "18:00",
   "actors": [
     {
@@ -142,11 +143,11 @@ Create a simulation template for this task with appropriate actors and comprehen
     try:
         response = chat_with_llm("gemma3", system_prompt, user_prompt)
         template = parse_llm_json_response(response)
-        
+
         # Merge with defaults and ensure we have comprehensive resources
         result = defaults.copy()
         result.update(template)
-        
+
         # Standardize all resource IDs to snake_case and ensure consistency
         if result.get("resources"):
             standardized_resources = []
@@ -156,18 +157,18 @@ Create a simulation template for this task with appropriate actors and comprehen
                 # Ensure camelCase is converted (e.g., CleanMixer -> clean_mixer)
                 import re
                 resource_id = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', resource_id).lower()
-                
+
                 standardized_resources.append({
                     "id": resource_id,
                     "unit": resource["unit"].lower(),
                     "starting_stock": resource["starting_stock"]
                 })
             result["resources"] = standardized_resources
-        
+
         # Ensure we have minimum required intermediate resources for breadmaking
         if not result.get("resources"):
             result["resources"] = []
-        
+
         # Add missing critical intermediate resources if not present
         existing_resource_ids = {r["id"] for r in result["resources"]}
         critical_resources = [
@@ -189,13 +190,13 @@ Create a simulation template for this task with appropriate actors and comprehen
             {"id": "finished_bread", "unit": "loaves", "starting_stock": 0},
             {"id": "cooled_bread", "unit": "loaves", "starting_stock": 0}
         ]
-        
+
         for resource in critical_resources:
             if resource["id"] not in existing_resource_ids:
                 result["resources"].append(resource)
-        
+
         return result
-        
+
     except Exception as e:
         print(f"Error constructing simulation template: {e}")
         # Return comprehensive template for breadmaking with proper naming
@@ -245,23 +246,23 @@ Create a simulation template for this task with appropriate actors and comprehen
 
 def ask_llm_for_schedule(simulation_template: Dict[str, Any], tree_json: Dict[str, Any]) -> str:
     """Generate detailed task schedule from the tree and simulation template."""
-    
+
     # Calculate available minutes for validation
     start_time = simulation_template.get('start_time', '07:00')
     end_time = simulation_template.get('end_time', '18:00')
     start_hour, start_min = map(int, start_time.split(':'))
     end_hour, end_min = map(int, end_time.split(':'))
     total_minutes = (end_hour * 60 + end_min) - (start_hour * 60 + start_min)
-    
+
     # Get available actors for examples
     actors = simulation_template.get("actors", [])
     actor_1_id = actors[0]["id"] if len(actors) > 0 else "baker"
     actor_2_id = actors[1]["id"] if len(actors) > 1 else "assistant"
-    
+
     # Get available resources for validation
     resource_ids = [r["id"] for r in simulation_template.get("resources", [])]
     resource_list = ", ".join(resource_ids[:10])  # Show first 10 for brevity
-    
+
     system_prompt = f"""You are a process scheduling expert. Given a task tree and simulation template with actors and resources, create a detailed task schedule.
 
 CRITICAL REQUIREMENTS - ALL MUST BE ENFORCED:
@@ -495,74 +496,74 @@ Create a complete simulation with detailed tasks following ALL the requirements 
 def parse_and_validate_simulation(raw_json_str: str) -> Tuple[Optional[Dict[str, Any]], List[str]]:
     """Parse and validate simulation JSON response with strict requirements."""
     errors = []
-    
+
     try:
         simulation_dict = parse_llm_json_response(raw_json_str)
-        
+
         # Handle case where JSON parsing completely failed
         if simulation_dict is None:
             errors.append("Failed to parse JSON response - response is None")
             return None, errors
-        
+
         # Handle case where parsed result is not a dictionary
         if not isinstance(simulation_dict, dict):
             errors.append(f"Expected JSON object, got {type(simulation_dict)}")
             return None, errors
-        
+
         # Check for unwanted nested structure
         if "simulation" in simulation_dict:
             if isinstance(simulation_dict["simulation"], dict) and any(key in simulation_dict["simulation"] for key in ["time_unit", "actors", "resources", "tasks"]):
                 errors.append("Detected nested simulation structure - remove inner 'simulation' object")
                 return None, errors
-        
+
         # Validate required fields at root level
         required_fields = ["time_unit", "start_time", "end_time", "actors", "resources", "tasks"]
         for field in required_fields:
             if field not in simulation_dict:
                 errors.append(f"Missing required field at root level: {field}")
-        
+
         # Validate tasks have ALL required fields
         for i, task in enumerate(simulation_dict.get("tasks", [])):
             task_required = ["id", "start", "duration", "actor_id", "location", "consumes", "produces", "depends_on"]
             for field in task_required:
                 if field not in task:
                     errors.append(f"Task {i} ({task.get('id', 'unnamed')}): Missing required field: {field}")
-            
+
             # Validate task ID format (must end with emoji)
             task_id = task.get("id", "")
             if not (task_id and "🔸" in task_id):
                 errors.append(f"Task {i}: ID must end with ' 🔸[EMOJI]' format, got: {task_id}")
-            
+
             # Validate time format
             start_time = task.get("start", "")
             if not (isinstance(start_time, str) and ":" in start_time):
                 errors.append(f"Task {i} ({task_id}): Invalid start time format: {start_time}")
-            
+
             # Validate duration
             duration = task.get("duration")
             if not (isinstance(duration, (int, float)) and duration > 0):
                 errors.append(f"Task {i} ({task_id}): Duration must be positive number, got: {duration}")
-            
+
             # Validate resources
             consumes = task.get("consumes", {})
             produces = task.get("produces", {})
-            
+
             if not consumes:
                 errors.append(f"Task {i} ({task_id}): Must consume at least one resource")
             if not produces:
                 errors.append(f"Task {i} ({task_id}): Must produce at least one resource")
-            
+
             # Validate resource amounts are positive
             for resource, amount in consumes.items():
                 if not (isinstance(amount, (int, float)) and amount > 0):
                     errors.append(f"Task {i} ({task_id}): Consumed {resource} must be positive, got: {amount}")
-            
+
             for resource, amount in produces.items():
                 if not (isinstance(amount, (int, float)) and amount > 0):
                     errors.append(f"Task {i} ({task_id}): Produced {resource} must be positive, got: {amount}")
-        
+
         return simulation_dict, errors
-        
+
     except Exception as e:
         errors.append(f"JSON parsing error: {e}")
         return None, errors
@@ -570,10 +571,10 @@ def parse_and_validate_simulation(raw_json_str: str) -> Tuple[Optional[Dict[str,
 def standardize_resource_names(simulation_dict: Dict[str, Any]) -> Dict[str, Any]:
     """Standardize all resource names to snake_case and fix inconsistencies."""
     import re
-    
+
     # Create mapping of original names to standardized names
     resource_mapping = {}
-    
+
     # Process resources
     if "resources" in simulation_dict:
         standardized_resources = []
@@ -583,21 +584,21 @@ def standardize_resource_names(simulation_dict: Dict[str, Any]) -> Dict[str, Any
             standardized_id = original_id.lower().replace(" ", "_").replace("-", "_")
             # Handle camelCase conversion
             standardized_id = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', standardized_id).lower()
-            
+
             resource_mapping[original_id] = standardized_id
-            
+
             # Check for required fields with defaults
             unit = resource.get("unit", "units")
             starting_stock = resource.get("starting_stock", 0)
-            
+
             standardized_resources.append({
                 "id": standardized_id,
                 "unit": unit.lower() if isinstance(unit, str) else "units",
                 "starting_stock": starting_stock
             })
-        
+
         simulation_dict["resources"] = standardized_resources
-    
+
     # Update task resource references
     if "tasks" in simulation_dict:
         for task in simulation_dict["tasks"]:
@@ -608,7 +609,7 @@ def standardize_resource_names(simulation_dict: Dict[str, Any]) -> Dict[str, Any
                     standardized_id = resource_mapping.get(resource_id, resource_id.lower())
                     updated_consumes[standardized_id] = amount
                 task["consumes"] = updated_consumes
-            
+
             # Update produces
             if "produces" in task:
                 updated_produces = {}
@@ -616,19 +617,19 @@ def standardize_resource_names(simulation_dict: Dict[str, Any]) -> Dict[str, Any
                     standardized_id = resource_mapping.get(resource_id, resource_id.lower())
                     updated_produces[standardized_id] = amount
                 task["produces"] = updated_produces
-    
+
     return simulation_dict
 
 def validate_simulation_logic(sim: Dict[str, Any]) -> List[str]:
     """Validate simulation logic and constraints with enhanced checks."""
     errors = []
-    
+
     # Check if all actor_ids in tasks exist in actors
     actor_ids = {actor["id"] for actor in sim.get("actors", [])}
     for task in sim.get("tasks", []):
         if task.get("actor_id") not in actor_ids:
             errors.append(f"Task {task.get('id')}: Invalid actor_id {task.get('actor_id')}")
-    
+
     # Check if all resource IDs in tasks exist in resources
     resource_ids = {resource["id"] for resource in sim.get("resources", [])}
     for task in sim.get("tasks", []):
@@ -638,24 +639,24 @@ def validate_simulation_logic(sim: Dict[str, Any]) -> List[str]:
         for resource in task.get("produces", {}):
             if resource not in resource_ids:
                 errors.append(f"Task {task.get('id')}: Unknown produced resource: {resource}")
-    
+
     # Validate no overlapping tasks per actor
     tasks_by_actor = {}
     for task in sim.get("tasks", []):
         actor_id = task.get("actor_id")
         if actor_id not in tasks_by_actor:
             tasks_by_actor[actor_id] = []
-        
+
         # Parse start time and calculate end time
         try:
             start_time = task.get("start", "00:00")
             duration = task.get("duration", 0)
-            
+
             if ":" in start_time:
                 hours, minutes = map(int, start_time.split(":"))
                 start_minutes = hours * 60 + minutes
                 end_minutes = start_minutes + duration
-                
+
                 tasks_by_actor[actor_id].append({
                     "id": task.get("id"),
                     "start": start_minutes,
@@ -663,30 +664,30 @@ def validate_simulation_logic(sim: Dict[str, Any]) -> List[str]:
                 })
         except (ValueError, TypeError):
             errors.append(f"Task {task.get('id')}: Invalid time format or duration")
-    
+
     # Check for overlaps within each actor's tasks
     for actor_id, actor_tasks in tasks_by_actor.items():
         # Sort tasks by start time
         actor_tasks.sort(key=lambda x: x["start"])
-        
+
         for i in range(len(actor_tasks) - 1):
             current_task = actor_tasks[i]
             next_task = actor_tasks[i + 1]
-            
+
             if current_task["end"] > next_task["start"]:
                 errors.append(
                     f"Actor {actor_id}: Task overlap detected between "
                     f"'{current_task['id']}' (ends at {current_task['end']//60:02d}:{current_task['end']%60:02d}) "
                     f"and '{next_task['id']}' (starts at {next_task['start']//60:02d}:{next_task['start']%60:02d})"
                 )
-    
+
     # Validate task dependencies
     task_ids = {task["id"] for task in sim.get("tasks", [])}
     for task in sim.get("tasks", []):
         for dep in task.get("depends_on", []):
             if dep not in task_ids:
                 errors.append(f"Task {task.get('id')}: Unknown dependency: {dep}")
-    
+
     # Check for temporal logic issues (consuming resources before they're produced)
     # Simple check: ensure dependencies are respected
     task_by_id = {task["id"]: task for task in sim.get("tasks", [])}
@@ -697,34 +698,34 @@ def validate_simulation_logic(sim: Dict[str, Any]) -> List[str]:
                 dep_task = task_by_id[dep_id]
                 dep_start = dep_task.get("start", "00:00")
                 dep_duration = dep_task.get("duration", 0)
-                
+
                 # Calculate end time of dependency
                 try:
                     dep_hours, dep_minutes = map(int, dep_start.split(":"))
                     dep_end_minutes = dep_hours * 60 + dep_minutes + dep_duration
-                    
+
                     task_hours, task_minutes = map(int, task_start.split(":"))
                     task_start_minutes = task_hours * 60 + task_minutes
-                    
+
                     if task_start_minutes < dep_end_minutes:
                         errors.append(f"Task {task.get('id')}: Starts before dependency {dep_id} finishes")
                 except (ValueError, TypeError):
                     # Time parsing errors already caught above
                     pass
-    
+
     return errors
 
 def refine_simulation(simulation_errors: List[str], simulation_template: Dict[str, Any], tree_json: Dict[str, Any]) -> str:
     """Refine simulation based on errors with detailed structure enforcement."""
-    
+
     # Get actor IDs for the refined response
     actors = simulation_template.get("actors", [])
     actor_1_id = actors[0]["id"] if len(actors) > 0 else "baker"
     actor_2_id = actors[1]["id"] if len(actors) > 1 else "assistant"
-    
+
     # Get resource IDs for validation
     resource_ids = [r["id"] for r in simulation_template.get("resources", [])]
-    
+
     system_prompt = f"""You are a simulation refinement expert. Fix ALL issues in the simulation JSON.
 
 CRITICAL ERRORS TO FIX:
@@ -776,34 +777,34 @@ Fix ALL the listed errors and provide a complete, valid simulation JSON with pro
         return ask_llm_for_schedule(simulation_template, tree_json)
 
 def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, Any], output_dir: Optional[str] = None) -> Dict[str, Any]:
-    """Main function to generate simulation from task tree with strict validation."""
-    
+    """Main function to generate simulation from task tree with enhanced validation and constraint processing."""
+
     max_attempts = 3
-    
+
     for attempt in range(max_attempts):
         print(f"Simulation generation attempt {attempt + 1}/{max_attempts}")
-        
+
         # Step 1: Construct initial simulation template
         simulation_template = construct_initial_simulation(tree_json, article_metadata)
-        
+
         # Step 2: Generate detailed schedule
         if attempt == 0:
             raw_schedule = ask_llm_for_schedule(simulation_template, tree_json)
         else:
             # Use refinement on subsequent attempts
             raw_schedule = refine_simulation(["Previous attempt failed validation"], simulation_template, tree_json)
-        
+
         # Step 3: Parse and validate structure
         simulation_dict, parse_errors = parse_and_validate_simulation(raw_schedule)
           # Save failed attempt if there are parse errors and output_dir is provided
         if parse_errors and output_dir:
             save_failed_attempt(raw_schedule, parse_errors, attempt + 1, output_dir, "parse")
-        
+
         if parse_errors:
             print(f"Parse errors (attempt {attempt + 1}): {parse_errors}")
             if attempt < max_attempts - 1:
                 continue
-        
+
         if simulation_dict:
             # Step 4: Standardize resource names
             try:
@@ -816,34 +817,55 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
                     continue
                 else:
                     return None
-            
-            # Step 5: Validate logic
+
+            # Step 5: Basic validation (legacy)
             logic_errors = validate_simulation_logic(simulation_dict)
-            
+
             # Save failed attempt if there are logic errors and output_dir is provided
             if logic_errors and output_dir:
                 save_failed_attempt(simulation_dict, logic_errors, attempt + 1, output_dir, "logic")
-            
-            if logic_errors:
-                print(f"Logic errors (attempt {attempt + 1}): {logic_errors}")
-                if attempt < max_attempts - 1:
-                    # Try to refine for next attempt
+
+            # Step 6: Enhanced constraint processing
+            try:
+                print("⚙️ Applying enhanced constraint processing...")
+                constraint_processor = ConstraintProcessor()
+                enhanced_simulation = constraint_processor.apply_comprehensive_constraints(simulation_dict)
+
+                # Get validation summary
+                validation_summary = constraint_processor.get_validation_summary()
+                transparency_data = constraint_processor.get_transparency_data()
+
+                print(f"✓ Constraint processing complete. Business readiness: {validation_summary['business_readiness']['level']}")
+
+                # Return enhanced simulation with validation data
+                return {
+                    "simulation": enhanced_simulation,
+                    "validation_summary": validation_summary,
+                    "validation_transparency": transparency_data,
+                    "legacy_validation_errors": logic_errors
+                }
+
+            except Exception as e:
+                print(f"⚠ Error in constraint processing (attempt {attempt + 1}): {e}")
+                if output_dir:
+                    save_failed_attempt(simulation_dict, [f"Constraint processing error: {e}"], attempt + 1, output_dir, "constraint_processing")
+
+                # Fall back to basic validation if constraint processing fails
+                if not logic_errors:
+                    print("✓ Basic validation passed, using simulation without enhanced constraints")
+                    return {"simulation": simulation_dict, "legacy_validation_errors": logic_errors}
+                elif attempt == max_attempts - 1:
+                    print("⚠ Using simulation with validation issues (final attempt)")
+                    return {"simulation": simulation_dict, "legacy_validation_errors": logic_errors}
+                else:
                     continue
-            
-            # If we have a valid simulation or this is the last attempt, use it
-            if not parse_errors and not logic_errors:
-                print("✓ Simulation validation passed!")
-                return {"simulation": simulation_dict}
-            elif attempt == max_attempts - 1:
-                print("⚠ Using simulation with some validation issues (final attempt)")
-                return {"simulation": simulation_dict}
-    
+
     # Fallback: create a comprehensive manual simulation
     print("Creating fallback simulation with all required fields")
     actors = simulation_template.get("actors", [])
     actor_1_id = actors[0]["id"] if len(actors) > 0 else "baker"
     actor_2_id = actors[1]["id"] if len(actors) > 1 else "assistant"
-    
+
     fallback_simulation = {
         "time_unit": simulation_template.get("time_unit", "minute"),
         "start_time": simulation_template.get("start_time", "07:00"),
@@ -974,17 +996,38 @@ def generate_simulation(tree_json: Dict[str, Any], article_metadata: Dict[str, A
             }
         ]
     }
-    
-    return {"simulation": fallback_simulation}
+
+    # Apply constraint processing to fallback simulation
+    try:
+        print("⚙️ Applying constraint processing to fallback simulation...")
+        constraint_processor = ConstraintProcessor()
+        enhanced_fallback = constraint_processor.apply_comprehensive_constraints(fallback_simulation)
+
+        validation_summary = constraint_processor.get_validation_summary()
+        transparency_data = constraint_processor.get_transparency_data()
+
+        return {
+            "simulation": enhanced_fallback,
+            "validation_summary": validation_summary,
+            "validation_transparency": transparency_data,
+            "fallback_used": True
+        }
+    except Exception as e:
+        print(f"⚠ Error in fallback constraint processing: {e}")
+        return {
+            "simulation": fallback_simulation,
+            "fallback_used": True,
+            "constraint_processing_failed": True
+        }
 
 def save_simulation_json(simulation_dict: Dict[str, Any], output_dir: str) -> str:
     """Save simulation to JSON file."""
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, "simulation.json")
-    
+
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(simulation_dict, f, indent=2, ensure_ascii=False)
-    
+
     return output_path
 
 def save_failed_attempt(data: Any, errors: List[str], attempt_num: int, output_dir: str, error_type: str) -> None:
@@ -996,14 +1039,14 @@ def save_failed_attempt(data: Any, errors: List[str], attempt_num: int, output_d
             actual_output_dir = os.path.dirname(output_dir)
         else:
             actual_output_dir = output_dir
-        
+
         # Ensure output directory exists
         os.makedirs(actual_output_dir, exist_ok=True)
-        
+
         # Create filename for failed attempt
         fail_filename = f"simulation-fail{attempt_num}.json"
         fail_path = os.path.join(actual_output_dir, fail_filename)
-        
+
         # Prepare the failure data
         fail_data = {
             "attempt": attempt_num,
@@ -1012,13 +1055,13 @@ def save_failed_attempt(data: Any, errors: List[str], attempt_num: int, output_d
             "timestamp": json.dumps({"timestamp": "2025-06-17"}),  # Could use actual timestamp
             "failed_data": data
         }
-        
+
         # Save the failed attempt
         with open(fail_path, "w", encoding="utf-8") as f:
             json.dump(fail_data, f, indent=2, ensure_ascii=False)
-        
+
         print(f"Failed attempt {attempt_num} saved to: {fail_path}")
-        
+
     except Exception as e:
         print(f"Error saving failed attempt {attempt_num}: {e}")
 
@@ -1031,15 +1074,15 @@ def main():
         print("Usage: python simulation.py <tree_json_file> [output_dir]")
         print("Example: python simulation.py ../output/breadmaking/tree.json ../output/breadmaking/")
         sys.exit(1)
-    
+
     tree_file = sys.argv[1]
     output_dir = sys.argv[2] if len(sys.argv) > 2 else os.path.dirname(tree_file)
-    
+
     try:
         # Load tree JSON
         print(f"Loading tree from: {tree_file}")
         tree_json = load_json(tree_file)
-        
+
         # Extract article metadata from tree
         metadata = tree_json.get("metadata", {})
         article_metadata = {
@@ -1049,26 +1092,26 @@ def main():
           # Generate simulation
         print("Generating simulation...")
         simulation_dict = generate_simulation(tree_json, article_metadata, output_dir)
-        
+
         # Check if output_dir is actually a file path ending with simulation.json
         # This happens when called from flow-maker.py
         if output_dir.endswith('simulation.json'):
             # Save directly to the specified file path
             output_path = output_dir
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            
+
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(simulation_dict, f, indent=2, ensure_ascii=False)
-            
+
             print(f"Simulation saved to: {output_path}")
         else:
             # Use the original save function for standalone usage
             output_path = save_simulation_json(simulation_dict, output_dir)
-        
+
         print(f"\n✓ Simulation generation complete!")
         print(f"Input tree: {tree_file}")
         print(f"Output simulation: {output_path}")
-        
+
         # Print basic stats
         sim = simulation_dict["simulation"]
         print(f"\nSimulation stats:")
@@ -1076,7 +1119,7 @@ def main():
         print(f"- Actors: {len(sim['actors'])}")
         print(f"- Resources: {len(sim['resources'])}")
         print(f"- Tasks: {len(sim['tasks'])}")
-        
+
         # Validate the final output
         parse_errors = []
         logic_errors = []
@@ -1086,14 +1129,14 @@ def main():
                 logic_errors = validate_simulation_logic(simulation_dict["simulation"])
         except Exception as e:
             parse_errors.append(f"Final validation error: {e}")
-        
+
         if parse_errors or logic_errors:
             print(f"\n⚠ Validation issues detected:")
             for error in parse_errors + logic_errors:
                 print(f"  - {error}")
         else:
             print(f"\n✓ Final validation passed - simulation is valid!")
-        
+
     except Exception as e:
         print(f"Error generating simulation: {e}")
         import traceback

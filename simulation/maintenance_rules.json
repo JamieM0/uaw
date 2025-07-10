@@ -1,0 +1,335 @@
+{
+  "maintenance_rules": {
+    "equipment_types": {
+      "mixer": {
+        "maintenance_required": true,
+        "triggers": ["after_use", "hourly_if_used"],
+        "maintenance_tasks": [
+          {
+            "type": "cleaning",
+            "priority": "high",
+            "duration": 10,
+            "delay_after_use": 0,
+            "actor_required": true,
+            "actor_roles": ["worker", "cleaner"],
+            "resources_consumed": {
+              "water": 0.05,
+              "detergent": 0.01,
+              "cleaning_cloth": 0.1
+            },
+            "resources_produced": {
+              "clean_mixer": 1
+            },
+            "prerequisites": {
+              "dirty_mixer": 1
+            },
+            "location": "cleaning_station",
+            "description": "Clean mixer bowl and attachments"
+          },
+          {
+            "type": "inspection",
+            "priority": "medium",
+            "duration": 5,
+            "frequency": "daily",
+            "actor_required": true,
+            "actor_roles": ["maintenance_worker", "supervisor"],
+            "resources_consumed": {},
+            "resources_produced": {
+              "inspected_mixer": 1
+            },
+            "description": "Visual inspection of mixer components"
+          }
+        ]
+      },
+      "oven": {
+        "maintenance_required": true,
+        "triggers": ["after_use"],
+        "maintenance_tasks": [
+          {
+            "type": "cooldown",
+            "priority": "high",
+            "duration": 30,
+            "delay_after_use": 0,
+            "actor_required": false,
+            "resources_consumed": {
+              "used_oven": 1
+            },
+            "resources_produced": {
+              "cold_oven": 1
+            },
+            "location": "oven_area",
+            "description": "Allow oven to cool down to safe temperature"
+          },
+          {
+            "type": "cleaning",
+            "priority": "medium",
+            "duration": 15,
+            "delay_after_use": 30,
+            "actor_required": true,
+            "actor_roles": ["worker", "cleaner"],
+            "resources_consumed": {
+              "water": 0.02,
+              "oven_cleaner": 0.05,
+              "cleaning_cloth": 0.2
+            },
+            "resources_produced": {
+              "clean_oven": 1
+            },
+            "prerequisites": {
+              "cold_oven": 1
+            },
+            "location": "oven_area",
+            "description": "Clean oven interior and racks"
+          }
+        ]
+      },
+      "surface": {
+        "maintenance_required": true,
+        "triggers": ["after_use"],
+        "maintenance_tasks": [
+          {
+            "type": "cleaning",
+            "priority": "high",
+            "duration": 5,
+            "delay_after_use": 0,
+            "actor_required": true,
+            "actor_roles": ["worker", "cleaner"],
+            "resources_consumed": {
+              "water": 0.02,
+              "cleaning_cloth": 0.1,
+              "sanitizer": 0.01
+            },
+            "resources_produced": {
+              "clean_surface": 1
+            },
+            "prerequisites": {
+              "dirty_surface": 1
+            },
+            "location": "prep_area",
+            "description": "Clean and sanitize work surface"
+          }
+        ]
+      },
+      "mixing_bowl": {
+        "maintenance_required": true,
+        "triggers": ["after_use"],
+        "maintenance_tasks": [
+          {
+            "type": "cleaning",
+            "priority": "high",
+            "duration": 8,
+            "delay_after_use": 0,
+            "actor_required": true,
+            "actor_roles": ["worker", "cleaner"],
+            "resources_consumed": {
+              "water": 0.03,
+              "dish_soap": 0.01,
+              "cleaning_cloth": 0.1
+            },
+            "resources_produced": {
+              "clean_mixing_bowl": 1
+            },
+            "prerequisites": {
+              "dirty_mixing_bowl": 1
+            },
+            "location": "cleaning_station",
+            "description": "Wash and dry mixing bowl"
+          }
+        ]
+      },
+      "workspace": {
+        "maintenance_required": true,
+        "triggers": ["after_use", "end_of_shift"],
+        "maintenance_tasks": [
+          {
+            "type": "cleaning",
+            "priority": "medium",
+            "duration": 12,
+            "delay_after_use": 0,
+            "actor_required": true,
+            "actor_roles": ["worker", "cleaner"],
+            "resources_consumed": {
+              "water": 0.1,
+              "all_purpose_cleaner": 0.03,
+              "cleaning_cloth": 0.2,
+              "paper_towels": 0.1
+            },
+            "resources_produced": {
+              "clean_workspace": 1
+            },
+            "prerequisites": {
+              "dirty_workspace": 1
+            },
+            "location": "workspace",
+            "description": "Clean and organize workspace"
+          },
+          {
+            "type": "sanitization",
+            "priority": "high",
+            "duration": 5,
+            "delay_after_use": 12,
+            "actor_required": true,
+            "actor_roles": ["worker", "cleaner"],
+            "resources_consumed": {
+              "sanitizer": 0.05,
+              "paper_towels": 0.05
+            },
+            "resources_produced": {
+              "sanitized_workspace": 1
+            },
+            "prerequisites": {
+              "clean_workspace": 1
+            },
+            "location": "workspace",
+            "description": "Sanitize workspace surfaces"
+          }
+        ]
+      },
+      "conveyor": {
+        "maintenance_required": true,
+        "triggers": ["hourly_if_used", "shift_end"],
+        "maintenance_tasks": [
+          {
+            "type": "cleaning",
+            "priority": "medium",
+            "duration": 20,
+            "delay_after_use": 0,
+            "actor_required": true,
+            "actor_roles": ["maintenance_worker", "operator"],
+            "resources_consumed": {
+              "water": 0.2,
+              "degreaser": 0.1,
+              "cleaning_brush": 0.1
+            },
+            "resources_produced": {
+              "clean_conveyor": 1
+            },
+            "prerequisites": {
+              "dirty_conveyor": 1
+            },
+            "location": "conveyor_area",
+            "description": "Clean conveyor belt and rollers"
+          },
+          {
+            "type": "lubrication",
+            "priority": "low",
+            "duration": 10,
+            "frequency": "weekly",
+            "actor_required": true,
+            "actor_roles": ["maintenance_worker"],
+            "resources_consumed": {
+              "lubricant": 0.05
+            },
+            "resources_produced": {
+              "lubricated_conveyor": 1
+            },
+            "prerequisites": {
+              "clean_conveyor": 1
+            },
+            "location": "conveyor_area",
+            "description": "Lubricate conveyor moving parts"
+          }
+        ]
+      }
+    },
+    "cleaning_supplies": {
+      "water": {
+        "unit": "liter",
+        "cost_per_unit": 0.001,
+        "stock_management": "unlimited"
+      },
+      "detergent": {
+        "unit": "liter",
+        "cost_per_unit": 2.50,
+        "stock_management": "tracked"
+      },
+      "cleaning_cloth": {
+        "unit": "piece",
+        "cost_per_unit": 0.50,
+        "reusable": true,
+        "durability": 10
+      },
+      "sanitizer": {
+        "unit": "liter",
+        "cost_per_unit": 3.00,
+        "stock_management": "tracked"
+      },
+      "oven_cleaner": {
+        "unit": "liter",
+        "cost_per_unit": 8.00,
+        "stock_management": "tracked"
+      },
+      "dish_soap": {
+        "unit": "liter",
+        "cost_per_unit": 1.50,
+        "stock_management": "tracked"
+      },
+      "all_purpose_cleaner": {
+        "unit": "liter",
+        "cost_per_unit": 2.00,
+        "stock_management": "tracked"
+      },
+      "paper_towels": {
+        "unit": "roll",
+        "cost_per_unit": 1.00,
+        "stock_management": "tracked"
+      },
+      "degreaser": {
+        "unit": "liter",
+        "cost_per_unit": 5.00,
+        "stock_management": "tracked"
+      },
+      "cleaning_brush": {
+        "unit": "piece",
+        "cost_per_unit": 3.00,
+        "reusable": true,
+        "durability": 50
+      },
+      "lubricant": {
+        "unit": "liter",
+        "cost_per_unit": 15.00,
+        "stock_management": "tracked"
+      }
+    },
+    "maintenance_scheduling": {
+      "auto_schedule": true,
+      "priority_order": ["high", "medium", "low"],
+      "parallel_cleaning": false,
+      "max_concurrent_maintenance": 2,
+      "maintenance_windows": {
+        "cleaning": {
+          "anytime": true,
+          "preferred_hours": ["end_of_shift", "break_time"]
+        },
+        "inspection": {
+          "anytime": false,
+          "preferred_hours": ["start_of_shift", "break_time"]
+        },
+        "lubrication": {
+          "anytime": false,
+          "preferred_hours": ["maintenance_window"]
+        }
+      }
+    },
+    "actor_assignments": {
+      "preferred_assignments": {
+        "cleaning": ["cleaner", "worker"],
+        "inspection": ["maintenance_worker", "supervisor"],
+        "lubrication": ["maintenance_worker"],
+        "cooldown": ["none"]
+      },
+      "skill_requirements": {
+        "basic_cleaning": ["worker", "cleaner"],
+        "equipment_inspection": ["maintenance_worker", "supervisor"],
+        "mechanical_maintenance": ["maintenance_worker"]
+      }
+    },
+    "validation_rules": {
+      "require_maintenance_completion": true,
+      "enforce_cooldown_periods": true,
+      "check_cleaning_supply_availability": true,
+      "validate_actor_qualifications": true,
+      "maintenance_task_dependencies": true
+    }
+  }
+}
