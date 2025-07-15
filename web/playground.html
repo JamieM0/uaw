@@ -1,699 +1,1443 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulation Playground - Universal Automation Wiki</title>
-    <meta name="description" content="Interactive simulation playground for testing and visualizing automation workflows">
-    <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="stylesheet" href="/assets/css/components.css">
-    <link rel="stylesheet" href="/assets/css/simulation.css">
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Monaco Editor for JSON syntax highlighting -->
-    <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
-    
-    <style>
-        .playground-container {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background: var(--bg-color);
-        }
-        
-        .playground-header {
-            background: var(--primary-color);
-            color: white;
-            padding: 1rem 2rem;
-            box-shadow: var(--shadow-md);
-        }
-        
-        .playground-header h1 {
-            margin: 0;
-            font-size: var(--font-size-xxl);
-            font-weight: 600;
-        }
-        
-        .playground-main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        .playground-top {
-            height: 80%;
-            display: flex;
-            border-bottom: 2px solid var(--border-color);
-        }
-        
-        .json-editor-panel {
-            width: 50%;
-            display: flex;
-            flex-direction: column;
-            border-right: 2px solid var(--border-color);
-        }
-        
-        .simulation-panel {
-            width: 50%;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .panel-header {
-            background: var(--bg-light);
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border-color);
-            font-weight: 600;
-            color: var(--text-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .panel-content {
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        #json-editor {
-            height: 100%;
-            width: 100%;
-        }
-        
-        .simulation-content {
-            height: 100%;
-            overflow-y: auto;
-            padding: 1rem;
-        }
-        
-        .playground-bottom {
-            height: 20%;
-            background: var(--bg-light);
-            border-top: 1px solid var(--border-color);
-            overflow-y: auto;
-        }
-        
-        .validation-panel {
-            padding: 1rem;
-        }
-        
-        .validation-header {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--text-color);
-        }
-        
-        .validation-content {
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            font-size: 0.875rem;
-            line-height: 1.4;
-        }
-        
-        .validation-error {
-            color: var(--error-color);
-            background: rgba(220, 53, 69, 0.1);
-            padding: 0.5rem;
-            border-radius: var(--border-radius-sm);
-            margin: 0.25rem 0;
-        }
-        
-        .validation-success {
-            color: var(--success-color);
-            background: rgba(40, 167, 69, 0.1);
-            padding: 0.5rem;
-            border-radius: var(--border-radius-sm);
-            margin: 0.25rem 0;
-        }
-        
-        .validation-warning {
-            color: #856404;
-            background: rgba(255, 193, 7, 0.1);
-            padding: 0.5rem;
-            border-radius: var(--border-radius-sm);
-            margin: 0.25rem 0;
-        }
-        
-        .toolbar {
-            display: flex;
-            gap: 0.5rem;
-        }
-        
-        .toolbar button {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius-sm);
-            cursor: pointer;
-            font-size: var(--font-size-sm);
-            transition: background-color var(--transition-normal);
-        }
-        
-        .toolbar button:hover {
-            background: var(--primary-dark);
-        }
-        
-        .toolbar button:disabled {
-            background: var(--text-lighter);
-            cursor: not-allowed;
-        }
-        
-        .loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-        }
-        
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--border-color);
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-    <div class="playground-container">
-        <header class="playground-header">
-            <h1>Simulation Playground</h1>
-        </header>
-        
-        <main class="playground-main">
-            <div class="playground-top">
-                <div class="json-editor-panel">
-                    <div class="panel-header">
-                        JSON Editor
-                        <div class="toolbar">
-                            <button id="load-sample-btn">Load Sample</button>
-                            <button id="format-json-btn">Format JSON</button>
-                            <button id="clear-editor-btn">Clear</button>
-                        </div>
-                    </div>
-                    <div class="panel-content">
-                        <div id="json-editor"></div>
-                    </div>
-                </div>
-                
-                <div class="simulation-panel">
-                    <div class="panel-header">
-                        Simulation Rendering
-                        <div class="toolbar">
-                            <button id="render-simulation-btn">Render Simulation</button>
-                            <button id="auto-render-toggle">Auto-render: OFF</button>
-                        </div>
-                    </div>
-                    <div class="panel-content">
-                        <div class="simulation-content" id="simulation-content">
-                            <p style="color: var(--text-light); text-align: center; margin-top: 2rem;">
-                                Paste simulation JSON in the editor and click "Render Simulation" to see the visualization.
-                            </p>
-                        </div>
-                        <div class="loading-overlay" id="simulation-loading" style="display: none;">
-                            <div class="spinner"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="playground-bottom">
-                <div class="validation-panel">
-                    <div class="validation-header">Validation</div>
-                    <div class="validation-content" id="validation-content">
-                        <div class="validation-success">Ready to validate JSON input</div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Simulation Playground - Universal Automation Wiki</title>
+        <meta
+            name="description"
+            content="Interactive simulation playground for testing and visualizing automation workflows"
+        />
+        <link rel="stylesheet" href="/assets/css/main.css" />
+        <link rel="stylesheet" href="/assets/css/components.css" />
+        <link rel="stylesheet" href="/assets/css/simulation.css" />
+        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
 
-    <script src="/assets/js/simulation-viewer.js"></script>
-    <script>
-        // Simulation Playground JavaScript
-        let editor;
-        let autoRender = false;
-        
-        // Sample simulation data
-        const sampleSimulation = {
-            "simulation": {
-                "time_unit": "minute",
-                "start_time": "06:00",
-                "end_time": "18:00",
-                "actors": [
-                    {
-                        "id": "baker",
-                        "role": "Baker",
-                        "cost_per_hour": 25
-                    },
-                    {
-                        "id": "assistant",
-                        "role": "Assistant Baker",
-                        "cost_per_hour": 18
-                    }
-                ],
-                "tasks": [
-                    {
-                        "id": "prepare_ingredients",
-                        "actor_id": "baker",
-                        "start": "06:00",
-                        "duration": 30
-                    },
-                    {
-                        "id": "mix_dough",
-                        "actor_id": "baker",
-                        "start": "06:30",
-                        "duration": 45
-                    },
-                    {
-                        "id": "first_rise",
-                        "actor_id": "baker",
-                        "start": "07:15",
-                        "duration": 90
-                    },
-                    {
-                        "id": "shape_loaves",
-                        "actor_id": "baker",
-                        "start": "08:45",
-                        "duration": 20
-                    },
-                    {
-                        "id": "second_rise",
-                        "actor_id": "baker",
-                        "start": "09:05",
-                        "duration": 60
-                    },
-                    {
-                        "id": "bake_bread",
-                        "actor_id": "baker",
-                        "start": "10:05",
-                        "duration": 35
-                    }
-                ],
-                "article_title": "Breadmaking Process",
-                "domain": "Food Production"
+        <!-- Monaco Editor for JSON syntax highlighting -->
+        <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
+
+        <style>
+            .playground-container {
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                background: var(--bg-color);
             }
-        };
-        
-        // Initialize Monaco Editor
-        require.config({ paths: { vs: 'https://unpkg.com/monaco-editor@0.44.0/min/vs' } });
-        require(['vs/editor/editor.main'], function () {
-            editor = monaco.editor.create(document.getElementById('json-editor'), {
-                value: JSON.stringify(sampleSimulation, null, 2),
-                language: 'json',
-                theme: 'vs',
-                automaticLayout: true,
-                minimap: { enabled: false },
-                scrollBeyondLastLine: false,
-                fontSize: 14,
-                lineNumbers: 'on',
-                roundedSelection: false,
-                scrollbar: {
-                    vertical: 'visible',
-                    horizontal: 'visible'
+
+            .playground-header {
+                background: var(--primary-color);
+                color: white;
+                padding: 1rem 2rem;
+                box-shadow: var(--shadow-md);
+            }
+
+            .playground-header h1 {
+                margin: 0;
+                font-size: var(--font-size-xxl);
+                font-weight: 600;
+            }
+
+            .playground-main {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            .playground-top {
+                height: 80%;
+                display: flex;
+                border-bottom: 2px solid var(--border-color);
+                position: relative;
+            }
+
+            .json-editor-panel {
+                width: 40%;
+                display: flex;
+                flex-direction: column;
+                border-right: 2px solid var(--border-color);
+                position: relative;
+            }
+
+            .simulation-panel {
+                width: 60%;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .resize-handle-vertical {
+                position: absolute;
+                top: 0;
+                right: -3px;
+                bottom: 0;
+                width: 6px;
+                cursor: col-resize;
+                background: transparent;
+                z-index: 10;
+            }
+
+            .resize-handle-vertical:hover {
+                background: rgba(0, 123, 255, 0.3);
+            }
+
+            .resize-handle-horizontal {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: -3px;
+                height: 6px;
+                cursor: row-resize;
+                background: transparent;
+                z-index: 10;
+            }
+
+            .resize-handle-horizontal:hover {
+                background: rgba(0, 123, 255, 0.3);
+            }
+
+            .panel-header {
+                background: var(--bg-light);
+                padding: 0.75rem 1rem;
+                border-bottom: 1px solid var(--border-color);
+                font-weight: 600;
+                color: var(--text-color);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .panel-content {
+                flex: 1;
+                overflow: hidden;
+                position: relative;
+            }
+
+            #json-editor {
+                height: 100%;
+                width: 100%;
+            }
+
+            .simulation-content {
+                height: 100%;
+                overflow-y: auto;
+                padding: 1rem;
+                width: 100%;
+                box-sizing: border-box;
+                display: block !important;
+                grid-template-columns: unset !important;
+            }
+
+            .playground-bottom {
+                height: 20%;
+                background: var(--bg-light);
+                border-top: 1px solid var(--border-color);
+                overflow-y: auto;
+                position: relative;
+            }
+
+            .validation-panel {
+                padding: 1rem;
+            }
+
+            .validation-header {
+                font-weight: 600;
+                margin-bottom: 0.5rem;
+                color: var(--text-color);
+            }
+
+            .validation-content {
+                font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+                font-size: 0.875rem;
+                line-height: 1.4;
+            }
+
+            .validation-error {
+                color: var(--error-color);
+                background: rgba(220, 53, 69, 0.1);
+                padding: 0.5rem;
+                border-radius: var(--border-radius-sm);
+                margin: 0.25rem 0;
+            }
+
+            .validation-success {
+                color: var(--success-color);
+                background: rgba(40, 167, 69, 0.1);
+                padding: 0.5rem;
+                border-radius: var(--border-radius-sm);
+                margin: 0.25rem 0;
+            }
+
+            .validation-warning {
+                color: #856404;
+                background: rgba(255, 193, 7, 0.1);
+                padding: 0.5rem;
+                border-radius: var(--border-radius-sm);
+                margin: 0.25rem 0;
+            }
+
+            .toolbar {
+                display: flex;
+                gap: 0.5rem;
+            }
+
+            .toolbar button {
+                background: var(--primary-color);
+                color: white;
+                border: none;
+                padding: 0.5rem 1rem;
+                border-radius: var(--border-radius-sm);
+                cursor: pointer;
+                font-size: var(--font-size-sm);
+                transition: background-color var(--transition-normal);
+            }
+
+            .toolbar button:hover {
+                background: var(--primary-dark);
+            }
+
+            .toolbar button:disabled {
+                background: var(--text-lighter);
+                cursor: not-allowed;
+            }
+
+            .toolbar button.hidden {
+                display: none;
+            }
+
+            .loading-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(255, 255, 255, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10;
+            }
+
+            .spinner {
+                width: 40px;
+                height: 40px;
+                border: 4px solid var(--border-color);
+                border-top: 4px solid var(--primary-color);
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
+            .simulation-container {
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+                display: block !important;
+            }
+
+            .simulation-timeline {
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+                display: block !important;
+            }
+
+            .task-track {
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+
+            .actor-lanes {
+                width: 100%;
+                box-sizing: border-box;
+                display: block !important;
+            }
+
+            .actor-lane {
+                width: 100%;
+                box-sizing: border-box;
+                display: flex !important;
+            }
+
+            .task-block {
+                display: flex;
+                align-items: center;
+                justify-content: center !important;
+                padding: 0.25rem 0.5rem;
+                gap: 0.25rem;
+            }
+
+            .task-emoji {
+                font-size: 1.2rem;
+                flex-shrink: 0;
+                text-align: center;
+            }
+
+            .task-duration {
+                font-size: 0.7rem;
+                opacity: 0.8;
+                flex-shrink: 0;
+            }
+
+            .validation-inline {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .validation-indicator {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.25rem;
+                padding: 0.25rem 0.5rem;
+                border-radius: var(--border-radius-sm);
+                font-size: 0.75rem;
+                font-weight: 500;
+            }
+
+            .validation-indicator.success {
+                background: rgba(40, 167, 69, 0.1);
+                color: var(--success-color);
+            }
+
+            .validation-indicator.warning {
+                background: rgba(255, 193, 7, 0.1);
+                color: #856404;
+            }
+
+            .validation-indicator.error {
+                background: rgba(220, 53, 69, 0.1);
+                color: var(--error-color);
+            }
+
+            .validation-categories {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1rem;
+                margin-top: 1rem;
+            }
+
+            .validation-category {
+                background: var(--bg-light);
+                border-radius: var(--border-radius-md);
+                padding: 1rem;
+                border-left: 4px solid;
+                flex: 1;
+                min-width: 300px;
+            }
+
+            .validation-category.critical-errors {
+                border-left-color: var(--error-color);
+            }
+
+            .validation-category.resource-issues {
+                border-left-color: #ffc107;
+            }
+
+            .validation-category.scheduling-conflicts {
+                border-left-color: #fd7e14;
+            }
+
+            .validation-category.optimization-suggestions {
+                border-left-color: #0dcaf0;
+            }
+
+            .validation-category h4 {
+                margin: 0 0 0.5rem 0;
+                font-size: 0.9rem;
+                font-weight: 600;
+            }
+
+            .validation-issue {
+                background: white;
+                border-radius: var(--border-radius-sm);
+                padding: 0.5rem;
+                margin-bottom: 0.5rem;
+                font-size: 0.8rem;
+                border-left: 3px solid;
+            }
+
+            .validation-issue.error {
+                border-left-color: var(--error-color);
+            }
+
+            .validation-issue.warning {
+                border-left-color: #ffc107;
+            }
+
+            .validation-issue.info {
+                border-left-color: #0dcaf0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="playground-container">
+            <header class="playground-header">
+                <h1>Simulation Playground</h1>
+            </header>
+
+            <main class="playground-main">
+                <div class="playground-top">
+                    <div class="json-editor-panel">
+                        <div class="panel-header">
+                            JSON Editor
+                            <div class="toolbar">
+                                <button id="load-sample-btn">
+                                    Load Sample
+                                </button>
+                                <button id="format-json-btn">
+                                    Format JSON
+                                </button>
+                                <button id="clear-editor-btn">Clear</button>
+                            </div>
+                        </div>
+                        <div class="panel-content">
+                            <div id="json-editor"></div>
+                        </div>
+                        <div class="resize-handle-vertical"></div>
+                    </div>
+
+                    <div class="simulation-panel">
+                        <div class="panel-header">
+                            Simulation Rendering
+                            <div class="toolbar">
+                                <button id="render-simulation-btn">
+                                    Render Simulation
+                                </button>
+                                <button id="auto-render-toggle">
+                                    Auto-render: ON
+                                </button>
+                            </div>
+                        </div>
+                        <div class="panel-content">
+                            <div
+                                class="simulation-content"
+                                id="simulation-content"
+                            >
+                                <p
+                                    style="
+                                        color: var(--text-light);
+                                        text-align: center;
+                                        margin-top: 2rem;
+                                    "
+                                >
+                                    Simulation will render automatically as you
+                                    edit the JSON.
+                                </p>
+                            </div>
+                            <div
+                                class="loading-overlay"
+                                id="simulation-loading"
+                                style="display: none"
+                            >
+                                <div class="spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="playground-bottom">
+                    <div class="resize-handle-horizontal"></div>
+                    <div class="validation-panel">
+                        <div class="validation-header">
+                            <div class="validation-inline">
+                                <span>Validation</span>
+                                <div
+                                    class="validation-indicator success"
+                                    id="json-status"
+                                    title="Click for details"
+                                >
+                                    ✓ Valid JSON
+                                </div>
+                            </div>
+                        </div>
+                        <div class="validation-content" id="validation-content">
+                            <div
+                                class="validation-categories"
+                                id="validation-categories"
+                            >
+                                <!-- Validation results will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <script src="/assets/js/simulation-viewer.js"></script>
+        <script>
+            // Simulation Playground JavaScript
+            let editor;
+            let autoRender = true; // Enable auto-render by default
+
+            // Sample simulation data with proper emoji format and realistic bakery process
+            const sampleSimulation = {
+                simulation: {
+                    time_unit: "minute",
+                    start_time: "06:00",
+                    end_time: "18:00",
+                    actors: [
+                        {
+                            id: "baker",
+                            role: "Baker",
+                            cost_per_hour: 25,
+                        },
+                        {
+                            id: "assistant",
+                            role: "Assistant Baker",
+                            cost_per_hour: 18,
+                        },
+                    ],
+                    tasks: [
+                        {
+                            id: "clean_workspace 🔸 🧽",
+                            actor_id: "assistant",
+                            start: "06:00",
+                            duration: 15,
+                        },
+                        {
+                            id: "prepare_ingredients 🔸 🔧",
+                            actor_id: "baker",
+                            start: "06:15",
+                            duration: 30,
+                        },
+                        {
+                            id: "measure_flour 🔸 ⚖️",
+                            actor_id: "baker",
+                            start: "06:45",
+                            duration: 10,
+                        },
+                        {
+                            id: "activate_yeast 🔸 🦠",
+                            actor_id: "assistant",
+                            start: "06:45",
+                            duration: 10,
+                        },
+                        {
+                            id: "mix_dough 🔸 🥄",
+                            actor_id: "baker",
+                            start: "06:55",
+                            duration: 20,
+                        },
+                        {
+                            id: "knead_dough 🔸 👋",
+                            actor_id: "baker",
+                            start: "07:15",
+                            duration: 15,
+                        },
+                        {
+                            id: "first_rise 🔸 ⏰",
+                            actor_id: "baker",
+                            start: "07:30",
+                            duration: 90,
+                        },
+                        {
+                            id: "clean_mixing_bowls 🔸 🧼",
+                            actor_id: "assistant",
+                            start: "07:30",
+                            duration: 20,
+                        },
+                        {
+                            id: "shape_loaves 🔸 👐",
+                            actor_id: "baker",
+                            start: "09:00",
+                            duration: 25,
+                        },
+                        {
+                            id: "prepare_baking_sheets 🔸 🍞",
+                            actor_id: "assistant",
+                            start: "09:00",
+                            duration: 10,
+                        },
+                        {
+                            id: "second_rise 🔸 ⏰",
+                            actor_id: "baker",
+                            start: "09:25",
+                            duration: 45,
+                        },
+                        {
+                            id: "preheat_oven 🔸 🔥",
+                            actor_id: "assistant",
+                            start: "09:55",
+                            duration: 15,
+                        },
+                        {
+                            id: "bake_bread 🔸 🍞",
+                            actor_id: "baker",
+                            start: "10:10",
+                            duration: 35,
+                        },
+                        {
+                            id: "wash_equipment 🔸 🧽",
+                            actor_id: "assistant",
+                            start: "10:10",
+                            duration: 35,
+                        },
+                    ],
+                    article_title: "Artisan Bread Making Process",
+                    domain: "Bakery Operations",
                 },
-                folding: true,
-                bracketMatching: 'always',
-                formatOnPaste: true,
-                formatOnType: true
+            };
+
+            // Initialize Monaco Editor
+            require.config({
+                paths: { vs: "https://unpkg.com/monaco-editor@0.44.0/min/vs" },
             });
-            
-            // Auto-render on content change if enabled
-            editor.onDidChangeModelContent(() => {
-                if (autoRender) {
-                    debounceRender();
-                }
+            require(["vs/editor/editor.main"], function () {
+                editor = monaco.editor.create(
+                    document.getElementById("json-editor"),
+                    {
+                        value: JSON.stringify(sampleSimulation, null, 2),
+                        language: "json",
+                        theme: "vs",
+                        automaticLayout: true,
+                        minimap: { enabled: false },
+                        scrollBeyondLastLine: false,
+                        fontSize: 14,
+                        lineNumbers: "on",
+                        roundedSelection: false,
+                        scrollbar: {
+                            vertical: "visible",
+                            horizontal: "visible",
+                        },
+                        folding: true,
+                        bracketMatching: "always",
+                        formatOnPaste: true,
+                        formatOnType: true,
+                    },
+                );
+
+                // Auto-render on content change if enabled
+                editor.onDidChangeModelContent(() => {
+                    if (autoRender) {
+                        debounceRender();
+                    }
+                    validateJSON();
+                });
+
+                // Initial validation and render
                 validateJSON();
+                if (autoRender) {
+                    renderSimulation();
+                }
+
+                // Update UI based on auto-render state
+                updateAutoRenderUI();
+
+                // Initialize resize functionality
+                initializeResizeHandles();
             });
-            
-            // Initial validation and render
-            validateJSON();
-            renderSimulation();
-        });
-        
-        // Debounced render function
-        let renderTimeout;
-        function debounceRender() {
-            clearTimeout(renderTimeout);
-            renderTimeout = setTimeout(renderSimulation, 500);
-        }
-        
-        // Validate JSON
-        function validateJSON() {
-            const validationContent = document.getElementById('validation-content');
-            const jsonText = editor.getValue();
-            
-            if (!jsonText.trim()) {
-                validationContent.innerHTML = '<div class="validation-warning">Editor is empty</div>';
-                return false;
+
+            // Debounced render function
+            let renderTimeout;
+            function debounceRender() {
+                clearTimeout(renderTimeout);
+                renderTimeout = setTimeout(renderSimulation, 500);
             }
-            
-            try {
-                const parsed = JSON.parse(jsonText);
-                
-                // Validate simulation structure
-                const errors = [];
-                const warnings = [];
-                
-                if (!parsed.simulation) {
-                    errors.push('Missing "simulation" root object');
+
+            // Update auto-render UI
+            function updateAutoRenderUI() {
+                const renderBtn = document.getElementById(
+                    "render-simulation-btn",
+                );
+                const toggleBtn = document.getElementById("auto-render-toggle");
+
+                if (autoRender) {
+                    renderBtn.classList.add("hidden");
+                    toggleBtn.textContent = "Auto-render: ON";
                 } else {
-                    const sim = parsed.simulation;
-                    
-                    // Required fields
-                    if (!sim.time_unit) warnings.push('Missing "time_unit" field');
-                    if (!sim.start_time) warnings.push('Missing "start_time" field');
-                    if (!sim.actors || !Array.isArray(sim.actors)) {
-                        errors.push('Missing or invalid "actors" array');
-                    } else if (sim.actors.length === 0) {
-                        warnings.push('No actors defined');
-                    }
-                    if (!sim.tasks || !Array.isArray(sim.tasks)) {
-                        errors.push('Missing or invalid "tasks" array');
-                    } else if (sim.tasks.length === 0) {
-                        warnings.push('No tasks defined');
-                    }
-                    
-                    // Validate actor structure
-                    if (sim.actors) {
-                        sim.actors.forEach((actor, i) => {
-                            if (!actor.id) errors.push(`Actor ${i}: missing "id" field`);
-                            if (!actor.role) warnings.push(`Actor ${i}: missing "role" field`);
-                        });
-                    }
-                    
-                    // Validate task structure
-                    if (sim.tasks) {
-                        sim.tasks.forEach((task, i) => {
-                            if (!task.id) errors.push(`Task ${i}: missing "id" field`);
-                            if (!task.actor_id) errors.push(`Task ${i}: missing "actor_id" field`);
-                            if (!task.start) errors.push(`Task ${i}: missing "start" field`);
-                            if (task.duration === undefined) errors.push(`Task ${i}: missing "duration" field`);
-                            
-                            // Check if actor_id exists
-                            if (task.actor_id && sim.actors && !sim.actors.find(a => a.id === task.actor_id)) {
-                                errors.push(`Task ${i}: actor_id "${task.actor_id}" not found in actors`);
-                            }
-                        });
-                    }
+                    renderBtn.classList.remove("hidden");
+                    toggleBtn.textContent = "Auto-render: OFF";
                 }
-                
-                // Display validation results
-                let html = '';
-                if (errors.length === 0 && warnings.length === 0) {
-                    html = '<div class="validation-success">Valid simulation JSON</div>';
-                } else {
-                    if (errors.length > 0) {
-                        html += errors.map(err => `<div class="validation-error">Error: ${err}</div>`).join('');
-                    }
-                    if (warnings.length > 0) {
-                        html += warnings.map(warn => `<div class="validation-warning">Warning: ${warn}</div>`).join('');
-                    }
-                }
-                
-                validationContent.innerHTML = html;
-                return errors.length === 0;
-                
-            } catch (e) {
-                validationContent.innerHTML = `<div class="validation-error">JSON Parse Error: ${e.message}</div>`;
-                return false;
             }
-        }
-        
-        // Process simulation data (replicating assemble.py logic)
-        function processSimulationData(simulationData) {
-            const sim = simulationData.simulation;
-            
-            // Convert time strings to minutes
-            const startTime = sim.start_time || "06:00";
-            const endTime = sim.end_time || "18:00";
-            
-            const [startHour, startMin] = startTime.split(':').map(Number);
-            const [endHour, endMin] = endTime.split(':').map(Number);
-            
-            const startTimeMinutes = startHour * 60 + startMin;
-            const endTimeMinutes = endHour * 60 + endMin;
-            
-            // Process tasks
-            const processedTasks = [];
-            for (const task of sim.tasks || []) {
-                const taskStart = task.start || "00:00";
-                let taskStartMinutes;
-                
+
+            // Validate JSON and update status indicator
+            function validateJSON() {
+                const jsonStatus = document.getElementById("json-status");
+                const jsonText = editor.getValue();
+
+                if (!jsonText.trim()) {
+                    jsonStatus.className = "validation-indicator warning";
+                    jsonStatus.textContent = "⚠ Empty Editor";
+                    jsonStatus.title = "Editor is empty";
+                    return false;
+                }
+
                 try {
-                    if (taskStart.includes(':')) {
-                        let [taskHour, taskMin] = taskStart.split(':').map(Number);
-                        // Handle invalid minutes (60+ minutes should roll over to next hour)
-                        if (taskMin >= 60) {
-                            const additionalHours = Math.floor(taskMin / 60);
-                            taskHour += additionalHours;
-                            taskMin = taskMin % 60;
-                        }
-                        taskStartMinutes = taskHour * 60 + taskMin;
+                    const parsed = JSON.parse(jsonText);
+                    jsonStatus.className = "validation-indicator success";
+                    jsonStatus.textContent = "✓ Valid JSON";
+                    jsonStatus.title = "JSON syntax is valid";
+
+                    // Run comprehensive validation
+                    runComprehensiveValidation(parsed);
+                    return true;
+                } catch (e) {
+                    jsonStatus.className = "validation-indicator error";
+
+                    // Extract line number from error message
+                    let errorMessage = e.message;
+                    let lineInfo = "";
+
+                    // Try to find line number in error message
+                    const lineMatch =
+                        errorMessage.match(/at line (\d+)/i) ||
+                        errorMessage.match(/line (\d+)/i) ||
+                        errorMessage.match(/position (\d+)/i);
+
+                    if (lineMatch) {
+                        const lineNum = lineMatch[1];
+                        lineInfo = `, line ${lineNum}`;
                     } else {
+                        // Calculate approximate line number from position
+                        const position = errorMessage.match(/position (\d+)/);
+                        if (position) {
+                            const pos = parseInt(position[1]);
+                            const lines = jsonText
+                                .substring(0, pos)
+                                .split("\n");
+                            lineInfo = `, line ${lines.length}`;
+                        }
+                    }
+
+                    // Clean up error message
+                    if (errorMessage.includes("Unexpected token")) {
+                        const token = errorMessage.match(
+                            /Unexpected token (.+?)( |$)/,
+                        );
+                        if (token) {
+                            errorMessage = `Unexpected ${token[1]}`;
+                        }
+                    } else if (errorMessage.includes("Expected")) {
+                        const expected =
+                            errorMessage.match(/Expected (.+?)( |$)/);
+                        if (expected) {
+                            errorMessage = `Expected ${expected[1]}`;
+                        }
+                    }
+
+                    jsonStatus.textContent = `✗ Invalid JSON: ${errorMessage}${lineInfo}`;
+                    jsonStatus.title = `JSON Parse Error: ${e.message}`;
+                    return false;
+                }
+            }
+
+            // Comprehensive validation system based on constraint processor
+            function runComprehensiveValidation(simulationData) {
+                const validationResults = [];
+
+                if (!simulationData.simulation) {
+                    validationResults.push({
+                        id: "missing_simulation",
+                        severity: "error",
+                        category: "critical_errors",
+                        message: "Missing simulation root object",
+                        friendlyMessage:
+                            "CRITICAL ERROR: No simulation data found",
+                    });
+                    displayValidationResults(validationResults);
+                    return;
+                }
+
+                const sim = simulationData.simulation;
+
+                // 1. Validate basic structure
+                validateBasicStructure(sim, validationResults);
+
+                // 2. Validate resource flow
+                validateResourceFlow(sim, validationResults);
+
+                // 3. Validate equipment maintenance
+                validateEquipmentMaintenance(sim, validationResults);
+
+                // 4. Validate scheduling conflicts
+                validateSchedulingConflicts(sim, validationResults);
+
+                // 5. Generate optimization suggestions
+                generateOptimizationSuggestions(sim, validationResults);
+
+                displayValidationResults(validationResults);
+            }
+
+            function validateBasicStructure(sim, results) {
+                // Check required fields
+                if (
+                    !sim.actors ||
+                    !Array.isArray(sim.actors) ||
+                    sim.actors.length === 0
+                ) {
+                    results.push({
+                        severity: "error",
+                        category: "critical_errors",
+                        message: "No actors defined",
+                        friendlyMessage:
+                            "ERROR: You need to define at least one actor",
+                    });
+                }
+
+                if (
+                    !sim.tasks ||
+                    !Array.isArray(sim.tasks) ||
+                    sim.tasks.length === 0
+                ) {
+                    results.push({
+                        severity: "error",
+                        category: "critical_errors",
+                        message: "No tasks defined",
+                        friendlyMessage:
+                            "ERROR: You need to define at least one task",
+                    });
+                }
+
+                // Validate actor references
+                if (sim.actors && sim.tasks) {
+                    const actorIds = new Set(sim.actors.map((a) => a.id));
+                    sim.tasks.forEach((task, i) => {
+                        if (!actorIds.has(task.actor_id)) {
+                            results.push({
+                                severity: "error",
+                                category: "critical_errors",
+                                message: `Task references unknown actor: ${task.actor_id}`,
+                                friendlyMessage: `ERROR: Task "${task.id || i}" references unknown actor "${task.actor_id}"`,
+                            });
+                        }
+                    });
+                }
+
+                // Check emoji format
+                if (sim.tasks) {
+                    sim.tasks.forEach((task, i) => {
+                        if (!task.id || !task.id.includes("🔸")) {
+                            results.push({
+                                severity: "warning",
+                                category: "optimization_suggestions",
+                                message: `Task missing emoji format: ${task.id}`,
+                                friendlyMessage: `SUGGESTION: Task "${task.id || i}" should use format "name 🔸 emoji"`,
+                            });
+                        }
+                    });
+                }
+            }
+
+            function validateResourceFlow(sim, results) {
+                // Track resource consumption and production
+                const resourceFlow = {};
+
+                if (!sim.tasks) return;
+
+                sim.tasks.forEach((task) => {
+                    // Check for produces/consumes fields
+                    if (task.consumes) {
+                        Object.entries(task.consumes).forEach(
+                            ([resource, amount]) => {
+                                if (!resourceFlow[resource])
+                                    resourceFlow[resource] = 0;
+                                resourceFlow[resource] -= amount;
+
+                                if (resourceFlow[resource] < 0) {
+                                    results.push({
+                                        severity: "warning",
+                                        category: "resource_issues",
+                                        message: `Resource shortage: ${resource}`,
+                                        friendlyMessage: `WARNING: ${resource} runs out during task "${task.id}"`,
+                                    });
+                                }
+                            },
+                        );
+                    }
+
+                    if (task.produces) {
+                        Object.entries(task.produces).forEach(
+                            ([resource, amount]) => {
+                                if (!resourceFlow[resource])
+                                    resourceFlow[resource] = 0;
+                                resourceFlow[resource] += amount;
+                            },
+                        );
+                    }
+                });
+            }
+
+            function validateEquipmentMaintenance(sim, results) {
+                if (!sim.tasks) return;
+
+                const equipmentUsage = new Set();
+                const cleaningTasks = new Set();
+
+                sim.tasks.forEach((task) => {
+                    const taskId = task.id || "";
+                    const location = task.location || "";
+
+                    // Track equipment that might need cleaning
+                    if (location.includes("mixer") || taskId.includes("mix")) {
+                        equipmentUsage.add("mixer");
+                    }
+                    if (location.includes("oven") || taskId.includes("bake")) {
+                        equipmentUsage.add("oven");
+                    }
+                    if (taskId.includes("clean") || taskId.includes("wash")) {
+                        if (taskId.includes("mixer"))
+                            cleaningTasks.add("mixer");
+                        if (taskId.includes("oven")) cleaningTasks.add("oven");
+                        if (taskId.includes("bowl"))
+                            cleaningTasks.add("mixing_bowl");
+                        if (taskId.includes("workspace"))
+                            cleaningTasks.add("workspace");
+                    }
+                });
+
+                // Check if equipment is cleaned after use
+                equipmentUsage.forEach((equipment) => {
+                    if (!cleaningTasks.has(equipment)) {
+                        results.push({
+                            severity: "warning",
+                            category: "resource_issues",
+                            message: `Equipment not cleaned: ${equipment}`,
+                            friendlyMessage: `WARNING: ${equipment.charAt(0).toUpperCase() + equipment.slice(1)} is not washed after use`,
+                        });
+                    }
+                });
+            }
+
+            function validateSchedulingConflicts(sim, results) {
+                if (!sim.actors || !sim.tasks) return;
+
+                // Convert times to minutes for comparison
+                const parseTime = (timeStr) => {
+                    const [hours, minutes] = timeStr.split(":").map(Number);
+                    return hours * 60 + minutes;
+                };
+
+                // Group tasks by actor
+                const actorTasks = {};
+                sim.tasks.forEach((task) => {
+                    if (!actorTasks[task.actor_id]) {
+                        actorTasks[task.actor_id] = [];
+                    }
+
+                    const startMinutes = parseTime(task.start);
+                    const endMinutes = startMinutes + (task.duration || 0);
+
+                    actorTasks[task.actor_id].push({
+                        ...task,
+                        startMinutes,
+                        endMinutes,
+                    });
+                });
+
+                // Check for overlapping tasks
+                Object.entries(actorTasks).forEach(([actorId, tasks]) => {
+                    tasks.sort((a, b) => a.startMinutes - b.startMinutes);
+
+                    for (let i = 0; i < tasks.length - 1; i++) {
+                        const current = tasks[i];
+                        const next = tasks[i + 1];
+
+                        if (current.endMinutes > next.startMinutes) {
+                            results.push({
+                                severity: "error",
+                                category: "scheduling_conflicts",
+                                message: `Actor ${actorId} has overlapping tasks`,
+                                friendlyMessage: `ERROR: ${actorId} has overlapping tasks "${current.id}" and "${next.id}"`,
+                            });
+                        }
+                    }
+                });
+            }
+
+            function generateOptimizationSuggestions(sim, results) {
+                if (!sim.actors || !sim.tasks) return;
+
+                // Calculate actual end time based on when tasks finish (same logic as rendering)
+                const parseTime = (timeStr) => {
+                    const [hours, minutes] = timeStr.split(":").map(Number);
+                    return hours * 60 + minutes;
+                };
+
+                const startTime = parseTime(sim.start_time || "06:00");
+                let actualEndTime = startTime;
+
+                const actorWorkload = {};
+
+                sim.actors.forEach((actor) => {
+                    actorWorkload[actor.id] = 0;
+                });
+
+                // Calculate workload and find actual end time
+                sim.tasks.forEach((task) => {
+                    if (actorWorkload[task.actor_id] !== undefined) {
+                        const taskDuration = task.duration || 0;
+                        actorWorkload[task.actor_id] += taskDuration;
+
+                        // Track actual end time
+                        const taskStartMinutes = parseTime(task.start);
+                        const taskEndMinutes = taskStartMinutes + taskDuration;
+                        actualEndTime = Math.max(actualEndTime, taskEndMinutes);
+                    }
+                });
+
+                // Use dynamic end time + buffer (same as rendering)
+                const dynamicEndTime = actualEndTime + 30;
+                const totalAvailableTime = dynamicEndTime - startTime;
+
+                // Check for underutilized actors
+                Object.entries(actorWorkload).forEach(([actorId, workload]) => {
+                    const utilization = (workload / totalAvailableTime) * 100;
+
+                    if (utilization < 30) {
+                        results.push({
+                            severity: "info",
+                            category: "optimization_suggestions",
+                            message: `Low utilization for ${actorId}`,
+                            friendlyMessage: `SUGGESTION: ${actorId} is only ${Math.round(utilization)}% utilized - consider adding more tasks`,
+                        });
+                    } else if (utilization > 90) {
+                        results.push({
+                            severity: "warning",
+                            category: "scheduling_conflicts",
+                            message: `High utilization for ${actorId}`,
+                            friendlyMessage: `WARNING: ${actorId} is ${Math.round(utilization)}% utilized - may be overworked`,
+                        });
+                    }
+                });
+            }
+
+            function displayValidationResults(results) {
+                const categoriesContainer = document.getElementById(
+                    "validation-categories",
+                );
+
+                // Group results by category
+                const categories = {
+                    critical_errors: { name: "Critical Errors", results: [] },
+                    resource_issues: { name: "Resource Issues", results: [] },
+                    scheduling_conflicts: {
+                        name: "Scheduling Conflicts",
+                        results: [],
+                    },
+                    optimization_suggestions: {
+                        name: "Optimization Suggestions",
+                        results: [],
+                    },
+                };
+
+                results.forEach((result) => {
+                    if (categories[result.category]) {
+                        categories[result.category].results.push(result);
+                    }
+                });
+
+                let html = "";
+
+                // If no issues, show success message
+                if (results.length === 0) {
+                    html =
+                        '<div class="validation-success" style="text-align: center; padding: 2rem;">🎉 Perfect! No validation issues found.</div>';
+                } else {
+                    Object.entries(categories).forEach(
+                        ([categoryId, category]) => {
+                            if (category.results.length > 0) {
+                                html += `
+                                <div class="validation-category ${categoryId}">
+                                    <h4>${category.name} (${category.results.length})</h4>
+                                    ${category.results
+                                        .map(
+                                            (result) => `
+                                        <div class="validation-issue ${result.severity}">
+                                            ${result.friendlyMessage || result.message}
+                                        </div>
+                                    `,
+                                        )
+                                        .join("")}
+                                </div>
+                            `;
+                            }
+                        },
+                    );
+                }
+
+                categoriesContainer.innerHTML = html;
+            }
+
+            // Process simulation data (replicating assemble.py logic)
+            function processSimulationData(simulationData) {
+                const sim = simulationData.simulation;
+
+                // Convert time strings to minutes
+                const startTime = sim.start_time || "06:00";
+                const endTime = sim.end_time || "18:00";
+
+                const [startHour, startMin] = startTime.split(":").map(Number);
+                const [endHour, endMin] = endTime.split(":").map(Number);
+
+                const startTimeMinutes = startHour * 60 + startMin;
+                const endTimeMinutes = endHour * 60 + endMin;
+
+                // Process tasks
+                const processedTasks = [];
+                let actualEndTime = startTimeMinutes;
+
+                for (const task of sim.tasks || []) {
+                    const taskStart = task.start || "00:00";
+                    let taskStartMinutes;
+
+                    try {
+                        if (taskStart.includes(":")) {
+                            let [taskHour, taskMin] = taskStart
+                                .split(":")
+                                .map(Number);
+                            // Handle invalid minutes (60+ minutes should roll over to next hour)
+                            if (taskMin >= 60) {
+                                const additionalHours = Math.floor(
+                                    taskMin / 60,
+                                );
+                                taskHour += additionalHours;
+                                taskMin = taskMin % 60;
+                            }
+                            taskStartMinutes = taskHour * 60 + taskMin;
+                        } else {
+                            taskStartMinutes = startTimeMinutes;
+                        }
+                    } catch {
                         taskStartMinutes = startTimeMinutes;
                     }
-                } catch {
-                    taskStartMinutes = startTimeMinutes;
+
+                    const taskDuration = task.duration || 0;
+                    const taskEndMinutes = taskStartMinutes + taskDuration;
+
+                    // Track actual end time for zooming
+                    actualEndTime = Math.max(actualEndTime, taskEndMinutes);
+
+                    const processedTask = { ...task };
+                    processedTask.start_minutes = taskStartMinutes;
+                    processedTask.end_minutes = taskEndMinutes;
+
+                    // Extract emoji and display name using the same logic as assemble.py
+                    const taskId = task.id || "";
+                    console.log("Processing task ID:", taskId);
+                    try {
+                        // Try to handle emoji splitting safely
+                        if (taskId.includes("🔸")) {
+                            const parts = taskId.split("🔸");
+                            console.log("Split parts:", parts);
+                            if (parts.length >= 2 && parts[1].trim()) {
+                                processedTask.display_name = parts[0].trim();
+                                processedTask.emoji = parts[1].trim();
+                                console.log(
+                                    "Extracted emoji:",
+                                    processedTask.emoji,
+                                );
+                            } else {
+                                processedTask.display_name = taskId;
+                                processedTask.emoji = "[TASK]";
+                            }
+                        } else {
+                            // No emoji found, use the full ID as display name
+                            processedTask.display_name = taskId;
+                            processedTask.emoji = "[TASK]";
+                            console.log("No emoji separator found in:", taskId);
+                        }
+                    } catch (e) {
+                        console.log("Error parsing emoji:", e);
+                        processedTask.display_name = taskId;
+                        processedTask.emoji = "[TASK]";
+                    }
+
+                    processedTasks.push(processedTask);
                 }
-                
-                const taskDuration = task.duration || 0;
-                const taskEndMinutes = taskStartMinutes + taskDuration;
-                
-                const processedTask = { ...task };
-                processedTask.start_minutes = taskStartMinutes;
-                processedTask.end_minutes = taskEndMinutes;
-                
-                // Extract emoji and display name
-                const taskId = task.id || "";
-                processedTask.display_name = taskId;
-                processedTask.emoji = "[TASK]";
-                
-                // Calculate percentages
-                const totalDuration = endTimeMinutes - startTimeMinutes;
-                if (totalDuration > 0) {
-                    processedTask.start_percentage = ((taskStartMinutes - startTimeMinutes) / totalDuration) * 100;
-                    processedTask.duration_percentage = (taskDuration / totalDuration) * 100;
-                } else {
-                    processedTask.start_percentage = 0;
-                    processedTask.duration_percentage = 0;
+
+                // Use actual end time for dynamic zooming (add 30 minutes buffer)
+                const dynamicEndTime = actualEndTime + 30;
+                const totalDuration = dynamicEndTime - startTimeMinutes;
+                console.log(
+                    "Timeline calculation - Start:",
+                    startTimeMinutes,
+                    "Actual End:",
+                    actualEndTime,
+                    "Dynamic End:",
+                    dynamicEndTime,
+                    "Total Duration:",
+                    totalDuration,
+                );
+
+                // Calculate percentages based on dynamic timeline
+                for (const task of processedTasks) {
+                    if (totalDuration > 0) {
+                        task.start_percentage =
+                            ((task.start_minutes - startTimeMinutes) /
+                                totalDuration) *
+                            100;
+                        task.duration_percentage =
+                            ((task.duration || 0) / totalDuration) * 100;
+                    } else {
+                        task.start_percentage = 0;
+                        task.duration_percentage = 0;
+                    }
                 }
-                
-                processedTasks.push(processedTask);
+
+                // Process actors with utilization
+                const actorWorkloads = {};
+                const totalAvailableTime = dynamicEndTime - startTimeMinutes;
+
+                for (const task of processedTasks) {
+                    const actorId = task.actor_id;
+                    const duration = task.duration || 0;
+                    actorWorkloads[actorId] =
+                        (actorWorkloads[actorId] || 0) + duration;
+                }
+
+                const processedActors = [];
+                for (const actor of sim.actors || []) {
+                    const actorCopy = { ...actor };
+                    const workload = actorWorkloads[actor.id] || 0;
+                    const utilization =
+                        totalAvailableTime > 0
+                            ? (workload / totalAvailableTime) * 100
+                            : 0;
+                    actorCopy.utilization_percentage =
+                        Math.round(utilization * 10) / 10;
+                    actorCopy.total_work_minutes = workload;
+                    processedActors.push(actorCopy);
+                }
+
+                // Format dynamic end time
+                const dynamicEndHour = Math.floor(dynamicEndTime / 60);
+                const dynamicEndMin = dynamicEndTime % 60;
+                const dynamicEndTimeStr = `${dynamicEndHour.toString().padStart(2, "0")}:${dynamicEndMin.toString().padStart(2, "0")}`;
+
+                return {
+                    time_unit: sim.time_unit || "minute",
+                    start_time: startTime,
+                    end_time: dynamicEndTimeStr,
+                    start_time_minutes: startTimeMinutes,
+                    end_time_minutes: dynamicEndTime,
+                    total_duration_minutes: totalDuration,
+                    actors: processedActors,
+                    resources: sim.resources || [],
+                    tasks: processedTasks,
+                    article_title: sim.article_title || "Process Simulation",
+                    domain: sim.domain || "General",
+                    has_validation_data: false,
+                    validation_summary: {},
+                    validation_transparency: {},
+                    validation_results: [],
+                    business_readiness: {},
+                };
             }
-            
-            // Process actors with utilization
-            const actorWorkloads = {};
-            const totalAvailableTime = endTimeMinutes - startTimeMinutes;
-            
-            for (const task of processedTasks) {
-                const actorId = task.actor_id;
-                const duration = task.duration || 0;
-                actorWorkloads[actorId] = (actorWorkloads[actorId] || 0) + duration;
-            }
-            
-            const processedActors = [];
-            for (const actor of sim.actors || []) {
-                const actorCopy = { ...actor };
-                const workload = actorWorkloads[actor.id] || 0;
-                const utilization = totalAvailableTime > 0 ? (workload / totalAvailableTime) * 100 : 0;
-                actorCopy.utilization_percentage = Math.round(utilization * 10) / 10;
-                actorCopy.total_work_minutes = workload;
-                processedActors.push(actorCopy);
-            }
-            
-            return {
-                time_unit: sim.time_unit || "minute",
-                start_time: startTime,
-                end_time: endTime,
-                start_time_minutes: startTimeMinutes,
-                end_time_minutes: endTimeMinutes,
-                total_duration_minutes: endTimeMinutes - startTimeMinutes,
-                actors: processedActors,
-                resources: sim.resources || [],
-                tasks: processedTasks,
-                article_title: sim.article_title || "Process Simulation",
-                domain: sim.domain || "General",
-                has_validation_data: false,
-                validation_summary: {},
-                validation_transparency: {},
-                validation_results: [],
-                business_readiness: {}
-            };
-        }
-        
-        // Render simulation
-        function renderSimulation() {
-            const simulationContent = document.getElementById('simulation-content');
-            const loadingOverlay = document.getElementById('simulation-loading');
-            
-            if (!validateJSON()) {
-                simulationContent.innerHTML = '<p style="color: var(--error-color); text-align: center; margin-top: 2rem;">Cannot render: JSON validation failed</p>';
-                return;
-            }
-            
-            try {
-                loadingOverlay.style.display = 'flex';
-                
-                const jsonText = editor.getValue();
-                const simulationData = JSON.parse(jsonText);
-                
-                // Process simulation data exactly like assemble.py
-                const processedSimulation = processSimulationData(simulationData);
-                
-                // Clear and render
-                simulationContent.innerHTML = '';
-                
-                // Create simulation container
-                const container = document.createElement('div');
-                container.className = 'simulation-container';
-                
-                // Create header
-                const header = document.createElement('div');
-                header.className = 'simulation-header';
-                header.innerHTML = `
+
+            // Render simulation
+            function renderSimulation() {
+                const simulationContent =
+                    document.getElementById("simulation-content");
+                const loadingOverlay =
+                    document.getElementById("simulation-loading");
+
+                if (!validateJSON()) {
+                    simulationContent.innerHTML =
+                        '<p style="color: var(--error-color); text-align: center; margin-top: 2rem;">Cannot render: JSON validation failed</p>';
+                    return;
+                }
+
+                try {
+                    loadingOverlay.style.display = "flex";
+
+                    const jsonText = editor.getValue();
+                    const simulationData = JSON.parse(jsonText);
+
+                    // Process simulation data exactly like assemble.py
+                    const processedSimulation =
+                        processSimulationData(simulationData);
+
+                    // Clear and render
+                    simulationContent.innerHTML = "";
+
+                    // Create simulation container
+                    const container = document.createElement("div");
+                    container.className = "simulation-container";
+
+                    // Create header
+                    const header = document.createElement("div");
+                    header.className = "simulation-header";
+                    header.innerHTML = `
                     <h4>${processedSimulation.article_title}</h4>
-                    <p>${processedSimulation.domain} � ${processedSimulation.start_time} - ${processedSimulation.end_time} (${processedSimulation.total_duration_minutes} minutes)</p>
+                    <p>${processedSimulation.domain} • ${processedSimulation.start_time} - ${processedSimulation.end_time} (${processedSimulation.total_duration_minutes} minutes)</p>
                 `;
-                container.appendChild(header);
-                
-                // Create timeline visualization
-                const timeline = document.createElement('div');
-                timeline.className = 'simulation-timeline';
-                timeline.style.position = 'relative';
-                timeline.style.minHeight = '300px';
-                timeline.style.background = '#fff';
-                timeline.style.border = '1px solid var(--border-color)';
-                timeline.style.borderRadius = 'var(--border-radius-md)';
-                timeline.style.margin = '1rem 0';
-                
-                // Add time markers
-                const timeMarkers = document.createElement('div');
-                timeMarkers.className = 'timeline-time-markers';
-                timeMarkers.style.position = 'relative';
-                timeMarkers.style.height = '30px';
-                timeMarkers.style.borderBottom = '1px solid var(--border-color)';
-                timeMarkers.style.background = '#f8f9fa';
-                
-                const totalMinutes = processedSimulation.total_duration_minutes;
-                const markerInterval = Math.max(60, Math.floor(totalMinutes / 8) / 60 * 60);
-                
-                for (let minutes = 0; minutes <= totalMinutes; minutes += markerInterval) {
-                    const marker = document.createElement('div');
-                    marker.className = 'time-marker';
-                    marker.style.position = 'absolute';
-                    marker.style.left = `${(minutes / totalMinutes) * 100}%`;
-                    marker.style.top = '5px';
-                    marker.style.fontSize = '0.75rem';
-                    marker.style.color = 'var(--text-light)';
-                    marker.style.transform = 'translateX(-50%)';
-                    
-                    const totalMinutesFromStart = processedSimulation.start_time_minutes + minutes;
-                    const hours = Math.floor(totalMinutesFromStart / 60);
-                    const mins = totalMinutesFromStart % 60;
-                    marker.textContent = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-                    
-                    timeMarkers.appendChild(marker);
-                }
-                timeline.appendChild(timeMarkers);
-                
-                // Add actor lanes
-                const actorLanes = document.createElement('div');
-                actorLanes.className = 'actor-lanes';
-                actorLanes.style.padding = '1rem';
-                
-                for (const actor of processedSimulation.actors) {
-                    const lane = document.createElement('div');
-                    lane.className = 'actor-lane';
-                    lane.style.display = 'flex';
-                    lane.style.marginBottom = '1rem';
-                    lane.style.minHeight = '60px';
-                    
-                    const actorLabel = document.createElement('div');
-                    actorLabel.className = 'actor-label';
-                    actorLabel.style.width = '150px';
-                    actorLabel.style.padding = '0.5rem';
-                    actorLabel.style.background = 'var(--bg-light)';
-                    actorLabel.style.borderRadius = 'var(--border-radius-sm)';
-                    actorLabel.style.marginRight = '1rem';
-                    actorLabel.innerHTML = `
+                    container.appendChild(header);
+
+                    // Create timeline visualization
+                    const timeline = document.createElement("div");
+                    timeline.className = "simulation-timeline";
+                    timeline.style.position = "relative";
+                    timeline.style.minHeight = "300px";
+                    timeline.style.background = "#fff";
+                    timeline.style.border = "1px solid var(--border-color)";
+                    timeline.style.borderRadius = "var(--border-radius-md)";
+                    timeline.style.margin = "1rem 0";
+                    timeline.style.width = "100%";
+                    timeline.style.boxSizing = "border-box";
+
+                    // Add time markers
+                    const timeMarkers = document.createElement("div");
+                    timeMarkers.className = "timeline-time-markers";
+                    timeMarkers.style.position = "relative";
+                    timeMarkers.style.height = "30px";
+                    timeMarkers.style.borderBottom =
+                        "1px solid var(--border-color)";
+                    timeMarkers.style.background = "#f8f9fa";
+
+                    const totalMinutes =
+                        processedSimulation.total_duration_minutes;
+                    const markerInterval = Math.max(
+                        30,
+                        Math.ceil(totalMinutes / 8 / 30) * 30,
+                    );
+
+                    console.log(
+                        "Marker calculation - Total minutes:",
+                        totalMinutes,
+                        "Interval:",
+                        markerInterval,
+                    );
+
+                    for (
+                        let minutes = 0;
+                        minutes <= totalMinutes;
+                        minutes += markerInterval
+                    ) {
+                        const marker = document.createElement("div");
+                        marker.className = "time-marker";
+                        marker.style.position = "absolute";
+                        marker.style.left = `${(minutes / totalMinutes) * 100}%`;
+                        marker.style.top = "5px";
+                        marker.style.fontSize = "0.75rem";
+                        marker.style.color = "var(--text-light)";
+                        marker.style.transform = "translateX(-50%)";
+
+                        const totalMinutesFromStart =
+                            processedSimulation.start_time_minutes + minutes;
+                        const hours = Math.floor(totalMinutesFromStart / 60);
+                        const mins = totalMinutesFromStart % 60;
+                        marker.textContent = `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+
+                        timeMarkers.appendChild(marker);
+                    }
+                    timeline.appendChild(timeMarkers);
+
+                    // Add actor lanes
+                    const actorLanes = document.createElement("div");
+                    actorLanes.className = "actor-lanes";
+                    actorLanes.style.padding = "1rem";
+                    actorLanes.style.width = "100%";
+                    actorLanes.style.boxSizing = "border-box";
+
+                    for (const actor of processedSimulation.actors) {
+                        const lane = document.createElement("div");
+                        lane.className = "actor-lane";
+                        lane.style.display = "flex";
+                        lane.style.marginBottom = "1rem";
+                        lane.style.minHeight = "60px";
+                        lane.style.width = "100%";
+                        lane.style.boxSizing = "border-box";
+
+                        const actorLabel = document.createElement("div");
+                        actorLabel.className = "actor-label";
+                        actorLabel.style.width = "150px";
+                        actorLabel.style.padding = "0.5rem";
+                        actorLabel.style.background = "var(--bg-light)";
+                        actorLabel.style.borderRadius =
+                            "var(--border-radius-sm)";
+                        actorLabel.style.marginRight = "1rem";
+                        actorLabel.style.flexShrink = "0";
+                        actorLabel.innerHTML = `
                         <strong>${actor.role}</strong><br>
                         <small>Utilization: ${actor.utilization_percentage}%</small>
                     `;
-                    lane.appendChild(actorLabel);
-                    
-                    const taskTrack = document.createElement('div');
-                    taskTrack.className = 'task-track';
-                    taskTrack.style.flex = '1';
-                    taskTrack.style.position = 'relative';
-                    taskTrack.style.background = '#f8f9fa';
-                    taskTrack.style.border = '1px solid var(--border-color)';
-                    taskTrack.style.borderRadius = 'var(--border-radius-sm)';
-                    taskTrack.style.minHeight = '40px';
-                    
-                    // Add tasks for this actor
-                    const actorTasks = processedSimulation.tasks.filter(task => task.actor_id === actor.id);
-                    for (const task of actorTasks) {
-                        const taskElement = document.createElement('div');
-                        taskElement.className = 'task-block';
-                        taskElement.style.position = 'absolute';
-                        taskElement.style.left = `${task.start_percentage}%`;
-                        taskElement.style.width = `${task.duration_percentage}%`;
-                        taskElement.style.height = '30px';
-                        taskElement.style.top = '5px';
-                        taskElement.style.background = 'var(--primary-color)';
-                        taskElement.style.color = 'white';
-                        taskElement.style.borderRadius = 'var(--border-radius-sm)';
-                        taskElement.style.padding = '0.25rem';
-                        taskElement.style.fontSize = '0.75rem';
-                        taskElement.style.overflow = 'hidden';
-                        taskElement.style.whiteSpace = 'nowrap';
-                        taskElement.style.textOverflow = 'ellipsis';
-                        taskElement.style.cursor = 'pointer';
-                        
-                        taskElement.innerHTML = `
-                            <span class="task-name">${task.display_name}</span>
-                            <span class="task-duration">${task.duration}min</span>
+                        lane.appendChild(actorLabel);
+
+                        const taskTrack = document.createElement("div");
+                        taskTrack.className = "task-track";
+                        taskTrack.style.flex = "1";
+                        taskTrack.style.position = "relative";
+                        taskTrack.style.background = "#f8f9fa";
+                        taskTrack.style.border =
+                            "1px solid var(--border-color)";
+                        taskTrack.style.borderRadius =
+                            "var(--border-radius-sm)";
+                        taskTrack.style.minHeight = "40px";
+                        taskTrack.style.width = "100%";
+                        taskTrack.style.boxSizing = "border-box";
+
+                        // Add tasks for this actor
+                        const actorTasks = processedSimulation.tasks.filter(
+                            (task) => task.actor_id === actor.id,
+                        );
+                        for (const task of actorTasks) {
+                            const taskElement = document.createElement("div");
+                            taskElement.className = "task-block";
+                            taskElement.style.position = "absolute";
+                            taskElement.style.left = `${task.start_percentage}%`;
+                            taskElement.style.width = `${task.duration_percentage}%`;
+                            taskElement.style.height = "30px";
+                            taskElement.style.top = "5px";
+                            taskElement.style.background =
+                                "var(--primary-color)";
+                            taskElement.style.color = "white";
+                            taskElement.style.borderRadius =
+                                "var(--border-radius-sm)";
+                            taskElement.style.fontSize = "0.75rem";
+                            taskElement.style.overflow = "hidden";
+                            taskElement.style.cursor = "pointer";
+                            taskElement.style.display = "flex";
+                            taskElement.style.alignItems = "center";
+                            taskElement.style.justifyContent = "space-between";
+                            taskElement.style.gap = "0.25rem";
+
+                            // Use emoji instead of task name to save space
+                            console.log(
+                                "Rendering task with emoji:",
+                                task.emoji,
+                                "for task:",
+                                task.display_name,
+                            );
+                            taskElement.innerHTML = `
+                            <span class="task-emoji">${task.emoji}</span>
                         `;
-                        taskElement.title = `${task.display_name} (${task.duration} minutes)`;
-                        taskTrack.appendChild(taskElement);
+                            taskElement.title = `${task.display_name} (${task.duration} minutes)`;
+                            taskTrack.appendChild(taskElement);
+                        }
+
+                        lane.appendChild(taskTrack);
+                        actorLanes.appendChild(lane);
                     }
-                    
-                    lane.appendChild(taskTrack);
-                    actorLanes.appendChild(lane);
-                }
-                
-                timeline.appendChild(actorLanes);
-                container.appendChild(timeline);
-                
-                // Add summary stats
-                const stats = document.createElement('div');
-                stats.className = 'simulation-stats';
-                stats.style.display = 'flex';
-                stats.style.gap = '2rem';
-                stats.style.padding = '1rem';
-                stats.style.background = 'var(--bg-light)';
-                stats.style.borderRadius = 'var(--border-radius-md)';
-                stats.style.marginTop = '1rem';
-                
-                stats.innerHTML = `
+
+                    timeline.appendChild(actorLanes);
+                    container.appendChild(timeline);
+
+                    // Add summary stats
+                    const stats = document.createElement("div");
+                    stats.className = "simulation-stats";
+                    stats.style.display = "flex";
+                    stats.style.gap = "2rem";
+                    stats.style.padding = "1rem";
+                    stats.style.background = "var(--bg-light)";
+                    stats.style.borderRadius = "var(--border-radius-md)";
+                    stats.style.marginTop = "1rem";
+
+                    stats.innerHTML = `
                     <div class="stat-item">
                         <strong>Total Duration:</strong> ${processedSimulation.total_duration_minutes} minutes
                     </div>
@@ -704,47 +1448,131 @@
                         <strong>Tasks:</strong> ${processedSimulation.tasks.length}
                     </div>
                 `;
-                container.appendChild(stats);
-                
-                simulationContent.appendChild(container);
-                
-            } catch (e) {
-                simulationContent.innerHTML = `<p style="color: var(--error-color); text-align: center; margin-top: 2rem;">Render Error: ${e.message}</p>`;
-                console.error('Render error:', e);
-            } finally {
-                loadingOverlay.style.display = 'none';
+                    container.appendChild(stats);
+
+                    simulationContent.appendChild(container);
+                } catch (e) {
+                    simulationContent.innerHTML = `<p style="color: var(--error-color); text-align: center; margin-top: 2rem;">Render Error: ${e.message}</p>`;
+                    console.error("Render error:", e);
+                } finally {
+                    loadingOverlay.style.display = "none";
+                }
             }
-        }
-        
-        // Event listeners
-        document.getElementById('load-sample-btn').addEventListener('click', () => {
-            editor.setValue(JSON.stringify(sampleSimulation, null, 2));
-        });
-        
-        document.getElementById('format-json-btn').addEventListener('click', () => {
-            try {
-                const parsed = JSON.parse(editor.getValue());
-                editor.setValue(JSON.stringify(parsed, null, 2));
-            } catch (e) {
-                alert('Cannot format: Invalid JSON');
+
+            // Event listeners
+            document
+                .getElementById("load-sample-btn")
+                .addEventListener("click", () => {
+                    editor.setValue(JSON.stringify(sampleSimulation, null, 2));
+                });
+
+            document
+                .getElementById("format-json-btn")
+                .addEventListener("click", () => {
+                    try {
+                        const parsed = JSON.parse(editor.getValue());
+                        editor.setValue(JSON.stringify(parsed, null, 2));
+                    } catch (e) {
+                        alert("Cannot format: Invalid JSON");
+                    }
+                });
+
+            document
+                .getElementById("clear-editor-btn")
+                .addEventListener("click", () => {
+                    if (confirm("Clear the editor?")) {
+                        editor.setValue("");
+                    }
+                });
+
+            document
+                .getElementById("render-simulation-btn")
+                .addEventListener("click", renderSimulation);
+
+            document
+                .getElementById("auto-render-toggle")
+                .addEventListener("click", (e) => {
+                    autoRender = !autoRender;
+                    updateAutoRenderUI();
+                    if (autoRender) {
+                        renderSimulation();
+                    }
+                });
+
+            // Initialize resize handles
+            function initializeResizeHandles() {
+                const verticalHandle = document.querySelector(
+                    ".resize-handle-vertical",
+                );
+                const horizontalHandle = document.querySelector(
+                    ".resize-handle-horizontal",
+                );
+                const jsonPanel = document.querySelector(".json-editor-panel");
+                const simulationPanel =
+                    document.querySelector(".simulation-panel");
+                const playgroundTop = document.querySelector(".playground-top");
+                const playgroundBottom =
+                    document.querySelector(".playground-bottom");
+
+                let isDragging = false;
+                let dragType = "";
+
+                // Vertical resize (between JSON editor and simulation)
+                verticalHandle.addEventListener("mousedown", (e) => {
+                    isDragging = true;
+                    dragType = "vertical";
+                    document.body.style.cursor = "col-resize";
+                    e.preventDefault();
+                });
+
+                // Horizontal resize (between top and validation panels)
+                horizontalHandle.addEventListener("mousedown", (e) => {
+                    isDragging = true;
+                    dragType = "horizontal";
+                    document.body.style.cursor = "row-resize";
+                    e.preventDefault();
+                });
+
+                document.addEventListener("mousemove", (e) => {
+                    if (!isDragging) return;
+
+                    if (dragType === "vertical") {
+                        const containerRect =
+                            playgroundTop.getBoundingClientRect();
+                        const newWidth =
+                            ((e.clientX - containerRect.left) /
+                                containerRect.width) *
+                            100;
+
+                        if (newWidth >= 20 && newWidth <= 80) {
+                            jsonPanel.style.width = newWidth + "%";
+                            simulationPanel.style.width = 100 - newWidth + "%";
+                        }
+                    } else if (dragType === "horizontal") {
+                        const containerRect = document
+                            .querySelector(".playground-main")
+                            .getBoundingClientRect();
+                        const newHeight =
+                            ((e.clientY - containerRect.top) /
+                                containerRect.height) *
+                            100;
+
+                        if (newHeight >= 30 && newHeight <= 90) {
+                            playgroundTop.style.height = newHeight + "%";
+                            playgroundBottom.style.height =
+                                100 - newHeight + "%";
+                        }
+                    }
+                });
+
+                document.addEventListener("mouseup", () => {
+                    if (isDragging) {
+                        isDragging = false;
+                        dragType = "";
+                        document.body.style.cursor = "default";
+                    }
+                });
             }
-        });
-        
-        document.getElementById('clear-editor-btn').addEventListener('click', () => {
-            if (confirm('Clear the editor?')) {
-                editor.setValue('');
-            }
-        });
-        
-        document.getElementById('render-simulation-btn').addEventListener('click', renderSimulation);
-        
-        document.getElementById('auto-render-toggle').addEventListener('click', (e) => {
-            autoRender = !autoRender;
-            e.target.textContent = `Auto-render: ${autoRender ? 'ON' : 'OFF'}`;
-            if (autoRender) {
-                renderSimulation();
-            }
-        });
-    </script>
-</body>
+        </script>
+    </body>
 </html>
