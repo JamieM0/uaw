@@ -92,11 +92,10 @@
             }
 
             .resize-handle-horizontal {
-                position: absolute;
+                position: relative;
                 left: 0;
                 right: 0;
-                top: -3px;
-                height: 6px;
+                height: 12px;
                 cursor: row-resize;
                 background: transparent;
                 z-index: 10;
@@ -525,6 +524,35 @@
                 flex: 1;
             }
 
+            /* Submit dialog specific styles */
+            .submit-dialog {
+                min-width: 400px;
+            }
+
+            .cascade-container {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .cascade-dropdown {
+                display: none;
+            }
+
+            .cascade-dropdown.visible {
+                display: flex;
+            }
+
+            .page-path-preview {
+                background: var(--bg-light);
+                padding: 0.5rem;
+                border-radius: var(--border-radius-sm);
+                font-family: monospace;
+                font-size: 0.9rem;
+                margin-top: 0.5rem;
+                border: 1px solid var(--border-color);
+            }
+
             .task-duration {
                 font-size: 0.7rem;
                 opacity: 0.8;
@@ -803,6 +831,13 @@
                                 <button id="auto-render-toggle">
                                     Auto-render: ON
                                 </button>
+                                <button
+                                    id="submit-btn"
+                                    class="action-btn"
+                                    title="Submit simulation to page"
+                                >
+                                    Submit
+                                </button>
                             </div>
                         </div>
                         <div class="panel-content">
@@ -834,8 +869,8 @@
                     </div>
                 </div>
 
+                <div class="resize-handle-horizontal"></div>
                 <div class="playground-bottom">
-                    <div class="resize-handle-horizontal"></div>
                     <div class="validation-panel">
                         <div class="validation-header">
                             <div class="validation-inline">
@@ -1843,6 +1878,237 @@
                 }
             }
 
+            // Static page structure from structure.txt file
+            async function fetchPageStructure() {
+                try {
+                    const response = await fetch('/assets/data/structure.txt');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch structure.txt');
+                    }
+
+                    const text = await response.text();
+                    const lines = text.trim().split('\n');
+                    const structure = {};
+
+                    lines.forEach(line => {
+                        const parts = line.trim().split('/');
+                        if (parts.length === 3) {
+                            const [domain, subcategory, page] = parts;
+
+                            if (!structure[domain]) {
+                                structure[domain] = {};
+                            }
+                            if (!structure[domain][subcategory]) {
+                                structure[domain][subcategory] = [];
+                            }
+                            structure[domain][subcategory].push(page);
+                        }
+                    });
+
+                    return structure;
+                } catch (e) {
+                    console.error('Failed to load page structure:', e);
+                    // Basic fallback
+                    return {
+                        "food-production": {
+                            "baking": ["breadmaking", "breadmaking-alpha"]
+                        }
+                    };
+                }
+            }
+
+            function cleanDisplayName(name) {
+                return name.split('-').map(word =>
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ');
+            }
+
+            function openSubmitDialog() {
+                const content = `
+                    <div class="submit-dialog">
+                        <form class="dialog-form" onsubmit="handleSubmit(event)">
+                            <div class="cascade-container">
+                                <div class="dialog-field">
+                                    <label>Domain</label>
+                                    <select name="domain" id="domain-select" onchange="updateSubcategories()" required>
+                                        <option value="">Select a domain...</option>
+                                        <option value="entertainment">Entertainment</option>
+                                        <option value="food-production">Food Production</option>
+                                        <option value="healthcare">Healthcare</option>
+                                        <option value="manufacturing">Manufacturing</option>
+                                        <option value="technology">Technology</option>
+                                        <option value="transportation">Transportation</option>
+                                    </select>
+                                </div>
+
+                                <div class="dialog-field cascade-dropdown" id="subcategory-field">
+                                    <label>Subcategory</label>
+                                    <select name="subcategory" id="subcategory-select" onchange="updatePages()" required>
+                                        <option value="">Select a subcategory...</option>
+                                    </select>
+                                </div>
+
+                                <div class="dialog-field cascade-dropdown" id="page-field">
+                                    <label>Page</label>
+                                    <select name="page" id="page-select" onchange="updatePreview()" required>
+                                        <option value="">Select a page...</option>
+                                    </select>
+                                </div>
+
+                                <div id="path-preview" class="page-path-preview" style="display: none;">
+                                    <strong>Target:</strong> <span id="preview-path"></span>
+                                </div>
+                            </div>
+
+                            <div class="dialog-buttons">
+                                <button type="button" class="btn-secondary" onclick="closeDialog()">Cancel</button>
+                                <button type="submit" class="btn-primary" disabled id="submit-confirm-btn">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                `;
+
+                openDialog("Submit Simulation", content);
+
+                // Load page structure from static file
+                fetchPageStructure().then(structure => {
+                    window.pageStructure = structure;
+                    console.log('Page structure loaded successfully');
+                }).catch(e => {
+                    console.error("Failed to load page structure:", e);
+                    window.pageStructure = {
+                        "food-production": {
+                            "baking": ["breadmaking", "breadmaking-alpha"]
+                        }
+                    };
+                });
+            }
+
+            function updateSubcategories() {
+                const domainSelect = document.getElementById('domain-select');
+                const subcategoryField = document.getElementById('subcategory-field');
+                const subcategorySelect = document.getElementById('subcategory-select');
+                const pageField = document.getElementById('page-field');
+
+                const selectedDomain = domainSelect.value;
+
+                // Clear subcategory options
+                subcategorySelect.innerHTML = '<option value="">Select a subcategory...</option>';
+
+                if (selectedDomain && window.pageStructure && window.pageStructure[selectedDomain]) {
+                    const subcategories = Object.keys(window.pageStructure[selectedDomain]);
+                    subcategories.sort().forEach(subcat => {
+                        const option = document.createElement('option');
+                        option.value = subcat;
+                        option.textContent = cleanDisplayName(subcat);
+                        subcategorySelect.appendChild(option);
+                    });
+
+                    subcategoryField.classList.add('visible');
+                } else {
+                    subcategoryField.classList.remove('visible');
+                }
+
+                // Hide page field
+                pageField.classList.remove('visible');
+                updatePreview();
+            }
+
+            function updatePages() {
+                const domainSelect = document.getElementById('domain-select');
+                const subcategorySelect = document.getElementById('subcategory-select');
+                const pageField = document.getElementById('page-field');
+                const pageSelect = document.getElementById('page-select');
+
+                const selectedDomain = domainSelect.value;
+                const selectedSubcategory = subcategorySelect.value;
+
+                // Clear page options
+                pageSelect.innerHTML = '<option value="">Select a page...</option>';
+
+                if (selectedDomain && selectedSubcategory &&
+                    window.pageStructure &&
+                    window.pageStructure[selectedDomain] &&
+                    window.pageStructure[selectedDomain][selectedSubcategory]) {
+
+                    const pages = window.pageStructure[selectedDomain][selectedSubcategory];
+                    pages.sort().forEach(page => {
+                        const option = document.createElement('option');
+                        option.value = page;
+                        option.textContent = cleanDisplayName(page);
+                        pageSelect.appendChild(option);
+                    });
+
+                    if (pages.length > 0) {
+                        pageField.classList.add('visible');
+
+                        // Auto-select if there's a good match for the current simulation
+                        const simulationData = getCurrentSimulationData();
+                        if (simulationData && selectedDomain === 'food-production' && selectedSubcategory === 'baking') {
+                            const breadmakingOption = pageSelect.querySelector('option[value="breadmaking"]');
+                            if (breadmakingOption) {
+                                pageSelect.value = 'breadmaking';
+                                updatePreview();
+                            }
+                        }
+                    }
+                } else {
+                    pageField.classList.remove('visible');
+                }
+
+                updatePreview();
+            }
+
+            function updatePreview() {
+                const domainSelect = document.getElementById('domain-select');
+                const subcategorySelect = document.getElementById('subcategory-select');
+                const pageSelect = document.getElementById('page-select');
+                const previewDiv = document.getElementById('path-preview');
+                const previewPath = document.getElementById('preview-path');
+                const submitBtn = document.getElementById('submit-confirm-btn');
+
+                const domain = domainSelect.value;
+                const subcategory = subcategorySelect.value;
+                const page = pageSelect.value;
+
+                if (domain && subcategory && page) {
+                    const fullPath = `${domain}/${subcategory}/${page}`;
+                    previewPath.textContent = fullPath;
+                    previewDiv.style.display = 'block';
+                    submitBtn.disabled = false;
+                } else {
+                    previewDiv.style.display = 'none';
+                    submitBtn.disabled = true;
+                }
+            }
+
+            function handleSubmit(event) {
+                event.preventDefault();
+                const formData = new FormData(event.target);
+                const domain = formData.get('domain');
+                const subcategory = formData.get('subcategory');
+                const page = formData.get('page');
+
+                const targetPath = `${domain}/${subcategory}/${page}`;
+
+                // For now, just show an alert - actual submission logic would go here
+                alert(`Simulation would be submitted to: ${targetPath}\n\n(Submission functionality not implemented yet)`);
+
+                closeDialog();
+            }
+
+            function getCurrentSimulationData() {
+                try {
+                    const jsonText = editor.getValue().trim();
+                    if (jsonText) {
+                        return JSON.parse(jsonText);
+                    }
+                } catch (e) {
+                    // Invalid JSON
+                }
+                return null;
+            }
+
             function processSimulationData(simulationData) {
                 const sim = simulationData.simulation;
                 const startTime = sim.start_time || "06:00";
@@ -2363,6 +2629,10 @@
                 .getElementById("fullscreen-btn")
                 .addEventListener("click", toggleFullscreen);
 
+            document
+                .getElementById("submit-btn")
+                .addEventListener("click", openSubmitDialog);
+
             // Close dialog when clicking outside
             document
                 .getElementById("dialog-overlay")
@@ -2394,6 +2664,7 @@
                 const playgroundTop = document.querySelector(".playground-top");
                 const playgroundBottom =
                     document.querySelector(".playground-bottom");
+                const playgroundMain = document.querySelector(".playground-main");
 
                 let isDragging = false;
                 let dragType = "";
@@ -2414,6 +2685,7 @@
 
                 document.addEventListener("mousemove", (e) => {
                     if (!isDragging) return;
+                    e.preventDefault();
 
                     if (dragType === "vertical") {
                         const containerRect =
@@ -2428,18 +2700,13 @@
                             simulationPanel.style.width = 100 - newWidth + "%";
                         }
                     } else if (dragType === "horizontal") {
-                        const containerRect = document
-                            .querySelector(".playground-main")
-                            .getBoundingClientRect();
-                        const newHeight =
-                            ((e.clientY - containerRect.top) /
-                                containerRect.height) *
-                            100;
+                        const mainRect = playgroundMain.getBoundingClientRect();
+                        const relativeY = e.clientY - mainRect.top;
+                        const newTopHeight = (relativeY / mainRect.height) * 100;
 
-                        if (newHeight >= 30 && newHeight <= 90) {
-                            playgroundTop.style.height = newHeight + "%";
-                            playgroundBottom.style.height =
-                                100 - newHeight + "%";
+                        if (newTopHeight >= 20 && newTopHeight <= 80) {
+                            playgroundTop.style.height = newTopHeight + "%";
+                            playgroundBottom.style.height = (100 - newTopHeight) + "%";
                         }
                     }
                 });
