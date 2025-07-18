@@ -232,4 +232,68 @@ class SimulationValidator {
       this.addResult({ metricId: metric.id, status: 'success', message: 'All task dependencies are temporally respected.' });
     }
   }
+
+    /**
+   * METRIC: equipment.state.logic
+   * Tracks equipment states to ensure tasks use equipment in the correct state
+   * and that equipment is not used simultaneously.
+   */
+  validateEquipmentState(metric) {
+    const equipment = this.simulation.equipment || [];
+    const tasks = this.simulation.tasks || [];
+    let issueFound = false;
+
+    // 1. Initialize the state of all equipment.
+    const equipmentState = {};
+    equipment.forEach(e => {
+      equipmentState[e.id] = e.state || 'available'; // Default to 'available'
+    });
+
+    // 2. Create a timeline to track equipment usage periods.
+    const equipmentTimeline = {};
+    equipment.forEach(e => { equipmentTimeline[e.id] = []; });
+    
+    // 3. Process tasks chronologically to check for state prerequisites and conflicts.
+    const sortedTasks = [...tasks].sort((a, b) => (a.start || "00:00").localeCompare(b.start || "00:00"));
+
+    for (const task of sortedTasks) {
+      const taskStart = this._timeToMinutes(task.start);
+      if (taskStart === null) continue;
+      const taskEnd = taskStart + (task.duration || 0);
+
+      for (const interaction of (task.equipment_interactions || [])) {
+        const eqId = interaction.id;
+        
+        // A. Check for prerequisite state.
+        if (equipmentState[eqId] !== interaction.from_state) {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Task '${task.id}' requires equipment '${eqId}' to be in state '${interaction.from_state}', but it was '${equipmentState[eqId]}'.`
+          });
+          issueFound = true;
+        }
+
+        // B. Check for simultaneous usage conflict.
+        for (const usagePeriod of equipmentTimeline[eqId]) {
+          if (taskStart < usagePeriod.end && taskEnd > usagePeriod.start) {
+            this.addResult({
+              metricId: metric.id,
+              status: 'error',
+              message: `Equipment Conflict: '${eqId}' is used by task '${task.id}' while it's still in use by another task.`
+            });
+            issueFound = true;
+          }
+        }
+        
+        // C. Update the state and timeline for the next task.
+        equipmentState[eqId] = interaction.to_state;
+        equipmentTimeline[eqId].push({ start: taskStart, end: taskEnd });
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'Equipment states and usage are logical.' });
+    }
+  }
 }

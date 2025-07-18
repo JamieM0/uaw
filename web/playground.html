@@ -20,6 +20,8 @@
             rel="stylesheet"
         />
 
+        <script src="/assets/js/simulation-validator.js"></script>
+
         <!-- Monaco Editor for JSON syntax highlighting -->
         <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
 
@@ -907,6 +909,17 @@
         <script>
             // Enhanced Simulation Playground JavaScript
             let editor;
+            let metricsCatalog = [];
+            fetch('/assets/static/metrics-catalog.json')
+                .then(response => response.json())
+                .then(data => {
+                    window.metricsCatalog = data; // Use window.metricsCatalog to make it global
+                    console.log("Metrics loaded successfully.");
+                    if (editor) { // If editor is already loaded, run validation
+                        validateJSON();
+                    }
+                })
+            .catch(error => console.error("Error loading metrics catalog:", error));
             let autoRender = true;
             let currentSimulationData = null;
 
@@ -932,183 +945,114 @@
 
             // Sample simulation data with resources
             const sampleSimulation = {
-                simulation: {
-                    time_unit: "minute",
-                    start_time: "06:00",
-                    end_time: "18:00",
-                    actors: [
-                        {
-                            id: "baker",
-                            role: "Baker",
-                            cost_per_hour: 25,
-                        },
-                        {
-                            id: "assistant",
-                            role: "Assistant Baker",
-                            cost_per_hour: 18,
-                        },
-                    ],
-                    resources: [
-                        {
-                            id: "mixer",
-                            name: "Stand Mixer",
-                            emoji: "🥄",
-                            state: "clean",
-                            capacity: 1,
-                            current_usage: 0,
-                        },
-                        {
-                            id: "oven",
-                            name: "Commercial Oven",
-                            emoji: "🔥",
-                            state: "available",
-                            capacity: 1,
-                            current_usage: 0,
-                        },
-                        {
-                            id: "spoon",
-                            name: "Wooden Spoon",
-                            emoji: "🥄",
-                            state: "clean",
-                            capacity: 1,
-                            current_usage: 0,
-                        },
-                        {
-                            id: "workspace",
-                            name: "Prep Counter",
-                            emoji: "🏢",
-                            state: "clean",
-                            capacity: 2,
-                            current_usage: 0,
-                        },
-                        {
-                            id: "mixing_bowl",
-                            name: "Mixing Bowl",
-                            emoji: "🥣",
-                            state: "clean",
-                            capacity: 1,
-                            current_usage: 0,
-                        },
-                    ],
-                    tasks: [
-                        {
-                            id: "clean_workspace 🔸 🧽",
-                            actor_id: "assistant",
-                            start: "06:00",
-                            duration: 15,
-                            uses_resources: ["workspace"],
-                            changes_resources: [
-                                { id: "workspace", state: "clean" },
-                            ],
-                        },
-                        {
-                            id: "prepare_ingredients 🔸 🔧",
-                            actor_id: "baker",
-                            start: "06:15",
-                            duration: 30,
-                            uses_resources: ["workspace"],
-                        },
-                        {
-                            id: "measure_flour 🔸 ⚖️",
-                            actor_id: "baker",
-                            start: "06:45",
-                            duration: 10,
-                            uses_resources: ["workspace"],
-                        },
-                        {
-                            id: "activate_yeast 🔸 🦠",
-                            actor_id: "assistant",
-                            start: "06:45",
-                            duration: 10,
-                            uses_resources: ["workspace"],
-                        },
-                        {
-                            id: "mix_dough 🔸 🥄",
-                            actor_id: "baker",
-                            start: "06:55",
-                            duration: 20,
-                            uses_resources: ["mixer", "mixing_bowl"],
-                            changes_resources: [
-                                { id: "mixer", state: "dirty" },
-                                { id: "mixing_bowl", state: "dirty" },
-                            ],
-                        },
-                        {
-                            id: "knead_dough 🔸 👋",
-                            actor_id: "baker",
-                            start: "07:15",
-                            duration: 15,
-                            uses_resources: ["workspace"],
-                        },
-                        {
-                            id: "first_rise 🔸 ⏰",
-                            actor_id: "baker",
-                            start: "07:30",
-                            duration: 90,
-                        },
-                        {
-                            id: "clean_mixing_bowls 🔸 🧼",
-                            actor_id: "assistant",
-                            start: "07:30",
-                            duration: 20,
-                            uses_resources: ["mixing_bowl"],
-                            changes_resources: [
-                                { id: "mixing_bowl", state: "clean" },
-                            ],
-                        },
-                        {
-                            id: "shape_loaves 🔸 👐",
-                            actor_id: "baker",
-                            start: "09:00",
-                            duration: 25,
-                            uses_resources: ["workspace"],
-                        },
-                        {
-                            id: "prepare_baking_sheets 🔸 🍞",
-                            actor_id: "assistant",
-                            start: "09:00",
-                            duration: 10,
-                            uses_resources: ["workspace"],
-                        },
-                        {
-                            id: "second_rise 🔸 ⏰",
-                            actor_id: "baker",
-                            start: "09:25",
-                            duration: 45,
-                        },
-                        {
-                            id: "preheat_oven 🔸 🔥",
-                            actor_id: "assistant",
-                            start: "09:55",
-                            duration: 15,
-                            uses_resources: ["oven"],
-                            changes_resources: [
-                                { id: "oven", state: "in-use" },
-                            ],
-                        },
-                        {
-                            id: "bake_bread 🔸 🍞",
-                            actor_id: "baker",
-                            start: "10:10",
-                            duration: 35,
-                            uses_resources: ["oven"],
-                        },
-                        {
-                            id: "wash_equipment 🔸 🧽",
-                            actor_id: "assistant",
-                            start: "10:10",
-                            duration: 35,
-                            uses_resources: ["mixer", "spoon"],
-                            changes_resources: [
-                                { id: "mixer", state: "clean" },
-                                { id: "spoon", state: "clean" },
-                            ],
-                        },
-                    ],
-                    article_title: "Artisan Bread Making Process",
-                    domain: "Bakery Operations",
-                },
-            };
+  "simulation": {
+    "meta": {
+      "id": "sim_breadmaking_v3",
+      "article_title": "Artisan Bread Making Process",
+      "domain": "Bakery Operations"
+    },
+    "config": { "time_unit": "minute", "start_time": "06:00", "end_time": "18:00" },
+    "actors": [
+      { "id": "baker", "role": "Baker", "cost_per_hour": 25 },
+      { "id": "assistant", "role": "Assistant Baker", "cost_per_hour": 18 }
+    ],
+    "equipment": [
+        { "id": "mixer", "name": "Stand Mixer", "emoji": "🌀", "state": "clean" },
+        { "id": "oven", "name": "Commercial Oven", "emoji": "🔥", "state": "available" },
+        { "id": "workspace", "name": "Prep Counter", "emoji": "🏢", "state": "clean" },
+        { "id": "mixing_bowl", "name": "Mixing Bowl", "emoji": "🥣", "state": "clean" }
+    ],
+    "resources": [
+      { "id": "flour", "unit": "kg", "starting_stock": 50, "emoji": "🌾" },
+      { "id": "water", "unit": "liter", "starting_stock": 20, "emoji": "💧" },
+      { "id": "yeast", "unit": "g", "starting_stock": 500, "emoji": "🦠" },
+      { "id": "mixed_dough", "unit": "batch", "starting_stock": 0, "emoji": "덩"},
+      { "id": "risen_dough", "unit": "batch", "starting_stock": 0, "emoji": "🍞" },
+      { "id": "shaped_loaves", "unit": "loaves", "starting_stock": 0, "emoji": "🥖" },
+      { "id": "baked_bread", "unit": "loaves", "starting_stock": 0, "emoji": "🍞" }
+    ],
+    "tasks": [
+      {
+        "id": "clean_workspace 🔸 🧽", "actor_id": "assistant", "start": "06:00", "duration": 15,
+        "consumes": {}, "produces": {}, "depends_on": [],
+        "equipment_interactions": [
+          { "id": "workspace", "from_state": "dirty", "to_state": "clean" }
+        ]
+      },
+      {
+        "id": "prepare_ingredients 🔸 🔧", "actor_id": "baker", "start": "06:15", "duration": 30,
+        "consumes": { "flour": 1, "water": 0.7, "yeast": 15 },
+        "produces": {}, "depends_on": ["clean_workspace 🔸 🧽"],
+        "equipment_interactions": [
+          { "id": "workspace", "from_state": "clean", "to_state": "in-use" }
+        ]
+      },
+      {
+        "id": "mix_dough 🔸 🥄", "actor_id": "baker", "start": "06:55", "duration": 20,
+        "consumes": { }, "produces": { "mixed_dough": 1 }, "depends_on": ["prepare_ingredients 🔸 🔧"],
+        "equipment_interactions": [
+          { "id": "mixer", "from_state": "clean", "to_state": "dirty" },
+          { "id": "mixing_bowl", "from_state": "clean", "to_state": "dirty" }
+        ]
+      },
+      {
+        "id": "knead_dough 🔸 👋", "actor_id": "baker", "start": "07:15", "duration": 15,
+        "consumes": { "mixed_dough": 1 }, "produces": { "risen_dough": 1 }, "depends_on": ["mix_dough 🔸 🥄"],
+        "equipment_interactions": [
+          { "id": "workspace", "from_state": "in-use", "to_state": "dirty" }
+        ]
+      },
+      {
+        "id": "first_rise 🔸 ⏰", "actor_id": "baker", "start": "07:30", "duration": 90,
+        "consumes": { "risen_dough": 1 }, "produces": { "risen_dough": 1 }, "depends_on": ["knead_dough 🔸 👋"]
+      },
+      {
+        "id": "clean_mixing_bowls 🔸 🧼", "actor_id": "assistant", "start": "07:30", "duration": 20,
+        "consumes": {}, "produces": {}, "depends_on": [],
+        "equipment_interactions": [
+          { "id": "mixing_bowl", "from_state": "dirty", "to_state": "clean" }
+        ]
+      },
+      {
+        "id": "shape_loaves 🔸 👐", "actor_id": "baker", "start": "09:00", "duration": 25,
+        "consumes": { "risen_dough": 1 }, "produces": { "shaped_loaves": 1 }, "depends_on": ["first_rise 🔸 ⏰"],
+        "equipment_interactions": [
+          { "id": "workspace", "from_state": "dirty", "to_state": "dirty" }
+        ]
+      },
+      {
+        "id": "second_rise 🔸 ⏰", "actor_id": "baker", "start": "09:25", "duration": 45,
+        "consumes": { "shaped_loaves": 1 }, "produces": { "shaped_loaves": 1 }, "depends_on": ["shape_loaves 🔸 👐"]
+      },
+      // INTENTIONAL OVERLAP: assistant has two tasks at the same time.
+      {
+        "id": "prepare_baking_sheets 🔸 🍞", "actor_id": "assistant", "start": "09:00", "duration": 10,
+        "consumes": {}, "produces": {}, "depends_on": []
+      },
+      {
+        "id": "preheat_oven 🔸 🔥", "actor_id": "assistant", "start": "09:05", "duration": 15,
+        "consumes": {}, "produces": {}, "depends_on": ["prepare_baking_sheets 🔸 🍞"],
+        "equipment_interactions": [
+          { "id": "oven", "from_state": "available", "to_state": "in-use" }
+        ]
+      },
+      {
+        "id": "bake_bread 🔸 🍞", "actor_id": "baker", "start": "10:10", "duration": 35,
+        "consumes": { "shaped_loaves": 1 }, "produces": { "baked_bread": 1 }, "depends_on": ["second_rise 🔸 ⏰"],
+        "equipment_interactions": [
+          { "id": "oven", "from_state": "in-use", "to_state": "available" }
+        ]
+      },
+      {
+        "id": "wash_equipment 🔸 🧽", "actor_id": "assistant", "start": "10:10", "duration": 35,
+        "consumes": {}, "produces": {}, "depends_on": [],
+        "equipment_interactions": [
+          { "id": "mixer", "from_state": "dirty", "to_state": "clean" }
+        ]
+      }
+    ]
+  }
+};
 
             // History management
             function saveToHistory() {
@@ -2226,6 +2170,7 @@
                     end_time_minutes: dynamicEndTime,
                     total_duration_minutes: totalDuration,
                     actors: processedActors,
+                    equipment: sim.equipment || [],
                     resources: sim.resources || [],
                     tasks: processedTasks,
                     article_title: sim.article_title || "Process Simulation",
@@ -2399,32 +2344,61 @@
                     timeline.appendChild(actorLanes);
                     container.appendChild(timeline);
 
-                    if (
-                        currentSimulationData.resources &&
-                        currentSimulationData.resources.length > 0
-                    ) {
-                        const resourcesPanel = document.createElement("div");
-                        resourcesPanel.className = "resources-panel";
-                        resourcesPanel.innerHTML = `
-                            <h5>📦 Resources</h5>
-                            <div class="resource-grid">
-                                ${currentSimulationData.resources
-                                    .map(
-                                        (resource) => `
-                                    <div class="resource-item">
-                                        <div class="resource-emoji">${resource.emoji}</div>
-                                        <div class="resource-info">
-                                            <div class="resource-name">${resource.name}</div>
-                                            <div class="resource-state ${resource.state}">${resource.state}</div>
-                                        </div>
-                                    </div>
-                                `,
-                                    )
-                                    .join("")}
+                    const equipmentAndResourcesContainer = document.createElement('div');
+                    // **NEW** Equipment Panel
+
+                    if (currentSimulationData.equipment && currentSimulationData.equipment.length > 0) {
+            // Calculate final equipment states
+            const finalEquipmentStates = {};
+            currentSimulationData.equipment.forEach(e => { finalEquipmentStates[e.id] = e.state || 'available'; });
+            const sortedTasks = [...(currentSimulationData.tasks || [])].sort((a,b) => (a.start || "00:00").localeCompare(b.start || "00:00"));
+            sortedTasks.forEach(task => {
+                (task.equipment_interactions || []).forEach(interaction => {
+                    finalEquipmentStates[interaction.id] = interaction.to_state;
+                });
+            });
+
+            const equipmentPanel = document.createElement("div");
+            equipmentPanel.className = "resources-panel";
+            equipmentPanel.innerHTML = `
+                <h5>⚙️ Equipment (Final States)</h5>
+                <div class="resource-grid">
+                    ${currentSimulationData.equipment.map(item => `
+                        <div class="resource-item">
+                            <div class="resource-emoji">${item.emoji || '❓'}</div>
+                            <div class="resource-info">
+                                <div class="resource-name">${item.name || item.id}</div>
+                                <div class="resource-state ${finalEquipmentStates[item.id]}">${finalEquipmentStates[item.id]}</div>
                             </div>
-                        `;
-                        container.appendChild(resourcesPanel);
-                    }
+                        </div>
+                    `).join("")}
+                </div>
+            `;
+            equipmentAndResourcesContainer.appendChild(equipmentPanel);
+        }
+        
+        // **UPDATED** Resources (Consumables) Panel
+        if (currentSimulationData.resources && currentSimulationData.resources.length > 0) {
+            const resourcesPanel = document.createElement("div");
+            resourcesPanel.className = "resources-panel";
+            resourcesPanel.innerHTML = `
+                <h5>📦 Resources (Consumables)</h5>
+                <div class="resource-grid">
+                    ${currentSimulationData.resources.map(resource => `
+                        <div class="resource-item">
+                            <div class="resource-emoji">${resource.emoji || '❓'}</div>
+                            <div class="resource-info">
+                                <div class="resource-name">${resource.id}</div>
+                                <div class="resource-state available">Stock: ${resource.starting_stock} ${resource.unit}</div>
+                            </div>
+                        </div>
+                    `).join("")}
+                </div>
+            `;
+            equipmentAndResourcesContainer.appendChild(resourcesPanel);
+        }
+
+        container.appendChild(equipmentAndResourcesContainer);
 
                     const stats = document.createElement("div");
                     stats.className = "simulation-stats";
@@ -2485,6 +2459,13 @@
                     jsonStatus.className = "validation-indicator success";
                     jsonStatus.textContent = "✓ Valid JSON";
                     jsonStatus.title = "JSON syntax is valid";
+
+                    if (window.metricsCatalog && window.metricsCatalog.length > 0) {
+                        const validator = new SimulationValidator(parsed);
+                        const validationResults = validator.runChecks(window.metricsCatalog);
+                        displayValidationResults(validationResults); // Call the display function
+                    }
+
                     return true;
                 } catch (e) {
                     jsonStatus.className = "validation-indicator error";
@@ -2495,24 +2476,56 @@
             }
 
             function displayValidationResults(results) {
-                const categoriesContainer = document.getElementById(
-                    "validation-categories",
-                );
+                const categoriesContainer = document.getElementById("validation-categories");
 
-                if (results.length === 0) {
-                    categoriesContainer.innerHTML =
-                        '<div class="validation-success" style="text-align: center; padding: 2rem;">🎉 Perfect! No validation issues found.</div>';
-                } else {
-                    categoriesContainer.innerHTML = results
-                        .map(
-                            (result) => `
-                        <div class="validation-issue ${result.severity}">
-                            ${result.friendlyMessage || result.message}
-                        </div>
-                    `,
-                        )
-                        .join("");
+                // Check for a clean run (only success messages)
+                const hasIssues = results.some(r => r.status !== 'success');
+
+                if (!hasIssues) {
+                    categoriesContainer.innerHTML = '<div class="validation-success" style="text-align: center; padding: 2rem;">🎉 Perfect! No validation issues found.</div>';
+                    return;
                 }
+
+                // Prepare categories for grouping issues
+                const categories = {
+                    "Structural Integrity": { id: "critical-errors", results: [] },
+                    "Resource Flow": { id: "resource-issues", results: [] },
+                    "Scheduling": { id: "scheduling-conflicts", results: [] },
+                    "Optimization": { id: "optimization-suggestions", results: [] }
+                };
+
+                // Create a map for quick metric lookup
+                const metricMap = new Map(window.metricsCatalog.map(m => [m.id, m]));
+
+                // Group results by category
+                results.forEach(result => {
+                    if (result.status === 'success') return; // Don't display success messages in the detailed view
+
+                    const metric = metricMap.get(result.metricId);
+                    if (metric && categories[metric.category]) {
+                        categories[metric.category].results.push({
+                            ...result,
+                            severity: metric.severity // Pass severity for UI styling
+                        });
+                    }
+                });
+
+                let html = "";
+                for (const [categoryName, categoryData] of Object.entries(categories)) {
+                    if (categoryData.results.length > 0) {
+                        html += `
+                            <div class="validation-category ${categoryData.id}">
+                                <h4>${categoryName} (${categoryData.results.length})</h4>
+                                ${categoryData.results.map(result => `
+                                    <div class="validation-issue ${result.severity || 'warning'}">
+                                        ${result.message}
+                                    </div>
+                                `).join("")}
+                            </div>
+                        `;
+                    }
+                }
+                categoriesContainer.innerHTML = html;
             }
 
             // Initialize Monaco Editor
@@ -2568,6 +2581,8 @@
                 updateAutoRenderUI();
                 initializeResizeHandles();
                 initializeDragAndDrop();
+
+                validateJSON();
             });
 
             // Event listeners

@@ -11,11 +11,20 @@
   {
     "id": "resource.flow.negative_stock",
     "name": "Negative Stock Check",
-    "description": "Verifies that no resource stock level drops below zero.",
+    "description": "Verifies that no consumable resource stock level drops below zero.",
     "category": "Resource Flow",
     "severity": "error",
     "validation_type": "computational",
     "computation": { "engine": "javascript", "function_name": "validateNegativeStock" }
+  },
+  {
+    "id": "equipment.state.logic",
+    "name": "Equipment State Logic",
+    "description": "Checks for logical consistency in equipment usage, such as using a 'dirty' mixer or using equipment that is already in use.",
+    "category": "Resource Flow",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateEquipmentState" }
   },
   {
     "id": "actor.scheduling.overlap",
