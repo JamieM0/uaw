@@ -76,8 +76,31 @@ We have an exciting future planned for UAW. Here are some of the key features on
 -   [ ] **Real-World Pilot Program:** Partner with a business (like a local bakery) to validate and refine a simulation against real-world operational data.
 -   [ ] **Community Contribution Workflow:** Streamline the process for users to submit improved simulations from the playground back to the main wiki.
 
+## Licensing
+
+The Universal Automation Wiki is an open-core project and uses a hybrid licensing model to protect the core engine while encouraging broad adoption and a commercial ecosystem.
+
+The project is generally licensed under the **GNU Affero General Public License v3.0**, the full text of which can be found in the [LICENSE](LICENSE) file.
+
+However, specific parts of the project intended for broader integration are licensed under the more permissive **Apache License 2.0**, the full text of which can be found in the [LICENSE-APACHE](LICENSE-APACHE) file. 
+
+This hybrid model is designed to create a clear legal and technical boundary. Proprietary modules or integrations that you build are not considered "derivative works" of the core engine, provided they interact with it solely through the components we have licensed under Apache 2.0. This ensures the AGPL's strong copyleft provisions do not extend to your custom code. As a result, you can confidently build commercial or private software on UAW, knowing your intellectual property remains your own.
+
+### Component Breakdown
+
+*   **AGPL-3.0 Licensed (The Core Engine):**
+    *   `/routines/simulation.py`
+    *   `/routines/constraint_processor.py`
+    *   All core simulation generation and validation logic.
+    *   This is the "heart" of UAW. Any modifications to this core code, when used over a network, must be shared back with the community.
+
+*   **Apache 2.0 Licensed (Modules & APIs):**
+    *   This includes all future client libraries, provider integrations, and pluggable modules designed to interact with the core engine. You can build proprietary, closed-source modules using these components without the AGPL obligations applying to your module code.
+
+If you are unsure of the relevant license, please get in touch.
+
 ## Contact
 
-For more information, please reach out via email at: [contact@universalautomation.wiki](mailto:contact@universalautomation.wiki).
+For more information, please reach out via email at [contact@universalautomation.wiki](mailto:contact@universalautomation.wiki), or [jamie@jmatthews.uk](mailto:jamie@jmatthews.uk).
 
 Thank you for your interest in the Universal Automation Wiki!
