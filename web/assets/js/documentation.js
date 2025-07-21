@@ -41,6 +41,13 @@ const docsTree = [
       { title: "- Summary", path: "/docs/routines/summary" },
       { title: "- Utils", path: "/docs/routines/utils" }
     ]
+  },
+  {
+    title: "Simulations",
+    path: "#",
+    children: [
+      { title: "- Validation", path: "/docs/simulations/validation" }
+    ]
   }
 ];
 

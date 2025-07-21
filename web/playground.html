@@ -947,7 +947,7 @@
             const sampleSimulation = {
   "simulation": {
     "meta": {
-      "id": "sim_breadmaking_v3",
+      "id": "sim_breadmaking_v3_full",
       "article_title": "Artisan Bread Making Process",
       "domain": "Bakery Operations"
     },
@@ -957,10 +957,10 @@
       { "id": "assistant", "role": "Assistant Baker", "cost_per_hour": 18 }
     ],
     "equipment": [
-        { "id": "mixer", "name": "Stand Mixer", "emoji": "🌀", "state": "clean" },
-        { "id": "oven", "name": "Commercial Oven", "emoji": "🔥", "state": "available" },
-        { "id": "workspace", "name": "Prep Counter", "emoji": "🏢", "state": "clean" },
-        { "id": "mixing_bowl", "name": "Mixing Bowl", "emoji": "🥣", "state": "clean" }
+      { "id": "mixer", "name": "Stand Mixer", "emoji": "🌀", "state": "clean" },
+      { "id": "oven", "name": "Commercial Oven", "emoji": "🔥", "state": "available" },
+      { "id": "workspace", "name": "Prep Counter", "emoji": "🏢", "state": "clean" },
+      { "id": "mixing_bowl", "name": "Mixing Bowl", "emoji": "🥣", "state": "clean" }
     ],
     "resources": [
       { "id": "flour", "unit": "kg", "starting_stock": 50, "emoji": "🌾" },
@@ -973,23 +973,22 @@
     ],
     "tasks": [
       {
-        "id": "clean_workspace 🔸 🧽", "actor_id": "assistant", "start": "06:00", "duration": 15,
+        "id": "prepare_ingredients 🔸 🔧", "actor_id": "baker", "start": "06:15", "duration": 30,
         "consumes": {}, "produces": {}, "depends_on": [],
-        "equipment_interactions": [
-          { "id": "workspace", "from_state": "dirty", "to_state": "clean" }
-        ]
+        "equipment_interactions": [{ "id": "workspace", "from_state": "clean", "to_state": "in-use" }]
       },
       {
-        "id": "prepare_ingredients 🔸 🔧", "actor_id": "baker", "start": "06:15", "duration": 30,
-        "consumes": { "flour": 1, "water": 0.7, "yeast": 15 },
-        "produces": {}, "depends_on": ["clean_workspace 🔸 🧽"],
-        "equipment_interactions": [
-          { "id": "workspace", "from_state": "clean", "to_state": "in-use" }
-        ]
+        "id": "measure_flour 🔸 ⚖️", "actor_id": "baker", "start": "06:45", "duration": 10,
+        "consumes": {}, "produces": {}, "depends_on": ["prepare_ingredients 🔸 🔧"]
+      },
+      {
+        "id": "activate_yeast 🔸 🦠", "actor_id": "assistant", "start": "06:45", "duration": 10,
+        "consumes": { "yeast": 15 }, "produces": {}, "depends_on": []
       },
       {
         "id": "mix_dough 🔸 🥄", "actor_id": "baker", "start": "06:55", "duration": 20,
-        "consumes": { }, "produces": { "mixed_dough": 1 }, "depends_on": ["prepare_ingredients 🔸 🔧"],
+        "consumes": { "flour": 1, "water": 0.7 },
+        "produces": { "mixed_dough": 1 }, "depends_on": ["measure_flour 🔸 ⚖️", "activate_yeast 🔸 🦠"],
         "equipment_interactions": [
           { "id": "mixer", "from_state": "clean", "to_state": "dirty" },
           { "id": "mixing_bowl", "from_state": "clean", "to_state": "dirty" }
@@ -998,9 +997,7 @@
       {
         "id": "knead_dough 🔸 👋", "actor_id": "baker", "start": "07:15", "duration": 15,
         "consumes": { "mixed_dough": 1 }, "produces": { "risen_dough": 1 }, "depends_on": ["mix_dough 🔸 🥄"],
-        "equipment_interactions": [
-          { "id": "workspace", "from_state": "in-use", "to_state": "dirty" }
-        ]
+        "equipment_interactions": [{ "id": "workspace", "from_state": "in-use", "to_state": "dirty" }]
       },
       {
         "id": "first_rise 🔸 ⏰", "actor_id": "baker", "start": "07:30", "duration": 90,
@@ -1009,22 +1006,14 @@
       {
         "id": "clean_mixing_bowls 🔸 🧼", "actor_id": "assistant", "start": "07:30", "duration": 20,
         "consumes": {}, "produces": {}, "depends_on": [],
-        "equipment_interactions": [
-          { "id": "mixing_bowl", "from_state": "dirty", "to_state": "clean" }
-        ]
+        "equipment_interactions": [{ "id": "mixing_bowl", "from_state": "dirty", "to_state": "clean" }]
       },
       {
         "id": "shape_loaves 🔸 👐", "actor_id": "baker", "start": "09:00", "duration": 25,
         "consumes": { "risen_dough": 1 }, "produces": { "shaped_loaves": 1 }, "depends_on": ["first_rise 🔸 ⏰"],
-        "equipment_interactions": [
-          { "id": "workspace", "from_state": "dirty", "to_state": "dirty" }
-        ]
+        "equipment_interactions": [{ "id": "workspace", "from_state": "dirty", "to_state": "dirty" }]
       },
-      {
-        "id": "second_rise 🔸 ⏰", "actor_id": "baker", "start": "09:25", "duration": 45,
-        "consumes": { "shaped_loaves": 1 }, "produces": { "shaped_loaves": 1 }, "depends_on": ["shape_loaves 🔸 👐"]
-      },
-      // INTENTIONAL OVERLAP: assistant has two tasks at the same time.
+      // INTENTIONAL OVERLAP for 'assistant'
       {
         "id": "prepare_baking_sheets 🔸 🍞", "actor_id": "assistant", "start": "09:00", "duration": 10,
         "consumes": {}, "produces": {}, "depends_on": []
@@ -1032,23 +1021,22 @@
       {
         "id": "preheat_oven 🔸 🔥", "actor_id": "assistant", "start": "09:05", "duration": 15,
         "consumes": {}, "produces": {}, "depends_on": ["prepare_baking_sheets 🔸 🍞"],
-        "equipment_interactions": [
-          { "id": "oven", "from_state": "available", "to_state": "in-use" }
-        ]
+        "equipment_interactions": [{ "id": "oven", "from_state": "available", "to_state": "in-use" }]
+      },
+      // INTENTIONAL LACK OF BUFFER for 'baker'
+      {
+        "id": "second_rise 🔸 ⏰", "actor_id": "baker", "start": "09:25", "duration": 45,
+        "consumes": { "shaped_loaves": 1 }, "produces": { "shaped_loaves": 1 }, "depends_on": ["shape_loaves 🔸 👐"]
       },
       {
         "id": "bake_bread 🔸 🍞", "actor_id": "baker", "start": "10:10", "duration": 35,
         "consumes": { "shaped_loaves": 1 }, "produces": { "baked_bread": 1 }, "depends_on": ["second_rise 🔸 ⏰"],
-        "equipment_interactions": [
-          { "id": "oven", "from_state": "in-use", "to_state": "available" }
-        ]
+        "equipment_interactions": [{ "id": "oven", "from_state": "in-use", "to_state": "available" }]
       },
       {
         "id": "wash_equipment 🔸 🧽", "actor_id": "assistant", "start": "10:10", "duration": 35,
         "consumes": {}, "produces": {}, "depends_on": [],
-        "equipment_interactions": [
-          { "id": "mixer", "from_state": "dirty", "to_state": "clean" }
-        ]
+        "equipment_interactions": [{ "id": "mixer", "from_state": "dirty", "to_state": "clean" }]
       }
     ]
   }

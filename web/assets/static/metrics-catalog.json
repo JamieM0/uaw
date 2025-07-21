@@ -18,10 +18,30 @@
     "computation": { "engine": "javascript", "function_name": "validateNegativeStock" }
   },
   {
+    "id": "resource.flow.dependency_missing",
+    "name": "Missing Production Ingredients",
+    "description": "Checks if tasks that produce a composite resource (e.g., dough) consume the necessary ingredients (e.g., flour, water).",
+    "category": "Resource Flow",
+    "severity": "warning",
+    "validation_type": "computational",
+    "computation": {
+      "engine": "javascript",
+      "function_name": "validateMissingDependencies",
+      "params": {
+        "dependency_map": {
+          "mixed_dough": ["flour", "water", "yeast"],
+          "risen_dough": ["mixed_dough"],
+          "shaped_loaves": ["risen_dough"],
+          "baked_bread": ["shaped_loaves"]
+        }
+      }
+    }
+  },
+  {
     "id": "equipment.state.logic",
     "name": "Equipment State Logic",
-    "description": "Checks for logical consistency in equipment usage, such as using a 'dirty' mixer or using equipment that is already in use.",
-    "category": "Resource Flow",
+    "description": "Checks for logical consistency in equipment usage, such as using a 'dirty' mixer or equipment that is already in use.",
+    "category": "Scheduling",
     "severity": "error",
     "validation_type": "computational",
     "computation": { "engine": "javascript", "function_name": "validateEquipmentState" }
@@ -43,5 +63,20 @@
     "severity": "warning",
     "validation_type": "computational",
     "computation": { "engine": "javascript", "function_name": "validateDependencyTiming" }
+  },
+  {
+    "id": "scheduling.optimization.missing_buffer",
+    "name": "Missing Buffer Time",
+    "description": "Suggests adding a small buffer between consecutive tasks for the same actor to improve realism.",
+    "category": "Optimization",
+    "severity": "info",
+    "validation_type": "computational",
+    "computation": {
+      "engine": "javascript",
+      "function_name": "validateMissingBufferTime",
+      "params": {
+        "minimum_buffer_minutes": 5
+      }
+    }
   }
 ]
