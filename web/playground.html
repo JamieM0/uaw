@@ -11,7 +11,7 @@
         <link rel="stylesheet" href="/assets/css/main.css" />
         <link rel="stylesheet" href="/assets/css/components.css" />
         <link rel="stylesheet" href="/assets/css/simulation.css" />
-        <link rel="stylesheet" href="/assets/css/playground-header.css" />
+
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -30,6 +30,24 @@
                 --primary-color-rgb: 59, 130, 246;
             }
 
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                overflow: hidden; /* Prevents the main page scrollbar */
+            }
+
+            body {
+                display: flex;
+                flex-direction: column; /* Stack header and main content vertically */
+            }
+
+            .playground-main {
+                flex: 1;
+                min-height: 0;
+            }
+
             .playground-container {
                 height: 100vh;
                 display: flex;
@@ -38,16 +56,133 @@
             }
 
             .playground-header {
-                background: var(--primary-color);
-                color: white;
-                padding: 1rem 2rem;
-                box-shadow: var(--shadow-md);
+                background: rgba(255, 255, 255, 0.98);
+                backdrop-filter: blur(10px);
+                box-shadow: var(--shadow-sm);
+                padding: 0.5rem 0;
+                height: 50px;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+            }
+
+            .playground-header .header-container {
+                display: flex;
+                align-items: center;
+                height: 100%;
+                max-width: 100%;
+                padding: 0 var(--spacing-md);
+                gap: 1rem;
+            }
+
+            .playground-header .logo {
+                display: flex;
+                align-items: center;
+                height: 40px;
+                max-width: 200px;
+            }
+
+            .playground-header .logo a {
+                display: flex;
+                align-items: center;
+                height: 100%;
+                text-decoration: none;
+            }
+
+            .playground-header .logo img {
+                height: auto;
+                max-height: 100%;
+                width: auto;
+                max-width: 100%;
+                object-fit: contain;
             }
 
             .playground-header h1 {
                 margin: 0;
-                font-size: var(--font-size-xxl);
+                font-size: var(--font-size-xl);
                 font-weight: 600;
+                color: var(--text-color);
+            }
+
+            .header-actions {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                margin-left: auto;
+            }
+
+            .json-editor-buttons {
+                display: flex;
+                gap: 0.25rem;
+                padding-right: 0.75rem;
+                border-right: 1px solid var(--border-color);
+            }
+
+            .simulation-buttons {
+                display: flex;
+                gap: 0.25rem;
+                padding-right: 0.75rem;
+                border-right: 1px solid var(--border-color);
+            }
+
+            .control-buttons {
+                display: flex;
+                gap: 0.25rem;
+                padding-right: 0.75rem;
+                border-right: 1px solid var(--border-color);
+            }
+
+            .action-buttons {
+                display: flex;
+                gap: 0.25rem;
+            }
+
+            .header-actions .action-btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.875rem;
+                border: 1px solid var(--primary-color);
+                background: var(--primary-color);
+                color: white;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .header-actions .action-btn:hover {
+                background: var(--primary-dark);
+                border-color: var(--primary-dark);
+            }
+
+            .header-actions button {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.875rem;
+                border: 1px solid var(--border-color);
+                background: white;
+                color: var(--text-color);
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .header-actions button:hover {
+                background: var(--bg-light);
+                border-color: var(--primary-color);
+            }
+
+            .header-actions button:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            .header-actions button.primary {
+                background: var(--primary-color);
+                color: white;
+                border-color: var(--primary-color);
+            }
+
+            .header-actions button.primary:hover {
+                background: var(--primary-dark);
+                border-color: var(--primary-dark);
             }
 
             .playground-main {
@@ -58,7 +193,7 @@
             }
 
             .playground-top {
-                height: 80%;
+                height: 70%;
                 display: flex;
                 border-bottom: 2px solid var(--border-color);
                 position: relative;
@@ -94,13 +229,15 @@
             }
 
             .resize-handle-horizontal {
-                position: relative;
+                position: absolute;
                 left: 0;
                 right: 0;
                 height: 12px;
                 cursor: row-resize;
                 background: transparent;
                 z-index: 10;
+                top: -6px;
+                width: 100%;
             }
 
             .resize-handle-horizontal:hover {
@@ -108,14 +245,7 @@
             }
 
             .panel-header {
-                background: var(--bg-light);
-                padding: 0.75rem 1rem;
-                border-bottom: 1px solid var(--border-color);
-                font-weight: 600;
-                color: var(--text-color);
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
+                display: none;
             }
 
             .panel-content {
@@ -132,7 +262,7 @@
             .simulation-content {
                 height: 100%;
                 overflow-y: auto;
-                padding: 1rem;
+                padding: 0.75rem;
                 width: 100%;
                 box-sizing: border-box;
                 display: block !important;
@@ -141,11 +271,12 @@
             }
 
             .playground-bottom {
-                height: 20%;
+                height: 30%;
                 background: var(--bg-light);
                 border-top: 1px solid var(--border-color);
                 overflow-y: auto;
                 position: relative;
+                flex-shrink: 0;
             }
 
             .validation-panel {
@@ -476,46 +607,25 @@
                 background: var(--border-color);
             }
 
-            /* Action buttons */
-            .action-buttons {
-                display: flex;
-                gap: 0.5rem;
-                margin-right: 1rem;
-            }
-
-            .action-btn {
-                background: var(--primary-color);
-                color: white;
-                border: none;
-                padding: 0.5rem 1rem;
-                border-radius: var(--border-radius-sm);
-                font-size: var(--font-size-sm);
-                cursor: pointer;
-                transition: all 0.2s ease;
-            }
-
-            .action-btn:hover {
-                background: var(--primary-dark);
-            }
-
             .fullscreen-btn {
-                background: var(--text-lighter);
-                color: white;
-                border: none;
-                padding: 0.5rem;
-                border-radius: var(--border-radius-sm);
+                padding: 0.25rem 0.5rem;
+                font-size: 0.875rem;
+                border: 1px solid var(--border-color);
+                background: white;
+                color: var(--text-color);
+                border-radius: 4px;
                 cursor: pointer;
-                transition: all 0.2s ease;
-                font-size: 1rem;
-                width: 36px;
-                height: 36px;
+                transition: all 0.2s;
+                width: 32px;
+                height: 32px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
             }
 
             .fullscreen-btn:hover {
-                background: var(--text-light);
+                background: var(--bg-light);
+                border-color: var(--primary-color);
             }
 
             .json-editor-panel.hidden {
@@ -678,55 +788,64 @@
 
             .resources-panel {
                 background: var(--bg-light);
-                border-radius: var(--border-radius-md);
-                padding: 1rem;
-                margin: 1rem 0;
+                border-radius: var(--border-radius-sm);
+                padding: 0.5rem;
+                margin: 0.5rem 0;
                 border: 1px solid var(--border-color);
             }
 
             .resources-panel h5 {
-                margin: 0 0 1rem 0;
+                margin: 0 0 0.5rem 0;
                 color: var(--text-color);
-                font-size: 1rem;
+                font-size: 0.875rem;
                 font-weight: 600;
             }
 
             .resource-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 1rem;
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 0.375rem;
             }
 
             .resource-item {
                 background: white;
                 border-radius: var(--border-radius-sm);
-                padding: 0.75rem;
+                padding: 0.375rem 0.5rem;
                 border: 1px solid var(--border-color);
                 display: flex;
                 align-items: center;
-                gap: 0.75rem;
+                gap: 0.375rem;
+                font-size: 0.75rem;
             }
 
             .resource-emoji {
-                font-size: 1.5rem;
+                font-size: 1rem;
                 flex-shrink: 0;
             }
 
             .resource-info {
                 flex: 1;
+                min-width: 0;
             }
 
             .resource-name {
                 font-weight: 600;
-                margin: 0 0 0.25rem 0;
-                font-size: 0.9rem;
+                margin: 0;
+                font-size: 0.75rem;
+                line-height: 1.2;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .resource-state {
-                font-size: 0.8rem;
-                padding: 0.25rem 0.5rem;
+                font-size: 0.7rem;
+                padding: 0.125rem 0.25rem;
                 border-radius: var(--border-radius-sm);
                 font-weight: 500;
+                line-height: 1;
+                margin-top: 0.125rem;
+                display: inline-block;
             }
 
             .resource-state.clean {
@@ -750,154 +869,159 @@
             }
 
             .undo-button {
-                background: #6c757d !important;
+                padding: 0.25rem 0.5rem;
+                font-size: 0.875rem;
+                border: 1px solid var(--border-color);
+                background: white;
+                color: var(--text-color);
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.2s;
             }
 
             .undo-button:hover {
-                background: #5a6268 !important;
+                background: var(--bg-light);
+                border-color: var(--primary-color);
             }
 
             .undo-button:disabled {
-                background: var(--text-lighter) !important;
+                opacity: 0.5;
                 cursor: not-allowed;
+                background: white;
+                border-color: var(--border-color);
             }
         </style>
     </head>
     <body>
-        <div id="header-placeholder"></div>
-    <script src="/assets/js/components.js"></script>
-
-            <main class="playground-main">
-                <div class="playground-top">
-                    <div class="json-editor-panel">
-                        <div class="panel-header">
-                            JSON Editor
-                            <div class="toolbar">
-                                <button id="load-sample-btn">
-                                    Load Sample
-                                </button>
-                                <button id="format-json-btn">
-                                    Format JSON
-                                </button>
-                                <button id="clear-editor-btn">Clear</button>
-                            </div>
-                        </div>
-                        <div class="panel-content">
-                            <div id="json-editor"></div>
-                        </div>
-                        <div class="resize-handle-vertical"></div>
+        <header class="playground-header">
+            <div class="container header-container">
+                <div class="logo">
+                    <a href="/index">
+                        <img
+                            src="/assets/images/uaw-logo.png"
+                            alt="Universal Automation Wiki Logo"
+                        />
+                    </a>
+                </div>
+                <h1>Playground</h1>
+                <div class="header-actions">
+                    <div class="json-editor-buttons">
+                        <button id="load-sample-btn">Load Sample</button>
+                        <button id="format-json-btn">Format JSON</button>
+                        <button id="clear-editor-btn">Clear</button>
                     </div>
 
-                    <div class="simulation-panel">
-                        <div class="panel-header">
-                            Simulation Rendering
-                            <div class="toolbar">
-                                <div class="action-buttons">
-                                    <button
-                                        class="action-btn"
-                                        id="add-task-btn"
-                                    >
-                                        + Task
-                                    </button>
-                                    <button
-                                        class="action-btn"
-                                        id="add-actor-btn"
-                                    >
-                                        + Actor
-                                    </button>
-                                    <button
-                                        class="action-btn"
-                                        id="add-resource-btn"
-                                    >
-                                        + Resource
-                                    </button>
-                                </div>
-                                <button
-                                    id="fullscreen-btn"
-                                    class="fullscreen-btn"
-                                    title="Toggle fullscreen simulation view"
-                                >
-                                    ⛶
-                                </button>
-                                <button
-                                    id="undo-btn"
-                                    class="undo-button"
-                                    disabled
-                                    title="Undo last change (Ctrl+Z)"
-                                >
-                                    ↶ Undo
-                                </button>
-                                <button id="render-simulation-btn">
-                                    Render Simulation
-                                </button>
-                                <button id="auto-render-toggle">
-                                    Auto-render: ON
-                                </button>
-                                <button
-                                    id="submit-btn"
-                                    class="action-btn"
-                                    title="Submit simulation to page"
-                                >
-                                    Submit
-                                </button>
-                            </div>
+                    <div class="simulation-buttons">
+                        <button class="action-btn" id="add-task-btn">
+                            + Task
+                        </button>
+                        <button class="action-btn" id="add-actor-btn">
+                            + Actor
+                        </button>
+                        <button class="action-btn" id="add-resource-btn">
+                            + Resource
+                        </button>
+                    </div>
+
+                    <div class="control-buttons">
+                        <button id="render-simulation-btn" class="hidden">
+                            Render
+                        </button>
+                        <button id="auto-render-toggle">Auto-render: ON</button>
+                        <button
+                            id="fullscreen-btn"
+                            class="fullscreen-btn primary"
+                            title="Toggle fullscreen simulation view"
+                        >
+                            ⛶
+                        </button>
+                        <button
+                            id="undo-btn"
+                            class="undo-button"
+                            disabled
+                            title="Undo last change (Ctrl+Z)"
+                        >
+                            ↶ Undo
+                        </button>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button
+                            id="submit-btn"
+                            class="action-btn"
+                            title="Submit simulation to page"
+                        >
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="playground-main">
+            <div class="playground-top">
+                <div class="json-editor-panel">
+                    <div class="panel-header"></div>
+                    <div class="panel-content">
+                        <div id="json-editor"></div>
+                    </div>
+                    <div class="resize-handle-vertical"></div>
+                </div>
+
+                <div class="simulation-panel">
+                    <div class="panel-header"></div>
+                    <div class="panel-content">
+                        <div class="simulation-content" id="simulation-content">
+                            <p
+                                style="
+                                    color: var(--text-light);
+                                    text-align: center;
+                                    margin-top: 2rem;
+                                "
+                            >
+                                Simulation will render automatically as you edit
+                                the JSON. Click on task blocks to jump to their
+                                JSON definition. Drag task blocks to move them
+                                between actors or change times.
+                            </p>
                         </div>
-                        <div class="panel-content">
-                            <div
-                                class="simulation-content"
-                                id="simulation-content"
-                            >
-                                <p
-                                    style="
-                                        color: var(--text-light);
-                                        text-align: center;
-                                        margin-top: 2rem;
-                                    "
-                                >
-                                    Simulation will render automatically as you
-                                    edit the JSON. Click on task blocks to jump
-                                    to their JSON definition. Drag task blocks
-                                    to move them between actors or change times.
-                                </p>
-                            </div>
-                            <div
-                                class="loading-overlay"
-                                id="simulation-loading"
-                                style="display: none"
-                            >
-                                <div class="spinner"></div>
-                            </div>
+                        <div
+                            class="loading-overlay"
+                            id="simulation-loading"
+                            style="display: none"
+                        >
+                            <div class="spinner"></div>
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <div class="playground-bottom">
                 <div class="resize-handle-horizontal"></div>
-                <div class="playground-bottom">
-                    <div class="validation-panel">
-                        <div class="validation-header">
-                            <div class="validation-inline">
-                                <span>Validation</span>
-                                <div
-                                    class="validation-indicator success"
-                                    id="json-status"
-                                    title="Click for details"
-                                >
-                                    ✓ Valid JSON
-                                </div>
-                            </div>
-                        </div>
-                        <div class="validation-content" id="validation-content">
+                <div class="validation-panel">
+                    <div class="validation-header">
+                        <div class="validation-inline">
+                            <span>Validation</span>
                             <div
-                                class="validation-categories"
-                                id="validation-categories"
+                                class="validation-indicator success"
+                                id="json-status"
+                                title="Click for details"
                             >
-                                <!-- Validation results will be populated here -->
+                                ✓ Valid JSON
                             </div>
                         </div>
                     </div>
+                    <div class="validation-content" id="validation-content">
+                        <div
+                            class="validation-categories"
+                            id="validation-categories"
+                        >
+                            <!-- Validation results will be populated here -->
+                        </div>
+                    </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </main>
 
         <!-- Dialog overlay -->
         <div id="dialog-overlay" class="dialog-overlay" style="display: none">
@@ -910,18 +1034,35 @@
             // Enhanced Simulation Playground JavaScript
             let editor;
             let metricsCatalog = [];
-            fetch('/assets/static/metrics-catalog.json')
-                .then(response => response.json())
-                .then(data => {
+            fetch("/assets/static/metrics-catalog.json")
+                .then((response) => response.json())
+                .then((data) => {
                     window.metricsCatalog = data; // Use window.metricsCatalog to make it global
                     console.log("Metrics loaded successfully.");
-                    if (editor) { // If editor is already loaded, run validation
+                    if (editor) {
+                        // If editor is already loaded, run validation
                         validateJSON();
                     }
                 })
-            .catch(error => console.error("Error loading metrics catalog:", error));
+                .catch((error) =>
+                    console.error("Error loading metrics catalog:", error),
+                );
             let autoRender = true;
             let currentSimulationData = null;
+
+            // Scroll to validation section
+            document.addEventListener("click", function (e) {
+                if (e.target && e.target.id === "scroll-to-validation-btn") {
+                    const validationPanel =
+                        document.querySelector(".validation-panel");
+                    if (validationPanel) {
+                        validationPanel.scrollIntoView({ behavior: "smooth" });
+                    }
+                }
+                if (e.target && e.target.id === "scroll-to-top-btn") {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+            });
 
             // History system for undo functionality
             let history = [];
@@ -945,102 +1086,282 @@
 
             // Sample simulation data with resources
             const sampleSimulation = {
-  "simulation": {
-    "meta": {
-      "id": "sim_breadmaking_v3_full",
-      "article_title": "Artisan Bread Making Process",
-      "domain": "Bakery Operations"
-    },
-    "config": { "time_unit": "minute", "start_time": "06:00", "end_time": "18:00" },
-    "actors": [
-      { "id": "baker", "role": "Baker", "cost_per_hour": 25 },
-      { "id": "assistant", "role": "Assistant Baker", "cost_per_hour": 18 }
-    ],
-    "equipment": [
-      { "id": "mixer", "name": "Stand Mixer", "emoji": "🌀", "state": "clean" },
-      { "id": "oven", "name": "Commercial Oven", "emoji": "🔥", "state": "available" },
-      { "id": "workspace", "name": "Prep Counter", "emoji": "🏢", "state": "clean" },
-      { "id": "mixing_bowl", "name": "Mixing Bowl", "emoji": "🥣", "state": "clean" }
-    ],
-    "resources": [
-      { "id": "flour", "unit": "kg", "starting_stock": 50, "emoji": "🌾" },
-      { "id": "water", "unit": "liter", "starting_stock": 20, "emoji": "💧" },
-      { "id": "yeast", "unit": "g", "starting_stock": 500, "emoji": "🦠" },
-      { "id": "mixed_dough", "unit": "batch", "starting_stock": 0, "emoji": "덩"},
-      { "id": "risen_dough", "unit": "batch", "starting_stock": 0, "emoji": "🍞" },
-      { "id": "shaped_loaves", "unit": "loaves", "starting_stock": 0, "emoji": "🥖" },
-      { "id": "baked_bread", "unit": "loaves", "starting_stock": 0, "emoji": "🍞" }
-    ],
-    "tasks": [
-      {
-        "id": "prepare_ingredients 🔸 🔧", "actor_id": "baker", "start": "06:15", "duration": 30,
-        "consumes": {}, "produces": {}, "depends_on": [],
-        "equipment_interactions": [{ "id": "workspace", "from_state": "clean", "to_state": "in-use" }]
-      },
-      {
-        "id": "measure_flour 🔸 ⚖️", "actor_id": "baker", "start": "06:45", "duration": 10,
-        "consumes": {}, "produces": {}, "depends_on": ["prepare_ingredients 🔸 🔧"]
-      },
-      {
-        "id": "activate_yeast 🔸 🦠", "actor_id": "assistant", "start": "06:45", "duration": 10,
-        "consumes": { "yeast": 15 }, "produces": {}, "depends_on": []
-      },
-      {
-        "id": "mix_dough 🔸 🥄", "actor_id": "baker", "start": "06:55", "duration": 20,
-        "consumes": { "flour": 1, "water": 0.7 },
-        "produces": { "mixed_dough": 1 }, "depends_on": ["measure_flour 🔸 ⚖️", "activate_yeast 🔸 🦠"],
-        "equipment_interactions": [
-          { "id": "mixer", "from_state": "clean", "to_state": "dirty" },
-          { "id": "mixing_bowl", "from_state": "clean", "to_state": "dirty" }
-        ]
-      },
-      {
-        "id": "knead_dough 🔸 👋", "actor_id": "baker", "start": "07:15", "duration": 15,
-        "consumes": { "mixed_dough": 1 }, "produces": { "risen_dough": 1 }, "depends_on": ["mix_dough 🔸 🥄"],
-        "equipment_interactions": [{ "id": "workspace", "from_state": "in-use", "to_state": "dirty" }]
-      },
-      {
-        "id": "first_rise 🔸 ⏰", "actor_id": "baker", "start": "07:30", "duration": 90,
-        "consumes": { "risen_dough": 1 }, "produces": { "risen_dough": 1 }, "depends_on": ["knead_dough 🔸 👋"]
-      },
-      {
-        "id": "clean_mixing_bowls 🔸 🧼", "actor_id": "assistant", "start": "07:30", "duration": 20,
-        "consumes": {}, "produces": {}, "depends_on": [],
-        "equipment_interactions": [{ "id": "mixing_bowl", "from_state": "dirty", "to_state": "clean" }]
-      },
-      {
-        "id": "shape_loaves 🔸 👐", "actor_id": "baker", "start": "09:00", "duration": 25,
-        "consumes": { "risen_dough": 1 }, "produces": { "shaped_loaves": 1 }, "depends_on": ["first_rise 🔸 ⏰"],
-        "equipment_interactions": [{ "id": "workspace", "from_state": "dirty", "to_state": "dirty" }]
-      },
-      // INTENTIONAL OVERLAP for 'assistant'
-      {
-        "id": "prepare_baking_sheets 🔸 🍞", "actor_id": "assistant", "start": "09:00", "duration": 10,
-        "consumes": {}, "produces": {}, "depends_on": []
-      },
-      {
-        "id": "preheat_oven 🔸 🔥", "actor_id": "assistant", "start": "09:05", "duration": 15,
-        "consumes": {}, "produces": {}, "depends_on": ["prepare_baking_sheets 🔸 🍞"],
-        "equipment_interactions": [{ "id": "oven", "from_state": "available", "to_state": "in-use" }]
-      },
-      // INTENTIONAL LACK OF BUFFER for 'baker'
-      {
-        "id": "second_rise 🔸 ⏰", "actor_id": "baker", "start": "09:25", "duration": 45,
-        "consumes": { "shaped_loaves": 1 }, "produces": { "shaped_loaves": 1 }, "depends_on": ["shape_loaves 🔸 👐"]
-      },
-      {
-        "id": "bake_bread 🔸 🍞", "actor_id": "baker", "start": "10:10", "duration": 35,
-        "consumes": { "shaped_loaves": 1 }, "produces": { "baked_bread": 1 }, "depends_on": ["second_rise 🔸 ⏰"],
-        "equipment_interactions": [{ "id": "oven", "from_state": "in-use", "to_state": "available" }]
-      },
-      {
-        "id": "wash_equipment 🔸 🧽", "actor_id": "assistant", "start": "10:10", "duration": 35,
-        "consumes": {}, "produces": {}, "depends_on": [],
-        "equipment_interactions": [{ "id": "mixer", "from_state": "dirty", "to_state": "clean" }]
-      }
-    ]
-  }
-};
+                simulation: {
+                    meta: {
+                        id: "sim_breadmaking_v3_full",
+                        article_title: "Artisan Bread Making Process",
+                        domain: "Bakery Operations",
+                    },
+                    config: {
+                        time_unit: "minute",
+                        start_time: "06:00",
+                        end_time: "18:00",
+                    },
+                    actors: [
+                        { id: "baker", role: "Baker", cost_per_hour: 25 },
+                        {
+                            id: "assistant",
+                            role: "Assistant Baker",
+                            cost_per_hour: 18,
+                        },
+                    ],
+                    equipment: [
+                        {
+                            id: "mixer",
+                            name: "Stand Mixer",
+                            emoji: "🌀",
+                            state: "clean",
+                        },
+                        {
+                            id: "oven",
+                            name: "Commercial Oven",
+                            emoji: "🔥",
+                            state: "available",
+                        },
+                        {
+                            id: "workspace",
+                            name: "Prep Counter",
+                            emoji: "🏢",
+                            state: "clean",
+                        },
+                        {
+                            id: "mixing_bowl",
+                            name: "Mixing Bowl",
+                            emoji: "🥣",
+                            state: "clean",
+                        },
+                    ],
+                    resources: [
+                        {
+                            id: "flour",
+                            unit: "kg",
+                            starting_stock: 50,
+                            emoji: "🌾",
+                        },
+                        {
+                            id: "water",
+                            unit: "liter",
+                            starting_stock: 20,
+                            emoji: "💧",
+                        },
+                        {
+                            id: "yeast",
+                            unit: "g",
+                            starting_stock: 500,
+                            emoji: "🦠",
+                        },
+                        {
+                            id: "mixed_dough",
+                            unit: "batch",
+                            starting_stock: 0,
+                            emoji: "덩",
+                        },
+                        {
+                            id: "risen_dough",
+                            unit: "batch",
+                            starting_stock: 0,
+                            emoji: "🍞",
+                        },
+                        {
+                            id: "shaped_loaves",
+                            unit: "loaves",
+                            starting_stock: 0,
+                            emoji: "🥖",
+                        },
+                        {
+                            id: "baked_bread",
+                            unit: "loaves",
+                            starting_stock: 0,
+                            emoji: "🍞",
+                        },
+                    ],
+                    tasks: [
+                        {
+                            id: "prepare_ingredients 🔸 🔧",
+                            actor_id: "baker",
+                            start: "06:15",
+                            duration: 30,
+                            consumes: {},
+                            produces: {},
+                            depends_on: [],
+                            equipment_interactions: [
+                                {
+                                    id: "workspace",
+                                    from_state: "clean",
+                                    to_state: "in-use",
+                                },
+                            ],
+                        },
+                        {
+                            id: "measure_flour 🔸 ⚖️",
+                            actor_id: "baker",
+                            start: "06:45",
+                            duration: 10,
+                            consumes: {},
+                            produces: {},
+                            depends_on: ["prepare_ingredients 🔸 🔧"],
+                        },
+                        {
+                            id: "activate_yeast 🔸 🦠",
+                            actor_id: "assistant",
+                            start: "06:45",
+                            duration: 10,
+                            consumes: { yeast: 15 },
+                            produces: {},
+                            depends_on: [],
+                        },
+                        {
+                            id: "mix_dough 🔸 🥄",
+                            actor_id: "baker",
+                            start: "06:55",
+                            duration: 20,
+                            consumes: { flour: 1, water: 0.7 },
+                            produces: { mixed_dough: 1 },
+                            depends_on: [
+                                "measure_flour 🔸 ⚖️",
+                                "activate_yeast 🔸 🦠",
+                            ],
+                            equipment_interactions: [
+                                {
+                                    id: "mixer",
+                                    from_state: "clean",
+                                    to_state: "dirty",
+                                },
+                                {
+                                    id: "mixing_bowl",
+                                    from_state: "clean",
+                                    to_state: "dirty",
+                                },
+                            ],
+                        },
+                        {
+                            id: "knead_dough 🔸 👋",
+                            actor_id: "baker",
+                            start: "07:15",
+                            duration: 15,
+                            consumes: { mixed_dough: 1 },
+                            produces: { risen_dough: 1 },
+                            depends_on: ["mix_dough 🔸 🥄"],
+                            equipment_interactions: [
+                                {
+                                    id: "workspace",
+                                    from_state: "in-use",
+                                    to_state: "dirty",
+                                },
+                            ],
+                        },
+                        {
+                            id: "first_rise 🔸 ⏰",
+                            actor_id: "baker",
+                            start: "07:30",
+                            duration: 90,
+                            consumes: { risen_dough: 1 },
+                            produces: { risen_dough: 1 },
+                            depends_on: ["knead_dough 🔸 👋"],
+                        },
+                        {
+                            id: "clean_mixing_bowls 🔸 🧼",
+                            actor_id: "assistant",
+                            start: "07:30",
+                            duration: 20,
+                            consumes: {},
+                            produces: {},
+                            depends_on: [],
+                            equipment_interactions: [
+                                {
+                                    id: "mixing_bowl",
+                                    from_state: "dirty",
+                                    to_state: "clean",
+                                },
+                            ],
+                        },
+                        {
+                            id: "shape_loaves 🔸 👐",
+                            actor_id: "baker",
+                            start: "09:00",
+                            duration: 25,
+                            consumes: { risen_dough: 1 },
+                            produces: { shaped_loaves: 1 },
+                            depends_on: ["first_rise 🔸 ⏰"],
+                            equipment_interactions: [
+                                {
+                                    id: "workspace",
+                                    from_state: "dirty",
+                                    to_state: "dirty",
+                                },
+                            ],
+                        },
+                        // INTENTIONAL OVERLAP for 'assistant'
+                        {
+                            id: "prepare_baking_sheets 🔸 🍞",
+                            actor_id: "assistant",
+                            start: "09:00",
+                            duration: 10,
+                            consumes: {},
+                            produces: {},
+                            depends_on: [],
+                        },
+                        {
+                            id: "preheat_oven 🔸 🔥",
+                            actor_id: "assistant",
+                            start: "09:05",
+                            duration: 15,
+                            consumes: {},
+                            produces: {},
+                            depends_on: ["prepare_baking_sheets 🔸 🍞"],
+                            equipment_interactions: [
+                                {
+                                    id: "oven",
+                                    from_state: "available",
+                                    to_state: "in-use",
+                                },
+                            ],
+                        },
+                        // INTENTIONAL LACK OF BUFFER for 'baker'
+                        {
+                            id: "second_rise 🔸 ⏰",
+                            actor_id: "baker",
+                            start: "09:25",
+                            duration: 45,
+                            consumes: { shaped_loaves: 1 },
+                            produces: { shaped_loaves: 1 },
+                            depends_on: ["shape_loaves 🔸 👐"],
+                        },
+                        {
+                            id: "bake_bread 🔸 🍞",
+                            actor_id: "baker",
+                            start: "10:10",
+                            duration: 35,
+                            consumes: { shaped_loaves: 1 },
+                            produces: { baked_bread: 1 },
+                            depends_on: ["second_rise 🔸 ⏰"],
+                            equipment_interactions: [
+                                {
+                                    id: "oven",
+                                    from_state: "in-use",
+                                    to_state: "available",
+                                },
+                            ],
+                        },
+                        {
+                            id: "wash_equipment 🔸 🧽",
+                            actor_id: "assistant",
+                            start: "10:10",
+                            duration: 35,
+                            consumes: {},
+                            produces: {},
+                            depends_on: [],
+                            equipment_interactions: [
+                                {
+                                    id: "mixer",
+                                    from_state: "dirty",
+                                    to_state: "clean",
+                                },
+                            ],
+                        },
+                    ],
+                },
+            };
 
             // History management
             function saveToHistory() {
@@ -1813,17 +2134,17 @@
             // Static page structure from structure.txt file
             async function fetchPageStructure() {
                 try {
-                    const response = await fetch('/assets/data/structure.txt');
+                    const response = await fetch("/assets/data/structure.txt");
                     if (!response.ok) {
-                        throw new Error('Failed to fetch structure.txt');
+                        throw new Error("Failed to fetch structure.txt");
                     }
 
                     const text = await response.text();
-                    const lines = text.trim().split('\n');
+                    const lines = text.trim().split("\n");
                     const structure = {};
 
-                    lines.forEach(line => {
-                        const parts = line.trim().split('/');
+                    lines.forEach((line) => {
+                        const parts = line.trim().split("/");
                         if (parts.length === 3) {
                             const [domain, subcategory, page] = parts;
 
@@ -1839,20 +2160,21 @@
 
                     return structure;
                 } catch (e) {
-                    console.error('Failed to load page structure:', e);
+                    console.error("Failed to load page structure:", e);
                     // Basic fallback
                     return {
                         "food-production": {
-                            "baking": ["breadmaking", "breadmaking-alpha"]
-                        }
+                            baking: ["breadmaking", "breadmaking-alpha"],
+                        },
                     };
                 }
             }
 
             function cleanDisplayName(name) {
-                return name.split('-').map(word =>
-                    word.charAt(0).toUpperCase() + word.slice(1)
-                ).join(' ');
+                return name
+                    .split("-")
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(" ");
             }
 
             function openSubmitDialog() {
@@ -1903,101 +2225,126 @@
                 openDialog("Submit Simulation", content);
 
                 // Load page structure from static file
-                fetchPageStructure().then(structure => {
-                    window.pageStructure = structure;
-                    console.log('Page structure loaded successfully');
-                }).catch(e => {
-                    console.error("Failed to load page structure:", e);
-                    window.pageStructure = {
-                        "food-production": {
-                            "baking": ["breadmaking", "breadmaking-alpha"]
-                        }
-                    };
-                });
+                fetchPageStructure()
+                    .then((structure) => {
+                        window.pageStructure = structure;
+                        console.log("Page structure loaded successfully");
+                    })
+                    .catch((e) => {
+                        console.error("Failed to load page structure:", e);
+                        window.pageStructure = {
+                            "food-production": {
+                                baking: ["breadmaking", "breadmaking-alpha"],
+                            },
+                        };
+                    });
             }
 
             function updateSubcategories() {
-                const domainSelect = document.getElementById('domain-select');
-                const subcategoryField = document.getElementById('subcategory-field');
-                const subcategorySelect = document.getElementById('subcategory-select');
-                const pageField = document.getElementById('page-field');
+                const domainSelect = document.getElementById("domain-select");
+                const subcategoryField =
+                    document.getElementById("subcategory-field");
+                const subcategorySelect =
+                    document.getElementById("subcategory-select");
+                const pageField = document.getElementById("page-field");
 
                 const selectedDomain = domainSelect.value;
 
                 // Clear subcategory options
-                subcategorySelect.innerHTML = '<option value="">Select a subcategory...</option>';
+                subcategorySelect.innerHTML =
+                    '<option value="">Select a subcategory...</option>';
 
-                if (selectedDomain && window.pageStructure && window.pageStructure[selectedDomain]) {
-                    const subcategories = Object.keys(window.pageStructure[selectedDomain]);
-                    subcategories.sort().forEach(subcat => {
-                        const option = document.createElement('option');
+                if (
+                    selectedDomain &&
+                    window.pageStructure &&
+                    window.pageStructure[selectedDomain]
+                ) {
+                    const subcategories = Object.keys(
+                        window.pageStructure[selectedDomain],
+                    );
+                    subcategories.sort().forEach((subcat) => {
+                        const option = document.createElement("option");
                         option.value = subcat;
                         option.textContent = cleanDisplayName(subcat);
                         subcategorySelect.appendChild(option);
                     });
 
-                    subcategoryField.classList.add('visible');
+                    subcategoryField.classList.add("visible");
                 } else {
-                    subcategoryField.classList.remove('visible');
+                    subcategoryField.classList.remove("visible");
                 }
 
                 // Hide page field
-                pageField.classList.remove('visible');
+                pageField.classList.remove("visible");
                 updatePreview();
             }
 
             function updatePages() {
-                const domainSelect = document.getElementById('domain-select');
-                const subcategorySelect = document.getElementById('subcategory-select');
-                const pageField = document.getElementById('page-field');
-                const pageSelect = document.getElementById('page-select');
+                const domainSelect = document.getElementById("domain-select");
+                const subcategorySelect =
+                    document.getElementById("subcategory-select");
+                const pageField = document.getElementById("page-field");
+                const pageSelect = document.getElementById("page-select");
 
                 const selectedDomain = domainSelect.value;
                 const selectedSubcategory = subcategorySelect.value;
 
                 // Clear page options
-                pageSelect.innerHTML = '<option value="">Select a page...</option>';
+                pageSelect.innerHTML =
+                    '<option value="">Select a page...</option>';
 
-                if (selectedDomain && selectedSubcategory &&
+                if (
+                    selectedDomain &&
+                    selectedSubcategory &&
                     window.pageStructure &&
                     window.pageStructure[selectedDomain] &&
-                    window.pageStructure[selectedDomain][selectedSubcategory]) {
-
-                    const pages = window.pageStructure[selectedDomain][selectedSubcategory];
-                    pages.sort().forEach(page => {
-                        const option = document.createElement('option');
+                    window.pageStructure[selectedDomain][selectedSubcategory]
+                ) {
+                    const pages =
+                        window.pageStructure[selectedDomain][
+                            selectedSubcategory
+                        ];
+                    pages.sort().forEach((page) => {
+                        const option = document.createElement("option");
                         option.value = page;
                         option.textContent = cleanDisplayName(page);
                         pageSelect.appendChild(option);
                     });
 
                     if (pages.length > 0) {
-                        pageField.classList.add('visible');
+                        pageField.classList.add("visible");
 
                         // Auto-select if there's a good match for the current simulation
                         const simulationData = getCurrentSimulationData();
-                        if (simulationData && selectedDomain === 'food-production' && selectedSubcategory === 'baking') {
-                            const breadmakingOption = pageSelect.querySelector('option[value="breadmaking"]');
+                        if (
+                            simulationData &&
+                            selectedDomain === "food-production" &&
+                            selectedSubcategory === "baking"
+                        ) {
+                            const breadmakingOption = pageSelect.querySelector(
+                                'option[value="breadmaking"]',
+                            );
                             if (breadmakingOption) {
-                                pageSelect.value = 'breadmaking';
+                                pageSelect.value = "breadmaking";
                                 updatePreview();
                             }
                         }
                     }
                 } else {
-                    pageField.classList.remove('visible');
+                    pageField.classList.remove("visible");
                 }
 
                 updatePreview();
             }
 
             function updatePreview() {
-                const domainSelect = document.getElementById('domain-select');
-                const subcategorySelect = document.getElementById('subcategory-select');
-                const pageSelect = document.getElementById('page-select');
-                const previewDiv = document.getElementById('path-preview');
-                const previewPath = document.getElementById('preview-path');
-                const submitBtn = document.getElementById('submit-confirm-btn');
+                const domainSelect = document.getElementById("domain-select");
+                const subcategorySelect =
+                    document.getElementById("subcategory-select");
+                const pageSelect = document.getElementById("page-select");
+                const previewDiv = document.getElementById("path-preview");
+                const previewPath = document.getElementById("preview-path");
+                const submitBtn = document.getElementById("submit-confirm-btn");
 
                 const domain = domainSelect.value;
                 const subcategory = subcategorySelect.value;
@@ -2006,10 +2353,10 @@
                 if (domain && subcategory && page) {
                     const fullPath = `${domain}/${subcategory}/${page}`;
                     previewPath.textContent = fullPath;
-                    previewDiv.style.display = 'block';
+                    previewDiv.style.display = "block";
                     submitBtn.disabled = false;
                 } else {
-                    previewDiv.style.display = 'none';
+                    previewDiv.style.display = "none";
                     submitBtn.disabled = true;
                 }
             }
@@ -2017,14 +2364,16 @@
             function handleSubmit(event) {
                 event.preventDefault();
                 const formData = new FormData(event.target);
-                const domain = formData.get('domain');
-                const subcategory = formData.get('subcategory');
-                const page = formData.get('page');
+                const domain = formData.get("domain");
+                const subcategory = formData.get("subcategory");
+                const page = formData.get("page");
 
                 const targetPath = `${domain}/${subcategory}/${page}`;
 
                 // For now, just show an alert - actual submission logic would go here
-                alert(`Simulation would be submitted to: ${targetPath}\n\n(Submission functionality not implemented yet)`);
+                alert(
+                    `Simulation would be submitted to: ${targetPath}\n\n(Submission functionality not implemented yet)`,
+                );
 
                 closeDialog();
             }
@@ -2332,61 +2681,91 @@
                     timeline.appendChild(actorLanes);
                     container.appendChild(timeline);
 
-                    const equipmentAndResourcesContainer = document.createElement('div');
+                    const equipmentAndResourcesContainer =
+                        document.createElement("div");
                     // **NEW** Equipment Panel
 
-                    if (currentSimulationData.equipment && currentSimulationData.equipment.length > 0) {
-            // Calculate final equipment states
-            const finalEquipmentStates = {};
-            currentSimulationData.equipment.forEach(e => { finalEquipmentStates[e.id] = e.state || 'available'; });
-            const sortedTasks = [...(currentSimulationData.tasks || [])].sort((a,b) => (a.start || "00:00").localeCompare(b.start || "00:00"));
-            sortedTasks.forEach(task => {
-                (task.equipment_interactions || []).forEach(interaction => {
-                    finalEquipmentStates[interaction.id] = interaction.to_state;
-                });
-            });
+                    if (
+                        currentSimulationData.equipment &&
+                        currentSimulationData.equipment.length > 0
+                    ) {
+                        // Calculate final equipment states
+                        const finalEquipmentStates = {};
+                        currentSimulationData.equipment.forEach((e) => {
+                            finalEquipmentStates[e.id] = e.state || "available";
+                        });
+                        const sortedTasks = [
+                            ...(currentSimulationData.tasks || []),
+                        ].sort((a, b) =>
+                            (a.start || "00:00").localeCompare(
+                                b.start || "00:00",
+                            ),
+                        );
+                        sortedTasks.forEach((task) => {
+                            (task.equipment_interactions || []).forEach(
+                                (interaction) => {
+                                    finalEquipmentStates[interaction.id] =
+                                        interaction.to_state;
+                                },
+                            );
+                        });
 
-            const equipmentPanel = document.createElement("div");
-            equipmentPanel.className = "resources-panel";
-            equipmentPanel.innerHTML = `
+                        const equipmentPanel = document.createElement("div");
+                        equipmentPanel.className = "resources-panel";
+                        equipmentPanel.innerHTML = `
                 <h5>⚙️ Equipment (Final States)</h5>
                 <div class="resource-grid">
-                    ${currentSimulationData.equipment.map(item => `
+                    ${currentSimulationData.equipment
+                        .map(
+                            (item) => `
                         <div class="resource-item">
-                            <div class="resource-emoji">${item.emoji || '❓'}</div>
+                            <div class="resource-emoji">${item.emoji || "❓"}</div>
                             <div class="resource-info">
                                 <div class="resource-name">${item.name || item.id}</div>
                                 <div class="resource-state ${finalEquipmentStates[item.id]}">${finalEquipmentStates[item.id]}</div>
                             </div>
                         </div>
-                    `).join("")}
+                    `,
+                        )
+                        .join("")}
                 </div>
             `;
-            equipmentAndResourcesContainer.appendChild(equipmentPanel);
-        }
-        
-        // **UPDATED** Resources (Consumables) Panel
-        if (currentSimulationData.resources && currentSimulationData.resources.length > 0) {
-            const resourcesPanel = document.createElement("div");
-            resourcesPanel.className = "resources-panel";
-            resourcesPanel.innerHTML = `
+                        equipmentAndResourcesContainer.appendChild(
+                            equipmentPanel,
+                        );
+                    }
+
+                    // **UPDATED** Resources (Consumables) Panel
+                    if (
+                        currentSimulationData.resources &&
+                        currentSimulationData.resources.length > 0
+                    ) {
+                        const resourcesPanel = document.createElement("div");
+                        resourcesPanel.className = "resources-panel";
+                        resourcesPanel.innerHTML = `
                 <h5>📦 Resources (Consumables)</h5>
                 <div class="resource-grid">
-                    ${currentSimulationData.resources.map(resource => `
+                    ${currentSimulationData.resources
+                        .map(
+                            (resource) => `
                         <div class="resource-item">
-                            <div class="resource-emoji">${resource.emoji || '❓'}</div>
+                            <div class="resource-emoji">${resource.emoji || "❓"}</div>
                             <div class="resource-info">
                                 <div class="resource-name">${resource.id}</div>
                                 <div class="resource-state available">Stock: ${resource.starting_stock} ${resource.unit}</div>
                             </div>
                         </div>
-                    `).join("")}
+                    `,
+                        )
+                        .join("")}
                 </div>
             `;
-            equipmentAndResourcesContainer.appendChild(resourcesPanel);
-        }
+                        equipmentAndResourcesContainer.appendChild(
+                            resourcesPanel,
+                        );
+                    }
 
-        container.appendChild(equipmentAndResourcesContainer);
+                    container.appendChild(equipmentAndResourcesContainer);
 
                     const stats = document.createElement("div");
                     stats.className = "simulation-stats";
@@ -2448,9 +2827,14 @@
                     jsonStatus.textContent = "✓ Valid JSON";
                     jsonStatus.title = "JSON syntax is valid";
 
-                    if (window.metricsCatalog && window.metricsCatalog.length > 0) {
+                    if (
+                        window.metricsCatalog &&
+                        window.metricsCatalog.length > 0
+                    ) {
                         const validator = new SimulationValidator(parsed);
-                        const validationResults = validator.runChecks(window.metricsCatalog);
+                        const validationResults = validator.runChecks(
+                            window.metricsCatalog,
+                        );
                         displayValidationResults(validationResults); // Call the display function
                     }
 
@@ -2464,57 +2848,79 @@
             }
 
             function displayValidationResults(results) {
-                const categoriesContainer = document.getElementById("validation-categories");
+                const categoriesContainer = document.getElementById(
+                    "validation-categories",
+                );
 
                 // Check for a clean run (only success messages)
-                const hasIssues = results.some(r => r.status !== 'success');
+                const hasIssues = results.some((r) => r.status !== "success");
 
                 if (!hasIssues) {
-                    categoriesContainer.innerHTML = '<div class="validation-success" style="text-align: center; padding: 2rem;">🎉 Perfect! No validation issues found.</div>';
+                    categoriesContainer.innerHTML =
+                        '<div class="validation-success" style="text-align: center; padding: 2rem;">🎉 Perfect! No validation issues found.</div>';
                     return;
                 }
 
                 // Prepare categories for grouping issues
                 const categories = {
-                    "Structural Integrity": { id: "critical-errors", results: [] },
+                    "Structural Integrity": {
+                        id: "critical-errors",
+                        results: [],
+                    },
                     "Resource Flow": { id: "resource-issues", results: [] },
-                    "Scheduling": { id: "scheduling-conflicts", results: [] },
-                    "Optimization": { id: "optimization-suggestions", results: [] }
+                    Scheduling: { id: "scheduling-conflicts", results: [] },
+                    Optimization: {
+                        id: "optimization-suggestions",
+                        results: [],
+                    },
                 };
 
                 // Create a map for quick metric lookup
-                const metricMap = new Map(window.metricsCatalog.map(m => [m.id, m]));
+                const metricMap = new Map(
+                    window.metricsCatalog.map((m) => [m.id, m]),
+                );
 
                 // Group results by category
-                results.forEach(result => {
-                    if (result.status === 'success') return; // Don't display success messages in the detailed view
+                results.forEach((result) => {
+                    if (result.status === "success") return; // Don't display success messages in the detailed view
 
                     const metric = metricMap.get(result.metricId);
                     if (metric && categories[metric.category]) {
                         categories[metric.category].results.push({
                             ...result,
-                            severity: metric.severity // Pass severity for UI styling
+                            severity: metric.severity, // Pass severity for UI styling
                         });
                     }
                 });
 
                 let html = "";
-                for (const [categoryName, categoryData] of Object.entries(categories)) {
+                for (const [categoryName, categoryData] of Object.entries(
+                    categories,
+                )) {
                     if (categoryData.results.length > 0) {
                         html += `
                             <div class="validation-category ${categoryData.id}">
                                 <h4>${categoryName} (${categoryData.results.length})</h4>
-                                ${categoryData.results.map(result => `
-                                    <div class="validation-issue ${result.severity || 'warning'}">
+                                ${categoryData.results
+                                    .map(
+                                        (result) => `
+                                    <div class="validation-issue ${result.severity || "warning"}">
                                         ${result.message}
                                     </div>
-                                `).join("")}
+                                `,
+                                    )
+                                    .join("")}
                             </div>
                         `;
                     }
                 }
                 categoriesContainer.innerHTML = html;
             }
+
+            // Ensure correct initial button visibility
+            document.addEventListener("DOMContentLoaded", function () {
+                updateAutoRenderUI();
+            });
 
             // Initialize Monaco Editor
             require.config({
@@ -2667,7 +3073,8 @@
                 const playgroundTop = document.querySelector(".playground-top");
                 const playgroundBottom =
                     document.querySelector(".playground-bottom");
-                const playgroundMain = document.querySelector(".playground-main");
+                const playgroundMain =
+                    document.querySelector(".playground-main");
 
                 let isDragging = false;
                 let dragType = "";
@@ -2698,19 +3105,20 @@
                                 containerRect.width) *
                             100;
 
+                        // This logic for vertical resizing is fine
                         if (newWidth >= 20 && newWidth <= 80) {
                             jsonPanel.style.width = newWidth + "%";
                             simulationPanel.style.width = 100 - newWidth + "%";
                         }
                     } else if (dragType === "horizontal") {
                         const mainRect = playgroundMain.getBoundingClientRect();
-                        const relativeY = e.clientY - mainRect.top;
-                        const newTopHeight = (relativeY / mainRect.height) * 100;
+                        const newTopHeight = e.clientY - mainRect.top;
 
-                        if (newTopHeight >= 20 && newTopHeight <= 80) {
-                            playgroundTop.style.height = newTopHeight + "%";
-                            playgroundBottom.style.height = (100 - newTopHeight) + "%";
-                        }
+                        // Apply new heights in pixels to forcefully override flex properties.
+                        // This also removes the resizing limits as you requested.
+                        playgroundTop.style.height = newTopHeight + "px";
+                        playgroundBottom.style.height =
+                            mainRect.height - newTopHeight + "px";
                     }
                 });
 
@@ -2722,14 +3130,6 @@
                     }
                 });
             }
-        </script>
-    <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const header = document.querySelector('.site-header');
-                if (header) {
-                    header.classList.add('playground-header');
-                }
-            });
         </script>
     </body>
 </html>
