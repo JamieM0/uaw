@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="container header-container">
                 <div class="logo">
                     <a href="/index">
-                        <img src="/assets/images/uaw-logo.png" alt="Universal Automation Wiki Logo">
+                        <img src="/assets/images/logo-primary-stacked.png" alt="Universal Automation Wiki Logo">
                     </a>
                 </div>
                 <nav class="main-nav">
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="container">
                 <div class="footer-content">
                     <div class="footer-logo">
-                        <img src="/assets/images/uaw-logo.png" alt="Universal Automation Wiki Logo">
+                        <img src="/assets/images/logo-primary-stacked.png" alt="Universal Automation Wiki Logo">
                     </div>
                     <div class="footer-links">
                         <div class="footer-links-column">

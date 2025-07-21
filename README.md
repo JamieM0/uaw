@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/jamiem0/uaw/main/web/assets/images/uaw-logo-white.png" alt="UAW Logo"/>
+  <img src="https://raw.githubusercontent.com/jamiem0/uaw/main/web/assets/images/logo-primary-stacked.png" alt="UAW Logo"/>
 </p>
 
 The **Universal Automation Wiki (UAW)** is an open-source platform for mapping, simulating, and optimizing real-world processes. We aim to create a unified, data-driven knowledge base that tracks global automation progress, identifies technological gaps, and helps users explore opportunities for improvement in any domain.
