@@ -75,6 +75,12 @@ def parse_markdown(content):
                 subtitle_found = True
                 break
 
+    # Remove the title line from markdown before converting to HTML
+    if title_found and first_header_index != -1:
+        content_for_html = "\n".join(lines[:first_header_index] + lines[first_header_index+1:])
+    else:
+        content_for_html = content
+
     # Set up custom Markdown extensions with proper code highlighting
     extensions = [
         TableExtension(),
@@ -86,9 +92,9 @@ def parse_markdown(content):
         )
     ]
     
-    # Convert the entire markdown content to HTML with syntax highlighting
+    # Convert the markdown content (without title) to HTML with syntax highlighting
     try:
-        html_content = markdown.markdown(content, extensions=extensions)
+        html_content = markdown.markdown(content_for_html, extensions=extensions)
         
         # Post-process HTML to ensure code blocks are properly formatted
         # This adds any language-specific class for better syntax highlighting

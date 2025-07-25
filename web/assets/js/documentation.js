@@ -46,7 +46,8 @@ const docsTree = [
     title: "Simulations",
     path: "#",
     children: [
-      { title: "- Validation", path: "/docs/simulations/validation" }
+      { title: "- Validation", path: "/docs/simulations/validation" },
+      { title: "- Constraints", path: "/docs/simulations/constraints" },
     ]
   }
 ];

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css"> <!-- For nav cards -->
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css"> <!-- Added documentation styles -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-layout">
+        <div id="sidebar-placeholder"></div>
+
+        <main>
+            <section class="hero">
+                <div class="container">
+                    <h1>UAW Metric &amp; Constraint ID Standardization</h1>
+                    <p class="hero-subtitle">To ensure the system remains organized and scalable, all metric IDs will follow a three-level `TOP.MIDDLE.SPECIFIC` structure. This creates a clear, predictable, and self-documenting namespace.</p>
+                </div>
+            </section>
+            <div class="spacer"></div>
+            <section class="content-section">
+                <div class="spacer"></div>
+
+                <p>To ensure the system remains organized and scalable, all metric IDs will follow a three-level <code>TOP.MIDDLE.SPECIFIC</code> structure. This creates a clear, predictable, and self-documenting namespace.</p>
+<h2>Structure Overview</h2>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Description</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>TOP</strong></td>
+<td>The highest-level domain the metric belongs to.<br><em>What part of the simulation is this about?</em></td>
+<td><code>schema</code>, <code>actor</code>, <code>equipment</code>, <code>resource</code>, <code>task</code>, <code>temporal</code>, <code>economic</code>, <code>optimization</code></td>
+</tr>
+<tr>
+<td><strong>MIDDLE</strong></td>
+<td>A sub-category specifying the type of check.<br><em>What property is being checked?</em></td>
+<td><code>integrity</code>, <code>scheduling</code>, <code>utilization</code>, <code>state</code>, <code>capacity</code>, <code>flow</code>, <code>definition</code>, <code>dependency</code>, <code>profitability</code>, <code>efficiency</code></td>
+</tr>
+<tr>
+<td><strong>SPECIFIC</strong></td>
+<td>A concise, snake_case name for the specific rule.<br><em>What is the exact problem?</em></td>
+<td><code>missing_root</code>, <code>overlap</code>, <code>exceeded</code>, <code>negative_stock</code>, <code>unreachable</code>, <code>negative_margin</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Detailed Level Breakdown</h2>
+<h3>Top Level</h3>
+<ul>
+<li><strong>schema</strong>: Rules about the structural correctness of the JSON itself.</li>
+<li><strong>actor</strong>: Rules concerning the actors (people, machines).</li>
+<li><strong>equipment</strong>: Rules for non-consumable tools and objects.</li>
+<li><strong>resource</strong>: Rules for consumable materials and abstract states.</li>
+<li><strong>task</strong>: Rules about the definition and integrity of individual tasks.</li>
+<li><strong>temporal</strong>: Rules concerning time, order, and dependencies between tasks.</li>
+<li><strong>economic</strong>: Rules for financial viability (costs, revenue, profitability).</li>
+<li><strong>optimization</strong>: Suggestions for improvement that are not strictly errors.</li>
+</ul>
+<h3>Middle Level</h3>
+<ul>
+<li><strong>integrity</strong>: Checks for structural soundness and completeness.</li>
+<li><strong>scheduling</strong>: Checks for timing, overlaps, and assignments.</li>
+<li><strong>utilization</strong>: Analyzes how effectively actors/equipment are used.</li>
+<li><strong>state</strong>: Validates the logical transitions of equipment states (e.g., <code>clean -&gt; dirty</code>).</li>
+<li><strong>capacity</strong>: Checks if equipment usage exceeds its defined capacity.</li>
+<li><strong>flow</strong>: Tracks the consumption and production of resources over time.</li>
+<li><strong>definition</strong>: Validates that defined items (e.g., resources) are used correctly.</li>
+<li><strong>dependency</strong>: Checks the logical links between tasks.</li>
+<li><strong>profitability</strong>: Analyzes financial outcomes.</li>
+<li><strong>efficiency</strong>: Identifies opportunities for improvement (e.g., reducing idle time).</li>
+</ul>
+            </section>
+
+        </main>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+<script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>
