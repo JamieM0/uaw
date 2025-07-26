@@ -22,6 +22,9 @@
 
         <script src="/assets/js/simulation-validator.js"></script>
 
+        <script src="/assets/js/tutorial.js"></script>
+        <script src="/assets/js/tutorial-validator.js"></script>
+
         <!-- Monaco Editor for JSON syntax highlighting -->
         <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
 
@@ -184,8 +187,9 @@
             .playground-main {
                 flex: 1;
                 display: flex;
-                flex-direction: column;
+                flex-direction: row;
                 overflow: hidden;
+                position: relative;
             }
 
             .playground-top {
@@ -886,6 +890,46 @@
                 background: white;
                 border-color: var(--border-color);
             }
+            /* Tutorial & Gamification Styles */
+.tutorial-panel {
+    display: none; /* Hidden by default */
+    width: 350px;
+    flex-shrink: 0; /* Prevent the panel from shrinking */
+    background: #fff;
+    z-index: 1500;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    flex-direction: column;
+    border-right: 1px solid var(--border-color);
+}
+.tutorial-panel.visible {
+    display: flex; /* Show the panel and let it take up space */
+}
+.tutorial-header { padding: 1rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+.tutorial-header h3 { margin: 0; }
+.tutorial-exit-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
+.tutorial-exit-btn:hover { color: var(--text-color); }
+.tutorial-content { flex: 1; padding: 1rem; overflow-y: auto; line-height: 1.6; }
+.tutorial-content code { background: var(--bg-light); padding: 2px 5px; border-radius: 4px; font-family: monospace; }
+.tutorial-footer { padding: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; }
+.tutorial-footer button { padding: 0.5rem 1rem; border: 1px solid var(--border-color); background: var(--bg-light); cursor: pointer; border-radius: var(--border-radius-sm); }
+.tutorial-footer button:disabled { background: var(--border-color); color: var(--text-light); cursor: not-allowed; }
+.tutorial-footer button#tutorial-next-btn { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+.tutorial-footer button#tutorial-next-btn:disabled { background: var(--primary-light); border-color: var(--primary-light); }
+
+/* Hide buttons when tutorial is active */
+body.tutorial-active #load-sample-btn,
+body.tutorial-active #render-simulation-btn,
+body.tutorial-active #submit-btn,
+body.tutorial-active #auto-render-toggle {
+    display: none;
+}
+
+/* Help Dropdown Styles */
+.dropdown { position: relative; display: inline-block; }
+.dropdown-content { display: none; position: absolute; background-color: #f9f9f9; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1; border-radius: var(--border-radius-sm); overflow: hidden; right: 0; }
+.dropdown-content a { color: black; padding: 12px 16px; text-decoration: none; display: block; }
+.dropdown-content a:hover { background-color: #f1f1f1; }
+.dropdown:hover .dropdown-content { display: block; }
         </style>
     </head>
     <body>
@@ -942,77 +986,97 @@
                     </div>
 
                     <div class="action-buttons">
-                        <button
-                            id="submit-btn"
-                            class="action-btn"
-                            title="Submit simulation to page"
-                        >
-                            Submit
-                        </button>
+                        <!-- New Help Dropdown Menu -->
+<div class="dropdown">
+    <button class="action-btn">Help</button>
+    <div class="dropdown-content">
+        <a href="#" id="start-tutorial-btn">Start Tutorial</a>
+        <!-- You can add more help links here in the future -->
+    </div>
+</div>
+
+<button id="submit-btn" class="action-btn" title="Submit simulation to page">Submit</button>
                     </div>
                 </div>
             </div>
         </header>
 
         <main class="playground-main">
-            <div class="playground-top">
-                <div class="json-editor-panel">
-                    <div class="panel-header"></div>
-                    <div class="panel-content">
-                        <div id="json-editor"></div>
-                    </div>
-                    <div class="resize-handle-vertical"></div>
+            <div id="tutorial-panel" class="tutorial-panel">
+                <div class="tutorial-header">
+                    <h3 id="tutorial-title">Tutorial</h3>
+                    <button id="tutorial-exit-btn" class="tutorial-exit-btn" title="Exit Tutorial">×</button>
                 </div>
-
-                <div class="simulation-panel">
-                    <div class="panel-header"></div>
-                    <div class="panel-content">
-                        <div class="simulation-content" id="simulation-content">
-                            <p
-                                style="
-                                    color: var(--text-light);
-                                    text-align: center;
-                                    margin-top: 2rem;
-                                "
-                            >
-                                Simulation will render automatically as you edit
-                                the JSON. Click on task blocks to jump to their
-                                JSON definition. Drag task blocks to move them
-                                between actors or change times.
-                            </p>
-                        </div>
-                        <div
-                            class="loading-overlay"
-                            id="simulation-loading"
-                            style="display: none"
-                        >
-                            <div class="spinner"></div>
-                        </div>
-                    </div>
+                <div class="tutorial-content">
+                    <div id="tutorial-instructions"></div>
+                    <div id="tutorial-status" style="display: none; margin-top: 1rem;"></div>
+                </div>
+                <div class="tutorial-footer">
+                    <button id="tutorial-prev-btn">Back</button>
+                    <button id="tutorial-next-btn" disabled>Next</button>
                 </div>
             </div>
+            
+            <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+                <div class="playground-top">
+                    <div class="json-editor-panel">
+                        <div class="panel-header"></div>
+                        <div class="panel-content">
+                            <div id="json-editor"></div>
+                        </div>
+                        <div class="resize-handle-vertical"></div>
+                    </div>
 
-            <div class="playground-bottom">
-                <div class="resize-handle-horizontal"></div>
-                <div class="validation-panel">
-                    <div class="validation-header">
-                        <div class="validation-inline">
-                            <span>Validation</span>
+                    <div class="simulation-panel">
+                        <div class="panel-header"></div>
+                        <div class="panel-content">
+                            <div class="simulation-content" id="simulation-content">
+                                <p
+                                    style="
+                                        color: var(--text-light);
+                                        text-align: center;
+                                        margin-top: 2rem;
+                                    "
+                                >
+                                    Simulation will render automatically as you edit
+                                    the JSON. Click on task blocks to jump to their
+                                    JSON definition. Drag task blocks to move them
+                                    between actors or change times.
+                                </p>
+                            </div>
                             <div
-                                class="validation-indicator success"
-                                id="json-status"
-                                title="Click for details"
+                                class="loading-overlay"
+                                id="simulation-loading"
+                                style="display: none"
                             >
-                                ✓ Valid JSON
+                                <div class="spinner"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="validation-content" id="validation-content">
-                        <div
-                            class="validation-categories"
-                            id="validation-categories"
-                        >
-                            <!-- Validation results will be populated here -->
+                </div>
+
+                <div class="playground-bottom">
+                    <div class="resize-handle-horizontal"></div>
+                    <div class="validation-panel">
+                        <div class="validation-header">
+                            <div class="validation-inline">
+                                <span>Validation</span>
+                                <div
+                                    class="validation-indicator success"
+                                    id="json-status"
+                                    title="Click for details"
+                                >
+                                    ✓ Valid JSON
+                                </div>
+                            </div>
+                        </div>
+                        <div class="validation-content" id="validation-content">
+                            <div
+                                class="validation-categories"
+                                id="validation-categories"
+                            >
+                                <!-- Validation results will be populated here -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1029,20 +1093,23 @@
         <script>
             // Enhanced Simulation Playground JavaScript
             let editor;
+            let tutorialManager;
+            let tutorialData = null;
             let metricsCatalog = [];
-            fetch("/assets/static/metrics-catalog.json")
-                .then((response) => response.json())
-                .then((data) => {
-                    window.metricsCatalog = data; // Use window.metricsCatalog to make it global
-                    console.log("Metrics loaded successfully.");
-                    if (editor) {
-                        // If editor is already loaded, run validation
-                        validateJSON();
-                    }
-                })
-                .catch((error) =>
-                    console.error("Error loading metrics catalog:", error),
-                );
+            Promise.all([
+                fetch('/assets/static/tutorial-content.json').then(res => res.json()),
+                fetch('/assets/static/metrics-catalog.json').then(res => res.json())
+            ]).then(([tutData, metData]) => {
+                tutorialData = tutData;
+                window.metricsCatalog = metData;
+                console.log("Tutorial and Metrics catalogs loaded successfully.");
+                if (editor) {
+                    initializeTutorial(); // Initialize tutorial manager now that data is ready
+                    validateJSON();
+                }
+            }).catch(error => {
+                console.error("Error loading initial data:", error);
+            });
             let autoRender = true;
             let currentSimulationData = null;
 
@@ -1401,6 +1468,28 @@
             function updateUndoButton() {
                 const undoBtn = document.getElementById("undo-btn");
                 undoBtn.disabled = historyIndex <= 0;
+            }
+
+            function initializeTutorial() {
+                if (!tutorialData || !editor) return;
+
+                const playgroundElements = {
+                    panel: document.getElementById('tutorial-panel'),
+                    title: document.getElementById('tutorial-title'),
+                    instructions: document.getElementById('tutorial-instructions'),
+                    status: document.getElementById('tutorial-status'),
+                    nextBtn: document.getElementById('tutorial-next-btn'),
+                    prevBtn: document.getElementById('tutorial-prev-btn'),
+                    exitBtn: document.getElementById('tutorial-exit-btn')
+                };
+
+                tutorialManager = new TutorialManager(tutorialData, editor, playgroundElements);
+
+                document.getElementById('start-tutorial-btn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.querySelector('.dropdown-content').style.display = 'none'; // Hide dropdown
+                    tutorialManager.start();
+                });
             }
 
             // Task click to scroll functionality
@@ -2681,29 +2770,23 @@
                         document.createElement("div");
                     // **NEW** Equipment Panel
 
-                    if (
-                        currentSimulationData.equipment &&
-                        currentSimulationData.equipment.length > 0
-                    ) {
-                        // Calculate final equipment states
+                    if (currentSimulationData.equipment && currentSimulationData.equipment.length > 0) {
+                        // Calculate final equipment states chronologically
                         const finalEquipmentStates = {};
-                        currentSimulationData.equipment.forEach((e) => {
-                            finalEquipmentStates[e.id] = e.state || "available";
+                        currentSimulationData.equipment.forEach(e => {
+                            finalEquipmentStates[e.id] = e.state || 'available';
                         });
-                        const sortedTasks = [
-                            ...(currentSimulationData.tasks || []),
-                        ].sort((a, b) =>
-                            (a.start || "00:00").localeCompare(
-                                b.start || "00:00",
-                            ),
-                        );
-                        sortedTasks.forEach((task) => {
-                            (task.equipment_interactions || []).forEach(
-                                (interaction) => {
-                                    finalEquipmentStates[interaction.id] =
-                                        interaction.to_state;
-                                },
-                            );
+
+                        const sortedTasks = [...(currentSimulationData.tasks || [])].sort((a,b) => (a.start || "00:00").localeCompare(b.start || "00:00"));
+                        
+                        sortedTasks.forEach(task => {
+                            (task.equipment_interactions || []).forEach(interaction => {
+                                // If the equipment is in the correct starting state...
+                                if(finalEquipmentStates[interaction.id] === interaction.from_state) {
+                                    //...its new state is the 'to_state', unless it reverts.
+                                    finalEquipmentStates[interaction.id] = interaction.revert_after === true ? interaction.from_state : interaction.to_state;
+                                }
+                            });
                         });
 
                         const equipmentPanel = document.createElement("div");
@@ -2949,10 +3032,19 @@
                 saveToHistory();
 
                 editor.onDidChangeModelContent(() => {
+                    // Always trigger a render if auto-render is on.
                     if (autoRender) {
                         debounceRender();
                     }
-                    validateJSON();
+
+                    // Now, decide which validation logic to run.
+                    if (tutorialManager && tutorialManager.isActive) {
+                        // TUTORIAL MODE: Run step-specific validation logic.
+                        tutorialManager.runStepValidation();
+                    } else {
+                        // NORMAL MODE: Run the full validation suite.
+                        validateJSON();
+                    }
                 });
 
                 let changeTimeout;
@@ -2972,6 +3064,7 @@
                 initializeResizeHandles();
                 initializeDragAndDrop();
 
+                initializeTutorial();
                 validateJSON();
             });
 

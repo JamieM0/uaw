@@ -1,0 +1,120 @@
+{
+  "title": "UAW Playground Guide",
+  "introduction": "Learn how to model and optimize real-world processes.",
+  "steps": [
+    {
+      "id": "intro_layout",
+      "title": "1. Understanding the Layout",
+      "instructions": "<p>Welcome to the Playground! Your screen is divided into three key areas:</p><ul><li><b>The JSON Editor (Top Left):</b> This is where you'll define the simulation's structure.</li><li><b>The Timeline (Top Right):</b> A visual rendering of your simulation.</li><li><b>The Validation Panel (Bottom):</b> Your intelligent assistant. It shows errors and warnings based on a catalog of rules.</li></ul><p>For this first step, you don't need to change anything. Just click 'Next' to continue.</p>",
+      "initial_json": {
+        "simulation": { "meta": { "article_title": "Welcome!" } }
+      },
+      "validation": { "type": "none" },
+      "success_message": "Perfect! Let's make our first edit."
+    },
+    {
+      "id": "solve_scheduling",
+      "title": "2. Solving a Scheduling Conflict",
+      "instructions": "<p>A core rule of simulations is that an actor can't be in two places at once.</p><p>Look at the Validation Panel. You'll see an <b>error</b> because the <code>assistant</code> is scheduled for two overlapping tasks.</p><p><b>Your Goal:</b> Modify the <code>start</code> time of the <code>'preheat_oven 🔸 🔥'</code> task so that it begins *after* the <code>'clean_up_spills 🔸 🧹'</code> task is finished.</p><p>You can update this either by directly modifying the JSON or by adjusting the task in the simulation rendering.</p>",
+      "initial_json": {
+        "simulation": {
+          "actors": [{ "id": "assistant", "role": "Assistant" }],
+          "tasks": [
+            { "id": "clean_up_spills 🔸 🧹", "actor_id": "assistant", "start": "07:00", "duration": 15 },
+            { "id": "preheat_oven 🔸 🔥", "actor_id": "assistant", "start": "07:10", "duration": 20 }
+          ]
+        }
+      },
+      "validation": {
+        "type": "custom_function",
+        "function_name": "validateNoAssistantOverlap"
+      },
+      "success_message": "Excellent! The assistant's schedule is now conflict-free."
+    },
+    {
+      "id": "solve_dependencies",
+      "title": "3. Respecting Dependencies",
+      "instructions": "<p>Tasks often depend on each other. You can't bake bread before the oven is hot.</p><p>The validation panel shows a <b>warning</b> because the <code>'bake_bread'</code> task starts before its dependency, <code>'preheat_oven'</code>, is finished.</p><p><b>Your Goal:</b> Change the <code>start</code> time of the <code>'bake_bread 🔸 🍞'</code> task to <code>09:30</code> to ensure it starts after the oven is ready.</p>",
+      "initial_json": {
+        "simulation": {
+            "actors": [{ "id": "baker", "role": "Baker"}],
+            "tasks": [
+                { "id": "preheat_oven 🔸 🔥", "actor_id": "baker", "start": "09:00", "duration": 30 },
+                { "id": "bake_bread 🔸 🍞", "actor_id": "baker", "start": "09:15", "duration": 40, "depends_on": ["preheat_oven 🔸 🔥"]}
+            ]
+        }
+      },
+      "validation": {
+        "type": "custom_function",
+        "function_name": "validateBakingDependency"
+      },
+      "success_message": "Great job! The process flow is now logical."
+    },
+    {
+      "id": "solve_resource_flow",
+      "title": "4. Managing Consumables",
+      "instructions": "<p>Simulations track consumable resources. You can't use what you don't have.</p><p>The validation panel shows an <b>error</b> because the process tries to consume <code>10 kg</code> of flour, but the <code>starting_stock</code> is only <code>5</code>.</p><p><b>Your Goal:</b> Find the <code>flour</code> resource in the <code>resources</code> array and increase its <code>starting_stock</code> to at least <code>10</code>.</p>",
+      "initial_json": {
+        "simulation": {
+          "actors": [{ "id": "baker", "role": "Baker" }],
+          "resources": [{ "id": "flour", "unit": "kg", "starting_stock": 5 }],
+          "tasks": [{ "id": "make_bulk_dough 🔸 🌀", "actor_id": "baker", "start": "10:00", "duration": 30, "consumes": { "flour": 10 }, "produces": {} }]
+        }
+      },
+      "validation": {
+        "type": "custom_function",
+        "function_name": "validateSufficientFlour"
+      },
+      "success_message": "Problem solved! The bakery now has enough flour."
+    },
+    {
+      "id": "solve_equipment_capacity",
+      "title": "5. Respecting Equipment Capacity",
+      "instructions": "<p>Equipment, like a proofing rack, has a limited capacity.</p><p>The validation panel shows an <b>error</b> because two bakers are trying to place dough on a rack that only has a capacity of <code>1</code>.</p><p><b>Your Goal:</b> Adjust the schedule. Change the <code>start</code> time of the <code>'shape_batch_2'</code> task so it begins after <code>'shape_batch_1'</code> is finished.</p><p>Note the use of the 'revert_after' property in the equipment interactions.</p>",
+      "initial_json": {
+        "simulation": {
+            "actors": [{ "id": "baker_1", "role": "Baker" }, { "id": "baker_2", "role": "Baker" }],
+            "equipment": [{ "id": "proofing_rack", "name": "Proofing Rack", "capacity": 1, "state": "available" }],
+            "tasks": [
+                {
+                    "id": "shape_batch_1 🔸 🥖", "actor_id": "baker_1", "start": "11:00", "duration": 15,
+                    "equipment_interactions": [{ "id": "proofing_rack", "from_state": "available", "to_state": "in-use", "revert_after": true }]
+                },
+                {
+                    "id": "shape_batch_2 🔸 🥖", "actor_id": "baker_2", "start": "11:00", "duration": 15,
+                    "equipment_interactions": [{ "id": "proofing_rack", "from_state": "available", "to_state": "in-use", "revert_after": true }]
+                }
+            ]
+        }
+      },
+      "validation": {
+          "type": "custom_function",
+          "function_name": "validateRackCapacity"
+      },
+      "success_message": "Perfect! The bakers are no longer fighting for space."
+    },
+    {
+      "id": "capstone_challenge",
+      "title": "6. Capstone: Fix the Coffee Shop",
+      "instructions": "<p>Time for a challenge! The morning rush at this coffee shop is a mess. The simulation has multiple errors.</p><p>Look at the validation panel and use everything you've learned to fix the workflow.</p><p><b>Your Goals:</b><ol><li>Fix the <b>scheduling overlap</b> for the barista.</li><li>Fix the <b>equipment state logic</b> so the espresso machine is cleaned before it's used again.</li><li>Fix the <b>dependency timing</b> so the latte art is poured *after* the milk is steamed.</li></ol>",
+      "initial_json": {
+        "simulation": {
+          "meta": { "article_title": "Morning Coffee Rush" },
+          "actors": [{ "id": "barista", "role": "Barista" }],
+          "equipment": [{ "id": "espresso_machine", "name": "Espresso Machine", "state": "dirty" }],
+          "resources": [{ "id": "steamed_milk", "unit": "pitcher", "starting_stock": 0 }, { "id": "espresso_shot", "unit": "shot", "starting_stock": 0 }],
+          "tasks": [
+            { "id": "pull_espresso 🔸 ☕", "actor_id": "barista", "start": "08:00", "duration": 2, "equipment_interactions": [{ "id": "espresso_machine", "from_state": "clean", "to_state": "dirty" }], "produces": { "espresso_shot": 1 } },
+            { "id": "steam_milk 🔸 🥛", "actor_id": "barista", "start": "08:01", "duration": 3, "produces": { "steamed_milk": 1 } },
+            { "id": "pour_latte_art 🔸 🎨", "actor_id": "barista", "start": "08:02", "duration": 1, "depends_on": ["steam_milk 🔸 🥛", "pull_espresso 🔸 ☕"] }
+          ]
+        }
+      },
+      "validation": {
+          "type": "custom_function",
+          "function_name": "validateCoffeeShopWorkflow"
+      },
+      "success_message": "Congratulations! You've successfully optimized the workflow and completed the tutorial."
+    }
+  ]
+}

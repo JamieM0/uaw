@@ -18,23 +18,15 @@
     "computation": { "engine": "javascript", "function_name": "validateNegativeStock" }
   },
   {
-    "id": "resource.flow.dependency_missing",
-    "name": "Missing Production Ingredients",
-    "description": "Checks if tasks that produce a composite resource (e.g., dough) consume the necessary ingredients (e.g., flour, water).",
+    "id": "resource.flow.recipe_violation",
+    "name": "Recipe Ingredients Check",
+    "description": "Checks if tasks producing a composite resource consume all the ingredients defined in the simulation's 'production_recipes' section.",
     "category": "Resource Flow",
     "severity": "warning",
     "validation_type": "computational",
     "computation": {
       "engine": "javascript",
-      "function_name": "validateMissingDependencies",
-      "params": {
-        "dependency_map": {
-          "mixed_dough": ["flour", "water", "yeast"],
-          "risen_dough": ["mixed_dough"],
-          "shaped_loaves": ["risen_dough"],
-          "baked_bread": ["shaped_loaves"]
-        }
-      }
+      "function_name": "validateRecipeCompliance"
     }
   },
   {
@@ -78,5 +70,56 @@
         "minimum_buffer_minutes": 5
       }
     }
+  },
+  {
+  "id": "task.integrity.unassigned_actor",
+  "name": "Unassigned Task Actor",
+  "description": "Ensures every task is assigned to a valid, defined actor.",
+  "category": "Structural Integrity",
+  "severity": "error",
+  "validation_type": "computational",
+  "computation": { "engine": "javascript", "function_name": "validateUnassignedTasks" }
+  },
+  {
+  "id": "resource.definition.unused",
+  "name": "Unused Resource",
+  "description": "Flags consumable resources that are defined in the simulation but are never consumed or produced by any task.",
+  "category": "Optimization",
+  "severity": "info",
+  "validation_type": "computational",
+  "computation": { "engine": "javascript", "function_name": "validateUnusedResources" }
+  },
+  {
+  "id": "equipment.capacity.exceeded",
+  "name": "Equipment Capacity Exceeded",
+  "description": "Ensures that the number of concurrent tasks using a piece of equipment never exceeds its specified capacity.",
+  "category": "Scheduling",
+  "severity": "error",
+  "validation_type": "computational",
+  "computation": { "engine": "javascript", "function_name": "validateEquipmentCapacity" }
+  },
+  {
+  "id": "task.dependency.unreachable",
+  "name": "Unreachable Task Dependency",
+  "description": "Ensures that every task listed in a 'depends_on' array corresponds to a valid, defined task ID.",
+  "category": "Structural Integrity",
+  "severity": "error",
+  "validation_type": "computational",
+  "computation": { "engine": "javascript", "function_name": "validateUnreachableDependencies" }
+  },
+  {
+  "id": "economic.profitability.negative_margin",
+  "name": "Negative Profitability",
+  "description": "Calculates total revenue from final products and subtracts total costs of labor and consumed resources. Flags if the result is negative.",
+  "category": "Economic",
+  "severity": "warning",
+  "validation_type": "computational",
+  "computation": {
+    "engine": "javascript",
+    "function_name": "validateProfitability",
+    "params": {
+      "final_product_ids": ["baked_bread"]
+    }
   }
+}
 ]
