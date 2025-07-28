@@ -991,7 +991,7 @@ body.tutorial-active #auto-render-toggle {
     <button class="action-btn">Help</button>
     <div class="dropdown-content">
         <a href="#" id="start-tutorial-btn">Start Tutorial</a>
-        <!-- You can add more help links here in the future -->
+        <a href="#" id="start-llm-btn">Experimental LLM</a>
     </div>
 </div>
 
@@ -1089,6 +1089,51 @@ body.tutorial-active #auto-render-toggle {
                 <!-- Dialog content will be inserted here -->
             </div>
         </div>
+
+        <!-- Overlay 1: Information and Prerequisite Check (Updated) -->
+<div id="llm-info-overlay" class="dialog-overlay" style="display: none;">
+    <div class="dialog">
+        <h3>🚀 Experimental AI Feature (Canary)</h3>
+        <p>You are about to test UAW's integration with an experimental, built-in AI. This feature uses the new Prompt API which is under active development.</p>
+        
+        <strong>Requirements:</strong>
+        <ul>
+            <li>You must be using <strong>Google Chrome Canary</strong>.</li>
+            <li>The API must be enabled via a feature flag.</li>
+        </ul>
+        
+        <strong>How to Enable:</strong>
+        <ol>
+            <li>Download and install <a href="https://www.google.com/chrome/canary/" target="_blank">Google Chrome Canary</a>.</li>
+            <li>In Canary, go to <code>chrome://flags/#prompt-api-for-gemini-nano</code>, set it to <strong>Enabled</strong>, and restart the browser.</li>
+            <li>Go to <strong>Settings > Experimental AI</strong> (or <code>chrome://settings/ai</code>) and turn on the feature. The model may need to download.</li>
+        </ol>
+        <p><small>This API is experimental and subject to change. It may not work on all devices.</small></p>
+
+        <div class="dialog-buttons">
+            <button type="button" class="btn-secondary" id="llm-cancel-btn">Cancel</button>
+            <button type="button" class="btn-primary" id="llm-proceed-btn">I'm Using Canary & It's Enabled</button>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay 2: The Chat Interface (No changes needed) -->
+<div id="llm-chat-overlay" class="dialog-overlay" style="display: none;">
+    <div class="dialog" style="max-width: 600px; display: flex; flex-direction: column;">
+        <h3 id="llm-chat-title">Chat with Built-in AI</h3>
+        <div id="llm-chat-history" style="flex: 1; overflow-y: auto; border: 1px solid var(--border-color); padding: 1rem; border-radius: 4px; min-height: 300px; margin-bottom: 1rem;"></div>
+        <div id="llm-thinking-indicator" style="display: none; font-style: italic; color: var(--text-light); margin-bottom: 1rem;">AI is thinking...</div>
+        <form id="llm-chat-form">
+            <div style="display: flex; gap: 1rem;">
+                <input type="text" id="llm-chat-input" placeholder="Ask a question about your simulation..." style="flex: 1;">
+                <button type="submit" class="btn-primary">Send</button>
+            </div>
+        </form>
+         <div class="dialog-buttons" style="justify-content: center;">
+            <button type="button" class="btn-secondary" id="llm-chat-close-btn">Close</button>
+        </div>
+    </div>
+</div>
 
         <script>
             // Enhanced Simulation Playground JavaScript
@@ -2996,6 +3041,246 @@ body.tutorial-active #auto-render-toggle {
                 categoriesContainer.innerHTML = html;
             }
 
+            
+            const startBtn = document.getElementById('start-llm-btn');
+            
+            const infoOverlay = document.getElementById('llm-info-overlay');
+            const proceedBtn = document.getElementById('llm-proceed-btn');
+            const cancelBtn = document.getElementById('llm-cancel-btn');
+
+            const chatOverlay = document.getElementById('llm-chat-overlay');
+            const chatTitle = document.getElementById('llm-chat-title');
+            const chatHistory = document.getElementById('llm-chat-history');
+            const chatForm = document.getElementById('llm-chat-form');
+            const chatInput = document.getElementById('llm-chat-input');
+            const thinkingIndicator = document.getElementById('llm-thinking-indicator');
+            const chatCloseBtn = document.getElementById('llm-chat-close-btn');
+
+            let aiSession = null;
+
+            // --- Event Listeners ---
+            startBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                infoOverlay.style.display = 'flex';
+            });
+
+            cancelBtn.addEventListener('click', () => infoOverlay.style.display = 'none');
+            chatCloseBtn.addEventListener('click', () => chatOverlay.style.display = 'none');
+
+            proceedBtn.addEventListener('click', async () => {
+                infoOverlay.style.display = 'none';
+
+                if (!('ai' in window)) {
+                    alert("On-Device AI API not found. Please ensure you are using a compatible version of Google Chrome and have enabled the required features.");
+                    return;
+                }
+
+                try {
+                    const sessionOptions = { topK: 3 };
+                    aiSession = await window.ai.createTextSession(sessionOptions);
+                    
+                    chatTitle.textContent = `Chat with ${aiSession.modelName}`;
+                    chatHistory.innerHTML = `<p style="color: var(--text-light);">Session started. Ask a question about the current simulation. For example: "Suggest an improvement."</p>`;
+                    chatOverlay.style.display = 'flex';
+                } catch (err) {
+                    alert(`Error initializing AI session: ${err.message}. Ensure the model has finished downloading.`);
+                    console.error(err);
+                }
+            });
+
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const userInput = chatInput.value.trim();
+                if (!userInput || !aiSession) return;
+
+                // Append user's message
+                appendChatMessage(userInput, 'user');
+                chatInput.value = '';
+                thinkingIndicator.style.display = 'block';
+
+                try {
+                    // Prepend context from the simulation
+                    const simulationContext = `Context: The user is viewing a simulation named '${currentSimulationData?.article_title}'. The JSON is: ${editor.getValue()}`;
+                    const fullPrompt = `${simulationContext}\n\nUser question: ${userInput}`;
+                    
+                    const stream = await aiSession.promptStreaming(fullPrompt);
+                    
+                    // Create a new bubble for the AI response
+                    const aiMessageBubble = appendChatMessage('', 'ai');
+                    
+                    // Stream the response into the bubble
+                    for await (const chunk of stream) {
+                        aiMessageBubble.textContent += chunk;
+                    }
+
+                } catch (err) {
+                    appendChatMessage(`Error: ${err.message}`, 'error');
+                    console.error(err);
+                } finally {
+                    thinkingIndicator.style.display = 'none';
+                }
+            });
+
+            function appendChatMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.style.marginBottom = '0.75rem';
+                
+                const bubble = document.createElement('p');
+                bubble.textContent = text;
+                bubble.style.padding = '0.5rem 1rem';
+                bubble.style.borderRadius = '12px';
+                bubble.style.maxWidth = '80%';
+                bubble.style.display = 'inline-block';
+                
+                if (sender === 'user') {
+                    messageDiv.style.textAlign = 'right';
+                    bubble.style.backgroundColor = 'var(--primary-color)';
+                    bubble.style.color = 'white';
+                } else if (sender === 'ai') {
+                    bubble.style.backgroundColor = 'var(--bg-light)';
+                    bubble.style.color = 'var(--text-color)';
+                } else { // error
+                     bubble.style.backgroundColor = 'var(--error-color)';
+                     bubble.style.color = 'white';
+                }
+                
+                messageDiv.appendChild(bubble);
+                chatHistory.appendChild(messageDiv);
+                chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll
+                return bubble; // Return the bubble to stream into it
+            }
+
+            function initializeExperimentalLLM() {
+            const startBtn = document.getElementById('start-llm-btn');
+            
+            const infoOverlay = document.getElementById('llm-info-overlay');
+            const proceedBtn = document.getElementById('llm-proceed-btn');
+            const cancelBtn = document.getElementById('llm-cancel-btn');
+
+            const chatOverlay = document.getElementById('llm-chat-overlay');
+            const chatTitle = document.getElementById('llm-chat-title');
+            const chatHistory = document.getElementById('llm-chat-history');
+            const chatForm = document.getElementById('llm-chat-form');
+            const chatInput = document.getElementById('llm-chat-input');
+            const thinkingIndicator = document.getElementById('llm-thinking-indicator');
+            const chatCloseBtn = document.getElementById('llm-chat-close-btn');
+
+            let llmSession = null;
+
+            // --- Event Listeners ---
+            startBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                infoOverlay.style.display = 'flex';
+            });
+
+            cancelBtn.addEventListener('click', () => infoOverlay.style.display = 'none');
+            chatCloseBtn.addEventListener('click', () => {
+                if (llmSession && llmSession.destroy) {
+                    llmSession.destroy();
+                }
+                llmSession = null;
+                chatOverlay.style.display = 'none';
+            });
+
+            proceedBtn.addEventListener('click', async () => {
+                infoOverlay.style.display = 'none';
+
+                // The new check is for 'LanguageModel'
+                if (!('LanguageModel' in window)) {
+                    alert("The Prompt API ('LanguageModel') is not available in your browser. Please ensure you are using Google Chrome Canary and have enabled the required features.");
+                    return;
+                }
+
+                try {
+                    // Check availability first, as recommended
+                    const availability = await LanguageModel.availability();
+                    if (availability === 'unavailable') {
+                         alert("The built-in AI is unavailable on your device. It may not be supported or may have been disabled.");
+                         return;
+                    }
+                    if (availability !== 'available') {
+                        alert(`The AI model is currently ${availability}. Please wait for the download to complete and try again.`);
+                        return;
+                    }
+
+                    // The new API for creating a session
+                    llmSession = await LanguageModel.create();
+                    
+                    chatHistory.innerHTML = `<p style="color: var(--text-light);">Session started. You can now chat with the built-in AI about your current simulation.</p>`;
+                    chatOverlay.style.display = 'flex';
+                } catch (err) {
+                    alert(`Error initializing AI session: ${err.message}.`);
+                    console.error(err);
+                }
+            });
+
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const userInput = chatInput.value.trim();
+                if (!userInput || !llmSession) return;
+
+                appendChatMessage(userInput, 'user');
+                chatInput.value = '';
+                thinkingIndicator.style.display = 'block';
+                chatInput.disabled = true;
+
+                try {
+                    const simulationContext = `The user is editing a JSON simulation for the Universal Automation Wiki. Here is the current simulation data:\n\n${editor.getValue()}`;
+                    
+                    // The new API uses promptStreaming on the session object
+                    const stream = llmSession.promptStreaming(
+                        `Context:\n${simulationContext}\n\nUser Question:\n${userInput}`
+                    );
+                    
+                    const aiMessageBubble = appendChatMessage('', 'ai');
+                    
+                    // The README provides this exact pattern for streaming
+                    for await (const chunk of stream) {
+                        aiMessageBubble.textContent += chunk;
+                        chatHistory.scrollTop = chatHistory.scrollHeight;
+                    }
+
+                } catch (err) {
+                    appendChatMessage(`Error: ${err.message}`, 'error');
+                    console.error(err);
+                } finally {
+                    thinkingIndicator.style.display = 'none';
+                    chatInput.disabled = false;
+                    chatInput.focus();
+                }
+            });
+
+            function appendChatMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.style.marginBottom = '0.75rem';
+                
+                const bubble = document.createElement('p');
+                bubble.textContent = text;
+                bubble.style.padding = '0.5rem 1rem';
+                bubble.style.borderRadius = '12px';
+                bubble.style.maxWidth = '80%';
+                bubble.style.display = 'inline-block';
+                bubble.style.wordWrap = 'break-word';
+                
+                if (sender === 'user') {
+                    messageDiv.style.textAlign = 'right';
+                    bubble.style.backgroundColor = 'var(--primary-color)';
+                    bubble.style.color = 'white';
+                } else if (sender === 'ai') {
+                    bubble.style.backgroundColor = 'var(--bg-light)';
+                    bubble.style.color = 'var(--text-color)';
+                } else { // error
+                     bubble.style.backgroundColor = 'var(--error-color)';
+                     bubble.style.color = 'white';
+                }
+                
+                messageDiv.appendChild(bubble);
+                chatHistory.appendChild(messageDiv);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+                return bubble;
+            }
+        }
+
             // Ensure correct initial button visibility
             document.addEventListener("DOMContentLoaded", function () {
                 updateAutoRenderUI();
@@ -3065,6 +3350,7 @@ body.tutorial-active #auto-render-toggle {
                 initializeDragAndDrop();
 
                 initializeTutorial();
+                initializeExperimentalLLM();
                 validateJSON();
             });
 
