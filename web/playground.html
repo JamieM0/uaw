@@ -1105,14 +1105,14 @@ body.tutorial-active #auto-render-toggle {
         <strong>How to Enable:</strong>
         <ol>
             <li>Download and install <a href="https://www.google.com/chrome/canary/" target="_blank">Google Chrome Canary</a>.</li>
-            <li>In Canary, go to <code>chrome://flags/#prompt-api-for-gemini-nano</code>, set it to <strong>Enabled</strong>, and restart the browser.</li>
-            <li>Go to <strong>Settings > Experimental AI</strong> (or <code>chrome://settings/ai</code>) and turn on the feature. The model may need to download.</li>
+            <li>In Canary, go to <code>chrome://flags/#prompt-api-for-gemini-nano</code> <strong>and</strong> <code>chrome://flags/#optimization-guide-on-device-model</code>, set both to <strong>Enabled</strong>, and restart the browser.</li>
+            <li>After around 15 minutes, you should see a new entry in <code>chrome://components/</code> - Optimization Guide On Device Model. Wait for this to be on 'Status - Updated' before clicking continue.</li>
         </ol>
         <p><small>This API is experimental and subject to change. It may not work on all devices.</small></p>
 
         <div class="dialog-buttons">
             <button type="button" class="btn-secondary" id="llm-cancel-btn">Cancel</button>
-            <button type="button" class="btn-primary" id="llm-proceed-btn">I'm Using Canary & It's Enabled</button>
+            <button type="button" class="btn-primary" id="llm-proceed-btn">Continue</button>
         </div>
     </div>
 </div>
@@ -3069,11 +3069,6 @@ body.tutorial-active #auto-render-toggle {
 
             proceedBtn.addEventListener('click', async () => {
                 infoOverlay.style.display = 'none';
-
-                if (!('ai' in window)) {
-                    alert("On-Device AI API not found. Please ensure you are using a compatible version of Google Chrome and have enabled the required features.");
-                    return;
-                }
 
                 try {
                     const sessionOptions = { topK: 3 };
