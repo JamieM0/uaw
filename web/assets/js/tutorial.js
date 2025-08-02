@@ -50,11 +50,13 @@ class TutorialManager {
         this.elements.title.textContent = step.title;
         this.elements.instructions.innerHTML = step.instructions;
         
-        // Simply set the value. The onDidChangeModelContent event handler
-        // will now automatically take care of rendering and validation.
         this.editor.setValue(JSON.stringify(step.initial_json, null, 2));
 
         this.updateNavButtons();
+        
+        if (window.renderSimulation) {
+            window.renderSimulation();
+        }
     }
 
     runStepValidation() {

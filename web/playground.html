@@ -24,6 +24,7 @@
 
         <script src="/assets/js/tutorial.js"></script>
         <script src="/assets/js/tutorial-validator.js"></script>
+        <script src="/assets/js/simulation-player.js"></script>
 
         <!-- Monaco Editor for JSON syntax highlighting -->
         <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
@@ -391,6 +392,7 @@
                 max-width: 100%;
                 box-sizing: border-box;
                 display: block !important;
+                overflow: hidden;
             }
 
             .task-track {
@@ -891,45 +893,124 @@
                 border-color: var(--border-color);
             }
             /* Tutorial & Gamification Styles */
-.tutorial-panel {
-    display: none; /* Hidden by default */
-    width: 350px;
-    flex-shrink: 0; /* Prevent the panel from shrinking */
-    background: #fff;
-    z-index: 1500;
-    box-shadow: 0 0 20px rgba(0,0,0,0.2);
-    flex-direction: column;
-    border-right: 1px solid var(--border-color);
-}
-.tutorial-panel.visible {
-    display: flex; /* Show the panel and let it take up space */
-}
-.tutorial-header { padding: 1rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-.tutorial-header h3 { margin: 0; }
-.tutorial-exit-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
-.tutorial-exit-btn:hover { color: var(--text-color); }
-.tutorial-content { flex: 1; padding: 1rem; overflow-y: auto; line-height: 1.6; }
-.tutorial-content code { background: var(--bg-light); padding: 2px 5px; border-radius: 4px; font-family: monospace; }
-.tutorial-footer { padding: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; }
-.tutorial-footer button { padding: 0.5rem 1rem; border: 1px solid var(--border-color); background: var(--bg-light); cursor: pointer; border-radius: var(--border-radius-sm); }
-.tutorial-footer button:disabled { background: var(--border-color); color: var(--text-light); cursor: not-allowed; }
-.tutorial-footer button#tutorial-next-btn { background: var(--primary-color); color: white; border-color: var(--primary-color); }
-.tutorial-footer button#tutorial-next-btn:disabled { background: var(--primary-light); border-color: var(--primary-light); }
+            .tutorial-panel {
+                display: none; /* Hidden by default */
+                width: 350px;
+                flex-shrink: 0; /* Prevent the panel from shrinking */
+                background: #fff;
+                z-index: 1500;
+                box-shadow: 0 0 20px rgba(0,0,0,0.2);
+                flex-direction: column;
+                border-right: 1px solid var(--border-color);
+            }
+            .tutorial-panel.visible {
+                display: flex; /* Show the panel and let it take up space */
+            }
+            .tutorial-header { padding: 1rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+            .tutorial-header h3 { margin: 0; }
+            .tutorial-exit-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
+            .tutorial-exit-btn:hover { color: var(--text-color); }
+            .tutorial-content { flex: 1; padding: 1rem; overflow-y: auto; line-height: 1.6; }
+            .tutorial-content code { background: var(--bg-light); padding: 2px 5px; border-radius: 4px; font-family: monospace; }
+            .tutorial-footer { padding: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; }
+            .tutorial-footer button { padding: 0.5rem 1rem; border: 1px solid var(--border-color); background: var(--bg-light); cursor: pointer; border-radius: var(--border-radius-sm); }
+            .tutorial-footer button:disabled { background: var(--border-color); color: var(--text-light); cursor: not-allowed; }
+            .tutorial-footer button#tutorial-next-btn { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+            .tutorial-footer button#tutorial-next-btn:disabled { background: var(--primary-light); border-color: var(--primary-light); }
 
-/* Hide buttons when tutorial is active */
-body.tutorial-active #load-sample-btn,
-body.tutorial-active #render-simulation-btn,
-body.tutorial-active #submit-btn,
-body.tutorial-active #auto-render-toggle {
-    display: none;
-}
+            /* Hide buttons when tutorial is active */
+            body.tutorial-active #load-sample-btn,
+            body.tutorial-active #render-simulation-btn,
+            body.tutorial-active #submit-btn,
+            body.tutorial-active #auto-render-toggle {
+                display: none;
+            }
 
-/* Help Dropdown Styles */
-.dropdown { position: relative; display: inline-block; }
-.dropdown-content { display: none; position: absolute; background-color: #f9f9f9; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1; border-radius: var(--border-radius-sm); overflow: hidden; right: 0; }
-.dropdown-content a { color: black; padding: 12px 16px; text-decoration: none; display: block; }
-.dropdown-content a:hover { background-color: #f1f1f1; }
-.dropdown:hover .dropdown-content { display: block; }
+            /* Help Dropdown Styles */
+            .dropdown { position: relative; display: inline-block; }
+            .dropdown-content { display: none; position: absolute; background-color: #f9f9f9; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1; border-radius: var(--border-radius-sm); overflow: hidden; right: 0; }
+            .dropdown-content a { color: black; padding: 12px 16px; text-decoration: none; display: block; }
+            .dropdown-content a:hover { background-color: #f1f1f1; }
+            .dropdown:hover .dropdown-content { display: block; }
+
+            /* --- Simulation Player Styles --- */
+            .player-controls {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0 0.75rem;
+                border-left: 1px solid var(--border-color);
+            }
+            #player-play-pause-btn {
+                font-size: 1.25rem;
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 0;
+                width: 32px;
+                height: 32px;
+                line-height: 32px;
+            }
+            .player-time-display {
+                font-size: 0.875rem;
+                font-family: monospace;
+                background: var(--bg-light);
+                padding: 0.25rem 0.5rem;
+                border-radius: 4px;
+            }
+            .player-speed-control select {
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+                padding: 0.25rem;
+            }
+
+            /* --- Playhead and Scrubbing Styles --- */
+            .simulation-playhead {
+                position: absolute;
+                top: 0;
+                bottom: -10000px; /* Extends way down to cover all actor lanes */
+                left: 0; /* Positioned by JavaScript */
+                width: 2px;
+                background-color: rgba(220, 53, 69, 0.8); /* Red line */
+                z-index: 50;
+                pointer-events: none; /* The handle will capture events */
+            }
+            .scrub-handle {
+                position: absolute;
+                top: 0;
+                left: -8px;
+                width: 18px;
+                height: 30px; /* Matches height of time marker bar */
+                cursor: ew-resize;
+                pointer-events: all; /* Make the handle interactive */
+                z-index: 51;
+                background: transparent; /* Keep it invisible but grabbable */
+            }
+            .scrub-handle::after {
+                content: '';
+                position: absolute;
+                top: 5px;
+                left: 8px;
+                width: 2px;
+                height: 20px;
+                background: #dc3545;
+                border-radius: 2px;
+            }
+
+            /* Live State Panel Styles */
+            #live-state-container {
+                display: flex;
+                gap: 1rem;
+                padding: 0 0.75rem; /* Match simulation-content padding */
+            }
+            #live-equipment-panel, #live-resources-panel {
+                flex: 1;
+                margin: 0; /* Override default margin */
+            }
+            .live-time {
+                font-weight: normal;
+                color: var(--primary-color);
+            }
         </style>
     </head>
     <body>
@@ -985,17 +1066,34 @@ body.tutorial-active #auto-render-toggle {
                         </button>
                     </div>
 
+                    <div class="player-controls">
+                        <button id="player-play-pause-btn" title="Play/Pause Simulation">▶️</button>
+                        <div class="player-time-display">
+                            <span id="player-current-time">00:00</span>
+                        </div>
+                        <div class="player-speed-control">
+                            <label for="player-speed-select">Speed:</label>
+                            <select id="player-speed-select">
+                                <option value="0.5">0.5x</option>
+                                <option value="1" selected>1x</option>
+                                <option value="2">2x</option>
+                                <option value="5">5x</option>
+                                <option value="10">10x</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="action-buttons">
                         <!-- New Help Dropdown Menu -->
-<div class="dropdown">
-    <button class="action-btn">Help</button>
-    <div class="dropdown-content">
-        <a href="#" id="start-tutorial-btn">Start Tutorial</a>
-        <a href="#" id="start-llm-btn">Experimental LLM</a>
-    </div>
-</div>
+                        <div class="dropdown">
+                            <button class="action-btn">Help</button>
+                            <div class="dropdown-content">
+                                <a href="#" id="start-tutorial-btn">Start Tutorial</a>
+                                <a href="#" id="start-llm-btn">Experimental LLM</a>
+                            </div>
+                        </div>
 
-<button id="submit-btn" class="action-btn" title="Submit simulation to page">Submit</button>
+                        <button id="submit-btn" class="action-btn" title="Submit simulation to page">Submit</button>
                     </div>
                 </div>
             </div>
@@ -1139,6 +1237,8 @@ body.tutorial-active #auto-render-toggle {
             // Enhanced Simulation Playground JavaScript
             let editor;
             let tutorialManager;
+            let player;
+
             let tutorialData = null;
             let metricsCatalog = [];
             Promise.all([
@@ -2725,7 +2825,20 @@ body.tutorial-active #auto-render-toggle {
 
                         timeMarkers.appendChild(marker);
                     }
+                    
                     timeline.appendChild(timeMarkers);
+
+                    // --- START OF FIX ---
+                    const playhead = document.createElement("div");
+                    playhead.id = "simulation-playhead";
+                    playhead.className = "simulation-playhead";
+                    
+                    const scrubHandle = document.createElement("div");
+                    scrubHandle.className = "scrub-handle";
+                    playhead.appendChild(scrubHandle);
+
+                    // Append the playhead to the main timeline, not the marker bar
+                    timeMarkers.appendChild(playhead);
 
                     const actorLanes = document.createElement("div");
                     actorLanes.className = "actor-lanes";
@@ -2837,23 +2950,23 @@ body.tutorial-active #auto-render-toggle {
                         const equipmentPanel = document.createElement("div");
                         equipmentPanel.className = "resources-panel";
                         equipmentPanel.innerHTML = `
-                <h5>⚙️ Equipment (Final States)</h5>
-                <div class="resource-grid">
-                    ${currentSimulationData.equipment
-                        .map(
-                            (item) => `
-                        <div class="resource-item">
-                            <div class="resource-emoji">${item.emoji || "❓"}</div>
-                            <div class="resource-info">
-                                <div class="resource-name">${item.name || item.id}</div>
-                                <div class="resource-state ${finalEquipmentStates[item.id]}">${finalEquipmentStates[item.id]}</div>
+                            <h5>⚙️ Equipment (Final States)</h5>
+                            <div class="resource-grid">
+                                ${currentSimulationData.equipment
+                                    .map(
+                                        (item) => `
+                                    <div class="resource-item">
+                                        <div class="resource-emoji">${item.emoji || "❓"}</div>
+                                        <div class="resource-info">
+                                            <div class="resource-name">${item.name || item.id}</div>
+                                            <div class="resource-state ${finalEquipmentStates[item.id]}">${finalEquipmentStates[item.id]}</div>
+                                        </div>
+                                    </div>
+                                `,
+                                    )
+                                    .join("")}
                             </div>
-                        </div>
-                    `,
-                        )
-                        .join("")}
-                </div>
-            `;
+                        `;
                         equipmentAndResourcesContainer.appendChild(
                             equipmentPanel,
                         );
@@ -2867,29 +2980,50 @@ body.tutorial-active #auto-render-toggle {
                         const resourcesPanel = document.createElement("div");
                         resourcesPanel.className = "resources-panel";
                         resourcesPanel.innerHTML = `
-                <h5>📦 Resources (Consumables)</h5>
-                <div class="resource-grid">
-                    ${currentSimulationData.resources
-                        .map(
-                            (resource) => `
-                        <div class="resource-item">
-                            <div class="resource-emoji">${resource.emoji || "❓"}</div>
-                            <div class="resource-info">
-                                <div class="resource-name">${resource.id}</div>
-                                <div class="resource-state available">Stock: ${resource.starting_stock} ${resource.unit}</div>
+                            <h5>📦 Resources (Consumables)</h5>
+                            <div class="resource-grid">
+                                ${currentSimulationData.resources
+                                    .map(
+                                        (resource) => `
+                                    <div class="resource-item">
+                                        <div class="resource-emoji">${resource.emoji || "❓"}</div>
+                                        <div class="resource-info">
+                                            <div class="resource-name">${resource.id}</div>
+                                            <div class="resource-state available">Stock: ${resource.starting_stock} ${resource.unit}</div>
+                                        </div>
+                                    </div>
+                                `,
+                                    )
+                                    .join("")}
                             </div>
-                        </div>
-                    `,
-                        )
-                        .join("")}
-                </div>
-            `;
+                        `;
                         equipmentAndResourcesContainer.appendChild(
                             resourcesPanel,
                         );
                     }
 
-                    container.appendChild(equipmentAndResourcesContainer);
+                    // --- NEW Dynamic State Panels ---
+                    const liveStateContainer = document.createElement('div');
+                    liveStateContainer.id = 'live-state-container';
+                    liveStateContainer.style.display = 'flex';
+                    liveStateContainer.style.gap = '1rem';
+                    liveStateContainer.style.marginTop = '1rem';
+
+                    // Panel for live equipment state
+                    const liveEquipmentPanel = document.createElement("div");
+                    liveEquipmentPanel.id = 'live-equipment-panel';
+                    liveEquipmentPanel.className = "resources-panel";
+                    liveEquipmentPanel.innerHTML = `<h5>⚙️ Equipment State (at <span class="live-time">00:00</span>)</h5><div class="resource-grid"></div>`;
+                    
+                    // Panel for live resource stock
+                    const liveResourcesPanel = document.createElement("div");
+                    liveResourcesPanel.id = 'live-resources-panel';
+                    liveResourcesPanel.className = "resources-panel";
+                    liveResourcesPanel.innerHTML = `<h5>📦 Resource Stock (at <span class="live-time">00:00</span>)</h5><div class="resource-grid"></div>`;
+
+                    liveStateContainer.appendChild(liveEquipmentPanel);
+                    liveStateContainer.appendChild(liveResourcesPanel);
+                    container.appendChild(liveStateContainer);
 
                     const stats = document.createElement("div");
                     stats.className = "simulation-stats";
@@ -2904,6 +3038,11 @@ body.tutorial-active #auto-render-toggle {
                     container.appendChild(stats);
 
                     simulationContent.appendChild(container);
+
+                    if (player && typeof player.destroy == 'function') {
+                        player.destroy();
+                    }
+                    player = new SimulationPlayer(currentSimulationData);
                 } catch (e) {
                     simulationContent.innerHTML = `<p style="color: var(--error-color); text-align: center; margin-top: 2rem;">Render Error: ${e.message}</p>`;
                     console.error("Render error:", e);
