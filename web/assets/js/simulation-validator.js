@@ -322,4 +322,60 @@ class SimulationValidator {
       this.addResult({ metricId: metric.id, status: 'success', message: `Simulation is profitable with a margin of $${profit.toFixed(2)}.` });
     }
   }
+
+    // --- ADD THESE NEW FUNCTIONS ---
+
+  validateObjectLocations(metric) {
+    const locations = this.simulation.layout?.locations || [];
+    const locationIds = new Set(locations.map(l => l.id));
+    const objects = this.simulation.objects || [];
+    let issueFound = false;
+
+    for (const obj of objects) {
+      const objLoc = obj.properties?.location;
+      if (objLoc && !locationIds.has(objLoc)) {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Object '${obj.id}' is assigned to an undefined location: '${objLoc}'.`
+        });
+        issueFound = true;
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All object locations are valid.' });
+    }
+  }
+
+  validateTaskProximity(metric) {
+    const objects = this.simulation.objects || [];
+    const objectMap = new Map(objects.map(o => [o.id, o]));
+    const tasks = this.simulation.tasks || [];
+    let issueFound = false;
+
+    for (const task of tasks) {
+        if (!task.location) continue; // Skip tasks without a location
+
+        // 1. Check the actor's location
+        const actor = objectMap.get(task.actor_id);
+        if (actor && actor.properties?.location !== task.location) {
+            this.addResult({ metricId: metric.id, status: 'error', message: `Proximity Error: Actor '${actor.id}' must be in location '${task.location}' to perform task '${task.id}', but is in '${actor.properties.location}'.` });
+            issueFound = true;
+        }
+
+        // 2. Check the location of all required equipment
+        for (const interaction of (task.equipment_interactions || [])) {
+            const equipment = objectMap.get(interaction.id);
+            if (equipment && equipment.properties?.location !== task.location) {
+                 this.addResult({ metricId: metric.id, status: 'error', message: `Proximity Error: Equipment '${equipment.id}' must be in location '${task.location}' for task '${task.id}', but is in '${equipment.properties.location}'.` });
+                 issueFound = true;
+            }
+        }
+    }
+
+    if (!issueFound) {
+        this.addResult({ metricId: metric.id, status: 'success', message: 'All task proximity requirements are met.' });
+    }
+  }
 }

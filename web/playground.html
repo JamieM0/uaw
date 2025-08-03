@@ -11,6 +11,7 @@
         <link rel="stylesheet" href="/assets/css/main.css" />
         <link rel="stylesheet" href="/assets/css/components.css" />
         <link rel="stylesheet" href="/assets/css/simulation.css" />
+        <link rel="stylesheet" href="/assets/css/space-editor.css" />
 
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,6 +22,7 @@
         />
 
         <script src="/assets/js/simulation-validator.js"></script>
+        <script src="/assets/js/space-editor.js"></script>
 
         <script src="/assets/js/tutorial.js"></script>
         <script src="/assets/js/tutorial-validator.js"></script>
@@ -1011,6 +1013,11 @@
                 font-weight: normal;
                 color: var(--primary-color);
             }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
         </style>
     </head>
     <body>
@@ -1126,28 +1133,36 @@
                     </div>
 
                     <div class="simulation-panel">
-                        <div class="panel-header"></div>
-                        <div class="panel-content">
-                            <div class="simulation-content" id="simulation-content">
-                                <p
-                                    style="
-                                        color: var(--text-light);
-                                        text-align: center;
-                                        margin-top: 2rem;
-                                    "
-                                >
-                                    Simulation will render automatically as you edit
-                                    the JSON. Click on task blocks to jump to their
-                                    JSON definition. Drag task blocks to move them
-                                    between actors or change times.
-                                </p>
+                        <div class="tab-bar">
+                            <button class="tab-btn active" data-tab="timeline">Simulation Render</button>
+                            <button class="tab-btn" data-tab="space-editor">Space Editor</button>
+                        </div>
+
+                        <div class="tab-content-wrapper">
+                            <div id="simulation-tab" class="tab-content active">
+                                <div id="simulation-content" class="simulation-content">
+                                    <!-- Existing simulation content -->
+                                </div>
+                                <div id="simulation-loading" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.9); padding: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <div style="width: 20px; height: 20px; border: 2px solid #ddd; border-top: 2px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                                        Rendering simulation...
+                                    </div>
+                                </div>
                             </div>
-                            <div
-                                class="loading-overlay"
-                                id="simulation-loading"
-                                style="display: none"
-                            >
-                                <div class="spinner"></div>
+                            <div id="space-editor-tab" class="tab-content">
+                                <div class="space-editor-container">
+                                    <div class="space-canvas" id="space-canvas"></div>
+                                    <div class="properties-panel-container">
+                                        <div class="properties-panel-header">
+                                            <h4>Properties</h4>
+                                            <button id="add-location-btn" class="btn btn-primary">+ Add</button>
+                                        </div>
+                                        <div id="properties-panel-content">
+                                            <p class="placeholder">Select a location, or click '+ Add' to draw a new one.</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1189,88 +1204,208 @@
         </div>
 
         <!-- Overlay 1: Information and Prerequisite Check (Updated) -->
-<div id="llm-info-overlay" class="dialog-overlay" style="display: none;">
-    <div class="dialog">
-        <h3>🚀 Experimental AI Feature (Canary)</h3>
-        <p>You are about to test UAW's integration with an experimental, built-in AI. This feature uses the new Prompt API which is under active development.</p>
-        
-        <strong>Requirements:</strong>
-        <ul>
-            <li>You must be using <strong>Google Chrome Canary</strong>.</li>
-            <li>The API must be enabled via a feature flag.</li>
-        </ul>
-        
-        <strong>How to Enable:</strong>
-        <ol>
-            <li>Download and install <a href="https://www.google.com/chrome/canary/" target="_blank">Google Chrome Canary</a>.</li>
-            <li>In Canary, go to <code>chrome://flags/#prompt-api-for-gemini-nano</code> <strong>and</strong> <code>chrome://flags/#optimization-guide-on-device-model</code>, set both to <strong>Enabled</strong>, and restart the browser.</li>
-            <li>After around 15 minutes, you should see a new entry in <code>chrome://components/</code> - Optimization Guide On Device Model. Wait for this to be on 'Status - Updated' before clicking continue.</li>
-        </ol>
-        <p><small>This API is experimental and subject to change. It may not work on all devices.</small></p>
+        <div id="llm-info-overlay" class="dialog-overlay" style="display: none;">
+            <div class="dialog">
+                <h3>🚀 Experimental AI Feature (Canary)</h3>
+                <p>You are about to test UAW's integration with an experimental, built-in AI. This feature uses the new Prompt API which is under active development.</p>
+                
+                <strong>Requirements:</strong>
+                <ul>
+                    <li>You must be using <strong>Google Chrome Canary</strong>.</li>
+                    <li>The API must be enabled via a feature flag.</li>
+                </ul>
+                
+                <strong>How to Enable:</strong>
+                <ol>
+                    <li>Download and install <a href="https://www.google.com/chrome/canary/" target="_blank">Google Chrome Canary</a>.</li>
+                    <li>In Canary, go to <code>chrome://flags/#prompt-api-for-gemini-nano</code> <strong>and</strong> <code>chrome://flags/#optimization-guide-on-device-model</code>, set both to <strong>Enabled</strong>, and restart the browser.</li>
+                    <li>After around 15 minutes, you should see a new entry in <code>chrome://components/</code> - Optimization Guide On Device Model. Wait for this to be on 'Status - Updated' before clicking continue.</li>
+                </ol>
+                <p><small>This API is experimental and subject to change. It may not work on all devices.</small></p>
 
-        <div class="dialog-buttons">
-            <button type="button" class="btn-secondary" id="llm-cancel-btn">Cancel</button>
-            <button type="button" class="btn-primary" id="llm-proceed-btn">Continue</button>
-        </div>
-    </div>
-</div>
-
-<!-- Overlay 2: The Chat Interface (No changes needed) -->
-<div id="llm-chat-overlay" class="dialog-overlay" style="display: none;">
-    <div class="dialog" style="max-width: 600px; display: flex; flex-direction: column;">
-        <h3 id="llm-chat-title">Chat with Built-in AI</h3>
-        <div id="llm-chat-history" style="flex: 1; overflow-y: auto; border: 1px solid var(--border-color); padding: 1rem; border-radius: 4px; min-height: 300px; margin-bottom: 1rem;"></div>
-        <div id="llm-thinking-indicator" style="display: none; font-style: italic; color: var(--text-light); margin-bottom: 1rem;">AI is thinking...</div>
-        <form id="llm-chat-form">
-            <div style="display: flex; gap: 1rem;">
-                <input type="text" id="llm-chat-input" placeholder="Ask a question about your simulation..." style="flex: 1;">
-                <button type="submit" class="btn-primary">Send</button>
+                <div class="dialog-buttons">
+                    <button type="button" class="btn-secondary" id="llm-cancel-btn">Cancel</button>
+                    <button type="button" class="btn-primary" id="llm-proceed-btn">Continue</button>
+                </div>
             </div>
-        </form>
-         <div class="dialog-buttons" style="justify-content: center;">
-            <button type="button" class="btn-secondary" id="llm-chat-close-btn">Close</button>
         </div>
-    </div>
-</div>
 
+        <!-- Overlay 2: The Chat Interface (No changes needed) -->
+        <div id="llm-chat-overlay" class="dialog-overlay" style="display: none;">
+            <div class="dialog" style="max-width: 600px; display: flex; flex-direction: column;">
+                <h3 id="llm-chat-title">Chat with Built-in AI</h3>
+                <div id="llm-chat-history" style="flex: 1; overflow-y: auto; border: 1px solid var(--border-color); padding: 1rem; border-radius: 4px; min-height: 300px; margin-bottom: 1rem;"></div>
+                <div id="llm-thinking-indicator" style="display: none; font-style: italic; color: var(--text-light); margin-bottom: 1rem;">AI is thinking...</div>
+                <form id="llm-chat-form">
+                    <div style="display: flex; gap: 1rem;">
+                        <input type="text" id="llm-chat-input" placeholder="Ask a question about your simulation..." style="flex: 1;">
+                        <button type="submit" class="btn-primary">Send</button>
+                    </div>
+                </form>
+                <div class="dialog-buttons" style="justify-content: center;">
+                    <button type="button" class="btn-secondary" id="llm-chat-close-btn">Close</button>
+                </div>
+            </div>
+        </div>
         <script>
-            // Enhanced Simulation Playground JavaScript
+            console.log("SCRIPT START: Initializing global variables.");
             let editor;
-            let tutorialManager;
-            let player;
-
+            let tutorialManager, player, spaceEditor;
             let tutorialData = null;
-            let metricsCatalog = [];
+            let isPlaygroundInitialized = false; // Flag to prevent double-initialization
+            let autoRender = true;
+
+            // --- DATA FETCHING ---
+            console.log("FETCH: Initiating fetch for tutorial and metrics catalogs.");
             Promise.all([
-                fetch('/assets/static/tutorial-content.json').then(res => res.json()),
-                fetch('/assets/static/metrics-catalog.json').then(res => res.json())
+                fetch('/assets/static/tutorial-content.json').then(res => {
+                    if (!res.ok) throw new Error(`Fetch failed for tutorial-content.json: ${res.statusText}`);
+                    return res.json();
+                }),
+                fetch('/assets/static/metrics-catalog.json').then(res => {
+                    if (!res.ok) throw new Error(`Fetch failed for metrics-catalog.json: ${res.statusText}`);
+                    return res.json();
+                })
             ]).then(([tutData, metData]) => {
                 tutorialData = tutData;
                 window.metricsCatalog = metData;
-                console.log("Tutorial and Metrics catalogs loaded successfully.");
-                if (editor) {
-                    initializeTutorial(); // Initialize tutorial manager now that data is ready
-                    validateJSON();
-                }
+                console.log("FETCH SUCCESS: Catalogs loaded.");
+                // Now that data is ready, try to initialize.
+                // If the editor isn't ready, this will do nothing. The editor's callback will handle it.
+                attemptInitializePlayground();
             }).catch(error => {
-                console.error("Error loading initial data:", error);
+                console.error("FETCH FAILED: Critical error loading initial data.", error);
             });
-            let autoRender = true;
-            let currentSimulationData = null;
 
-            // Scroll to validation section
-            document.addEventListener("click", function (e) {
-                if (e.target && e.target.id === "scroll-to-validation-btn") {
-                    const validationPanel =
-                        document.querySelector(".validation-panel");
-                    if (validationPanel) {
-                        validationPanel.scrollIntoView({ behavior: "smooth" });
-                    }
+            // --- CORE INITIALIZATION FUNCTION ---
+            function initializePlayground() {
+                console.log("INIT: Running initializePlayground().");
+
+                console.log("INIT: 1. Setting up UI components.");
+                setupTabs();
+                updateAutoRenderUI();
+                initializeResizeHandles();
+                initializeDragAndDrop();
+
+                console.log("INIT: 2. Instantiating controllers.");
+                const canvas = document.getElementById('space-canvas');
+                const propsPanel = document.getElementById('properties-panel-content');
+                if (canvas && propsPanel) {
+                    spaceEditor = new SpaceEditor(canvas, propsPanel, editor);
+                    console.log("INIT: SpaceEditor instantiated successfully.");
+                } else {
+                    console.error("INIT ERROR: Canvas or Properties Panel element not found!");
                 }
-                if (e.target && e.target.id === "scroll-to-top-btn") {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
+                
+                initializeTutorial();
+                initializeExperimentalLLM();
+
+                console.log("INIT: 3. Performing initial render and validation.");
+                renderSimulation();
+                validateJSON();
+                console.log("INIT: initializePlayground() completed successfully.");
+            }
+
+            // --- SINGLE POINT OF ENTRY FOR INITIALIZATION ---
+            function attemptInitializePlayground() {
+                // This function can be called from either async operation (fetch or monaco).
+                // It will only run the actual initialization once all conditions are met.
+                if (isPlaygroundInitialized) return; // Already done, do nothing.
+                if (editor && tutorialData && window.metricsCatalog) {
+                    isPlaygroundInitialized = true; // Set flag to prevent re-entry
+                    initializePlayground();
                 }
+            }
+
+            // --- MONACO EDITOR INITIALIZATION ---
+            console.log("MONACO: Starting initialization.");
+            require.config({
+                paths: { vs: "https://unpkg.com/monaco-editor@0.44.0/min/vs" },
             });
+            require(["vs/editor/editor.main"], function () {
+                console.log("MONACO-CALLBACK: Monaco editor is ready.");
+                editor = monaco.editor.create(
+                    document.getElementById("json-editor"),
+                    {
+                        value: JSON.stringify(sampleSimulation, null, 2),
+                        language: "json",
+                        theme: "vs",
+                        automaticLayout: true,
+                        minimap: { enabled: false },
+                        scrollBeyondLastLine: false,
+                        fontSize: 14,
+                        lineNumbers: "on",
+                        roundedSelection: false,
+                        scrollbar: { vertical: "visible", horizontal: "visible" },
+                        folding: true,
+                        bracketMatching: "always",
+                        formatOnPaste: true,
+                        formatOnType: true
+                    }
+                );
+
+                // --- EVENT HANDLERS ---
+                editor.onDidChangeModelContent(() => {
+                    if (autoRender) { debounceRender(); }
+
+                    if (tutorialManager && tutorialManager.isActive) {
+                        tutorialManager.runStepValidation();
+                    } else {
+                        validateJSON();
+                    }
+
+                    if (spaceEditor && !spaceEditor.isDrawing && !spaceEditor.isDragging && !spaceEditor.isUpdatingJson) {
+                        try {
+                            const currentJson = JSON.parse(editor.getValue());
+                            spaceEditor.loadLayout(currentJson.simulation.layout);
+                        } catch(e) { /* Ignore parse errors during typing */ }
+                    }
+                });
+
+                let changeTimeout;
+                editor.onDidChangeModelContent(() => {
+                    clearTimeout(changeTimeout);
+                    changeTimeout = setTimeout(() => { saveToHistory(); }, 1000);
+                });
+
+                // Now that the editor is ready, try to initialize the playground.
+                console.log("MONACO-CALLBACK: Attempting to initialize playground.");
+                attemptInitializePlayground();
+            });
+            
+            function setupTabs() {
+                console.log("UI: Setting up tabs.");
+                const tabButtons = document.querySelectorAll('.tab-btn');
+                const tabContents = document.querySelectorAll('.tab-content');
+                tabButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const targetTab = button.dataset.tab;
+
+                        tabButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+
+                        tabContents.forEach(content => {
+                            content.classList.remove('active');
+                        });
+
+                        // Map tab names to content IDs correctly
+                        if (targetTab === 'timeline') {
+                            document.getElementById('simulation-tab').classList.add('active');
+                        } else if (targetTab === 'space-editor') {
+                            document.getElementById('space-editor-tab').classList.add('active');
+                            // Load current simulation data into space editor when tab is opened
+                            if (spaceEditor) {
+                                try {
+                                    const currentJson = JSON.parse(editor.getValue());
+                                    spaceEditor.loadLayout(currentJson.simulation.layout);
+                                } catch(e) {
+                                    console.log("No valid JSON to load into space editor");
+                                }
+                            }
+                        }
+                    });
+                });
+            }
 
             // History system for undo functionality
             let history = [];
@@ -1305,41 +1440,57 @@
                         start_time: "06:00",
                         end_time: "18:00",
                     },
+                    layout: {
+                        meta: {
+                            units: "meters",
+                            pixels_per_unit: 20
+                        },
+                        locations: [
+                            {
+                                id: "prep_area", name: "Prep Area",
+                                shape: { type: "rect", x: 50, y: 50, width: 300, height: 150 }
+                            },
+                            {
+                                id: "oven_area", name: "Oven Area",
+                                shape: { type: "rect", x: 400, y: 50, width: 150, height: 150 }
+                            }
+                        ]
+                    },
                     objects: [
                         // --- ACTORS ---
-                        { id: "baker", type: "actor", name: "Baker", properties: { role: "Baker", cost_per_hour: 25 } },
-                        { id: "assistant", type: "actor", name: "Assistant", properties: { role: "Assistant Baker", cost_per_hour: 18 } },
+                        { id: "baker", type: "actor", name: "Baker", properties: { role: "Baker", cost_per_hour: 25, location: "prep_area" } },
+                        { id: "assistant", type: "actor", name: "Assistant", properties: { role: "Assistant Baker", cost_per_hour: 18, location: "prep_area" } },
                         // --- EQUIPMENT ---
-                        { id: "mixer", type: "equipment", name: "Stand Mixer", emoji: "🌀", properties: { state: "clean", capacity: 1 } },
-                        { id: "oven", type: "equipment", name: "Commercial Oven", emoji: "🔥", properties: { state: "available", capacity: 4 } },
-                        { id: "workspace", type: "equipment", name: "Prep Counter", emoji: "🏢", properties: { state: "clean", capacity: 2 } },
-                        { id: "mixing_bowl", type: "equipment", name: "Mixing Bowl", emoji: "🥣", properties: { state: "clean", capacity: 1 } },
+                        { id: "mixer", type: "equipment", name: "Stand Mixer", emoji: "🌀", properties: { state: "clean", capacity: 1, location: "prep_area" } },
+                        { id: "oven", type: "equipment", name: "Commercial Oven", emoji: "🔥", properties: { state: "available", capacity: 4, location: "oven_area" } },
+                        { id: "workspace", type: "equipment", name: "Prep Counter", emoji: "🏢", properties: { state: "clean", capacity: 2, location: "prep_area" } },
+                        { id: "mixing_bowl", type: "equipment", name: "Mixing Bowl", emoji: "🥣", properties: { state: "clean", capacity: 1, location: "prep_area" } },
                         // --- RESOURCES (CONSUMABLES) ---
-                        { id: "flour", type: "resource_pile", name: "Flour", emoji: "🌾", properties: { unit: "kg", quantity: 50 } },
-                        { id: "water", type: "resource_pile", name: "Water", emoji: "💧", properties: { unit: "liter", quantity: 20 } },
-                        { id: "yeast", type: "resource_pile", name: "Yeast", emoji: "🦠", properties: { unit: "g", quantity: 500 } },
+                        { id: "flour", type: "resource_pile", name: "Flour", emoji: "🌾", properties: { unit: "kg", quantity: 50, location: "prep_area" } },
+                        { id: "water", type: "resource_pile", name: "Water", emoji: "💧", properties: { unit: "liter", quantity: 20, location: "prep_area" } },
+                        { id: "yeast", type: "resource_pile", name: "Yeast", emoji: "🦠", properties: { unit: "g", quantity: 500, location: "prep_area" } },
                         // --- PRODUCTS (INTERMEDIATE & FINAL) ---
-                        { id: "mixed_dough", type: "product", name: "Mixed Dough", emoji: "덩", properties: { unit: "batch", quantity: 0 } },
-                        { id: "risen_dough", type: "product", name: "Risen Dough", emoji: "🍞", properties: { unit: "batch", quantity: 0 } },
-                        { id: "shaped_loaves", type: "product", name: "Shaped Loaves", emoji: "🥖", properties: { unit: "loaves", quantity: 0 } },
-                        { id: "baked_bread", type: "product", name: "Baked Bread", emoji: "🍞", properties: { unit: "loaves", quantity: 0 } }
+                        { id: "mixed_dough", type: "product", name: "Mixed Dough", emoji: "덩", properties: { unit: "batch", quantity: 0, location: "prep_area" } },
+                        { id: "risen_dough", type: "product", name: "Risen Dough", emoji: "🍞", properties: { unit: "batch", quantity: 0, location: "prep_area" } },
+                        { id: "shaped_loaves", type: "product", name: "Shaped Loaves", emoji: "🥖", properties: { unit: "loaves", quantity: 0, location: "oven_area" } },
+                        { id: "baked_bread", type: "product", name: "Baked Bread", emoji: "🍞", properties: { unit: "loaves", quantity: 0, location: "oven_area" } }
                     ],
                     tasks: [
                         {
-                            id: "prepare_ingredients 🔸 🔧", actor_id: "baker", start: "06:15", duration: 30,
+                            id: "prepare_ingredients 🔸 🔧", actor_id: "baker", start: "06:15", duration: 30, location: "prep_area",
                             consumes: {}, produces: {}, depends_on: [],
                             equipment_interactions: [{ id: "workspace", from_state: "clean", to_state: "in-use" }]
                         },
                         {
-                            id: "measure_flour 🔸 ⚖️", actor_id: "baker", start: "06:45", duration: 10,
+                            id: "measure_flour 🔸 ⚖️", actor_id: "baker", start: "06:45", duration: 10, location: "prep_area",
                             consumes: {}, produces: {}, depends_on: ["prepare_ingredients 🔸 🔧"]
                         },
                         {
-                            id: "activate_yeast 🔸 🦠", actor_id: "assistant", start: "06:45", duration: 10,
+                            id: "activate_yeast 🔸 🦠", actor_id: "assistant", start: "06:45", duration: 10, location: "prep_area",
                             consumes: { yeast: 15 }, produces: {}, depends_on: []
                         },
                         {
-                            id: "mix_dough 🔸 🥄", actor_id: "baker", start: "06:55", duration: 20,
+                            id: "mix_dough 🔸 🥄", actor_id: "baker", start: "06:55", duration: 20, location: "prep_area",
                             consumes: { flour: 1, water: 0.7 }, produces: { mixed_dough: 1 },
                             depends_on: ["measure_flour 🔸 ⚖️", "activate_yeast 🔸 🦠"],
                             equipment_interactions: [
@@ -1348,44 +1499,44 @@
                             ]
                         },
                         {
-                            id: "knead_dough 🔸 👋", actor_id: "baker", start: "07:15", duration: 15,
+                            id: "knead_dough 🔸 👋", actor_id: "baker", start: "07:15", duration: 15, location: "prep_area",
                             consumes: { mixed_dough: 1 }, produces: { risen_dough: 1 }, depends_on: ["mix_dough 🔸 🥄"],
                             equipment_interactions: [{ id: "workspace", from_state: "in-use", to_state: "dirty" }]
                         },
                         {
-                            id: "first_rise 🔸 ⏰", actor_id: "baker", start: "07:30", duration: 90,
+                            id: "first_rise 🔸 ⏰", actor_id: "baker", start: "07:30", duration: 90, location: "prep_area",
                             consumes: { risen_dough: 1 }, produces: { risen_dough: 1 }, depends_on: ["knead_dough 🔸 👋"]
                         },
                         {
-                            id: "clean_mixing_bowls 🔸 🧼", actor_id: "assistant", start: "07:30", duration: 20,
+                            id: "clean_mixing_bowls 🔸 🧼", actor_id: "assistant", start: "07:30", duration: 20, location: "prep_area",
                             consumes: {}, produces: {}, depends_on: [],
                             equipment_interactions: [{ id: "mixing_bowl", from_state: "dirty", to_state: "clean" }]
                         },
                         {
-                            id: "shape_loaves 🔸 👐", actor_id: "baker", start: "09:00", duration: 25,
+                            id: "shape_loaves 🔸 👐", actor_id: "baker", start: "09:00", duration: 25, location: "prep_area",
                             consumes: { risen_dough: 1 }, produces: { shaped_loaves: 1 }, depends_on: ["first_rise 🔸 ⏰"],
                             equipment_interactions: [{ id: "workspace", from_state: "dirty", to_state: "dirty" }]
                         },
                         {
-                            id: "prepare_baking_sheets 🔸 🍞", actor_id: "assistant", start: "09:00", duration: 10,
+                            id: "prepare_baking_sheets 🔸 🍞", actor_id: "assistant", start: "09:00", duration: 10, location: "prep_area",
                             consumes: {}, produces: {}, depends_on: []
                         },
                         {
-                            id: "preheat_oven 🔸 🔥", actor_id: "assistant", start: "09:05", duration: 15,
+                            id: "preheat_oven 🔸 🔥", actor_id: "assistant", start: "09:05", duration: 15, location: "oven_area",
                             consumes: {}, produces: {}, depends_on: ["prepare_baking_sheets 🔸 🍞"],
                             equipment_interactions: [{ id: "oven", from_state: "available", to_state: "in-use" }]
                         },
                         {
-                            id: "second_rise 🔸 ⏰", actor_id: "baker", start: "09:25", duration: 45,
+                            id: "second_rise 🔸 ⏰", actor_id: "baker", start: "09:25", duration: 45, location: "prep_area",
                             consumes: { shaped_loaves: 1 }, produces: { shaped_loaves: 1 }, depends_on: ["shape_loaves 🔸 👐"]
                         },
                         {
-                            id: "bake_bread 🔸 🍞", actor_id: "baker", start: "10:10", duration: 35,
+                            id: "bake_bread 🔸 🍞", actor_id: "baker", start: "10:10", duration: 35, location: "oven_area",
                             consumes: { shaped_loaves: 1 }, produces: { baked_bread: 1 }, depends_on: ["second_rise 🔸 ⏰"],
                             equipment_interactions: [{ id: "oven", from_state: "in-use", to_state: "available" }]
                         },
                         {
-                            id: "wash_equipment 🔸 🧽", actor_id: "assistant", start: "10:10", duration: 35,
+                            id: "wash_equipment 🔸 🧽", actor_id: "assistant", start: "10:10", duration: 35, location: "prep_area",
                             consumes: {}, produces: {}, depends_on: [],
                             equipment_interactions: [{ id: "mixer", from_state: "dirty", to_state: "clean" }]
                         }
@@ -2567,6 +2718,10 @@
                     currentSimulationData =
                         processSimulationData(simulationData);
 
+                    if (spaceEditor) {
+                        spaceEditor.loadLayout(simulationData.simulation.layout);
+                    }
+
                     simulationContent.innerHTML = "";
                     const container = document.createElement("div");
                     container.className = "simulation-container";
@@ -3199,87 +3354,20 @@
                 return bubble;
             }
         }
-
-            // Ensure correct initial button visibility
-            document.addEventListener("DOMContentLoaded", function () {
-                updateAutoRenderUI();
-            });
-
-            // Initialize Monaco Editor
-            require.config({
-                paths: { vs: "https://unpkg.com/monaco-editor@0.44.0/min/vs" },
-            });
-            require(["vs/editor/editor.main"], function () {
-                editor = monaco.editor.create(
-                    document.getElementById("json-editor"),
-                    {
-                        value: JSON.stringify(sampleSimulation, null, 2),
-                        language: "json",
-                        theme: "vs",
-                        automaticLayout: true,
-                        minimap: { enabled: false },
-                        scrollBeyondLastLine: false,
-                        fontSize: 14,
-                        lineNumbers: "on",
-                        roundedSelection: false,
-                        scrollbar: {
-                            vertical: "visible",
-                            horizontal: "visible",
-                        },
-                        folding: true,
-                        bracketMatching: "always",
-                        formatOnPaste: true,
-                        formatOnType: true,
-                    },
-                );
-
-                saveToHistory();
-
-                editor.onDidChangeModelContent(() => {
-                    // Always trigger a render if auto-render is on.
-                    if (autoRender) {
-                        debounceRender();
-                    }
-
-                    // Now, decide which validation logic to run.
-                    if (tutorialManager && tutorialManager.isActive) {
-                        // TUTORIAL MODE: Run step-specific validation logic.
-                        tutorialManager.runStepValidation();
-                    } else {
-                        // NORMAL MODE: Run the full validation suite.
-                        validateJSON();
-                    }
-                });
-
-                let changeTimeout;
-                editor.onDidChangeModelContent(() => {
-                    clearTimeout(changeTimeout);
-                    changeTimeout = setTimeout(() => {
-                        saveToHistory();
-                    }, 1000);
-                });
-
-                validateJSON();
-                if (autoRender) {
-                    renderSimulation();
-                }
-
-                updateAutoRenderUI();
-                initializeResizeHandles();
-                initializeDragAndDrop();
-
-                initializeTutorial();
-                initializeExperimentalLLM();
-                validateJSON();
-            });
-
+            
             // Event listeners
             document.getElementById("undo-btn").addEventListener("click", undo);
 
             document
                 .getElementById("load-sample-btn")
                 .addEventListener("click", () => {
+                    if (spaceEditor) {
+                        spaceEditor.hasInitiallyLoaded = false;
+                    }
                     editor.setValue(JSON.stringify(sampleSimulation, null, 2));
+                    if (autoRender) {
+                        renderSimulation();
+                    }
                 });
 
             document
@@ -3424,6 +3512,7 @@
                     }
                 });
             }
+            
         </script>
     </body>
 </html>

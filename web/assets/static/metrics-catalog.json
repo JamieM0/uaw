@@ -112,5 +112,23 @@
       "final_product_ids": ["baked_bread"]
     }
   }
-}
+  },
+  {
+    "id": "object.spatial.location_undefined",
+    "name": "Undefined Location",
+    "description": "Ensures every object with a location property is assigned to a valid, defined location from the layout.",
+    "category": "Structural Integrity",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateObjectLocations" }
+  },
+  {
+    "id": "task.spatial.unmet_proximity_requirement",
+    "name": "Task Proximity Check",
+    "description": "Checks if the actor and all required equipment/resources for a task are in the same location as the task itself.",
+    "category": "Scheduling",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateTaskProximity" }
+  }
 ]
