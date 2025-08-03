@@ -90,15 +90,6 @@
   "computation": { "engine": "javascript", "function_name": "validateUnusedResources" }
   },
   {
-  "id": "equipment.capacity.exceeded",
-  "name": "Equipment Capacity Exceeded",
-  "description": "Ensures that the number of concurrent tasks using a piece of equipment never exceeds its specified capacity.",
-  "category": "Scheduling",
-  "severity": "error",
-  "validation_type": "computational",
-  "computation": { "engine": "javascript", "function_name": "validateEquipmentCapacity" }
-  },
-  {
   "id": "task.dependency.unreachable",
   "name": "Unreachable Task Dependency",
   "description": "Ensures that every task listed in a 'depends_on' array corresponds to a valid, defined task ID.",

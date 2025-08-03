@@ -82,7 +82,32 @@ class SimulationPlayer {
 
         // 1. Update Playhead Position
         const percentage = (this.playheadTime - this.simData.start_time_minutes) / this.simData.total_duration_minutes;
-        this.ui.playhead.style.left = `${Math.min(100, Math.max(0, percentage * 100))}%`;
+
+        //Remove existing playheads
+        document.querySelectorAll('.timeline-playhead').forEach(el => el.remove());
+
+        // Add playhead to each task track                                                                                  │
+        document.querySelectorAll('.task-track').forEach(track => {
+            const playheadClone = document.createElement('div');
+            playheadClone.className = 'timeline-playhead';
+            playheadClone.style.cssText = `
+                position: absolute;
+                left: ${percentage * 100}%;
+                top: 0;
+                bottom: 0;
+                width: 2px;
+                background: #FF0000;
+                z-index: 1000;
+                pointer-events: all;
+                box-shadow: 0 0 4px rgba(255, 0, 0, 0.5);
+                cursor: ew-resize;
+            `;
+            track.appendChild(playheadClone);
+        });
+
+        if (this.attachScrubbing) {
+            this.attachScrubbing();
+        }
 
         // 2. Update Time Displays
         const formattedTime = this.formatTime(this.playheadTime);
@@ -125,24 +150,38 @@ class SimulationPlayer {
     }
 
     updateResourceState() {
+        if (!this.ui.liveResourcesPanel) return; // Defensive check
+        
         const stocks = {};
-        this.simData.resources.forEach(r => { stocks[r.id] = r.starting_stock || 0; });
+        // Correctly initialize stock from the new object structure
+        this.simData.resources.forEach(r => { 
+            stocks[r.id] = r.properties.quantity || 0; 
+        });
 
         const sortedTasks = [...(this.simData.tasks || [])].sort((a,b) => a.start_minutes - b.start_minutes);
 
         for (const task of sortedTasks) {
-            if (task.start_minutes >= this.playheadTime) break;
+            // Stop processing if the task hasn't started yet.
+            if (task.start_minutes > this.playheadTime) break;
             
-            Object.entries(task.consumes || {}).forEach(([resId, amount]) => { stocks[resId] -= amount; });
-            Object.entries(task.produces || {}).forEach(([resId, amount]) => { stocks[resId] += amount; });
+            // Only account for tasks that have fully completed.
+            if (task.end_minutes <= this.playheadTime) {
+                Object.entries(task.consumes || {}).forEach(([resId, amount]) => { 
+                    if (stocks[resId] !== undefined) stocks[resId] -= amount; 
+                });
+                Object.entries(task.produces || {}).forEach(([resId, amount]) => { 
+                    if (stocks[resId] !== undefined) stocks[resId] += amount; 
+                });
+            }
         }
 
+        // Correctly render the live state using the new object structure
         this.ui.liveResourcesPanel.innerHTML = this.simData.resources.map(resource => `
             <div class="resource-item">
                 <div class="resource-emoji">${resource.emoji || "❓"}</div>
                 <div class="resource-info">
                     <div class="resource-name">${resource.id}</div>
-                    <div class="resource-state available">Stock: ${stocks[resource.id].toFixed(2)} ${resource.unit}</div>
+                    <div class="resource-state available">Stock: ${stocks[resource.id].toFixed(2)} ${resource.properties.unit}</div>
                 </div>
             </div>
         `).join("");
@@ -150,25 +189,56 @@ class SimulationPlayer {
 
     initScrubbing() {
         let isScrubbing = false;
-        const scrubHandle = this.ui.timeMarkers; // The whole bar is draggable
+        let currentScrubTrack = null;
 
         const onScrub = (e) => {
-            if (!isScrubbing) return;
-            const rect = this.ui.timeMarkers.getBoundingClientRect();
+            if (!isScrubbing || !currentScrubTrack) return;
+
+            const rect = currentScrubTrack.getBoundingClientRect();
             const percentage = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
             const newTime = this.simData.start_time_minutes + (percentage * this.simData.total_duration_minutes);
             this.update(newTime);
         };
-        
-        scrubHandle.addEventListener('mousedown', (e) => {
+
+        const startScrubbing = (e, track) => {
             isScrubbing = true;
-            if(this.isPlaying) this.togglePlay();
+            currentScrubTrack = track;
+            if (this.isPlaying) this.togglePlay();
             onScrub(e);
+
             document.addEventListener('mousemove', onScrub);
             document.addEventListener('mouseup', () => {
                 isScrubbing = false;
+                currentScrubTrack = null;
                 document.removeEventListener('mousemove', onScrub);
             }, { once: true });
-        });
+        };
+
+        // Add scrubbing to all existing task tracks
+        this.attachScrubbing = () => {
+            document.querySelectorAll('.task-track').forEach(track => {
+                // Remove existing listeners to prevent duplicates
+                track.removeEventListener('mousedown', track._scrubHandler);
+
+                // Create and store the handler
+                track._scrubHandler = (e) => startScrubbing(e, track);
+                track.addEventListener('mousedown', track._scrubHandler);
+
+                // Also make playheads draggable
+                const playhead = track.querySelector('.timeline-playhead');
+                if (playhead) {
+                    playhead.removeEventListener('mousedown', playhead._scrubHandler);
+                    playhead._scrubHandler = (e) => {
+                        e.stopPropagation(); // Prevent event bubbling
+                        startScrubbing(e, track);
+                    };
+                    playhead.addEventListener('mousedown', playhead._scrubHandler);
+                    playhead.style.pointerEvents = 'all'; // Make sure playhead is clickable
+                }
+            });
+        };
+
+        // Initial attachment
+        this.attachScrubbing();
     }
 }

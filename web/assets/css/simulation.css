@@ -64,11 +64,16 @@
     gap: 0.5rem;
     flex: 1;
     min-width: 200px;
+    position: absolute;
 }
 
 .time-scrubber label {
     font-weight: 500;
     white-space: nowrap;
+}
+
+.simulation-playhead {
+    position: absolute;
 }
 
 .slider {
@@ -172,6 +177,24 @@
     display: flex;
     align-items: center;
     font-size: 0.9rem;
+}
+
+.task-track {
+    cursor: pointer;
+}
+
+.task-track:hover {
+    background-color: #f0f0f0 !important;
+}
+
+.timeline-playhead {
+    cursor: ew-resize !important;
+}
+
+.timeline-playhead:hover {
+    background: #FF4444 !important;
+    width: 3px !important;
+    margin-left: -0.5px;
 }
 
 .task-lane {

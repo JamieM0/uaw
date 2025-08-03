@@ -1305,270 +1305,92 @@
                         start_time: "06:00",
                         end_time: "18:00",
                     },
-                    actors: [
-                        { id: "baker", role: "Baker", cost_per_hour: 25 },
-                        {
-                            id: "assistant",
-                            role: "Assistant Baker",
-                            cost_per_hour: 18,
-                        },
-                    ],
-                    equipment: [
-                        {
-                            id: "mixer",
-                            name: "Stand Mixer",
-                            emoji: "🌀",
-                            state: "clean",
-                        },
-                        {
-                            id: "oven",
-                            name: "Commercial Oven",
-                            emoji: "🔥",
-                            state: "available",
-                        },
-                        {
-                            id: "workspace",
-                            name: "Prep Counter",
-                            emoji: "🏢",
-                            state: "clean",
-                        },
-                        {
-                            id: "mixing_bowl",
-                            name: "Mixing Bowl",
-                            emoji: "🥣",
-                            state: "clean",
-                        },
-                    ],
-                    resources: [
-                        {
-                            id: "flour",
-                            unit: "kg",
-                            starting_stock: 50,
-                            emoji: "🌾",
-                        },
-                        {
-                            id: "water",
-                            unit: "liter",
-                            starting_stock: 20,
-                            emoji: "💧",
-                        },
-                        {
-                            id: "yeast",
-                            unit: "g",
-                            starting_stock: 500,
-                            emoji: "🦠",
-                        },
-                        {
-                            id: "mixed_dough",
-                            unit: "batch",
-                            starting_stock: 0,
-                            emoji: "덩",
-                        },
-                        {
-                            id: "risen_dough",
-                            unit: "batch",
-                            starting_stock: 0,
-                            emoji: "🍞",
-                        },
-                        {
-                            id: "shaped_loaves",
-                            unit: "loaves",
-                            starting_stock: 0,
-                            emoji: "🥖",
-                        },
-                        {
-                            id: "baked_bread",
-                            unit: "loaves",
-                            starting_stock: 0,
-                            emoji: "🍞",
-                        },
+                    objects: [
+                        // --- ACTORS ---
+                        { id: "baker", type: "actor", name: "Baker", properties: { role: "Baker", cost_per_hour: 25 } },
+                        { id: "assistant", type: "actor", name: "Assistant", properties: { role: "Assistant Baker", cost_per_hour: 18 } },
+                        // --- EQUIPMENT ---
+                        { id: "mixer", type: "equipment", name: "Stand Mixer", emoji: "🌀", properties: { state: "clean", capacity: 1 } },
+                        { id: "oven", type: "equipment", name: "Commercial Oven", emoji: "🔥", properties: { state: "available", capacity: 4 } },
+                        { id: "workspace", type: "equipment", name: "Prep Counter", emoji: "🏢", properties: { state: "clean", capacity: 2 } },
+                        { id: "mixing_bowl", type: "equipment", name: "Mixing Bowl", emoji: "🥣", properties: { state: "clean", capacity: 1 } },
+                        // --- RESOURCES (CONSUMABLES) ---
+                        { id: "flour", type: "resource_pile", name: "Flour", emoji: "🌾", properties: { unit: "kg", quantity: 50 } },
+                        { id: "water", type: "resource_pile", name: "Water", emoji: "💧", properties: { unit: "liter", quantity: 20 } },
+                        { id: "yeast", type: "resource_pile", name: "Yeast", emoji: "🦠", properties: { unit: "g", quantity: 500 } },
+                        // --- PRODUCTS (INTERMEDIATE & FINAL) ---
+                        { id: "mixed_dough", type: "product", name: "Mixed Dough", emoji: "덩", properties: { unit: "batch", quantity: 0 } },
+                        { id: "risen_dough", type: "product", name: "Risen Dough", emoji: "🍞", properties: { unit: "batch", quantity: 0 } },
+                        { id: "shaped_loaves", type: "product", name: "Shaped Loaves", emoji: "🥖", properties: { unit: "loaves", quantity: 0 } },
+                        { id: "baked_bread", type: "product", name: "Baked Bread", emoji: "🍞", properties: { unit: "loaves", quantity: 0 } }
                     ],
                     tasks: [
                         {
-                            id: "prepare_ingredients 🔸 🔧",
-                            actor_id: "baker",
-                            start: "06:15",
-                            duration: 30,
-                            consumes: {},
-                            produces: {},
-                            depends_on: [],
+                            id: "prepare_ingredients 🔸 🔧", actor_id: "baker", start: "06:15", duration: 30,
+                            consumes: {}, produces: {}, depends_on: [],
+                            equipment_interactions: [{ id: "workspace", from_state: "clean", to_state: "in-use" }]
+                        },
+                        {
+                            id: "measure_flour 🔸 ⚖️", actor_id: "baker", start: "06:45", duration: 10,
+                            consumes: {}, produces: {}, depends_on: ["prepare_ingredients 🔸 🔧"]
+                        },
+                        {
+                            id: "activate_yeast 🔸 🦠", actor_id: "assistant", start: "06:45", duration: 10,
+                            consumes: { yeast: 15 }, produces: {}, depends_on: []
+                        },
+                        {
+                            id: "mix_dough 🔸 🥄", actor_id: "baker", start: "06:55", duration: 20,
+                            consumes: { flour: 1, water: 0.7 }, produces: { mixed_dough: 1 },
+                            depends_on: ["measure_flour 🔸 ⚖️", "activate_yeast 🔸 🦠"],
                             equipment_interactions: [
-                                {
-                                    id: "workspace",
-                                    from_state: "clean",
-                                    to_state: "in-use",
-                                },
-                            ],
+                                { id: "mixer", from_state: "clean", to_state: "dirty" },
+                                { id: "mixing_bowl", from_state: "clean", to_state: "dirty" }
+                            ]
                         },
                         {
-                            id: "measure_flour 🔸 ⚖️",
-                            actor_id: "baker",
-                            start: "06:45",
-                            duration: 10,
-                            consumes: {},
-                            produces: {},
-                            depends_on: ["prepare_ingredients 🔸 🔧"],
+                            id: "knead_dough 🔸 👋", actor_id: "baker", start: "07:15", duration: 15,
+                            consumes: { mixed_dough: 1 }, produces: { risen_dough: 1 }, depends_on: ["mix_dough 🔸 🥄"],
+                            equipment_interactions: [{ id: "workspace", from_state: "in-use", to_state: "dirty" }]
                         },
                         {
-                            id: "activate_yeast 🔸 🦠",
-                            actor_id: "assistant",
-                            start: "06:45",
-                            duration: 10,
-                            consumes: { yeast: 15 },
-                            produces: {},
-                            depends_on: [],
+                            id: "first_rise 🔸 ⏰", actor_id: "baker", start: "07:30", duration: 90,
+                            consumes: { risen_dough: 1 }, produces: { risen_dough: 1 }, depends_on: ["knead_dough 🔸 👋"]
                         },
                         {
-                            id: "mix_dough 🔸 🥄",
-                            actor_id: "baker",
-                            start: "06:55",
-                            duration: 20,
-                            consumes: { flour: 1, water: 0.7 },
-                            produces: { mixed_dough: 1 },
-                            depends_on: [
-                                "measure_flour 🔸 ⚖️",
-                                "activate_yeast 🔸 🦠",
-                            ],
-                            equipment_interactions: [
-                                {
-                                    id: "mixer",
-                                    from_state: "clean",
-                                    to_state: "dirty",
-                                },
-                                {
-                                    id: "mixing_bowl",
-                                    from_state: "clean",
-                                    to_state: "dirty",
-                                },
-                            ],
+                            id: "clean_mixing_bowls 🔸 🧼", actor_id: "assistant", start: "07:30", duration: 20,
+                            consumes: {}, produces: {}, depends_on: [],
+                            equipment_interactions: [{ id: "mixing_bowl", from_state: "dirty", to_state: "clean" }]
                         },
                         {
-                            id: "knead_dough 🔸 👋",
-                            actor_id: "baker",
-                            start: "07:15",
-                            duration: 15,
-                            consumes: { mixed_dough: 1 },
-                            produces: { risen_dough: 1 },
-                            depends_on: ["mix_dough 🔸 🥄"],
-                            equipment_interactions: [
-                                {
-                                    id: "workspace",
-                                    from_state: "in-use",
-                                    to_state: "dirty",
-                                },
-                            ],
+                            id: "shape_loaves 🔸 👐", actor_id: "baker", start: "09:00", duration: 25,
+                            consumes: { risen_dough: 1 }, produces: { shaped_loaves: 1 }, depends_on: ["first_rise 🔸 ⏰"],
+                            equipment_interactions: [{ id: "workspace", from_state: "dirty", to_state: "dirty" }]
                         },
                         {
-                            id: "first_rise 🔸 ⏰",
-                            actor_id: "baker",
-                            start: "07:30",
-                            duration: 90,
-                            consumes: { risen_dough: 1 },
-                            produces: { risen_dough: 1 },
-                            depends_on: ["knead_dough 🔸 👋"],
+                            id: "prepare_baking_sheets 🔸 🍞", actor_id: "assistant", start: "09:00", duration: 10,
+                            consumes: {}, produces: {}, depends_on: []
                         },
                         {
-                            id: "clean_mixing_bowls 🔸 🧼",
-                            actor_id: "assistant",
-                            start: "07:30",
-                            duration: 20,
-                            consumes: {},
-                            produces: {},
-                            depends_on: [],
-                            equipment_interactions: [
-                                {
-                                    id: "mixing_bowl",
-                                    from_state: "dirty",
-                                    to_state: "clean",
-                                },
-                            ],
+                            id: "preheat_oven 🔸 🔥", actor_id: "assistant", start: "09:05", duration: 15,
+                            consumes: {}, produces: {}, depends_on: ["prepare_baking_sheets 🔸 🍞"],
+                            equipment_interactions: [{ id: "oven", from_state: "available", to_state: "in-use" }]
                         },
                         {
-                            id: "shape_loaves 🔸 👐",
-                            actor_id: "baker",
-                            start: "09:00",
-                            duration: 25,
-                            consumes: { risen_dough: 1 },
-                            produces: { shaped_loaves: 1 },
-                            depends_on: ["first_rise 🔸 ⏰"],
-                            equipment_interactions: [
-                                {
-                                    id: "workspace",
-                                    from_state: "dirty",
-                                    to_state: "dirty",
-                                },
-                            ],
-                        },
-                        // INTENTIONAL OVERLAP for 'assistant'
-                        {
-                            id: "prepare_baking_sheets 🔸 🍞",
-                            actor_id: "assistant",
-                            start: "09:00",
-                            duration: 10,
-                            consumes: {},
-                            produces: {},
-                            depends_on: [],
+                            id: "second_rise 🔸 ⏰", actor_id: "baker", start: "09:25", duration: 45,
+                            consumes: { shaped_loaves: 1 }, produces: { shaped_loaves: 1 }, depends_on: ["shape_loaves 🔸 👐"]
                         },
                         {
-                            id: "preheat_oven 🔸 🔥",
-                            actor_id: "assistant",
-                            start: "09:05",
-                            duration: 15,
-                            consumes: {},
-                            produces: {},
-                            depends_on: ["prepare_baking_sheets 🔸 🍞"],
-                            equipment_interactions: [
-                                {
-                                    id: "oven",
-                                    from_state: "available",
-                                    to_state: "in-use",
-                                },
-                            ],
-                        },
-                        // INTENTIONAL LACK OF BUFFER for 'baker'
-                        {
-                            id: "second_rise 🔸 ⏰",
-                            actor_id: "baker",
-                            start: "09:25",
-                            duration: 45,
-                            consumes: { shaped_loaves: 1 },
-                            produces: { shaped_loaves: 1 },
-                            depends_on: ["shape_loaves 🔸 👐"],
+                            id: "bake_bread 🔸 🍞", actor_id: "baker", start: "10:10", duration: 35,
+                            consumes: { shaped_loaves: 1 }, produces: { baked_bread: 1 }, depends_on: ["second_rise 🔸 ⏰"],
+                            equipment_interactions: [{ id: "oven", from_state: "in-use", to_state: "available" }]
                         },
                         {
-                            id: "bake_bread 🔸 🍞",
-                            actor_id: "baker",
-                            start: "10:10",
-                            duration: 35,
-                            consumes: { shaped_loaves: 1 },
-                            produces: { baked_bread: 1 },
-                            depends_on: ["second_rise 🔸 ⏰"],
-                            equipment_interactions: [
-                                {
-                                    id: "oven",
-                                    from_state: "in-use",
-                                    to_state: "available",
-                                },
-                            ],
-                        },
-                        {
-                            id: "wash_equipment 🔸 🧽",
-                            actor_id: "assistant",
-                            start: "10:10",
-                            duration: 35,
-                            consumes: {},
-                            produces: {},
-                            depends_on: [],
-                            equipment_interactions: [
-                                {
-                                    id: "mixer",
-                                    from_state: "dirty",
-                                    to_state: "clean",
-                                },
-                            ],
-                        },
-                    ],
-                },
+                            id: "wash_equipment 🔸 🧽", actor_id: "assistant", start: "10:10", duration: 35,
+                            consumes: {}, produces: {}, depends_on: [],
+                            equipment_interactions: [{ id: "mixer", from_state: "dirty", to_state: "clean" }]
+                        }
+                    ]
+                }
             };
 
             // History management
@@ -2620,128 +2442,94 @@
                 return null;
             }
 
-            function processSimulationData(simulationData) {
+                        function processSimulationData(simulationData) {
                 const sim = simulationData.simulation;
-                const startTime = sim.start_time || "06:00";
+                const config = sim.config || {};
+                const startTime = config.start_time || "06:00";
                 const [startHour, startMin] = startTime.split(":").map(Number);
                 const startTimeMinutes = startHour * 60 + startMin;
 
-                const processedTasks = [];
-                let actualEndTime = startTimeMinutes;
+                let actualLastTaskEnd = startTimeMinutes;
 
-                for (const task of sim.tasks || []) {
-                    const taskStart = task.start || "00:00";
+                const allObjects = sim.objects || [];
+                const actors = allObjects.filter(o => o.type === 'actor');
+                const equipment = allObjects.filter(o => o.type === 'equipment');
+                const resources = allObjects.filter(o => o.type === 'resource_pile' || o.type === 'product');
+
+                const tasksWithMinutes = (sim.tasks || []).map(task => {
                     let taskStartMinutes;
-
                     try {
-                        if (taskStart.includes(":")) {
-                            let [taskHour, taskMin] = taskStart
-                                .split(":")
-                                .map(Number);
-                            if (taskMin >= 60) {
-                                const additionalHours = Math.floor(
-                                    taskMin / 60,
-                                );
-                                taskHour += additionalHours;
-                                taskMin = taskMin % 60;
-                            }
-                            taskStartMinutes = taskHour * 60 + taskMin;
-                        } else {
-                            taskStartMinutes = startTimeMinutes;
-                        }
+                        const [taskHour, taskMin] = (task.start || "00:00").split(":").map(Number);
+                        taskStartMinutes = taskHour * 60 + taskMin;
                     } catch {
                         taskStartMinutes = startTimeMinutes;
                     }
-
                     const taskDuration = task.duration || 0;
                     const taskEndMinutes = taskStartMinutes + taskDuration;
-                    actualEndTime = Math.max(actualEndTime, taskEndMinutes);
+                    actualLastTaskEnd = Math.max(actualLastTaskEnd, taskEndMinutes);
+                    return { ...task, start_minutes: taskStartMinutes, end_minutes: taskEndMinutes };
+                });
+                
+                // --- START OF THE UNIFIED SCALING FIX ---
 
-                    const processedTask = { ...task };
-                    processedTask.start_minutes = taskStartMinutes;
-                    processedTask.end_minutes = taskEndMinutes;
+                // 1. Determine the logical end time, including a small buffer for visuals.
+                const logicalEndTime = actualLastTaskEnd + 30;
 
+                // 2. Calculate a visually clean, rounded-up total duration for the timeline.
+                // This becomes the single source of truth for all rendering.
+                const logicalTotalDuration = logicalEndTime - startTimeMinutes;
+                const visualTotalDuration = Math.ceil(logicalTotalDuration / 60) * 60; // Round up to the next full hour.
+
+                // 3. Calculate the end time string based on this visual duration.
+                const visualEndTimeMinutes = startTimeMinutes + visualTotalDuration;
+                const visualEndHour = Math.floor(visualEndTimeMinutes / 60);
+                const visualEndMin = visualEndTimeMinutes % 60;
+                const visualEndTimeStr = `${String(visualEndHour).padStart(2, "0")}:${String(visualEndMin).padStart(2, "0")}`;
+
+                // --- END OF THE UNIFIED SCALING FIX ---
+
+                const processedTasks = tasksWithMinutes.map(task => {
                     const taskId = task.id || "";
-                    try {
-                        if (taskId.includes("🔸")) {
-                            const parts = taskId.split("🔸");
-                            if (parts.length >= 2 && parts[1].trim()) {
-                                processedTask.display_name = parts[0].trim();
-                                processedTask.emoji = parts[1].trim();
-                            } else {
-                                processedTask.display_name = taskId;
-                                processedTask.emoji = "[TASK]";
-                            }
-                        } else {
-                            processedTask.display_name = taskId;
-                            processedTask.emoji = "[TASK]";
-                        }
-                    } catch (e) {
-                        processedTask.display_name = taskId;
-                        processedTask.emoji = "[TASK]";
+                    let displayName = taskId, emoji = "[TASK]";
+                    if (taskId.includes("🔸")) {
+                        const parts = taskId.split("🔸");
+                        displayName = parts[0].trim();
+                        emoji = parts[1].trim();
                     }
-
-                    processedTasks.push(processedTask);
-                }
-
-                const dynamicEndTime = actualEndTime + 30;
-                const totalDuration = dynamicEndTime - startTimeMinutes;
-
-                for (const task of processedTasks) {
-                    if (totalDuration > 0) {
-                        task.start_percentage =
-                            ((task.start_minutes - startTimeMinutes) /
-                                totalDuration) *
-                            100;
-                        task.duration_percentage =
-                            ((task.duration || 0) / totalDuration) * 100;
-                    } else {
-                        task.start_percentage = 0;
-                        task.duration_percentage = 0;
-                    }
-                }
-
+                    return {
+                        ...task,
+                        display_name: displayName,
+                        emoji: emoji,
+                        // All percentages now use the same, consistent denominator.
+                        start_percentage: ((task.start_minutes - startTimeMinutes) / visualTotalDuration) * 100,
+                        duration_percentage: (task.duration / visualTotalDuration) * 100
+                    };
+                });
+                
                 const actorWorkloads = {};
-                const totalAvailableTime = dynamicEndTime - startTimeMinutes;
+                processedTasks.forEach(task => {
+                    actorWorkloads[task.actor_id] = (actorWorkloads[task.actor_id] || 0) + (task.duration || 0);
+                });
 
-                for (const task of processedTasks) {
-                    const actorId = task.actor_id;
-                    const duration = task.duration || 0;
-                    actorWorkloads[actorId] =
-                        (actorWorkloads[actorId] || 0) + duration;
-                }
-
-                const processedActors = [];
-                for (const actor of sim.actors || []) {
-                    const actorCopy = { ...actor };
+                const processedActors = actors.map(actor => {
                     const workload = actorWorkloads[actor.id] || 0;
-                    const utilization =
-                        totalAvailableTime > 0
-                            ? (workload / totalAvailableTime) * 100
-                            : 0;
-                    actorCopy.utilization_percentage =
-                        Math.round(utilization * 10) / 10;
-                    actorCopy.total_work_minutes = workload;
-                    processedActors.push(actorCopy);
-                }
-
-                const dynamicEndHour = Math.floor(dynamicEndTime / 60);
-                const dynamicEndMin = dynamicEndTime % 60;
-                const dynamicEndTimeStr = `${dynamicEndHour.toString().padStart(2, "0")}:${dynamicEndMin.toString().padStart(2, "0")}`;
+                    // Utilization should also be based on the visual duration of the workday shown.
+                    const utilization = visualTotalDuration > 0 ? (workload / visualTotalDuration) * 100 : 0;
+                    return { ...actor, utilization_percentage: Math.round(utilization * 10) / 10 };
+                });
 
                 return {
-                    time_unit: sim.time_unit || "minute",
                     start_time: startTime,
-                    end_time: dynamicEndTimeStr,
+                    end_time: visualEndTimeStr, // Use the new visual end time
                     start_time_minutes: startTimeMinutes,
-                    end_time_minutes: dynamicEndTime,
-                    total_duration_minutes: totalDuration,
+                    end_time_minutes: visualEndTimeMinutes, // Use the new visual end time
+                    total_duration_minutes: visualTotalDuration, // This is now the unified duration
                     actors: processedActors,
-                    equipment: sim.equipment || [],
-                    resources: sim.resources || [],
+                    equipment: equipment,
+                    resources: resources,
                     tasks: processedTasks,
-                    article_title: sim.article_title || "Process Simulation",
-                    domain: sim.domain || "General",
+                    article_title: sim.meta?.article_title || "Process Simulation",
+                    domain: sim.meta?.domain || "General",
                 };
             }
 
@@ -2801,12 +2589,9 @@
                     timeMarkers.style.cssText =
                         "position: relative; height: 30px; border-bottom: 1px solid var(--border-color); background: #f8f9fa;";
 
-                    const totalMinutes =
+                     const totalMinutes =
                         currentSimulationData.total_duration_minutes;
-                    const markerInterval = Math.max(
-                        30,
-                        Math.ceil(totalMinutes / 8 / 30) * 30,
-                    );
+                    const markerInterval = totalMinutes <= 120 ? 30 : 60; // use 30m for short sims, 60m for long
 
                     for (
                         let minutes = 0;
@@ -2828,7 +2613,7 @@
                     
                     timeline.appendChild(timeMarkers);
 
-                    // --- START OF FIX ---
+                    
                     const playhead = document.createElement("div");
                     playhead.id = "simulation-playhead";
                     playhead.className = "simulation-playhead";
@@ -2838,7 +2623,7 @@
                     playhead.appendChild(scrubHandle);
 
                     // Append the playhead to the main timeline, not the marker bar
-                    timeMarkers.appendChild(playhead);
+                    //timeMarkers.appendChild(playhead);
 
                     const actorLanes = document.createElement("div");
                     actorLanes.className = "actor-lanes";
@@ -2856,7 +2641,7 @@
                         actorLabel.style.cssText =
                             "width: 150px; padding: 0.5rem; background: var(--bg-light); border-radius: var(--border-radius-sm); margin-right: 1rem; flex-shrink: 0;";
                         actorLabel.innerHTML = `
-                            <strong>${actor.role}</strong><br>
+                            <strong>${actor.properties.role || actor.name}</strong><br>
                             <small>Utilization: ${actor.utilization_percentage}%</small>
                         `;
                         lane.appendChild(actorLabel);
@@ -2989,7 +2774,7 @@
                                         <div class="resource-emoji">${resource.emoji || "❓"}</div>
                                         <div class="resource-info">
                                             <div class="resource-name">${resource.id}</div>
-                                            <div class="resource-state available">Stock: ${resource.starting_stock} ${resource.unit}</div>
+                                            <div class="resource-state available">Stock: ${resource.properties.quantity} ${resource.properties.unit}</div>
                                         </div>
                                     </div>
                                 `,
