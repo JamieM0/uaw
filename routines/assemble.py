@@ -1031,7 +1031,7 @@ def main():
             'expanded_tree_data': expanded_tree_data # Add expanded tree data to context
         }
         # Debug: Print validation_summary keys before rendering
-        if "validation_summary" in simulation_data:
+        if simulation_data and "validation_summary" in simulation_data:
             print("DEBUG: validation_summary keys:", list(simulation_data["validation_summary"].keys()))
         else:
             print("DEBUG: validation_summary missing from simulation_data")
