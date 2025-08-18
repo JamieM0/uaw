@@ -1,0 +1,1077 @@
+/* Playground-specific styles for Universal Automation Wiki */
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevents the main page scrollbar */
+}
+
+body {
+    display: flex;
+    flex-direction: column; /* Stack header and main content vertically */
+}
+
+.playground-main {
+    flex: 1;
+    min-height: 0;
+}
+
+.playground-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-color);
+}
+
+.playground-header {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
+    padding: 0.5rem 0;
+    height: 50px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.playground-header .header-container {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    max-width: 100%;
+    padding: 0 var(--spacing-md);
+    gap: 1rem;
+}
+
+.playground-header .logo {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    max-width: 200px;
+}
+
+.playground-header .logo a {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    text-decoration: none;
+}
+
+.playground-header .logo img {
+    height: auto;
+    max-height: 100%;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.playground-header h1 {
+    margin: 0;
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: #126ca8;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-left: auto;
+}
+
+.json-editor-buttons {
+    display: flex;
+    gap: 0.25rem;
+    padding-right: 0.75rem;
+    border-right: 1px solid var(--border-color);
+}
+
+.simulation-buttons {
+    display: flex;
+    gap: 0.25rem;
+    padding-right: 0.75rem;
+    border-right: 1px solid var(--border-color);
+}
+
+.control-buttons {
+    display: flex;
+    gap: 0.25rem;
+    padding-right: 0.75rem;
+    border-right: 1px solid var(--border-color);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.header-actions .action-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid var(--primary-color);
+    background: var(--primary-color);
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.header-actions .action-btn:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+.header-actions button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid var(--border-color);
+    background: white;
+    color: var(--text-color);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.header-actions button:hover {
+    background: var(--bg-light);
+    border-color: var(--primary-color);
+}
+
+.header-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.header-actions button.primary {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.header-actions button.primary:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+.playground-main {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+    position: relative;
+}
+
+.playground-top {
+    height: 70%;
+    display: flex;
+    border-bottom: 2px solid var(--border-color);
+    position: relative;
+}
+
+.json-editor-panel {
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    border-right: 2px solid var(--border-color);
+    position: relative;
+}
+
+.simulation-panel {
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+}
+
+.resize-handle-vertical {
+    position: absolute;
+    top: 0;
+    right: -3px;
+    bottom: 0;
+    width: 6px;
+    cursor: col-resize;
+    background: transparent;
+    z-index: 10;
+}
+
+.resize-handle-vertical:hover {
+    background: rgba(0, 123, 255, 0.3);
+}
+
+.resize-handle-horizontal {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 12px;
+    cursor: row-resize;
+    background: transparent;
+    z-index: 10;
+    top: -6px;
+    width: 100%;
+}
+
+.resize-handle-horizontal:hover {
+    background: rgba(0, 123, 255, 0.3);
+}
+
+.panel-header {
+    display: none;
+}
+
+.panel-content {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+#json-editor {
+    height: 100%;
+    width: 100%;
+}
+
+.simulation-content {
+    height: 100%;
+    overflow-y: auto;
+    padding: 0.75rem;
+    width: 100%;
+    box-sizing: border-box;
+    display: block !important;
+    grid-template-columns: unset !important;
+    user-select: none;
+}
+
+.playground-bottom {
+    height: 30%;
+    background: var(--bg-light);
+    border-top: 1px solid var(--border-color);
+    overflow-y: auto;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.validation-panel {
+    padding: 1rem;
+}
+
+.validation-header {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+.validation-content {
+    font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.validation-error {
+    color: var(--error-color);
+    background: rgba(220, 53, 69, 0.1);
+    padding: 0.5rem;
+    border-radius: var(--border-radius-sm);
+    margin: 0.25rem 0;
+}
+
+.validation-success {
+    color: var(--success-color);
+    background: rgba(40, 167, 69, 0.1);
+    padding: 0.5rem;
+    border-radius: var(--border-radius-sm);
+    margin: 0.25rem 0;
+}
+
+.validation-warning {
+    color: #856404;
+    background: rgba(255, 193, 7, 0.1);
+    padding: 0.5rem;
+    border-radius: var(--border-radius-sm);
+    margin: 0.25rem 0;
+}
+
+.toolbar {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.toolbar button {
+    background: var(--primary-light);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    transition: background-color var(--transition-normal);
+}
+
+.toolbar button:hover {
+    background: var(--primary-dark);
+}
+
+.toolbar button:disabled {
+    background: var(--text-lighter);
+    cursor: not-allowed;
+}
+
+.toolbar button.hidden {
+    display: none;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border-color);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.simulation-container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: block !important;
+}
+
+.simulation-timeline {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: block !important;
+    overflow: hidden;
+}
+
+.task-track {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.actor-lanes {
+    width: 100%;
+    box-sizing: border-box;
+    display: block !important;
+}
+
+.actor-lane {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex !important;
+}
+
+.task-block {
+    display: flex;
+    align-items: center;
+    justify-content: center !important;
+    padding: 0.25rem 0.5rem;
+    gap: 0.25rem;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+    background: white;
+    color: black;
+    border: 2px solid var(--primary-color);
+}
+
+.task-block:hover {
+    border: 2px solid var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 5;
+}
+
+.task-block.dragging {
+    opacity: 0.8;
+    z-index: 1000;
+    pointer-events: none;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.task-block.resizing {
+    opacity: 0.9;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Resize handles */
+.task-block::before,
+.task-block::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    cursor: ew-resize;
+    z-index: 10;
+    background: transparent;
+    transition: background-color 0.2s ease;
+}
+
+.task-block::before {
+    left: -4px;
+}
+
+.task-block::after {
+    right: -4px;
+}
+
+.task-block:hover::before,
+.task-block:hover::after {
+    background-color: rgba(var(--primary-color-rgb), 0.3);
+}
+
+.task-block.resizing::before,
+.task-block.resizing::after {
+    background-color: rgba(var(--primary-color-rgb), 0.5);
+}
+
+/* Duration preview overlay */
+.duration-preview {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary-color);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    z-index: 1001;
+    pointer-events: none;
+}
+
+.duration-preview::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 3px solid transparent;
+    border-top-color: var(--primary-color);
+}
+
+.task-emoji {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+/* Dialog styles */
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.dialog {
+    background: white;
+    border-radius: var(--border-radius-md);
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+}
+
+.dialog h3 {
+    margin: 0 0 1.5rem 0;
+    color: var(--text-color);
+    font-size: var(--font-size-lg);
+}
+
+.dialog-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.dialog-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.dialog-field label {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.dialog-field input,
+.dialog-field select,
+.dialog-field textarea {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-base);
+}
+
+.dialog-field textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.dialog-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+.dialog-buttons button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dialog-buttons .btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.dialog-buttons .btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.dialog-buttons .btn-secondary {
+    background: var(--bg-light);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.dialog-buttons .btn-secondary:hover {
+    background: var(--border-color);
+}
+
+.fullscreen-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid var(--border-color);
+    background: white;
+    color: var(--text-color);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fullscreen-btn:hover {
+    background: var(--bg-light);
+    border-color: var(--primary-color);
+}
+
+.json-editor-panel.hidden {
+    display: none;
+}
+
+.simulation-panel.fullscreen {
+    flex: 1;
+}
+
+/* Submit dialog specific styles */
+.submit-dialog {
+    min-width: 400px;
+}
+
+.cascade-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.cascade-dropdown {
+    display: none;
+}
+
+.cascade-dropdown.visible {
+    display: flex;
+}
+
+.page-path-preview {
+    background: var(--bg-light);
+    padding: 0.5rem;
+    border-radius: var(--border-radius-sm);
+    font-family: monospace;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.task-duration {
+    font-size: 0.7rem;
+    opacity: 0.8;
+    flex-shrink: 0;
+}
+
+.validation-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.validation-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.validation-indicator.success {
+    background: rgba(40, 167, 69, 0.1);
+    color: var(--success-color);
+}
+
+.validation-indicator.warning {
+    background: rgba(255, 193, 7, 0.1);
+    color: #856404;
+}
+
+.validation-indicator.error {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--error-color);
+}
+
+.validation-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.validation-category {
+    background: var(--bg-light);
+    border-radius: var(--border-radius-md);
+    padding: 1rem;
+    border-left: 4px solid;
+    flex: 1;
+    min-width: 300px;
+}
+
+.validation-category.critical-errors {
+    border-left-color: var(--error-color);
+}
+
+.validation-category.resource-issues {
+    border-left-color: #ffc107;
+}
+
+.validation-category.scheduling-conflicts {
+    border-left-color: #fd7e14;
+}
+
+.validation-category.optimization-suggestions {
+    border-left-color: #0dcaf0;
+}
+
+.validation-category h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.validation-issue {
+    background: white;
+    border-radius: var(--border-radius-sm);
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    border-left: 3px solid;
+}
+
+.validation-issue.error {
+    border-left-color: var(--error-color);
+}
+
+.validation-issue.warning {
+    border-left-color: #ffc107;
+}
+
+.validation-issue.info {
+    border-left-color: #0dcaf0;
+}
+
+/* Enhanced features styling */
+.json-highlight {
+    background-color: #ffeb3b !important;
+    animation: highlight-fade 2s ease-out;
+}
+
+@keyframes highlight-fade {
+    0% {
+        background-color: #ffeb3b !important;
+    }
+    100% {
+        background-color: transparent !important;
+    }
+}
+
+.task-track.drop-zone {
+    background: rgba(0, 123, 255, 0.1) !important;
+    border: 2px dashed var(--primary-color) !important;
+}
+
+.task-track.drop-zone.invalid {
+    background: rgba(220, 53, 69, 0.1) !important;
+    border: 2px dashed var(--error-color) !important;
+}
+
+.resources-panel {
+    background: var(--bg-light);
+    border-radius: var(--border-radius-sm);
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    border: 1px solid var(--border-color);
+}
+
+.resources-panel h5 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.375rem;
+}
+
+.resource-item {
+    background: white;
+    border-radius: var(--border-radius-sm);
+    padding: 0.375rem 0.5rem;
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+}
+
+.resource-emoji {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.resource-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.resource-name {
+    font-weight: 600;
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.resource-state {
+    font-size: 0.7rem;
+    padding: 0.125rem 0.25rem;
+    border-radius: var(--border-radius-sm);
+    font-weight: 500;
+    line-height: 1;
+    margin-top: 0.125rem;
+    display: inline-block;
+}
+
+.resource-state.clean {
+    background: rgba(40, 167, 69, 0.1);
+    color: var(--success-color);
+}
+
+.resource-state.dirty {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--error-color);
+}
+
+.resource-state.available {
+    background: rgba(0, 123, 255, 0.1);
+    color: var(--primary-color);
+}
+
+.resource-state.in-use {
+    background: rgba(255, 193, 7, 0.1);
+    color: #856404;
+}
+
+.undo-button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid var(--border-color);
+    background: white;
+    color: var(--text-color);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.undo-button:hover {
+    background: var(--bg-light);
+    border-color: var(--primary-color);
+}
+
+.undo-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: white;
+    border-color: var(--border-color);
+}
+
+/* Tutorial & Gamification Styles */
+.tutorial-panel {
+    display: none; /* Hidden by default */
+    width: 350px;
+    flex-shrink: 0; /* Prevent the panel from shrinking */
+    background: #fff;
+    z-index: 1500;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    flex-direction: column;
+    border-right: 1px solid var(--border-color);
+}
+
+.tutorial-panel.visible {
+    display: flex; /* Show the panel and let it take up space */
+}
+
+.tutorial-header { 
+    padding: 1rem; 
+    border-bottom: 1px solid var(--border-color); 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+.tutorial-header h3 { 
+    margin: 0; 
+}
+
+.tutorial-exit-btn { 
+    background: none; 
+    border: none; 
+    font-size: 1.5rem; 
+    cursor: pointer; 
+    color: var(--text-light); 
+}
+
+.tutorial-exit-btn:hover { 
+    color: var(--text-color); 
+}
+
+.tutorial-content { 
+    flex: 1; 
+    padding: 1rem; 
+    overflow-y: auto; 
+    line-height: 1.6; 
+}
+
+.tutorial-content code { 
+    background: var(--bg-light); 
+    padding: 2px 5px; 
+    border-radius: 4px; 
+    font-family: monospace; 
+}
+
+.tutorial-footer { 
+    padding: 1rem; 
+    border-top: 1px solid var(--border-color); 
+    display: flex; 
+    justify-content: space-between; 
+}
+
+.tutorial-footer button { 
+    padding: 0.5rem 1rem; 
+    border: 1px solid var(--border-color); 
+    background: var(--bg-light); 
+    cursor: pointer; 
+    border-radius: var(--border-radius-sm); 
+}
+
+.tutorial-footer button:disabled { 
+    background: var(--border-color); 
+    color: var(--text-light); 
+    cursor: not-allowed; 
+}
+
+.tutorial-footer button#tutorial-next-btn { 
+    background: var(--primary-color); 
+    color: white; 
+    border-color: var(--primary-color); 
+}
+
+.tutorial-footer button#tutorial-next-btn:disabled { 
+    background: var(--primary-light); 
+    border-color: var(--primary-light); 
+}
+
+/* Hide buttons when tutorial is active */
+body.tutorial-active #load-sample-btn,
+body.tutorial-active #render-simulation-btn,
+body.tutorial-active #submit-btn,
+body.tutorial-active #auto-render-toggle {
+    display: none;
+}
+
+/* Help Dropdown Styles */
+.dropdown { 
+    position: relative; 
+    display: inline-block; 
+}
+
+.dropdown-content { 
+    display: none; 
+    position: absolute; 
+    background-color: #f9f9f9; 
+    min-width: 160px; 
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); 
+    z-index: 1; 
+    border-radius: var(--border-radius-sm); 
+    overflow: hidden; 
+    right: 0; 
+}
+
+.dropdown-content a { 
+    color: black; 
+    padding: 12px 16px; 
+    text-decoration: none; 
+    display: block; 
+}
+
+.dropdown-content a:hover { 
+    background-color: #f1f1f1; 
+}
+
+.dropdown:hover .dropdown-content { 
+    display: block; 
+}
+
+/* --- Simulation Player Styles --- */
+.player-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.75rem;
+    border-left: 1px solid var(--border-color);
+}
+
+#player-play-pause-btn {
+    font-size: 1.25rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+}
+
+.player-time-display {
+    font-size: 0.875rem;
+    font-family: monospace;
+    background: var(--bg-light);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.player-speed-control select {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.25rem;
+}
+
+/* --- Playhead and Scrubbing Styles --- */
+.simulation-playhead {
+    position: absolute;
+    top: 0;
+    bottom: -10000px; /* Extends way down to cover all actor lanes */
+    left: 0; /* Positioned by JavaScript */
+    width: 2px;
+    background-color: rgba(220, 53, 69, 0.8); /* Red line */
+    z-index: 50;
+    pointer-events: none; /* The handle will capture events */
+}
+
+.scrub-handle {
+    position: absolute;
+    top: 0;
+    left: -8px;
+    width: 18px;
+    height: 30px; /* Matches height of time marker bar */
+    cursor: ew-resize;
+    pointer-events: all; /* Make the handle interactive */
+    z-index: 51;
+    background: transparent; /* Keep it invisible but grabbable */
+}
+
+.scrub-handle::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 8px;
+    width: 2px;
+    height: 20px;
+    background: #dc3545;
+    border-radius: 2px;
+}
+
+/* Live State Panel Styles */
+#live-state-container {
+    display: flex;
+    gap: 1rem;
+    padding: 0 0.75rem; /* Match simulation-content padding */
+}
+
+#live-equipment-panel, #live-resources-panel {
+    flex: 1;
+    margin: 0; /* Override default margin */
+}
+
+.live-time {
+    font-weight: normal;
+    color: var(--primary-color);
+}
