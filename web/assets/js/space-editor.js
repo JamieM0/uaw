@@ -19,6 +19,17 @@ class SpaceEditor {
         this.world = document.createElement('div');
         this.world.className = 'space-world';
         this.canvas.appendChild(this.world);
+        
+        // Layer management
+        this.activeLayer = 'all';
+        this.availableLayers = new Set();
+        
+        // Snapping options
+        this.snapSettings = {
+            xEnabled: false,
+            zEnabled: false,
+            tolerance: 10
+        };
 
         this.view = {
             scale: 1,
@@ -46,6 +57,38 @@ class SpaceEditor {
         document.addEventListener('mouseup', this.onMouseUp.bind(this));
         document.addEventListener('keydown', this.onKeyDown.bind(this));
         document.addEventListener('keyup', this.onKeyUp.bind(this));
+        
+        // Layer filtering
+        const layerFilter = document.getElementById('layer-filter');
+        if (layerFilter) {
+            layerFilter.addEventListener('change', (e) => {
+                this.activeLayer = e.target.value;
+                this.applyLayerFilter();
+            });
+        }
+        
+        // Snapping options
+        const snapXCheckbox = document.getElementById('snap-x-enabled');
+        const snapZCheckbox = document.getElementById('snap-z-enabled');
+        const snapToleranceInput = document.getElementById('snap-tolerance');
+        
+        if (snapXCheckbox) {
+            snapXCheckbox.addEventListener('change', (e) => {
+                this.snapSettings.xEnabled = e.target.checked;
+            });
+        }
+        
+        if (snapZCheckbox) {
+            snapZCheckbox.addEventListener('change', (e) => {
+                this.snapSettings.zEnabled = e.target.checked;
+            });
+        }
+        
+        if (snapToleranceInput) {
+            snapToleranceInput.addEventListener('change', (e) => {
+                this.snapSettings.tolerance = parseInt(e.target.value);
+            });
+        }
     }
 
     updateViewTransform() {
@@ -131,10 +174,24 @@ class SpaceEditor {
 
         this.locations = layoutData.locations || [];
         this.pixelsPerMeter = layoutData.meta?.pixels_per_unit || 20;
+        
+        // Ensure all locations have depth property for 3D support
+        this.locations.forEach(loc => {
+            if (!loc.shape.depth) {
+                loc.shape.depth = 50; // Default depth
+            }
+            if (!loc.layer) {
+                loc.layer = 0; // Default layer
+            }
+        });
+        
         console.log(`SPACE-EDITOR: Loading ${this.locations.length} locations with scale ${this.pixelsPerMeter} px/m.`);
 
         this.world.innerHTML = ''; // Clear only the world container
         this.locations.forEach(loc => this.createRectElement(loc));
+        this.updateLayerDropdown();
+        this.applyLayerFilter();
+        this.updateHierarchicalDisplay();
         this.renderPropertiesPanel();
        
         if (this.locations.length > 0) {
@@ -163,14 +220,295 @@ class SpaceEditor {
         const rectEl = document.createElement('div');
         rectEl.className = 'location-rect';
         rectEl.dataset.id = loc.id;
-        rectEl.style.left = `${loc.shape.x}px`;
-        rectEl.style.top = `${loc.shape.y}px`;
-        rectEl.style.width = `${loc.shape.width}px`;
-        rectEl.style.height = `${loc.shape.height}px`;
         rectEl.textContent = loc.name || loc.id;
         rectEl.addEventListener('mousedown', (e) => this.onRectMouseDown(e, loc.id));
+        
+        // Apply 3D transformation
+        this.apply3DTransform(rectEl, loc);
+        
         this.world.appendChild(rectEl);
         return rectEl;
+    }
+
+    updateLayerDropdown() {
+        const layerFilter = document.getElementById('layer-filter');
+        if (!layerFilter) return;
+
+        // Collect all unique layers
+        this.availableLayers.clear();
+        this.locations.forEach(loc => {
+            this.availableLayers.add(loc.layer || 0);
+        });
+
+        // Preserve current selection
+        const currentValue = layerFilter.value;
+        
+        // Rebuild dropdown
+        layerFilter.innerHTML = '<option value="all">All Layers</option>';
+        
+        const sortedLayers = Array.from(this.availableLayers).sort((a, b) => a - b);
+        sortedLayers.forEach(layer => {
+            const option = document.createElement('option');
+            option.value = layer;
+            option.textContent = `Layer ${layer}`;
+            layerFilter.appendChild(option);
+        });
+
+        // Restore selection if it still exists
+        if (Array.from(layerFilter.options).some(opt => opt.value === currentValue)) {
+            layerFilter.value = currentValue;
+        } else {
+            layerFilter.value = 'all';
+            this.activeLayer = 'all';
+        }
+    }
+
+    applyLayerFilter() {
+        this.locations.forEach(loc => {
+            const rectEl = document.querySelector(`.location-rect[data-id="${loc.id}"]`);
+            if (!rectEl) return;
+
+            const locationLayer = loc.layer || 0;
+            const shouldShow = this.activeLayer === 'all' || locationLayer.toString() === this.activeLayer;
+            
+            rectEl.style.display = shouldShow ? 'flex' : 'none';
+        });
+    }
+
+    populateParentDropdown(currentLocationId) {
+        const parentSelect = document.getElementById('prop-parent');
+        if (!parentSelect) return;
+
+        const currentLocation = this.locations.find(l => l.id === currentLocationId);
+        
+        // Clear existing options except the first one
+        parentSelect.innerHTML = '<option value="">None (Root)</option>';
+        
+        // Add all other locations as potential parents, excluding self and descendants
+        this.locations.forEach(loc => {
+            if (loc.id === currentLocationId) return; // Can't be parent of self
+            if (this.isDescendantOf(currentLocationId, loc.id)) return; // Prevent circular references
+            
+            const option = document.createElement('option');
+            option.value = loc.id;
+            option.textContent = loc.name || loc.id;
+            if (currentLocation && currentLocation.parentId === loc.id) {
+                option.selected = true;
+            }
+            parentSelect.appendChild(option);
+        });
+    }
+
+    isDescendantOf(ancestorId, potentialDescendantId) {
+        let currentId = potentialDescendantId;
+        while (currentId) {
+            const location = this.locations.find(l => l.id === currentId);
+            if (!location || !location.parentId) break;
+            
+            if (location.parentId === ancestorId) return true;
+            currentId = location.parentId;
+        }
+        return false;
+    }
+
+    updateHierarchicalDisplay() {
+        // Add visual indicators for hierarchy - connecting lines or indentation
+        this.locations.forEach(loc => {
+            const rectEl = document.querySelector(`.location-rect[data-id="${loc.id}"]`);
+            if (!rectEl) return;
+            
+            // Remove existing hierarchy classes
+            rectEl.classList.remove('has-parent', 'has-children');
+            
+            // Add hierarchy indicators
+            if (loc.parentId) {
+                rectEl.classList.add('has-parent');
+            }
+            
+            const hasChildren = this.locations.some(l => l.parentId === loc.id);
+            if (hasChildren) {
+                rectEl.classList.add('has-children');
+            }
+            
+            // Update z-index for hierarchy (children appear above parents)
+            const hierarchyDepth = this.getHierarchyDepth(loc.id);
+            const baseZIndex = Math.floor((loc.shape.y + loc.shape.x) / 10) + (loc.layer || 0) * 1000;
+            rectEl.style.zIndex = baseZIndex + hierarchyDepth * 10;
+        });
+    }
+
+    getHierarchyDepth(locationId) {
+        let depth = 0;
+        let currentId = locationId;
+        
+        while (currentId) {
+            const location = this.locations.find(l => l.id === currentId);
+            if (!location || !location.parentId) break;
+            
+            depth++;
+            currentId = location.parentId;
+            
+            // Prevent infinite loops
+            if (depth > 10) break;
+        }
+        
+        return depth;
+    }
+
+    applySnapping(proposedX, proposedY) {
+        if (!this.activeRectEl || (!this.snapSettings.xEnabled && !this.snapSettings.zEnabled)) {
+            return { x: proposedX, y: proposedY };
+        }
+
+        let snappedX = proposedX;
+        let snappedY = proposedY;
+        
+        const activeWidth = parseInt(this.activeRectEl.style.width) || 0;
+        const activeHeight = parseInt(this.activeRectEl.style.height) || 0;
+        
+        // Get snap targets from other rectangles
+        const snapTargets = [];
+        document.querySelectorAll('.location-rect').forEach(rect => {
+            if (rect === this.activeRectEl) return;
+            
+            const targetX = parseInt(rect.style.left) || 0;
+            const targetY = parseInt(rect.style.top) || 0;
+            const targetWidth = parseInt(rect.style.width) || 0;
+            const targetHeight = parseInt(rect.style.height) || 0;
+            
+            snapTargets.push({
+                left: targetX,
+                right: targetX + targetWidth,
+                top: targetY,
+                bottom: targetY + targetHeight
+            });
+        });
+
+        // X-axis snapping (length alignment)
+        if (this.snapSettings.xEnabled) {
+            for (const target of snapTargets) {
+                // Snap left edge to left edge
+                if (Math.abs(proposedX - target.left) < this.snapSettings.tolerance) {
+                    snappedX = target.left;
+                    break;
+                }
+                // Snap left edge to right edge
+                if (Math.abs(proposedX - target.right) < this.snapSettings.tolerance) {
+                    snappedX = target.right;
+                    break;
+                }
+                // Snap right edge to left edge
+                if (Math.abs((proposedX + activeWidth) - target.left) < this.snapSettings.tolerance) {
+                    snappedX = target.left - activeWidth;
+                    break;
+                }
+                // Snap right edge to right edge
+                if (Math.abs((proposedX + activeWidth) - target.right) < this.snapSettings.tolerance) {
+                    snappedX = target.right - activeWidth;
+                    break;
+                }
+            }
+        }
+
+        // Z-axis snapping (width alignment) - using Y coordinates for the 2D representation
+        if (this.snapSettings.zEnabled) {
+            for (const target of snapTargets) {
+                // Snap top edge to top edge
+                if (Math.abs(proposedY - target.top) < this.snapSettings.tolerance) {
+                    snappedY = target.top;
+                    break;
+                }
+                // Snap top edge to bottom edge
+                if (Math.abs(proposedY - target.bottom) < this.snapSettings.tolerance) {
+                    snappedY = target.bottom;
+                    break;
+                }
+                // Snap bottom edge to top edge
+                if (Math.abs((proposedY + activeHeight) - target.top) < this.snapSettings.tolerance) {
+                    snappedY = target.top - activeHeight;
+                    break;
+                }
+                // Snap bottom edge to bottom edge
+                if (Math.abs((proposedY + activeHeight) - target.bottom) < this.snapSettings.tolerance) {
+                    snappedY = target.bottom - activeHeight;
+                    break;
+                }
+            }
+        }
+
+        return { x: snappedX, y: snappedY };
+    }
+
+    populateConnectedLocations(loc) {
+        const connectedDiv = document.getElementById('connected-locations-list');
+        const addBtn = document.getElementById('add-connection-btn');
+        
+        if (!connectedDiv || !addBtn) return;
+        
+        // Clear existing connections
+        connectedDiv.innerHTML = '';
+        
+        // Display current connections
+        if (loc.connectedLocations) {
+            loc.connectedLocations.forEach((connectionId, index) => {
+                const connectedLoc = this.locations.find(l => l.id === connectionId);
+                const connectionDiv = document.createElement('div');
+                connectionDiv.className = 'connection-item';
+                connectionDiv.innerHTML = `
+                    <span>${connectedLoc ? connectedLoc.name : connectionId}</span>
+                    <button type="button" class="remove-connection" data-index="${index}">×</button>
+                `;
+                connectedDiv.appendChild(connectionDiv);
+            });
+        }
+        
+        // Add connection button handler
+        addBtn.onclick = () => {
+            this.showConnectionSelector(loc);
+        };
+        
+        // Remove connection handlers
+        connectedDiv.querySelectorAll('.remove-connection').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = parseInt(e.target.dataset.index);
+                loc.connectedLocations.splice(index, 1);
+                this.populateConnectedLocations(loc);
+                this.updateJson();
+            });
+        });
+    }
+
+    showConnectionSelector(loc) {
+        const availableLocations = this.locations.filter(l => 
+            l.id !== loc.id && 
+            !(loc.connectedLocations || []).includes(l.id)
+        );
+        
+        if (availableLocations.length === 0) {
+            alert('No available locations to connect to.');
+            return;
+        }
+        
+        const locationName = prompt(
+            'Enter the name/ID of the location to connect:\n' + 
+            availableLocations.map(l => `• ${l.name || l.id}`).join('\n')
+        );
+        
+        if (locationName) {
+            const targetLoc = availableLocations.find(l => 
+                (l.name && l.name.toLowerCase() === locationName.toLowerCase()) ||
+                l.id.toLowerCase() === locationName.toLowerCase()
+            );
+            
+            if (targetLoc) {
+                if (!loc.connectedLocations) loc.connectedLocations = [];
+                loc.connectedLocations.push(targetLoc.id);
+                this.populateConnectedLocations(loc);
+                this.updateJson();
+            } else {
+                alert('Location not found.');
+            }
+        }
     }
     
     updateJson() {
@@ -227,7 +565,17 @@ class SpaceEditor {
     
     onRectMouseDown(e, id) {
         e.stopPropagation();
+        
+        // Immediately clear any previous states
         this.isDrawing = false;
+        this.canvas.classList.remove('is-dragging');
+        
+        // Clear any lingering collision states
+        document.querySelectorAll('.location-rect.colliding').forEach(el => {
+            el.classList.remove('colliding');
+        });
+        
+        // Set up new drag state
         this.isDragging = true;
         this.canvas.classList.add('is-dragging');
         this.activeRectEl = e.target;
@@ -279,11 +627,17 @@ class SpaceEditor {
             const screenX = e.clientX - rect.left;
             const screenY = e.clientY - rect.top;
 
-            const worldX = (screenX - this.view.x) / this.view.scale;
-            const worldY = (screenY - this.view.y) / this.view.scale;
+            let worldX = (screenX - this.view.x) / this.view.scale;
+            let worldY = (screenY - this.view.y) / this.view.scale;
 
-            this.activeRectEl.style.left = `${worldX - this.dragOffset.x / this.view.scale}px`;
-            this.activeRectEl.style.top = `${worldY - this.dragOffset.y / this.view.scale}px`;
+            const proposedX = worldX - this.dragOffset.x / this.view.scale;
+            const proposedY = worldY - this.dragOffset.y / this.view.scale;
+
+            // Apply snapping
+            const snappedPosition = this.applySnapping(proposedX, proposedY);
+
+            this.activeRectEl.style.left = `${snappedPosition.x}px`;
+            this.activeRectEl.style.top = `${snappedPosition.y}px`;
             this.checkCollisions();
         }
     }
@@ -318,8 +672,9 @@ class SpaceEditor {
                     type: 'rect',
                     x: parseInt(this.activeRectEl.style.left),
                     y: parseInt(this.activeRectEl.style.top),
-                    width: width,
-                    height: height
+                    width: width,      // X = length (LEFT-RIGHT) 
+                    height: height,    // Z = width (UP-DOWN)
+                    depth: 50         // Y = height (vertical space, not rendered)
                 }
             };
             this.locations.push(newLocation);
@@ -328,32 +683,50 @@ class SpaceEditor {
             this.activeRectEl.addEventListener('mousedown', (ev) => this.onRectMouseDown(ev, newId));
             
             this.selectRect(newId);
+            this.updateLayerDropdown();
+            this.applyLayerFilter();
             this.updateJson();
         } 
         // Finalize dragging an existing rectangle
         else if (this.isDragging && this.activeRectEl) {
-            this.isDragging = false;
-            this.canvas.classList.remove('is-dragging');
-            if (this.activeRectEl.classList.contains('colliding')) {
-                const loc = this.locations.find(l => l.id === this.selectedRectId);
-                this.activeRectEl.style.left = `${loc.shape.x}px`;
-                this.activeRectEl.style.top = `${loc.shape.y}px`;
-                this.activeRectEl.classList.remove('colliding');
-            } else {
-                const loc = this.locations.find(l => l.id === this.selectedRectId);
+            // Immediately commit the position to prevent snapping back
+            const loc = this.locations.find(l => l.id === this.selectedRectId);
+            if (loc) {
                 loc.shape.x = parseInt(this.activeRectEl.style.left);
                 loc.shape.y = parseInt(this.activeRectEl.style.top);
-                this.updateJson();
             }
+            
+            // Clear all dragging states immediately
+            this.isDragging = false;
+            this.canvas.classList.remove('is-dragging');
+            
+            // Remove any collision styling immediately
+            if (this.activeRectEl) {
+                this.activeRectEl.classList.remove('colliding');
+            }
+            
+            // Update JSON after position is committed
+            this.updateJson();
         }
+        
+        // Clear activeRectEl reference
         this.activeRectEl = null;
     }
 
     selectRect(id) {
-        this.selectedRectId = id;
-        document.querySelectorAll('.location-rect').forEach(el => {
-            el.classList.toggle('selected', el.dataset.id === id);
+        // Clear previous selection immediately
+        document.querySelectorAll('.location-rect.selected').forEach(el => {
+            el.classList.remove('selected');
         });
+        
+        this.selectedRectId = id;
+        
+        // Apply new selection immediately
+        const newSelectedEl = document.querySelector(`.location-rect[data-id="${id}"]`);
+        if (newSelectedEl) {
+            newSelectedEl.classList.add('selected');
+        }
+        
         this.renderPropertiesPanel();
     }
     
@@ -366,16 +739,38 @@ class SpaceEditor {
     checkCollisions() {
         if (!this.activeRectEl) return;
         let isColliding = false;
-        const activeBounds = this.activeRectEl.getBoundingClientRect();
+        const activeRect = this.activeRectEl.getBoundingClientRect();
+        const activeWorldRect = this.getWorldBounds(this.activeRectEl);
+        
         document.querySelectorAll('.location-rect').forEach(rect => {
             if (rect === this.activeRectEl) return;
-            const staticBounds = rect.getBoundingClientRect();
-            if (!(activeBounds.right < staticBounds.left || activeBounds.left > staticBounds.right || activeBounds.bottom < staticBounds.top || activeBounds.top > staticBounds.bottom)) {
+            const staticWorldRect = this.getWorldBounds(rect);
+            
+            // Check for overlap in world coordinates
+            if (!(activeWorldRect.right <= staticWorldRect.left || 
+                  activeWorldRect.left >= staticWorldRect.right || 
+                  activeWorldRect.bottom <= staticWorldRect.top || 
+                  activeWorldRect.top >= staticWorldRect.bottom)) {
                 isColliding = true;
             }
         });
+        
         this.activeRectEl.classList.toggle('colliding', isColliding);
-        }
+    }
+
+    getWorldBounds(element) {
+        const left = parseInt(element.style.left) || 0;
+        const top = parseInt(element.style.top) || 0;
+        const width = parseInt(element.style.width) || 0;
+        const height = parseInt(element.style.height) || 0;
+        
+        return {
+            left: left,
+            top: top,
+            right: left + width,
+            bottom: top + height
+        };
+    }
     
         renderPropertiesPanel() {
         if (!this.selectedRectId) {
@@ -385,8 +780,9 @@ class SpaceEditor {
         const loc = this.locations.find(l => l.id === this.selectedRectId);
         if (!loc) return;
 
-        const widthM = (loc.shape.width / this.pixelsPerMeter).toFixed(2);
-        const heightM = (loc.shape.height / this.pixelsPerMeter).toFixed(2);
+        const lengthM = (loc.shape.width / this.pixelsPerMeter).toFixed(2);  // X = length (LEFT-RIGHT)
+        const widthM = (loc.shape.height / this.pixelsPerMeter).toFixed(2);  // Z = width (UP-DOWN in 2D view)
+        const heightM = ((loc.shape.depth || 50) / this.pixelsPerMeter).toFixed(2);  // Y = height (vertical space, not rendered)
         
         this.propsPanel.innerHTML = `
             <div class="prop-field">
@@ -394,18 +790,47 @@ class SpaceEditor {
                 <input type="text" id="prop-name" value="${loc.name || ''}">
             </div>
             <div class="prop-field">
-                <label for="prop-width">Width</label>
+                <label for="prop-length">Length (X)</label>
+                <div class="input-group">
+                    <input type="number" id="prop-length" value="${lengthM}" step="0.1" min="0.1">
+                    <span>m</span>
+                </div>
+            </div>
+            <div class="prop-field">
+                <label for="prop-height">Height (Y)</label>
+                <div class="input-group">
+                    <input type="number" id="prop-height" value="${heightM}" step="0.1" min="0.1">
+                    <span>m</span>
+                </div>
+            </div>
+            <div class="prop-field">
+                <label for="prop-width">Width (Z)</label>
                 <div class="input-group">
                     <input type="number" id="prop-width" value="${widthM}" step="0.1" min="0.1">
                     <span>m</span>
                 </div>
             </div>
             <div class="prop-field">
-                <label for="prop-height">Height</label>
-                <div class="input-group">
-                    <input type="number" id="prop-height" value="${heightM}" step="0.1" min="0.1">
-                    <span>m</span>
+                <label for="prop-layer">Layer</label>
+                <input type="number" id="prop-layer" value="${loc.layer || 0}" min="0" step="1">
+            </div>
+            <div class="prop-field">
+                <label for="prop-parent">Parent Location</label>
+                <select id="prop-parent">
+                    <option value="">None (Root)</option>
+                </select>
+            </div>
+            <div class="prop-field">
+                <label for="prop-transition">Transition Zone</label>
+                <input type="checkbox" id="prop-transition" ${loc.isTransition ? 'checked' : ''}>
+                <small>Allows occupancy of multiple locations simultaneously</small>
+            </div>
+            <div class="prop-field" style="display: ${loc.isTransition ? 'block' : 'none'};" id="connected-locations-field">
+                <label for="prop-connected">Connected Locations</label>
+                <div id="connected-locations-list">
+                    <!-- Connected locations will be populated here -->
                 </div>
+                <button type="button" id="add-connection-btn" class="btn btn-sm">+ Add Connection</button>
             </div>
             <div class="prop-field">
                 <label for="prop-id">ID (Auto-generated)</label>
@@ -415,6 +840,9 @@ class SpaceEditor {
         
         const nameInput = document.getElementById('prop-name');
         const idInput = document.getElementById('prop-id');
+        
+        // Populate parent dropdown
+        this.populateParentDropdown(loc.id);
 
         nameInput.addEventListener('input', e => {
             const newName = e.target.value;
@@ -431,22 +859,95 @@ class SpaceEditor {
             this.updateJson();
         });
         
-        document.getElementById('prop-width').addEventListener('change', e => {
-            const newWidthM = parseFloat(e.target.value);
+        document.getElementById('prop-length').addEventListener('change', e => {
+            const newLengthM = parseFloat(e.target.value);
             if (this.locations.length === 1) {
-                this.pixelsPerMeter = loc.shape.width / newWidthM;
+                this.pixelsPerMeter = loc.shape.width / newLengthM;
             }
-            loc.shape.width = newWidthM * this.pixelsPerMeter;
-            loc.shape.height = parseFloat(document.getElementById('prop-height').value) * this.pixelsPerMeter;
+            loc.shape.width = newLengthM * this.pixelsPerMeter;  // X = length (LEFT-RIGHT) maps to CSS width
+            loc.shape.height = parseFloat(document.getElementById('prop-width').value) * this.pixelsPerMeter;  // Z = width (UP-DOWN) maps to CSS height
+            loc.shape.depth = parseFloat(document.getElementById('prop-height').value) * this.pixelsPerMeter;  // Y = height (vertical space)
             this.loadLayout({ meta: { pixels_per_unit: this.pixelsPerMeter }, locations: this.locations });
             this.updateJson();
         });
 
         document.getElementById('prop-height').addEventListener('change', e => {
             const newHeightM = parseFloat(e.target.value);
-            loc.shape.height = newHeightM * this.pixelsPerMeter;
-            document.querySelector(`.location-rect[data-id="${loc.id}"]`).style.height = `${loc.shape.height}px`;
+            loc.shape.depth = newHeightM * this.pixelsPerMeter;  // Y = height (vertical space, not rendered)
             this.updateJson();
         });
+
+        document.getElementById('prop-width').addEventListener('change', e => {
+            const newWidthM = parseFloat(e.target.value);
+            loc.shape.height = newWidthM * this.pixelsPerMeter;  // Z = width (UP-DOWN) maps to CSS height
+            this.updateRectElement(loc);
+            this.updateJson();
+        });
+
+        document.getElementById('prop-layer').addEventListener('change', e => {
+            const newLayer = parseInt(e.target.value);
+            loc.layer = newLayer;
+            this.updateRectElement(loc);
+            this.updateLayerDropdown();
+            this.applyLayerFilter();
+            this.updateJson();
+        });
+
+        document.getElementById('prop-parent').addEventListener('change', e => {
+            const newParentId = e.target.value || null;
+            loc.parentId = newParentId;
+            this.updateHierarchicalDisplay();
+            this.updateJson();
+        });
+
+        document.getElementById('prop-transition').addEventListener('change', e => {
+            loc.isTransition = e.target.checked;
+            if (loc.isTransition && !loc.connectedLocations) {
+                loc.connectedLocations = [];
+            }
+            document.getElementById('connected-locations-field').style.display = loc.isTransition ? 'block' : 'none';
+            this.updateRectElement(loc);
+            this.updateJson();
+        });
+
+        // Populate connected locations if it's a transition zone
+        if (loc.isTransition) {
+            this.populateConnectedLocations(loc);
+        }
     }
+
+    updateRectElement(loc) {
+        const rectEl = document.querySelector(`.location-rect[data-id="${loc.id}"]`);
+        if (!rectEl) return;
+
+        // Update 3D positioning and styling
+        this.apply3DTransform(rectEl, loc);
+    }
+
+    apply3DTransform(rectEl, loc) {
+        // Set base position (top-left corner is fixed)
+        rectEl.style.left = `${loc.shape.x}px`;
+        rectEl.style.top = `${loc.shape.y}px`;
+        rectEl.style.width = `${loc.shape.width}px`;
+        rectEl.style.height = `${loc.shape.height}px`;
+        
+        // Set position and remove shadows
+        rectEl.style.position = 'absolute';
+        rectEl.style.boxShadow = 'none';
+        
+        // Add depth visualization class for 3D borders
+        rectEl.classList.add('cube-3d');
+        
+        // Add transition zone styling
+        if (loc.isTransition) {
+            rectEl.classList.add('transition-zone');
+        } else {
+            rectEl.classList.remove('transition-zone');
+        }
+        
+        // Set z-index based on position for proper layering
+        const zIndex = Math.floor((loc.shape.y + loc.shape.x) / 10) + (loc.layer || 0) * 1000;
+        rectEl.style.zIndex = zIndex;
+    }
+
 }
