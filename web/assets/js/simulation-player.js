@@ -128,12 +128,29 @@ class SimulationPlayer {
         for (const task of sortedTasks) {
             if (task.start_minutes > this.playheadTime) break; // No need to process future tasks
 
+            // Handle old-style equipment_interactions
             (task.equipment_interactions || []).forEach(interaction => {
                 const isTaskActive = this.playheadTime >= task.start_minutes && this.playheadTime < task.end_minutes;
                 if (isTaskActive) {
                     states[interaction.id] = interaction.to_state;
                 } else { // Task is finished
                     states[interaction.id] = interaction.revert_after === true ? interaction.from_state : interaction.to_state;
+                }
+            });
+            
+            // Handle new-style interactions for equipment
+            (task.interactions || []).forEach(interaction => {
+                const targetObject = this.simData.equipment?.find(eq => eq.id === interaction.object_id);
+                if (targetObject) {
+                    const stateChanges = interaction.property_changes?.state;
+                    if (stateChanges) {
+                        const isTaskActive = this.playheadTime >= task.start_minutes && this.playheadTime < task.end_minutes;
+                        if (isTaskActive) {
+                            states[interaction.object_id] = stateChanges.to;
+                        } else { // Task is finished
+                            states[interaction.object_id] = interaction.revert_after === true ? stateChanges.from : stateChanges.to;
+                        }
+                    }
                 }
             });
         }
@@ -166,11 +183,25 @@ class SimulationPlayer {
             
             // Only account for tasks that have fully completed.
             if (task.end_minutes <= this.playheadTime) {
+                // Handle old-style consumes/produces
                 Object.entries(task.consumes || {}).forEach(([resId, amount]) => { 
                     if (stocks[resId] !== undefined) stocks[resId] -= amount; 
                 });
                 Object.entries(task.produces || {}).forEach(([resId, amount]) => { 
                     if (stocks[resId] !== undefined) stocks[resId] += amount; 
+                });
+                
+                // Handle new-style interactions for resources
+                (task.interactions || []).forEach(interaction => {
+                    const targetResource = this.simData.resources?.find(res => res.id === interaction.object_id);
+                    if (targetResource) {
+                        const quantityChanges = interaction.property_changes?.quantity;
+                        if (quantityChanges && quantityChanges.delta !== undefined) {
+                            if (stocks[interaction.object_id] !== undefined) {
+                                stocks[interaction.object_id] += quantityChanges.delta;
+                            }
+                        }
+                    }
                 });
             }
         }

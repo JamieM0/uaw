@@ -95,6 +95,22 @@ class SpaceEditor {
         this.world.style.transform = `translate(${this.view.x}px, ${this.view.y}px) scale(${this.view.scale})`;
     }
 
+    ensureContentVisible() {
+        // Public method to ensure content is visible - useful for tutorials
+        if (this.locations.length > 0) {
+            this.view.scale = 1;
+            this.view.x = 0;
+            this.view.y = 0;
+            this.updateViewTransform();
+            this.zoomToFit();
+        }
+    }
+
+    resetViewForNewContent() {
+        // Reset the initially loaded flag so next loadLayout will zoom to fit
+        this.hasInitiallyLoaded = false;
+    }
+
     zoomToFit() {
         if (this.locations.length === 0) return;
 
@@ -141,6 +157,11 @@ class SpaceEditor {
     }
 
     onKeyDown(e) {
+        // Don't intercept space key if user is typing in an input field
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.contentEditable === 'true') {
+            return;
+        }
+        
         if (e.code === 'Space' && !this.view.isPanning) {
             e.preventDefault();
             this.view.isPanning = true;
@@ -149,14 +170,19 @@ class SpaceEditor {
     }
     
     onKeyUp(e) {
+        // Don't intercept space key if user is typing in an input field
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.contentEditable === 'true') {
+            return;
+        }
+        
         if (e.code === 'Space') {
             this.view.isPanning = false;
             this.canvas.style.cursor = 'crosshair'; // Or 'default'
         }
     }
 
-    loadLayout(layoutData) {
-        console.log("SPACE-EDITOR: loadLayout() called.", layoutData);
+    loadLayout(layoutData, forceZoomToFit = false) {
+        console.log("SPACE-EDITOR: loadLayout() called.", layoutData, "forceZoomToFit:", forceZoomToFit);
 
         const wasDrawing = this.isDrawing;
 
@@ -199,14 +225,17 @@ class SpaceEditor {
         this.renderPropertiesPanel();
        
         if (this.locations.length > 0) {
-            // Reset view to ensure rectangles are visible
-            this.view.scale = 1;
-            this.view.x = 0;
-            this.view.y = 0;
-            this.updateViewTransform();
-            if (!this.hasInitiallyLoaded) {
+            // Reset view and zoom to fit on initial load or when explicitly requested
+            if (!this.hasInitiallyLoaded || forceZoomToFit) {
+                this.view.scale = 1;
+                this.view.x = 0;
+                this.view.y = 0;
+                this.updateViewTransform();
                 this.zoomToFit();
                 this.hasInitiallyLoaded = true;
+            } else {
+                // Just update the transform without resetting position/scale
+                this.updateViewTransform();
             }
         } else {
             // Ensure transform is applied even with no locations

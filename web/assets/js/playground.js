@@ -150,7 +150,8 @@ function setupTabs() {
                 if (spaceEditor) {
                     try {
                         const currentJson = JSON.parse(editor.getValue());
-                        spaceEditor.loadLayout(currentJson.simulation.layout);
+                        // Force zoom to fit when switching to space editor tab
+                        spaceEditor.loadLayout(currentJson.simulation.layout, true);
                     } catch(e) {
                         console.log("No valid JSON to load into space editor");
                     }
@@ -231,67 +232,222 @@ const sampleSimulation = {
         tasks: [
             {
                 id: "prepare_ingredients 🔸 🔧", actor_id: "baker", start: "06:15", duration: 30, location: "prep_area",
-                consumes: {}, produces: {}, depends_on: [],
-                equipment_interactions: [{ id: "workspace", from_state: "clean", to_state: "in-use" }]
+                depends_on: [],
+                interactions: [
+                    {
+                        object_id: "workspace",
+                        property_changes: {
+                            state: { from: "clean", to: "in-use" }
+                        }
+                    }
+                ]
             },
             {
                 id: "measure_flour 🔸 ⚖️", actor_id: "baker", start: "06:45", duration: 10, location: "prep_area",
-                consumes: {}, produces: {}, depends_on: ["prepare_ingredients 🔸 🔧"]
+                depends_on: ["prepare_ingredients 🔸 🔧"]
             },
             {
                 id: "activate_yeast 🔸 🦠", actor_id: "assistant", start: "06:45", duration: 10, location: "prep_area",
-                consumes: { yeast: 15 }, produces: {}, depends_on: []
+                depends_on: [],
+                interactions: [
+                    {
+                        object_id: "yeast",
+                        property_changes: {
+                            quantity: { delta: -15 }
+                        }
+                    }
+                ]
             },
             {
                 id: "mix_dough 🔸 🥄", actor_id: "baker", start: "06:55", duration: 20, location: "prep_area",
-                consumes: { flour: 1, water: 0.7 }, produces: { mixed_dough: 1 },
                 depends_on: ["measure_flour 🔸 ⚖️", "activate_yeast 🔸 🦠"],
-                equipment_interactions: [
-                    { id: "mixer", from_state: "clean", to_state: "dirty" },
-                    { id: "mixing_bowl", from_state: "clean", to_state: "dirty" }
+                interactions: [
+                    {
+                        object_id: "flour",
+                        property_changes: {
+                            quantity: { delta: -1 }
+                        }
+                    },
+                    {
+                        object_id: "water",
+                        property_changes: {
+                            quantity: { delta: -0.7 }
+                        }
+                    },
+                    {
+                        object_id: "mixed_dough",
+                        property_changes: {
+                            quantity: { delta: 1 }
+                        }
+                    },
+                    {
+                        object_id: "mixer",
+                        property_changes: {
+                            state: { from: "clean", to: "dirty" }
+                        }
+                    },
+                    {
+                        object_id: "mixing_bowl",
+                        property_changes: {
+                            state: { from: "clean", to: "dirty" }
+                        }
+                    }
                 ]
             },
             {
                 id: "knead_dough 🔸 👋", actor_id: "baker", start: "07:15", duration: 15, location: "prep_area",
-                consumes: { mixed_dough: 1 }, produces: { risen_dough: 1 }, depends_on: ["mix_dough 🔸 🥄"],
-                equipment_interactions: [{ id: "workspace", from_state: "in-use", to_state: "dirty" }]
+                depends_on: ["mix_dough 🔸 🥄"],
+                interactions: [
+                    {
+                        object_id: "mixed_dough",
+                        property_changes: {
+                            quantity: { delta: -1 }
+                        }
+                    },
+                    {
+                        object_id: "risen_dough",
+                        property_changes: {
+                            quantity: { delta: 1 }
+                        }
+                    },
+                    {
+                        object_id: "workspace",
+                        property_changes: {
+                            state: { from: "in-use", to: "dirty" }
+                        }
+                    }
+                ]
             },
             {
                 id: "first_rise 🔸 ⏰", actor_id: "baker", start: "07:30", duration: 90, location: "prep_area",
-                consumes: { risen_dough: 1 }, produces: { risen_dough: 1 }, depends_on: ["knead_dough 🔸 👋"]
+                depends_on: ["knead_dough 🔸 👋"],
+                interactions: [
+                    {
+                        object_id: "risen_dough",
+                        property_changes: {
+                            quantity: { delta: -1 }
+                        }
+                    },
+                    {
+                        object_id: "risen_dough",
+                        property_changes: {
+                            quantity: { delta: 1 }
+                        }
+                    },
+                    {
+                        object_id: "workspace",
+                        property_changes: {
+                            state: { from: "dirty", to: "occupied" }
+                        },
+                        revert_after: true
+                    }
+                ]
             },
             {
                 id: "clean_mixing_bowls 🔸 🧼", actor_id: "assistant", start: "07:30", duration: 20, location: "prep_area",
-                consumes: {}, produces: {}, depends_on: [],
-                equipment_interactions: [{ id: "mixing_bowl", from_state: "dirty", to_state: "clean" }]
+                depends_on: [],
+                interactions: [
+                    {
+                        object_id: "mixing_bowl",
+                        property_changes: {
+                            state: { from: "dirty", to: "clean" }
+                        }
+                    }
+                ]
             },
             {
                 id: "shape_loaves 🔸 👐", actor_id: "baker", start: "09:00", duration: 25, location: "prep_area",
-                consumes: { risen_dough: 1 }, produces: { shaped_loaves: 1 }, depends_on: ["first_rise 🔸 ⏰"],
-                equipment_interactions: [{ id: "workspace", from_state: "dirty", to_state: "dirty" }]
+                depends_on: ["first_rise 🔸 ⏰"],
+                interactions: [
+                    {
+                        object_id: "risen_dough",
+                        property_changes: {
+                            quantity: { delta: -1 }
+                        }
+                    },
+                    {
+                        object_id: "shaped_loaves",
+                        property_changes: {
+                            quantity: { delta: 1 }
+                        }
+                    },
+                    {
+                        object_id: "workspace",
+                        property_changes: {
+                            state: { from: "dirty", to: "dirty" }
+                        }
+                    }
+                ]
             },
             {
                 id: "prepare_baking_sheets 🔸 🍞", actor_id: "assistant", start: "09:00", duration: 10, location: "prep_area",
-                consumes: {}, produces: {}, depends_on: []
+                depends_on: []
             },
             {
                 id: "preheat_oven 🔸 🔥", actor_id: "assistant", start: "09:05", duration: 15, location: "oven_area",
-                consumes: {}, produces: {}, depends_on: ["prepare_baking_sheets 🔸 🍞"],
-                equipment_interactions: [{ id: "oven", from_state: "available", to_state: "in-use" }]
+                depends_on: ["prepare_baking_sheets 🔸 🍞"],
+                interactions: [
+                    {
+                        object_id: "oven",
+                        property_changes: {
+                            state: { from: "available", to: "in-use" }
+                        }
+                    }
+                ]
             },
             {
                 id: "second_rise 🔸 ⏰", actor_id: "baker", start: "09:25", duration: 45, location: "prep_area",
-                consumes: { shaped_loaves: 1 }, produces: { shaped_loaves: 1 }, depends_on: ["shape_loaves 🔸 👐"]
+                depends_on: ["shape_loaves 🔸 👐"],
+                interactions: [
+                    {
+                        object_id: "shaped_loaves",
+                        property_changes: {
+                            quantity: { delta: -1 }
+                        }
+                    },
+                    {
+                        object_id: "shaped_loaves",
+                        property_changes: {
+                            quantity: { delta: 1 }
+                        }
+                    }
+                ]
             },
             {
                 id: "bake_bread 🔸 🍞", actor_id: "baker", start: "10:10", duration: 35, location: "oven_area",
-                consumes: { shaped_loaves: 1 }, produces: { baked_bread: 1 }, depends_on: ["second_rise 🔸 ⏰"],
-                equipment_interactions: [{ id: "oven", from_state: "in-use", to_state: "available" }]
+                depends_on: ["second_rise 🔸 ⏰"],
+                interactions: [
+                    {
+                        object_id: "shaped_loaves",
+                        property_changes: {
+                            quantity: { delta: -1 }
+                        }
+                    },
+                    {
+                        object_id: "baked_bread",
+                        property_changes: {
+                            quantity: { delta: 1 }
+                        }
+                    },
+                    {
+                        object_id: "oven",
+                        property_changes: {
+                            state: { from: "in-use", to: "available" }
+                        }
+                    }
+                ]
             },
             {
                 id: "wash_equipment 🔸 🧽", actor_id: "assistant", start: "10:10", duration: 35, location: "prep_area",
-                consumes: {}, produces: {}, depends_on: [],
-                equipment_interactions: [{ id: "mixer", from_state: "dirty", to_state: "clean" }]
+                depends_on: [],
+                interactions: [
+                    {
+                        object_id: "mixer",
+                        property_changes: {
+                            state: { from: "dirty", to: "clean" }
+                        }
+                    }
+                ]
             }
         ]
     }
@@ -1631,11 +1787,20 @@ function renderSimulation() {
             const sortedTasks = [...(currentSimulationData.tasks || [])].sort((a,b) => (a.start || "00:00").localeCompare(b.start || "00:00"));
             
             sortedTasks.forEach(task => {
+                // Handle old-style equipment_interactions
                 (task.equipment_interactions || []).forEach(interaction => {
                     // If the equipment is in the correct starting state...
                     if(finalEquipmentStates[interaction.id] === interaction.from_state) {
                         //...its new state is the 'to_state', unless it reverts.
                         finalEquipmentStates[interaction.id] = interaction.revert_after === true ? interaction.from_state : interaction.to_state;
+                    }
+                });
+                
+                // Handle new-style interactions
+                (task.interactions || []).forEach(interaction => {
+                    const stateChanges = interaction.property_changes?.state;
+                    if (stateChanges && finalEquipmentStates[interaction.object_id] === stateChanges.from) {
+                        finalEquipmentStates[interaction.object_id] = interaction.revert_after === true ? stateChanges.from : stateChanges.to;
                     }
                 });
             });

@@ -52,6 +52,7 @@ class SimulationValidator {
     const sortedTasks = [...tasks].sort((a, b) => (a.start || "00:00").localeCompare(b.start || "00:00"));
 
     for (const task of sortedTasks) {
+      // Handle old-style consumes/produces
       Object.entries(task.consumes || {}).forEach(([resId, amount]) => {
         if (stocks[resId] === undefined) {
           this.addResult({ metricId: metric.id, status: 'error', message: `Task '${task.id}' consumes undefined resource '${resId}'.` });
@@ -67,6 +68,30 @@ class SimulationValidator {
         if (stocks[resId] === undefined) stocks[resId] = 0; // Allows creation of new products
         stocks[resId] += amount;
       });
+      
+      // Handle new-style interactions that modify resource quantities
+      for (const interaction of (task.interactions || [])) {
+        const obj = resources.find(r => r.id === interaction.object_id);
+        if (obj && (obj.type === 'resource_pile' || obj.type === 'product')) {
+          const quantityChanges = interaction.property_changes?.quantity;
+          if (quantityChanges) {
+            const deltaAmount = quantityChanges.delta || 0;
+            if (stocks[obj.id] === undefined) {
+              if (deltaAmount < 0) {
+                this.addResult({ metricId: metric.id, status: 'error', message: `Task '${task.id}' tries to reduce undefined resource '${obj.id}'.` });
+                issueFound = true; 
+                continue;
+              }
+              stocks[obj.id] = 0;
+            }
+            stocks[obj.id] += deltaAmount;
+            if (stocks[obj.id] < -0.0001) {
+              this.addResult({ metricId: metric.id, status: 'error', message: `Resource '${obj.id}' stock became negative (${stocks[obj.id].toFixed(2)}) after task '${task.id}'.` });
+              issueFound = true;
+            }
+          }
+        }
+      }
     }
 
     if (!issueFound) { this.addResult({ metricId: metric.id, status: 'success', message: 'Resource levels remained positive.' }); }
@@ -81,8 +106,15 @@ class SimulationValidator {
     for (const [eqId, equipmentDef] of equipmentMap.entries()) {
       const capacity = equipmentDef.properties?.capacity || 1;
       
+      // Support both old equipment_interactions and new interactions
       const relevantTasks = tasks
-        .filter(t => (t.equipment_interactions || []).some(i => i.id === eqId))
+        .filter(t => {
+          // Check for old-style equipment_interactions
+          const hasOldStyle = (t.equipment_interactions || []).some(i => i.id === eqId);
+          // Check for new-style interactions targeting this equipment
+          const hasNewStyle = (t.interactions || []).some(i => i.object_id === eqId);
+          return hasOldStyle || hasNewStyle;
+        })
         .map(t => ({ ...t, startMinutes: this._timeToMinutes(t.start), endMinutes: this._timeToMinutes(t.start) + (t.duration || 0) }))
         .sort((a, b) => a.startMinutes - b.startMinutes);
 
@@ -90,16 +122,58 @@ class SimulationValidator {
       
       for (let i = 0; i < relevantTasks.length; i++) {
         const currentTask = relevantTasks[i];
-        const interaction = (currentTask.equipment_interactions || []).find(i => i.id === eqId);
+        
+        // Get interaction for this equipment (try both old and new style)
+        let interaction = (currentTask.equipment_interactions || []).find(i => i.id === eqId);
+        let isNewStyle = false;
+        
+        if (!interaction) {
+          // Look for new-style interactions
+          const newInteraction = (currentTask.interactions || []).find(i => i.object_id === eqId);
+          if (newInteraction) {
+            // Convert new-style to old-style format for backward compatibility
+            const stateChanges = newInteraction.property_changes?.state;
+            if (stateChanges) {
+              interaction = {
+                id: eqId,
+                from_state: stateChanges.from,
+                to_state: stateChanges.to,
+                revert_after: newInteraction.revert_after || false
+              };
+              isNewStyle = true;
+            }
+          }
+        }
+        
+        if (!interaction) continue;
         
         let stateAtTaskStart = equipmentDef.properties?.state || 'available';
         for (let j = 0; j < i; j++) {
             const priorTask = relevantTasks[j];
-            const priorInteraction = (priorTask.equipment_interactions || []).find(i => i.id === eqId);
-            if (priorTask.endMinutes <= currentTask.startMinutes) {
-                stateAtTaskStart = priorInteraction.revert_after === true ? priorInteraction.from_state : priorInteraction.to_state;
-            } else {
-                stateAtTaskStart = priorInteraction.to_state;
+            let priorInteraction = (priorTask.equipment_interactions || []).find(i => i.id === eqId);
+            
+            if (!priorInteraction) {
+              // Handle new-style interactions for prior tasks too
+              const newPriorInteraction = (priorTask.interactions || []).find(i => i.object_id === eqId);
+              if (newPriorInteraction) {
+                const stateChanges = newPriorInteraction.property_changes?.state;
+                if (stateChanges) {
+                  priorInteraction = {
+                    id: eqId,
+                    from_state: stateChanges.from,
+                    to_state: stateChanges.to,
+                    revert_after: newPriorInteraction.revert_after || false
+                  };
+                }
+              }
+            }
+            
+            if (priorInteraction) {
+              if (priorTask.endMinutes <= currentTask.startMinutes) {
+                  stateAtTaskStart = priorInteraction.revert_after === true ? priorInteraction.from_state : priorInteraction.to_state;
+              } else {
+                  stateAtTaskStart = priorInteraction.to_state;
+              }
             }
         }
         
@@ -190,7 +264,16 @@ class SimulationValidator {
       return;
     }
     for (const task of tasks) {
+      // Collect all consumed items (old and new style)
       const consumedItems = new Set(Object.keys(task.consumes || {}));
+      for (const interaction of (task.interactions || [])) {
+        const quantityChanges = interaction.property_changes?.quantity;
+        if (quantityChanges && quantityChanges.delta < 0) {
+          consumedItems.add(interaction.object_id);
+        }
+      }
+      
+      // Check produced items (old style)
       for (const producedItem in (task.produces || {})) {
         if (recipes[producedItem]) {
           const requiredIngredients = new Set(recipes[producedItem].consumes || []);
@@ -201,6 +284,25 @@ class SimulationValidator {
           if (missingIngredients.length > 0) {
             this.addResult({ metricId: metric.id, status: 'warning', message: `Recipe Violation: Task '${task.id}' produces '${producedItem}' but is missing required ingredient(s): ${missingIngredients.join(', ')}.` });
             issueFound = true;
+          }
+        }
+      }
+      
+      // Check produced items (new style)
+      for (const interaction of (task.interactions || [])) {
+        const quantityChanges = interaction.property_changes?.quantity;
+        if (quantityChanges && quantityChanges.delta > 0) {
+          const producedItem = interaction.object_id;
+          if (recipes[producedItem]) {
+            const requiredIngredients = new Set(recipes[producedItem].consumes || []);
+            const missingIngredients = [];
+            for (const required of requiredIngredients) {
+              if (!consumedItems.has(required)) missingIngredients.push(required);
+            }
+            if (missingIngredients.length > 0) {
+              this.addResult({ metricId: metric.id, status: 'warning', message: `Recipe Violation: Task '${task.id}' produces '${producedItem}' but is missing required ingredient(s): ${missingIngredients.join(', ')}.` });
+              issueFound = true;
+            }
           }
         }
       }
@@ -253,8 +355,19 @@ class SimulationValidator {
     const tasks = this.simulation.tasks || [];
 
     for (const task of tasks) {
+      // Handle old-style consumes/produces
       Object.keys(task.consumes || {}).forEach(resId => definedResources.delete(resId));
       Object.keys(task.produces || {}).forEach(resId => definedResources.delete(resId));
+      
+      // Handle new-style interactions
+      for (const interaction of (task.interactions || [])) {
+        const obj = resources.find(r => r.id === interaction.object_id);
+        if (obj && (obj.type === 'resource_pile' || obj.type === 'product')) {
+          if (interaction.property_changes?.quantity) {
+            definedResources.delete(obj.id);
+          }
+        }
+      }
     }
 
     if (definedResources.size > 0) {
@@ -298,12 +411,33 @@ class SimulationValidator {
     const resourceMap = new Map(resources.map(r => [r.id, r.properties]));
     
     for (const task of tasks) {
+      // Handle old-style consumes/produces
       for (const [resId, amount] of Object.entries(task.consumes || {})) {
         totalResourceCost += (resourceMap.get(resId)?.cost_per_unit || 0) * amount;
       }
       for (const [resId, amount] of Object.entries(task.produces || {})) {
         if (finalProductIds.includes(resId)) {
             totalRevenue += (resourceMap.get(resId)?.revenue_per_unit || 0) * amount;
+        }
+      }
+      
+      // Handle new-style interactions
+      for (const interaction of (task.interactions || [])) {
+        const obj = resources.find(r => r.id === interaction.object_id);
+        if (obj && (obj.type === 'resource_pile' || obj.type === 'product')) {
+          const quantityChanges = interaction.property_changes?.quantity;
+          if (quantityChanges) {
+            const deltaAmount = quantityChanges.delta || 0;
+            if (deltaAmount < 0) {
+              // Resource consumption (negative delta)
+              totalResourceCost += (obj.properties?.cost_per_unit || 0) * Math.abs(deltaAmount);
+            } else if (deltaAmount > 0) {
+              // Resource production (positive delta)
+              if (finalProductIds.includes(obj.id)) {
+                totalRevenue += (obj.properties?.revenue_per_unit || 0) * deltaAmount;
+              }
+            }
+          }
         }
       }
     }
@@ -364,7 +498,7 @@ class SimulationValidator {
             issueFound = true;
         }
 
-        // 2. Check the location of all required equipment
+        // 2. Check the location of all required equipment (support both old and new interaction styles)
         for (const interaction of (task.equipment_interactions || [])) {
             const equipment = objectMap.get(interaction.id);
             if (equipment && equipment.properties?.location !== task.location) {
@@ -372,10 +506,82 @@ class SimulationValidator {
                  issueFound = true;
             }
         }
+        
+        // Also check new-style interactions
+        for (const interaction of (task.interactions || [])) {
+            const obj = objectMap.get(interaction.object_id);
+            if (obj && obj.type === 'equipment' && obj.properties?.location !== task.location) {
+                 this.addResult({ metricId: metric.id, status: 'error', message: `Proximity Error: Equipment '${obj.id}' must be in location '${task.location}' for task '${task.id}', but is in '${obj.properties.location}'.` });
+                 issueFound = true;
+            }
+        }
     }
 
     if (!issueFound) {
         this.addResult({ metricId: metric.id, status: 'success', message: 'All task proximity requirements are met.' });
+    }
+  }
+  validateInteractions(metric) {
+    const objects = this.simulation.objects || [];
+    const objectMap = new Map(objects.map(o => [o.id, o]));
+    const tasks = this.simulation.tasks || [];
+    let issueFound = false;
+
+    for (const task of tasks) {
+      for (const interaction of (task.interactions || [])) {
+        const targetObject = objectMap.get(interaction.object_id);
+        if (!targetObject) {
+          this.addResult({ 
+            metricId: metric.id, 
+            status: 'error', 
+            message: `Task '${task.id}' has an interaction with undefined object '${interaction.object_id}'.` 
+          });
+          issueFound = true;
+          continue;
+        }
+
+        // Validate property changes
+        if (interaction.property_changes) {
+          for (const [property, change] of Object.entries(interaction.property_changes)) {
+            // Check if the property exists on the target object
+            if (!targetObject.properties || !(property in targetObject.properties)) {
+              if (!change.delta) { // Only warn if not using delta (which can create new properties)
+                this.addResult({ 
+                  metricId: metric.id, 
+                  status: 'warning', 
+                  message: `Task '${task.id}' tries to modify property '${property}' on object '${interaction.object_id}', but the property doesn't exist.` 
+                });
+              }
+            }
+
+            // Validate change structure
+            if (change.from !== undefined && change.to !== undefined && change.delta !== undefined) {
+              this.addResult({ 
+                metricId: metric.id, 
+                status: 'error', 
+                message: `Task '${task.id}' has invalid property change for '${property}' on object '${interaction.object_id}': cannot specify both from/to and delta.` 
+              });
+              issueFound = true;
+            }
+
+            // Validate from/to changes
+            if (change.from !== undefined && change.to !== undefined) {
+              const currentValue = targetObject.properties?.[property];
+              if (currentValue !== undefined && currentValue !== change.from) {
+                this.addResult({ 
+                  metricId: metric.id, 
+                  status: 'warning', 
+                  message: `Task '${task.id}' expects '${property}' on object '${interaction.object_id}' to be '${change.from}', but it is '${currentValue}'.` 
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All object interactions are valid.' });
     }
   }
 }

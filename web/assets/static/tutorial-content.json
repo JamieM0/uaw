@@ -1,27 +1,120 @@
 {
-  "title": "UAW Playground Guide",
-  "introduction": "Learn how to model and optimize real-world processes.",
+  "title": "UAW Playground Tutorial",
+  "introduction": "Learn process simulation modeling through hands-on challenges across multiple domains.",
   "steps": [
     {
       "id": "intro_layout",
-      "title": "1. Understanding the Layout",
-      "instructions": "<p>Welcome to the Playground! Your screen is divided into three key areas:</p><ul><li><b>The JSON Editor (Top Left):</b> This is where you'll define the simulation's structure.</li><li><b>The Timeline (Top Right):</b> A visual rendering of your simulation.</li><li><b>The Validation Panel (Bottom):</b> Your intelligent assistant. It shows errors and warnings based on a catalog of rules.</li></ul><p>For this first step, you don't need to change anything. Just click 'Next' to continue.</p>",
+      "title": "1. Interface Overview",
+      "instructions": "<p><strong>Welcome to the UAW Playground!</strong> This interface allows you to model and simulate real-world processes.</p><p><strong>Key interface areas:</strong></p><ul><li><b>JSON Editor (Top Left):</b> Define simulation structure - tasks, actors, and resources</li><li><b>Visual Timeline (Top Right):</b> Interactive timeline showing process flow</li><li><b>Space Editor Tab:</b> Design physical layouts and workspaces</li><li><b>Validation Panel (Bottom):</b> Automated error detection and optimization suggestions</li></ul><p><strong>Controls:</strong> Player controls, speed selector, and timeline scrubber enable time-based simulation.</p><p><em>Click 'Next' to continue.</em></p>",
       "initial_json": {
-        "simulation": { "meta": { "article_title": "Welcome!" } }
+        "simulation": { 
+          "meta": { 
+            "id": "tutorial_intro",
+            "article_title": "Mission Control Tutorial",
+            "domain": "Training"
+          },
+          "config": {
+            "time_unit": "minute",
+            "start_time": "08:00",
+            "end_time": "12:00"
+          },
+          "layout": {
+            "meta": { "units": "meters", "pixels_per_unit": 20 },
+            "locations": [
+              { "id": "command_center", "name": "Command Center", "shape": { "type": "rect", "x": 50, "y": 50, "width": 300, "height": 200 } }
+            ]
+          },
+          "objects": [
+            { "id": "trainee", "type": "actor", "name": "Trainee", "properties": { "role": "Learning Specialist", "cost_per_hour": 0, "location": "command_center" } }
+          ],
+          "tasks": [
+            { "id": "orientation 🔸 🎯", "actor_id": "trainee", "start": "08:00", "duration": 30, "location": "command_center" }
+          ]
+        }
       },
       "validation": { "type": "none" },
-      "success_message": "Perfect! Let's make our first edit."
+      "success_message": "Interface overview complete."
     },
     {
-      "id": "solve_scheduling",
-      "title": "2. Solving a Scheduling Conflict",
-      "instructions": "<p>A core rule of simulations is that an actor can't be in two places at once.</p><p>Look at the Validation Panel. You'll see an <b>error</b> because the <code>assistant</code> is scheduled for two overlapping tasks.</p><p><b>Your Goal:</b> Modify the <code>start</code> time of the <code>'preheat_oven 🔸 🔥'</code> task so that it begins *after* the <code>'clean_up_spills 🔸 🧹'</code> task is finished.</p><p>You can update this either by directly modifying the JSON or by adjusting the task in the simulation rendering.</p>",
+      "id": "space_design_challenge",
+      "title": "2. Space Design",
+      "instructions": "<p><strong>Task:</strong> Design a functional bakery layout using the Space Editor.</p><p>Switch to the <strong>Space Editor</strong> tab to begin.</p><p><strong>Requirements:</strong></p><ol><li><strong>Create Prep Station:</strong> Click '+ Add', draw a rectangle, name it <strong>\"Prep Station\"</strong></li><li><strong>Set Dimensions:</strong> Set its <strong>Length</strong> to exactly <strong>5</strong> meters in Properties panel</li><li><strong>Add Oven Zone:</strong> Create a second location called <strong>\"Oven Zone\"</strong> with length <strong>3</strong> meters</li></ol><p><strong>Note:</strong> Use the Properties panel to adjust dimensions. The JSON updates automatically as you work.</p>",
       "initial_json": {
         "simulation": {
-          "actors": [{ "id": "assistant", "role": "Assistant" }],
+          "meta": {
+            "id": "tutorial_space",
+            "article_title": "Artisan Bakery Layout",
+            "domain": "Food Production"
+          },
+          "config": {
+            "time_unit": "minute",
+            "start_time": "06:00",
+            "end_time": "14:00"
+          },
+          "layout": {
+            "meta": {
+              "units": "meters",
+              "pixels_per_unit": 20
+            },
+            "locations": [
+              {
+                "id": "reception",
+                "name": "Reception Area",
+                "shape": { "type": "rect", "x": 50, "y": 250, "width": 200, "height": 100 }
+              }
+            ]
+          },
+          "objects": [
+            { "id": "architect", "type": "actor", "name": "Space Designer", "properties": { "role": "Layout Architect", "cost_per_hour": 30, "location": "reception" } }
+          ],
           "tasks": [
-            { "id": "clean_up_spills 🔸 🧹", "actor_id": "assistant", "start": "07:00", "duration": 15 },
-            { "id": "preheat_oven 🔸 🔥", "actor_id": "assistant", "start": "07:10", "duration": 20 }
+            { "id": "space_planning 🔸 📐", "actor_id": "architect", "start": "06:00", "duration": 60, "location": "reception" }
+          ]
+        }
+      },
+      "validation": { 
+        "type": "custom_function",
+        "function_name": "validateAdvancedSpaceDesign"
+      },
+      "success_message": "Space design complete."
+    },
+    {
+      "id": "timeline_mastery",
+      "title": "3. Timeline Manipulation",
+      "instructions": "<p><strong>Task:</strong> Use the interactive timeline to resolve scheduling conflicts.</p><p>Switch to <strong>Simulation Render</strong> to view the timeline.</p><p><strong>Steps:</strong></p><ol><li><strong>Identify Conflict:</strong> The validation panel shows a scheduling overlap - one person cannot perform two tasks simultaneously</li><li><strong>Resolve Conflict:</strong> Drag the <code>'preheat_oven 🔸 🔥'</code> task to start after <code>'clean_up_spills 🔸 🧹'</code> finishes</li><li><strong>Test Resize:</strong> Try dragging the right edge of any task to change its duration</li></ol><p><strong>Features:</strong> Click tasks to jump to their JSON code, or drag them between actors. The timeline is fully interactive.</p>",
+      "initial_json": {
+        "simulation": {
+          "meta": {
+            "id": "tutorial_timeline",
+            "article_title": "Timeline Interactive Challenge",
+            "domain": "Food Production"
+          },
+          "config": {
+            "time_unit": "minute",
+            "start_time": "07:00",
+            "end_time": "09:00"
+          },
+          "layout": {
+            "meta": {
+              "units": "meters", 
+              "pixels_per_unit": 20
+            },
+            "locations": [
+              {
+                "id": "main_kitchen",
+                "name": "Main Kitchen",
+                "shape": { "type": "rect", "x": 50, "y": 50, "width": 400, "height": 200 }
+              }
+            ]
+          },
+          "objects": [
+            { "id": "assistant_chef", "type": "actor", "name": "Assistant Chef", "properties": { "role": "Kitchen Assistant", "cost_per_hour": 18, "location": "main_kitchen" } },
+            { "id": "head_chef", "type": "actor", "name": "Head Chef", "properties": { "role": "Executive Chef", "cost_per_hour": 35, "location": "main_kitchen" } }
+          ],
+          "tasks": [
+            { "id": "clean_up_spills 🔸 🧹", "actor_id": "assistant_chef", "start": "07:00", "duration": 15, "location": "main_kitchen" },
+            { "id": "preheat_oven 🔸 🔥", "actor_id": "assistant_chef", "start": "07:10", "duration": 20, "location": "main_kitchen" },
+            { "id": "prep_vegetables 🔸 🥕", "actor_id": "head_chef", "start": "07:00", "duration": 30, "location": "main_kitchen" }
           ]
         }
       },
@@ -29,92 +122,348 @@
         "type": "custom_function",
         "function_name": "validateNoAssistantOverlap"
       },
-      "success_message": "Excellent! The assistant's schedule is now conflict-free."
+      "success_message": "Timeline manipulation complete."
     },
     {
-      "id": "solve_dependencies",
-      "title": "3. Respecting Dependencies",
-      "instructions": "<p>Tasks often depend on each other. You can't bake bread before the oven is hot.</p><p>The validation panel shows a <b>warning</b> because the <code>'bake_bread'</code> task starts before its dependency, <code>'preheat_oven'</code>, is finished.</p><p><b>Your Goal:</b> Change the <code>start</code> time of the <code>'bake_bread 🔸 🍞'</code> task to <code>09:30</code> to ensure it starts after the oven is ready.</p>",
+      "id": "simulation_playback",
+      "title": "4. Simulation Playback",
+      "instructions": "<p><strong>Task:</strong> Explore simulation playback controls and time-based state tracking.</p><p><strong>Actions to complete:</strong></p><ol><li><strong>Start Playback:</strong> Click the ▶️ button to begin simulation</li><li><strong>Adjust Speed:</strong> Change playback speed using the dropdown menu</li><li><strong>Scrub Timeline:</strong> Drag the red playhead to jump to different times</li><li><strong>Monitor States:</strong> Observe equipment and resource panels updating in real-time</li></ol><p><strong>Experiment:</strong> Try pausing mid-simulation and scrubbing back and forth. Notice how equipment states change and resources are consumed over time.</p>",
       "initial_json": {
         "simulation": {
-            "actors": [{ "id": "baker", "role": "Baker"}],
-            "tasks": [
-                { "id": "preheat_oven 🔸 🔥", "actor_id": "baker", "start": "09:00", "duration": 30 },
-                { "id": "bake_bread 🔸 🍞", "actor_id": "baker", "start": "09:15", "duration": 40, "depends_on": ["preheat_oven 🔸 🔥"]}
+          "meta": {
+            "id": "tutorial_playback",
+            "article_title": "Time Machine Workshop",
+            "domain": "Manufacturing"
+          },
+          "config": {
+            "time_unit": "minute", 
+            "start_time": "09:00",
+            "end_time": "10:30"
+          },
+          "layout": {
+            "meta": { "units": "meters", "pixels_per_unit": 20 },
+            "locations": [
+              { "id": "assembly_line", "name": "Assembly Line", "shape": { "type": "rect", "x": 50, "y": 50, "width": 400, "height": 150 } },
+              { "id": "quality_control", "name": "QC Station", "shape": { "type": "rect", "x": 500, "y": 50, "width": 200, "height": 150 } }
             ]
-        }
-      },
-      "validation": {
-        "type": "custom_function",
-        "function_name": "validateBakingDependency"
-      },
-      "success_message": "Great job! The process flow is now logical."
-    },
-    {
-      "id": "solve_resource_flow",
-      "title": "4. Managing Consumables",
-      "instructions": "<p>Simulations track consumable resources. You can't use what you don't have.</p><p>The validation panel shows an <b>error</b> because the process tries to consume <code>10 kg</code> of flour, but the <code>starting_stock</code> is only <code>5</code>.</p><p><b>Your Goal:</b> Find the <code>flour</code> resource in the <code>resources</code> array and increase its <code>starting_stock</code> to at least <code>10</code>.</p>",
-      "initial_json": {
-        "simulation": {
-          "actors": [{ "id": "baker", "role": "Baker" }],
-          "resources": [{ "id": "flour", "unit": "kg", "starting_stock": 5 }],
-          "tasks": [{ "id": "make_bulk_dough 🔸 🌀", "actor_id": "baker", "start": "10:00", "duration": 30, "consumes": { "flour": 10 }, "produces": {} }]
-        }
-      },
-      "validation": {
-        "type": "custom_function",
-        "function_name": "validateSufficientFlour"
-      },
-      "success_message": "Problem solved! The bakery now has enough flour."
-    },
-    {
-      "id": "solve_equipment_capacity",
-      "title": "5. Respecting Equipment Capacity",
-      "instructions": "<p>Equipment, like a proofing rack, has a limited capacity.</p><p>The validation panel shows an <b>error</b> because two bakers are trying to place dough on a rack that only has a capacity of <code>1</code>.</p><p><b>Your Goal:</b> Adjust the schedule. Change the <code>start</code> time of the <code>'shape_batch_2'</code> task so it begins after <code>'shape_batch_1'</code> is finished.</p><p>Note the use of the 'revert_after' property in the equipment interactions.</p>",
-      "initial_json": {
-        "simulation": {
-            "actors": [{ "id": "baker_1", "role": "Baker" }, { "id": "baker_2", "role": "Baker" }],
-            "equipment": [{ "id": "proofing_rack", "name": "Proofing Rack", "capacity": 1, "state": "available" }],
-            "tasks": [
-                {
-                    "id": "shape_batch_1 🔸 🥖", "actor_id": "baker_1", "start": "11:00", "duration": 15,
-                    "equipment_interactions": [{ "id": "proofing_rack", "from_state": "available", "to_state": "in-use", "revert_after": true }]
-                },
-                {
-                    "id": "shape_batch_2 🔸 🥖", "actor_id": "baker_2", "start": "11:00", "duration": 15,
-                    "equipment_interactions": [{ "id": "proofing_rack", "from_state": "available", "to_state": "in-use", "revert_after": true }]
-                }
-            ]
-        }
-      },
-      "validation": {
-          "type": "custom_function",
-          "function_name": "validateRackCapacity"
-      },
-      "success_message": "Perfect! The bakers are no longer fighting for space."
-    },
-    {
-      "id": "capstone_challenge",
-      "title": "6. Capstone: Fix the Coffee Shop",
-      "instructions": "<p>Time for a challenge! The morning rush at this coffee shop is a mess. The simulation has multiple errors.</p><p>Look at the validation panel and use everything you've learned to fix the workflow.</p><p><b>Your Goals:</b><ol><li>Fix the <b>scheduling overlap</b> for the barista.</li><li>Fix the <b>equipment state logic</b> so the espresso machine is cleaned before it's used again.</li><li>Fix the <b>dependency timing</b> so the latte art is poured *after* the milk is steamed.</li></ol>",
-      "initial_json": {
-        "simulation": {
-          "meta": { "article_title": "Morning Coffee Rush" },
-          "actors": [{ "id": "barista", "role": "Barista" }],
-          "equipment": [{ "id": "espresso_machine", "name": "Espresso Machine", "state": "dirty" }],
-          "resources": [{ "id": "steamed_milk", "unit": "pitcher", "starting_stock": 0 }, { "id": "espresso_shot", "unit": "shot", "starting_stock": 0 }],
+          },
+          "objects": [
+            { "id": "operator", "type": "actor", "name": "Machine Operator", "properties": { "role": "Assembly Specialist", "cost_per_hour": 22, "location": "assembly_line" } },
+            { "id": "inspector", "type": "actor", "name": "QC Inspector", "properties": { "role": "Quality Inspector", "cost_per_hour": 28, "location": "quality_control" } },
+            { "id": "assembly_machine", "type": "equipment", "name": "Assembly Machine", "emoji": "🏭", "properties": { "state": "off", "capacity": 1, "location": "assembly_line" } },
+            { "id": "components", "type": "resource_pile", "name": "Components", "emoji": "⚙️", "properties": { "unit": "pieces", "quantity": 50, "location": "assembly_line" } },
+            { "id": "finished_products", "type": "product", "name": "Finished Products", "emoji": "📦", "properties": { "unit": "units", "quantity": 0, "location": "quality_control" } }
+          ],
           "tasks": [
-            { "id": "pull_espresso 🔸 ☕", "actor_id": "barista", "start": "08:00", "duration": 2, "equipment_interactions": [{ "id": "espresso_machine", "from_state": "clean", "to_state": "dirty" }], "produces": { "espresso_shot": 1 } },
-            { "id": "steam_milk 🔸 🥛", "actor_id": "barista", "start": "08:01", "duration": 3, "produces": { "steamed_milk": 1 } },
-            { "id": "pour_latte_art 🔸 🎨", "actor_id": "barista", "start": "08:02", "duration": 1, "depends_on": ["steam_milk 🔸 🥛", "pull_espresso 🔸 ☕"] }
+            { 
+              "id": "startup_machine 🔸 🔧", 
+              "actor_id": "operator", 
+              "start": "09:00", 
+              "duration": 10, 
+              "location": "assembly_line",
+              "interactions": [
+                { "object_id": "assembly_machine", "property_changes": { "state": { "from": "off", "to": "running" } } }
+              ]
+            },
+            { 
+              "id": "assembly_batch_1 🔸 🏭", 
+              "actor_id": "operator", 
+              "start": "09:10", 
+              "duration": 20, 
+              "location": "assembly_line",
+              "depends_on": ["startup_machine 🔸 🔧"],
+              "interactions": [
+                { "object_id": "components", "property_changes": { "quantity": { "delta": -10 } } },
+                { "object_id": "finished_products", "property_changes": { "quantity": { "delta": 10 } } }
+              ]
+            },
+            { 
+              "id": "quality_inspection 🔸 🔍", 
+              "actor_id": "inspector", 
+              "start": "09:30", 
+              "duration": 15, 
+              "location": "quality_control",
+              "depends_on": ["assembly_batch_1 🔸 🏭"]
+            },
+            { 
+              "id": "shutdown_machine 🔸 🛑", 
+              "actor_id": "operator", 
+              "start": "10:00", 
+              "duration": 5, 
+              "location": "assembly_line",
+              "interactions": [
+                { "object_id": "assembly_machine", "property_changes": { "state": { "from": "running", "to": "off" } } }
+              ]
+            }
+          ]
+        }
+      },
+      "validation": { "type": "custom_function", "function_name": "validatePlaybackExperience" },
+      "success_message": "Simulation playback complete."
+    },
+    {
+      "id": "resource_economics",
+      "title": "5. Resource Management",
+      "instructions": "<p><strong>Scenario:</strong> A research lab is running short on critical materials.</p><p><strong>Problem:</strong> The validation panel shows resource shortages that will halt production.</p><p><strong>Tasks:</strong></p><ol><li><strong>Locate Issue:</strong> Find the <code>rare_minerals</code> object with insufficient <code>quantity</code></li><li><strong>Fix Shortage:</strong> Increase its <code>properties.quantity</code> to at least <code>15</code> units</li><li><strong>Observe States:</strong> Notice how equipment states change during tasks</li><li><strong>Monitor Consumption:</strong> Use the player to watch real-time resource usage</li></ol><p><strong>Application:</strong> This demonstrates supply chain modeling, inventory management, and resource constraints.</p>",
+      "initial_json": {
+        "simulation": {
+          "meta": {
+            "id": "tutorial_resources",
+            "article_title": "Materials Science Lab Crisis",
+            "domain": "Research & Development"
+          },
+          "config": {
+            "time_unit": "minute",
+            "start_time": "10:00",
+            "end_time": "12:00"
+          },
+          "layout": {
+            "meta": { "units": "meters", "pixels_per_unit": 20 },
+            "locations": [
+              { "id": "research_lab", "name": "Research Lab", "shape": { "type": "rect", "x": 50, "y": 50, "width": 350, "height": 200 } },
+              { "id": "storage_vault", "name": "Secure Storage", "shape": { "type": "rect", "x": 450, "y": 50, "width": 200, "height": 200 } }
+            ]
+          },
+          "objects": [
+            { "id": "lead_scientist", "type": "actor", "name": "Dr. Smith", "properties": { "role": "Lead Researcher", "cost_per_hour": 75, "location": "research_lab" } },
+            { "id": "lab_tech", "type": "actor", "name": "Lab Technician", "properties": { "role": "Research Assistant", "cost_per_hour": 35, "location": "research_lab" } },
+            { "id": "spectrometer", "type": "equipment", "name": "Mass Spectrometer", "emoji": "🔬", "properties": { "state": "calibrated", "capacity": 1, "location": "research_lab" } },
+            { "id": "rare_minerals", "type": "resource_pile", "name": "Rare Earth Minerals", "emoji": "💎", "properties": { "unit": "grams", "quantity": 8, "location": "storage_vault" } },
+            { "id": "catalyst_compound", "type": "resource_pile", "name": "Catalyst Compound", "emoji": "🧪", "properties": { "unit": "ml", "quantity": 200, "location": "research_lab" } },
+            { "id": "research_sample", "type": "product", "name": "Analyzed Sample", "emoji": "📊", "properties": { "unit": "samples", "quantity": 0, "location": "research_lab" } }
+          ],
+          "tasks": [
+            { 
+              "id": "prepare_sample_batch_1 🔸 🧪", 
+              "actor_id": "lab_tech", 
+              "start": "10:00", 
+              "duration": 30, 
+              "location": "research_lab",
+              "interactions": [
+                { "object_id": "rare_minerals", "property_changes": { "quantity": { "delta": -12 } } },
+                { "object_id": "catalyst_compound", "property_changes": { "quantity": { "delta": -50 } } }
+              ]
+            },
+            { 
+              "id": "spectral_analysis 🔸 🔬", 
+              "actor_id": "lead_scientist", 
+              "start": "10:30", 
+              "duration": 45, 
+              "location": "research_lab",
+              "depends_on": ["prepare_sample_batch_1 🔸 🧪"],
+              "interactions": [
+                { "object_id": "spectrometer", "property_changes": { "state": { "from": "calibrated", "to": "analyzing" } } },
+                { "object_id": "research_sample", "property_changes": { "quantity": { "delta": 3 } } }
+              ]
+            },
+            { 
+              "id": "recalibrate_equipment 🔸 ⚙️", 
+              "actor_id": "lab_tech", 
+              "start": "11:15", 
+              "duration": 15, 
+              "location": "research_lab",
+              "interactions": [
+                { "object_id": "spectrometer", "property_changes": { "state": { "from": "analyzing", "to": "calibrated" } } }
+              ]
+            }
           ]
         }
       },
       "validation": {
-          "type": "custom_function",
-          "function_name": "validateCoffeeShopWorkflow"
+        "type": "custom_function",
+        "function_name": "validateResourceEconomics"
       },
-      "success_message": "Congratulations! You've successfully optimized the workflow and completed the tutorial."
+      "success_message": "Resource management complete."
+    },
+    {
+      "id": "json_editing_mastery",
+      "title": "6. JSON Editing",
+      "instructions": "<p><strong>Task:</strong> Practice direct JSON manipulation using the interface tools.</p><p><strong>Requirements:</strong></p><ol><li><strong>Add Actor:</strong> Click '+ Actor' button and create a <strong>\"Data Analyst\"</strong> with cost <strong>$40/hour</strong></li><li><strong>Create Resource:</strong> Use '+ Resource' to add <strong>\"Server Capacity\"</strong> with 100 units</li><li><strong>Manual Task Entry:</strong> Add a JSON task called <strong>\"data_processing 🔸 💻\"</strong> for your new analyst</li><li><strong>Format Code:</strong> Use the 'Format JSON' button to clean up formatting</li></ol><p><strong>Note:</strong> Click task blocks to auto-scroll to their JSON code. Syntax highlighting and validation occur automatically. You may skip this step if preferred.</p>",
+      "initial_json": {
+        "simulation": {
+          "meta": {
+            "id": "tutorial_json_editing",
+            "article_title": "Tech Startup Data Operations",
+            "domain": "Technology"
+          },
+          "config": {
+            "time_unit": "minute",
+            "start_time": "09:00",
+            "end_time": "13:00"
+          },
+          "layout": {
+            "meta": { "units": "meters", "pixels_per_unit": 20 },
+            "locations": [
+              { "id": "dev_floor", "name": "Development Floor", "shape": { "type": "rect", "x": 50, "y": 50, "width": 400, "height": 250 } },
+              { "id": "server_room", "name": "Server Room", "shape": { "type": "rect", "x": 500, "y": 50, "width": 200, "height": 250 } }
+            ]
+          },
+          "objects": [
+            { "id": "lead_dev", "type": "actor", "name": "Senior Developer", "properties": { "role": "Lead Developer", "cost_per_hour": 85, "location": "dev_floor" } },
+            { "id": "database_server", "type": "equipment", "name": "Database Server", "emoji": "🗄️", "properties": { "state": "idle", "capacity": 10, "location": "server_room" } },
+            { "id": "raw_data", "type": "resource_pile", "name": "Raw Dataset", "emoji": "📊", "properties": { "unit": "GB", "quantity": 500, "location": "server_room" } }
+          ],
+          "tasks": [
+            { 
+              "id": "database_optimization 🔸 ⚡", 
+              "actor_id": "lead_dev", 
+              "start": "09:00", 
+              "duration": 60, 
+              "location": "dev_floor",
+              "interactions": [
+                { "object_id": "database_server", "property_changes": { "state": { "from": "idle", "to": "optimizing" } } }
+              ]
+            }
+          ]
+        }
+      },
+      "validation": { "type": "custom_function", "function_name": "validateJsonEditingMastery" },
+      "success_message": "JSON editing complete."
+    },
+    {
+      "id": "emergency_room_capstone",
+      "title": "7. Emergency Room Challenge",
+      "instructions": "<p><strong>Final Challenge:</strong> Optimize a hospital emergency room workflow during peak hours.</p><p><strong>Scenario:</strong> Multiple patients, limited staff, equipment dependencies, and resource constraints.</p><p><strong>Tasks:</strong></p><ol><li>Fix overlapping doctor schedules</li><li>Correct equipment state issues</li><li>Ensure adequate medical supplies</li><li>Establish proper task dependencies</li><li>Verify workflow using simulation player</li></ol><p><strong>Requirements:</strong> Apply timeline editing, resource management, JSON editing, and validation skills to create a functioning emergency room simulation.</p>",
+      "initial_json": {
+        "simulation": {
+          "meta": { 
+            "id": "tutorial_capstone",
+            "article_title": "Metro General Emergency Department",
+            "domain": "Healthcare"
+          },
+          "config": {
+            "time_unit": "minute",
+            "start_time": "14:00",
+            "end_time": "18:00"
+          },
+          "layout": {
+            "meta": { "units": "meters", "pixels_per_unit": 15 },
+            "locations": [
+              { "id": "triage", "name": "Triage Area", "shape": { "type": "rect", "x": 50, "y": 50, "width": 200, "height": 150 } },
+              { "id": "emergency_bay_1", "name": "Emergency Bay 1", "shape": { "type": "rect", "x": 300, "y": 50, "width": 180, "height": 150 } },
+              { "id": "emergency_bay_2", "name": "Emergency Bay 2", "shape": { "type": "rect", "x": 520, "y": 50, "width": 180, "height": 150 } },
+              { "id": "imaging_suite", "name": "MRI Suite", "shape": { "type": "rect", "x": 300, "y": 250, "width": 200, "height": 180 } },
+              { "id": "operating_room", "name": "OR-1", "shape": { "type": "rect", "x": 550, "y": 250, "width": 150, "height": 180 } }
+            ]
+          },
+          "objects": [
+            { "id": "dr_chen", "type": "actor", "name": "Dr. Chen", "properties": { "role": "Emergency Physician", "cost_per_hour": 200, "location": "triage" } },
+            { "id": "nurse_martinez", "type": "actor", "name": "Nurse Martinez", "properties": { "role": "Trauma Nurse", "cost_per_hour": 75, "location": "emergency_bay_1" } },
+            { "id": "surgeon_patel", "type": "actor", "name": "Dr. Patel", "properties": { "role": "Trauma Surgeon", "cost_per_hour": 350, "location": "operating_room" } },
+            { "id": "mri_machine", "type": "equipment", "name": "MRI Scanner", "emoji": "🏥", "properties": { "state": "ready", "capacity": 1, "location": "imaging_suite" } },
+            { "id": "surgical_suite", "type": "equipment", "name": "Surgical Equipment", "emoji": "⚕️", "properties": { "state": "sterilized", "capacity": 1, "location": "operating_room" } },
+            { "id": "oxygen_supply", "type": "resource_pile", "name": "Medical Oxygen", "emoji": "💨", "properties": { "unit": "hours", "quantity": 8, "location": "emergency_bay_1" } },
+            { "id": "blood_units", "type": "resource_pile", "name": "Blood Bank Units", "emoji": "🩸", "properties": { "unit": "units", "quantity": 2, "location": "operating_room" } },
+            { "id": "contrast_dye", "type": "resource_pile", "name": "MRI Contrast", "emoji": "💉", "properties": { "unit": "doses", "quantity": 1, "location": "imaging_suite" } },
+            { "id": "stabilized_patients", "type": "product", "name": "Stabilized Patients", "emoji": "😌", "properties": { "unit": "patients", "quantity": 0, "location": "emergency_bay_2" } }
+          ],
+          "tasks": [
+            { 
+              "id": "patient_1_triage 🔸 🩺", 
+              "actor_id": "dr_chen", 
+              "start": "14:00", 
+              "duration": 20, 
+              "location": "triage"
+            },
+            { 
+              "id": "patient_2_triage 🔸 🩺", 
+              "actor_id": "dr_chen", 
+              "start": "14:05", 
+              "duration": 20, 
+              "location": "triage"
+            },
+            { 
+              "id": "patient_3_triage 🔸 🩺", 
+              "actor_id": "dr_chen", 
+              "start": "14:15", 
+              "duration": 15, 
+              "location": "triage"
+            },
+            { 
+              "id": "emergency_stabilization 🔸 🚨", 
+              "actor_id": "nurse_martinez", 
+              "start": "14:15", 
+              "duration": 30, 
+              "location": "emergency_bay_1",
+              "depends_on": ["patient_1_triage 🔸 🩺"],
+              "interactions": [
+                { "object_id": "oxygen_supply", "property_changes": { "quantity": { "delta": -2 } } },
+                { "object_id": "stabilized_patients", "property_changes": { "quantity": { "delta": 1 } } }
+              ]
+            },
+            { 
+              "id": "mri_scan_patient_2 🔸 🏥", 
+              "actor_id": "dr_chen", 
+              "start": "14:25", 
+              "duration": 45, 
+              "location": "imaging_suite",
+              "depends_on": ["patient_2_triage 🔸 🩺"],
+              "interactions": [
+                { "object_id": "mri_machine", "property_changes": { "state": { "from": "ready", "to": "scanning" } } },
+                { "object_id": "contrast_dye", "property_changes": { "quantity": { "delta": -2 } } }
+              ]
+            },
+            { 
+              "id": "emergency_surgery 🔸 ⚕️", 
+              "actor_id": "surgeon_patel", 
+              "start": "15:00", 
+              "duration": 120, 
+              "location": "operating_room",
+              "depends_on": ["emergency_stabilization 🔸 🚨"],
+              "interactions": [
+                { "object_id": "surgical_suite", "property_changes": { "state": { "from": "sterilized", "to": "in-use" } } },
+                { "object_id": "blood_units", "property_changes": { "quantity": { "delta": -3 } } }
+              ]
+            },
+            { 
+              "id": "post_surgery_monitoring 🔸 📊", 
+              "actor_id": "nurse_martinez", 
+              "start": "15:30", 
+              "duration": 60, 
+              "location": "emergency_bay_2",
+              "interactions": [
+                { "object_id": "oxygen_supply", "property_changes": { "quantity": { "delta": -1 } } }
+              ]
+            }
+          ]
+        }
+      },
+      "validation": { "type": "custom_function", "function_name": "validateEmergencyRoomCapstone" },
+      "success_message": "Emergency room challenge complete. Tutorial finished."
+    },
+    {
+      "id": "graduation_celebration",
+      "title": "8. Tutorial Complete",
+      "instructions": "<p><strong>Tutorial Completed</strong></p><p><strong>Skills covered:</strong></p><ul><li>Space Design: Visual layout creation and property management</li><li>Timeline Editing: Interactive drag-and-drop editing and resizing</li><li>Simulation Playback: Time control, speed adjustment, and live state tracking</li><li>Resource Management: Supply chain modeling and constraint management</li><li>JSON Editing: Direct code editing and validation</li><li>Complex Problem Solving: Multi-domain workflow optimization</li></ul><p><strong>Next steps:</strong> Explore the sample simulation, create your own processes, or try advanced features like the experimental AI assistant.</p><p><em>Click 'Next' to return to the main playground.</em></p>",
+      "initial_json": {
+        "simulation": {
+          "meta": {
+            "id": "graduation_complete",
+            "article_title": "🎓 Playground Mastery Achieved",
+            "domain": "Education"
+          },
+          "config": {
+            "time_unit": "minute",
+            "start_time": "12:00",
+            "end_time": "12:30"
+          },
+          "layout": {
+            "meta": { "units": "meters", "pixels_per_unit": 20 },
+            "locations": [
+              { "id": "auditorium", "name": "Graduation Auditorium", "shape": { "type": "rect", "x": 50, "y": 50, "width": 500, "height": 300 } }
+            ]
+          },
+          "objects": [
+            { "id": "graduate", "type": "actor", "name": "UAW Graduate", "properties": { "role": "Process Modeling Expert", "cost_per_hour": 0, "location": "auditorium" } },
+            { "id": "playground_mastery", "type": "product", "name": "Playground Mastery", "emoji": "🏆", "properties": { "unit": "skills", "quantity": 1, "location": "auditorium" } }
+          ],
+          "tasks": [
+            { "id": "graduation_ceremony 🔸 🎉", "actor_id": "graduate", "start": "12:00", "duration": 30, "location": "auditorium" }
+          ]
+        }
+      },
+      "validation": { "type": "none" },
+      "success_message": "Tutorial complete. You can now explore the full playground."
     }
   ]
 }

@@ -9,12 +9,20 @@ class TutorialManager {
         this.elements.nextBtn.addEventListener('click', () => this.nextStep());
         this.elements.prevBtn.addEventListener('click', () => this.prevStep());
         this.elements.exitBtn.addEventListener('click', () => this.end());
+        
+        // Add skip button functionality
+        const skipBtn = document.getElementById('tutorial-skip-btn');
+        if (skipBtn) {
+            skipBtn.addEventListener('click', () => this.skipStep());
+        }
     }
 
     start() {
         this.isActive = true;
         this.elements.panel.style.display = 'flex';
         document.body.classList.add('tutorial-active'); // For hiding buttons via CSS
+
+        // Keep menu buttons enabled during tutorial
 
         // Force auto-render ON
         if (window.autoRender === false) {
@@ -31,14 +39,97 @@ class TutorialManager {
         this.elements.panel.style.display = 'none';
         document.body.classList.remove('tutorial-active');
         
+        // Load the default sample simulation (from playground.js)
         if (window.sampleSimulation) {
             this.editor.setValue(JSON.stringify(window.sampleSimulation, null, 2));
         }
+
+        // Menu buttons remain enabled throughout tutorial
 
         if (window.autoRender) {
             window.debounceRender();
         }
         window.validateJSON();
+    }
+
+    enableMenuButtons() {
+        // Re-enable all header buttons
+        const buttons = [
+            'load-sample-btn',
+            'format-json-btn', 
+            'clear-editor-btn',
+            'add-task-btn',
+            'add-actor-btn',
+            'add-resource-btn',
+            'auto-render-toggle',
+            'fullscreen-btn',
+            'undo-btn',
+            'submit-btn'
+        ];
+        
+        buttons.forEach(buttonId => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.disabled = false;
+                button.style.pointerEvents = 'auto';
+                button.style.opacity = '1';
+            }
+        });
+
+        // Re-enable player controls
+        const playerButtons = [
+            'player-play-pause-btn',
+            'player-speed-select'
+        ];
+        
+        playerButtons.forEach(buttonId => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.disabled = false;
+                button.style.pointerEvents = 'auto';
+                button.style.opacity = '1';
+            }
+        });
+    }
+
+    disableMenuButtons() {
+        // Disable header buttons during tutorial
+        const buttons = [
+            'load-sample-btn',
+            'format-json-btn', 
+            'clear-editor-btn',
+            'add-task-btn',
+            'add-actor-btn',
+            'add-resource-btn',
+            'auto-render-toggle',
+            'fullscreen-btn',
+            'undo-btn',
+            'submit-btn'
+        ];
+        
+        buttons.forEach(buttonId => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.disabled = true;
+                button.style.pointerEvents = 'none';
+                button.style.opacity = '0.5';
+            }
+        });
+
+        // Disable player controls during tutorial  
+        const playerButtons = [
+            'player-play-pause-btn',
+            'player-speed-select'
+        ];
+        
+        playerButtons.forEach(buttonId => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.disabled = true;
+                button.style.pointerEvents = 'none';
+                button.style.opacity = '0.5';
+            }
+        });
     }
 
     loadStep(index) {
@@ -54,8 +145,22 @@ class TutorialManager {
 
         this.updateNavButtons();
         
+        // Show skip button only for step 6 (JSON editing)
+        const skipBtn = document.getElementById('tutorial-skip-btn');
+        if (skipBtn) {
+            skipBtn.style.display = (step.id === 'json_editing_mastery') ? 'inline-block' : 'none';
+        }
+        
         if (window.renderSimulation) {
             window.renderSimulation();
+        }
+        
+        // For steps involving space editor, ensure content is visible
+        if (step.id === 'space_design_challenge' && window.spaceEditor) {
+            // Small delay to ensure rendering is complete
+            setTimeout(() => {
+                window.spaceEditor.ensureContentVisible();
+            }, 100);
         }
     }
 
@@ -114,10 +219,22 @@ class TutorialManager {
     }
 
     nextStep() {
-        this.loadStep(this.currentStepIndex + 1);
+        // If we're at the last step, end the tutorial
+        if (this.currentStepIndex >= this.tutorialData.steps.length - 1) {
+            this.end();
+        } else {
+            this.loadStep(this.currentStepIndex + 1);
+        }
     }
 
     prevStep() {
         this.loadStep(this.currentStepIndex - 1);
+    }
+
+    skipStep() {
+        // Force complete the current step and move to next
+        const step = this.tutorialData.steps[this.currentStepIndex];
+        this.setStepCompleted(true, step.success_message || "Step skipped!");
+        this.elements.nextBtn.disabled = false;
     }
 }
