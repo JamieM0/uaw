@@ -183,6 +183,10 @@ class SpaceEditor {
             if (!loc.layer) {
                 loc.layer = 0; // Default layer
             }
+            // Initialize transition layers for transition zones
+            if (loc.isTransition && !loc.transitionLayers) {
+                loc.transitionLayers = [loc.layer || 0];
+            }
         });
         
         console.log(`SPACE-EDITOR: Loading ${this.locations.length} locations with scale ${this.pixelsPerMeter} px/m.`);
@@ -237,7 +241,13 @@ class SpaceEditor {
         // Collect all unique layers
         this.availableLayers.clear();
         this.locations.forEach(loc => {
-            this.availableLayers.add(loc.layer || 0);
+            if (loc.isTransition && loc.transitionLayers) {
+                // Add all layers from transition zones
+                loc.transitionLayers.forEach(layer => this.availableLayers.add(layer));
+            } else {
+                // Add single layer from regular locations
+                this.availableLayers.add(loc.layer || 0);
+            }
         });
 
         // Preserve current selection
@@ -268,8 +278,22 @@ class SpaceEditor {
             const rectEl = document.querySelector(`.location-rect[data-id="${loc.id}"]`);
             if (!rectEl) return;
 
-            const locationLayer = loc.layer || 0;
-            const shouldShow = this.activeLayer === 'all' || locationLayer.toString() === this.activeLayer;
+            let shouldShow = false;
+            
+            if (this.activeLayer === 'all') {
+                shouldShow = true;
+            } else {
+                const activeLayerNum = parseInt(this.activeLayer);
+                
+                if (loc.isTransition && loc.transitionLayers) {
+                    // For transition zones, show if the active layer is in the transition layers
+                    shouldShow = loc.transitionLayers.includes(activeLayerNum);
+                } else {
+                    // For regular locations, use the single layer
+                    const locationLayer = loc.layer || 0;
+                    shouldShow = locationLayer === activeLayerNum;
+                }
+            }
             
             rectEl.style.display = shouldShow ? 'flex' : 'none';
         });
@@ -509,6 +533,45 @@ class SpaceEditor {
                 alert('Location not found.');
             }
         }
+    }
+
+    populateTransitionLayersDropdown(loc) {
+        const transitionLayersSelect = document.getElementById('prop-transition-layers');
+        if (!transitionLayersSelect) return;
+        
+        // Clear existing options
+        transitionLayersSelect.innerHTML = '';
+        
+        // Get all available layers from the layer dropdown
+        const sortedLayers = Array.from(this.availableLayers).sort((a, b) => a - b);
+        
+        // Add all layer options
+        sortedLayers.forEach(layer => {
+            const option = document.createElement('option');
+            option.value = layer;
+            option.textContent = `Layer ${layer}`;
+            
+            // Select if it's in the location's transition layers
+            if (loc.transitionLayers && loc.transitionLayers.includes(layer)) {
+                option.selected = true;
+            }
+            
+            transitionLayersSelect.appendChild(option);
+        });
+        
+        // Remove any existing event listeners by cloning the element
+        const newTransitionLayersSelect = transitionLayersSelect.cloneNode(true);
+        transitionLayersSelect.parentNode.replaceChild(newTransitionLayersSelect, transitionLayersSelect);
+        
+        // Add event listener for changes
+        newTransitionLayersSelect.addEventListener('change', (e) => {
+            const selectedOptions = Array.from(e.target.selectedOptions);
+            loc.transitionLayers = selectedOptions.map(option => parseInt(option.value));
+            
+            // Update the visual representation
+            this.updateRectElement(loc);
+            this.updateJson();
+        });
     }
     
     updateJson() {
@@ -810,7 +873,7 @@ class SpaceEditor {
                     <span>m</span>
                 </div>
             </div>
-            <div class="prop-field">
+            <div class="prop-field" style="display: ${loc.isTransition ? 'none' : 'block'};" id="single-layer-field">
                 <label for="prop-layer">Layer</label>
                 <input type="number" id="prop-layer" value="${loc.layer || 0}" min="0" step="1">
             </div>
@@ -824,6 +887,13 @@ class SpaceEditor {
                 <label for="prop-transition">Transition Zone</label>
                 <input type="checkbox" id="prop-transition" ${loc.isTransition ? 'checked' : ''}>
                 <small>Allows occupancy of multiple locations simultaneously</small>
+            </div>
+            <div class="prop-field" style="display: ${loc.isTransition ? 'block' : 'none'};" id="transition-layers-field">
+                <label for="prop-transition-layers">Layers</label>
+                <select id="prop-transition-layers" multiple style="height: 120px;">
+                    <!-- Layer options will be populated here -->
+                </select>
+                <small>Hold Ctrl/Cmd to select multiple layers</small>
             </div>
             <div class="prop-field" style="display: ${loc.isTransition ? 'block' : 'none'};" id="connected-locations-field">
                 <label for="prop-connected">Connected Locations</label>
@@ -905,14 +975,23 @@ class SpaceEditor {
             if (loc.isTransition && !loc.connectedLocations) {
                 loc.connectedLocations = [];
             }
+            if (loc.isTransition && !loc.transitionLayers) {
+                loc.transitionLayers = [loc.layer || 0];
+            }
+            document.getElementById('single-layer-field').style.display = loc.isTransition ? 'none' : 'block';
+            document.getElementById('transition-layers-field').style.display = loc.isTransition ? 'block' : 'none';
             document.getElementById('connected-locations-field').style.display = loc.isTransition ? 'block' : 'none';
+            if (loc.isTransition) {
+                this.populateTransitionLayersDropdown(loc);
+            }
             this.updateRectElement(loc);
             this.updateJson();
         });
 
-        // Populate connected locations if it's a transition zone
+        // Populate connected locations and transition layers if it's a transition zone
         if (loc.isTransition) {
             this.populateConnectedLocations(loc);
+            this.populateTransitionLayersDropdown(loc);
         }
     }
 
