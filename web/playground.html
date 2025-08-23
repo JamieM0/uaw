@@ -32,8 +32,6 @@
         <!-- Monaco Editor for JSON syntax highlighting -->
         <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
 
-        <script src="/assets/js/playground.js"></script>
-
     </head>
     <body>
         <header class="playground-header">
@@ -115,6 +113,8 @@
                             </div>
                         </div>
 
+                        <button id="load-simulation-btn" class="action-btn" title="Load simulation from save code">Load Simulation</button>
+                        <button id="save-simulation-btn" class="action-btn" title="Save simulation and get save code">Save Simulation</button>
                         <button id="submit-btn" class="action-btn" title="Submit simulation to page">Submit</button>
                     </div>
                 </div>
@@ -244,6 +244,64 @@
         <div id="dialog-overlay" class="dialog-overlay" style="display: none">
             <div class="dialog" id="dialog-content">
                 <!-- Dialog content will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Save Simulation Modal -->
+        <div id="save-modal" class="dialog-overlay" style="display: none;">
+            <div class="dialog">
+                <h3>Save Simulation</h3>
+                <div class="save-warning">
+                    <p><strong>⚠️ Privacy Notice</strong></p>
+                    <p>Your simulation is currently private and locally stored in your browser. By continuing, you agree that your simulation will be stored on a server so it can later be retrieved. Do not store confidential information in simulations, as anyone who guesses your save code will be able to see your simulation in full.</p>
+                    <label>
+                        <input type="checkbox" id="privacy-consent-checkbox">
+                        I understand and agree to the privacy terms above
+                    </label>
+                </div>
+                <div id="save-success" style="display: none;" class="save-success">
+                    <p><strong>✅ Save Successful!</strong></p>
+                    <p>Your save code is:</p>
+                    <div class="save-code-display">
+                        <input type="text" id="save-code-result" readonly>
+                        <button id="copy-save-code-btn" class="btn-secondary">Copy</button>
+                    </div>
+                    <p><small>Keep this code safe - you'll need it to load your simulation later.</small></p>
+                </div>
+                <div id="save-loading" style="display: none;" class="save-loading">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 20px; height: 20px; border: 2px solid #ddd; border-top: 2px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        Saving simulation...
+                    </div>
+                </div>
+                <div class="dialog-buttons">
+                    <button type="button" class="btn-secondary" id="save-cancel-btn">Cancel</button>
+                    <button type="button" class="btn-primary" id="save-confirm-btn" disabled>Save Simulation</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Load Simulation Modal -->
+        <div id="load-modal" class="dialog-overlay" style="display: none;">
+            <div class="dialog">
+                <h3>Load Simulation</h3>
+                <p>Enter your 16-character save code to load a previously saved simulation:</p>
+                <div class="load-input-container">
+                    <input type="text" id="load-code-input" placeholder="Enter save code..." maxlength="16">
+                </div>
+                <div id="load-error" style="display: none;" class="load-error">
+                    <p style="color: #d32f2f;"><strong>Error:</strong> <span id="load-error-message"></span></p>
+                </div>
+                <div id="load-loading" style="display: none;" class="load-loading">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 20px; height: 20px; border: 2px solid #ddd; border-top: 2px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        Loading simulation...
+                    </div>
+                </div>
+                <div class="dialog-buttons">
+                    <button type="button" class="btn-secondary" id="load-cancel-btn">Cancel</button>
+                    <button type="button" class="btn-primary" id="load-confirm-btn">Load Simulation</button>
+                </div>
             </div>
         </div>
 

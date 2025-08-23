@@ -39,6 +39,7 @@ function initializePlayground() {
     updateAutoRenderUI();
     initializeResizeHandles();
     initializeDragAndDrop();
+    setupSaveLoadButtons();
 
     console.log("INIT: 2. Instantiating controllers.");
     const canvas = document.getElementById('space-canvas');
@@ -2238,6 +2239,78 @@ document
     .getElementById("submit-btn")
     .addEventListener("click", openSubmitDialog);
 
+// Setup save/load button event listeners
+function setupSaveLoadButtons() {
+    console.log("INIT: Setting up save/load buttons.");
+    
+    const saveBtn = document.getElementById("save-simulation-btn");
+    const loadBtn = document.getElementById("load-simulation-btn");
+    
+    if (saveBtn) {
+        saveBtn.addEventListener("click", openSaveDialog);
+        console.log("INIT: Save button event listener attached.");
+    } else {
+        console.error("INIT: Save button not found!");
+    }
+    
+    if (loadBtn) {
+        loadBtn.addEventListener("click", openLoadDialog);
+        console.log("INIT: Load button event listener attached.");
+    } else {
+        console.error("INIT: Load button not found!");
+    }
+    
+    // Setup copy save code button
+    const copyBtn = document.getElementById("copy-save-code-btn");
+    if (copyBtn) {
+        copyBtn.addEventListener("click", function() {
+            const input = document.getElementById('save-code-result');
+            if (input && input.value) {
+                input.select();
+                input.setSelectionRange(0, 99999);
+                
+                // Try modern clipboard API first, fall back to execCommand
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(input.value).then(() => {
+                        this.textContent = 'Copied!';
+                        setTimeout(() => {
+                            this.textContent = 'Copy';
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Clipboard API failed:', err);
+                        // Fallback to execCommand
+                        try {
+                            document.execCommand('copy');
+                            this.textContent = 'Copied!';
+                            setTimeout(() => {
+                                this.textContent = 'Copy';
+                            }, 2000);
+                        } catch (e) {
+                            console.error('Copy fallback failed:', e);
+                            alert('Copy failed - please select and copy manually');
+                        }
+                    });
+                } else {
+                    // Fallback for older browsers
+                    try {
+                        document.execCommand('copy');
+                        this.textContent = 'Copied!';
+                        setTimeout(() => {
+                            this.textContent = 'Copy';
+                        }, 2000);
+                    } catch (e) {
+                        console.error('Copy fallback failed:', e);
+                        alert('Copy failed - please select and copy manually');
+                    }
+                }
+            }
+        });
+        console.log("INIT: Copy save code button event listener attached.");
+    } else {
+        console.log("INIT: Copy save code button not found (will be available when save modal opens).");
+    }
+}
+
 // Close dialog when clicking outside
 document
     .getElementById("dialog-overlay")
@@ -2325,4 +2398,241 @@ function initializeResizeHandles() {
             document.body.style.cursor = "default";
         }
     });
+}
+
+// Save/Load simulation functionality
+let loadedSaveCode = null; // Track the save code we loaded (for lineage)
+let hasShownDisclaimer = false; // Track if user has seen disclaimer this session
+
+// Check if user has accepted disclaimer this session
+function hasAcceptedDisclaimer() {
+    return hasShownDisclaimer || localStorage.getItem('uaw_playground_disclaimer_accepted') === 'true';
+}
+
+function setDisclaimerAccepted() {
+    hasShownDisclaimer = true;
+    localStorage.setItem('uaw_playground_disclaimer_accepted', 'true');
+}
+
+function clearSaveState() {
+    loadedSaveCode = null;
+}
+
+function openSaveDialog() {
+    const modal = document.getElementById('save-modal');
+    const checkbox = document.getElementById('privacy-consent-checkbox');
+    const confirmBtn = document.getElementById('save-confirm-btn');
+    const successDiv = document.getElementById('save-success');
+    const warningDiv = modal.querySelector('.save-warning');
+    const loadingDiv = document.getElementById('save-loading');
+
+    // Reset modal state
+    successDiv.style.display = 'none';
+    loadingDiv.style.display = 'none';
+    checkbox.checked = false;
+
+    // Always save as new entry - show disclaimer only if not previously accepted
+    if (hasAcceptedDisclaimer()) {
+        warningDiv.style.display = 'none';
+        confirmBtn.disabled = false;
+    } else {
+        warningDiv.style.display = 'block';
+        confirmBtn.disabled = true;
+    }
+    
+    confirmBtn.textContent = 'Save Simulation';
+
+    modal.style.display = 'flex';
+
+    // Handle checkbox change (only if disclaimer not previously accepted)
+    if (!hasAcceptedDisclaimer()) {
+        checkbox.addEventListener('change', function() {
+            confirmBtn.disabled = !this.checked;
+        });
+    }
+
+    // Handle cancel
+    document.getElementById('save-cancel-btn').addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+
+    // Handle save
+    confirmBtn.addEventListener('click', async function() {
+        const simulationData = editor.getValue();
+        
+        try {
+            JSON.parse(simulationData); // Validate JSON
+        } catch (e) {
+            alert('Please fix JSON errors before saving');
+            return;
+        }
+
+        // Show loading
+        warningDiv.style.display = 'none';
+        loadingDiv.style.display = 'block';
+        confirmBtn.disabled = true;
+
+        try {
+            const response = await saveSimulation(simulationData, loadedSaveCode);
+            
+            if (response.success) {
+                // Set disclaimer as accepted for this session
+                setDisclaimerAccepted();
+                
+                // Store the new save code for potential future lineage
+                loadedSaveCode = response.saveCode;
+                document.getElementById('save-code-result').value = response.saveCode;
+                
+                loadingDiv.style.display = 'none';
+                successDiv.style.display = 'block';
+            } else if (response.saveCode) {
+                // Save was actually successful despite error - log warning but show success
+                console.warn('Save warning (but successful):', response.error);
+                
+                // Set disclaimer as accepted for this session
+                setDisclaimerAccepted();
+                
+                // Store the new save code for potential future lineage
+                loadedSaveCode = response.saveCode;
+                document.getElementById('save-code-result').value = response.saveCode;
+                
+                loadingDiv.style.display = 'none';
+                successDiv.style.display = 'block';
+            } else {
+                throw new Error(response.error || 'Save failed');
+            }
+        } catch (error) {
+            loadingDiv.style.display = 'none';
+            warningDiv.style.display = hasAcceptedDisclaimer() ? 'none' : 'block';
+            confirmBtn.disabled = hasAcceptedDisclaimer() ? false : !checkbox.checked;
+            alert('Save failed: ' + error.message);
+        }
+    });
+
+}
+
+function openLoadDialog() {
+    const modal = document.getElementById('load-modal');
+    const input = document.getElementById('load-code-input');
+    const errorDiv = document.getElementById('load-error');
+    const loadingDiv = document.getElementById('load-loading');
+    const confirmBtn = document.getElementById('load-confirm-btn');
+
+    // Reset modal state
+    input.value = '';
+    errorDiv.style.display = 'none';
+    loadingDiv.style.display = 'none';
+    confirmBtn.disabled = false;
+
+    modal.style.display = 'flex';
+
+    // Handle cancel
+    document.getElementById('load-cancel-btn').addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+
+    // Handle load
+    confirmBtn.addEventListener('click', async function() {
+        const saveCode = input.value.trim();
+        
+        if (saveCode.length !== 16) {
+            showLoadError('Save code must be exactly 16 characters');
+            return;
+        }
+
+        // Show loading
+        loadingDiv.style.display = 'block';
+        confirmBtn.disabled = true;
+        errorDiv.style.display = 'none';
+
+        try {
+            const response = await loadSimulation(saveCode);
+            
+            if (response.success) {
+                // Load the simulation into the editor
+                editor.setValue(response.data);
+                loadedSaveCode = saveCode;
+                
+                // Close modal
+                modal.style.display = 'none';
+                
+                // Show success message briefly
+                showNotification('Simulation loaded successfully!');
+            } else {
+                throw new Error(response.error || 'Load failed');
+            }
+        } catch (error) {
+            showLoadError(error.message);
+        } finally {
+            loadingDiv.style.display = 'none';
+            confirmBtn.disabled = false;
+        }
+    });
+
+    // Auto-format input (uppercase, alphanumeric only)
+    input.addEventListener('input', function() {
+        this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    });
+}
+
+function showLoadError(message) {
+    const errorDiv = document.getElementById('load-error');
+    const errorMessage = document.getElementById('load-error-message');
+    errorMessage.textContent = message;
+    errorDiv.style.display = 'block';
+}
+
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4caf50;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 4px;
+        z-index: 10000;
+        font-family: Inter, sans-serif;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+async function saveSimulation(data, previousSaveCode = null) {
+    const API_BASE = 'https://api.universalautomation.wiki';
+    
+    const payload = {
+        action: 'create', // Always create new entries
+        data: data,
+        previousSaveCode: previousSaveCode || undefined
+    };
+
+    const response = await fetch(`${API_BASE}/playground/save`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+    });
+
+    return await response.json();
+}
+
+async function loadSimulation(saveCode) {
+    const API_BASE = 'https://api.universalautomation.wiki';
+    
+    const response = await fetch(`${API_BASE}/playground/load`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ saveCode })
+    });
+
+    return await response.json();
 }
