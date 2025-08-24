@@ -43,7 +43,7 @@ class SimulationValidator {
   }
 
   validateNegativeStock(metric) {
-    const resources = (this.simulation.objects || []).filter(o => o.type === 'resource_pile' || o.type === 'product');
+    const resources = (this.simulation.objects || []).filter(o => o.type === 'resource' || o.type === 'product');
     const tasks = this.simulation.tasks || [];
     let issueFound = false;
     const stocks = {};
@@ -72,7 +72,7 @@ class SimulationValidator {
       // Handle new-style interactions that modify resource quantities
       for (const interaction of (task.interactions || [])) {
         const obj = resources.find(r => r.id === interaction.object_id);
-        if (obj && (obj.type === 'resource_pile' || obj.type === 'product')) {
+        if (obj && (obj.type === 'resource' || obj.type === 'product')) {
           const quantityChanges = interaction.property_changes?.quantity;
           if (quantityChanges) {
             const deltaAmount = quantityChanges.delta || 0;
@@ -351,7 +351,7 @@ class SimulationValidator {
   }
   
   validateUnusedResources(metric) {
-    const definedResources = new Set((this.simulation.objects || []).filter(o => o.type === 'resource_pile' || o.type === 'product').map(r => r.id));
+    const definedResources = new Set((this.simulation.objects || []).filter(o => o.type === 'resource' || o.type === 'product').map(r => r.id));
     const tasks = this.simulation.tasks || [];
 
     for (const task of tasks) {
@@ -362,7 +362,7 @@ class SimulationValidator {
       // Handle new-style interactions
       for (const interaction of (task.interactions || [])) {
         const obj = resources.find(r => r.id === interaction.object_id);
-        if (obj && (obj.type === 'resource_pile' || obj.type === 'product')) {
+        if (obj && (obj.type === 'resource' || obj.type === 'product')) {
           if (interaction.property_changes?.quantity) {
             definedResources.delete(obj.id);
           }
@@ -394,7 +394,7 @@ class SimulationValidator {
 
   validateProfitability(metric) {
     const actors = (this.simulation.objects || []).filter(o => o.type === 'actor');
-    const resources = (this.simulation.objects || []).filter(o => o.type === 'resource_pile' || o.type === 'product');
+    const resources = (this.simulation.objects || []).filter(o => o.type === 'resource' || o.type === 'product');
     const tasks = this.simulation.tasks || [];
     const finalProductIds = metric.computation.params?.final_product_ids || [];
     
@@ -424,7 +424,7 @@ class SimulationValidator {
       // Handle new-style interactions
       for (const interaction of (task.interactions || [])) {
         const obj = resources.find(r => r.id === interaction.object_id);
-        if (obj && (obj.type === 'resource_pile' || obj.type === 'product')) {
+        if (obj && (obj.type === 'resource' || obj.type === 'product')) {
           const quantityChanges = interaction.property_changes?.quantity;
           if (quantityChanges) {
             const deltaAmount = quantityChanges.delta || 0;

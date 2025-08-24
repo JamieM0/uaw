@@ -50,7 +50,7 @@ const TutorialValidators = {
         if (!simulation || !simulation.objects) return false;
         const minerals = simulation.objects.find(o => 
             o.id === 'rare_minerals' && 
-            o.type === 'resource_pile'
+            o.type === 'resource'
         );
         return minerals && minerals.properties && minerals.properties.quantity >= 15;
     },

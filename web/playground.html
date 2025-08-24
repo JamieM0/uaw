@@ -53,14 +53,11 @@
                     </div>
 
                     <div class="simulation-buttons">
+                        <button class="action-btn" id="add-object-btn">
+                            + Object
+                        </button>
                         <button class="action-btn" id="add-task-btn">
                             + Task
-                        </button>
-                        <button class="action-btn" id="add-actor-btn">
-                            + Actor
-                        </button>
-                        <button class="action-btn" id="add-resource-btn">
-                            + Resource
                         </button>
                     </div>
 
@@ -277,6 +274,107 @@
                 <div class="dialog-buttons">
                     <button type="button" class="btn-secondary" id="save-cancel-btn">Cancel</button>
                     <button type="button" class="btn-primary" id="save-confirm-btn" disabled>Save Simulation</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Task Modal -->
+        <div id="add-task-modal" class="dialog-overlay" style="display: none;">
+            <div class="dialog" style="max-width: 700px;">
+                <h3>Add Task</h3>
+                <div class="modal-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="task-id-input">Task ID:</label>
+                            <input type="text" id="task-id-input" placeholder="task_name">
+                        </div>
+                        <div class="form-group">
+                            <label for="task-emoji-input">Emoji:</label>
+                            <input type="text" id="task-emoji-input" placeholder="🔧" maxlength="2" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="task-actor-select">Actor:</label>
+                            <select id="task-actor-select">
+                                <option value="">Select actor...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="task-location-input">Location:</label>
+                            <input type="text" id="task-location-input" placeholder="location_id">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="task-start-input">Start Time:</label>
+                            <input type="text" id="task-start-input" placeholder="HH:MM">
+                        </div>
+                        <div class="form-group">
+                            <label for="task-duration-input">Duration (minutes):</label>
+                            <input type="number" id="task-duration-input" placeholder="30" min="1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-depends-input">Dependencies (comma-separated task IDs):</label>
+                        <input type="text" id="task-depends-input" placeholder="task1, task2">
+                    </div>
+                    
+                    <div class="interactions-section">
+                        <div class="section-header">
+                            <h4>Interactions</h4>
+                            <button type="button" class="btn-secondary" id="add-interaction-btn">+ Add Interaction</button>
+                        </div>
+                        <div id="interactions-container">
+                            <!-- Interactions will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="dialog-buttons">
+                    <button type="button" class="btn-secondary" id="task-cancel-btn">Cancel</button>
+                    <button type="button" class="btn-primary" id="task-add-btn">Add Task</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Object Modal -->
+        <div id="add-object-modal" class="dialog-overlay" style="display: none;">
+            <div class="dialog" style="max-width: 500px;">
+                <h3>Add Object</h3>
+                <div class="modal-content">
+                    <div class="form-group">
+                        <label for="object-type-select">Object Type:</label>
+                        <select id="object-type-select">
+                            <option value="">Select type...</option>
+                            <option value="actor">Actor (People, AI agents)</option>
+                            <option value="equipment">Equipment (Tools, machines)</option>
+                            <option value="resource">Resource (Materials, consumables)</option>
+                            <option value="product">Product (Outputs, deliverables)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="object-id-input">ID:</label>
+                        <input type="text" id="object-id-input" placeholder="unique_identifier">
+                    </div>
+                    <div class="form-group">
+                        <label for="object-name-input">Name:</label>
+                        <input type="text" id="object-name-input" placeholder="Display Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="object-emoji-input">Emoji:</label>
+                        <input type="text" id="object-emoji-input" placeholder="🔧" maxlength="2">
+                    </div>
+                    <div class="form-group">
+                        <label for="object-location-input">Location:</label>
+                        <input type="text" id="object-location-input" placeholder="location_id">
+                    </div>
+                    <div id="object-type-specific-fields">
+                        <!-- Type-specific fields will be dynamically inserted here -->
+                    </div>
+                </div>
+                <div class="dialog-buttons">
+                    <button type="button" class="btn-secondary" id="object-cancel-btn">Cancel</button>
+                    <button type="button" class="btn-primary" id="object-add-btn">Add Object</button>
                 </div>
             </div>
         </div>

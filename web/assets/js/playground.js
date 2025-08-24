@@ -221,9 +221,9 @@ const sampleSimulation = {
             { id: "workspace", type: "equipment", name: "Prep Counter", emoji: "🏢", properties: { state: "clean", capacity: 2, location: "prep_area" } },
             { id: "mixing_bowl", type: "equipment", name: "Mixing Bowl", emoji: "🥣", properties: { state: "clean", capacity: 1, location: "prep_area" } },
             // --- RESOURCES (CONSUMABLES) ---
-            { id: "flour", type: "resource_pile", name: "Flour", emoji: "🌾", properties: { unit: "kg", quantity: 50, location: "prep_area" } },
-            { id: "water", type: "resource_pile", name: "Water", emoji: "💧", properties: { unit: "liter", quantity: 20, location: "prep_area" } },
-            { id: "yeast", type: "resource_pile", name: "Yeast", emoji: "🦠", properties: { unit: "g", quantity: 500, location: "prep_area" } },
+            { id: "flour", type: "resource", name: "Flour", emoji: "🌾", properties: { unit: "kg", quantity: 50, location: "prep_area" } },
+            { id: "water", type: "resource", name: "Water", emoji: "💧", properties: { unit: "liter", quantity: 20, location: "prep_area" } },
+            { id: "yeast", type: "resource", name: "Yeast", emoji: "🦠", properties: { unit: "g", quantity: 500, location: "prep_area" } },
             // --- PRODUCTS (INTERMEDIATE & FINAL) ---
             { id: "mixed_dough", type: "product", name: "Mixed Dough", emoji: "덩", properties: { unit: "batch", quantity: 0, location: "prep_area" } },
             { id: "risen_dough", type: "product", name: "Risen Dough", emoji: "🍞", properties: { unit: "batch", quantity: 0, location: "prep_area" } },
@@ -2220,16 +2220,12 @@ document
 
 // New action button event listeners
 document
+    .getElementById("add-object-btn")
+    .addEventListener("click", openAddObjectModal);
+
+document
     .getElementById("add-task-btn")
-    .addEventListener("click", openAddTaskDialog);
-
-document
-    .getElementById("add-actor-btn")
-    .addEventListener("click", openAddActorDialog);
-
-document
-    .getElementById("add-resource-btn")
-    .addEventListener("click", openAddResourceDialog);
+    .addEventListener("click", openAddTaskModal);
 
 document
     .getElementById("fullscreen-btn")
@@ -2635,4 +2631,451 @@ async function loadSimulation(saveCode) {
     });
 
     return await response.json();
+}
+
+// New Modal Functions
+let interactionCounter = 0;
+
+function openAddObjectModal() {
+    const modal = document.getElementById('add-object-modal');
+    const typeSelect = document.getElementById('object-type-select');
+    const typeSpecificFields = document.getElementById('object-type-specific-fields');
+    
+    // Clear form
+    modal.querySelectorAll('input, select').forEach(input => input.value = '');
+    typeSpecificFields.innerHTML = '';
+    
+    // Handle type change
+    typeSelect.addEventListener('change', function() {
+        updateObjectTypeFields(this.value, typeSpecificFields);
+    });
+    
+    modal.style.display = 'flex';
+}
+
+function updateObjectTypeFields(type, container) {
+    let html = '';
+    
+    switch(type) {
+        case 'actor':
+            html = `
+                <div class="form-group">
+                    <label for="object-role-input">Role:</label>
+                    <input type="text" id="object-role-input" placeholder="Head Chef">
+                </div>
+                <div class="form-group">
+                    <label for="object-cost-input">Cost per Hour ($):</label>
+                    <input type="number" id="object-cost-input" placeholder="25.00" step="0.01" min="0">
+                </div>
+            `;
+            break;
+        case 'equipment':
+            html = `
+                <div class="form-group">
+                    <label for="object-state-input">Initial State:</label>
+                    <select id="object-state-input">
+                        <option value="clean">Clean</option>
+                        <option value="dirty">Dirty</option>
+                        <option value="available">Available</option>
+                        <option value="in-use">In Use</option>
+                        <option value="maintenance">Maintenance</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="object-capacity-input">Capacity:</label>
+                    <input type="number" id="object-capacity-input" placeholder="1" min="1">
+                </div>
+            `;
+            break;
+        case 'resource':
+            html = `
+                <div class="form-group">
+                    <label for="object-unit-input">Unit:</label>
+                    <input type="text" id="object-unit-input" placeholder="kg, liter, g">
+                </div>
+                <div class="form-group">
+                    <label for="object-quantity-input">Initial Quantity:</label>
+                    <input type="number" id="object-quantity-input" placeholder="50" min="0" step="0.01">
+                </div>
+            `;
+            break;
+        case 'product':
+            html = `
+                <div class="form-group">
+                    <label for="object-unit-input">Unit:</label>
+                    <input type="text" id="object-unit-input" placeholder="batch, loaves, items">
+                </div>
+                <div class="form-group">
+                    <label for="object-quantity-input">Initial Quantity:</label>
+                    <input type="number" id="object-quantity-input" placeholder="0" min="0" step="0.01">
+                </div>
+            `;
+            break;
+    }
+    
+    container.innerHTML = html;
+}
+
+function openAddTaskModal() {
+    const modal = document.getElementById('add-task-modal');
+    const actorSelect = document.getElementById('task-actor-select');
+    
+    // Clear form
+    modal.querySelectorAll('input, select').forEach(input => {
+        if (input.type === 'checkbox') input.checked = false;
+        else input.value = '';
+    });
+    document.getElementById('interactions-container').innerHTML = '';
+    interactionCounter = 0;
+    
+    // Populate actors from current simulation
+    try {
+        const simulation = JSON.parse(editor.getValue());
+        const actors = simulation.simulation?.objects?.filter(obj => obj.type === 'actor') || [];
+        
+        actorSelect.innerHTML = '<option value="">Select actor...</option>';
+        actors.forEach(actor => {
+            const option = document.createElement('option');
+            option.value = actor.id;
+            option.textContent = `${actor.name} (${actor.properties?.role || actor.id})`;
+            actorSelect.appendChild(option);
+        });
+    } catch (e) {
+        actorSelect.innerHTML = '<option value="">Select actor... (No valid simulation loaded)</option>';
+    }
+    
+    modal.style.display = 'flex';
+}
+
+function addInteraction() {
+    const container = document.getElementById('interactions-container');
+    const interactionId = ++interactionCounter;
+    
+    // Get available objects from current simulation
+    let objects = [];
+    try {
+        const simulation = JSON.parse(editor.getValue());
+        objects = simulation.simulation?.objects || [];
+    } catch (e) {
+        // Empty simulation
+    }
+    
+    const objectOptions = objects.map(obj => 
+        `<option value="${obj.id}">${obj.name} (${obj.type})</option>`
+    ).join('');
+    
+    const interactionDiv = document.createElement('div');
+    interactionDiv.className = 'interaction-item';
+    interactionDiv.innerHTML = `
+        <div class="interaction-header">
+            <h5>Interaction ${interactionId}</h5>
+            <button type="button" class="remove-interaction-btn" onclick="removeInteraction(this)">Remove</button>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Object:</label>
+                <select class="interaction-object-select">
+                    <option value="">Select object...</option>
+                    ${objectOptions}
+                </select>
+            </div>
+        </div>
+        <div class="property-changes-container">
+            <div class="property-changes-header">
+                <h6>Property Changes:</h6>
+                <button type="button" class="btn-secondary" onclick="addPropertyChange(this)">+ Add Property Change</button>
+            </div>
+            <div class="property-changes-list"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" class="revert-after-checkbox"> Revert After Task
+                </label>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(interactionDiv);
+}
+
+function removeInteraction(button) {
+    button.closest('.interaction-item').remove();
+}
+
+function addPropertyChange(button) {
+    const container = button.parentElement.parentElement.querySelector('.property-changes-list');
+    const changeDiv = document.createElement('div');
+    changeDiv.className = 'property-change-group';
+    changeDiv.innerHTML = `
+        <div class="form-row">
+            <div class="form-group">
+                <label>Property:</label>
+                <input type="text" class="property-name" placeholder="state, quantity, etc.">
+            </div>
+            <div class="form-group">
+                <label>Change Type:</label>
+                <select class="property-change-type">
+                    <option value="from_to">From/To</option>
+                    <option value="delta">Delta</option>
+                </select>
+            </div>
+        </div>
+        <div class="property-from-to-fields">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>From:</label>
+                    <input type="text" class="property-from" placeholder="current value">
+                </div>
+                <div class="form-group">
+                    <label>To:</label>
+                    <input type="text" class="property-to" placeholder="new value">
+                </div>
+            </div>
+        </div>
+        <div class="property-delta-fields" style="display: none;">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Delta:</label>
+                    <input type="number" class="property-delta" placeholder="0" step="0.01">
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn-secondary" onclick="removePropertyChange(this)">Remove Property</button>
+    `;
+    
+    container.appendChild(changeDiv);
+    
+    // Handle change type toggle
+    const changeTypeSelect = changeDiv.querySelector('.property-change-type');
+    changeTypeSelect.addEventListener('change', function() {
+        const fromToFields = changeDiv.querySelector('.property-from-to-fields');
+        const deltaFields = changeDiv.querySelector('.property-delta-fields');
+        
+        if (this.value === 'delta') {
+            fromToFields.style.display = 'none';
+            deltaFields.style.display = 'block';
+        } else {
+            fromToFields.style.display = 'block';
+            deltaFields.style.display = 'none';
+        }
+    });
+}
+
+function removePropertyChange(button) {
+    button.closest('.property-change-group').remove();
+}
+
+// Modal event handlers
+document.getElementById('object-cancel-btn').addEventListener('click', function() {
+    document.getElementById('add-object-modal').style.display = 'none';
+});
+
+document.getElementById('object-add-btn').addEventListener('click', function() {
+    addObjectToSimulation();
+});
+
+document.getElementById('task-cancel-btn').addEventListener('click', function() {
+    document.getElementById('add-task-modal').style.display = 'none';
+});
+
+document.getElementById('task-add-btn').addEventListener('click', function() {
+    addTaskToSimulation();
+});
+
+document.getElementById('add-interaction-btn').addEventListener('click', function() {
+    addInteraction();
+});
+
+function addObjectToSimulation() {
+    const type = document.getElementById('object-type-select').value;
+    const id = document.getElementById('object-id-input').value.trim();
+    const name = document.getElementById('object-name-input').value.trim();
+    const emoji = document.getElementById('object-emoji-input').value.trim();
+    const location = document.getElementById('object-location-input').value.trim();
+    
+    if (!type || !id || !name) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    const newObject = {
+        id: id,
+        type: type,
+        name: name,
+        properties: { location: location }
+    };
+    
+    if (emoji) {
+        newObject.emoji = emoji;
+    }
+    
+    // Add type-specific properties
+    switch(type) {
+        case 'actor':
+            const role = document.getElementById('object-role-input')?.value.trim();
+            const cost = parseFloat(document.getElementById('object-cost-input')?.value);
+            if (role) newObject.properties.role = role;
+            if (cost) newObject.properties.cost_per_hour = cost;
+            break;
+        case 'equipment':
+            const state = document.getElementById('object-state-input')?.value;
+            const capacity = parseInt(document.getElementById('object-capacity-input')?.value);
+            if (state) newObject.properties.state = state;
+            if (capacity) newObject.properties.capacity = capacity;
+            break;
+        case 'resource':
+        case 'product':
+            const unit = document.getElementById('object-unit-input')?.value.trim();
+            const quantity = parseFloat(document.getElementById('object-quantity-input')?.value);
+            if (unit) newObject.properties.unit = unit;
+            if (!isNaN(quantity)) newObject.properties.quantity = quantity;
+            break;
+    }
+    
+    try {
+        let simulation;
+        const jsonText = editor.getValue().trim();
+        
+        if (!jsonText) {
+            simulation = {
+                simulation: {
+                    meta: {
+                        id: "new_simulation",
+                        article_title: "New Simulation",
+                        domain: "General"
+                    },
+                    config: {
+                        time_unit: "minute",
+                        start_time: "06:00",
+                        end_time: "18:00"
+                    },
+                    objects: [],
+                    tasks: []
+                }
+            };
+        } else {
+            simulation = JSON.parse(jsonText);
+            if (!simulation.simulation) simulation.simulation = {};
+            if (!simulation.simulation.objects) simulation.simulation.objects = [];
+        }
+        
+        simulation.simulation.objects.push(newObject);
+        
+        saveToHistory();
+        editor.setValue(JSON.stringify(simulation, null, 2));
+        debounceRender();
+        document.getElementById('add-object-modal').style.display = 'none';
+        
+    } catch (e) {
+        alert('Error adding object: ' + e.message);
+    }
+}
+
+function addTaskToSimulation() {
+    const taskId = document.getElementById('task-id-input').value.trim();
+    const emoji = document.getElementById('task-emoji-input').value.trim();
+    const actorId = document.getElementById('task-actor-select').value;
+    const location = document.getElementById('task-location-input').value.trim();
+    const startTime = document.getElementById('task-start-input').value;
+    const duration = parseInt(document.getElementById('task-duration-input').value);
+    const dependsInput = document.getElementById('task-depends-input').value.trim();
+    
+    if (!taskId || !emoji || !actorId || !startTime || !duration) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    const depends_on = dependsInput ? dependsInput.split(',').map(s => s.trim()).filter(s => s) : [];
+    
+    const newTask = {
+        id: `${taskId} 🔸 ${emoji}`,
+        actor_id: actorId,
+        start: startTime,
+        duration: duration,
+        location: location,
+        depends_on: depends_on,
+        interactions: []
+    };
+    
+    // Process interactions
+    const interactionItems = document.querySelectorAll('#interactions-container .interaction-item');
+    interactionItems.forEach(item => {
+        const objectId = item.querySelector('.interaction-object-select').value;
+        if (!objectId) return;
+        
+        const interaction = {
+            object_id: objectId,
+            property_changes: {}
+        };
+        
+        const revertAfter = item.querySelector('.revert-after-checkbox').checked;
+        if (revertAfter) {
+            interaction.revert_after = true;
+        }
+        
+        // Process property changes
+        const propertyGroups = item.querySelectorAll('.property-change-group');
+        propertyGroups.forEach(group => {
+            const propertyName = group.querySelector('.property-name').value.trim();
+            const changeType = group.querySelector('.property-change-type').value;
+            
+            if (!propertyName) return;
+            
+            if (changeType === 'delta') {
+                const delta = parseFloat(group.querySelector('.property-delta').value);
+                if (!isNaN(delta)) {
+                    interaction.property_changes[propertyName] = { delta: delta };
+                }
+            } else {
+                const from = group.querySelector('.property-from').value.trim();
+                const to = group.querySelector('.property-to').value.trim();
+                if (from && to) {
+                    interaction.property_changes[propertyName] = { from: from, to: to };
+                }
+            }
+        });
+        
+        if (Object.keys(interaction.property_changes).length > 0) {
+            newTask.interactions.push(interaction);
+        }
+    });
+    
+    try {
+        let simulation;
+        const jsonText = editor.getValue().trim();
+        
+        if (!jsonText) {
+            simulation = {
+                simulation: {
+                    meta: {
+                        id: "new_simulation",
+                        article_title: "New Simulation",
+                        domain: "General"
+                    },
+                    config: {
+                        time_unit: "minute",
+                        start_time: "06:00",
+                        end_time: "18:00"
+                    },
+                    objects: [],
+                    tasks: []
+                }
+            };
+        } else {
+            simulation = JSON.parse(jsonText);
+            if (!simulation.simulation) simulation.simulation = {};
+            if (!simulation.simulation.tasks) simulation.simulation.tasks = [];
+        }
+        
+        simulation.simulation.tasks.push(newTask);
+        
+        saveToHistory();
+        editor.setValue(JSON.stringify(simulation, null, 2));
+        debounceRender();
+        document.getElementById('add-task-modal').style.display = 'none';
+        
+    } catch (e) {
+        alert('Error adding task: ' + e.message);
+    }
 }

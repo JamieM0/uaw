@@ -151,7 +151,7 @@
             { "id": "operator", "type": "actor", "name": "Machine Operator", "properties": { "role": "Assembly Specialist", "cost_per_hour": 22, "location": "assembly_line" } },
             { "id": "inspector", "type": "actor", "name": "QC Inspector", "properties": { "role": "Quality Inspector", "cost_per_hour": 28, "location": "quality_control" } },
             { "id": "assembly_machine", "type": "equipment", "name": "Assembly Machine", "emoji": "🏭", "properties": { "state": "off", "capacity": 1, "location": "assembly_line" } },
-            { "id": "components", "type": "resource_pile", "name": "Components", "emoji": "⚙️", "properties": { "unit": "pieces", "quantity": 50, "location": "assembly_line" } },
+            { "id": "components", "type": "resource", "name": "Components", "emoji": "⚙️", "properties": { "unit": "pieces", "quantity": 50, "location": "assembly_line" } },
             { "id": "finished_products", "type": "product", "name": "Finished Products", "emoji": "📦", "properties": { "unit": "units", "quantity": 0, "location": "quality_control" } }
           ],
           "tasks": [
@@ -228,8 +228,8 @@
             { "id": "lead_scientist", "type": "actor", "name": "Dr. Smith", "properties": { "role": "Lead Researcher", "cost_per_hour": 75, "location": "research_lab" } },
             { "id": "lab_tech", "type": "actor", "name": "Lab Technician", "properties": { "role": "Research Assistant", "cost_per_hour": 35, "location": "research_lab" } },
             { "id": "spectrometer", "type": "equipment", "name": "Mass Spectrometer", "emoji": "🔬", "properties": { "state": "calibrated", "capacity": 1, "location": "research_lab" } },
-            { "id": "rare_minerals", "type": "resource_pile", "name": "Rare Earth Minerals", "emoji": "💎", "properties": { "unit": "grams", "quantity": 8, "location": "storage_vault" } },
-            { "id": "catalyst_compound", "type": "resource_pile", "name": "Catalyst Compound", "emoji": "🧪", "properties": { "unit": "ml", "quantity": 200, "location": "research_lab" } },
+            { "id": "rare_minerals", "type": "resource", "name": "Rare Earth Minerals", "emoji": "💎", "properties": { "unit": "grams", "quantity": 8, "location": "storage_vault" } },
+            { "id": "catalyst_compound", "type": "resource", "name": "Catalyst Compound", "emoji": "🧪", "properties": { "unit": "ml", "quantity": 200, "location": "research_lab" } },
             { "id": "research_sample", "type": "product", "name": "Analyzed Sample", "emoji": "📊", "properties": { "unit": "samples", "quantity": 0, "location": "research_lab" } }
           ],
           "tasks": [
@@ -301,7 +301,7 @@
           "objects": [
             { "id": "lead_dev", "type": "actor", "name": "Senior Developer", "properties": { "role": "Lead Developer", "cost_per_hour": 85, "location": "dev_floor" } },
             { "id": "database_server", "type": "equipment", "name": "Database Server", "emoji": "🗄️", "properties": { "state": "idle", "capacity": 10, "location": "server_room" } },
-            { "id": "raw_data", "type": "resource_pile", "name": "Raw Dataset", "emoji": "📊", "properties": { "unit": "GB", "quantity": 500, "location": "server_room" } }
+            { "id": "raw_data", "type": "resource", "name": "Raw Dataset", "emoji": "📊", "properties": { "unit": "GB", "quantity": 500, "location": "server_room" } }
           ],
           "tasks": [
             { 
@@ -352,9 +352,9 @@
             { "id": "surgeon_patel", "type": "actor", "name": "Dr. Patel", "properties": { "role": "Trauma Surgeon", "cost_per_hour": 350, "location": "operating_room" } },
             { "id": "mri_machine", "type": "equipment", "name": "MRI Scanner", "emoji": "🏥", "properties": { "state": "ready", "capacity": 1, "location": "imaging_suite" } },
             { "id": "surgical_suite", "type": "equipment", "name": "Surgical Equipment", "emoji": "⚕️", "properties": { "state": "sterilized", "capacity": 1, "location": "operating_room" } },
-            { "id": "oxygen_supply", "type": "resource_pile", "name": "Medical Oxygen", "emoji": "💨", "properties": { "unit": "hours", "quantity": 8, "location": "emergency_bay_1" } },
-            { "id": "blood_units", "type": "resource_pile", "name": "Blood Bank Units", "emoji": "🩸", "properties": { "unit": "units", "quantity": 2, "location": "operating_room" } },
-            { "id": "contrast_dye", "type": "resource_pile", "name": "MRI Contrast", "emoji": "💉", "properties": { "unit": "doses", "quantity": 1, "location": "imaging_suite" } },
+            { "id": "oxygen_supply", "type": "resource", "name": "Medical Oxygen", "emoji": "💨", "properties": { "unit": "hours", "quantity": 8, "location": "emergency_bay_1" } },
+            { "id": "blood_units", "type": "resource", "name": "Blood Bank Units", "emoji": "🩸", "properties": { "unit": "units", "quantity": 2, "location": "operating_room" } },
+            { "id": "contrast_dye", "type": "resource", "name": "MRI Contrast", "emoji": "💉", "properties": { "unit": "doses", "quantity": 1, "location": "imaging_suite" } },
             { "id": "stabilized_patients", "type": "product", "name": "Stabilized Patients", "emoji": "😌", "properties": { "unit": "patients", "quantity": 0, "location": "emergency_bay_2" } }
           ],
           "tasks": [

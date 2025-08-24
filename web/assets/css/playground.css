@@ -28,6 +28,9 @@ body {
 .playground-header {
     background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    /* Firefox fallback */
+    background: rgba(255, 255, 255, 0.95);
     box-shadow: var(--shadow-sm);
     padding: 0.5rem 0;
     height: 50px;
@@ -79,6 +82,8 @@ body {
     align-items: center;
     gap: 0.75rem;
     margin-left: auto;
+    /* Firefox flexbox shrink fix */
+    flex-shrink: 0;
 }
 
 .json-editor-buttons {
@@ -376,12 +381,16 @@ body {
     width: 100%;
     box-sizing: border-box;
     display: block !important;
+    /* Firefox flexbox fix */
+    min-height: 0;
 }
 
 .actor-lane {
     width: 100%;
     box-sizing: border-box;
     display: flex !important;
+    /* Firefox flexbox alignment fix */
+    align-items: center;
 }
 
 .task-block {
@@ -1170,4 +1179,169 @@ body.tutorial-active #auto-render-toggle {
 .live-time {
     font-weight: normal;
     color: var(--primary-color);
+}
+
+/* Modal Form Styles */
+.modal-content {
+    margin: 1rem 0;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.form-group {
+    flex: 1;
+    margin-bottom: 0.75rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+/* Interactions Section */
+.interactions-section {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.property-changes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.property-changes-header h6 {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-color);
+}
+
+.property-changes-list {
+    margin-top: 0.5rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.section-header h4 {
+    margin: 0;
+    color: var(--text-color);
+}
+
+.interaction-item {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: #f8f9fa;
+}
+
+.interaction-item .form-row {
+    margin-bottom: 0.5rem;
+}
+
+.interaction-item .form-row:last-child {
+    margin-bottom: 0;
+}
+
+.interaction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.interaction-header h5 {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-color);
+}
+
+.remove-interaction-btn {
+    background: var(--error-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.remove-interaction-btn:hover {
+    background: #c82333;
+}
+
+.property-change-group {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 0.5rem;
+    background: white;
+    margin-bottom: 0.5rem;
+}
+
+.property-change-group .form-row {
+    margin-bottom: 0.5rem;
+}
+
+.property-change-group .form-row:last-child {
+    margin-bottom: 0;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: 1px solid #6c757d;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    border-color: #545b62;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+    border: 1px solid var(--primary-color);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+    border-color: #004085;
 }
