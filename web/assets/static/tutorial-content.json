@@ -28,7 +28,7 @@
             { "id": "trainee", "type": "actor", "name": "Trainee", "properties": { "role": "Learning Specialist", "cost_per_hour": 0, "location": "command_center" } }
           ],
           "tasks": [
-            { "id": "orientation 🔸 🎯", "actor_id": "trainee", "start": "08:00", "duration": 30, "location": "command_center" }
+            { "id": "orientation", "emoji": "🎯", "actor_id": "trainee", "start": "08:00", "duration": 30, "location": "command_center" }
           ]
         }
       },
@@ -68,7 +68,7 @@
             { "id": "architect", "type": "actor", "name": "Space Designer", "properties": { "role": "Layout Architect", "cost_per_hour": 30, "location": "reception" } }
           ],
           "tasks": [
-            { "id": "space_planning 🔸 📐", "actor_id": "architect", "start": "06:00", "duration": 60, "location": "reception" }
+            { "id": "space_planning", "emoji": "📐", "actor_id": "architect", "start": "06:00", "duration": 60, "location": "reception" }
           ]
         }
       },
@@ -112,9 +112,9 @@
             { "id": "head_chef", "type": "actor", "name": "Head Chef", "properties": { "role": "Executive Chef", "cost_per_hour": 35, "location": "main_kitchen" } }
           ],
           "tasks": [
-            { "id": "clean_up_spills 🔸 🧹", "actor_id": "assistant_chef", "start": "07:00", "duration": 15, "location": "main_kitchen" },
-            { "id": "preheat_oven 🔸 🔥", "actor_id": "assistant_chef", "start": "07:10", "duration": 20, "location": "main_kitchen" },
-            { "id": "prep_vegetables 🔸 🥕", "actor_id": "head_chef", "start": "07:00", "duration": 30, "location": "main_kitchen" }
+            { "id": "clean_up_spills", "emoji": "🧹", "actor_id": "assistant_chef", "start": "07:00", "duration": 15, "location": "main_kitchen" },
+            { "id": "preheat_oven", "emoji": "🔥", "actor_id": "assistant_chef", "start": "07:10", "duration": 20, "location": "main_kitchen" },
+            { "id": "prep_vegetables", "emoji": "🥕", "actor_id": "head_chef", "start": "07:00", "duration": 30, "location": "main_kitchen" }
           ]
         }
       },
@@ -156,7 +156,8 @@
           ],
           "tasks": [
             { 
-              "id": "startup_machine 🔸 🔧", 
+              "id": "startup_machine",
+              "emoji": "🔧", 
               "actor_id": "operator", 
               "start": "09:00", 
               "duration": 10, 
@@ -166,27 +167,30 @@
               ]
             },
             { 
-              "id": "assembly_batch_1 🔸 🏭", 
+              "id": "assembly_batch_1",
+              "emoji": "🏭", 
               "actor_id": "operator", 
               "start": "09:10", 
               "duration": 20, 
               "location": "assembly_line",
-              "depends_on": ["startup_machine 🔸 🔧"],
+              "depends_on": ["startup_machine"],
               "interactions": [
                 { "object_id": "components", "property_changes": { "quantity": { "delta": -10 } } },
                 { "object_id": "finished_products", "property_changes": { "quantity": { "delta": 10 } } }
               ]
             },
             { 
-              "id": "quality_inspection 🔸 🔍", 
+              "id": "quality_inspection",
+              "emoji": "🔍", 
               "actor_id": "inspector", 
               "start": "09:30", 
               "duration": 15, 
               "location": "quality_control",
-              "depends_on": ["assembly_batch_1 🔸 🏭"]
+              "depends_on": ["assembly_batch_1"]
             },
             { 
-              "id": "shutdown_machine 🔸 🛑", 
+              "id": "shutdown_machine",
+              "emoji": "🛑", 
               "actor_id": "operator", 
               "start": "10:00", 
               "duration": 5, 
@@ -234,7 +238,8 @@
           ],
           "tasks": [
             { 
-              "id": "prepare_sample_batch_1 🔸 🧪", 
+              "id": "prepare_sample_batch_1",
+              "emoji": "🧪", 
               "actor_id": "lab_tech", 
               "start": "10:00", 
               "duration": 30, 
@@ -245,19 +250,21 @@
               ]
             },
             { 
-              "id": "spectral_analysis 🔸 🔬", 
+              "id": "spectral_analysis",
+              "emoji": "🔬", 
               "actor_id": "lead_scientist", 
               "start": "10:30", 
               "duration": 45, 
               "location": "research_lab",
-              "depends_on": ["prepare_sample_batch_1 🔸 🧪"],
+              "depends_on": ["prepare_sample_batch_1"],
               "interactions": [
                 { "object_id": "spectrometer", "property_changes": { "state": { "from": "calibrated", "to": "analyzing" } } },
                 { "object_id": "research_sample", "property_changes": { "quantity": { "delta": 3 } } }
               ]
             },
             { 
-              "id": "recalibrate_equipment 🔸 ⚙️", 
+              "id": "recalibrate_equipment",
+              "emoji": "⚙️", 
               "actor_id": "lab_tech", 
               "start": "11:15", 
               "duration": 15, 
@@ -305,7 +312,8 @@
           ],
           "tasks": [
             { 
-              "id": "database_optimization 🔸 ⚡", 
+              "id": "database_optimization",
+              "emoji": "⚡", 
               "actor_id": "lead_dev", 
               "start": "09:00", 
               "duration": 60, 
@@ -359,64 +367,71 @@
           ],
           "tasks": [
             { 
-              "id": "patient_1_triage 🔸 🩺", 
+              "id": "patient_1_triage",
+              "emoji": "🩺", 
               "actor_id": "dr_chen", 
               "start": "14:00", 
               "duration": 20, 
               "location": "triage"
             },
             { 
-              "id": "patient_2_triage 🔸 🩺", 
+              "id": "patient_2_triage",
+              "emoji": "🩺", 
               "actor_id": "dr_chen", 
               "start": "14:05", 
               "duration": 20, 
               "location": "triage"
             },
             { 
-              "id": "patient_3_triage 🔸 🩺", 
+              "id": "patient_3_triage",
+              "emoji": "🩺", 
               "actor_id": "dr_chen", 
               "start": "14:15", 
               "duration": 15, 
               "location": "triage"
             },
             { 
-              "id": "emergency_stabilization 🔸 🚨", 
+              "id": "emergency_stabilization",
+              "emoji": "🚨", 
               "actor_id": "nurse_martinez", 
               "start": "14:15", 
               "duration": 30, 
               "location": "emergency_bay_1",
-              "depends_on": ["patient_1_triage 🔸 🩺"],
+              "depends_on": ["patient_1_triage"],
               "interactions": [
                 { "object_id": "oxygen_supply", "property_changes": { "quantity": { "delta": -2 } } },
                 { "object_id": "stabilized_patients", "property_changes": { "quantity": { "delta": 1 } } }
               ]
             },
             { 
-              "id": "mri_scan_patient_2 🔸 🏥", 
+              "id": "mri_scan_patient_2",
+              "emoji": "🏥", 
               "actor_id": "dr_chen", 
               "start": "14:25", 
               "duration": 45, 
               "location": "imaging_suite",
-              "depends_on": ["patient_2_triage 🔸 🩺"],
+              "depends_on": ["patient_2_triage"],
               "interactions": [
                 { "object_id": "mri_machine", "property_changes": { "state": { "from": "ready", "to": "scanning" } } },
                 { "object_id": "contrast_dye", "property_changes": { "quantity": { "delta": -2 } } }
               ]
             },
             { 
-              "id": "emergency_surgery 🔸 ⚕️", 
+              "id": "emergency_surgery",
+              "emoji": "⚕️", 
               "actor_id": "surgeon_patel", 
               "start": "15:00", 
               "duration": 120, 
               "location": "operating_room",
-              "depends_on": ["emergency_stabilization 🔸 🚨"],
+              "depends_on": ["emergency_stabilization"],
               "interactions": [
                 { "object_id": "surgical_suite", "property_changes": { "state": { "from": "sterilized", "to": "in-use" } } },
                 { "object_id": "blood_units", "property_changes": { "quantity": { "delta": -3 } } }
               ]
             },
             { 
-              "id": "post_surgery_monitoring 🔸 📊", 
+              "id": "post_surgery_monitoring",
+              "emoji": "📊", 
               "actor_id": "nurse_martinez", 
               "start": "15:30", 
               "duration": 60, 
@@ -458,7 +473,7 @@
             { "id": "playground_mastery", "type": "product", "name": "Playground Mastery", "emoji": "🏆", "properties": { "unit": "skills", "quantity": 1, "location": "auditorium" } }
           ],
           "tasks": [
-            { "id": "graduation_ceremony 🔸 🎉", "actor_id": "graduate", "start": "12:00", "duration": 30, "location": "auditorium" }
+            { "id": "graduation_ceremony", "emoji": "🎉", "actor_id": "graduate", "start": "12:00", "duration": 30, "location": "auditorium" }
           ]
         }
       },

@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
         <header class="site-header">
             <div class="container header-container">
                 <div class="logo">
-                    <a href="/index">
+                    <a href="/">
                         <img src="/assets/images/logo-primary-stacked.png" alt="Universal Automation Wiki Logo">
                     </a>
                 </div>
@@ -22,8 +22,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     <ul>
                         <li><a href="/about">About</a></li>
                         <li><a href="/docs">Documentation</a></li>
-                        <li><a href="/playground.html">Playground</a></li>
-                        <li><a href="https://jamiem.me/iterative-code" target="_blank">GitHub</a></li>
+                        <li><a href="/playground">Playground</a></li>
+                        <li><a href="https://github.com/JamieM0/uaw" target="_blank">GitHub</a></li>
                     </ul>
                 </nav>
                 <div class="header-persona-selector">
@@ -54,21 +54,21 @@ document.addEventListener("DOMContentLoaded", function () {
                             <h4>Platform</h4>
                             <ul>
                                 <li><a href="/about">About</a></li>
-                                <li><a href="/technical">Technical Details</a></li>
+                                <li><a href="/playground">Simulation Playground</a></li>
                             </ul>
                         </div>
                         <div class="footer-links-column">
                             <h4>Resources</h4>
                             <ul>
-                                <li><a href="https://jamiem.me/iterative-code">GitHub</a></li>
+                                <li><a href="https://github.com/JamieM0/uaw" target="_blank">GitHub</a></li>
                                 <li><a href="/docs">Documentation</a></li>
                             </ul>
                         </div>
                         <div class="footer-links-column">
                             <h4>Connect</h4>
                             <ul>
-                                <li><a href="#">Twitter</a></li>
-                                <li><a href="#">LinkedIn</a></li>
+                                <li><a href="https://x.com/automation_wiki">Twitter</a></li>
+                                <li><a href="mailto:contact@universalautomation.wiki">Email</a></li>
                             </ul>
                         </div>
                     </div>

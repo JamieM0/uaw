@@ -259,6 +259,9 @@ class SpaceEditor {
         // Apply 3D transformation
         this.apply3DTransform(rectEl, loc);
         
+        // Adjust text size to fit within rectangle
+        this.adjustTextSize(rectEl);
+        
         this.world.appendChild(rectEl);
         return rectEl;
     }
@@ -774,6 +777,9 @@ class SpaceEditor {
             this.activeRectEl.textContent = newName;
             this.activeRectEl.addEventListener('mousedown', (ev) => this.onRectMouseDown(ev, newId));
             
+            // Adjust text size for the newly created rectangle
+            this.adjustTextSize(this.activeRectEl);
+            
             this.selectRect(newId);
             this.updateLayerDropdown();
             this.applyLayerFilter();
@@ -792,9 +798,12 @@ class SpaceEditor {
             this.isDragging = false;
             this.canvas.classList.remove('is-dragging');
             
-            // Remove any collision styling immediately
+            // Remove any collision styling immediately and fix border style without delay
             if (this.activeRectEl) {
                 this.activeRectEl.classList.remove('colliding');
+                // Force immediate border style update by re-applying selection class
+                this.activeRectEl.classList.remove('selected');
+                this.activeRectEl.classList.add('selected');
             }
             
             // Update JSON after position is committed
@@ -945,17 +954,39 @@ class SpaceEditor {
 
         nameInput.addEventListener('input', e => {
             const newName = e.target.value;
+            
+            // Only update the visual label immediately, don't modify the data model yet
+            const rectEl = document.querySelector(`.location-rect[data-id="${this.selectedRectId}"]`);
+            if (rectEl) {
+                rectEl.textContent = newName || loc.id; // Show text immediately or fallback to original ID
+                this.adjustTextSize(rectEl);
+            }
+        });
+        
+        // Update the data model and JSON only when user stops editing or presses enter
+        const updateNameData = () => {
+            const newName = nameInput.value;
             const newId = newName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
             
             loc.name = newName;
             loc.id = newId;
             
-            document.querySelector(`.location-rect[data-id="${this.selectedRectId}"]`).textContent = newName;
-            this.selectedRectId = newId; // Update the selected ID
-            document.querySelector(`.location-rect[data-id="${newId}"]`).dataset.id = newId;
+            const rectEl = document.querySelector(`.location-rect[data-id="${this.selectedRectId}"]`);
+            if (rectEl) {
+                rectEl.textContent = newName || newId;
+                rectEl.dataset.id = newId;
+                this.adjustTextSize(rectEl);
+            }
+            this.selectedRectId = newId;
             idInput.value = newId;
-            
             this.updateJson();
+        };
+        
+        nameInput.addEventListener('blur', updateNameData);
+        nameInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.target.blur(); // This will trigger the blur event and updateNameData
+            }
         });
         
         document.getElementById('prop-length').addEventListener('change', e => {
@@ -1030,6 +1061,9 @@ class SpaceEditor {
 
         // Update 3D positioning and styling
         this.apply3DTransform(rectEl, loc);
+        
+        // Re-adjust text size after rectangle update
+        this.adjustTextSize(rectEl);
     }
 
     apply3DTransform(rectEl, loc) {
@@ -1056,6 +1090,54 @@ class SpaceEditor {
         // Set z-index based on position for proper layering
         const zIndex = Math.floor((loc.shape.y + loc.shape.x) / 10) + (loc.layer || 0) * 1000;
         rectEl.style.zIndex = zIndex;
+    }
+
+    adjustTextSize(rectEl) {
+        // Skip if no text content
+        if (!rectEl.textContent || rectEl.textContent.trim() === '') {
+            return;
+        }
+
+        // Use setTimeout to ensure the element is fully rendered
+        setTimeout(() => {
+            // Get the available space inside the rectangle (accounting for padding)
+            const availableWidth = rectEl.offsetWidth - 10; // 5px padding on each side
+            const availableHeight = rectEl.offsetHeight;
+            
+            if (availableWidth <= 0 || availableHeight <= 0) {
+                return;
+            }
+
+            // Start with a reasonable font size and work our way down
+            let fontSize = 16;
+            
+            // Create a temporary element to measure text dimensions
+            const tempEl = document.createElement('span');
+            tempEl.style.visibility = 'hidden';
+            tempEl.style.position = 'absolute';
+            tempEl.style.whiteSpace = 'nowrap';
+            tempEl.style.fontFamily = getComputedStyle(rectEl).fontFamily || 'Inter, sans-serif';
+            tempEl.style.fontWeight = getComputedStyle(rectEl).fontWeight || '600';
+            tempEl.textContent = rectEl.textContent;
+            document.body.appendChild(tempEl);
+
+            // Decrease font size until text fits within the available width
+            while (fontSize > 6) { // Set minimum font size to 6px
+                tempEl.style.fontSize = fontSize + 'px';
+                
+                if (tempEl.offsetWidth <= availableWidth && tempEl.offsetHeight <= availableHeight) {
+                    break;
+                }
+                
+                fontSize--;
+            }
+
+            // Apply the calculated font size
+            rectEl.style.fontSize = fontSize + 'px';
+            
+            // Clean up temporary element
+            document.body.removeChild(tempEl);
+        }, 0);
     }
 
 }
