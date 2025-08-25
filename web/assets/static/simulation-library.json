@@ -1,0 +1,2253 @@
+{
+  "simulations": [
+    {
+      "id": "breadmaking",
+      "name": "Artisan Bread Making",
+      "description": "A simple bakery process showing basic resource transformation and timing dependencies",
+      "complexity": "Basic",
+      "domain": "Food Production",
+      "simulation": {
+        "meta": {
+          "id": "sim_breadmaking_v3_full",
+          "article_title": "Artisan Bread Making Process",
+          "domain": "Bakery Operations"
+        },
+        "config": {
+          "time_unit": "minute",
+          "start_time": "06:00",
+          "end_time": "18:00"
+        },
+        "layout": {
+          "meta": {
+            "units": "meters",
+            "pixels_per_unit": 20
+          },
+          "locations": [
+            {
+              "id": "prep_area",
+              "name": "Prep Area",
+              "shape": { "type": "rect", "x": 50, "y": 50, "width": 300, "height": 150 }
+            },
+            {
+              "id": "oven_area",
+              "name": "Oven Area",
+              "shape": { "type": "rect", "x": 400, "y": 50, "width": 150, "height": 150 }
+            }
+          ]
+        },
+        "objects": [
+          { "id": "baker", "type": "actor", "name": "Baker", "properties": { "role": "Baker", "cost_per_hour": 25, "location": "prep_area" } },
+          { "id": "assistant", "type": "actor", "name": "Assistant", "properties": { "role": "Assistant Baker", "cost_per_hour": 18, "location": "prep_area" } },
+          { "id": "mixer", "type": "equipment", "name": "Stand Mixer", "emoji": "🌀", "properties": { "state": "clean", "capacity": 1, "location": "prep_area" } },
+          { "id": "oven", "type": "equipment", "name": "Commercial Oven", "emoji": "🔥", "properties": { "state": "available", "capacity": 4, "location": "oven_area" } },
+          { "id": "workspace", "type": "equipment", "name": "Prep Counter", "emoji": "🏢", "properties": { "state": "clean", "capacity": 2, "location": "prep_area" } },
+          { "id": "mixing_bowl", "type": "equipment", "name": "Mixing Bowl", "emoji": "🥣", "properties": { "state": "clean", "capacity": 1, "location": "prep_area" } },
+          { "id": "flour", "type": "resource", "name": "Flour", "emoji": "🌾", "properties": { "unit": "kg", "quantity": 50, "location": "prep_area", "cost_per_unit": 2.50 } },
+          { "id": "water", "type": "resource", "name": "Water", "emoji": "💧", "properties": { "unit": "liter", "quantity": 20, "location": "prep_area", "cost_per_unit": 0.01 } },
+          { "id": "yeast", "type": "resource", "name": "Yeast", "emoji": "🦠", "properties": { "unit": "g", "quantity": 500, "location": "prep_area", "cost_per_unit": 0.02 } },
+          { "id": "mixed_dough", "type": "product", "name": "Mixed Dough", "emoji": "🥖", "properties": { "unit": "batch", "quantity": 0, "location": "prep_area" } },
+          { "id": "risen_dough", "type": "product", "name": "Risen Dough", "emoji": "🍞", "properties": { "unit": "batch", "quantity": 0, "location": "prep_area" } },
+          { "id": "shaped_loaves", "type": "product", "name": "Shaped Loaves", "emoji": "🥖", "properties": { "unit": "loaves", "quantity": 0, "location": "oven_area" } },
+          { "id": "baked_bread", "type": "product", "name": "Baked Bread", "emoji": "🍞", "properties": { "unit": "loaves", "quantity": 0, "location": "oven_area", "revenue_per_unit": 6.00 } }
+        ],
+        "tasks": [
+          {
+            "id": "prepare_ingredients",
+            "emoji": "🔧",
+            "actor_id": "baker",
+            "start": "06:15",
+            "duration": 30,
+            "location": "prep_area",
+            "depends_on": [],
+            "interactions": [
+              {
+                "object_id": "workspace",
+                "property_changes": {
+                  "state": { "from": "clean", "to": "in-use" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "measure_flour",
+            "emoji": "⚖️",
+            "actor_id": "baker",
+            "start": "06:45",
+            "duration": 10,
+            "location": "prep_area",
+            "depends_on": ["prepare_ingredients"]
+          },
+          {
+            "id": "activate_yeast",
+            "emoji": "🦠",
+            "actor_id": "assistant",
+            "start": "06:45",
+            "duration": 10,
+            "location": "prep_area",
+            "depends_on": [],
+            "interactions": [
+              {
+                "object_id": "yeast",
+                "property_changes": {
+                  "quantity": { "delta": -15 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "mix_dough",
+            "emoji": "🌀",
+            "actor_id": "baker",
+            "start": "06:55",
+            "duration": 20,
+            "location": "prep_area",
+            "depends_on": ["measure_flour", "activate_yeast"],
+            "interactions": [
+              {
+                "object_id": "flour",
+                "property_changes": {
+                  "quantity": { "delta": -1 }
+                }
+              },
+              {
+                "object_id": "water",
+                "property_changes": {
+                  "quantity": { "delta": -0.7 }
+                }
+              },
+              {
+                "object_id": "mixed_dough",
+                "property_changes": {
+                  "quantity": { "delta": 1 }
+                }
+              },
+              {
+                "object_id": "mixer",
+                "property_changes": {
+                  "state": { "from": "clean", "to": "dirty" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "knead_dough",
+            "emoji": "👋",
+            "actor_id": "baker",
+            "start": "07:15",
+            "duration": 15,
+            "location": "prep_area",
+            "depends_on": ["mix_dough"],
+            "interactions": [
+              {
+                "object_id": "mixed_dough",
+                "property_changes": {
+                  "quantity": { "delta": -1 }
+                }
+              },
+              {
+                "object_id": "risen_dough",
+                "property_changes": {
+                  "quantity": { "delta": 1 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "first_rise",
+            "emoji": "⏰",
+            "actor_id": "baker",
+            "start": "07:30",
+            "duration": 90,
+            "location": "prep_area",
+            "depends_on": ["knead_dough"],
+            "interactions": [
+              {
+                "object_id": "workspace",
+                "property_changes": {
+                  "state": { "from": "in-use", "to": "occupied" }
+                },
+                "revert_after": true
+              }
+            ]
+          },
+          {
+            "id": "clean_equipment",
+            "emoji": "🧼",
+            "actor_id": "assistant",
+            "start": "07:30",
+            "duration": 20,
+            "location": "prep_area",
+            "depends_on": [],
+            "interactions": [
+              {
+                "object_id": "mixer",
+                "property_changes": {
+                  "state": { "from": "dirty", "to": "clean" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "shape_loaves",
+            "emoji": "👐",
+            "actor_id": "baker",
+            "start": "09:00",
+            "duration": 25,
+            "location": "prep_area",
+            "depends_on": ["first_rise"],
+            "interactions": [
+              {
+                "object_id": "risen_dough",
+                "property_changes": {
+                  "quantity": { "delta": -1 }
+                }
+              },
+              {
+                "object_id": "shaped_loaves",
+                "property_changes": {
+                  "quantity": { "delta": 1 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "preheat_oven",
+            "emoji": "🔥",
+            "actor_id": "assistant",
+            "start": "09:05",
+            "duration": 15,
+            "location": "oven_area",
+            "depends_on": [],
+            "interactions": [
+              {
+                "object_id": "oven",
+                "property_changes": {
+                  "state": { "from": "available", "to": "preheating" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "second_rise",
+            "emoji": "⏳",
+            "actor_id": "baker",
+            "start": "09:25",
+            "duration": 45,
+            "location": "prep_area",
+            "depends_on": ["shape_loaves"]
+          },
+          {
+            "id": "bake_bread",
+            "emoji": "🍞",
+            "actor_id": "baker",
+            "start": "10:10",
+            "duration": 35,
+            "location": "oven_area",
+            "depends_on": ["second_rise", "preheat_oven"],
+            "interactions": [
+              {
+                "object_id": "shaped_loaves",
+                "property_changes": {
+                  "quantity": { "delta": -1 }
+                }
+              },
+              {
+                "object_id": "baked_bread",
+                "property_changes": {
+                  "quantity": { "delta": 1 }
+                }
+              },
+              {
+                "object_id": "oven",
+                "property_changes": {
+                  "state": { "from": "preheating", "to": "available" }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "electronics_assembly",
+      "name": "Smartphone Assembly Line",
+      "description": "Complex electronics manufacturing with multiple parallel assembly stations, quality control checkpoints, and inventory management",
+      "complexity": "Advanced", 
+      "domain": "Electronics Manufacturing",
+      "simulation": {
+        "meta": {
+          "id": "sim_smartphone_assembly_v2",
+          "article_title": "Smartphone Assembly Line Process",
+          "domain": "Electronics Manufacturing"
+        },
+        "config": {
+          "time_unit": "minute",
+          "start_time": "08:00", 
+          "end_time": "18:00"
+        },
+        "layout": {
+          "meta": {
+            "units": "meters",
+            "pixels_per_unit": 15
+          },
+          "locations": [
+            {
+              "id": "component_storage",
+              "name": "Component Storage",
+              "shape": { "type": "rect", "x": 50, "y": 50, "width": 200, "height": 100 }
+            },
+            {
+              "id": "pcb_station",
+              "name": "PCB Assembly Station",
+              "shape": { "type": "rect", "x": 300, "y": 50, "width": 150, "height": 100 }
+            },
+            {
+              "id": "display_station", 
+              "name": "Display Assembly Station",
+              "shape": { "type": "rect", "x": 500, "y": 50, "width": 150, "height": 100 }
+            },
+            {
+              "id": "final_assembly",
+              "name": "Final Assembly Line",
+              "shape": { "type": "rect", "x": 700, "y": 50, "width": 200, "height": 100 }
+            },
+            {
+              "id": "quality_control",
+              "name": "Quality Control Lab",
+              "shape": { "type": "rect", "x": 300, "y": 200, "width": 300, "height": 100 }
+            },
+            {
+              "id": "packaging",
+              "name": "Packaging Station",
+              "shape": { "type": "rect", "x": 700, "y": 200, "width": 150, "height": 100 }
+            }
+          ]
+        },
+        "objects": [
+          { "id": "technician_a", "type": "actor", "name": "PCB Technician", "properties": { "specialization": "PCB Assembly", "cost_per_hour": 35, "location": "pcb_station" } },
+          { "id": "technician_b", "type": "actor", "name": "Display Technician", "properties": { "specialization": "Display Assembly", "cost_per_hour": 40, "location": "display_station" } },
+          { "id": "assembler_1", "type": "actor", "name": "Assembly Worker 1", "properties": { "role": "Final Assembly", "cost_per_hour": 30, "location": "final_assembly" } },
+          { "id": "assembler_2", "type": "actor", "name": "Assembly Worker 2", "properties": { "role": "Final Assembly", "cost_per_hour": 30, "location": "final_assembly" } },
+          { "id": "qa_engineer", "type": "actor", "name": "QA Engineer", "properties": { "certification": "Electronics QA", "cost_per_hour": 45, "location": "quality_control" } },
+          { "id": "packager", "type": "actor", "name": "Packaging Specialist", "properties": { "role": "Packaging", "cost_per_hour": 25, "location": "packaging" } },
+          
+          { "id": "smt_machine", "type": "equipment", "name": "SMT Pick & Place", "emoji": "🤖", "properties": { "state": "available", "capacity": 1, "throughput_per_hour": 12, "location": "pcb_station" } },
+          { "id": "reflow_oven", "type": "equipment", "name": "Reflow Oven", "emoji": "🔥", "properties": { "state": "available", "capacity": 4, "temperature": 250, "location": "pcb_station" } },
+          { "id": "display_bonding_machine", "type": "equipment", "name": "Display Bonding Machine", "emoji": "⚡", "properties": { "state": "available", "capacity": 1, "location": "display_station" } },
+          { "id": "assembly_conveyor", "type": "equipment", "name": "Assembly Conveyor", "emoji": "🔧", "properties": { "state": "running", "capacity": 10, "speed": "0.5m/min", "location": "final_assembly" } },
+          { "id": "test_station", "type": "equipment", "name": "Automated Test Station", "emoji": "📱", "properties": { "state": "available", "capacity": 2, "test_cycles": 5, "location": "quality_control" } },
+          { "id": "packaging_machine", "type": "equipment", "name": "Packaging Machine", "emoji": "📦", "properties": { "state": "available", "capacity": 1, "location": "packaging" } },
+          
+          { "id": "pcb_blanks", "type": "resource", "name": "PCB Blanks", "emoji": "🟢", "properties": { "unit": "units", "quantity": 500, "cost_per_unit": 8.50, "location": "component_storage" } },
+          { "id": "processors", "type": "resource", "name": "ARM Processors", "emoji": "💾", "properties": { "unit": "units", "quantity": 200, "cost_per_unit": 45.00, "location": "component_storage" } },
+          { "id": "memory_chips", "type": "resource", "name": "Memory Chips", "emoji": "🧠", "properties": { "unit": "units", "quantity": 400, "cost_per_unit": 25.00, "location": "component_storage" } },
+          { "id": "displays", "type": "resource", "name": "OLED Displays", "emoji": "📺", "properties": { "unit": "units", "quantity": 150, "cost_per_unit": 85.00, "location": "component_storage" } },
+          { "id": "batteries", "type": "resource", "name": "Li-ion Batteries", "emoji": "🔋", "properties": { "unit": "units", "quantity": 200, "cost_per_unit": 15.00, "location": "component_storage" } },
+          { "id": "housings", "type": "resource", "name": "Phone Housings", "emoji": "📱", "properties": { "unit": "units", "quantity": 180, "cost_per_unit": 12.00, "location": "component_storage" } },
+          { "id": "packaging_materials", "type": "resource", "name": "Packaging Materials", "emoji": "📦", "properties": { "unit": "sets", "quantity": 300, "cost_per_unit": 3.00, "location": "packaging" } },
+          
+          { "id": "assembled_pcbs", "type": "product", "name": "Assembled PCBs", "emoji": "🖥️", "properties": { "unit": "units", "quantity": 0, "location": "pcb_station" } },
+          { "id": "display_assemblies", "type": "product", "name": "Display Assemblies", "emoji": "📱", "properties": { "unit": "units", "quantity": 0, "location": "display_station" } },
+          { "id": "partial_phones", "type": "product", "name": "Partially Assembled Phones", "emoji": "📱", "properties": { "unit": "units", "quantity": 0, "location": "final_assembly" } },
+          { "id": "tested_phones", "type": "product", "name": "Quality Tested Phones", "emoji": "✅", "properties": { "unit": "units", "quantity": 0, "location": "quality_control" } },
+          { "id": "finished_phones", "type": "product", "name": "Packaged Smartphones", "emoji": "📦", "properties": { "unit": "units", "quantity": 0, "location": "packaging", "revenue_per_unit": 299.99 } }
+        ],
+        "tasks": [
+          {
+            "id": "pcb_setup",
+            "emoji": "⚙️",
+            "actor_id": "technician_a",
+            "start": "08:00",
+            "duration": 15,
+            "location": "pcb_station",
+            "depends_on": [],
+            "interactions": [
+              {
+                "object_id": "smt_machine",
+                "property_changes": {
+                  "state": { "from": "available", "to": "calibrating" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "pcb_assembly_batch_1",
+            "emoji": "🔌",
+            "actor_id": "technician_a",
+            "start": "08:15",
+            "duration": 45,
+            "location": "pcb_station", 
+            "depends_on": ["pcb_setup"],
+            "interactions": [
+              {
+                "object_id": "pcb_blanks",
+                "property_changes": {
+                  "quantity": { "delta": -6 }
+                }
+              },
+              {
+                "object_id": "processors",
+                "property_changes": {
+                  "quantity": { "delta": -6 }
+                }
+              },
+              {
+                "object_id": "memory_chips",
+                "property_changes": {
+                  "quantity": { "delta": -12 }
+                }
+              },
+              {
+                "object_id": "assembled_pcbs",
+                "property_changes": {
+                  "quantity": { "delta": 6 }
+                }
+              },
+              {
+                "object_id": "smt_machine",
+                "property_changes": {
+                  "state": { "from": "calibrating", "to": "running" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "reflow_soldering_batch_1",
+            "emoji": "🔥",
+            "actor_id": "technician_a", 
+            "start": "09:00",
+            "duration": 20,
+            "location": "pcb_station",
+            "depends_on": ["pcb_assembly_batch_1"],
+            "interactions": [
+              {
+                "object_id": "reflow_oven",
+                "property_changes": {
+                  "state": { "from": "available", "to": "heating" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "display_prep",
+            "emoji": "📺",
+            "actor_id": "technician_b",
+            "start": "08:30",
+            "duration": 30,
+            "location": "display_station",
+            "depends_on": [],
+            "interactions": [
+              {
+                "object_id": "display_bonding_machine",
+                "property_changes": {
+                  "state": { "from": "available", "to": "warming_up" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "display_assembly_batch_1",
+            "emoji": "📱",
+            "actor_id": "technician_b",
+            "start": "09:00",
+            "duration": 40,
+            "location": "display_station",
+            "depends_on": ["display_prep"],
+            "interactions": [
+              {
+                "object_id": "displays",
+                "property_changes": {
+                  "quantity": { "delta": -6 }
+                }
+              },
+              {
+                "object_id": "display_assemblies",
+                "property_changes": {
+                  "quantity": { "delta": 6 }
+                }
+              },
+              {
+                "object_id": "display_bonding_machine",
+                "property_changes": {
+                  "state": { "from": "warming_up", "to": "active" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "final_assembly_setup",
+            "emoji": "🔧",
+            "actor_id": "assembler_1",
+            "start": "09:20",
+            "duration": 10,
+            "location": "final_assembly",
+            "depends_on": [],
+            "interactions": [
+              {
+                "object_id": "assembly_conveyor",
+                "property_changes": {
+                  "state": { "from": "running", "to": "running" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "phone_assembly_batch_1",
+            "emoji": "🔨",
+            "actor_id": "assembler_1",
+            "start": "09:30",
+            "duration": 60,
+            "location": "final_assembly",
+            "depends_on": ["final_assembly_setup", "reflow_soldering_batch_1", "display_assembly_batch_1"],
+            "interactions": [
+              {
+                "object_id": "assembled_pcbs",
+                "property_changes": {
+                  "quantity": { "delta": -6 }
+                }
+              },
+              {
+                "object_id": "display_assemblies",
+                "property_changes": {
+                  "quantity": { "delta": -6 }
+                }
+              },
+              {
+                "object_id": "batteries",
+                "property_changes": {
+                  "quantity": { "delta": -6 }
+                }
+              },
+              {
+                "object_id": "housings",
+                "property_changes": {
+                  "quantity": { "delta": -6 }
+                }
+              },
+              {
+                "object_id": "partial_phones",
+                "property_changes": {
+                  "quantity": { "delta": 6 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "quality_testing_batch_1",
+            "emoji": "✅",
+            "actor_id": "qa_engineer",
+            "start": "10:30",
+            "duration": 45,
+            "location": "quality_control",
+            "depends_on": ["phone_assembly_batch_1"],
+            "interactions": [
+              {
+                "object_id": "partial_phones",
+                "property_changes": {
+                  "quantity": { "delta": -6 }
+                }
+              },
+              {
+                "object_id": "tested_phones",
+                "property_changes": {
+                  "quantity": { "delta": 5 }
+                }
+              },
+              {
+                "object_id": "test_station",
+                "property_changes": {
+                  "state": { "from": "available", "to": "testing" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "packaging_batch_1",
+            "emoji": "📦",
+            "actor_id": "packager",
+            "start": "11:15",
+            "duration": 30,
+            "location": "packaging",
+            "depends_on": ["quality_testing_batch_1"],
+            "interactions": [
+              {
+                "object_id": "tested_phones",
+                "property_changes": {
+                  "quantity": { "delta": -5 }
+                }
+              },
+              {
+                "object_id": "packaging_materials",
+                "property_changes": {
+                  "quantity": { "delta": -5 }
+                }
+              },
+              {
+                "object_id": "finished_phones",
+                "property_changes": {
+                  "quantity": { "delta": 5 }
+                }
+              },
+              {
+                "object_id": "packaging_machine",
+                "property_changes": {
+                  "state": { "from": "available", "to": "active" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "pcb_assembly_batch_2",
+            "emoji": "🔌",
+            "actor_id": "technician_a",
+            "start": "10:30",
+            "duration": 45,
+            "location": "pcb_station",
+            "depends_on": ["reflow_soldering_batch_1"],
+            "interactions": [
+              {
+                "object_id": "pcb_blanks",
+                "property_changes": {
+                  "quantity": { "delta": -8 }
+                }
+              },
+              {
+                "object_id": "processors",
+                "property_changes": {
+                  "quantity": { "delta": -8 }
+                }
+              },
+              {
+                "object_id": "memory_chips",
+                "property_changes": {
+                  "quantity": { "delta": -16 }
+                }
+              },
+              {
+                "object_id": "assembled_pcbs",
+                "property_changes": {
+                  "quantity": { "delta": 8 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "display_assembly_batch_2",
+            "emoji": "📱",
+            "actor_id": "technician_b",
+            "start": "10:45",
+            "duration": 50,
+            "location": "display_station",
+            "depends_on": ["display_assembly_batch_1"],
+            "interactions": [
+              {
+                "object_id": "displays",
+                "property_changes": {
+                  "quantity": { "delta": -8 }
+                }
+              },
+              {
+                "object_id": "display_assemblies",
+                "property_changes": {
+                  "quantity": { "delta": 8 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "phone_assembly_batch_2",
+            "emoji": "🔨",
+            "actor_id": "assembler_2",
+            "start": "12:00",
+            "duration": 75,
+            "location": "final_assembly",
+            "depends_on": ["pcb_assembly_batch_2", "display_assembly_batch_2"],
+            "interactions": [
+              {
+                "object_id": "assembled_pcbs",
+                "property_changes": {
+                  "quantity": { "delta": -8 }
+                }
+              },
+              {
+                "object_id": "display_assemblies",
+                "property_changes": {
+                  "quantity": { "delta": -8 }
+                }
+              },
+              {
+                "object_id": "batteries",
+                "property_changes": {
+                  "quantity": { "delta": -8 }
+                }
+              },
+              {
+                "object_id": "housings",
+                "property_changes": {
+                  "quantity": { "delta": -8 }
+                }
+              },
+              {
+                "object_id": "partial_phones",
+                "property_changes": {
+                  "quantity": { "delta": 8 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "quality_testing_batch_2",
+            "emoji": "✅",
+            "actor_id": "qa_engineer",
+            "start": "13:15",
+            "duration": 60,
+            "location": "quality_control",
+            "depends_on": ["phone_assembly_batch_2"],
+            "interactions": [
+              {
+                "object_id": "partial_phones",
+                "property_changes": {
+                  "quantity": { "delta": -8 }
+                }
+              },
+              {
+                "object_id": "tested_phones",
+                "property_changes": {
+                  "quantity": { "delta": 7 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "packaging_batch_2",
+            "emoji": "📦",
+            "actor_id": "packager",
+            "start": "14:15",
+            "duration": 40,
+            "location": "packaging",
+            "depends_on": ["quality_testing_batch_2"],
+            "interactions": [
+              {
+                "object_id": "tested_phones",
+                "property_changes": {
+                  "quantity": { "delta": -7 }
+                }
+              },
+              {
+                "object_id": "packaging_materials",
+                "property_changes": {
+                  "quantity": { "delta": -7 }
+                }
+              },
+              {
+                "object_id": "finished_phones",
+                "property_changes": {
+                  "quantity": { "delta": 7 }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "pharmaceutical_production",
+      "name": "Pharmaceutical Drug Manufacturing",
+      "description": "Highly regulated pharmaceutical production with strict quality controls, batch tracking, environmental monitoring, and multi-stage chemical synthesis",
+      "complexity": "Expert",
+      "domain": "Pharmaceutical Manufacturing", 
+      "simulation": {
+        "meta": {
+          "id": "sim_pharmaceutical_production_v1",
+          "article_title": "Pharmaceutical Drug Manufacturing Process",
+          "domain": "Pharmaceutical Production"
+        },
+        "config": {
+          "time_unit": "minute",
+          "start_time": "07:00",
+          "end_time": "19:00"
+        },
+        "layout": {
+          "meta": {
+            "units": "meters",
+            "pixels_per_unit": 12
+          },
+          "locations": [
+            {
+              "id": "raw_material_warehouse",
+              "name": "Raw Material Warehouse",
+              "shape": { "type": "rect", "x": 50, "y": 50, "width": 200, "height": 120 }
+            },
+            {
+              "id": "weighing_room",
+              "name": "Weighing & Dispensing Room",
+              "shape": { "type": "rect", "x": 300, "y": 50, "width": 150, "height": 120 }
+            },
+            {
+              "id": "synthesis_lab",
+              "name": "Chemical Synthesis Lab",
+              "shape": { "type": "rect", "x": 500, "y": 50, "width": 200, "height": 120 }
+            },
+            {
+              "id": "purification_unit",
+              "name": "Purification Unit",
+              "shape": { "type": "rect", "x": 750, "y": 50, "width": 150, "height": 120 }
+            },
+            {
+              "id": "formulation_suite",
+              "name": "Formulation Suite",
+              "shape": { "type": "rect", "x": 300, "y": 220, "width": 200, "height": 120 }
+            },
+            {
+              "id": "tablet_press_room",
+              "name": "Tablet Press Room",
+              "shape": { "type": "rect", "x": 550, "y": 220, "width": 150, "height": 120 }
+            },
+            {
+              "id": "coating_station",
+              "name": "Coating Station",
+              "shape": { "type": "rect", "x": 750, "y": 220, "width": 150, "height": 120 }
+            },
+            {
+              "id": "qa_lab",
+              "name": "Quality Assurance Lab",
+              "shape": { "type": "rect", "x": 200, "y": 390, "width": 300, "height": 120 }
+            },
+            {
+              "id": "packaging_cleanroom",
+              "name": "Packaging Clean Room",
+              "shape": { "type": "rect", "x": 550, "y": 390, "width": 200, "height": 120 }
+            },
+            {
+              "id": "finished_goods",
+              "name": "Finished Goods Storage",
+              "shape": { "type": "rect", "x": 800, "y": 390, "width": 150, "height": 120 }
+            }
+          ]
+        },
+        "objects": [
+          { "id": "production_manager", "type": "actor", "name": "Production Manager", "properties": { "certification": "Pharmaceutical Production", "cost_per_hour": 75, "location": "synthesis_lab" } },
+          { "id": "chemist_senior", "type": "actor", "name": "Senior Chemist", "properties": { "certification": "PhD Chemistry", "cost_per_hour": 65, "location": "synthesis_lab" } },
+          { "id": "chemist_junior", "type": "actor", "name": "Junior Chemist", "properties": { "degree": "BS Chemistry", "cost_per_hour": 45, "location": "synthesis_lab" } },
+          { "id": "qa_analyst_1", "type": "actor", "name": "QA Analyst 1", "properties": { "certification": "Analytical Chemistry", "cost_per_hour": 55, "location": "qa_lab" } },
+          { "id": "qa_analyst_2", "type": "actor", "name": "QA Analyst 2", "properties": { "certification": "Analytical Chemistry", "cost_per_hour": 55, "location": "qa_lab" } },
+          { "id": "formulation_tech", "type": "actor", "name": "Formulation Technician", "properties": { "specialization": "Drug Formulation", "cost_per_hour": 40, "location": "formulation_suite" } },
+          { "id": "press_operator", "type": "actor", "name": "Tablet Press Operator", "properties": { "certification": "Tablet Manufacturing", "cost_per_hour": 35, "location": "tablet_press_room" } },
+          { "id": "coating_tech", "type": "actor", "name": "Coating Technician", "properties": { "specialization": "Tablet Coating", "cost_per_hour": 38, "location": "coating_station" } },
+          { "id": "packaging_operator", "type": "actor", "name": "Packaging Operator", "properties": { "certification": "Cleanroom Operations", "cost_per_hour": 30, "location": "packaging_cleanroom" } },
+          
+          { "id": "analytical_balance", "type": "equipment", "name": "Analytical Balance", "emoji": "⚖️", "properties": { "state": "calibrated", "precision": "0.1mg", "capacity": "220g", "location": "weighing_room" } },
+          { "id": "reactor_vessel", "type": "equipment", "name": "Glass Reactor Vessel", "emoji": "🧪", "properties": { "state": "clean", "capacity": "10L", "temperature_range": "-80_to_200C", "location": "synthesis_lab" } },
+          { "id": "rotary_evaporator", "type": "equipment", "name": "Rotary Evaporator", "emoji": "🌀", "properties": { "state": "available", "capacity": "5L", "vacuum_level": "10mbar", "location": "synthesis_lab" } },
+          { "id": "hplc_system", "type": "equipment", "name": "HPLC Analysis System", "emoji": "📊", "properties": { "state": "ready", "columns": 3, "auto_sampler": true, "location": "qa_lab" } },
+          { "id": "chromatography_column", "type": "equipment", "name": "Purification Column", "emoji": "🔬", "properties": { "state": "packed", "resin_type": "C18", "capacity": "2L", "location": "purification_unit" } },
+          { "id": "fluid_bed_dryer", "type": "equipment", "name": "Fluid Bed Dryer", "emoji": "💨", "properties": { "state": "available", "capacity": "50kg", "temperature_max": "80C", "location": "formulation_suite" } },
+          { "id": "high_shear_mixer", "type": "equipment", "name": "High Shear Mixer", "emoji": "🌪️", "properties": { "state": "clean", "capacity": "100L", "rpm_max": 3000, "location": "formulation_suite" } },
+          { "id": "tablet_press", "type": "equipment", "name": "Rotary Tablet Press", "emoji": "💊", "properties": { "state": "setup", "stations": 16, "output_per_hour": 144000, "location": "tablet_press_room" } },
+          { "id": "coating_pan", "type": "equipment", "name": "Coating Pan", "emoji": "🎨", "properties": { "state": "clean", "capacity": "50kg", "spray_guns": 2, "location": "coating_station" } },
+          { "id": "blister_machine", "type": "equipment", "name": "Blister Packaging Machine", "emoji": "📦", "properties": { "state": "available", "speed": "300_blisters_per_min", "location": "packaging_cleanroom" } },
+          
+          { "id": "api_precursor_a", "type": "resource", "name": "API Precursor A", "emoji": "🧬", "properties": { "unit": "kg", "quantity": 50, "purity": "99.5%", "cost_per_unit": 125.00, "location": "raw_material_warehouse" } },
+          { "id": "api_precursor_b", "type": "resource", "name": "API Precursor B", "emoji": "⚗️", "properties": { "unit": "kg", "quantity": 30, "purity": "98.8%", "cost_per_unit": 200.00, "location": "raw_material_warehouse" } },
+          { "id": "solvent_methanol", "type": "resource", "name": "Methanol (HPLC Grade)", "emoji": "🧴", "properties": { "unit": "L", "quantity": 100, "grade": "HPLC", "cost_per_unit": 45.00, "location": "raw_material_warehouse" } },
+          { "id": "solvent_acetone", "type": "resource", "name": "Acetone (ACS Grade)", "emoji": "🧴", "properties": { "unit": "L", "quantity": 80, "grade": "ACS", "cost_per_unit": 35.00, "location": "raw_material_warehouse" } },
+          { "id": "microcrystalline_cellulose", "type": "resource", "name": "Microcrystalline Cellulose", "emoji": "🌿", "properties": { "unit": "kg", "quantity": 200, "grade": "Pharmaceutical", "cost_per_unit": 15.00, "location": "raw_material_warehouse" } },
+          { "id": "magnesium_stearate", "type": "resource", "name": "Magnesium Stearate", "emoji": "🧂", "properties": { "unit": "kg", "quantity": 25, "grade": "USP", "cost_per_unit": 85.00, "location": "raw_material_warehouse" } },
+          { "id": "coating_solution", "type": "resource", "name": "Enteric Coating Solution", "emoji": "🎨", "properties": { "unit": "L", "quantity": 50, "viscosity": "50_cps", "cost_per_unit": 120.00, "location": "coating_station" } },
+          { "id": "blister_foil", "type": "resource", "name": "Aluminum Blister Foil", "emoji": "📄", "properties": { "unit": "m2", "quantity": 1000, "thickness": "25_micron", "cost_per_unit": 2.50, "location": "packaging_cleanroom" } },
+          { "id": "pvc_sheets", "type": "resource", "name": "PVC Blister Sheets", "emoji": "📄", "properties": { "unit": "sheets", "quantity": 5000, "thickness": "250_micron", "cost_per_unit": 0.15, "location": "packaging_cleanroom" } },
+          
+          { "id": "crude_api", "type": "product", "name": "Crude API", "emoji": "🧪", "properties": { "unit": "kg", "quantity": 0, "purity": "85%", "location": "synthesis_lab" } },
+          { "id": "purified_api", "type": "product", "name": "Purified API", "emoji": "💎", "properties": { "unit": "kg", "quantity": 0, "purity": "99.8%", "location": "purification_unit" } },
+          { "id": "tested_api", "type": "product", "name": "QC Approved API", "emoji": "✅", "properties": { "unit": "kg", "quantity": 0, "purity": "99.8%", "batch_tested": true, "location": "qa_lab" } },
+          { "id": "tablet_blend", "type": "product", "name": "Tablet Blend", "emoji": "🥄", "properties": { "unit": "kg", "quantity": 0, "uniformity": "validated", "location": "formulation_suite" } },
+          { "id": "compressed_tablets", "type": "product", "name": "Compressed Tablets", "emoji": "💊", "properties": { "unit": "tablets", "quantity": 0, "hardness": "8_kp", "location": "tablet_press_room" } },
+          { "id": "coated_tablets", "type": "product", "name": "Coated Tablets", "emoji": "💊", "properties": { "unit": "tablets", "quantity": 0, "coating_thickness": "50_micron", "location": "coating_station" } },
+          { "id": "finished_drug_product", "type": "product", "name": "Finished Drug Product", "emoji": "💊", "properties": { "unit": "packages", "quantity": 0, "strength": "50mg", "location": "finished_goods", "revenue_per_unit": 45.99 } }
+        ],
+        "tasks": [
+          {
+            "id": "batch_documentation_setup",
+            "emoji": "📝",
+            "actor_id": "production_manager",
+            "start": "07:00",
+            "duration": 30,
+            "location": "synthesis_lab",
+            "depends_on": []
+          },
+          {
+            "id": "raw_material_weighing",
+            "emoji": "⚖️",
+            "actor_id": "chemist_junior",
+            "start": "07:30",
+            "duration": 45,
+            "location": "weighing_room",
+            "depends_on": ["batch_documentation_setup"],
+            "interactions": [
+              {
+                "object_id": "analytical_balance",
+                "property_changes": {
+                  "state": { "from": "calibrated", "to": "in_use" }
+                }
+              },
+              {
+                "object_id": "api_precursor_a",
+                "property_changes": {
+                  "quantity": { "delta": -5.2 }
+                }
+              },
+              {
+                "object_id": "api_precursor_b",
+                "property_changes": {
+                  "quantity": { "delta": -3.8 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "reaction_setup",
+            "emoji": "🧪",
+            "actor_id": "chemist_senior",
+            "start": "08:15",
+            "duration": 30,
+            "location": "synthesis_lab",
+            "depends_on": ["raw_material_weighing"],
+            "interactions": [
+              {
+                "object_id": "reactor_vessel",
+                "property_changes": {
+                  "state": { "from": "clean", "to": "charged" }
+                }
+              },
+              {
+                "object_id": "solvent_methanol",
+                "property_changes": {
+                  "quantity": { "delta": -8.5 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "chemical_synthesis",
+            "emoji": "⚗️",
+            "actor_id": "chemist_senior",
+            "start": "08:45",
+            "duration": 180,
+            "location": "synthesis_lab",
+            "depends_on": ["reaction_setup"],
+            "interactions": [
+              {
+                "object_id": "crude_api",
+                "property_changes": {
+                  "quantity": { "delta": 4.2 }
+                }
+              },
+              {
+                "object_id": "reactor_vessel",
+                "property_changes": {
+                  "state": { "from": "charged", "to": "reaction_complete" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "workup_and_isolation",
+            "emoji": "🌀",
+            "actor_id": "chemist_senior",
+            "start": "11:45",
+            "duration": 90,
+            "location": "synthesis_lab",
+            "depends_on": ["chemical_synthesis"],
+            "interactions": [
+              {
+                "object_id": "rotary_evaporator",
+                "property_changes": {
+                  "state": { "from": "available", "to": "concentrating" }
+                }
+              },
+              {
+                "object_id": "solvent_acetone",
+                "property_changes": {
+                  "quantity": { "delta": -12.0 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "crude_api_purification",
+            "emoji": "🔬",
+            "actor_id": "chemist_junior",
+            "start": "13:15",
+            "duration": 120,
+            "location": "purification_unit",
+            "depends_on": ["workup_and_isolation"],
+            "interactions": [
+              {
+                "object_id": "crude_api",
+                "property_changes": {
+                  "quantity": { "delta": -4.2 }
+                }
+              },
+              {
+                "object_id": "purified_api",
+                "property_changes": {
+                  "quantity": { "delta": 3.8 }
+                }
+              },
+              {
+                "object_id": "chromatography_column",
+                "property_changes": {
+                  "state": { "from": "packed", "to": "eluting" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "api_identity_testing",
+            "emoji": "📊",
+            "actor_id": "qa_analyst_1",
+            "start": "15:15",
+            "duration": 60,
+            "location": "qa_lab",
+            "depends_on": ["crude_api_purification"],
+            "interactions": [
+              {
+                "object_id": "hplc_system",
+                "property_changes": {
+                  "state": { "from": "ready", "to": "analyzing" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "api_purity_assay",
+            "emoji": "✨",
+            "actor_id": "qa_analyst_2",
+            "start": "15:30",
+            "duration": 45,
+            "location": "qa_lab", 
+            "depends_on": ["api_identity_testing"],
+            "interactions": [
+              {
+                "object_id": "purified_api",
+                "property_changes": {
+                  "quantity": { "delta": -3.8 }
+                }
+              },
+              {
+                "object_id": "tested_api",
+                "property_changes": {
+                  "quantity": { "delta": 3.8 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "excipient_preparation",
+            "emoji": "🌿",
+            "actor_id": "formulation_tech",
+            "start": "09:00",
+            "duration": 60,
+            "location": "formulation_suite",
+            "depends_on": [],
+            "interactions": [
+              {
+                "object_id": "microcrystalline_cellulose",
+                "property_changes": {
+                  "quantity": { "delta": -45.0 }
+                }
+              },
+              {
+                "object_id": "magnesium_stearate",
+                "property_changes": {
+                  "quantity": { "delta": -1.2 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "tablet_blend_preparation",
+            "emoji": "🥄",
+            "actor_id": "formulation_tech",
+            "start": "16:15",
+            "duration": 75,
+            "location": "formulation_suite",
+            "depends_on": ["api_purity_assay", "excipient_preparation"],
+            "interactions": [
+              {
+                "object_id": "tested_api",
+                "property_changes": {
+                  "quantity": { "delta": -3.8 }
+                }
+              },
+              {
+                "object_id": "tablet_blend",
+                "property_changes": {
+                  "quantity": { "delta": 50.0 }
+                }
+              },
+              {
+                "object_id": "high_shear_mixer",
+                "property_changes": {
+                  "state": { "from": "clean", "to": "blending" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "tablet_compression",
+            "emoji": "📊",
+            "actor_id": "press_operator",
+            "start": "17:30",
+            "duration": 90,
+            "location": "tablet_press_room",
+            "depends_on": ["tablet_blend_preparation"],
+            "interactions": [
+              {
+                "object_id": "tablet_blend",
+                "property_changes": {
+                  "quantity": { "delta": -50.0 }
+                }
+              },
+              {
+                "object_id": "compressed_tablets",
+                "property_changes": {
+                  "quantity": { "delta": 7600 }
+                }
+              },
+              {
+                "object_id": "tablet_press",
+                "property_changes": {
+                  "state": { "from": "setup", "to": "running" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "tablet_coating",
+            "emoji": "🎨",
+            "actor_id": "coating_tech",
+            "start": "19:00",
+            "duration": 120,
+            "location": "coating_station",
+            "depends_on": ["tablet_compression"],
+            "interactions": [
+              {
+                "object_id": "compressed_tablets",
+                "property_changes": {
+                  "quantity": { "delta": -7600 }
+                }
+              },
+              {
+                "object_id": "coating_solution",
+                "property_changes": {
+                  "quantity": { "delta": -12.0 }
+                }
+              },
+              {
+                "object_id": "coated_tablets",
+                "property_changes": {
+                  "quantity": { "delta": 7600 }
+                }
+              },
+              {
+                "object_id": "coating_pan",
+                "property_changes": {
+                  "state": { "from": "clean", "to": "coating" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "final_product_packaging",
+            "emoji": "📦",
+            "actor_id": "packaging_operator",
+            "start": "21:00",
+            "duration": 60,
+            "location": "packaging_cleanroom", 
+            "depends_on": ["tablet_coating"],
+            "interactions": [
+              {
+                "object_id": "coated_tablets",
+                "property_changes": {
+                  "quantity": { "delta": -7600 }
+                }
+              },
+              {
+                "object_id": "blister_foil",
+                "property_changes": {
+                  "quantity": { "delta": -38.0 }
+                }
+              },
+              {
+                "object_id": "pvc_sheets",
+                "property_changes": {
+                  "quantity": { "delta": -380 }
+                }
+              },
+              {
+                "object_id": "finished_drug_product",
+                "property_changes": {
+                  "quantity": { "delta": 380 }
+                }
+              },
+              {
+                "object_id": "blister_machine",
+                "property_changes": {
+                  "state": { "from": "available", "to": "packaging" }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "restaurant_kitchen",
+      "name": "Fine Dining Restaurant Kitchen",
+      "description": "Complex commercial kitchen operations with multiple cooking stations, inventory management, food safety protocols, and synchronized meal service",
+      "complexity": "Advanced",
+      "domain": "Food Service",
+      "simulation": {
+        "meta": {
+          "id": "sim_restaurant_kitchen_v1",
+          "article_title": "Fine Dining Restaurant Kitchen Operations",
+          "domain": "Food Service"
+        },
+        "config": {
+          "time_unit": "minute",
+          "start_time": "16:00",
+          "end_time": "23:00"
+        },
+        "layout": {
+          "meta": {
+            "units": "meters",
+            "pixels_per_unit": 18
+          },
+          "locations": [
+            {
+              "id": "walk_in_cooler",
+              "name": "Walk-in Cooler",
+              "shape": { "type": "rect", "x": 50, "y": 50, "width": 120, "height": 80 }
+            },
+            {
+              "id": "prep_station",
+              "name": "Prep Station",
+              "shape": { "type": "rect", "x": 200, "y": 50, "width": 150, "height": 120 }
+            },
+            {
+              "id": "garde_manger",
+              "name": "Garde Manger (Cold Kitchen)",
+              "shape": { "type": "rect", "x": 380, "y": 50, "width": 120, "height": 80 }
+            },
+            {
+              "id": "grill_station",
+              "name": "Grill Station",
+              "shape": { "type": "rect", "x": 200, "y": 200, "width": 100, "height": 100 }
+            },
+            {
+              "id": "saute_station",
+              "name": "Sauté Station",
+              "shape": { "type": "rect", "x": 320, "y": 200, "width": 100, "height": 100 }
+            },
+            {
+              "id": "pastry_station",
+              "name": "Pastry Station",
+              "shape": { "type": "rect", "x": 440, "y": 200, "width": 120, "height": 100 }
+            },
+            {
+              "id": "expedite_pass",
+              "name": "Expediting Pass",
+              "shape": { "type": "rect", "x": 280, "y": 330, "width": 200, "height": 60 }
+            },
+            {
+              "id": "dish_pit",
+              "name": "Dish Pit",
+              "shape": { "type": "rect", "x": 50, "y": 200, "width": 120, "height": 80 }
+            }
+          ]
+        },
+        "objects": [
+          { "id": "executive_chef", "type": "actor", "name": "Executive Chef", "properties": { "role": "Kitchen Manager", "cost_per_hour": 45, "location": "expedite_pass" } },
+          { "id": "sous_chef", "type": "actor", "name": "Sous Chef", "properties": { "role": "Line Supervisor", "cost_per_hour": 32, "location": "saute_station" } },
+          { "id": "grill_cook", "type": "actor", "name": "Grill Cook", "properties": { "specialization": "Grill", "cost_per_hour": 26, "location": "grill_station" } },
+          { "id": "saute_cook", "type": "actor", "name": "Sauté Cook", "properties": { "specialization": "Sauté", "cost_per_hour": 26, "location": "saute_station" } },
+          { "id": "garde_manger_cook", "type": "actor", "name": "Garde Manger Cook", "properties": { "specialization": "Cold Kitchen", "cost_per_hour": 24, "location": "garde_manger" } },
+          { "id": "pastry_chef", "type": "actor", "name": "Pastry Chef", "properties": { "specialization": "Desserts", "cost_per_hour": 28, "location": "pastry_station" } },
+          { "id": "prep_cook_1", "type": "actor", "name": "Prep Cook 1", "properties": { "role": "Prep", "cost_per_hour": 18, "location": "prep_station" } },
+          { "id": "prep_cook_2", "type": "actor", "name": "Prep Cook 2", "properties": { "role": "Prep", "cost_per_hour": 18, "location": "prep_station" } },
+          { "id": "dishwasher", "type": "actor", "name": "Dishwasher", "properties": { "role": "Sanitation", "cost_per_hour": 15, "location": "dish_pit" } },
+          
+          { "id": "commercial_grill", "type": "equipment", "name": "Commercial Grill", "emoji": "🔥", "properties": { "state": "cold", "temperature": 0, "capacity": 8, "location": "grill_station" } },
+          { "id": "gas_range", "type": "equipment", "name": "8-Burner Gas Range", "emoji": "🔥", "properties": { "state": "available", "burners": 8, "capacity": 8, "location": "saute_station" } },
+          { "id": "convection_oven", "type": "equipment", "name": "Convection Oven", "emoji": "🔥", "properties": { "state": "available", "capacity": 4, "temperature_max": 500, "location": "saute_station" } },
+          { "id": "prep_tables", "type": "equipment", "name": "Stainless Steel Prep Tables", "emoji": "🔪", "properties": { "state": "clean", "capacity": 4, "location": "prep_station" } },
+          { "id": "walk_in_refrigeration", "type": "equipment", "name": "Walk-in Refrigeration", "emoji": "❄️", "properties": { "state": "running", "temperature": 2, "capacity": 1000, "location": "walk_in_cooler" } },
+          { "id": "salad_station_cooler", "type": "equipment", "name": "Salad Station Cooler", "emoji": "🥬", "properties": { "state": "running", "temperature": 4, "capacity": 50, "location": "garde_manger" } },
+          { "id": "stand_mixer", "type": "equipment", "name": "20Qt Stand Mixer", "emoji": "🌀", "properties": { "state": "clean", "capacity": 20, "location": "pastry_station" } },
+          { "id": "proof_box", "type": "equipment", "name": "Proofing Box", "emoji": "📦", "properties": { "state": "available", "temperature": 27, "humidity": 85, "location": "pastry_station" } },
+          { "id": "plate_warmer", "type": "equipment", "name": "Plate Warmer", "emoji": "🍽️", "properties": { "state": "heating", "temperature": 60, "capacity": 100, "location": "expedite_pass" } },
+          { "id": "dish_machine", "type": "equipment", "name": "Commercial Dish Machine", "emoji": "🧽", "properties": { "state": "running", "cycle_time": 2, "capacity": 20, "location": "dish_pit" } },
+          
+          { "id": "beef_tenderloin", "type": "resource", "name": "Beef Tenderloin", "emoji": "🥩", "properties": { "unit": "kg", "quantity": 8.5, "temperature": 2, "cost_per_unit": 45.00, "location": "walk_in_cooler" } },
+          { "id": "salmon_filets", "type": "resource", "name": "Atlantic Salmon Filets", "emoji": "🐟", "properties": { "unit": "pieces", "quantity": 24, "temperature": 1, "cost_per_unit": 12.50, "location": "walk_in_cooler" } },
+          { "id": "duck_breast", "type": "resource", "name": "Duck Breast", "emoji": "🦆", "properties": { "unit": "pieces", "quantity": 16, "temperature": 2, "cost_per_unit": 18.00, "location": "walk_in_cooler" } },
+          { "id": "seasonal_vegetables", "type": "resource", "name": "Seasonal Vegetables", "emoji": "🥕", "properties": { "unit": "kg", "quantity": 15, "temperature": 4, "cost_per_unit": 8.50, "location": "walk_in_cooler" } },
+          { "id": "artisanal_greens", "type": "resource", "name": "Artisanal Mixed Greens", "emoji": "🥬", "properties": { "unit": "kg", "quantity": 5, "temperature": 2, "cost_per_unit": 22.00, "location": "walk_in_cooler" } },
+          { "id": "truffle_oil", "type": "resource", "name": "Black Truffle Oil", "emoji": "🫒", "properties": { "unit": "bottles", "quantity": 3, "cost_per_unit": 85.00, "location": "garde_manger" } },
+          { "id": "premium_butter", "type": "resource", "name": "European Butter", "emoji": "🧈", "properties": { "unit": "kg", "quantity": 2.5, "temperature": 4, "cost_per_unit": 12.00, "location": "walk_in_cooler" } },
+          { "id": "flour_tipo_00", "type": "resource", "name": "Tipo 00 Flour", "emoji": "🌾", "properties": { "unit": "kg", "quantity": 10, "cost_per_unit": 6.50, "location": "pastry_station" } },
+          { "id": "vanilla_beans", "type": "resource", "name": "Madagascar Vanilla Beans", "emoji": "🌿", "properties": { "unit": "beans", "quantity": 12, "cost_per_unit": 8.00, "location": "pastry_station" } },
+          { "id": "dark_chocolate", "type": "resource", "name": "70% Dark Chocolate", "emoji": "🍫", "properties": { "unit": "kg", "quantity": 2, "cost_per_unit": 35.00, "location": "pastry_station" } },
+          
+          { "id": "prepped_proteins", "type": "product", "name": "Prepped Proteins", "emoji": "🥩", "properties": { "unit": "portions", "quantity": 0, "temperature": 4, "location": "prep_station" } },
+          { "id": "brunoise_vegetables", "type": "product", "name": "Brunoise Cut Vegetables", "emoji": "🔪", "properties": { "unit": "containers", "quantity": 0, "location": "prep_station" } },
+          { "id": "composed_salads", "type": "product", "name": "Composed Salads", "emoji": "🥗", "properties": { "unit": "plates", "quantity": 0, "temperature": 6, "location": "garde_manger" } },
+          { "id": "cooked_proteins", "type": "product", "name": "Cooked Proteins", "emoji": "🍖", "properties": { "unit": "portions", "quantity": 0, "location": "grill_station" } },
+          { "id": "pan_sauces", "type": "product", "name": "Pan Sauces", "emoji": "🍯", "properties": { "unit": "portions", "quantity": 0, "location": "saute_station" } },
+          { "id": "plated_desserts", "type": "product", "name": "Plated Desserts", "emoji": "🍰", "properties": { "unit": "plates", "quantity": 0, "location": "pastry_station" } },
+          { "id": "finished_entrees", "type": "product", "name": "Finished Entrées", "emoji": "🍽️", "properties": { "unit": "plates", "quantity": 0, "location": "expedite_pass", "revenue_per_unit": 38.00 } },
+          { "id": "finished_appetizers", "type": "product", "name": "Finished Appetizers", "emoji": "🥗", "properties": { "unit": "plates", "quantity": 0, "location": "expedite_pass", "revenue_per_unit": 16.00 } },
+          { "id": "finished_desserts", "type": "product", "name": "Finished Desserts", "emoji": "🧁", "properties": { "unit": "plates", "quantity": 0, "location": "expedite_pass", "revenue_per_unit": 14.00 } }
+        ],
+        "tasks": [
+          {
+            "id": "kitchen_setup",
+            "emoji": "🍴",
+            "actor_id": "executive_chef",
+            "start": "16:00",
+            "duration": 30,
+            "location": "expedite_pass",
+            "depends_on": [],
+            "interactions": [
+              {
+                "object_id": "plate_warmer",
+                "property_changes": {
+                  "state": { "from": "heating", "to": "ready" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "grill_preheat",
+            "emoji": "🔥",
+            "actor_id": "grill_cook",
+            "start": "16:15",
+            "duration": 20,
+            "location": "grill_station",
+            "depends_on": [],
+            "interactions": [
+              {
+                "object_id": "commercial_grill",
+                "property_changes": {
+                  "state": { "from": "cold", "to": "preheating" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "range_startup",
+            "emoji": "🍳",
+            "actor_id": "saute_cook",
+            "start": "16:15",
+            "duration": 15,
+            "location": "saute_station",
+            "depends_on": [],
+            "interactions": [
+              {
+                "object_id": "gas_range",
+                "property_changes": {
+                  "state": { "from": "available", "to": "ready" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "protein_prep",
+            "emoji": "🥩",
+            "actor_id": "prep_cook_1",
+            "start": "16:30",
+            "duration": 60,
+            "location": "prep_station",
+            "depends_on": ["kitchen_setup"],
+            "interactions": [
+              {
+                "object_id": "beef_tenderloin",
+                "property_changes": {
+                  "quantity": { "delta": -2.5 }
+                }
+              },
+              {
+                "object_id": "salmon_filets",
+                "property_changes": {
+                  "quantity": { "delta": -12 }
+                }
+              },
+              {
+                "object_id": "duck_breast",
+                "property_changes": {
+                  "quantity": { "delta": -8 }
+                }
+              },
+              {
+                "object_id": "prepped_proteins",
+                "property_changes": {
+                  "quantity": { "delta": 32 }
+                }
+              },
+              {
+                "object_id": "prep_tables",
+                "property_changes": {
+                  "state": { "from": "clean", "to": "in_use" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "vegetable_prep",
+            "emoji": "🥕",
+            "actor_id": "prep_cook_2",
+            "start": "16:45",
+            "duration": 45,
+            "location": "prep_station",
+            "depends_on": ["kitchen_setup"],
+            "interactions": [
+              {
+                "object_id": "seasonal_vegetables",
+                "property_changes": {
+                  "quantity": { "delta": -8.0 }
+                }
+              },
+              {
+                "object_id": "brunoise_vegetables",
+                "property_changes": {
+                  "quantity": { "delta": 12 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "cold_appetizer_prep",
+            "emoji": "🥗",
+            "actor_id": "garde_manger_cook",
+            "start": "17:00",
+            "duration": 40,
+            "location": "garde_manger",
+            "depends_on": [],
+            "interactions": [
+              {
+                "object_id": "artisanal_greens",
+                "property_changes": {
+                  "quantity": { "delta": -1.5 }
+                }
+              },
+              {
+                "object_id": "truffle_oil",
+                "property_changes": {
+                  "quantity": { "delta": -0.2 }
+                }
+              },
+              {
+                "object_id": "composed_salads",
+                "property_changes": {
+                  "quantity": { "delta": 8 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "dessert_mise_en_place",
+            "emoji": "🎂",
+            "actor_id": "pastry_chef",
+            "start": "17:00",
+            "duration": 90,
+            "location": "pastry_station",
+            "depends_on": [],
+            "interactions": [
+              {
+                "object_id": "flour_tipo_00",
+                "property_changes": {
+                  "quantity": { "delta": -0.8 }
+                }
+              },
+              {
+                "object_id": "dark_chocolate",
+                "property_changes": {
+                  "quantity": { "delta": -0.3 }
+                }
+              },
+              {
+                "object_id": "vanilla_beans",
+                "property_changes": {
+                  "quantity": { "delta": -2 }
+                }
+              },
+              {
+                "object_id": "stand_mixer",
+                "property_changes": {
+                  "state": { "from": "clean", "to": "mixing" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "first_dinner_service_appetizers",
+            "emoji": "🍽️",
+            "actor_id": "garde_manger_cook",
+            "start": "18:00",
+            "duration": 45,
+            "location": "garde_manger",
+            "depends_on": ["cold_appetizer_prep"],
+            "interactions": [
+              {
+                "object_id": "composed_salads",
+                "property_changes": {
+                  "quantity": { "delta": -6 }
+                }
+              },
+              {
+                "object_id": "finished_appetizers",
+                "property_changes": {
+                  "quantity": { "delta": 6 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "grill_first_proteins",
+            "emoji": "🍖",
+            "actor_id": "grill_cook",
+            "start": "18:15",
+            "duration": 40,
+            "location": "grill_station",
+            "depends_on": ["protein_prep", "grill_preheat"],
+            "interactions": [
+              {
+                "object_id": "prepped_proteins",
+                "property_changes": {
+                  "quantity": { "delta": -12 }
+                }
+              },
+              {
+                "object_id": "cooked_proteins",
+                "property_changes": {
+                  "quantity": { "delta": 12 }
+                }
+              },
+              {
+                "object_id": "commercial_grill",
+                "property_changes": {
+                  "state": { "from": "preheating", "to": "cooking" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "saute_first_dishes",
+            "emoji": "🍳",
+            "actor_id": "saute_cook",
+            "start": "18:20",
+            "duration": 35,
+            "location": "saute_station",
+            "depends_on": ["vegetable_prep", "range_startup"],
+            "interactions": [
+              {
+                "object_id": "brunoise_vegetables",
+                "property_changes": {
+                  "quantity": { "delta": -4 }
+                }
+              },
+              {
+                "object_id": "premium_butter",
+                "property_changes": {
+                  "quantity": { "delta": -0.3 }
+                }
+              },
+              {
+                "object_id": "pan_sauces",
+                "property_changes": {
+                  "quantity": { "delta": 12 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "expedite_first_course",
+            "emoji": "🍽️",
+            "actor_id": "executive_chef",
+            "start": "18:30",
+            "duration": 25,
+            "location": "expedite_pass",
+            "depends_on": ["first_dinner_service_appetizers", "grill_first_proteins", "saute_first_dishes"],
+            "interactions": [
+              {
+                "object_id": "cooked_proteins",
+                "property_changes": {
+                  "quantity": { "delta": -6 }
+                }
+              },
+              {
+                "object_id": "pan_sauces",
+                "property_changes": {
+                  "quantity": { "delta": -6 }
+                }
+              },
+              {
+                "object_id": "finished_entrees",
+                "property_changes": {
+                  "quantity": { "delta": 6 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "dessert_plating_prep",
+            "emoji": "🍰",
+            "actor_id": "pastry_chef",
+            "start": "18:30",
+            "duration": 60,
+            "location": "pastry_station",
+            "depends_on": ["dessert_mise_en_place"],
+            "interactions": [
+              {
+                "object_id": "plated_desserts",
+                "property_changes": {
+                  "quantity": { "delta": 10 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "second_service_wave",
+            "emoji": "🍖",
+            "actor_id": "grill_cook",
+            "start": "19:30",
+            "duration": 50,
+            "location": "grill_station",
+            "depends_on": ["expedite_first_course"],
+            "interactions": [
+              {
+                "object_id": "prepped_proteins",
+                "property_changes": {
+                  "quantity": { "delta": -15 }
+                }
+              },
+              {
+                "object_id": "cooked_proteins",
+                "property_changes": {
+                  "quantity": { "delta": 15 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "second_saute_service",
+            "emoji": "🍳", 
+            "actor_id": "saute_cook", 
+            "start": "19:35",
+            "duration": 45,
+            "location": "saute_station",
+            "depends_on": ["expedite_first_course"],
+            "interactions": [
+              {
+                "object_id": "brunoise_vegetables",
+                "property_changes": {
+                  "quantity": { "delta": -6 }
+                }
+              },
+              {
+                "object_id": "premium_butter",
+                "property_changes": {
+                  "quantity": { "delta": -0.5 }
+                }
+              },
+              {
+                "object_id": "pan_sauces",
+                "property_changes": {
+                  "quantity": { "delta": 15 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "expedite_main_service",
+            "emoji": "🍽️",
+            "actor_id": "executive_chef",
+            "start": "20:00",
+            "duration": 40,
+            "location": "expedite_pass",
+            "depends_on": ["second_service_wave", "second_saute_service"],
+            "interactions": [
+              {
+                "object_id": "cooked_proteins",
+                "property_changes": {
+                  "quantity": { "delta": -15 }
+                }
+              },
+              {
+                "object_id": "pan_sauces",
+                "property_changes": {
+                  "quantity": { "delta": -15 }
+                }
+              },
+              {
+                "object_id": "finished_entrees",
+                "property_changes": {
+                  "quantity": { "delta": 15 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "dessert_service",
+            "emoji": "🍰",
+            "actor_id": "pastry_chef",
+            "start": "21:00",
+            "duration": 30,
+            "location": "pastry_station",
+            "depends_on": ["dessert_plating_prep"],
+            "interactions": [
+              {
+                "object_id": "plated_desserts",
+                "property_changes": {
+                  "quantity": { "delta": -8 }
+                }
+              },
+              {
+                "object_id": "finished_desserts",
+                "property_changes": {
+                  "quantity": { "delta": 8 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "dish_washing_service",
+            "emoji": "🧽",
+            "actor_id": "dishwasher",
+            "start": "18:00",
+            "duration": 240,
+            "location": "dish_pit",
+            "depends_on": [],
+            "interactions": [
+              {
+                "object_id": "dish_machine",
+                "property_changes": {
+                  "state": { "from": "running", "to": "active_service" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "kitchen_breakdown",
+            "emoji": "🧽",
+            "actor_id": "sous_chef",
+            "start": "22:00",
+            "duration": 60,
+            "location": "saute_station",
+            "depends_on": ["dessert_service"],
+            "interactions": [
+              {
+                "object_id": "gas_range",
+                "property_changes": {
+                  "state": { "from": "ready", "to": "cooling_down" }
+                }
+              },
+              {
+                "object_id": "commercial_grill",
+                "property_changes": {
+                  "state": { "from": "cooking", "to": "cooling_down" }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "datacenter_deployment",
+      "name": "Cloud Datacenter Server Deployment",
+      "description": "Enterprise-scale datacenter operations with server provisioning, network configuration, monitoring systems, security protocols, and automated deployment pipelines",
+      "complexity": "Expert",
+      "domain": "Information Technology",
+      "simulation": {
+        "meta": {
+          "id": "sim_datacenter_deployment_v1",
+          "article_title": "Cloud Datacenter Server Deployment Process",
+          "domain": "Information Technology"
+        },
+        "config": {
+          "time_unit": "minute",
+          "start_time": "09:00",
+          "end_time": "21:00"
+        },
+        "layout": {
+          "meta": {
+            "units": "meters",
+            "pixels_per_unit": 10
+          },
+          "locations": [
+            {
+              "id": "receiving_dock",
+              "name": "Hardware Receiving Dock",
+              "shape": { "type": "rect", "x": 50, "y": 50, "width": 200, "height": 100 }
+            },
+            {
+              "id": "staging_area",
+              "name": "Hardware Staging Area", 
+              "shape": { "type": "rect", "x": 300, "y": 50, "width": 200, "height": 100 }
+            },
+            {
+              "id": "server_room_a",
+              "name": "Server Room A (Rack 1-20)",
+              "shape": { "type": "rect", "x": 550, "y": 50, "width": 300, "height": 150 }
+            },
+            {
+              "id": "server_room_b",
+              "name": "Server Room B (Rack 21-40)",
+              "shape": { "type": "rect", "x": 900, "y": 50, "width": 300, "height": 150 }
+            },
+            {
+              "id": "network_operations_center",
+              "name": "Network Operations Center",
+              "shape": { "type": "rect", "x": 300, "y": 250, "width": 250, "height": 120 }
+            },
+            {
+              "id": "security_operations_center",
+              "name": "Security Operations Center",
+              "shape": { "type": "rect", "x": 600, "y": 250, "width": 250, "height": 120 }
+            },
+            {
+              "id": "management_office",
+              "name": "Datacenter Management Office",
+              "shape": { "type": "rect", "x": 900, "y": 250, "width": 200, "height": 120 }
+            },
+            {
+              "id": "power_distribution_room",
+              "name": "Power Distribution Room",
+              "shape": { "type": "rect", "x": 50, "y": 250, "width": 200, "height": 120 }
+            }
+          ]
+        },
+        "objects": [
+          { "id": "datacenter_manager", "type": "actor", "name": "Datacenter Manager", "properties": { "clearance_level": "L3", "cost_per_hour": 85, "location": "management_office" } },
+          { "id": "senior_sysadmin", "type": "actor", "name": "Senior Systems Administrator", "properties": { "certifications": ["RHCE", "AWS_SA"], "cost_per_hour": 65, "location": "network_operations_center" } },
+          { "id": "network_engineer", "type": "actor", "name": "Network Engineer", "properties": { "certifications": ["CCNP", "CISSP"], "cost_per_hour": 70, "location": "network_operations_center" } },
+          { "id": "security_analyst", "type": "actor", "name": "Security Analyst", "properties": { "clearance_level": "L2", "cost_per_hour": 58, "location": "security_operations_center" } },
+          { "id": "datacenter_tech_1", "type": "actor", "name": "Datacenter Technician 1", "properties": { "specialization": "Hardware", "cost_per_hour": 42, "location": "server_room_a" } },
+          { "id": "datacenter_tech_2", "type": "actor", "name": "Datacenter Technician 2", "properties": { "specialization": "Hardware", "cost_per_hour": 42, "location": "server_room_b" } },
+          { "id": "automation_engineer", "type": "actor", "name": "DevOps Automation Engineer", "properties": { "certifications": ["Kubernetes", "Terraform"], "cost_per_hour": 75, "location": "network_operations_center" } },
+          { "id": "compliance_officer", "type": "actor", "name": "Compliance Officer", "properties": { "certifications": ["CISSP", "CISA"], "cost_per_hour": 68, "location": "security_operations_center" } },
+          { "id": "power_technician", "type": "actor", "name": "Electrical Power Technician", "properties": { "certification": "Licensed_Electrician", "cost_per_hour": 48, "location": "power_distribution_room" } },
+          
+          { "id": "server_deployment_system", "type": "equipment", "name": "Automated Server Deployment System", "emoji": "🤖", "properties": { "state": "available", "capacity": 20, "deployment_rate": "5_per_hour", "location": "staging_area" } },
+          { "id": "network_monitoring_system", "type": "equipment", "name": "Network Monitoring Console", "emoji": "📊", "properties": { "state": "monitoring", "monitored_devices": 2500, "alert_thresholds": 95, "location": "network_operations_center" } },
+          { "id": "security_scanning_cluster", "type": "equipment", "name": "Security Vulnerability Scanner", "emoji": "🔍", "properties": { "state": "idle", "scan_capacity": 1000, "update_frequency": "hourly", "location": "security_operations_center" } },
+          { "id": "power_distribution_unit", "type": "equipment", "name": "Primary PDU Bank", "emoji": "⚡", "properties": { "state": "active", "capacity_kw": 500, "redundancy": "2N", "location": "power_distribution_room" } },
+          { "id": "cooling_system", "type": "equipment", "name": "Precision Cooling System", "emoji": "❄️", "properties": { "state": "running", "capacity_tons": 150, "efficiency_pue": 1.3, "location": "server_room_a" } },
+          { "id": "backup_cooling", "type": "equipment", "name": "Backup Cooling System", "emoji": "❄️", "properties": { "state": "standby", "capacity_tons": 150, "efficiency_pue": 1.3, "location": "server_room_b" } },
+          { "id": "fiber_patch_panel", "type": "equipment", "name": "Main Fiber Distribution Panel", "emoji": "🔌", "properties": { "state": "configured", "port_count": 576, "utilization": 78, "location": "network_operations_center" } },
+          { "id": "configuration_management", "type": "equipment", "name": "Config Management Server", "emoji": "⚙️", "properties": { "state": "active", "managed_nodes": 1850, "deployment_queue": 0, "location": "network_operations_center" } },
+          { "id": "compliance_scanner", "type": "equipment", "name": "Compliance Audit Scanner", "emoji": "📋", "properties": { "state": "ready", "policy_count": 247, "scan_coverage": "100%", "location": "security_operations_center" } },
+          
+          { "id": "rack_servers", "type": "resource", "name": "1U Rack Servers", "emoji": "🖥️", "properties": { "unit": "units", "quantity": 50, "specifications": "2x20_core_128GB_2TB_SSD", "cost_per_unit": 4500.00, "location": "staging_area" } },
+          { "id": "storage_arrays", "type": "resource", "name": "High-Performance Storage Arrays", "emoji": "💾", "properties": { "unit": "units", "quantity": 10, "capacity_tb": 100, "cost_per_unit": 25000.00, "location": "staging_area" } },
+          { "id": "network_switches", "type": "resource", "name": "48-Port Gigabit Switches", "emoji": "🔀", "properties": { "unit": "units", "quantity": 15, "port_count": 48, "cost_per_unit": 3200.00, "location": "staging_area" } },
+          { "id": "server_rails", "type": "resource", "name": "Sliding Server Rails", "emoji": "🔧", "properties": { "unit": "sets", "quantity": 75, "compatibility": "universal", "cost_per_unit": 85.00, "location": "staging_area" } },
+          { "id": "fiber_cables", "type": "resource", "name": "Single-Mode Fiber Cables", "emoji": "📡", "properties": { "unit": "cables", "quantity": 200, "length_meters": 15, "cost_per_unit": 45.00, "location": "network_operations_center" } },
+          { "id": "power_cables", "type": "resource", "name": "IEC C13 Power Cables", "emoji": "🔌", "properties": { "unit": "cables", "quantity": 100, "rating": "15A_250V", "cost_per_unit": 12.00, "location": "power_distribution_room" } },
+          { "id": "security_certificates", "type": "resource", "name": "SSL/TLS Certificates", "emoji": "🔐", "properties": { "unit": "certificates", "quantity": 500, "validity_years": 2, "cost_per_unit": 150.00, "location": "security_operations_center" } },
+          { "id": "software_licenses", "type": "resource", "name": "Enterprise Software Licenses", "emoji": "💿", "properties": { "unit": "licenses", "quantity": 100, "type": "datacenter_suite", "cost_per_unit": 2500.00, "location": "management_office" } },
+          
+          { "id": "staged_servers", "type": "product", "name": "Pre-staged Servers", "emoji": "📦", "properties": { "unit": "units", "quantity": 0, "configuration": "base_image", "location": "staging_area" } },
+          { "id": "networked_servers", "type": "product", "name": "Network-Connected Servers", "emoji": "🌐", "properties": { "unit": "units", "quantity": 0, "network_status": "configured", "location": "server_room_a" } },
+          { "id": "provisioned_servers", "type": "product", "name": "Provisioned Servers", "emoji": "⚙️", "properties": { "unit": "units", "quantity": 0, "os_status": "installed", "location": "server_room_a" } },
+          { "id": "security_hardened_servers", "type": "product", "name": "Security Hardened Servers", "emoji": "🛡️", "properties": { "unit": "units", "quantity": 0, "compliance_score": 95, "location": "server_room_a" } },
+          { "id": "production_ready_servers", "type": "product", "name": "Production Ready Servers", "emoji": "✅", "properties": { "unit": "units", "quantity": 0, "monitoring_enabled": true, "location": "server_room_a" } },
+          { "id": "deployed_storage_cluster", "type": "product", "name": "Deployed Storage Cluster", "emoji": "🗄️", "properties": { "unit": "clusters", "quantity": 0, "redundancy_level": "RAID10", "location": "server_room_b" } },
+          { "id": "active_services", "type": "product", "name": "Active Production Services", "emoji": "🚀", "properties": { "unit": "services", "quantity": 0, "uptime_sla": "99.95%", "location": "server_room_a", "revenue_per_unit": 1250.00 } }
+        ],
+        "tasks": [
+          {
+            "id": "deployment_planning",
+            "emoji": "📋",
+            "actor_id": "datacenter_manager",
+            "start": "09:00",
+            "duration": 45,
+            "location": "management_office",
+            "depends_on": []
+          },
+          {
+            "id": "infrastructure_readiness_check",
+            "emoji": "⚡",
+            "actor_id": "power_technician",
+            "start": "09:15",
+            "duration": 30,
+            "location": "power_distribution_room",
+            "depends_on": [],
+            "interactions": [
+              {
+                "object_id": "power_distribution_unit",
+                "property_changes": {
+                  "state": { "from": "active", "to": "verified" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "cooling_system_validation",
+            "emoji": "❄️",
+            "actor_id": "datacenter_tech_1",
+            "start": "09:30",
+            "duration": 20,
+            "location": "server_room_a",
+            "depends_on": [],
+            "interactions": [
+              {
+                "object_id": "cooling_system",
+                "property_changes": {
+                  "state": { "from": "running", "to": "validated" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "hardware_inspection",
+            "emoji": "🔍",
+            "actor_id": "datacenter_tech_1",
+            "start": "09:45",
+            "duration": 60,
+            "location": "staging_area",
+            "depends_on": ["deployment_planning"],
+            "interactions": [
+              {
+                "object_id": "rack_servers",
+                "property_changes": {
+                  "quantity": { "delta": -20 }
+                }
+              },
+              {
+                "object_id": "storage_arrays",
+                "property_changes": {
+                  "quantity": { "delta": -4 }
+                }
+              },
+              {
+                "object_id": "staged_servers",
+                "property_changes": {
+                  "quantity": { "delta": 20 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "network_infrastructure_prep",
+            "emoji": "🌐",
+            "actor_id": "network_engineer",
+            "start": "10:00",
+            "duration": 90,
+            "location": "network_operations_center",
+            "depends_on": ["infrastructure_readiness_check"],
+            "interactions": [
+              {
+                "object_id": "network_switches",
+                "property_changes": {
+                  "quantity": { "delta": -6 }
+                }
+              },
+              {
+                "object_id": "fiber_cables",
+                "property_changes": {
+                  "quantity": { "delta": -40 }
+                }
+              },
+              {
+                "object_id": "fiber_patch_panel",
+                "property_changes": {
+                  "utilization": { "delta": 15 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "server_racking",
+            "emoji": "🖥️",
+            "actor_id": "datacenter_tech_1",
+            "start": "10:45",
+            "duration": 75,
+            "location": "server_room_a",
+            "depends_on": ["hardware_inspection", "cooling_system_validation"],
+            "interactions": [
+              {
+                "object_id": "staged_servers",
+                "property_changes": {
+                  "quantity": { "delta": -20 }
+                }
+              },
+              {
+                "object_id": "server_rails",
+                "property_changes": {
+                  "quantity": { "delta": -20 }
+                }
+              },
+              {
+                "object_id": "power_cables",
+                "property_changes": {
+                  "quantity": { "delta": -40 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "storage_array_installation",
+            "emoji": "💾",
+            "actor_id": "datacenter_tech_2",
+            "start": "11:00",
+            "duration": 60,
+            "location": "server_room_b",
+            "depends_on": ["hardware_inspection"],
+            "interactions": [
+              {
+                "object_id": "backup_cooling",
+                "property_changes": {
+                  "state": { "from": "standby", "to": "active" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "network_connectivity_setup",
+            "emoji": "🔌",
+            "actor_id": "network_engineer",
+            "start": "12:00",
+            "duration": 45,
+            "location": "server_room_a",
+            "depends_on": ["server_racking", "network_infrastructure_prep"],
+            "interactions": [
+              {
+                "object_id": "networked_servers",
+                "property_changes": {
+                  "quantity": { "delta": 20 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "automated_os_provisioning",
+            "emoji": "🤖",
+            "actor_id": "automation_engineer",
+            "start": "12:45",
+            "duration": 90,
+            "location": "network_operations_center",
+            "depends_on": ["network_connectivity_setup"],
+            "interactions": [
+              {
+                "object_id": "server_deployment_system",
+                "property_changes": {
+                  "state": { "from": "available", "to": "deploying" }
+                }
+              },
+              {
+                "object_id": "configuration_management",
+                "property_changes": {
+                  "managed_nodes": { "delta": 20 }
+                }
+              },
+              {
+                "object_id": "networked_servers",
+                "property_changes": {
+                  "quantity": { "delta": -20 }
+                }
+              },
+              {
+                "object_id": "provisioned_servers",
+                "property_changes": {
+                  "quantity": { "delta": 20 }
+                }
+              },
+              {
+                "object_id": "software_licenses",
+                "property_changes": {
+                  "quantity": { "delta": -20 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "security_baseline_configuration",
+            "emoji": "🔒",
+            "actor_id": "security_analyst",
+            "start": "14:15",
+            "duration": 75,
+            "location": "security_operations_center",
+            "depends_on": ["automated_os_provisioning"],
+            "interactions": [
+              {
+                "object_id": "security_scanning_cluster",
+                "property_changes": {
+                  "state": { "from": "idle", "to": "scanning" }
+                }
+              },
+              {
+                "object_id": "security_certificates",
+                "property_changes": {
+                  "quantity": { "delta": -20 }
+                }
+              },
+              {
+                "object_id": "provisioned_servers",
+                "property_changes": {
+                  "quantity": { "delta": -20 }
+                }
+              },
+              {
+                "object_id": "security_hardened_servers",
+                "property_changes": {
+                  "quantity": { "delta": 20 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "compliance_audit_scan",
+            "emoji": "📝",
+            "actor_id": "compliance_officer",
+            "start": "15:30",
+            "duration": 45,
+            "location": "security_operations_center",
+            "depends_on": ["security_baseline_configuration"],
+            "interactions": [
+              {
+                "object_id": "compliance_scanner",
+                "property_changes": {
+                  "state": { "from": "ready", "to": "auditing" }
+                }
+              }
+            ]
+          },
+          {
+            "id": "storage_cluster_configuration",
+            "emoji": "📊",
+            "actor_id": "senior_sysadmin",
+            "start": "13:00",
+            "duration": 120,
+            "location": "server_room_b",
+            "depends_on": ["storage_array_installation"],
+            "interactions": [
+              {
+                "object_id": "deployed_storage_cluster",
+                "property_changes": {
+                  "quantity": { "delta": 1 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "monitoring_agent_deployment",
+            "emoji": "📊",
+            "actor_id": "automation_engineer",
+            "start": "16:15",
+            "duration": 30,
+            "location": "network_operations_center",
+            "depends_on": ["compliance_audit_scan"],
+            "interactions": [
+              {
+                "object_id": "network_monitoring_system",
+                "property_changes": {
+                  "monitored_devices": { "delta": 20 }
+                }
+              },
+              {
+                "object_id": "security_hardened_servers",
+                "property_changes": {
+                  "quantity": { "delta": -20 }
+                }
+              },
+              {
+                "object_id": "production_ready_servers",
+                "property_changes": {
+                  "quantity": { "delta": 20 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "load_balancer_setup",
+            "emoji": "⚙️",
+            "actor_id": "network_engineer",
+            "start": "16:45",
+            "duration": 45,
+            "location": "network_operations_center",
+            "depends_on": ["monitoring_agent_deployment", "storage_cluster_configuration"]
+          },
+          {
+            "id": "service_deployment_pipeline",
+            "emoji": "🚀",
+            "actor_id": "automation_engineer",
+            "start": "17:30",
+            "duration": 60,
+            "location": "network_operations_center",
+            "depends_on": ["load_balancer_setup"],
+            "interactions": [
+              {
+                "object_id": "production_ready_servers",
+                "property_changes": {
+                  "quantity": { "delta": -20 }
+                }
+              },
+              {
+                "object_id": "active_services",
+                "property_changes": {
+                  "quantity": { "delta": 15 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "performance_baseline_testing",
+            "emoji": "🏁",
+            "actor_id": "senior_sysadmin",
+            "start": "18:30",
+            "duration": 45,
+            "location": "network_operations_center",
+            "depends_on": ["service_deployment_pipeline"],
+            "interactions": [
+              {
+                "object_id": "network_monitoring_system",
+                "property_changes": {
+                  "alert_thresholds": { "delta": 5 }
+                }
+              }
+            ]
+          },
+          {
+            "id": "disaster_recovery_validation",
+            "emoji": "🔄",
+            "actor_id": "senior_sysadmin",
+            "start": "19:15",
+            "duration": 60,
+            "location": "server_room_b",
+            "depends_on": ["performance_baseline_testing"]
+          },
+          {
+            "id": "deployment_documentation",
+            "emoji": "📝",
+            "actor_id": "datacenter_manager",
+            "start": "20:15",
+            "duration": 45,
+            "location": "management_office",
+            "depends_on": ["disaster_recovery_validation"],
+            "interactions": [
+              {
+                "object_id": "server_deployment_system",
+                "property_changes": {
+                  "state": { "from": "deploying", "to": "completed" }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

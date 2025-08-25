@@ -9,7 +9,7 @@ let isPlaygroundInitialized = false; // Flag to prevent double-initialization
 let autoRender = true;
 
 // --- DATA FETCHING ---
-console.log("FETCH: Initiating fetch for tutorial and metrics catalogs.");
+console.log("FETCH: Initiating fetch for tutorial, metrics, and simulation library catalogs.");
 Promise.all([
     fetch('/assets/static/tutorial-content.json').then(res => {
         if (!res.ok) throw new Error(`Fetch failed for tutorial-content.json: ${res.statusText}`);
@@ -18,11 +18,18 @@ Promise.all([
     fetch('/assets/static/metrics-catalog.json').then(res => {
         if (!res.ok) throw new Error(`Fetch failed for metrics-catalog.json: ${res.statusText}`);
         return res.json();
+    }),
+    fetch('/assets/static/simulation-library.json').then(res => {
+        if (!res.ok) throw new Error(`Fetch failed for simulation-library.json: ${res.statusText}`);
+        return res.json();
     })
-]).then(([tutData, metData]) => {
+]).then(([tutData, metData, simLibData]) => {
     tutorialData = tutData;
     window.metricsCatalog = metData;
+    window.simulationLibrary = simLibData;
     console.log("FETCH SUCCESS: Catalogs loaded.");
+    // Populate simulation library dropdown
+    populateSimulationLibrary();
     // Now that data is ready, try to initialize.
     // If the editor isn't ready, this will do nothing. The editor's callback will handle it.
     attemptInitializePlayground();
@@ -60,12 +67,59 @@ function initializePlayground() {
     console.log("INIT: initializePlayground() completed successfully.");
 }
 
+// --- SIMULATION LIBRARY FUNCTIONALITY ---
+function populateSimulationLibrary() {
+    console.log("LIBRARY: Populating simulation library dropdown.");
+    const dropdown = document.getElementById('simulation-library-dropdown');
+    if (!dropdown || !window.simulationLibrary) return;
+    
+    dropdown.innerHTML = ''; // Clear existing options
+    
+    window.simulationLibrary.simulations.forEach(simulation => {
+        const option = document.createElement('a');
+        option.href = '#';
+        option.textContent = simulation.name;
+        option.title = `${simulation.description} (${simulation.complexity})`;
+        option.dataset.simulationId = simulation.id;
+        
+        option.addEventListener('click', (e) => {
+            e.preventDefault();
+            loadSimulationFromLibrary(simulation.id);
+        });
+        
+        dropdown.appendChild(option);
+    });
+}
+
+function loadSimulationFromLibrary(simulationId) {
+    console.log(`LIBRARY: Loading simulation ${simulationId}`);
+    const simulation = window.simulationLibrary.simulations.find(s => s.id === simulationId);
+    if (!simulation) {
+        console.error(`Simulation with ID ${simulationId} not found`);
+        return;
+    }
+    
+    if (spaceEditor) {
+        spaceEditor.hasInitiallyLoaded = false;
+    }
+    
+    // Load the simulation data into the editor
+    const simulationData = { simulation: simulation.simulation };
+    editor.setValue(JSON.stringify(simulationData, null, 2));
+    
+    if (autoRender) {
+        renderSimulation();
+    }
+    
+    console.log(`LIBRARY: Successfully loaded ${simulation.name}`);
+}
+
 // --- SINGLE POINT OF ENTRY FOR INITIALIZATION ---
 function attemptInitializePlayground() {
     // This function can be called from either async operation (fetch or monaco).
     // It will only run the actual initialization once all conditions are met.
     if (isPlaygroundInitialized) return; // Already done, do nothing.
-    if (editor && tutorialData && window.metricsCatalog) {
+    if (editor && tutorialData && window.metricsCatalog && window.simulationLibrary) {
         isPlaygroundInitialized = true; // Set flag to prevent re-entry
         initializePlayground();
     }
@@ -78,10 +132,18 @@ require.config({
 });
 require(["vs/editor/editor.main"], function () {
     console.log("MONACO-CALLBACK: Monaco editor is ready.");
+    // Load the breadmaking simulation from the library as default
+    const defaultSimulation = window.simulationLibrary ? 
+        window.simulationLibrary.simulations.find(s => s.id === 'breadmaking') : 
+        null;
+    const defaultSimulationData = defaultSimulation ? 
+        { simulation: defaultSimulation.simulation } : 
+        sampleSimulation;
+
     editor = monaco.editor.create(
         document.getElementById("json-editor"),
         {
-            value: JSON.stringify(sampleSimulation, null, 2),
+            value: JSON.stringify(defaultSimulationData, null, 2),
             language: "json",
             theme: "vs",
             automaticLayout: true,
@@ -232,7 +294,7 @@ const sampleSimulation = {
         ],
         tasks: [
             {
-                id: "prepare_ingredients 🔸 🔧", actor_id: "baker", start: "06:15", duration: 30, location: "prep_area",
+                id: "prepare_ingredients", emoji: "🔧", actor_id: "baker", start: "06:15", duration: 30, location: "prep_area",
                 depends_on: [],
                 interactions: [
                     {
@@ -244,11 +306,11 @@ const sampleSimulation = {
                 ]
             },
             {
-                id: "measure_flour 🔸 ⚖️", actor_id: "baker", start: "06:45", duration: 10, location: "prep_area",
-                depends_on: ["prepare_ingredients 🔸 🔧"]
+                id: "measure_flour", emoji: "⚖️", actor_id: "baker", start: "06:45", duration: 10, location: "prep_area",
+                depends_on: ["prepare_ingredients"]
             },
             {
-                id: "activate_yeast 🔸 🦠", actor_id: "assistant", start: "06:45", duration: 10, location: "prep_area",
+                id: "activate_yeast", emoji: "🦠", actor_id: "assistant", start: "06:45", duration: 10, location: "prep_area",
                 depends_on: [],
                 interactions: [
                     {
@@ -260,8 +322,8 @@ const sampleSimulation = {
                 ]
             },
             {
-                id: "mix_dough 🔸 🥄", actor_id: "baker", start: "06:55", duration: 20, location: "prep_area",
-                depends_on: ["measure_flour 🔸 ⚖️", "activate_yeast 🔸 🦠"],
+                id: "mix_dough", emoji: "🥄", actor_id: "baker", start: "06:55", duration: 20, location: "prep_area",
+                depends_on: ["measure_flour", "activate_yeast"],
                 interactions: [
                     {
                         object_id: "flour",
@@ -296,8 +358,8 @@ const sampleSimulation = {
                 ]
             },
             {
-                id: "knead_dough 🔸 👋", actor_id: "baker", start: "07:15", duration: 15, location: "prep_area",
-                depends_on: ["mix_dough 🔸 🥄"],
+                id: "knead_dough", emoji: "👋", actor_id: "baker", start: "07:15", duration: 15, location: "prep_area",
+                depends_on: ["mix_dough"],
                 interactions: [
                     {
                         object_id: "mixed_dough",
@@ -320,8 +382,8 @@ const sampleSimulation = {
                 ]
             },
             {
-                id: "first_rise 🔸 ⏰", actor_id: "baker", start: "07:30", duration: 90, location: "prep_area",
-                depends_on: ["knead_dough 🔸 👋"],
+                id: "first_rise", emoji: "⏰", actor_id: "baker", start: "07:30", duration: 90, location: "prep_area",
+                depends_on: ["knead_dough"],
                 interactions: [
                     {
                         object_id: "risen_dough",
@@ -345,7 +407,7 @@ const sampleSimulation = {
                 ]
             },
             {
-                id: "clean_mixing_bowls 🔸 🧼", actor_id: "assistant", start: "07:30", duration: 20, location: "prep_area",
+                id: "clean_mixing_bowls", emoji: "🧼", actor_id: "assistant", start: "07:30", duration: 20, location: "prep_area",
                 depends_on: [],
                 interactions: [
                     {
@@ -357,8 +419,8 @@ const sampleSimulation = {
                 ]
             },
             {
-                id: "shape_loaves 🔸 👐", actor_id: "baker", start: "09:00", duration: 25, location: "prep_area",
-                depends_on: ["first_rise 🔸 ⏰"],
+                id: "shape_loaves", emoji: "👐", actor_id: "baker", start: "09:00", duration: 25, location: "prep_area",
+                depends_on: ["first_rise"],
                 interactions: [
                     {
                         object_id: "risen_dough",
@@ -381,12 +443,12 @@ const sampleSimulation = {
                 ]
             },
             {
-                id: "prepare_baking_sheets 🔸 🍞", actor_id: "assistant", start: "09:00", duration: 10, location: "prep_area",
+                id: "prepare_baking_sheets", emoji: "🍞", actor_id: "assistant", start: "09:00", duration: 10, location: "prep_area",
                 depends_on: []
             },
             {
-                id: "preheat_oven 🔸 🔥", actor_id: "assistant", start: "09:05", duration: 15, location: "oven_area",
-                depends_on: ["prepare_baking_sheets 🔸 🍞"],
+                id: "preheat_oven", emoji: "🔥", actor_id: "assistant", start: "09:05", duration: 15, location: "oven_area",
+                depends_on: ["prepare_baking_sheets"],
                 interactions: [
                     {
                         object_id: "oven",
@@ -397,8 +459,8 @@ const sampleSimulation = {
                 ]
             },
             {
-                id: "second_rise 🔸 ⏰", actor_id: "baker", start: "09:25", duration: 45, location: "prep_area",
-                depends_on: ["shape_loaves 🔸 👐"],
+                id: "second_rise", emoji: "⏳", actor_id: "baker", start: "09:25", duration: 45, location: "prep_area",
+                depends_on: ["shape_loaves"],
                 interactions: [
                     {
                         object_id: "shaped_loaves",
@@ -415,8 +477,8 @@ const sampleSimulation = {
                 ]
             },
             {
-                id: "bake_bread 🔸 🍞", actor_id: "baker", start: "10:10", duration: 35, location: "oven_area",
-                depends_on: ["second_rise 🔸 ⏰"],
+                id: "bake_bread", emoji: "🍞", actor_id: "baker", start: "10:10", duration: 35, location: "oven_area",
+                depends_on: ["second_rise"],
                 interactions: [
                     {
                         object_id: "shaped_loaves",
@@ -439,7 +501,7 @@ const sampleSimulation = {
                 ]
             },
             {
-                id: "wash_equipment 🔸 🧽", actor_id: "assistant", start: "10:10", duration: 35, location: "prep_area",
+                id: "wash_equipment", emoji: "🧽", actor_id: "assistant", start: "10:10", duration: 35, location: "prep_area",
                 depends_on: [],
                 interactions: [
                     {
@@ -1552,11 +1614,18 @@ function processSimulationData(simulationData) {
     const processedTasks = tasksWithMinutes.map(task => {
         const taskId = task.id || "";
         let displayName = taskId, emoji = "[TASK]";
-        if (taskId.includes("🔸")) {
+        
+        // Check for new emoji field first
+        if (task.emoji) {
+            emoji = task.emoji;
+            displayName = taskId;
+        } else if (taskId.includes("🔸")) {
+            // Fallback to old format for backwards compatibility
             const parts = taskId.split("🔸");
             displayName = parts[0].trim();
             emoji = parts[1].trim();
         }
+        
         return {
             ...task,
             display_name: displayName,
@@ -2173,17 +2242,7 @@ function initializeExperimentalLLM() {
 // Event listeners
 document.getElementById("undo-btn").addEventListener("click", undo);
 
-document
-    .getElementById("load-sample-btn")
-    .addEventListener("click", () => {
-        if (spaceEditor) {
-            spaceEditor.hasInitiallyLoaded = false;
-        }
-        editor.setValue(JSON.stringify(sampleSimulation, null, 2));
-        if (autoRender) {
-            renderSimulation();
-        }
-    });
+// Simulation library dropdown functionality is now handled in populateSimulationLibrary()
 
 document
     .getElementById("format-json-btn")
@@ -2989,7 +3048,8 @@ function addTaskToSimulation() {
     const depends_on = dependsInput ? dependsInput.split(',').map(s => s.trim()).filter(s => s) : [];
     
     const newTask = {
-        id: `${taskId} 🔸 ${emoji}`,
+        id: taskId,
+        emoji: emoji,
         actor_id: actorId,
         start: startTime,
         duration: duration,

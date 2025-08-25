@@ -47,7 +47,12 @@
                 <h1 class="special-title">Playground</h1>
                 <div class="header-actions">
                     <div class="json-editor-buttons">
-                        <button id="load-sample-btn">Load Sample</button>
+                        <div class="dropdown">
+                            <button id="simulation-library-btn" class="dropdown-toggle">Simulation Library ▼</button>
+                            <div id="simulation-library-dropdown" class="dropdown-content">
+                                <!-- Simulation options will be populated here -->
+                            </div>
+                        </div>
                         <button id="format-json-btn">Format JSON</button>
                         <button id="clear-editor-btn">Clear</button>
                     </div>
@@ -65,7 +70,7 @@
                         <button id="render-simulation-btn" class="hidden">
                             Render
                         </button>
-                        <button id="auto-render-toggle">Auto-render: ON</button>
+                        <button id="auto-render-toggle" class="hidden">Auto-render: ON</button>
                         <button
                             id="fullscreen-btn"
                             class="fullscreen-btn primary"
