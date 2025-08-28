@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monaco Editor Test</title>
+    <style>
+        #container {
+            width: 800px;
+            height: 400px;
+            border: 1px solid #ccc;
+            margin: 20px;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .log {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Monaco Editor Loading Test</h1>
+    <div id="log" class="log">Starting test...</div>
+    <div id="container"></div>
+
+    <!-- Load Monaco Editor -->
+    <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
+    <script>
+        const log = document.getElementById('log');
+        function addLog(message) {
+            log.innerHTML += '<br>' + new Date().toLocaleTimeString() + ': ' + message;
+            console.log(message);
+        }
+
+        addLog('Page loaded, checking RequireJS...');
+        
+        if (typeof require === 'undefined') {
+            addLog('❌ RequireJS is not available');
+        } else {
+            addLog('✅ RequireJS is available');
+            
+            require.config({ 
+                paths: { vs: 'https://unpkg.com/monaco-editor@0.44.0/min/vs' },
+                timeout: 30
+            });
+            
+            addLog('RequireJS configured, attempting to load Monaco Editor...');
+            
+            require(['vs/editor/editor.main'], function() {
+                addLog('✅ Monaco Editor loaded successfully');
+                
+                if (typeof monaco === 'undefined') {
+                    addLog('❌ Monaco global is not available');
+                } else {
+                    addLog('✅ Monaco global is available');
+                    
+                    try {
+                        const editor = monaco.editor.create(document.getElementById('container'), {
+                            value: 'console.log("Hello Monaco!");',
+                            language: 'javascript',
+                            theme: 'vs-dark'
+                        });
+                        addLog('✅ Monaco Editor created successfully');
+                    } catch (error) {
+                        addLog('❌ Error creating Monaco Editor: ' + error.message);
+                    }
+                }
+            }, function(err) {
+                addLog('❌ Failed to load Monaco Editor: ' + JSON.stringify(err));
+            });
+        }
+    </script>
+</body>
+</html>

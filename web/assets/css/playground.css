@@ -617,6 +617,12 @@ body {
     cursor: pointer;
 }
 
+.save-warning label input[type="checkbox"] {
+    width: auto;
+    flex-shrink: 0;
+    margin: 0;
+}
+
 .save-success {
     background: #d4edda;
     border: 1px solid #c3e6cb;
@@ -1246,6 +1252,102 @@ body.tutorial-active #auto-render-toggle {
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
 }
 
+/* Time Input Toggle Styles */
+.time-input-toggle {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.25rem; /* Reduced from 0.5rem */
+    padding: 0.125rem 0; /* Reduced from 0.25rem */
+}
+
+/* Make radio button row half height */
+.form-row:has(.time-input-toggle) {
+    margin-bottom: 0.375rem; /* Half of the normal 0.75rem */
+}
+
+.time-input-toggle label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-weight: normal;
+    cursor: pointer;
+    margin-bottom: 0;
+}
+
+.time-input-toggle input[type="radio"] {
+    width: auto;
+    margin: 0;
+}
+
+#duration-input-group,
+#end-time-input-group {
+    transition: opacity 0.2s ease;
+}
+
+/* Time input fields are now naturally aligned with the restructured HTML */
+
+/* Auto-populated field styling */
+input[style*="background-color: #e8f4f8"] {
+    border-left: 3px solid var(--primary-color);
+}
+
+/* Required field validation styling */
+.form-group input.required-missing,
+.form-group select.required-missing {
+    border: 2px solid var(--error-color);
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.1);
+}
+
+.form-group input.required-missing:focus,
+.form-group select.required-missing:focus {
+    outline: none;
+    border-color: var(--error-color);
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+}
+
+/* Created object styling in simulation player */
+.resource-item.created-object {
+    background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+    border-left: 3px solid #4caf50;
+    position: relative;
+}
+
+.resource-item.created-object::after {
+    content: '✨';
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+/* Extended Actors (Phase 4) styling */
+.interaction-object-select option[value="self"] {
+    background: #f0f8ff;
+    font-style: italic;
+    font-weight: 500;
+}
+
+optgroup[label*="Traditional Actors"] {
+    font-weight: bold;
+    color: #2c5aa0;
+}
+
+optgroup[label*="Equipment"] {
+    font-weight: bold;
+    color: #b8860b;
+}
+
+optgroup[label*="Resources"] {
+    font-weight: bold;
+    color: #8b4513;
+}
+
+optgroup[label*="Products"] {
+    font-weight: bold;
+    color: #556b2f;
+}
+
 /* Interactions Section */
 .interactions-section {
     margin-top: 1.5rem;
@@ -1326,10 +1428,7 @@ body.tutorial-active #auto-render-toggle {
 }
 
 .property-change-group {
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
     padding: 0.5rem;
-    background: white;
     margin-bottom: 0.5rem;
 }
 
@@ -1369,4 +1468,11 @@ body.tutorial-active #auto-render-toggle {
 .btn-primary:hover {
     background: #0056b3;
     border-color: #004085;
+}
+
+/* Revert After Task checkbox styling */
+.revert-after-checkbox {
+    width: auto !important;
+    flex-shrink: 0;
+    margin: 0;
 }

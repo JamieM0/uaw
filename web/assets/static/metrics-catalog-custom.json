@@ -1,0 +1,90 @@
+[ 
+  {
+    "id": "custom.performance.execution_time",
+    "name": "Task Execution Time",
+    "description": "Checks if tasks are completed within their expected time limits",
+    "category": "Performance",
+    "severity": "warning",
+    "validation_type": "computational",
+    "computation": {
+      "engine": "javascript",
+      "function_name": "validateExecutionTime",
+      "params": {
+        "max_delay_percent": 20
+      }
+    }
+  },
+  {
+    "id": "custom.quality.output_standards",
+    "name": "Output Quality Standards", 
+    "description": "Validates that task outputs meet quality requirements",
+    "category": "Quality Control",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": {
+      "engine": "javascript",
+      "function_name": "validateOutputQuality"
+    }
+  },
+  {
+    "id": "custom.resources.efficiency_ratio",
+    "name": "Resource Efficiency Ratio",
+    "description": "Calculates the efficiency of resource usage across the simulation",
+    "category": "Resource Management",
+    "severity": "info",
+    "validation_type": "computational",
+    "computation": {
+      "engine": "javascript",
+      "function_name": "validateResourceEfficiency",
+      "params": {
+        "target_efficiency": 0.85
+      }
+    }
+  },
+  {
+    "id": "custom.safety.hazard_proximity",
+    "name": "Hazard Proximity Check",
+    "description": "Ensures safety protocols are followed when working near hazardous materials or equipment",
+    "category": "Safety",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": {
+      "engine": "javascript",
+      "function_name": "validateHazardProximity",
+      "params": {
+        "min_safety_distance": 5
+      }
+    }
+  },
+  {
+    "id": "custom.workflow.bottleneck_detection",
+    "name": "Workflow Bottleneck Detection",
+    "description": "Identifies potential bottlenecks in the workflow that could cause delays",
+    "category": "Workflow Analysis",
+    "severity": "warning",
+    "validation_type": "computational",
+    "computation": {
+      "engine": "javascript",
+      "function_name": "detectWorkflowBottlenecks",
+      "params": {
+        "threshold_minutes": 30
+      }
+    }
+  },
+  {
+    "id": "custom.cost.budget_compliance",
+    "name": "Budget Compliance Check",
+    "description": "Verifies that the total cost of resources and labor stays within budget",
+    "category": "Financial",
+    "severity": "warning",
+    "validation_type": "computational",
+    "computation": {
+      "engine": "javascript",
+      "function_name": "validateBudgetCompliance",
+      "params": {
+        "max_budget": 10000,
+        "currency": "USD"
+      }
+    }
+  }
+]

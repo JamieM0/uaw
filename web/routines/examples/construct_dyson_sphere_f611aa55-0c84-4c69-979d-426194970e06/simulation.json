@@ -1,0 +1,383 @@
+{
+  "simulation": {
+    "uuid": "f611aa55-0c84-4c69-979d-426194970e06",
+    "time_unit": "year",
+    "start_time": "2150",
+    "end_time": "2300",
+    "actors": [
+      {
+        "id": "AI_Construction_Coordinator",
+        "role": "Automated Project Management System",
+        "hourly_rate": 0,
+        "availability": [
+          {
+            "from": "2150",
+            "to": "2300"
+          }
+        ]
+      },
+      {
+        "id": "Asteroid_Mining_Fleet",
+        "role": "Autonomous Mining Network",
+        "hourly_rate": 5000000,
+        "availability": [
+          {
+            "from": "2150",
+            "to": "2300"
+          }
+        ]
+      },
+      {
+        "id": "Solar_Panel_Fabricators",
+        "role": "Automated Manufacturing Systems",
+        "hourly_rate": 2500000,
+        "availability": [
+          {
+            "from": "2155",
+            "to": "2290"
+          }
+        ]
+      },
+      {
+        "id": "Space_Assembly_Drones",
+        "role": "Orbital Construction Network",
+        "hourly_rate": 8000000,
+        "availability": [
+          {
+            "from": "2160",
+            "to": "2295"
+          }
+        ]
+      }
+    ],
+    "consumable_resources": [
+      {
+        "name": "Iron_Ore",
+        "stock": 1000000000,
+        "cost_per_unit": 50
+      },
+      {
+        "name": "Silicon",
+        "stock": 500000000,
+        "cost_per_unit": 75
+      },
+      {
+        "name": "Rare_Earth_Elements",
+        "stock": 100000000,
+        "cost_per_unit": 1000
+      },
+      {
+        "name": "Carbon_Nanotubes",
+        "stock": 10000000,
+        "cost_per_unit": 5000
+      },
+      {
+        "name": "Antimatter_Fuel",
+        "stock": 1000000,
+        "cost_per_unit": 100000
+      },
+      {
+        "name": "Quantum_Processors",
+        "stock": 50000,
+        "cost_per_unit": 2000000
+      }
+    ],
+    "resources": [
+      {
+        "id": "Iron_Ore",
+        "unit": "metric_tons",
+        "starting_stock": 1000000000.0,
+        "cost_per_unit": 50
+      },
+      {
+        "id": "Silicon",
+        "unit": "metric_tons", 
+        "starting_stock": 500000000.0,
+        "cost_per_unit": 75
+      },
+      {
+        "id": "Rare_Earth_Elements",
+        "unit": "metric_tons",
+        "starting_stock": 100000000.0,
+        "cost_per_unit": 1000
+      },
+      {
+        "id": "Carbon_Nanotubes",
+        "unit": "metric_tons",
+        "starting_stock": 10000000.0,
+        "cost_per_unit": 5000
+      },
+      {
+        "id": "Antimatter_Fuel",
+        "unit": "kg",
+        "starting_stock": 1000000.0,
+        "cost_per_unit": 100000
+      }
+    ],
+    "equipment": [
+      {
+        "id": "Stellar_Mining_Platform",
+        "initial_state": "dormant",
+        "capacity": "planetary_scale"
+      },
+      {
+        "id": "Orbital_Fabrication_Complex",
+        "initial_state": "offline",
+        "capacity": "mega_structure"
+      },
+      {
+        "id": "Gravity_Manipulation_Array",
+        "initial_state": "charging",
+        "power_requirement": "10^18_watts"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "stellar_survey",
+        "name": "Stellar System Survey",
+        "description": "Comprehensive analysis of solar system resources and optimal placement",
+        "start": "2150",
+        "duration": 2,
+        "assigned_to": "AI_Construction_Coordinator",
+        "location": "Solar_System_Perimeter",
+        "consumes": {
+          "Antimatter_Fuel": 10000,
+          "Quantum_Processors": 100
+        },
+        "outputs": [
+          {
+            "name": "stellar_analysis_complete",
+            "quality_score": 0.98
+          }
+        ],
+        "hazard_level": 1
+      },
+      {
+        "id": "asteroid_belt_mining",
+        "name": "Asteroid Belt Resource Extraction",
+        "description": "Large-scale mining of asteroid belt for construction materials",
+        "start": "2152",
+        "duration": 8,
+        "actual_duration": 10,
+        "assigned_to": "Asteroid_Mining_Fleet", 
+        "location": "Asteroid_Belt",
+        "equipment_used": ["Stellar_Mining_Platform"],
+        "consumes": {
+          "Antimatter_Fuel": 500000
+        },
+        "produces": {
+          "Refined_Iron": 800000000,
+          "Processed_Silicon": 400000000,
+          "Rare_Metals": 80000000
+        },
+        "outputs": [
+          {
+            "name": "raw_materials_stockpile",
+            "quality_score": 0.94
+          }
+        ],
+        "hazard_level": 3
+      },
+      {
+        "id": "solar_panel_manufacturing",
+        "name": "Solar Panel Mass Production",
+        "description": "Automated production of photovoltaic collection panels",
+        "start": "2155",
+        "duration": 15,
+        "assigned_to": "Solar_Panel_Fabricators",
+        "location": "Orbital_Manufacturing_Station",
+        "equipment_used": ["Orbital_Fabrication_Complex"],
+        "consumes": {
+          "Silicon": 300000000,
+          "Rare_Earth_Elements": 50000000,
+          "Carbon_Nanotubes": 8000000
+        },
+        "produces": {
+          "Solar_Collection_Panels": 10000000
+        },
+        "outputs": [
+          {
+            "name": "solar_panel_array",
+            "quality_score": 0.91
+          }
+        ],
+        "hazard_level": 2
+      },
+      {
+        "id": "structural_framework",
+        "name": "Dyson Ring Framework Construction",
+        "description": "Assembly of primary structural framework around star",
+        "start": "2160",
+        "duration": 25,
+        "assigned_to": "Space_Assembly_Drones",
+        "location": "Solar_Orbital_Zone",
+        "equipment_used": ["Gravity_Manipulation_Array"],
+        "consumes": {
+          "Iron_Ore": 600000000,
+          "Carbon_Nanotubes": 2000000,
+          "Antimatter_Fuel": 200000
+        },
+        "produces": {
+          "Primary_Ring_Structure": 1
+        },
+        "outputs": [
+          {
+            "name": "dyson_ring_framework",
+            "quality_score": 0.89
+          }
+        ],
+        "hazard_level": 5
+      },
+      {
+        "id": "panel_installation",
+        "name": "Solar Panel Installation",
+        "description": "Attachment of solar collection panels to framework",
+        "start": "2185",
+        "duration": 20,
+        "assigned_to": "Space_Assembly_Drones",
+        "location": "Solar_Orbital_Zone",
+        "produces": {
+          "Operational_Dyson_Ring_Segments": 100
+        },
+        "outputs": [
+          {
+            "name": "active_solar_collection",
+            "quality_score": 0.87
+          }
+        ],
+        "hazard_level": 4
+      },
+      {
+        "id": "power_transmission_network",
+        "name": "Energy Transmission Infrastructure",
+        "description": "Installation of quantum energy transmission systems",
+        "start": "2205",
+        "duration": 15,
+        "assigned_to": "AI_Construction_Coordinator",
+        "location": "Inner_Solar_System",
+        "consumes": {
+          "Quantum_Processors": 40000,
+          "Rare_Earth_Elements": 30000000,
+          "Antimatter_Fuel": 150000
+        },
+        "produces": {
+          "Quantum_Energy_Network": 1
+        },
+        "outputs": [
+          {
+            "name": "energy_transmission_grid",
+            "quality_score": 0.96
+          }
+        ],
+        "hazard_level": 3
+      },
+      {
+        "id": "system_optimization",
+        "name": "System Optimization and Testing",
+        "description": "Fine-tuning and performance optimization of complete system",
+        "start": "2220",
+        "duration": 10,
+        "assigned_to": "AI_Construction_Coordinator",
+        "location": "Control_Station",
+        "equipment_used": ["Orbital_Fabrication_Complex", "Gravity_Manipulation_Array"],
+        "outputs": [
+          {
+            "name": "optimized_dyson_sphere",
+            "quality_score": 0.99
+          }
+        ],
+        "hazard_level": 2
+      },
+      {
+        "id": "expansion_phase",
+        "name": "Dyson Sphere Expansion",
+        "description": "Expansion to full spherical coverage",
+        "start": "2230",
+        "duration": 60,
+        "assigned_to": "Space_Assembly_Drones",
+        "location": "Complete_Solar_System",
+        "consumes": {
+          "Iron_Ore": 200000000,
+          "Silicon": 150000000,
+          "Carbon_Nanotubes": 5000000,
+          "Antimatter_Fuel": 800000
+        },
+        "produces": {
+          "Complete_Dyson_Sphere": 1
+        },
+        "outputs": [
+          {
+            "name": "full_stellar_energy_capture",
+            "quality_score": 0.92
+          }
+        ],
+        "hazard_level": 5
+      }
+    ],
+    "layout": {
+      "locations": [
+        {
+          "id": "Solar_System_Perimeter",
+          "coordinates": {"x": 0, "y": 0, "z": 0},
+          "type": "survey_zone",
+          "scale": "astronomical_unit"
+        },
+        {
+          "id": "Asteroid_Belt",
+          "coordinates": {"x": 300, "y": 0, "z": 0},
+          "type": "mining_zone",
+          "scale": "astronomical_unit"
+        },
+        {
+          "id": "Orbital_Manufacturing_Station",
+          "coordinates": {"x": 150, "y": 50, "z": 25},
+          "type": "industrial_complex",
+          "scale": "astronomical_unit"
+        },
+        {
+          "id": "Solar_Orbital_Zone", 
+          "coordinates": {"x": 100, "y": 0, "z": 0},
+          "type": "construction_zone",
+          "scale": "astronomical_unit"
+        },
+        {
+          "id": "Inner_Solar_System",
+          "coordinates": {"x": 50, "y": 0, "z": 0},
+          "type": "infrastructure_zone",
+          "scale": "astronomical_unit"
+        },
+        {
+          "id": "Control_Station",
+          "coordinates": {"x": 75, "y": 0, "z": 10},
+          "type": "command_center",
+          "scale": "astronomical_unit"
+        },
+        {
+          "id": "Complete_Solar_System",
+          "coordinates": {"x": 0, "y": 0, "z": 0},
+          "type": "megastructure_zone",
+          "scale": "solar_system"
+        }
+      ]
+    },
+    "production_recipes": [
+      {
+        "product": "Solar_Collection_Panels",
+        "ingredients": [
+          {"resource": "Silicon", "quantity": 30},
+          {"resource": "Rare_Earth_Elements", "quantity": 5},
+          {"resource": "Carbon_Nanotubes", "quantity": 0.8}
+        ],
+        "yield": 1
+      },
+      {
+        "product": "Primary_Ring_Structure",
+        "ingredients": [
+          {"resource": "Iron_Ore", "quantity": 600000000},
+          {"resource": "Carbon_Nanotubes", "quantity": 2000000}
+        ],
+        "yield": 1
+      }
+    ]
+  }
+}

@@ -304,10 +304,30 @@
                             <select id="task-actor-select">
                                 <option value="">Select actor...</option>
                             </select>
+                            <small style="color: #666; font-size: 0.8rem; display: block; margin-top: 0.25rem;">
+                                Any object can act as an actor (e.g., equipment self-maintenance, product self-processing)
+                            </small>
                         </div>
                         <div class="form-group">
-                            <label for="task-location-input">Location:</label>
-                            <input type="text" id="task-location-input" placeholder="location_id">
+                            <label for="task-location-select">Location:</label>
+                            <select id="task-location-select">
+                                <option value="">Select location...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <!-- Empty space to align with radio buttons -->
+                        </div>
+                        <div class="form-group">
+                            <div class="time-input-toggle">
+                                <label>
+                                    <input type="radio" name="time-input-mode" value="duration" checked> Duration
+                                </label>
+                                <label>
+                                    <input type="radio" name="time-input-mode" value="end-time"> End Time
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <div class="form-row">
@@ -316,8 +336,14 @@
                             <input type="text" id="task-start-input" placeholder="HH:MM">
                         </div>
                         <div class="form-group">
-                            <label for="task-duration-input">Duration (minutes):</label>
-                            <input type="number" id="task-duration-input" placeholder="30" min="1">
+                            <div id="duration-input-group">
+                                <label for="task-duration-input">Duration (minutes):</label>
+                                <input type="number" id="task-duration-input" placeholder="30" min="1">
+                            </div>
+                            <div id="end-time-input-group" style="display: none;">
+                                <label for="task-end-time-input">End Time:</label>
+                                <input type="text" id="task-end-time-input" placeholder="HH:MM">
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">

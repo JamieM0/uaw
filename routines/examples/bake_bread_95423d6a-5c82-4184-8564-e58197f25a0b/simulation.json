@@ -1,0 +1,337 @@
+{
+  "simulation": {
+    "uuid": "95423d6a-5c82-4184-8564-e58197f25a0b",
+    "time_unit": "minute",
+    "start_time": "07:00",
+    "end_time": "18:00",
+    "actors": [
+      {
+        "id": "Baker_1",
+        "role": "Professional Baker",
+        "cost_per_hour": 25.0,
+        "availability": [
+          {
+            "from": "07:00",
+            "to": "18:00"
+          }
+        ]
+      },
+      {
+        "id": "Assistant_1",
+        "role": "Bakery Assistant",
+        "cost_per_hour": 18.0,
+        "availability": [
+          {
+            "from": "07:00",
+            "to": "18:00"
+          }
+        ]
+      }
+    ],
+    "resources": [
+      {
+        "id": "Flour_Type_1",
+        "unit": "kg",
+        "starting_stock": 5.0,
+        "cost_per_unit": 2.50
+      },
+      {
+        "id": "Yeast_Active",
+        "unit": "g",
+        "starting_stock": 200.0,
+        "cost_per_unit": 0.05
+      },
+      {
+        "id": "Water_Filtered",
+        "unit": "L",
+        "starting_stock": 10.0,
+        "cost_per_unit": 0.01
+      },
+      {
+        "id": "Salt_Iodized",
+        "unit": "g",
+        "starting_stock": 500.0,
+        "cost_per_unit": 0.003
+      },
+      {
+        "id": "Sugar_White",
+        "unit": "g",
+        "starting_stock": 1000.0,
+        "cost_per_unit": 0.002
+      },
+      {
+        "id": "Olive_Oil",
+        "unit": "ml",
+        "starting_stock": 500.0,
+        "cost_per_unit": 0.012
+      }
+    ],
+    "consumable_resources": [
+      {
+        "name": "Flour_Type_1",
+        "stock": 5.0,
+        "cost_per_unit": 2.50
+      },
+      {
+        "name": "Yeast_Active", 
+        "stock": 200.0,
+        "cost_per_unit": 0.05
+      },
+      {
+        "name": "Water_Filtered",
+        "stock": 10.0,
+        "cost_per_unit": 0.01
+      },
+      {
+        "name": "Salt_Iodized",
+        "stock": 500.0,
+        "cost_per_unit": 0.003
+      }
+    ],
+    "equipment": [
+      {
+        "id": "Mixer_Industrial",
+        "initial_state": "clean",
+        "capacity": "20L"
+      },
+      {
+        "id": "Oven_Commercial",
+        "initial_state": "off",
+        "temperature_range": "150-250C"
+      },
+      {
+        "id": "Proofing_Chamber",
+        "initial_state": "available",
+        "temperature": "27C",
+        "humidity": "80%"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "prepare_ingredients",
+        "name": "Prepare Ingredients",
+        "description": "Measure and prepare all ingredients for bread making",
+        "start": "07:00",
+        "duration": 15,
+        "assigned_to": "Assistant_1",
+        "location": "Prep_Station",
+        "consumes": {
+          "Flour_Type_1": 1.0,
+          "Yeast_Active": 7.0,
+          "Water_Filtered": 0.6,
+          "Salt_Iodized": 10.0,
+          "Sugar_White": 12.0,
+          "Olive_Oil": 30.0
+        },
+        "equipment_used": [],
+        "outputs": [
+          {
+            "name": "ingredient_mise_en_place",
+            "quality_score": 0.95
+          }
+        ],
+        "hazard_level": 0
+      },
+      {
+        "id": "mix_dough",
+        "name": "Mix Dough",
+        "description": "Combine ingredients and knead into smooth dough",
+        "start": "07:15",
+        "duration": 20,
+        "actual_duration": 25,
+        "assigned_to": "Baker_1",
+        "location": "Mixing_Station",
+        "equipment_used": ["Mixer_Industrial"],
+        "equipment_state_changes": {
+          "Mixer_Industrial": {
+            "from": "clean",
+            "to": "dirty"
+          }
+        },
+        "outputs": [
+          {
+            "name": "bread_dough",
+            "quality_score": 0.92
+          }
+        ],
+        "hazard_level": 1
+      },
+      {
+        "id": "first_rise",
+        "name": "First Rise (Bulk Fermentation)",
+        "description": "Allow dough to rise in proofing chamber",
+        "start": "07:40",
+        "duration": 90,
+        "assigned_to": "Baker_1",
+        "location": "Proofing_Chamber",
+        "equipment_used": ["Proofing_Chamber"],
+        "outputs": [
+          {
+            "name": "risen_dough",
+            "quality_score": 0.88
+          }
+        ],
+        "hazard_level": 0
+      },
+      {
+        "id": "shape_loaves",
+        "name": "Shape Loaves",
+        "description": "Divide and shape dough into individual loaves",
+        "start": "09:10",
+        "duration": 15,
+        "assigned_to": "Baker_1",
+        "location": "Shaping_Station",
+        "produces": {
+          "Shaped_Loaves": 4
+        },
+        "outputs": [
+          {
+            "name": "shaped_loaves",
+            "quality_score": 0.90
+          }
+        ],
+        "hazard_level": 0
+      },
+      {
+        "id": "second_rise",
+        "name": "Second Rise (Final Proofing)",
+        "description": "Final proofing of shaped loaves",
+        "start": "09:25",
+        "duration": 45,
+        "assigned_to": "Assistant_1",
+        "location": "Proofing_Chamber",
+        "equipment_used": ["Proofing_Chamber"],
+        "outputs": [
+          {
+            "name": "proofed_loaves",
+            "quality_score": 0.87
+          }
+        ],
+        "hazard_level": 0
+      },
+      {
+        "id": "preheat_oven",
+        "name": "Preheat Oven",
+        "description": "Preheat commercial oven to baking temperature",
+        "start": "09:45",
+        "duration": 25,
+        "assigned_to": "Assistant_1",
+        "location": "Oven_Area",
+        "equipment_used": ["Oven_Commercial"],
+        "equipment_state_changes": {
+          "Oven_Commercial": {
+            "from": "off",
+            "to": "preheated_220C"
+          }
+        },
+        "hazard_level": 2
+      },
+      {
+        "id": "bake_bread",
+        "name": "Bake Bread",
+        "description": "Bake loaves in commercial oven",
+        "start": "10:10",
+        "duration": 35,
+        "assigned_to": "Baker_1",
+        "location": "Oven_Area",
+        "equipment_used": ["Oven_Commercial"],
+        "produces": {
+          "Finished_Bread_Loaves": 4
+        },
+        "outputs": [
+          {
+            "name": "baked_bread",
+            "quality_score": 0.93
+          }
+        ],
+        "hazard_level": 2
+      },
+      {
+        "id": "cool_bread",
+        "name": "Cool Bread",
+        "description": "Allow bread to cool on cooling racks",
+        "start": "10:45",
+        "duration": 60,
+        "assigned_to": "Assistant_1",
+        "location": "Cooling_Area",
+        "outputs": [
+          {
+            "name": "cooled_bread",
+            "quality_score": 0.94
+          }
+        ],
+        "hazard_level": 0
+      },
+      {
+        "id": "clean_equipment",
+        "name": "Clean Equipment",
+        "description": "Clean and sanitize all used equipment",
+        "start": "11:45",
+        "duration": 30,
+        "assigned_to": "Assistant_1",
+        "location": "Cleaning_Station",
+        "equipment_used": ["Mixer_Industrial"],
+        "equipment_state_changes": {
+          "Mixer_Industrial": {
+            "from": "dirty",
+            "to": "clean"
+          }
+        },
+        "hazard_level": 1
+      }
+    ],
+    "layout": {
+      "locations": [
+        {
+          "id": "Prep_Station",
+          "coordinates": {"x": 1, "y": 1},
+          "type": "work_area"
+        },
+        {
+          "id": "Mixing_Station", 
+          "coordinates": {"x": 3, "y": 1},
+          "type": "work_area"
+        },
+        {
+          "id": "Proofing_Chamber",
+          "coordinates": {"x": 5, "y": 1},
+          "type": "equipment_area"
+        },
+        {
+          "id": "Shaping_Station",
+          "coordinates": {"x": 3, "y": 3},
+          "type": "work_area"
+        },
+        {
+          "id": "Oven_Area",
+          "coordinates": {"x": 1, "y": 3},
+          "type": "equipment_area"
+        },
+        {
+          "id": "Cooling_Area",
+          "coordinates": {"x": 5, "y": 3},
+          "type": "storage_area"
+        },
+        {
+          "id": "Cleaning_Station",
+          "coordinates": {"x": 1, "y": 5},
+          "type": "utility_area"
+        }
+      ]
+    },
+    "production_recipes": [
+      {
+        "product": "Finished_Bread_Loaves",
+        "ingredients": [
+          {"resource": "Flour_Type_1", "quantity": 1.0},
+          {"resource": "Yeast_Active", "quantity": 7.0},
+          {"resource": "Water_Filtered", "quantity": 0.6},
+          {"resource": "Salt_Iodized", "quantity": 10.0},
+          {"resource": "Sugar_White", "quantity": 12.0},
+          {"resource": "Olive_Oil", "quantity": 30.0}
+        ],
+        "yield": 4
+      }
+    ]
+  }
+}

@@ -67,24 +67,30 @@ class SpaceEditor {
             });
         }
         
-        // Snapping options
+        // Snapping options - initialize from current checkbox states
         const snapXCheckbox = document.getElementById('snap-x-enabled');
         const snapZCheckbox = document.getElementById('snap-z-enabled');
         const snapToleranceInput = document.getElementById('snap-tolerance');
         
         if (snapXCheckbox) {
+            // Initialize from current checkbox state
+            this.snapSettings.xEnabled = snapXCheckbox.checked;
             snapXCheckbox.addEventListener('change', (e) => {
                 this.snapSettings.xEnabled = e.target.checked;
             });
         }
         
         if (snapZCheckbox) {
+            // Initialize from current checkbox state
+            this.snapSettings.zEnabled = snapZCheckbox.checked;
             snapZCheckbox.addEventListener('change', (e) => {
                 this.snapSettings.zEnabled = e.target.checked;
             });
         }
         
         if (snapToleranceInput) {
+            // Initialize from current input value
+            this.snapSettings.tolerance = parseInt(snapToleranceInput.value) || 10;
             snapToleranceInput.addEventListener('change', (e) => {
                 this.snapSettings.tolerance = parseInt(e.target.value);
             });
@@ -93,6 +99,49 @@ class SpaceEditor {
 
     updateViewTransform() {
         this.world.style.transform = `translate(${this.view.x}px, ${this.view.y}px) scale(${this.view.scale})`;
+    }
+
+    nudgeSelectedRectangle(keyCode) {
+        if (!this.selectedRectId) return;
+        
+        const loc = this.locations.find(l => l.id === this.selectedRectId);
+        const rectEl = document.querySelector(`.location-rect[data-id="${this.selectedRectId}"]`);
+        
+        if (!loc || !rectEl) return;
+        
+        // Calculate nudge distance - smaller increments for precision
+        // Use 1 pixel at 1x zoom, but scale with zoom level for consistency
+        const nudgeDistance = Math.max(1, Math.round(5 / this.view.scale));
+        
+        let deltaX = 0;
+        let deltaY = 0;
+        
+        switch(keyCode) {
+            case 'ArrowUp':
+                deltaY = -nudgeDistance;
+                break;
+            case 'ArrowDown':
+                deltaY = nudgeDistance;
+                break;
+            case 'ArrowLeft':
+                deltaX = -nudgeDistance;
+                break;
+            case 'ArrowRight':
+                deltaX = nudgeDistance;
+                break;
+        }
+        
+        // Update location data
+        loc.shape.x += deltaX;
+        loc.shape.y += deltaY;
+        
+        // Update visual element
+        rectEl.style.left = `${loc.shape.x}px`;
+        rectEl.style.top = `${loc.shape.y}px`;
+        
+        // Update hierarchical display and JSON
+        this.updateHierarchicalDisplay();
+        this.updateJson();
     }
 
     ensureContentVisible() {
@@ -141,10 +190,41 @@ class SpaceEditor {
 
     onCanvasWheel(e) {
         e.preventDefault();
-        const zoomSpeed = 0.1;
-        const delta = e.deltaY > 0 ? -1 : 1;
+        
+        // Detect scroll magnitude - different devices send different deltaY values
+        const rawDelta = Math.abs(e.deltaY);
+        const isTrackpad = rawDelta < 50; // Trackpads typically send smaller values
+        const isMouse = rawDelta >= 100;   // Mice typically send larger values
+        
+        // Normalize delta magnitude to a reasonable range
+        let normalizedDelta = Math.min(rawDelta / 100, 3); // Cap at 3x for very sensitive mice
+        if (isTrackpad) {
+            normalizedDelta = Math.min(rawDelta / 10, 1); // More gentle for trackpads
+        }
+        
+        const direction = e.deltaY > 0 ? -1 : 1;
         const oldScale = this.view.scale;
-        this.view.scale = Math.max(0.1, Math.min(5, oldScale + delta * zoomSpeed));
+        
+        // Adaptive zoom speed based on current zoom level
+        // At 1x zoom: base speed, at higher zooms: slower, at lower zooms: faster
+        const baseSpeed = 0.02; // Much slower base speed
+        const adaptiveSpeed = baseSpeed * Math.pow(this.view.scale, 0.3); // Gentle scaling curve
+        
+        // Calculate zoom step with maximum limits
+        let zoomStep = direction * adaptiveSpeed * normalizedDelta;
+        
+        // Maximum zoom step limits to prevent dramatic jumps
+        const maxStep = this.view.scale * 0.15; // Never change more than 15% of current scale
+        zoomStep = Math.max(-maxStep, Math.min(maxStep, zoomStep));
+        
+        // Apply exponential zoom curve for smoother feel
+        if (direction > 0) {
+            // Zooming in: multiplicative
+            this.view.scale = Math.min(5, this.view.scale * (1 + Math.abs(zoomStep)));
+        } else {
+            // Zooming out: multiplicative
+            this.view.scale = Math.max(0.1, this.view.scale / (1 + Math.abs(zoomStep)));
+        }
         
         // Zoom towards the cursor
         const rect = this.canvas.getBoundingClientRect();
@@ -157,15 +237,24 @@ class SpaceEditor {
     }
 
     onKeyDown(e) {
-        // Don't intercept space key if user is typing in an input field
+        // Don't intercept keys if user is typing in an input field
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.contentEditable === 'true') {
             return;
         }
         
+        // Handle space key for panning
         if (e.code === 'Space' && !this.view.isPanning) {
             e.preventDefault();
             this.view.isPanning = true;
             this.canvas.style.cursor = 'grab';
+            return;
+        }
+        
+        // Handle arrow keys for nudging selected rectangles
+        if (this.selectedRectId && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+            e.preventDefault();
+            this.nudgeSelectedRectangle(e.code);
+            return;
         }
     }
     
@@ -177,7 +266,8 @@ class SpaceEditor {
         
         if (e.code === 'Space') {
             this.view.isPanning = false;
-            this.canvas.style.cursor = 'crosshair'; // Or 'default'
+            // Set cursor based on current mode
+            this.canvas.style.cursor = this.isDrawing ? 'crosshair' : 'default';
         }
     }
 
@@ -630,7 +720,7 @@ class SpaceEditor {
             return;
         }
 
-        // Only allow drawing on the canvas itself or the world container
+        // Only allow drawing/panning on the canvas itself or the world container
         if (e.target !== this.canvas && !e.target.classList.contains('space-world')) return;
 
         if (this.isDrawing) {
@@ -654,6 +744,10 @@ class SpaceEditor {
 
             this.world.appendChild(this.activeRectEl);
         } else {
+            // Start background panning when not in drawing mode
+            this.view.isPanning = true;
+            this.view.lastPan = { x: e.clientX, y: e.clientY };
+            this.canvas.style.cursor = 'grabbing';
             this.deselectAll();
         }
     }
@@ -738,8 +832,9 @@ class SpaceEditor {
     }
     
     onMouseUp(e) {
-        if (this.view.isPanning) {
-            this.canvas.style.cursor = 'grab';
+        if (this.view.isPanning && !this.isDrawing && !this.isDragging) {
+            this.view.isPanning = false;
+            this.canvas.style.cursor = 'default';
             return;
         }
 

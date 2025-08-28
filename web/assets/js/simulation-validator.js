@@ -196,8 +196,8 @@ class SimulationValidator {
   }
 
   validateActorOverlap(metric) {
-    // Correctly get actors from the new 'objects' array
-    const actors = (this.simulation.objects || []).filter(o => o.type === 'actor');
+    // Phase 4: Extended Actors - Check overlap for all objects that can act as actors
+    const actors = (this.simulation.objects || []);
     const tasks = this.simulation.tasks || [];
     let issueFound = false;
 
@@ -312,7 +312,8 @@ class SimulationValidator {
 
   validateMissingBufferTime(metric) {
     const minBuffer = metric.computation.params?.minimum_buffer_minutes || 5;
-    const actors = (this.simulation.objects || []).filter(o => o.type === 'actor');
+    // Phase 4: Extended Actors - Check buffer times for all objects that can act as actors
+    const actors = (this.simulation.objects || []);
     const tasks = this.simulation.tasks || [];
     let issueFound = false;
     
@@ -334,7 +335,8 @@ class SimulationValidator {
   }
 
   validateUnassignedTasks(metric) {
-    const actorIds = new Set((this.simulation.objects || []).filter(o => o.type === 'actor').map(a => a.id));
+    // Phase 4: Extended Actors - Accept any object as a potential actor
+    const actorIds = new Set((this.simulation.objects || []).map(a => a.id));
     const tasks = this.simulation.tasks || [];
     let issueFound = false;
 
@@ -343,11 +345,11 @@ class SimulationValidator {
         this.addResult({ metricId: metric.id, status: 'error', message: `Task '${task.id}' is missing an 'actor_id'.` });
         issueFound = true;
       } else if (!actorIds.has(task.actor_id)) {
-        this.addResult({ metricId: metric.id, status: 'error', message: `Task '${task.id}' is assigned to an undefined actor: '${task.actor_id}'.` });
+        this.addResult({ metricId: metric.id, status: 'error', message: `Task '${task.id}' is assigned to an undefined object: '${task.actor_id}'.` });
         issueFound = true;
       }
     }
-    if (!issueFound) { this.addResult({ metricId: metric.id, status: 'success', message: 'All tasks are assigned to valid actors.' }); }
+    if (!issueFound) { this.addResult({ metricId: metric.id, status: 'success', message: 'All tasks are assigned to valid objects (actors).' }); }
   }
   
   validateUnusedResources(metric) {
@@ -393,6 +395,7 @@ class SimulationValidator {
   }
 
   validateProfitability(metric) {
+    // For profitability, we still focus on traditional actors for labor cost calculation
     const actors = (this.simulation.objects || []).filter(o => o.type === 'actor');
     const resources = (this.simulation.objects || []).filter(o => o.type === 'resource' || o.type === 'product');
     const tasks = this.simulation.tasks || [];

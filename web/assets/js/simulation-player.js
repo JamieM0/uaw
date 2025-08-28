@@ -114,14 +114,140 @@ class SimulationPlayer {
         this.ui.currentTimeDisplay.textContent = formattedTime;
         this.ui.liveTimeSpans.forEach(span => span.textContent = formattedTime);
         
-        // 3. Calculate and Render Live States
+        // 3. Calculate live object states (including created/deleted objects)
+        this.updateLiveObjectState();
+        
+        // 4. Calculate and Render Live States  
         this.updateEquipmentState();
         this.updateResourceState();
     }
 
+    updateLiveObjectState() {
+        // Track objects that have been created or deleted at current timeline position
+        this.liveObjects = {
+            equipment: [...this.simData.equipment],
+            resources: [...this.simData.resources],
+            actors: [...this.simData.actors || []],
+            products: [...this.simData.products || []],
+            created: [], // Objects created during simulation
+            deleted: [] // Objects deleted during simulation (with their stored state)
+        };
+
+        const sortedTasks = [...(this.simData.tasks || [])].sort((a,b) => a.start_minutes - b.start_minutes);
+        
+        for (const task of sortedTasks) {
+            if (task.start_minutes > this.playheadTime) break; // Stop if task hasn't started
+            
+            const isTaskActive = this.playheadTime >= task.start_minutes && this.playheadTime < task.end_minutes;
+            const isTaskCompleted = this.playheadTime >= task.end_minutes;
+            
+            (task.interactions || []).forEach(interaction => {
+                // Handle object creation
+                if (interaction.add_objects) {
+                    interaction.add_objects.forEach(newObj => {
+                        const shouldCreate = isTaskActive || (isTaskCompleted && !interaction.revert_after);
+                        
+                        if (shouldCreate && !this.liveObjects.created.find(obj => obj.id === newObj.id)) {
+                            // Create the object
+                            const createdObject = {
+                                ...newObj,
+                                createdAt: task.start_minutes,
+                                createdBy: task.id,
+                                emoji: newObj.emoji || this.getDefaultEmojiForType(newObj.type)
+                            };
+                            this.liveObjects.created.push(createdObject);
+                            
+                            // Add to appropriate category
+                            if (newObj.type === 'equipment') {
+                                this.liveObjects.equipment.push(createdObject);
+                            } else if (newObj.type === 'resource') {
+                                this.liveObjects.resources.push(createdObject);
+                            } else if (newObj.type === 'actor') {
+                                this.liveObjects.actors.push(createdObject);
+                            } else if (newObj.type === 'product') {
+                                this.liveObjects.products.push(createdObject);
+                            }
+                        } else if (!shouldCreate && this.liveObjects.created.find(obj => obj.id === newObj.id)) {
+                            // Remove the object (revert creation)
+                            this.liveObjects.created = this.liveObjects.created.filter(obj => obj.id !== newObj.id);
+                            this.liveObjects.equipment = this.liveObjects.equipment.filter(obj => obj.id !== newObj.id);
+                            this.liveObjects.resources = this.liveObjects.resources.filter(obj => obj.id !== newObj.id);
+                            this.liveObjects.actors = this.liveObjects.actors.filter(obj => obj.id !== newObj.id);
+                            this.liveObjects.products = this.liveObjects.products.filter(obj => obj.id !== newObj.id);
+                        }
+                    });
+                }
+                
+                // Handle object deletion
+                if (interaction.remove_objects) {
+                    interaction.remove_objects.forEach(objectId => {
+                        const shouldDelete = isTaskActive || (isTaskCompleted && !interaction.revert_after);
+                        
+                        if (shouldDelete && !this.liveObjects.deleted.find(obj => obj.id === objectId)) {
+                            // Find and store the object before deletion
+                            const toDelete = this.findObjectById(objectId);
+                            if (toDelete) {
+                                this.liveObjects.deleted.push({
+                                    ...toDelete,
+                                    deletedAt: task.start_minutes,
+                                    deletedBy: task.id
+                                });
+                                
+                                // Remove from live arrays
+                                this.liveObjects.equipment = this.liveObjects.equipment.filter(obj => obj.id !== objectId);
+                                this.liveObjects.resources = this.liveObjects.resources.filter(obj => obj.id !== objectId);
+                                this.liveObjects.actors = this.liveObjects.actors.filter(obj => obj.id !== objectId);
+                                this.liveObjects.products = this.liveObjects.products.filter(obj => obj.id !== objectId);
+                            }
+                        } else if (!shouldDelete && this.liveObjects.deleted.find(obj => obj.id === objectId)) {
+                            // Restore the object (revert deletion)
+                            const deletedObj = this.liveObjects.deleted.find(obj => obj.id === objectId);
+                            if (deletedObj) {
+                                this.liveObjects.deleted = this.liveObjects.deleted.filter(obj => obj.id !== objectId);
+                                
+                                // Restore to appropriate category
+                                if (deletedObj.type === 'equipment') {
+                                    this.liveObjects.equipment.push(deletedObj);
+                                } else if (deletedObj.type === 'resource') {
+                                    this.liveObjects.resources.push(deletedObj);
+                                } else if (deletedObj.type === 'actor') {
+                                    this.liveObjects.actors.push(deletedObj);
+                                } else if (deletedObj.type === 'product') {
+                                    this.liveObjects.products.push(deletedObj);
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    findObjectById(objectId) {
+        return this.simData.equipment.find(obj => obj.id === objectId) ||
+               this.simData.resources.find(obj => obj.id === objectId) ||
+               (this.simData.actors || []).find(obj => obj.id === objectId) ||
+               (this.simData.products || []).find(obj => obj.id === objectId) ||
+               (this.liveObjects?.created || []).find(obj => obj.id === objectId);
+    }
+
+    getDefaultEmojiForType(type) {
+        const defaults = {
+            'equipment': '⚙️',
+            'resource': '📦',
+            'actor': '👤',
+            'product': '📋'
+        };
+        return defaults[type] || '❓';
+    }
+
     updateEquipmentState() {
+        if (!this.ui.liveEquipmentPanel) return;
+        
         const states = {};
-        this.simData.equipment.forEach(e => { states[e.id] = e.state || 'available'; });
+        // Use live equipment list (includes created/deleted objects)
+        const liveEquipment = this.liveObjects?.equipment || this.simData.equipment;
+        liveEquipment.forEach(e => { states[e.id] = e.state || 'available'; });
 
         const sortedTasks = [...(this.simData.tasks || [])].sort((a,b) => a.start_minutes - b.start_minutes);
         
@@ -140,7 +266,7 @@ class SimulationPlayer {
             
             // Handle new-style interactions for equipment
             (task.interactions || []).forEach(interaction => {
-                const targetObject = this.simData.equipment?.find(eq => eq.id === interaction.object_id);
+                const targetObject = liveEquipment?.find(eq => eq.id === interaction.object_id);
                 if (targetObject) {
                     const stateChanges = interaction.property_changes?.state;
                     if (stateChanges) {
@@ -155,23 +281,31 @@ class SimulationPlayer {
             });
         }
 
-        this.ui.liveEquipmentPanel.innerHTML = this.simData.equipment.map(item => `
-            <div class="resource-item">
+        // Render live equipment with creation/deletion indicators
+        this.ui.liveEquipmentPanel.innerHTML = liveEquipment.map(item => {
+            const isCreated = this.liveObjects?.created?.find(obj => obj.id === item.id);
+            const createdClass = isCreated ? 'created-object' : '';
+            const createdTitle = isCreated ? `Created by ${isCreated.createdBy}` : '';
+            
+            return `
+            <div class="resource-item ${createdClass}" title="${createdTitle}">
                 <div class="resource-emoji">${item.emoji || "❓"}</div>
                 <div class="resource-info">
-                    <div class="resource-name">${item.name || item.id}</div>
+                    <div class="resource-name">${item.name || item.id}${isCreated ? ' ✨' : ''}</div>
                     <div class="resource-state ${states[item.id]}">${states[item.id]}</div>
                 </div>
             </div>
-        `).join("");
+            `;
+        }).join("");
     }
 
     updateResourceState() {
         if (!this.ui.liveResourcesPanel) return; // Defensive check
         
         const stocks = {};
-        // Correctly initialize stock from the new object structure
-        this.simData.resources.forEach(r => { 
+        // Use live resources list (includes created/deleted objects)
+        const liveResources = this.liveObjects?.resources || this.simData.resources;
+        liveResources.forEach(r => { 
             stocks[r.id] = r.properties.quantity || 0; 
         });
 
@@ -193,7 +327,7 @@ class SimulationPlayer {
                 
                 // Handle new-style interactions for resources
                 (task.interactions || []).forEach(interaction => {
-                    const targetResource = this.simData.resources?.find(res => res.id === interaction.object_id);
+                    const targetResource = liveResources?.find(res => res.id === interaction.object_id);
                     if (targetResource) {
                         const quantityChanges = interaction.property_changes?.quantity;
                         if (quantityChanges && quantityChanges.delta !== undefined) {
@@ -206,16 +340,22 @@ class SimulationPlayer {
             }
         }
 
-        // Correctly render the live state using the new object structure
-        this.ui.liveResourcesPanel.innerHTML = this.simData.resources.map(resource => `
-            <div class="resource-item">
+        // Render live resources with creation/deletion indicators
+        this.ui.liveResourcesPanel.innerHTML = liveResources.map(resource => {
+            const isCreated = this.liveObjects?.created?.find(obj => obj.id === resource.id);
+            const createdClass = isCreated ? 'created-object' : '';
+            const createdTitle = isCreated ? `Created by ${isCreated.createdBy}` : '';
+            
+            return `
+            <div class="resource-item ${createdClass}" title="${createdTitle}">
                 <div class="resource-emoji">${resource.emoji || "❓"}</div>
                 <div class="resource-info">
-                    <div class="resource-name">${resource.id}</div>
+                    <div class="resource-name">${resource.id}${isCreated ? ' ✨' : ''}</div>
                     <div class="resource-state available">Stock: ${stocks[resource.id].toFixed(2)} ${resource.properties.unit}</div>
                 </div>
             </div>
-        `).join("");
+            `;
+        }).join("");
     }
 
     initScrubbing() {

@@ -2775,42 +2775,387 @@ function updateObjectTypeFields(type, container) {
     container.innerHTML = html;
 }
 
+// Get current timeline context for task creation
+function getCurrentTimelineContext() {
+    let context = {
+        currentTime: null,
+        currentTimeFormatted: null,
+        activeActors: [],
+        availableLocations: [],
+        objectStates: {}
+    };
+
+    // Get current time from simulation player
+    if (player && player.playheadTime !== undefined) {
+        context.currentTime = player.playheadTime;
+        const hours = Math.floor(player.playheadTime / 60);
+        const minutes = Math.floor(player.playheadTime % 60);
+        context.currentTimeFormatted = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    }
+
+    // Get simulation data and extract context
+    try {
+        const simulation = JSON.parse(editor.getValue());
+        const simulationData = simulation.simulation;
+        
+        if (!simulationData) return context;
+
+        // Get available locations
+        if (simulationData.layout?.locations) {
+            context.availableLocations = simulationData.layout.locations.map(loc => ({
+                id: loc.id,
+                name: loc.name || loc.id
+            }));
+        }
+
+        // Get all objects as potential actors (Phase 4: Extended Actors)
+        const allObjects = simulationData.objects || [];
+        
+        if (context.currentTime !== null) {
+            // Find objects that are active (not busy) at current time
+            allObjects.forEach(obj => {
+                const isObjectBusy = simulationData.tasks?.some(task => 
+                    task.actor_id === obj.id && 
+                    task.start_minutes <= context.currentTime && 
+                    task.end_minutes > context.currentTime
+                );
+                
+                // Get object's current location (from their last completed task or initial location)
+                let currentLocation = obj.location || obj.properties?.location;
+                const objectTasks = simulationData.tasks?.filter(task => task.actor_id === obj.id)
+                    .sort((a, b) => a.start_minutes - b.start_minutes) || [];
+                
+                for (const task of objectTasks) {
+                    if (task.end_minutes <= context.currentTime && task.location) {
+                        currentLocation = task.location;
+                    }
+                }
+                
+                // Determine display role based on object type
+                let displayRole;
+                if (obj.type === 'actor') {
+                    displayRole = obj.properties?.role || 'Actor';
+                } else if (obj.type === 'equipment') {
+                    displayRole = 'Equipment (Self-Operating)';
+                } else if (obj.type === 'resource') {
+                    displayRole = 'Resource (Autonomous)';
+                } else if (obj.type === 'product') {
+                    displayRole = 'Product (Self-Processing)';
+                } else {
+                    displayRole = obj.type || 'Unknown';
+                }
+                
+                context.activeActors.push({
+                    id: obj.id,
+                    name: obj.name,
+                    type: obj.type,
+                    role: displayRole,
+                    isBusy: isObjectBusy,
+                    currentLocation: currentLocation,
+                    isTraditionalActor: obj.type === 'actor'
+                });
+            });
+        } else {
+            // No timeline position available, just list all objects as potential actors
+            context.activeActors = allObjects.map(obj => {
+                let displayRole;
+                if (obj.type === 'actor') {
+                    displayRole = obj.properties?.role || 'Actor';
+                } else if (obj.type === 'equipment') {
+                    displayRole = 'Equipment (Self-Operating)';
+                } else if (obj.type === 'resource') {
+                    displayRole = 'Resource (Autonomous)';
+                } else if (obj.type === 'product') {
+                    displayRole = 'Product (Self-Processing)';
+                } else {
+                    displayRole = obj.type || 'Unknown';
+                }
+                
+                return {
+                    id: obj.id,
+                    name: obj.name,
+                    type: obj.type,
+                    role: displayRole,
+                    isBusy: false,
+                    currentLocation: obj.location || obj.properties?.location,
+                    isTraditionalActor: obj.type === 'actor'
+                };
+            });
+        }
+
+    } catch (e) {
+        console.warn('Error extracting timeline context:', e);
+    }
+
+    return context;
+}
+
+// Validate object dependencies before deletion
+function validateObjectDeletion(simulation, objectIdToDelete, taskStartTime) {
+    const warnings = [];
+    const errors = [];
+    
+    if (!simulation.simulation?.tasks) {
+        return { valid: true, warnings, errors };
+    }
+    
+    // Find tasks that reference this object and start after the deletion task
+    const futureTasks = simulation.simulation.tasks.filter(task => {
+        const taskStartMinutes = parseTimeToMinutes(task.start);
+        return taskStartMinutes >= taskStartTime;
+    });
+    
+    futureTasks.forEach(task => {
+        // Check if task uses this object in old-style interactions
+        if (task.equipment_interactions) {
+            const hasReference = task.equipment_interactions.some(interaction => 
+                interaction.id === objectIdToDelete
+            );
+            if (hasReference) {
+                errors.push(`Task "${task.id}" references deleted object "${objectIdToDelete}" in equipment_interactions`);
+            }
+        }
+        
+        // Check if task uses this object in new-style interactions
+        if (task.interactions) {
+            const hasReference = task.interactions.some(interaction => 
+                interaction.object_id === objectIdToDelete
+            );
+            if (hasReference) {
+                errors.push(`Task "${task.id}" references deleted object "${objectIdToDelete}" in interactions`);
+            }
+        }
+        
+        // Check if task consumes/produces this object (old-style)
+        if (task.consumes && task.consumes[objectIdToDelete]) {
+            errors.push(`Task "${task.id}" consumes deleted object "${objectIdToDelete}"`);
+        }
+        
+        if (task.produces && task.produces[objectIdToDelete]) {
+            warnings.push(`Task "${task.id}" produces to deleted object "${objectIdToDelete}" - this may be intentional`);
+        }
+        
+        // Check if actor is assigned to this task
+        if (task.actor_id === objectIdToDelete) {
+            errors.push(`Task "${task.id}" is assigned to deleted actor "${objectIdToDelete}"`);
+        }
+    });
+    
+    return {
+        valid: errors.length === 0,
+        warnings,
+        errors
+    };
+}
+
+// Helper function to parse time string to minutes
+function parseTimeToMinutes(timeStr) {
+    if (!timeStr) return 0;
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + (minutes || 0);
+}
+
 function openAddTaskModal() {
     const modal = document.getElementById('add-task-modal');
     const actorSelect = document.getElementById('task-actor-select');
+    const locationSelect = document.getElementById('task-location-select');
+    const startTimeInput = document.getElementById('task-start-input');
     
     // Clear form
     modal.querySelectorAll('input, select').forEach(input => {
         if (input.type === 'checkbox') input.checked = false;
-        else input.value = '';
+        else if (input.type === 'radio') {
+            if (input.value === 'duration') input.checked = true;
+            else input.checked = false;
+        } else {
+            input.value = '';
+        }
     });
     document.getElementById('interactions-container').innerHTML = '';
     interactionCounter = 0;
     
-    // Populate actors from current simulation
-    try {
-        const simulation = JSON.parse(editor.getValue());
-        const actors = simulation.simulation?.objects?.filter(obj => obj.type === 'actor') || [];
-        
-        actorSelect.innerHTML = '<option value="">Select actor...</option>';
-        actors.forEach(actor => {
-            const option = document.createElement('option');
-            option.value = actor.id;
-            option.textContent = `${actor.name} (${actor.properties?.role || actor.id})`;
-            actorSelect.appendChild(option);
-        });
-    } catch (e) {
-        actorSelect.innerHTML = '<option value="">Select actor... (No valid simulation loaded)</option>';
+    // Reset duration/end-time toggle display
+    document.getElementById('duration-input-group').style.display = 'block';
+    document.getElementById('end-time-input-group').style.display = 'none';
+    
+    // Get timeline context
+    const context = getCurrentTimelineContext();
+    
+    // Auto-populate start time from timeline position
+    if (context.currentTimeFormatted) {
+        startTimeInput.value = context.currentTimeFormatted;
+        startTimeInput.style.backgroundColor = '#e8f4f8';
+        startTimeInput.title = 'Auto-populated from timeline position';
     }
     
+    // Populate location dropdown
+    locationSelect.innerHTML = '<option value="">Select location...</option>';
+    if (context.availableLocations.length > 0) {
+        context.availableLocations.forEach(location => {
+            const option = document.createElement('option');
+            option.value = location.id;
+            option.textContent = location.name;
+            locationSelect.appendChild(option);
+        });
+    }
+    
+    // Populate actors from current simulation
+    actorSelect.innerHTML = '<option value="">Select actor...</option>';
+    
+    if (context.activeActors.length > 0) {
+        // Group actors by type for better organization
+        const actorsByType = {
+            actor: [],
+            equipment: [],
+            resource: [],
+            product: []
+        };
+        
+        context.activeActors.forEach(actor => {
+            if (actorsByType[actor.type]) {
+                actorsByType[actor.type].push(actor);
+            }
+        });
+        
+        // Add grouped options to select
+        Object.entries(actorsByType).forEach(([type, actors]) => {
+            if (actors.length > 0) {
+                // Add optgroup for each type
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = type === 'actor' ? '👤 Traditional Actors' : 
+                               type === 'equipment' ? '⚙️ Equipment (Self-Operating)' :
+                               type === 'resource' ? '📦 Resources (Autonomous)' :
+                               type === 'product' ? '📋 Products (Self-Processing)' : type;
+                
+                // Sort actors within group: non-busy first, then by name
+                const sortedActors = [...actors].sort((a, b) => {
+                    if (a.isBusy !== b.isBusy) return a.isBusy ? 1 : -1;
+                    return a.name.localeCompare(b.name);
+                });
+                
+                sortedActors.forEach(actor => {
+                    const option = document.createElement('option');
+                    option.value = actor.id;
+                    option.textContent = `${actor.name}${actor.isBusy ? ' - BUSY' : ''}`;
+                    if (actor.isBusy) {
+                        option.style.color = '#999';
+                        option.disabled = true;
+                    }
+                    optgroup.appendChild(option);
+                });
+                
+                actorSelect.appendChild(optgroup);
+            }
+        });
+        
+        // If only one available actor, select it automatically (prioritize traditional actors)
+        const availableActors = context.activeActors.filter(a => !a.isBusy);
+        const traditionalActors = availableActors.filter(a => a.isTraditionalActor);
+        
+        if (traditionalActors.length === 1 && availableActors.length === 1) {
+            // Only one traditional actor available
+            actorSelect.value = traditionalActors[0].id;
+            
+            // Auto-populate location from selected actor's current location
+            if (traditionalActors[0].currentLocation && locationSelect) {
+                locationSelect.value = traditionalActors[0].currentLocation;
+                locationSelect.style.backgroundColor = '#e8f4f8';
+                locationSelect.title = 'Auto-populated from actor location';
+            }
+        } else if (availableActors.length === 1) {
+            // Only one actor of any type available
+            actorSelect.value = availableActors[0].id;
+            
+            // Auto-populate location from selected actor's current location
+            if (availableActors[0].currentLocation && locationSelect) {
+                locationSelect.value = availableActors[0].currentLocation;
+                locationSelect.style.backgroundColor = '#e8f4f8';
+                locationSelect.title = 'Auto-populated from object location';
+            }
+        }
+    } else {
+        actorSelect.innerHTML = '<option value="">No objects available as actors</option>';
+    }
+    
+    // Setup time input toggle handlers
+    setupTimeInputToggle();
+    
     modal.style.display = 'flex';
+}
+
+// Handle duration/end-time toggle functionality
+function setupTimeInputToggle() {
+    const durationRadio = document.querySelector('input[name="time-input-mode"][value="duration"]');
+    const endTimeRadio = document.querySelector('input[name="time-input-mode"][value="end-time"]');
+    const durationGroup = document.getElementById('duration-input-group');
+    const endTimeGroup = document.getElementById('end-time-input-group');
+    const durationInput = document.getElementById('task-duration-input');
+    const endTimeInput = document.getElementById('task-end-time-input');
+    const startTimeInput = document.getElementById('task-start-input');
+
+    function toggleInputMode() {
+        if (durationRadio.checked) {
+            durationGroup.style.display = 'block';
+            endTimeGroup.style.display = 'none';
+        } else {
+            durationGroup.style.display = 'none';
+            endTimeGroup.style.display = 'block';
+        }
+    }
+
+    function calculateEndTime() {
+        const startTime = startTimeInput.value;
+        const duration = parseInt(durationInput.value);
+        
+        if (startTime && duration) {
+            const [hours, minutes] = startTime.split(':').map(Number);
+            const startMinutes = hours * 60 + minutes;
+            const endMinutes = startMinutes + duration;
+            const endHours = Math.floor(endMinutes / 60);
+            const endMins = endMinutes % 60;
+            
+            endTimeInput.value = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+        }
+    }
+
+    function calculateDuration() {
+        const startTime = startTimeInput.value;
+        const endTime = endTimeInput.value;
+        
+        if (startTime && endTime) {
+            const [startHours, startMinutes] = startTime.split(':').map(Number);
+            const [endHours, endMinutes] = endTime.split(':').map(Number);
+            const startTotalMinutes = startHours * 60 + startMinutes;
+            const endTotalMinutes = endHours * 60 + endMinutes;
+            const duration = endTotalMinutes - startTotalMinutes;
+            
+            if (duration > 0) {
+                durationInput.value = duration;
+            }
+        }
+    }
+
+    // Event listeners
+    durationRadio.addEventListener('change', toggleInputMode);
+    endTimeRadio.addEventListener('change', toggleInputMode);
+    
+    // Auto-calculate values when inputs change
+    durationInput.addEventListener('input', calculateEndTime);
+    startTimeInput.addEventListener('input', () => {
+        if (durationRadio.checked) calculateEndTime();
+        else calculateDuration();
+    });
+    endTimeInput.addEventListener('input', calculateDuration);
+
+    // Initial setup
+    toggleInputMode();
 }
 
 function addInteraction() {
     const container = document.getElementById('interactions-container');
     const interactionId = ++interactionCounter;
     
-    // Get available objects from current simulation
+    // Get available objects from current simulation for object selection
     let objects = [];
     try {
         const simulation = JSON.parse(editor.getValue());
@@ -2819,9 +3164,12 @@ function addInteraction() {
         // Empty simulation
     }
     
-    const objectOptions = objects.map(obj => 
-        `<option value="${obj.id}">${obj.name} (${obj.type})</option>`
-    ).join('');
+    const objectOptions = [
+        '<option value="self">🔄 Self (Actor performs action on itself)</option>',
+        ...objects.map(obj => 
+            `<option value="${obj.id}">${obj.name} (${obj.type})</option>`
+        )
+    ].join('');
     
     const interactionDiv = document.createElement('div');
     interactionDiv.className = 'interaction-item';
@@ -2830,56 +3178,81 @@ function addInteraction() {
             <h5>Interaction ${interactionId}</h5>
             <button type="button" class="remove-interaction-btn" onclick="removeInteraction(this)">Remove</button>
         </div>
-        <div class="form-row">
-            <div class="form-group">
-                <label>Object:</label>
-                <select class="interaction-object-select">
-                    <option value="">Select object...</option>
-                    ${objectOptions}
-                </select>
-            </div>
-        </div>
         <div class="property-changes-container">
-            <div class="property-changes-header">
-                <h6>Property Changes:</h6>
-                <button type="button" class="btn-secondary" onclick="addPropertyChange(this)">+ Add Property Change</button>
-            </div>
             <div class="property-changes-list"></div>
-        </div>
-        <div class="form-row">
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" class="revert-after-checkbox"> Revert After Task
-                </label>
-            </div>
         </div>
     `;
     
     container.appendChild(interactionDiv);
+    
+    // Automatically add the first property change with object options
+    addPropertyChange(interactionDiv.querySelector('.property-changes-container'), objectOptions);
 }
 
 function removeInteraction(button) {
     button.closest('.interaction-item').remove();
 }
 
-function addPropertyChange(button) {
-    const container = button.parentElement.parentElement.querySelector('.property-changes-list');
+function addPropertyChange(buttonOrContainer, objectOptions = null) {
+    // Handle both button click and direct container call
+    let container;
+    if (buttonOrContainer.classList && buttonOrContainer.classList.contains('property-changes-container')) {
+        container = buttonOrContainer.querySelector('.property-changes-list');
+    } else {
+        container = buttonOrContainer.parentElement.parentElement.querySelector('.property-changes-list');
+    }
+    
+    // Get available objects if not provided
+    if (!objectOptions) {
+        let objects = [];
+        try {
+            const simulation = JSON.parse(editor.getValue());
+            objects = simulation.simulation?.objects || [];
+        } catch (e) {
+            // Empty simulation
+        }
+        objectOptions = [
+            '<option value="self">🔄 Self (Actor performs action on itself)</option>',
+            ...objects.map(obj => 
+                `<option value="${obj.id}">${obj.name} (${obj.type})</option>`
+            )
+        ].join('');
+    }
     const changeDiv = document.createElement('div');
     changeDiv.className = 'property-change-group';
     changeDiv.innerHTML = `
         <div class="form-row">
             <div class="form-group">
-                <label>Property:</label>
-                <input type="text" class="property-name" placeholder="state, quantity, etc.">
-            </div>
-            <div class="form-group">
                 <label>Change Type:</label>
                 <select class="property-change-type">
                     <option value="from_to">From/To</option>
                     <option value="delta">Delta</option>
+                    <option value="add_object">Add Object</option>
+                    <option value="remove_object">Remove Object</option>
                 </select>
             </div>
         </div>
+        
+        <!-- Object selection for property changes (from_to, delta) -->
+        <div class="object-selection-fields">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Object:</label>
+                    <select class="interaction-object-select">
+                        <option value="">Select object...</option>
+                        ${objectOptions}
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Property:</label>
+                    <input type="text" class="property-name" placeholder="state, quantity, etc.">
+                </div>
+            </div>
+        </div>
+        
+        <!-- From/To fields -->
         <div class="property-from-to-fields">
             <div class="form-row">
                 <div class="form-group">
@@ -2892,6 +3265,8 @@ function addPropertyChange(button) {
                 </div>
             </div>
         </div>
+        
+        <!-- Delta fields -->
         <div class="property-delta-fields" style="display: none;">
             <div class="form-row">
                 <div class="form-group">
@@ -2900,7 +3275,81 @@ function addPropertyChange(button) {
                 </div>
             </div>
         </div>
-        <button type="button" class="btn-secondary" onclick="removePropertyChange(this)">Remove Property</button>
+        
+        <!-- Add Object fields -->
+        <div class="property-add-object-fields" style="display: none;">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Object Type:</label>
+                    <select class="object-type">
+                        <option value="">Select type...</option>
+                        <option value="actor">Actor (People, AI agents)</option>
+                        <option value="equipment">Equipment (Tools, machines)</option>
+                        <option value="resource">Resource (Materials, consumables)</option>
+                        <option value="product">Product (Outputs, deliverables)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Object ID:</label>
+                    <input type="text" class="object-id" placeholder="unique_id">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Name:</label>
+                    <input type="text" class="object-name" placeholder="Display name">
+                </div>
+                <div class="form-group">
+                    <label>Emoji:</label>
+                    <input type="text" class="object-emoji" placeholder="🔧" maxlength="2">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Location:</label>
+                    <input type="text" class="object-location" placeholder="location_id">
+                </div>
+                <div class="form-group">
+                    <label>Created at time:</label>
+                    <select class="creation-timing">
+                        <option value="start">Task start</option>
+                        <option value="end">Task completion</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Remove Object fields -->
+        <div class="property-remove-object-fields" style="display: none;">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Target Object:</label>
+                    <select class="remove-object-id">
+                        <option value="">Select object to remove...</option>
+                        ${objectOptions}
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; width: auto;">
+                        <input type="checkbox" class="store-deleted-state">
+                        <span>Store state for potential restoration</span>
+                    </label>
+                    <small style="color: #666; font-size: 0.8rem;">Recommended for objects that might be recreated later</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Revert checkbox -->
+        <div class="form-row">
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem; width: auto;">
+                    <input type="checkbox" class="revert-after-checkbox">
+                    <span>Revert After Task</span>
+                </label>
+            </div>
+        </div>
     `;
     
     container.appendChild(changeDiv);
@@ -2908,15 +3357,30 @@ function addPropertyChange(button) {
     // Handle change type toggle
     const changeTypeSelect = changeDiv.querySelector('.property-change-type');
     changeTypeSelect.addEventListener('change', function() {
+        const objectSelectionFields = changeDiv.querySelector('.object-selection-fields');
         const fromToFields = changeDiv.querySelector('.property-from-to-fields');
         const deltaFields = changeDiv.querySelector('.property-delta-fields');
+        const addObjectFields = changeDiv.querySelector('.property-add-object-fields');
+        const removeObjectFields = changeDiv.querySelector('.property-remove-object-fields');
         
-        if (this.value === 'delta') {
-            fromToFields.style.display = 'none';
-            deltaFields.style.display = 'block';
-        } else {
+        // Hide all fields first
+        objectSelectionFields.style.display = 'none';
+        fromToFields.style.display = 'none';
+        deltaFields.style.display = 'none';
+        addObjectFields.style.display = 'none';
+        removeObjectFields.style.display = 'none';
+        
+        // Show appropriate fields based on selection
+        if (this.value === 'from_to') {
+            objectSelectionFields.style.display = 'block';
             fromToFields.style.display = 'block';
-            deltaFields.style.display = 'none';
+        } else if (this.value === 'delta') {
+            objectSelectionFields.style.display = 'block';
+            deltaFields.style.display = 'block';
+        } else if (this.value === 'add_object') {
+            addObjectFields.style.display = 'block';
+        } else if (this.value === 'remove_object') {
+            removeObjectFields.style.display = 'block';
         }
     });
 }
@@ -2940,6 +3404,19 @@ document.getElementById('task-cancel-btn').addEventListener('click', function() 
 
 document.getElementById('task-add-btn').addEventListener('click', function() {
     addTaskToSimulation();
+});
+
+// Clear validation styling when user starts typing/selecting
+['task-id-input', 'task-emoji-input', 'task-actor-select', 'task-start-input', 'task-duration-input', 'task-end-time-input'].forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+        element.addEventListener('input', function() {
+            this.classList.remove('required-missing');
+        });
+        element.addEventListener('change', function() {
+            this.classList.remove('required-missing');
+        });
+    }
 });
 
 document.getElementById('add-interaction-btn').addEventListener('click', function() {
@@ -3035,13 +3512,60 @@ function addTaskToSimulation() {
     const taskId = document.getElementById('task-id-input').value.trim();
     const emoji = document.getElementById('task-emoji-input').value.trim();
     const actorId = document.getElementById('task-actor-select').value;
-    const location = document.getElementById('task-location-input').value.trim();
+    const location = document.getElementById('task-location-select').value;
     const startTime = document.getElementById('task-start-input').value;
-    const duration = parseInt(document.getElementById('task-duration-input').value);
     const dependsInput = document.getElementById('task-depends-input').value.trim();
     
-    if (!taskId || !emoji || !actorId || !startTime || !duration) {
-        alert('Please fill in all required fields');
+    // Get duration based on current input mode
+    const durationRadio = document.querySelector('input[name="time-input-mode"][value="duration"]');
+    let duration;
+    
+    if (durationRadio.checked) {
+        duration = parseInt(document.getElementById('task-duration-input').value);
+    } else {
+        // Calculate duration from start and end time
+        const endTime = document.getElementById('task-end-time-input').value;
+        if (startTime && endTime) {
+            const [startHours, startMinutes] = startTime.split(':').map(Number);
+            const [endHours, endMinutes] = endTime.split(':').map(Number);
+            const startTotalMinutes = startHours * 60 + startMinutes;
+            const endTotalMinutes = endHours * 60 + endMinutes;
+            duration = endTotalMinutes - startTotalMinutes;
+        }
+    }
+    
+    // Clear any previous validation styling
+    document.querySelectorAll('.required-missing').forEach(el => el.classList.remove('required-missing'));
+    
+    let hasErrors = false;
+    const requiredFields = [
+        { value: taskId, element: document.getElementById('task-id-input'), name: 'Task ID' },
+        { value: emoji, element: document.getElementById('task-emoji-input'), name: 'Emoji' },
+        { value: actorId, element: document.getElementById('task-actor-select'), name: 'Actor' },
+        { value: startTime, element: document.getElementById('task-start-input'), name: 'Start Time' },
+    ];
+    
+    // Check duration field based on current input mode
+    const durationElement = durationRadio.checked 
+        ? document.getElementById('task-duration-input')
+        : document.getElementById('task-end-time-input');
+    const durationFieldName = durationRadio.checked ? 'Duration' : 'End Time';
+    
+    if (!duration || duration <= 0) {
+        durationElement.classList.add('required-missing');
+        hasErrors = true;
+    }
+    
+    // Check other required fields
+    requiredFields.forEach(field => {
+        if (!field.value) {
+            field.element.classList.add('required-missing');
+            hasErrors = true;
+        }
+    });
+    
+    if (hasErrors) {
+        alert('Please fill in all required fields with valid values');
         return;
     }
     
@@ -3058,29 +3582,83 @@ function addTaskToSimulation() {
         interactions: []
     };
     
-    // Process interactions
-    const interactionItems = document.querySelectorAll('#interactions-container .interaction-item');
-    interactionItems.forEach(item => {
-        const objectId = item.querySelector('.interaction-object-select').value;
-        if (!objectId) return;
+    // Process interactions - each property change group is now independent
+    const propertyGroups = document.querySelectorAll('#interactions-container .property-change-group');
+    propertyGroups.forEach(group => {
+        const changeType = group.querySelector('.property-change-type').value;
+        const revertAfter = group.querySelector('.revert-after-checkbox').checked;
         
-        const interaction = {
-            object_id: objectId,
-            property_changes: {}
-        };
-        
-        const revertAfter = item.querySelector('.revert-after-checkbox').checked;
-        if (revertAfter) {
-            interaction.revert_after = true;
-        }
-        
-        // Process property changes
-        const propertyGroups = item.querySelectorAll('.property-change-group');
-        propertyGroups.forEach(group => {
-            const propertyName = group.querySelector('.property-name').value.trim();
-            const changeType = group.querySelector('.property-change-type').value;
+        if (changeType === 'add_object') {
+            const objectType = group.querySelector('.object-type').value;
+            const objectId = group.querySelector('.object-id').value.trim();
+            const objectName = group.querySelector('.object-name').value.trim();
+            const objectEmoji = group.querySelector('.object-emoji')?.value.trim();
+            const objectLocation = group.querySelector('.object-location').value.trim();
             
-            if (!propertyName) return;
+            if (objectType && objectId && objectName) {
+                const newObject = {
+                    type: objectType,
+                    id: objectId,
+                    name: objectName,
+                    properties: { location: objectLocation || '' }
+                };
+                
+                if (objectEmoji) {
+                    newObject.emoji = objectEmoji;
+                }
+                
+                const interaction = {
+                    add_objects: [newObject]
+                };
+                if (revertAfter) interaction.revert_after = true;
+                newTask.interactions.push(interaction);
+            }
+        } else if (changeType === 'remove_object') {
+            const removeObjectId = group.querySelector('.remove-object-id').value.trim();
+            if (removeObjectId) {
+                // Validate object deletion dependencies
+                const taskStartMinutes = parseTimeToMinutes(startTime);
+                const validation = validateObjectDeletion(simulation, removeObjectId, taskStartMinutes);
+                
+                if (!validation.valid && !revertAfter) {
+                    // Show validation errors and warnings
+                    let message = `Warning: Deleting object "${removeObjectId}" may cause issues:\n\n`;
+                    
+                    if (validation.errors.length > 0) {
+                        message += 'ERRORS:\n' + validation.errors.join('\n') + '\n\n';
+                    }
+                    
+                    if (validation.warnings.length > 0) {
+                        message += 'WARNINGS:\n' + validation.warnings.join('\n') + '\n\n';
+                    }
+                    
+                    message += 'Do you want to proceed anyway? Consider using "Revert After Task" to temporarily remove the object.';
+                    
+                    if (!confirm(message)) {
+                        return; // Don't add the interaction
+                    }
+                }
+                
+                const interaction = {
+                    remove_objects: [removeObjectId]
+                };
+                if (revertAfter) interaction.revert_after = true;
+                newTask.interactions.push(interaction);
+            }
+        } else {
+            // Property changes (from_to, delta)
+            const rawObjectId = group.querySelector('.interaction-object-select')?.value;
+            const propertyName = group.querySelector('.property-name')?.value.trim();
+            
+            if (!rawObjectId || !propertyName) return;
+            
+            // Handle self-interactions by using the actor's ID
+            const objectId = rawObjectId === 'self' ? actorId : rawObjectId;
+            
+            const interaction = {
+                object_id: objectId,
+                property_changes: {}
+            };
             
             if (changeType === 'delta') {
                 const delta = parseFloat(group.querySelector('.property-delta').value);
@@ -3094,10 +3672,11 @@ function addTaskToSimulation() {
                     interaction.property_changes[propertyName] = { from: from, to: to };
                 }
             }
-        });
-        
-        if (Object.keys(interaction.property_changes).length > 0) {
-            newTask.interactions.push(interaction);
+            
+            if (Object.keys(interaction.property_changes).length > 0) {
+                if (revertAfter) interaction.revert_after = true;
+                newTask.interactions.push(interaction);
+            }
         }
     });
     
