@@ -1577,7 +1577,8 @@ function processSimulationData(simulationData) {
     const allObjects = sim.objects || [];
     const actors = allObjects.filter(o => o.type === 'actor');
     const equipment = allObjects.filter(o => o.type === 'equipment');
-    const resources = allObjects.filter(o => o.type === 'resource_pile' || o.type === 'product');
+    const resources = allObjects.filter(o => o.type === 'resource');
+    const products = allObjects.filter(o => o.type === 'product');
 
     const tasksWithMinutes = (sim.tasks || []).map(task => {
         let taskStartMinutes;
@@ -1657,6 +1658,7 @@ function processSimulationData(simulationData) {
         actors: processedActors,
         equipment: equipment,
         resources: resources,
+        products: products,
         tasks: processedTasks,
         article_title: sim.meta?.article_title || "Process Simulation",
         domain: sim.meta?.domain || "General",
@@ -1930,27 +1932,46 @@ function renderSimulation() {
             );
         }
 
-        // --- NEW Dynamic State Panels ---
+        // --- Dynamic State Panels ---
         const liveStateContainer = document.createElement('div');
         liveStateContainer.id = 'live-state-container';
         liveStateContainer.style.display = 'flex';
         liveStateContainer.style.gap = '1rem';
         liveStateContainer.style.marginTop = '1rem';
 
-        // Panel for live equipment state
-        const liveEquipmentPanel = document.createElement("div");
-        liveEquipmentPanel.id = 'live-equipment-panel';
-        liveEquipmentPanel.className = "resources-panel";
-        liveEquipmentPanel.innerHTML = `<h5>⚙️ Equipment State (at <span class="live-time">00:00</span>)</h5><div class="resource-grid"></div>`;
+        // Create panels dynamically based on object types in simulation data
+        const detectedTypes = new Set();
         
-        // Panel for live resource stock
-        const liveResourcesPanel = document.createElement("div");
-        liveResourcesPanel.id = 'live-resources-panel';
-        liveResourcesPanel.className = "resources-panel";
-        liveResourcesPanel.innerHTML = `<h5>📦 Resource Stock (at <span class="live-time">00:00</span>)</h5><div class="resource-grid"></div>`;
+        // Add types that have existing objects
+        ['equipment', 'resources', 'actors', 'products'].forEach(type => {
+            if (currentSimulationData[type] && currentSimulationData[type].length > 0) {
+                detectedTypes.add(type);
+            }
+        });
+        
+        // Also check for objects that will be created during tasks
+        (currentSimulationData.tasks || []).forEach(task => {
+            (task.interactions || []).forEach(interaction => {
+                if (interaction.add_objects) {
+                    interaction.add_objects.forEach(obj => {
+                        if (obj.type) {
+                            detectedTypes.add(obj.type);
+                        }
+                    });
+                }
+            });
+        });
+        
+        const availableTypes = Array.from(detectedTypes);
 
-        liveStateContainer.appendChild(liveEquipmentPanel);
-        liveStateContainer.appendChild(liveResourcesPanel);
+        availableTypes.forEach(objectType => {
+            const panel = document.createElement("div");
+            panel.id = `live-${objectType}-panel`;
+            panel.className = "resources-panel";
+            panel.innerHTML = `<h5>${objectType} (at <span class="live-time">00:00</span>)</h5><div class="resource-grid"></div>`;
+            liveStateContainer.appendChild(panel);
+        });
+
         container.appendChild(liveStateContainer);
 
         const stats = document.createElement("div");

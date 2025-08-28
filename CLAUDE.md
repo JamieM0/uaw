@@ -110,3 +110,14 @@ Each generated article lives in `routines/flow/<uuid>/` containing:
 - Import errors: Install missing Python packages with pip3
 - Template errors: Validate JSON structure matches schema expectations
 - Playground not loading: Check browser console for JavaScript errors
+
+## Development Best Practices
+
+### Approach to Implementation Tasks
+When working on implementation tasks, always follow this approach:
+1. **Ask clarifying questions** before starting implementation to avoid assumptions
+2. **Explain your planned approach** so the user can provide feedback
+3. **Break down complex tasks** into smaller, manageable steps
+4. **Verify requirements** especially for UI behavior, data handling, and integration points
+
+This ensures alignment with user expectations and prevents rework from misunderstood requirements.

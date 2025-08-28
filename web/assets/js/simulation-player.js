@@ -12,12 +12,26 @@ class SimulationPlayer {
             currentTimeDisplay: document.getElementById('player-current-time'),
             playhead: document.getElementById('simulation-playhead'),
             timeMarkers: document.querySelector('.timeline-time-markers'),
-            liveEquipmentPanel: document.querySelector('#live-equipment-panel .resource-grid'),
-            liveResourcesPanel: document.querySelector('#live-resources-panel .resource-grid'),
             liveTimeSpans: document.querySelectorAll('.live-time'),
+            livePanels: this.findLivePanels(),
         };
 
         this.init();
+    }
+
+    findLivePanels() {
+        const panels = {};
+        document.querySelectorAll('[id^="live-"][id$="-panel"]').forEach(panel => {
+            const match = panel.id.match(/^live-(.+)-panel$/);
+            if (match) {
+                const objectType = match[1];
+                const resourceGrid = panel.querySelector('.resource-grid');
+                if (resourceGrid) {
+                    panels[objectType] = resourceGrid;
+                }
+            }
+        });
+        return panels;
     }
 
     init() {
@@ -118,8 +132,7 @@ class SimulationPlayer {
         this.updateLiveObjectState();
         
         // 4. Calculate and Render Live States  
-        this.updateEquipmentState();
-        this.updateResourceState();
+        this.updateAllObjectStates();
     }
 
     updateLiveObjectState() {
@@ -241,13 +254,29 @@ class SimulationPlayer {
         return defaults[type] || '❓';
     }
 
-    updateEquipmentState() {
-        if (!this.ui.liveEquipmentPanel) return;
+    updateAllObjectStates() {
+        Object.entries(this.ui.livePanels).forEach(([objectType, panel]) => {
+            this.updateObjectTypeState(objectType, panel);
+        });
+    }
+
+    updateObjectTypeState(objectType, panel) {
+        if (!panel) return;
+
+        const liveObjects = this.liveObjects?.[objectType] || this.simData[objectType] || [];
         
+        if (objectType === 'equipment') {
+            this.updateEquipmentTypeState(objectType, panel, liveObjects);
+        } else if (objectType === 'resources') {
+            this.updateResourceTypeState(objectType, panel, liveObjects);
+        } else {
+            this.updateGenericObjectTypeState(objectType, panel, liveObjects);
+        }
+    }
+
+    updateEquipmentTypeState(objectType, panel, liveObjects) {
         const states = {};
-        // Use live equipment list (includes created/deleted objects)
-        const liveEquipment = this.liveObjects?.equipment || this.simData.equipment;
-        liveEquipment.forEach(e => { states[e.id] = e.state || 'available'; });
+        liveObjects.forEach(e => { states[e.id] = e.state || 'available'; });
 
         const sortedTasks = [...(this.simData.tasks || [])].sort((a,b) => a.start_minutes - b.start_minutes);
         
@@ -266,7 +295,7 @@ class SimulationPlayer {
             
             // Handle new-style interactions for equipment
             (task.interactions || []).forEach(interaction => {
-                const targetObject = liveEquipment?.find(eq => eq.id === interaction.object_id);
+                const targetObject = liveObjects?.find(eq => eq.id === interaction.object_id);
                 if (targetObject) {
                     const stateChanges = interaction.property_changes?.state;
                     if (stateChanges) {
@@ -281,8 +310,18 @@ class SimulationPlayer {
             });
         }
 
+        // Sort objects chronologically by their creation time, then by their id
+        const sortedObjects = [...liveObjects].sort((a, b) => {
+            const aCreated = this.liveObjects?.created?.find(obj => obj.id === a.id);
+            const bCreated = this.liveObjects?.created?.find(obj => obj.id === b.id);
+            const aTime = aCreated?.createdAt || 0;
+            const bTime = bCreated?.createdAt || 0;
+            if (aTime !== bTime) return aTime - bTime;
+            return a.id.localeCompare(b.id);
+        });
+
         // Render live equipment with creation/deletion indicators
-        this.ui.liveEquipmentPanel.innerHTML = liveEquipment.map(item => {
+        panel.innerHTML = sortedObjects.map(item => {
             const isCreated = this.liveObjects?.created?.find(obj => obj.id === item.id);
             const createdClass = isCreated ? 'created-object' : '';
             const createdTitle = isCreated ? `Created by ${isCreated.createdBy}` : '';
@@ -299,14 +338,10 @@ class SimulationPlayer {
         }).join("");
     }
 
-    updateResourceState() {
-        if (!this.ui.liveResourcesPanel) return; // Defensive check
-        
+    updateResourceTypeState(objectType, panel, liveObjects) {
         const stocks = {};
-        // Use live resources list (includes created/deleted objects)
-        const liveResources = this.liveObjects?.resources || this.simData.resources;
-        liveResources.forEach(r => { 
-            stocks[r.id] = r.properties.quantity || 0; 
+        liveObjects.forEach(r => { 
+            stocks[r.id] = r.properties?.quantity || 0; 
         });
 
         const sortedTasks = [...(this.simData.tasks || [])].sort((a,b) => a.start_minutes - b.start_minutes);
@@ -327,7 +362,7 @@ class SimulationPlayer {
                 
                 // Handle new-style interactions for resources
                 (task.interactions || []).forEach(interaction => {
-                    const targetResource = liveResources?.find(res => res.id === interaction.object_id);
+                    const targetResource = liveObjects?.find(res => res.id === interaction.object_id);
                     if (targetResource) {
                         const quantityChanges = interaction.property_changes?.quantity;
                         if (quantityChanges && quantityChanges.delta !== undefined) {
@@ -340,8 +375,18 @@ class SimulationPlayer {
             }
         }
 
+        // Sort objects chronologically by their creation time, then by their id
+        const sortedObjects = [...liveObjects].sort((a, b) => {
+            const aCreated = this.liveObjects?.created?.find(obj => obj.id === a.id);
+            const bCreated = this.liveObjects?.created?.find(obj => obj.id === b.id);
+            const aTime = aCreated?.createdAt || 0;
+            const bTime = bCreated?.createdAt || 0;
+            if (aTime !== bTime) return aTime - bTime;
+            return a.id.localeCompare(b.id);
+        });
+
         // Render live resources with creation/deletion indicators
-        this.ui.liveResourcesPanel.innerHTML = liveResources.map(resource => {
+        panel.innerHTML = sortedObjects.map(resource => {
             const isCreated = this.liveObjects?.created?.find(obj => obj.id === resource.id);
             const createdClass = isCreated ? 'created-object' : '';
             const createdTitle = isCreated ? `Created by ${isCreated.createdBy}` : '';
@@ -352,6 +397,35 @@ class SimulationPlayer {
                 <div class="resource-info">
                     <div class="resource-name">${resource.id}${isCreated ? ' ✨' : ''}</div>
                     <div class="resource-state available">Stock: ${stocks[resource.id].toFixed(2)} ${resource.properties.unit}</div>
+                </div>
+            </div>
+            `;
+        }).join("");
+    }
+
+    updateGenericObjectTypeState(objectType, panel, liveObjects) {
+        // For actors, products, and any other generic object types
+        // Sort objects chronologically by their creation time, then by their id
+        const sortedObjects = [...liveObjects].sort((a, b) => {
+            const aCreated = this.liveObjects?.created?.find(obj => obj.id === a.id);
+            const bCreated = this.liveObjects?.created?.find(obj => obj.id === b.id);
+            const aTime = aCreated?.createdAt || 0;
+            const bTime = bCreated?.createdAt || 0;
+            if (aTime !== bTime) return aTime - bTime;
+            return a.id.localeCompare(b.id);
+        });
+
+        panel.innerHTML = sortedObjects.map(item => {
+            const isCreated = this.liveObjects?.created?.find(obj => obj.id === item.id);
+            const createdClass = isCreated ? 'created-object' : '';
+            const createdTitle = isCreated ? `Created by ${isCreated.createdBy}` : '';
+            
+            return `
+            <div class="resource-item ${createdClass}" title="${createdTitle}">
+                <div class="resource-emoji">${item.emoji || "❓"}</div>
+                <div class="resource-info">
+                    <div class="resource-name">${item.name || item.id}${isCreated ? ' ✨' : ''}</div>
+                    <div class="resource-state available">${item.type || objectType}</div>
                 </div>
             </div>
             `;
