@@ -85,6 +85,44 @@ html, body {
         font-size: 1.5rem;
     }
     
+    /* Logo switching for mobile */
+    .logo-desktop {
+        display: none;
+    }
+    
+    .logo-mobile {
+        display: block;
+    }
+    
+    .logo {
+        max-width: 120px;
+        height: 50px;
+    }
+    
+    /* Hide "View As" text on mobile */
+    .header-persona-selector label {
+        display: none;
+    }
+    
+    .header-persona-selector {
+        gap: 0;
+    }
+    
+    #persona-selector-header {
+        min-width: 120px;
+        font-size: var(--font-size-xs);
+    }
+    
+    /* Fix header layout for mobile */
+    .header-container {
+        height: 60px;
+        padding: 0 var(--spacing-md);
+    }
+    
+    .site-header {
+        padding: var(--spacing-xs) 0;
+    }
+    
     .hero {
         padding: var(--spacing-xl) 0;
     }
@@ -116,6 +154,8 @@ html, body {
         opacity: 0;
         transition: all var(--transition-normal);
         pointer-events: none;
+        z-index: 999;
+        border-top: 1px solid var(--border-color);
     }
     
     .main-nav.active {
@@ -143,6 +183,35 @@ html, body {
     .footer-links {
         flex-direction: column;
         gap: var(--spacing-xl);
+    }
+    
+    /* Better mobile margins and spacing */
+    .container {
+        padding: 0 var(--spacing-md);
+    }
+    
+    /* Compress "What we offer" section on mobile */
+    .features {
+        padding: var(--spacing-xl) 0;
+    }
+    
+    .feature-card {
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-md);
+    }
+    
+    .feature-icon {
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .feature-card h3 {
+        font-size: var(--font-size-lg);
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .feature-card p {
+        font-size: var(--font-size-sm);
+        line-height: 1.4;
     }
 }
 

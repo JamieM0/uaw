@@ -15,7 +15,8 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="container header-container">
                 <div class="logo">
                     <a href="/">
-                        <img src="/assets/images/logo-primary-stacked.png" alt="Universal Automation Wiki Logo">
+                        <img src="/assets/images/logo-primary-stacked.png" alt="Universal Automation Wiki Logo" class="logo-desktop">
+                        <img src="/assets/images/logo-abbrev-stacked.png" alt="Universal Automation Wiki Logo" class="logo-mobile">
                     </a>
                 </div>
                 <nav class="main-nav">
@@ -32,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <!-- Options will be populated by main.js -->
                     </select>
                 </div>
-                <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
                     <span></span>
                     <span></span>
                     <span></span>

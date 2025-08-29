@@ -190,6 +190,15 @@ ul, ol {
     padding: 0; /* Remove any padding that might be restricting the image */
 }
 
+/* Logo switching for mobile */
+.logo-mobile {
+    display: none;
+}
+
+.logo-desktop {
+    display: block;
+}
+
 .main-nav ul {
     display: flex;
     list-style: none;
@@ -218,6 +227,12 @@ ul, ol {
     background: transparent;
     border: none;
     cursor: pointer;
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+}
+
+.mobile-menu-toggle:hover {
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 .mobile-menu-toggle span {
@@ -227,6 +242,20 @@ ul, ol {
     background-color: var(--text-color);
     margin: 5px 0;
     transition: all var(--transition-normal);
+    transform-origin: center;
+}
+
+/* Hamburger animation when menu is active */
+.mobile-menu-toggle[aria-expanded="true"] span:nth-child(1) {
+    transform: rotate(45deg) translate(7px, 7px);
+}
+
+.mobile-menu-toggle[aria-expanded="true"] span:nth-child(2) {
+    opacity: 0;
+}
+
+.mobile-menu-toggle[aria-expanded="true"] span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
 }
 
 /* Header Persona Selector Styles (to match old sidebar style) */
