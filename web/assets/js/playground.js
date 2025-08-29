@@ -1,9 +1,26 @@
 // Playground JavaScript for Universal Automation Wiki
 // Main application logic for the simulation playground
 
+document.addEventListener('DOMContentLoaded', () => {
+    const welcomeOverlay = document.getElementById('welcome-overlay');
+    const continueBtn = document.getElementById('welcome-continue-btn');
+    const dontShowAgainCheckbox = document.getElementById('dont-show-again');
+
+    if (localStorage.getItem('uaw-playground-welcome-seen')) {
+        welcomeOverlay.style.display = 'none';
+    }
+
+    continueBtn.addEventListener('click', () => {
+        welcomeOverlay.style.display = 'none';
+        if (dontShowAgainCheckbox.checked) {
+            localStorage.setItem('uaw-playground-welcome-seen', 'true');
+        }
+    });
+});
+
 console.log("SCRIPT START: Initializing global variables.");
 let editor;
-let tutorialManager, player, spaceEditor;
+let tutorialManager, player, spaceEditor, emojiPicker;
 let tutorialData = null;
 let isPlaygroundInitialized = false; // Flag to prevent double-initialization
 let autoRender = true;
@@ -58,6 +75,7 @@ function initializePlayground() {
         console.error("INIT ERROR: Canvas or Properties Panel element not found!");
     }
     
+    initializeEmojiPicker();
     initializeTutorial();
     initializeExperimentalLLM();
 
@@ -560,6 +578,64 @@ function updateUndoButton() {
     undoBtn.disabled = historyIndex <= 0;
 }
 
+async function initializeEmojiPicker() {
+    console.log("INIT: Initializing emoji picker...");
+    
+    try {
+        // Create and initialize emoji picker
+        emojiPicker = new EmojiPicker({
+            theme: 'uaw',
+            searchPlaceholder: 'Search workplace emojis...',
+            maxRecentEmojis: 24
+        });
+        
+        const initialized = await emojiPicker.initialize();
+        
+        if (initialized) {
+            // Attach to existing emoji input fields by ID
+            const taskEmojiInput = document.getElementById('task-emoji-input');
+            const objectEmojiInput = document.getElementById('object-emoji-input');
+            
+            if (taskEmojiInput) {
+                emojiPicker.attachToInput(taskEmojiInput, { autoOpen: true });
+                console.log("INIT: Emoji picker attached to task emoji input");
+            }
+            
+            if (objectEmojiInput) {
+                emojiPicker.attachToInput(objectEmojiInput, { autoOpen: true });
+                console.log("INIT: Emoji picker attached to object emoji input");
+            }
+            
+            // Attach to all emoji input fields by class
+            const emojiFields = document.querySelectorAll('.object-emoji, input[maxlength="2"]');
+            emojiFields.forEach(field => {
+                // Skip if already attached by ID
+                if (field.id === 'task-emoji-input' || field.id === 'object-emoji-input') {
+                    return;
+                }
+                
+                emojiPicker.attachToInput(field, { autoOpen: true });
+                console.log("INIT: Emoji picker attached to emoji field:", field.className || field.id);
+            });
+            
+            // Attach to Monaco editor if available
+            if (editor) {
+                emojiPicker.attachToMonaco(editor);
+                console.log("INIT: Emoji picker attached to Monaco editor");
+            }
+            
+            // Make emoji picker globally accessible for dynamic field attachment
+            window.emojiPicker = emojiPicker;
+            
+            console.log("INIT: Emoji picker initialization completed successfully");
+        } else {
+            console.warn("INIT: Emoji picker failed to initialize");
+        }
+    } catch (error) {
+        console.error("INIT: Emoji picker initialization error:", error);
+    }
+}
+
 function initializeTutorial() {
     if (!tutorialData || !editor) return;
 
@@ -982,6 +1058,11 @@ function openDialog(title, content) {
     `;
 
     overlay.style.display = "flex";
+    
+    // Attach emoji pickers to any new emoji fields in the dialog
+    if (window.emojiPicker) {
+        window.emojiPicker.attachToDynamicFields(dialogContent);
+    }
 }
 
 function closeDialog() {
@@ -3403,7 +3484,17 @@ function addPropertyChange(buttonOrContainer, objectOptions = null) {
         } else if (this.value === 'remove_object') {
             removeObjectFields.style.display = 'block';
         }
+        
+        // Attach emoji pickers to any new emoji fields
+        if (window.emojiPicker) {
+            window.emojiPicker.attachToDynamicFields(changeDiv);
+        }
     });
+    
+    // Attach emoji pickers to initial fields
+    if (window.emojiPicker) {
+        window.emojiPicker.attachToDynamicFields(changeDiv);
+    }
 }
 
 function removePropertyChange(button) {

@@ -1,0 +1,238 @@
+/* Emoji Picker CSS for Universal Automation Wiki */
+/* Matches UAW design system and component styling */
+
+.emoji-picker {
+    position: absolute;
+    width: 320px;
+    max-height: 400px;
+    background: var(--bg-color, #ffffff);
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: var(--border-radius-lg, 12px);
+    box-shadow: var(--shadow-lg, 0 10px 15px rgba(0, 0, 0, 0.1));
+    font-family: var(--font-family-body, 'Inter', sans-serif);
+    font-size: var(--font-size-sm, 0.875rem);
+    z-index: 10000;
+    display: none;
+    overflow: hidden;
+}
+
+.emoji-picker-header {
+    padding: var(--spacing-md, 16px);
+    padding-bottom: var(--spacing-sm, 8px);
+    border-bottom: 1px solid var(--border-color, #e0e0e0);
+    background: var(--bg-light, #f1f3f5);
+}
+
+.emoji-search-container {
+    position: relative;
+    margin-bottom: var(--spacing-md, 16px);
+}
+
+.emoji-search {
+    width: 100%;
+    padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+    padding-right: 36px;
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: var(--border-radius-md, 8px);
+    background: var(--bg-color, #ffffff);
+    font-size: var(--font-size-sm, 0.875rem);
+    font-family: var(--font-family-body, 'Inter', sans-serif);
+    color: var(--text-color, #333);
+    transition: border-color var(--transition-normal, 0.2s);
+    box-sizing: border-box;
+}
+
+.emoji-search:focus {
+    outline: none;
+    border-color: var(--primary-color, #126ca8);
+    box-shadow: 0 0 0 2px rgba(18, 108, 168, 0.1);
+}
+
+.emoji-search::placeholder {
+    color: var(--text-lighter, #888);
+}
+
+.emoji-search-icon {
+    position: absolute;
+    right: var(--spacing-sm, 8px);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-lighter, #888);
+    pointer-events: none;
+    font-size: 14px;
+}
+
+.emoji-categories {
+    display: flex;
+    gap: var(--spacing-xs, 4px);
+    flex-wrap: wrap;
+}
+
+.emoji-category-tab {
+    padding: var(--spacing-sm, 8px);
+    border: none;
+    background: transparent;
+    border-radius: var(--border-radius-md, 8px);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    transition: background-color var(--transition-normal, 0.2s);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.emoji-category-tab:hover {
+    background: var(--bg-hover, #e9ecef);
+}
+
+.emoji-category-tab.active {
+    background: var(--primary-color, #126ca8);
+    color: white;
+}
+
+.emoji-picker-body {
+    max-height: 280px;
+    overflow-y: auto;
+    padding: var(--spacing-md, 16px);
+}
+
+.emoji-picker-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.emoji-picker-body::-webkit-scrollbar-track {
+    background: var(--bg-light, #f1f3f5);
+    border-radius: 3px;
+}
+
+.emoji-picker-body::-webkit-scrollbar-thumb {
+    background: var(--border-color, #e0e0e0);
+    border-radius: 3px;
+}
+
+.emoji-picker-body::-webkit-scrollbar-thumb:hover {
+    background: var(--text-lighter, #888);
+}
+
+.emoji-category-title {
+    font-weight: 600;
+    color: var(--text-color, #333);
+    margin-bottom: var(--spacing-sm, 8px);
+    font-size: var(--font-size-sm, 0.875rem);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.emoji-items {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: var(--spacing-xs, 4px);
+}
+
+.emoji-item {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: var(--border-radius-sm, 4px);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    line-height: 1;
+    transition: all var(--transition-normal, 0.2s);
+    padding: 0;
+}
+
+.emoji-item:hover {
+    background: var(--bg-hover, #e9ecef);
+    transform: scale(1.1);
+}
+
+.emoji-item:active {
+    transform: scale(0.95);
+}
+
+.emoji-no-results {
+    text-align: center;
+    color: var(--text-light, #666);
+    font-style: italic;
+    padding: var(--spacing-xl, 32px) var(--spacing-md, 16px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .emoji-picker {
+        width: 280px;
+        max-height: 350px;
+    }
+    
+    .emoji-items {
+        grid-template-columns: repeat(7, 1fr);
+    }
+    
+    .emoji-item {
+        width: 28px;
+        height: 28px;
+        font-size: 18px;
+    }
+}
+
+/* Integration styles for emoji-enabled inputs */
+.emoji-picker-enabled {
+    position: relative;
+}
+
+.emoji-picker-enabled:focus {
+    border-color: var(--primary-color, #126ca8);
+}
+
+/* Visual indicator for emoji-enabled inputs */
+.emoji-picker-enabled::after {
+    content: '😀';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    opacity: 0.3;
+    pointer-events: none;
+    transition: opacity var(--transition-normal, 0.2s);
+}
+
+.emoji-picker-enabled:hover::after,
+.emoji-picker-enabled:focus::after {
+    opacity: 0.6;
+}
+
+/* Special styling for single emoji inputs (maxlength="2") */
+input[maxlength="2"].emoji-picker-enabled {
+    text-align: center;
+    font-size: 18px;
+    padding-right: 8px;
+}
+
+input[maxlength="2"].emoji-picker-enabled::after {
+    display: none;
+}
+
+/* Light mode only - matches UAW playground styling */
+.emoji-picker {
+    color: var(--text-color, #333);
+}
+
+.emoji-category-title {
+    color: var(--text-color, #333);
+}
+
+.emoji-search {
+    color: var(--text-color, #333);
+}
+
+.emoji-no-results {
+    color: var(--text-light, #666);
+}

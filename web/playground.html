@@ -13,6 +13,7 @@
         <link rel="stylesheet" href="/assets/css/simulation.css" />
         <link rel="stylesheet" href="/assets/css/space-editor.css" />
         <link rel="stylesheet" href="/assets/css/playground.css" />
+        <link rel="stylesheet" href="/assets/css/emoji-picker.css" />
 
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -24,6 +25,7 @@
 
         <script src="/assets/js/simulation-validator.js"></script>
         <script src="/assets/js/space-editor.js"></script>
+        <script src="/assets/js/emoji-picker.js"></script>
 
         <script src="/assets/js/tutorial.js"></script>
         <script src="/assets/js/tutorial-validator.js"></script>
@@ -34,6 +36,29 @@
 
     </head>
     <body>
+        <div id="welcome-overlay" class="dialog-overlay" style="display: flex;">
+            <div class="dialog">
+                <h2 class="special-subtitle">Welcome to the Simulation Playground!</h2>
+                <p>This playground is an interactive tool for testing and visualising automation workflows.</p>
+                <p>You can create, edit, and simulate complex processes to understand how they work and identify potential improvements.</p>
+                <p>The Universal Automation Wiki (UAW) project, including this playground, is open source. We welcome contributions and feedback from the community. You can find the project on <a href="https://github.com/JamieM0/uaw" target="_blank">GitHub</a>.</p>
+                <p><strong>Pro Tip:</strong> You can use emojis in any text field!
+                <ul>
+                    <li>Press <strong>Ctrl + .</strong> or <strong>Cmd + .</strong> to open the emoji selector.</li>
+                    <li>In the JSON editor, right-click and choose 'Insert Emoji'.</li>
+                </ul>
+                </p>
+                <div class="dialog-buttons" style="margin-top: 1rem; justify-content: center; flex-direction: column;">
+                    <div style="margin-bottom: 1rem;">
+                        <label>
+                            <input type="checkbox" id="dont-show-again" checked>
+                            Don't show again
+                        </label>
+                    </div>
+                    <button type="button" class="btn-primary" id="welcome-continue-btn">Continue</button>
+                </div>
+            </div>
+        </div>
         <header class="playground-header">
             <div class="container header-container">
                 <div class="logo">
@@ -481,3 +506,4 @@
         <script src="/assets/js/playground.js"></script>
     </body>
 </html>
+
