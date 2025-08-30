@@ -4227,6 +4227,48 @@ async function handleFeedbackSubmit(event) {
     }
 }
 
+// Global ESC key handler to close any open modal
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        // List all possible modals and overlays
+        const modals = [
+            'dialog-overlay',
+            'welcome-overlay', 
+            'save-modal',
+            'load-modal',
+            'add-task-modal',
+            'add-object-modal',
+            'llm-info-overlay',
+            'llm-chat-overlay',
+            'feedback-modal'
+        ];
+        
+        // Find and close the first visible modal
+        for (const modalId of modals) {
+            const modal = document.getElementById(modalId);
+            if (modal && (modal.style.display === 'flex' || modal.style.display === 'block')) {
+                // Handle special cases that have close functions or cleanup
+                if (modalId === 'dialog-overlay') {
+                    closeDialog();
+                } else if (modalId === 'llm-chat-overlay') {
+                    // Clean up LLM session if exists
+                    if (typeof llmSession !== 'undefined' && llmSession && llmSession.destroy) {
+                        llmSession.destroy();
+                    }
+                    if (typeof llmSession !== 'undefined') {
+                        llmSession = null;
+                    }
+                    modal.style.display = 'none';
+                } else {
+                    // For all other modals, simply hide them
+                    modal.style.display = 'none';
+                }
+                break; // Only close the first visible modal
+            }
+        }
+    }
+});
+
 // Initialize feedback modal when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     initializeFeedbackModal();
