@@ -695,9 +695,107 @@ function scrollToTaskInJSON(taskId) {
 
         setTimeout(() => {
             decoration.clear();
-        }, 2000);
+        }, 1000);
     }
 }
+
+function scrollToObjectInJSON(objectId) {
+    const jsonText = editor.getValue();
+    const lines = jsonText.split("\n");
+    let targetLine = -1;
+    
+    // Search in equipment, resources, actors, products arrays
+    for (let i = 0; i < lines.length; i++) {
+        if (
+            lines[i].includes(objectId) &&
+            lines[i].includes('"id"')
+        ) {
+            targetLine = i + 1;
+            break;
+        }
+    }
+    
+    if (targetLine > 0) {
+        editor.revealLineInCenter(targetLine);
+        const range = new monaco.Range(
+            targetLine,
+            1,
+            targetLine,
+            1,
+        );
+        const decoration = editor.createDecorationsCollection([
+            {
+                range: range,
+                options: {
+                    isWholeLine: true,
+                    className: "json-highlight",
+                },
+            },
+        ]);
+        setTimeout(() => {
+            decoration.clear();
+        }, 1000);
+    }
+}
+
+function findObjectStateModifierAtTime(objectId, timeInMinutes) {
+    if (!currentSimulationData || !currentSimulationData.tasks) {
+        return null;
+    }
+    
+    const sortedTasks = [...currentSimulationData.tasks].sort((a,b) => a.start_minutes - b.start_minutes);
+    let currentModifier = null;
+    
+    for (const task of sortedTasks) {
+        if (task.start_minutes > timeInMinutes) break;
+        
+        const isTaskActive = timeInMinutes >= task.start_minutes && timeInMinutes < task.end_minutes;
+        const isTaskCompleted = timeInMinutes >= task.end_minutes;
+        
+        // Check equipment_interactions (old style)
+        (task.equipment_interactions || []).forEach(interaction => {
+            if (interaction.id === objectId) {
+                if (isTaskActive) {
+                    currentModifier = task.id;
+                } else if (isTaskCompleted && !interaction.revert_after) {
+                    currentModifier = task.id;
+                }
+            }
+        });
+        
+        // Check interactions (new style)
+        (task.interactions || []).forEach(interaction => {
+            if (interaction.object_id === objectId && interaction.state) {
+                if (isTaskActive) {
+                    currentModifier = task.id;
+                } else if (isTaskCompleted && !interaction.revert_after) {
+                    currentModifier = task.id;
+                }
+            }
+        });
+    }
+    
+    return currentModifier;
+}
+
+function handleObjectClick(objectId, currentTime) {
+    if (currentTime === 0 || currentTime === currentSimulationData?.start_time_minutes) {
+        // At time=0, go to object definition
+        scrollToObjectInJSON(objectId);
+    } else {
+        // Find what's currently modifying this object
+        const modifyingTaskId = findObjectStateModifierAtTime(objectId, currentTime);
+        if (modifyingTaskId) {
+            scrollToTaskInJSON(modifyingTaskId);
+        } else {
+            // No modifier found, go to object definition
+            scrollToObjectInJSON(objectId);
+        }
+    }
+}
+
+// Make function available globally for simulation-player.js
+window.handleObjectClick = handleObjectClick;
 
 // Drag and drop functionality
 function initializeDragAndDrop() {
@@ -2561,6 +2659,53 @@ function initializeResizeHandles() {
 let loadedSaveCode = null; // Track the save code we loaded (for lineage)
 let hasShownDisclaimer = false; // Track if user has seen disclaimer this session
 
+// Simple file download function
+function downloadSimulationFile(data, filename) {
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// Simple file upload function
+function loadSimulationFromFileInput() {
+    return new Promise((resolve, reject) => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json,.uaw';
+        
+        input.onchange = function(e) {
+            const file = e.target.files[0];
+            if (!file) {
+                reject(new Error('No file selected'));
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const contents = e.target.result;
+                    JSON.parse(contents); // Validate JSON
+                    resolve({ success: true, data: contents, filename: file.name });
+                } catch (error) {
+                    reject(new Error('Invalid JSON file'));
+                }
+            };
+            reader.onerror = function() {
+                reject(new Error('Failed to read file'));
+            };
+            reader.readAsText(file);
+        };
+        
+        input.click();
+    });
+}
+
 // Check if user has accepted disclaimer this session
 function hasAcceptedDisclaimer() {
     return hasShownDisclaimer || localStorage.getItem('uaw_playground_disclaimer_accepted') === 'true';
@@ -2580,24 +2725,49 @@ function openSaveDialog() {
     const checkbox = document.getElementById('privacy-consent-checkbox');
     const confirmBtn = document.getElementById('save-confirm-btn');
     const successDiv = document.getElementById('save-success');
-    const warningDiv = modal.querySelector('.save-warning');
+    const warningDiv = document.getElementById('cloud-privacy-warning');
     const loadingDiv = document.getElementById('save-loading');
+    const localRadio = document.getElementById('save-local-radio');
+    const cloudRadio = document.getElementById('save-cloud-radio');
+    const localSaveNameDiv = document.getElementById('local-save-name');
+    const localFileNameInput = document.getElementById('local-file-name');
 
     // Reset modal state
     successDiv.style.display = 'none';
     loadingDiv.style.display = 'none';
     checkbox.checked = false;
+    localFileNameInput.value = '';
 
-    // Always save as new entry - show disclaimer only if not previously accepted
-    if (hasAcceptedDisclaimer()) {
-        warningDiv.style.display = 'none';
-        confirmBtn.disabled = false;
-    } else {
-        warningDiv.style.display = 'block';
-        confirmBtn.disabled = true;
+    // Enable local save option
+    const localOption = localRadio.parentElement;
+    localOption.classList.remove('disabled');
+    localRadio.disabled = false;
+
+    // Set up radio button change handlers
+    function updateSaveUI() {
+        if (localRadio.checked && !localRadio.disabled) {
+            warningDiv.style.display = 'none';
+            localSaveNameDiv.style.display = 'block';
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Save to File';
+        } else {
+            localSaveNameDiv.style.display = 'none';
+            if (hasAcceptedDisclaimer()) {
+                warningDiv.style.display = 'none';
+                confirmBtn.disabled = false;
+            } else {
+                warningDiv.style.display = 'block';
+                confirmBtn.disabled = true;
+            }
+            confirmBtn.textContent = 'Save to Cloud';
+        }
     }
+
+    localRadio.addEventListener('change', updateSaveUI);
+    cloudRadio.addEventListener('change', updateSaveUI);
     
-    confirmBtn.textContent = 'Save Simulation';
+    // Initial UI update
+    updateSaveUI();
 
     modal.style.display = 'flex';
 
@@ -2624,45 +2794,90 @@ function openSaveDialog() {
             return;
         }
 
-        // Show loading
-        warningDiv.style.display = 'none';
-        loadingDiv.style.display = 'block';
-        confirmBtn.disabled = true;
+        const isLocalSave = localRadio.checked && !localRadio.disabled;
 
-        try {
-            const response = await saveSimulation(simulationData, loadedSaveCode);
-            
-            if (response.success) {
-                // Set disclaimer as accepted for this session
-                setDisclaimerAccepted();
-                
-                // Store the new save code for potential future lineage
-                loadedSaveCode = response.saveCode;
-                document.getElementById('save-code-result').value = response.saveCode;
-                
-                loadingDiv.style.display = 'none';
-                successDiv.style.display = 'block';
-            } else if (response.saveCode) {
-                // Save was actually successful despite error - log warning but show success
-                console.warn('Save warning (but successful):', response.error);
-                
-                // Set disclaimer as accepted for this session
-                setDisclaimerAccepted();
-                
-                // Store the new save code for potential future lineage
-                loadedSaveCode = response.saveCode;
-                document.getElementById('save-code-result').value = response.saveCode;
-                
-                loadingDiv.style.display = 'none';
-                successDiv.style.display = 'block';
-            } else {
-                throw new Error(response.error || 'Save failed');
+        if (isLocalSave) {
+            // Local file save
+            const fileName = localFileNameInput.value.trim();
+            if (!fileName) {
+                alert('Please enter a file name');
+                localFileNameInput.focus();
+                return;
             }
-        } catch (error) {
-            loadingDiv.style.display = 'none';
-            warningDiv.style.display = hasAcceptedDisclaimer() ? 'none' : 'block';
-            confirmBtn.disabled = hasAcceptedDisclaimer() ? false : !checkbox.checked;
-            alert('Save failed: ' + error.message);
+
+            // Show loading
+            localSaveNameDiv.style.display = 'none';
+            loadingDiv.style.display = 'block';
+            confirmBtn.disabled = true;
+
+            try {
+                // Create clean filename and download
+                const cleanName = fileName.replace(/[<>:"/\\|?*]/g, '-').trim().substring(0, 50);
+                const downloadFileName = `${cleanName || 'uaw-simulation'}.json`;
+                downloadSimulationFile(simulationData, downloadFileName);
+                
+                loadingDiv.style.display = 'none';
+                successDiv.style.display = 'block';
+                document.getElementById('cloud-save-result').style.display = 'none';
+                document.getElementById('local-save-result').style.display = 'block';
+                document.getElementById('saved-filename').textContent = downloadFileName;
+                
+                // Clear save code since we're not using cloud
+                loadedSaveCode = null;
+                
+                showNotification('Simulation downloaded successfully!');
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                localSaveNameDiv.style.display = 'block';
+                confirmBtn.disabled = false;
+                alert('Local save failed: ' + error.message);
+            }
+        } else {
+            // Cloud save
+            // Show loading
+            warningDiv.style.display = 'none';
+            loadingDiv.style.display = 'block';
+            confirmBtn.disabled = true;
+
+            try {
+                const response = await saveSimulation(simulationData, loadedSaveCode);
+                
+                if (response.success) {
+                    // Set disclaimer as accepted for this session
+                    setDisclaimerAccepted();
+                    
+                    // Store the new save code for potential future lineage
+                    loadedSaveCode = response.saveCode;
+                    document.getElementById('save-code-result').value = response.saveCode;
+                    
+                    loadingDiv.style.display = 'none';
+                    successDiv.style.display = 'block';
+                    document.getElementById('cloud-save-result').style.display = 'block';
+                    document.getElementById('local-save-result').style.display = 'none';
+                } else if (response.saveCode) {
+                    // Save was actually successful despite error - log warning but show success
+                    console.warn('Save warning (but successful):', response.error);
+                    
+                    // Set disclaimer as accepted for this session
+                    setDisclaimerAccepted();
+                    
+                    // Store the new save code for potential future lineage
+                    loadedSaveCode = response.saveCode;
+                    document.getElementById('save-code-result').value = response.saveCode;
+                    
+                    loadingDiv.style.display = 'none';
+                    successDiv.style.display = 'block';
+                    document.getElementById('cloud-save-result').style.display = 'block';
+                    document.getElementById('local-save-result').style.display = 'none';
+                } else {
+                    throw new Error(response.error || 'Save failed');
+                }
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                warningDiv.style.display = hasAcceptedDisclaimer() ? 'none' : 'block';
+                confirmBtn.disabled = hasAcceptedDisclaimer() ? false : !checkbox.checked;
+                alert('Cloud save failed: ' + error.message);
+            }
         }
     });
 
@@ -2674,14 +2889,68 @@ function openLoadDialog() {
     const errorDiv = document.getElementById('load-error');
     const loadingDiv = document.getElementById('load-loading');
     const confirmBtn = document.getElementById('load-confirm-btn');
+    const localRadio = document.getElementById('load-local-radio');
+    const cloudRadio = document.getElementById('load-cloud-radio');
+    const cloudSection = document.getElementById('cloud-load-section');
+    const localSection = document.getElementById('local-load-section');
+    const browseBtn = document.getElementById('browse-local-file-btn');
+    const fileInfo = document.getElementById('selected-file-info');
+    const fileName = document.getElementById('selected-file-name');
+
+    let selectedFileData = null;
 
     // Reset modal state
     input.value = '';
     errorDiv.style.display = 'none';
     loadingDiv.style.display = 'none';
     confirmBtn.disabled = false;
+    selectedFileData = null;
+    fileInfo.style.display = 'none';
+
+    // Enable local load option
+    const localOption = localRadio.parentElement;
+    localOption.classList.remove('disabled');
+    localRadio.disabled = false;
+
+    // Set up radio button change handlers
+    function updateLoadUI() {
+        if (localRadio.checked && !localRadio.disabled) {
+            cloudSection.style.display = 'none';
+            localSection.style.display = 'block';
+            confirmBtn.textContent = 'Load from File';
+            confirmBtn.disabled = !selectedFileData;
+        } else {
+            localSection.style.display = 'none';
+            cloudSection.style.display = 'block';
+            confirmBtn.textContent = 'Load from Cloud';
+            confirmBtn.disabled = false;
+        }
+    }
+
+    localRadio.addEventListener('change', updateLoadUI);
+    cloudRadio.addEventListener('change', updateLoadUI);
+    
+    // Initial UI update
+    updateLoadUI();
 
     modal.style.display = 'flex';
+
+    // Handle file browse
+    browseBtn.addEventListener('click', async function() {
+        try {
+            const result = await loadSimulationFromFileInput();
+            selectedFileData = result.data;
+            fileName.textContent = result.filename;
+            fileInfo.style.display = 'block';
+            confirmBtn.disabled = false;
+            errorDiv.style.display = 'none';
+        } catch (error) {
+            showLoadError(error.message);
+            selectedFileData = null;
+            fileInfo.style.display = 'none';
+            confirmBtn.disabled = true;
+        }
+    });
 
     // Handle cancel
     document.getElementById('load-cancel-btn').addEventListener('click', function() {
@@ -2690,39 +2959,64 @@ function openLoadDialog() {
 
     // Handle load
     confirmBtn.addEventListener('click', async function() {
-        const saveCode = input.value.trim();
-        
-        if (saveCode.length !== 16) {
-            showLoadError('Save code must be exactly 16 characters');
-            return;
-        }
+        const isLocalLoad = localRadio.checked && !localRadio.disabled;
 
-        // Show loading
-        loadingDiv.style.display = 'block';
-        confirmBtn.disabled = true;
-        errorDiv.style.display = 'none';
+        if (isLocalLoad) {
+            // Local file load
+            if (!selectedFileData) {
+                showLoadError('Please select a file first');
+                return;
+            }
 
-        try {
-            const response = await loadSimulation(saveCode);
-            
-            if (response.success) {
+            try {
                 // Load the simulation into the editor
-                editor.setValue(response.data);
-                loadedSaveCode = saveCode;
+                editor.setValue(selectedFileData);
+                loadedSaveCode = null; // Clear cloud save code
                 
                 // Close modal
                 modal.style.display = 'none';
                 
-                // Show success message briefly
-                showNotification('Simulation loaded successfully!');
-            } else {
-                throw new Error(response.error || 'Load failed');
+                // Show success message
+                showNotification('Simulation loaded from file successfully!');
+            } catch (error) {
+                showLoadError('Failed to load simulation: ' + error.message);
             }
-        } catch (error) {
-            showLoadError(error.message);
-        } finally {
-            loadingDiv.style.display = 'none';
-            confirmBtn.disabled = false;
+        } else {
+            // Cloud load
+            const saveCode = input.value.trim();
+            
+            if (saveCode.length !== 16) {
+                showLoadError('Save code must be exactly 16 characters');
+                return;
+            }
+
+            // Show loading
+            loadingDiv.style.display = 'block';
+            confirmBtn.disabled = true;
+            errorDiv.style.display = 'none';
+
+            try {
+                const response = await loadSimulation(saveCode);
+                
+                if (response.success) {
+                    // Load the simulation into the editor
+                    editor.setValue(response.data);
+                    loadedSaveCode = saveCode;
+                    
+                    // Close modal
+                    modal.style.display = 'none';
+                    
+                    // Show success message briefly
+                    showNotification('Simulation loaded from cloud successfully!');
+                } else {
+                    throw new Error(response.error || 'Load failed');
+                }
+            } catch (error) {
+                showLoadError(error.message);
+            } finally {
+                loadingDiv.style.display = 'none';
+                confirmBtn.disabled = false;
+            }
         }
     });
 
@@ -2793,6 +3087,7 @@ async function loadSimulation(saveCode) {
 
     return await response.json();
 }
+
 
 // New Modal Functions
 let interactionCounter = 0;
@@ -3830,3 +4125,109 @@ function addTaskToSimulation() {
         alert('Error adding task: ' + e.message);
     }
 }
+
+// === FEEDBACK FUNCTIONALITY ===
+function initializeFeedbackModal() {
+    const feedbackBtn = document.getElementById('feedback-btn');
+    const feedbackModal = document.getElementById('feedback-modal');
+    const feedbackForm = document.getElementById('feedback-form');
+    const cancelBtn = document.getElementById('cancel-feedback');
+    const feedbackMessage = document.getElementById('feedback-message');
+    
+    // Open feedback modal
+    if (feedbackBtn) {
+        feedbackBtn.addEventListener('click', () => {
+            feedbackModal.style.display = 'flex';
+            feedbackForm.reset();
+            feedbackMessage.style.display = 'none';
+        });
+    }
+    
+    // Close feedback modal
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            feedbackModal.style.display = 'none';
+        });
+    }
+    
+    // Close modal when clicking outside
+    feedbackModal.addEventListener('click', (e) => {
+        if (e.target === feedbackModal) {
+            feedbackModal.style.display = 'none';
+        }
+    });
+    
+    // Handle form submission
+    if (feedbackForm) {
+        feedbackForm.addEventListener('submit', handleFeedbackSubmit);
+    }
+}
+
+async function handleFeedbackSubmit(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const submitBtn = document.getElementById('send-feedback');
+    const feedbackMessage = document.getElementById('feedback-message');
+    const originalSubmitText = submitBtn.textContent;
+    
+    // Disable submit button and show loading state
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+    feedbackMessage.style.display = 'none';
+    
+    try {
+        const formData = new FormData(form);
+        
+        // Add page context
+        formData.append('page', 'simulation-playground');
+        formData.append('url', window.location.href);
+        formData.append('timestamp', new Date().toISOString());
+        
+        // Prepare data for Lambda function (matching feedback.js format)
+        const feedbackData = {
+            name: formData.get('name') || 'Anonymous',
+            email: formData.get('email') || '',
+            message: `${formData.get('subject')}\n\n${formData.get('message')}`,
+            pageUrl: formData.get('url')
+        };
+        
+        // AWS Lambda endpoint (same as feedback.js)
+        const apiUrl = 'https://4hmwnax7r1.execute-api.us-east-1.amazonaws.com/default/uaw-feedback-handler';
+        
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(feedbackData),
+            mode: 'cors'
+        });
+        
+        if (response.ok) {
+            feedbackMessage.innerHTML = '<div class="feedback-success">✅ Thank you for your feedback! Your message has been sent successfully.</div>';
+            feedbackMessage.style.display = 'block';
+            form.reset();
+            
+            // Close modal after 2 seconds
+            setTimeout(() => {
+                document.getElementById('feedback-modal').style.display = 'none';
+            }, 2000);
+        } else {
+            throw new Error('Failed to send feedback');
+        }
+    } catch (error) {
+        console.error('Feedback submission error:', error);
+        feedbackMessage.innerHTML = '<div class="feedback-error">❌ Sorry, there was an error sending your feedback. Please try again later.</div>';
+        feedbackMessage.style.display = 'block';
+    } finally {
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalSubmitText;
+    }
+}
+
+// Initialize feedback modal when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    initializeFeedbackModal();
+});

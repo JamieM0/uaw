@@ -142,7 +142,8 @@
 
                         <button id="load-simulation-btn" class="action-btn" title="Load simulation from save code">Load Simulation</button>
                         <button id="save-simulation-btn" class="action-btn" title="Save simulation and get save code">Save Simulation</button>
-                        <button id="submit-btn" class="action-btn" title="Submit simulation to page">Submit</button>
+                        <button id="submit-btn" class="action-btn" title="Submit simulation to page" style="display: none;">Submit</button>
+                        <button id="feedback-btn" class="action-btn" title="Send feedback about the playground">Feedback</button>
                     </div>
                 </div>
             </div>
@@ -278,7 +279,25 @@
         <div id="save-modal" class="dialog-overlay" style="display: none;">
             <div class="dialog">
                 <h3>Save Simulation</h3>
-                <div class="save-warning">
+                <div class="save-method-selection">
+                    <div class="save-method-options">
+                        <label class="save-method-option">
+                            <input type="radio" name="save-method" value="local" id="save-local-radio">
+                            <span class="save-method-content">
+                                <strong>💾 Save to Local File</strong>
+                                <small>Save directly to your computer</small>
+                            </span>
+                        </label>
+                        <label class="save-method-option">
+                            <input type="radio" name="save-method" value="cloud" id="save-cloud-radio" checked>
+                            <span class="save-method-content">
+                                <strong>☁️ Save to Cloud</strong>
+                                <small>Get a shareable save code to load from any device</small>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="save-warning" id="cloud-privacy-warning">
                     <p><strong>⚠️ Privacy Notice</strong></p>
                     <p>Your simulation is currently private and locally stored in your browser. By continuing, you agree that your simulation will be stored on a server so it can later be retrieved. Do not store confidential information in simulations, as anyone who guesses your save code will be able to see your simulation in full.</p>
                     <label>
@@ -286,14 +305,25 @@
                         I understand and agree to the privacy terms above
                     </label>
                 </div>
+                <div class="local-save-name" id="local-save-name" style="display: none;">
+                    <label for="local-file-name">File Name:</label>
+                    <input type="text" id="local-file-name" placeholder="Enter simulation name..." maxlength="50">
+                    <small>A descriptive name for your simulation (e.g., "Restaurant Kitchen Process")</small>
+                </div>
                 <div id="save-success" style="display: none;" class="save-success">
                     <p><strong>✅ Save Successful!</strong></p>
-                    <p>Your save code is:</p>
-                    <div class="save-code-display">
-                        <input type="text" id="save-code-result" readonly>
-                        <button id="copy-save-code-btn" class="btn-secondary">Copy</button>
+                    <div id="cloud-save-result">
+                        <p>Your save code is:</p>
+                        <div class="save-code-display">
+                            <input type="text" id="save-code-result" readonly>
+                            <button id="copy-save-code-btn" class="btn-secondary">Copy</button>
+                        </div>
+                        <p><small>Keep this code safe - you'll need it to load your simulation later.</small></p>
                     </div>
-                    <p><small>Keep this code safe - you'll need it to load your simulation later.</small></p>
+                    <div id="local-save-result" style="display: none;">
+                        <p>File saved successfully to your computer!</p>
+                        <p><strong>Saved as:</strong> <span id="saved-filename"></span></p>
+                    </div>
                 </div>
                 <div id="save-loading" style="display: none;" class="save-loading">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -439,9 +469,38 @@
         <div id="load-modal" class="dialog-overlay" style="display: none;">
             <div class="dialog">
                 <h3>Load Simulation</h3>
-                <p>Enter your 16-character save code to load a previously saved simulation:</p>
-                <div class="load-input-container">
-                    <input type="text" id="load-code-input" placeholder="Enter save code..." maxlength="16">
+                <div class="load-method-selection">
+                    <div class="load-method-options">
+                        <label class="load-method-option">
+                            <input type="radio" name="load-method" value="local" id="load-local-radio">
+                            <span class="load-method-content">
+                                <strong>💾 Load from Local File</strong>
+                                <small>Browse and load from files saved on your computer</small>
+                            </span>
+                        </label>
+                        <label class="load-method-option">
+                            <input type="radio" name="load-method" value="cloud" id="load-cloud-radio" checked>
+                            <span class="load-method-content">
+                                <strong>☁️ Load from Cloud</strong>
+                                <small>Use a save code to load from the cloud</small>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div id="cloud-load-section">
+                    <p>Enter your 16-character save code to load a previously saved simulation:</p>
+                    <div class="load-input-container">
+                        <input type="text" id="load-code-input" placeholder="Enter save code..." maxlength="16">
+                    </div>
+                </div>
+                <div id="local-load-section" style="display: none;">
+                    <p>Click the button below to browse and select a simulation file from your computer:</p>
+                    <div class="local-load-container">
+                        <button type="button" id="browse-local-file-btn" class="btn-secondary">Browse Files</button>
+                        <div id="selected-file-info" style="display: none; margin-top: 1rem;">
+                            <p><strong>Selected file:</strong> <span id="selected-file-name"></span></p>
+                        </div>
+                    </div>
                 </div>
                 <div id="load-error" style="display: none;" class="load-error">
                     <p style="color: #d32f2f;"><strong>Error:</strong> <span id="load-error-message"></span></p>
@@ -503,6 +562,52 @@
                 </div>
             </div>
         </div>
+
+        <!-- Feedback Modal -->
+        <div id="feedback-modal" class="dialog-overlay" style="display: none;">
+            <div class="dialog">
+                <h3>Send Feedback</h3>
+                <p>Help us improve the Simulation Playground by sharing your suggestions and feedback.</p>
+                
+                <form id="feedback-form" class="feedback-form">
+                    <div class="feedback-form-field">
+                        <label for="feedback-name">Name (optional)</label>
+                        <input type="text" id="feedback-name" name="name" placeholder="Your name">
+                    </div>
+                    
+                    <div class="feedback-form-field">
+                        <label for="feedback-email">Email (optional)</label>
+                        <input type="email" id="feedback-email" name="email" placeholder="your@email.com">
+                    </div>
+                    
+                    <div class="feedback-form-field">
+                        <label for="feedback-subject">Subject</label>
+                        <input type="text" id="feedback-subject" name="subject" placeholder="Brief description of your feedback" required>
+                    </div>
+                    
+                    <div class="feedback-form-field">
+                        <label for="feedback-body">Feedback Details</label>
+                        <textarea id="feedback-body" name="message" placeholder="Please describe your feedback in detail..." required></textarea>
+                    </div>
+                    
+                    <div class="feedback-actions">
+                        <button type="button" id="cancel-feedback" class="btn-secondary">Cancel</button>
+                        <button type="submit" id="send-feedback" class="btn-primary">Send Feedback</button>
+                    </div>
+                </form>
+                
+                <div id="feedback-message" class="feedback-message" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Context Menu -->
+        <div id="context-menu" class="context-menu" style="display: none;">
+            <div class="context-menu-item" id="context-menu-delete">
+                Delete
+            </div>
+        </div>
+
+        <script src="/assets/js/context-menu.js"></script>
         <script src="/assets/js/playground.js"></script>
     </body>
 </html>

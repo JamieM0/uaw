@@ -1482,3 +1482,340 @@ optgroup[label*="Products"] {
     font-weight: 400;
     color: rgb(18, 108, 168); /* --primary-color-rgb */
 }
+
+/* === FEEDBACK MODAL STYLES === */
+.feedback-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.feedback-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.feedback-form-field label {
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.feedback-form-field input,
+.feedback-form-field textarea {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    background: #fff;
+    color: var(--text-color);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.feedback-form-field input:focus,
+.feedback-form-field textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(18, 108, 168, 0.1);
+}
+
+.feedback-form-field textarea {
+    resize: vertical;
+    min-height: 100px;
+    max-height: 200px;
+}
+
+.feedback-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.feedback-message {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.feedback-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    padding: 0.75rem;
+    border-radius: 4px;
+}
+
+.feedback-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    padding: 0.75rem;
+    border-radius: 4px;
+}
+
+/* Ensure feedback modal feels at home in the playground */
+#feedback-modal .dialog {
+    max-width: 500px;
+    width: 90%;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+#feedback-modal .dialog h3 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+#feedback-modal .dialog p {
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+/* Button consistency with playground theme */
+.feedback-actions .btn-secondary {
+    background: #f8f9fa;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.feedback-actions .btn-secondary:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.feedback-actions .btn-primary {
+    background: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.feedback-actions .btn-primary:hover:not(:disabled) {
+    background: #0a5f94;
+    border-color: #0a5f94;
+}
+
+.feedback-actions .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Context Menu */
+.context-menu {
+    position: fixed;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 10000;
+    min-width: 120px;
+    padding: var(--spacing-xs) 0;
+    font-family: var(--font-family-body);
+    font-size: var(--font-size-sm);
+}
+
+.context-menu-item {
+    padding: var(--spacing-sm) var(--spacing-md);
+    cursor: pointer;
+    color: var(--text-color);
+    user-select: none;
+    transition: background-color var(--transition-fast);
+}
+
+.context-menu-item:hover {
+    background-color: var(--bg-hover);
+}
+
+.context-menu-item:active {
+    background-color: var(--bg-dark);
+}
+
+/* Save/Load Method Selection Styles */
+.save-method-selection,
+.load-method-selection {
+    margin-bottom: 1.5rem;
+}
+
+.save-method-options,
+.load-method-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.save-method-option,
+.load-method-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bg-color);
+}
+
+.save-method-option:hover,
+.load-method-option:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-hover);
+}
+
+.save-method-option input[type="radio"],
+.load-method-option input[type="radio"] {
+    margin-top: 0.2rem;
+}
+
+.save-method-option input[type="radio"]:checked + .save-method-content,
+.load-method-option input[type="radio"]:checked + .load-method-content {
+    color: var(--primary-color);
+}
+
+.save-method-option:has(input[type="radio"]:checked),
+.load-method-option:has(input[type="radio"]:checked) {
+    border-color: var(--primary-color);
+    background: rgba(13, 110, 253, 0.05);
+}
+
+.save-method-content,
+.load-method-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.save-method-content strong,
+.load-method-content strong {
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.save-method-content small,
+.load-method-content small {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+.save-method-option.disabled,
+.load-method-option.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--bg-light);
+}
+
+.save-method-option.disabled:hover,
+.load-method-option.disabled:hover {
+    border-color: var(--border-color);
+    background: var(--bg-light);
+}
+
+/* Local Save Name Input */
+.local-save-name {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--bg-hover);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.local-save-name label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+.local-save-name input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.9rem;
+    background: white;
+}
+
+.local-save-name input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+.local-save-name small {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--text-light);
+    font-size: 0.8rem;
+}
+
+/* Local Load Section */
+.local-load-container {
+    text-align: center;
+    padding: 1rem;
+    background: var(--bg-hover);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+}
+
+#browse-local-file-btn {
+    background: var(--primary-color);
+    color: white;
+    border: 1px solid var(--primary-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+#browse-local-file-btn:hover:not(:disabled) {
+    background: #0a5f94;
+    border-color: #0a5f94;
+}
+
+#browse-local-file-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#selected-file-info {
+    text-align: left;
+    padding: 0.75rem;
+    background: rgba(13, 110, 253, 0.05);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid rgba(13, 110, 253, 0.2);
+}
+
+#selected-file-info p {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+#selected-file-name {
+    font-family: monospace;
+    font-weight: 600;
+    color: var(--primary-color);
+}

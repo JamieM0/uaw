@@ -276,7 +276,7 @@ class SimulationPlayer {
 
     updateEquipmentTypeState(objectType, panel, liveObjects) {
         const states = {};
-        liveObjects.forEach(e => { states[e.id] = e.state || 'available'; });
+        liveObjects.forEach(e => { states[e.id] = e.properties?.state || 'undefined'; });
 
         const sortedTasks = [...(this.simData.tasks || [])].sort((a,b) => a.start_minutes - b.start_minutes);
         
@@ -327,7 +327,7 @@ class SimulationPlayer {
             const createdTitle = isCreated ? `Created by ${isCreated.createdBy}` : '';
             
             return `
-            <div class="resource-item ${createdClass}" title="${createdTitle}">
+            <div class="resource-item ${createdClass}" title="${createdTitle}" data-object-id="${item.id}" style="cursor: pointer;">
                 <div class="resource-emoji">${item.emoji || "❓"}</div>
                 <div class="resource-info">
                     <div class="resource-name">${item.name || item.id}${isCreated ? ' ✨' : ''}</div>
@@ -336,6 +336,16 @@ class SimulationPlayer {
             </div>
             `;
         }).join("");
+        
+        // Add click event listeners to equipment items
+        panel.querySelectorAll('.resource-item[data-object-id]').forEach(item => {
+            item.addEventListener('click', () => {
+                const objectId = item.dataset.objectId;
+                if (window.handleObjectClick && typeof window.handleObjectClick === 'function') {
+                    window.handleObjectClick(objectId, this.playheadTime);
+                }
+            });
+        });
     }
 
     updateResourceTypeState(objectType, panel, liveObjects) {
@@ -392,7 +402,7 @@ class SimulationPlayer {
             const createdTitle = isCreated ? `Created by ${isCreated.createdBy}` : '';
             
             return `
-            <div class="resource-item ${createdClass}" title="${createdTitle}">
+            <div class="resource-item ${createdClass}" title="${createdTitle}" data-object-id="${resource.id}" style="cursor: pointer;">
                 <div class="resource-emoji">${resource.emoji || "❓"}</div>
                 <div class="resource-info">
                     <div class="resource-name">${resource.id}${isCreated ? ' ✨' : ''}</div>
@@ -401,6 +411,16 @@ class SimulationPlayer {
             </div>
             `;
         }).join("");
+        
+        // Add click event listeners to resource items
+        panel.querySelectorAll('.resource-item[data-object-id]').forEach(item => {
+            item.addEventListener('click', () => {
+                const objectId = item.dataset.objectId;
+                if (window.handleObjectClick && typeof window.handleObjectClick === 'function') {
+                    window.handleObjectClick(objectId, this.playheadTime);
+                }
+            });
+        });
     }
 
     updateGenericObjectTypeState(objectType, panel, liveObjects) {
@@ -421,7 +441,7 @@ class SimulationPlayer {
             const createdTitle = isCreated ? `Created by ${isCreated.createdBy}` : '';
             
             return `
-            <div class="resource-item ${createdClass}" title="${createdTitle}">
+            <div class="resource-item ${createdClass}" title="${createdTitle}" data-object-id="${item.id}" style="cursor: pointer;">
                 <div class="resource-emoji">${item.emoji || "❓"}</div>
                 <div class="resource-info">
                     <div class="resource-name">${item.name || item.id}${isCreated ? ' ✨' : ''}</div>
@@ -430,6 +450,16 @@ class SimulationPlayer {
             </div>
             `;
         }).join("");
+        
+        // Add click event listeners to generic object items
+        panel.querySelectorAll('.resource-item[data-object-id]').forEach(item => {
+            item.addEventListener('click', () => {
+                const objectId = item.dataset.objectId;
+                if (window.handleObjectClick && typeof window.handleObjectClick === 'function') {
+                    window.handleObjectClick(objectId, this.playheadTime);
+                }
+            });
+        });
     }
 
     initScrubbing() {
@@ -465,8 +495,12 @@ class SimulationPlayer {
                 // Remove existing listeners to prevent duplicates
                 track.removeEventListener('mousedown', track._scrubHandler);
 
-                // Create and store the handler
-                track._scrubHandler = (e) => startScrubbing(e, track);
+                // Create and store the handler - only respond to left-clicks
+                track._scrubHandler = (e) => {
+                    if (e.button === 0) { // Only left-click
+                        startScrubbing(e, track);
+                    }
+                };
                 track.addEventListener('mousedown', track._scrubHandler);
 
                 // Also make playheads draggable
@@ -474,8 +508,10 @@ class SimulationPlayer {
                 if (playhead) {
                     playhead.removeEventListener('mousedown', playhead._scrubHandler);
                     playhead._scrubHandler = (e) => {
-                        e.stopPropagation(); // Prevent event bubbling
-                        startScrubbing(e, track);
+                        if (e.button === 0) { // Only left-click
+                            e.stopPropagation(); // Prevent event bubbling
+                            startScrubbing(e, track);
+                        }
                     };
                     playhead.addEventListener('mousedown', playhead._scrubHandler);
                     playhead.style.pointerEvents = 'all'; // Make sure playhead is clickable
