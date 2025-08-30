@@ -439,11 +439,31 @@ class EmojiPicker {
         // Store reference to Monaco editor
         this.monacoEditor = monacoEditor;
         
+        // Also set global reference for keyboard shortcut access
+        window.editor = monacoEditor;
+        
         // Add context menu action for Monaco
         monacoEditor.addAction({
             id: 'insert-emoji',
             label: 'Insert Emoji',
             contextMenuGroupId: 'modification',
+            run: (editor) => {
+                // Get cursor position
+                const position = editor.getPosition();
+                this.monacoPosition = position;
+                
+                // Show picker positioned near cursor
+                this.showForMonaco(editor, position);
+            }
+        });
+        
+        // Add keyboard shortcut directly to Monaco editor
+        monacoEditor.addAction({
+            id: 'emoji-picker-shortcut',
+            label: 'Open Emoji Picker',
+            keybindings: [
+                monaco.KeyMod.CtrlCmd | monaco.KeyCode.Period
+            ],
             run: (editor) => {
                 // Get cursor position
                 const position = editor.getPosition();
@@ -610,9 +630,11 @@ class EmojiPicker {
             // Check if we're in Monaco editor
             if (this.isInMonacoEditor(focusedElement)) {
                 // Get current Monaco editor instance and position
-                if (window.editor) {
-                    const position = window.editor.getPosition();
-                    this.showForMonaco(window.editor, position);
+                // First check if we have stored Monaco editor reference, then check global window.editor
+                const editorInstance = this.monacoEditor || window.editor;
+                if (editorInstance) {
+                    const position = editorInstance.getPosition();
+                    this.showForMonaco(editorInstance, position);
                 }
             } else if (focusedElement && 
                 (focusedElement.tagName.toLowerCase() === 'input' || 
