@@ -26,6 +26,7 @@
         <script src="/assets/js/simulation-validator.js"></script>
         <script src="/assets/js/space-editor.js"></script>
         <script src="/assets/js/emoji-picker.js"></script>
+        <script src="/assets/js/metrics-editor.js"></script>
 
         <script src="/assets/js/tutorial.js"></script>
         <script src="/assets/js/tutorial-validator.js"></script>
@@ -92,6 +93,9 @@
                     </div>
 
                     <div class="control-buttons">
+                        <button id="metrics-mode-toggle" class="mode-toggle-btn" title="Toggle Metrics Editor Mode">
+                            Standard Mode
+                        </button>
                         <button id="render-simulation-btn" class="hidden">
                             Render
                         </button>
@@ -168,72 +172,130 @@
             
             <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
                 <div class="playground-top">
-                    <div class="json-editor-panel">
-                        <div class="panel-header"></div>
-                        <div class="panel-content">
-                            <div id="json-editor"></div>
-                        </div>
-                        <div class="resize-handle-vertical"></div>
-                    </div>
-
-                    <div class="simulation-panel">
-                        <div class="tab-bar">
-                            <button class="tab-btn active" data-tab="timeline">Simulation Render</button>
-                            <button class="tab-btn" data-tab="space-editor">Space Editor</button>
-                        </div>
-
-                        <div class="tab-content-wrapper">
-                            <div id="simulation-tab" class="tab-content active">
-                                <div id="simulation-content" class="simulation-content">
-                                    <!-- Existing simulation content -->
+                    <div class="playground-left">
+                        <!-- Standard Mode: Two panels side by side -->
+                        <div class="standard-mode-layout">
+                            <div class="json-editor-panel">
+                                <div class="panel-header"></div>
+                                <div class="panel-content">
+                                    <div id="json-editor"></div>
                                 </div>
-                                <div id="simulation-loading" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.9); padding: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                        <div style="width: 20px; height: 20px; border: 2px solid #ddd; border-top: 2px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                                        Rendering simulation...
+                                <div class="resize-handle-vertical"></div>
+                            </div>
+
+                            <div class="simulation-panel">
+                                <div class="tab-bar">
+                                    <button class="tab-btn active" data-tab="timeline">Simulation Render</button>
+                                    <button class="tab-btn" data-tab="space-editor">Space Editor</button>
+                                </div>
+
+                                <div class="tab-content-wrapper">
+                                    <div id="simulation-tab" class="tab-content active">
+                                        <div id="simulation-content" class="simulation-content">
+                                            <!-- Existing simulation content -->
+                                        </div>
+                                        <div id="simulation-loading" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.9); padding: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <div style="width: 20px; height: 20px; border: 2px solid #ddd; border-top: 2px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                                                Rendering simulation...
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="space-editor-tab" class="tab-content">
+                                        <div class="space-editor-container">
+                                            <div class="space-canvas" id="space-canvas"></div>
+                                            <div class="properties-panel-container">
+                                                <div class="properties-panel-header">
+                                                    <h4>Properties</h4>
+                                                    <div class="layer-controls">
+                                                        <label for="layer-filter">Layer:</label>
+                                                        <select id="layer-filter">
+                                                            <option value="all">All Layers</option>
+                                                        </select>
+                                                    </div>
+                                                    <button id="add-location-btn" class="btn btn-primary">+ Add</button>
+                                                </div>
+                                                <div id="properties-panel-content">
+                                                    <p class="placeholder">Select a location, or click '+ Add' to draw a new one.</p>
+                                                </div>
+                                                <div class="options-panel-container">
+                                                    <div class="options-panel-header">
+                                                        <h4>Options</h4>
+                                                    </div>
+                                                    <div id="options-panel-content">
+                                                        <div class="option-field">
+                                                            <label>
+                                                                <input type="checkbox" id="snap-x-enabled" checked> Enable Vertical Snapping
+                                                            </label>
+                                                        </div>
+                                                        <div class="option-field">
+                                                            <label>
+                                                                <input type="checkbox" id="snap-z-enabled" checked> Enable Horizontal Snapping
+                                                            </label>
+                                                        </div>
+                                                        <div class="option-field">
+                                                            <label for="snap-tolerance">Snap Tolerance:</label>
+                                                            <input type="number" id="snap-tolerance" value="10" min="1" max="50" step="1">
+                                                            <span>px</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div id="space-editor-tab" class="tab-content">
-                                <div class="space-editor-container">
-                                    <div class="space-canvas" id="space-canvas"></div>
-                                    <div class="properties-panel-container">
-                                        <div class="properties-panel-header">
-                                            <h4>Properties</h4>
-                                            <div class="layer-controls">
-                                                <label for="layer-filter">Layer:</label>
-                                                <select id="layer-filter">
-                                                    <option value="all">All Layers</option>
-                                                </select>
-                                            </div>
-                                            <button id="add-location-btn" class="btn btn-primary">+ Add</button>
-                                        </div>
-                                        <div id="properties-panel-content">
-                                            <p class="placeholder">Select a location, or click '+ Add' to draw a new one.</p>
-                                        </div>
-                                        <div class="options-panel-container">
-                                            <div class="options-panel-header">
-                                                <h4>Options</h4>
-                                            </div>
-                                            <div id="options-panel-content">
-                                                <div class="option-field">
-                                                    <label>
-                                                        <input type="checkbox" id="snap-x-enabled" checked> Enable Vertical Snapping
-                                                    </label>
-                                                </div>
-                                                <div class="option-field">
-                                                    <label>
-                                                        <input type="checkbox" id="snap-z-enabled" checked> Enable Horizontal Snapping
-                                                    </label>
-                                                </div>
-                                                <div class="option-field">
-                                                    <label for="snap-tolerance">Snap Tolerance:</label>
-                                                    <input type="number" id="snap-tolerance" value="10" min="1" max="50" step="1">
-                                                    <span>px</span>
-                                                </div>
+                        </div>
+
+                        <!-- Metrics Mode: Three tabs that reuse existing components -->
+                        <div class="metrics-mode-layout" style="display: none;">
+                            <div class="left-panel-tabs">
+                                <div class="tab-bar">
+                                    <button class="left-tab-btn active" data-tab="json-editor">JSON Editor</button>
+                                    <button class="left-tab-btn" data-tab="simulation-render">Simulation Render</button>
+                                    <button class="left-tab-btn" data-tab="space-editor">Space Editor</button>
+                                </div>
+                                
+                                <div class="left-tab-content-wrapper">
+                                    <!-- JSON Editor Tab: Create new editor instance -->
+                                    <div id="json-editor-left-tab" class="left-tab-content active">
+                                        <div class="panel-content">
+                                            <div id="json-editor-metrics-container" class="json-editor-resize-container">
+                                                <div id="json-editor-metrics"></div>
                                             </div>
                                         </div>
                                     </div>
+                                    
+                                    <!-- Simulation Render Tab: Move existing components here -->
+                                    <div id="simulation-render-left-tab" class="left-tab-content">
+                                        <!-- Existing simulation content will be moved here -->
+                                    </div>
+                                    
+                                    <!-- Space Editor Tab: Move existing components here -->
+                                    <div id="space-editor-left-tab" class="left-tab-content">
+                                        <!-- Existing space editor content will be moved here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metrics-editor-panel" id="metrics-editor-panel" style="display: none;">
+                        <div class="resize-handle-vertical metrics-resize"></div>
+                        <div class="panel-header">
+                            <h3>Metrics Editor</h3>
+                        </div>
+                        <div class="panel-content">
+                            <div class="metrics-tab-bar">
+                                <button class="metrics-tab-btn active" data-tab="catalog">metrics-catalog-custom.json</button>
+                                <button class="metrics-tab-btn" data-tab="validator">simulation-validator-custom.js</button>
+                            </div>
+                            <div class="metrics-tab-content-wrapper">
+                                <div id="metrics-catalog-tab" class="metrics-tab-content active">
+                                    <div id="metrics-catalog-editor"></div>
+                                </div>
+                                <div id="metrics-validator-tab" class="metrics-tab-content">
+                                    <div id="metrics-validator-editor"></div>
                                 </div>
                             </div>
                         </div>

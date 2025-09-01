@@ -121,3 +121,4 @@ When working on implementation tasks, always follow this approach:
 4. **Verify requirements** especially for UI behavior, data handling, and integration points
 
 This ensures alignment with user expectations and prevents rework from misunderstood requirements.
+- When stuck on a tricky problem, ALWAYS add detailed logs and ask for the log results. Remove these logs after the problem has been resolved.

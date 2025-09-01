@@ -25,6 +25,10 @@ let tutorialData = null;
 let isPlaygroundInitialized = false; // Flag to prevent double-initialization
 let autoRender = true;
 
+// Metrics Editor Variables
+let metricsEditor = null;
+let isMetricsMode = false;
+
 // --- DATA FETCHING ---
 console.log("FETCH: Initiating fetch for tutorial, metrics, and simulation library catalogs.");
 Promise.all([
@@ -64,6 +68,7 @@ function initializePlayground() {
     initializeResizeHandles();
     initializeDragAndDrop();
     setupSaveLoadButtons();
+    setupMetricsMode();
 
     console.log("INIT: 2. Instantiating controllers.");
     const canvas = document.getElementById('space-canvas');
@@ -2563,6 +2568,355 @@ function setupSaveLoadButtons() {
         console.log("INIT: Copy save code button event listener attached.");
     } else {
         console.log("INIT: Copy save code button not found (will be available when save modal opens).");
+    }
+}
+
+// Setup metrics mode toggle functionality
+function setupMetricsMode() {
+    console.log("INIT: Setting up metrics mode toggle.");
+    
+    const toggleBtn = document.getElementById("metrics-mode-toggle");
+    const playgroundTop = document.querySelector(".playground-top");
+    
+    if (!toggleBtn) {
+        console.error("INIT: Metrics mode toggle button not found!");
+        return;
+    }
+    
+    // Debug: Check if required containers exist
+    console.log("DEBUG: Checking metrics editor containers...");
+    console.log("- metrics-catalog-editor:", !!document.getElementById('metrics-catalog-editor'));
+    console.log("- metrics-validator-editor:", !!document.getElementById('metrics-validator-editor'));
+    console.log("- json-editor-metrics:", !!document.getElementById('json-editor-metrics'));
+    console.log("- metrics-editor-panel:", !!document.getElementById('metrics-editor-panel'));
+    
+    // Load saved mode preference
+    const savedMode = localStorage.getItem('uaw-metrics-mode');
+    isMetricsMode = savedMode === 'true';
+    
+    // Apply initial mode
+    updateMetricsMode();
+    
+    // Add click event listener
+    toggleBtn.addEventListener("click", () => {
+        isMetricsMode = !isMetricsMode;
+        localStorage.setItem('uaw-metrics-mode', isMetricsMode.toString());
+        updateMetricsMode();
+        console.log("METRICS: Mode toggled to:", isMetricsMode ? "Metrics Mode" : "Standard Mode");
+    });
+    
+    console.log("INIT: Metrics mode toggle setup complete. Current mode:", isMetricsMode ? "Metrics Mode" : "Standard Mode");
+}
+
+function updateMetricsMode() {
+    const toggleBtn = document.getElementById("metrics-mode-toggle");
+    const playgroundTop = document.querySelector(".playground-top");
+    
+    if (isMetricsMode) {
+        // Switch to metrics mode
+        toggleBtn.textContent = "Metrics Mode";
+        toggleBtn.classList.add("metrics-active");
+        playgroundTop.classList.add("metrics-mode");
+        
+        // Setup left panel tabs for metrics mode
+        setupLeftPanelTabs();
+        
+        // Initialize metrics components with delay to ensure Monaco is ready
+        setTimeout(() => {
+            // Copy JSON editor content to metrics mode editor
+            if (editor && !window.metricsJsonEditor) {
+                createMetricsJsonEditor();
+            }
+            
+            // Initialize metrics editor if not already done
+            if (!metricsEditor) {
+                initializeMetricsEditor();
+            }
+            
+            // Trigger layout updates for all editors after everything is initialized
+            setTimeout(() => {
+                console.log("METRICS: Triggering layout updates for all editors");
+                
+                if (window.metricsJsonEditor) {
+                    window.metricsJsonEditor.layout();
+                }
+                
+                if (metricsEditor) {
+                    if (metricsEditor.catalogEditor) {
+                        metricsEditor.catalogEditor.layout();
+                    }
+                    if (metricsEditor.validatorEditor) {
+                        metricsEditor.validatorEditor.layout();
+                    }
+                }
+                
+                // Move existing components to metrics mode layout
+                moveComponentsToMetricsMode();
+            }, 300);
+        }, 200);
+    } else {
+        // Switch to standard mode
+        toggleBtn.textContent = "Standard Mode";
+        toggleBtn.classList.remove("metrics-active");
+        playgroundTop.classList.remove("metrics-mode");
+        
+        // Move components back to standard mode layout
+        moveComponentsToStandardMode();
+        
+        // Reset any custom flex sizing that might have been applied in metrics mode
+        setTimeout(() => {
+            const leftPanel = document.querySelector('.playground-left');
+            const metricsPanel = document.querySelector('.metrics-editor-panel');
+            if (leftPanel) {
+                leftPanel.style.flex = '';
+                leftPanel.style.width = '';
+            }
+            if (metricsPanel) {
+                metricsPanel.style.flex = '';
+                metricsPanel.style.width = '';
+            }
+        }, 100);
+    }
+}
+
+function setupLeftPanelTabs() {
+    console.log("METRICS: Setting up left panel tabs...");
+    
+    const leftTabButtons = document.querySelectorAll('.left-tab-btn');
+    const leftTabContents = document.querySelectorAll('.left-tab-content');
+    
+    // Remove existing listeners
+    leftTabButtons.forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true));
+    });
+    
+    // Re-query after clone
+    const newLeftTabButtons = document.querySelectorAll('.left-tab-btn');
+    
+    newLeftTabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetTab = button.dataset.tab;
+            switchLeftTab(targetTab);
+        });
+    });
+}
+
+function switchLeftTab(targetTab) {
+    console.log('METRICS: Switching left tab to:', targetTab);
+    
+    const leftTabButtons = document.querySelectorAll('.left-tab-btn');
+    const leftTabContents = document.querySelectorAll('.left-tab-content');
+    
+    // Update button states
+    leftTabButtons.forEach(btn => btn.classList.remove('active'));
+    leftTabContents.forEach(content => content.classList.remove('active'));
+    
+    // Activate selected tab
+    const activeButton = document.querySelector(`.left-tab-btn[data-tab="${targetTab}"]`);
+    const activeContent = document.getElementById(`${targetTab}-left-tab`);
+    
+    if (activeButton) activeButton.classList.add('active');
+    if (activeContent) activeContent.classList.add('active');
+    
+    // Handle specific tab actions
+    if (targetTab === 'json-editor' && window.metricsJsonEditor) {
+        setTimeout(() => window.metricsJsonEditor.layout(), 100);
+    } else if (targetTab === 'space-editor') {
+        // Refresh space editor when switching to this tab
+        setTimeout(() => refreshSpaceEditor(), 100);
+    }
+    // No special handling needed for simulation-render tab
+    // since it uses the same DOM elements that were moved
+}
+
+function createMetricsJsonEditor() {
+    console.log("METRICS: Creating JSON editor for metrics mode...");
+    
+    const container = document.getElementById('json-editor-metrics');
+    if (!container) {
+        console.error("METRICS: json-editor-metrics container not found");
+        return;
+    }
+    
+    if (window.metricsJsonEditor) {
+        console.log("METRICS: JSON editor already exists");
+        return;
+    }
+    
+    // Wait for Monaco to be available
+    if (typeof monaco === 'undefined') {
+        console.log("METRICS: Monaco not available, retrying in 100ms");
+        setTimeout(createMetricsJsonEditor, 100);
+        return;
+    }
+    
+    try {
+        window.metricsJsonEditor = monaco.editor.create(container, {
+            value: editor ? editor.getValue() : '{\n  "simulation": {\n    "tasks": [],\n    "objects": [],\n    "locations": []\n  }\n}',
+            language: 'json',
+            theme: 'vs',
+            fontSize: 14,
+            lineNumbers: 'on',
+            wordWrap: 'on',
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            automaticLayout: true
+        });
+        
+        // Sync changes from metrics editor to main editor
+        let syncInProgress = false;
+        window.metricsJsonEditor.onDidChangeModelContent(() => {
+            if (!syncInProgress && editor) {
+                syncInProgress = true;
+                editor.setValue(window.metricsJsonEditor.getValue());
+                syncInProgress = false;
+            }
+        });
+        
+        // Sync changes from main editor to metrics editor
+        if (editor) {
+            const originalListener = editor.onDidChangeModelContent;
+            editor.onDidChangeModelContent(() => {
+                if (!syncInProgress && window.metricsJsonEditor) {
+                    syncInProgress = true;
+                    window.metricsJsonEditor.setValue(editor.getValue());
+                    syncInProgress = false;
+                }
+                // Call original validation/render logic
+                if (autoRender) { debounceRender(); }
+                // Also call validateJSON if it exists
+                if (typeof validateJSON === 'function') {
+                    validateJSON();
+                }
+            });
+        }
+        
+        console.log("METRICS: JSON editor created successfully");
+    } catch (error) {
+        console.error("METRICS: Error creating JSON editor:", error);
+    }
+}
+
+function moveComponentsToMetricsMode() {
+    console.log("METRICS: Moving components to metrics mode layout...");
+    
+    // Move simulation content
+    const simulationTab = document.getElementById('simulation-tab');
+    const simulationRenderLeftTab = document.getElementById('simulation-render-left-tab');
+    
+    if (simulationTab && simulationRenderLeftTab) {
+        // Move all children from simulation-tab to simulation-render-left-tab
+        while (simulationTab.firstChild) {
+            simulationRenderLeftTab.appendChild(simulationTab.firstChild);
+        }
+        console.log("METRICS: Moved simulation content");
+    }
+    
+    // Move space editor content
+    const spaceEditorTab = document.getElementById('space-editor-tab');
+    const spaceEditorLeftTab = document.getElementById('space-editor-left-tab');
+    
+    if (spaceEditorTab && spaceEditorLeftTab) {
+        // Move all children from space-editor-tab to space-editor-left-tab
+        while (spaceEditorTab.firstChild) {
+            spaceEditorLeftTab.appendChild(spaceEditorTab.firstChild);
+        }
+        console.log("METRICS: Moved space editor content");
+        
+        // Refresh space editor after moving
+        setTimeout(() => refreshSpaceEditor(), 100);
+    }
+}
+
+function moveComponentsToStandardMode() {
+    console.log("METRICS: Moving components back to standard mode layout...");
+    
+    // Move simulation content back
+    const simulationTab = document.getElementById('simulation-tab');
+    const simulationRenderLeftTab = document.getElementById('simulation-render-left-tab');
+    
+    if (simulationTab && simulationRenderLeftTab) {
+        // Move all children back from simulation-render-left-tab to simulation-tab
+        while (simulationRenderLeftTab.firstChild) {
+            simulationTab.appendChild(simulationRenderLeftTab.firstChild);
+        }
+        console.log("METRICS: Moved simulation content back");
+    }
+    
+    // Move space editor content back
+    const spaceEditorTab = document.getElementById('space-editor-tab');
+    const spaceEditorLeftTab = document.getElementById('space-editor-left-tab');
+    
+    if (spaceEditorTab && spaceEditorLeftTab) {
+        // Move all children back from space-editor-left-tab to space-editor-tab
+        while (spaceEditorLeftTab.firstChild) {
+            spaceEditorTab.appendChild(spaceEditorLeftTab.firstChild);
+        }
+        console.log("METRICS: Moved space editor content back");
+        
+        // Refresh space editor after moving back
+        setTimeout(() => refreshSpaceEditor(), 100);
+    }
+}
+
+function refreshSpaceEditor() {
+    console.log("METRICS: Refreshing space editor...");
+    
+    if (spaceEditor) {
+        try {
+            // Update view transform to recalculate positioning
+            if (typeof spaceEditor.updateViewTransform === 'function') {
+                spaceEditor.updateViewTransform();
+            }
+            
+            // Apply layer filtering
+            if (typeof spaceEditor.applyLayerFilter === 'function') {
+                spaceEditor.applyLayerFilter();
+            }
+            
+            // Update hierarchical display
+            if (typeof spaceEditor.updateHierarchicalDisplay === 'function') {
+                spaceEditor.updateHierarchicalDisplay();
+            }
+            
+            // Re-render properties panel
+            if (typeof spaceEditor.renderPropertiesPanel === 'function') {
+                spaceEditor.renderPropertiesPanel();
+            }
+            
+            // Zoom to fit if there are locations
+            if (spaceEditor.locations && spaceEditor.locations.length > 0 && typeof spaceEditor.zoomToFit === 'function') {
+                setTimeout(() => spaceEditor.zoomToFit(), 50);
+            }
+            
+            console.log("METRICS: Space editor refreshed successfully");
+        } catch (error) {
+            console.error("METRICS: Error refreshing space editor:", error);
+        }
+    } else {
+        console.error("METRICS: Space editor not found for refresh");
+    }
+}
+
+function initializeMetricsEditor() {
+    console.log("METRICS: Initializing metrics editor...");
+    
+    if (!window.MetricsEditor) {
+        console.error("METRICS: MetricsEditor class not found!");
+        return;
+    }
+    
+    try {
+        metricsEditor = new MetricsEditor();
+        metricsEditor.initialize().then(success => {
+            if (success) {
+                console.log("METRICS: Metrics editor initialized successfully");
+            } else {
+                console.error("METRICS: Failed to initialize metrics editor");
+            }
+        });
+    } catch (error) {
+        console.error("METRICS: Error creating metrics editor:", error);
     }
 }
 
