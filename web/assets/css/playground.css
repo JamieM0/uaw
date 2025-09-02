@@ -257,7 +257,6 @@ body {
 .left-tab-btn.active {
     color: var(--primary-color);
     border-bottom-color: var(--primary-color);
-    background: rgba(18, 108, 168, 0.05);
 }
 
 .left-tab-content-wrapper {
@@ -336,6 +335,11 @@ body {
     flex: 1;
     overflow: hidden;
     position: relative;
+}
+
+.metrics-editor-panel .panel-content {
+    display: flex;
+    flex-direction: column;
 }
 
 #json-editor {
@@ -497,6 +501,10 @@ body {
     padding: 0 1rem;
 }
 
+.playground-top.metrics-mode #add-metric-btn {
+    display: block !important;
+}
+
 .metrics-tab-btn {
     background: none;
     border: none;
@@ -516,7 +524,6 @@ body {
 .metrics-tab-btn.active {
     color: var(--primary-color);
     border-bottom-color: var(--primary-color);
-    background: rgba(18, 108, 168, 0.05);
 }
 
 .metrics-tab-content-wrapper {
@@ -600,6 +607,222 @@ body {
     background: var(--primary-color);
     color: white;
     border-color: var(--primary-color);
+}
+
+/* Validation Controls */
+.validation-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: auto;
+}
+
+.metrics-mode-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.validation-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.validation-filters label {
+    font-size: var(--font-size-sm);
+    color: var(--text-light);
+}
+
+.validation-filters select {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-sm);
+    background: white;
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: var(--font-size-sm);
+}
+
+.validation-compact {
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.validation-stats-inline {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.stat-item.clickable {
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: var(--border-radius-sm);
+    transition: background-color var(--transition-normal);
+}
+
+.stat-item.clickable:hover {
+    background: rgba(18, 108, 168, 0.1);
+}
+
+.stat-item.clickable.active {
+    background: rgba(18, 108, 168, 0.15);
+    border: 1px solid var(--primary-color);
+}
+
+.stat-count {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.stat-count.error {
+    color: var(--error-color);
+}
+
+.stat-count.warning {
+    color: #856404;
+}
+
+.stat-count.success {
+    color: var(--success-color);
+}
+
+.stat-count.suggestion {
+    color: #0066cc;
+}
+
+.stat-label {
+    font-size: var(--font-size-xs);
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    margin-top: 0.25rem;
+}
+
+.validation-results-grouped {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+}
+
+.validation-group {
+    margin-bottom: 0.25rem;
+}
+
+.validation-group:last-child {
+    margin-bottom: 0;
+}
+
+.validation-group-content {
+    max-height: none;
+    overflow: visible;
+}
+
+.validation-group-content.collapsed {
+    display: none;
+}
+
+.validation-group.collapsible .validation-group-content.collapsed {
+    display: none;
+}
+
+.validation-result-item {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: var(--font-size-sm);
+}
+
+.validation-result-item:last-child {
+    border-bottom: none;
+}
+
+.validation-result-item.error {
+    background: rgba(220, 53, 69, 0.05);
+    border-left: 3px solid var(--error-color);
+}
+
+.validation-result-item.warning {
+    background: rgba(255, 193, 7, 0.05);
+    border-left: 3px solid #856404;
+}
+
+.validation-result-item.success {
+    background: rgba(40, 167, 69, 0.05);
+    border-left: 3px solid var(--success-color);
+}
+
+.validation-result-item.suggestion {
+    background: rgba(0, 102, 204, 0.05);
+    border-left: 3px solid #0066cc;
+}
+
+.validation-result-status {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.validation-result-status.error {
+    background: var(--error-color);
+    color: white;
+}
+
+.validation-result-status.warning {
+    background: #856404;
+    color: white;
+}
+
+.validation-result-status.success {
+    background: var(--success-color);
+    color: white;
+}
+
+.validation-result-status.suggestion {
+    background: #0066cc;
+    color: white;
+}
+
+.validation-result-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.validation-result-name {
+    font-weight: 500;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.validation-result-message {
+    color: var(--text-light);
+    margin-top: 0.25rem;
+    line-height: 1.3;
 }
 
 .simulation-container {

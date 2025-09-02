@@ -8,7 +8,7 @@ class SimulationValidator {
     this.results = [];
   }
 
-  runChecks(metricsCatalog) {
+  runChecks(metricsCatalog, customValidatorCode = null) {
     this.results = [];
     if (!this.simulation) {
       this.addResult({ metricId: 'schema.integrity.missing_root', status: 'error', message: "The root 'simulation' object is missing." });
@@ -17,15 +17,128 @@ class SimulationValidator {
     
     const computationalMetrics = metricsCatalog.filter(m => m.validation_type === 'computational');
     for (const metric of computationalMetrics) {
-      const funcName = metric.computation.function_name;
+      const funcName = metric.computation?.function_name || metric.function;
+      
+      // Handle built-in validation functions
       if (typeof this[funcName] === 'function') {
         try { this[funcName](metric); } 
         catch (e) { this.addResult({ metricId: metric.id, status: 'error', message: `Execution Error in ${funcName}: ${e.message}` }); }
+      }
+      // Handle custom validation functions
+      else if (metric.source === 'custom' && customValidatorCode) {
+        try {
+          this.executeCustomValidation(metric, customValidatorCode);
+        } catch (e) {
+          this.addResult({ metricId: metric.id, status: 'error', message: `Custom validation error in ${funcName}: ${e.message}` });
+        }
       } else {
         this.addResult({ metricId: metric.id, status: 'error', message: `Internal Error: Validation function '${funcName}' not implemented.` });
       }
     }
     return this.results;
+  }
+  
+  executeCustomValidation(metric, customValidatorCode) {
+    const funcName = metric.function;
+    
+    // Create a sandboxed context for custom validation
+    const sandbox = {
+      simulation: JSON.parse(JSON.stringify(this.simulation)), // Deep copy for safety
+      addResult: (result) => this.addResult(result),
+      console: { 
+        log: (...args) => console.log('[Custom Validator]', ...args), 
+        warn: (...args) => console.warn('[Custom Validator]', ...args), 
+        error: (...args) => console.error('[Custom Validator]', ...args) 
+      }, // Allow console but prefix with identifier
+      // Utility functions that custom validators can use
+      _timeToMinutes: this._timeToMinutes.bind(this),
+      // Prevent access to dangerous globals
+      window: undefined,
+      document: undefined,
+      localStorage: undefined,
+      sessionStorage: undefined,
+      fetch: undefined,
+      XMLHttpRequest: undefined,
+      eval: undefined,
+      Function: undefined
+    };
+    
+    let timeoutId;
+    
+    try {
+      // Enhanced timeout protection with proper cleanup
+      let hasTimedOut = false;
+      timeoutId = setTimeout(() => {
+        hasTimedOut = true;
+      }, 5000);
+      
+      // Create function in sandboxed context without 'with' statement (strict mode compatible)
+      const func = new Function('sandbox', 'metric', `
+        try {
+          // Destructure sandbox properties for direct access
+          const { simulation, addResult, console, _timeToMinutes } = sandbox;
+          
+          ${customValidatorCode}
+          if (typeof ${funcName} === 'function') {
+            return ${funcName}.call(sandbox, metric);
+          } else {
+            // Get available function names from the custom code
+            const funcRegex = /function\\s+(\\w+)\\s*\\(/g;
+            const matches = [];
+            let match;
+            while ((match = funcRegex.exec(\`\${customValidatorCode}\`)) !== null) {
+              matches.push(match[1]);
+            }
+            throw new Error('Function "${funcName}" not found in custom validator code. Available functions: ' + matches.join(', '));
+          }
+        } catch (error) {
+          if (error instanceof SyntaxError) {
+            throw new Error('Syntax error in custom validator: ' + error.message);
+          } else if (error instanceof ReferenceError) {
+            throw new Error('Reference error in custom validator: ' + error.message + '. Check that all variables and functions are properly defined.');
+          } else if (error instanceof TypeError) {
+            throw new Error('Type error in custom validator: ' + error.message + '. Check that you are calling methods on the correct object types.');
+          } else {
+            throw error;
+          }
+        }
+      `);
+      
+      // Execute with enhanced error handling
+      const result = func(sandbox, metric);
+      
+      // Check for timeout after execution
+      if (hasTimedOut) {
+        throw new Error('Custom validation function exceeded 5 second time limit');
+      }
+      
+      clearTimeout(timeoutId);
+      
+    } catch (error) {
+      if (timeoutId) clearTimeout(timeoutId);
+      
+      // Enhanced error messages based on error type
+      let errorMessage = error.message;
+      let errorStatus = 'error';
+      
+      if (error.message.includes('timeout') || error.message.includes('time limit')) {
+        errorMessage = `Validation timeout: Function "${funcName}" took longer than 5 seconds to execute. Consider optimizing your validation logic.`;
+      } else if (error.message.includes('Syntax error')) {
+        errorMessage = `Syntax error in "${funcName}": ${error.message}. Check your JavaScript syntax in the validator editor.`;
+      } else if (error.message.includes('not found')) {
+        errorMessage = `Function "${funcName}" not found. Make sure the function is defined in your validator code with the exact same name.`;
+      } else if (error.message.includes('Reference error')) {
+        errorMessage = `Reference error in "${funcName}": ${error.message}`;
+      } else {
+        errorMessage = `Error in custom validation "${funcName}": ${error.message}`;
+      }
+      
+      this.addResult({ 
+        metricId: metric.id, 
+        status: errorStatus, 
+        message: errorMessage 
+      });
+    }
   }
 
   addResult(result) { this.results.push(result); }

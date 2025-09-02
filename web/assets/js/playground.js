@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-console.log("SCRIPT START: Initializing global variables.");
 let editor;
 let tutorialManager, player, spaceEditor, emojiPicker;
 let tutorialData = null;
@@ -30,7 +29,6 @@ let metricsEditor = null;
 let isMetricsMode = false;
 
 // --- DATA FETCHING ---
-console.log("FETCH: Initiating fetch for tutorial, metrics, and simulation library catalogs.");
 Promise.all([
     fetch('/assets/static/tutorial-content.json').then(res => {
         if (!res.ok) throw new Error(`Fetch failed for tutorial-content.json: ${res.statusText}`);
@@ -48,7 +46,6 @@ Promise.all([
     tutorialData = tutData;
     window.metricsCatalog = metData;
     window.simulationLibrary = simLibData;
-    console.log("FETCH SUCCESS: Catalogs loaded.");
     // Populate simulation library dropdown
     populateSimulationLibrary();
     // Now that data is ready, try to initialize.
@@ -60,9 +57,6 @@ Promise.all([
 
 // --- CORE INITIALIZATION FUNCTION ---
 function initializePlayground() {
-    console.log("INIT: Running initializePlayground().");
-
-    console.log("INIT: 1. Setting up UI components.");
     setupTabs();
     updateAutoRenderUI();
     initializeResizeHandles();
@@ -70,12 +64,10 @@ function initializePlayground() {
     setupSaveLoadButtons();
     setupMetricsMode();
 
-    console.log("INIT: 2. Instantiating controllers.");
     const canvas = document.getElementById('space-canvas');
     const propsPanel = document.getElementById('properties-panel-content');
     if (canvas && propsPanel) {
         spaceEditor = new SpaceEditor(canvas, propsPanel, editor);
-        console.log("INIT: SpaceEditor instantiated successfully.");
     } else {
         console.error("INIT ERROR: Canvas or Properties Panel element not found!");
     }
@@ -84,15 +76,12 @@ function initializePlayground() {
     initializeTutorial();
     initializeExperimentalLLM();
 
-    console.log("INIT: 3. Performing initial render and validation.");
     renderSimulation();
     validateJSON();
-    console.log("INIT: initializePlayground() completed successfully.");
 }
 
 // --- SIMULATION LIBRARY FUNCTIONALITY ---
 function populateSimulationLibrary() {
-    console.log("LIBRARY: Populating simulation library dropdown.");
     const dropdown = document.getElementById('simulation-library-dropdown');
     if (!dropdown || !window.simulationLibrary) return;
     
@@ -115,7 +104,6 @@ function populateSimulationLibrary() {
 }
 
 function loadSimulationFromLibrary(simulationId) {
-    console.log(`LIBRARY: Loading simulation ${simulationId}`);
     const simulation = window.simulationLibrary.simulations.find(s => s.id === simulationId);
     if (!simulation) {
         console.error(`Simulation with ID ${simulationId} not found`);
@@ -133,8 +121,6 @@ function loadSimulationFromLibrary(simulationId) {
     if (autoRender) {
         renderSimulation();
     }
-    
-    console.log(`LIBRARY: Successfully loaded ${simulation.name}`);
 }
 
 // --- SINGLE POINT OF ENTRY FOR INITIALIZATION ---
@@ -149,24 +135,41 @@ function attemptInitializePlayground() {
 }
 
 // --- MONACO EDITOR INITIALIZATION ---
-console.log("MONACO: Starting initialization.");
 require.config({
     paths: { vs: "https://unpkg.com/monaco-editor@0.44.0/min/vs" },
 });
 require(["vs/editor/editor.main"], function () {
-    console.log("MONACO-CALLBACK: Monaco editor is ready.");
-    // Load the breadmaking simulation from the library as default
-    const defaultSimulation = window.simulationLibrary ? 
-        window.simulationLibrary.simulations.find(s => s.id === 'breadmaking') : 
-        null;
-    const defaultSimulationData = defaultSimulation ? 
-        { simulation: defaultSimulation.simulation } : 
-        sampleSimulation;
+    // Try to load saved content from localStorage first
+    const savedContent = localStorage.getItem('uaw-json-editor-content');
+    let initialData;
+    
+    if (savedContent) {
+        try {
+            // Validate that saved content is valid JSON
+            JSON.parse(savedContent);
+            initialData = savedContent;
+            console.log('✅ Loaded saved JSON editor content from localStorage');
+        } catch (e) {
+            console.warn('⚠️ Invalid saved JSON content, using default');
+            initialData = null;
+        }
+    }
+    
+    // If no saved content or invalid, use default
+    if (!initialData) {
+        const defaultSimulation = window.simulationLibrary ? 
+            window.simulationLibrary.simulations.find(s => s.id === 'breadmaking') : 
+            null;
+        const defaultSimulationData = defaultSimulation ? 
+            { simulation: defaultSimulation.simulation } : 
+            sampleSimulation;
+        initialData = JSON.stringify(defaultSimulationData, null, 2);
+    }
 
     editor = monaco.editor.create(
         document.getElementById("json-editor"),
         {
-            value: JSON.stringify(defaultSimulationData, null, 2),
+            value: initialData,
             language: "json",
             theme: "vs",
             automaticLayout: true,
@@ -204,16 +207,24 @@ require(["vs/editor/editor.main"], function () {
     let changeTimeout;
     editor.onDidChangeModelContent(() => {
         clearTimeout(changeTimeout);
-        changeTimeout = setTimeout(() => { saveToHistory(); }, 1000);
+        changeTimeout = setTimeout(() => { 
+            saveToHistory(); 
+            // Save current content to localStorage
+            try {
+                const currentContent = editor.getValue();
+                JSON.parse(currentContent); // Validate JSON before saving
+                localStorage.setItem('uaw-json-editor-content', currentContent);
+            } catch (e) {
+                // Don't save invalid JSON
+            }
+        }, 1000);
     });
 
     // Now that the editor is ready, try to initialize the playground.
-    console.log("MONACO-CALLBACK: Attempting to initialize playground.");
     attemptInitializePlayground();
 });
 
 function setupTabs() {
-    console.log("UI: Setting up tabs.");
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     tabButtons.forEach(button => {
@@ -239,7 +250,6 @@ function setupTabs() {
                         // Force zoom to fit when switching to space editor tab
                         spaceEditor.loadLayout(currentJson.simulation.layout, true);
                     } catch(e) {
-                        console.log("No valid JSON to load into space editor");
                     }
                 }
             }
@@ -584,8 +594,6 @@ function updateUndoButton() {
 }
 
 async function initializeEmojiPicker() {
-    console.log("INIT: Initializing emoji picker...");
-    
     try {
         // Create and initialize emoji picker
         emojiPicker = new EmojiPicker({
@@ -603,12 +611,10 @@ async function initializeEmojiPicker() {
             
             if (taskEmojiInput) {
                 emojiPicker.attachToInput(taskEmojiInput, { autoOpen: true });
-                console.log("INIT: Emoji picker attached to task emoji input");
             }
             
             if (objectEmojiInput) {
                 emojiPicker.attachToInput(objectEmojiInput, { autoOpen: true });
-                console.log("INIT: Emoji picker attached to object emoji input");
             }
             
             // Attach to all emoji input fields by class
@@ -620,19 +626,15 @@ async function initializeEmojiPicker() {
                 }
                 
                 emojiPicker.attachToInput(field, { autoOpen: true });
-                console.log("INIT: Emoji picker attached to emoji field:", field.className || field.id);
             });
             
             // Attach to Monaco editor if available
             if (editor) {
                 emojiPicker.attachToMonaco(editor);
-                console.log("INIT: Emoji picker attached to Monaco editor");
             }
             
             // Make emoji picker globally accessible for dynamic field attachment
             window.emojiPicker = emojiPicker;
-            
-            console.log("INIT: Emoji picker initialization completed successfully");
         } else {
             console.warn("INIT: Emoji picker failed to initialize");
         }
@@ -1587,7 +1589,6 @@ function openSubmitDialog() {
     fetchPageStructure()
         .then((structure) => {
             window.pageStructure = structure;
-            console.log("Page structure loaded successfully");
         })
         .catch((e) => {
             console.error("Failed to load page structure:", e);
@@ -2223,14 +2224,13 @@ function validateJSON() {
         jsonStatus.textContent = "✓ Valid JSON";
         jsonStatus.title = "JSON syntax is valid";
 
-        if (
-            window.metricsCatalog &&
-            window.metricsCatalog.length > 0
-        ) {
+        // Get merged catalog (built-in + custom metrics)
+        const mergedCatalog = getMergedMetricsCatalog();
+        
+        if (mergedCatalog && mergedCatalog.length > 0) {
             const validator = new SimulationValidator(parsed);
-            const validationResults = validator.runChecks(
-                window.metricsCatalog,
-            );
+            const customValidator = getCustomValidatorCode();
+            const validationResults = validator.runChecks(mergedCatalog, customValidator);
             displayValidationResults(validationResults); // Call the display function
         }
 
@@ -2244,73 +2244,301 @@ function validateJSON() {
 }
 
 function displayValidationResults(results) {
-    const categoriesContainer = document.getElementById(
-        "validation-categories",
-    );
+    // Use the new grouped validation display
+    displayGroupedValidationResults(results);
+}
 
-    // Check for a clean run (only success messages)
-    const hasIssues = results.some((r) => r.status !== "success");
+function displayGroupedValidationResults(results) {
+    const compactContainer = document.getElementById("validation-compact");
+    if (!compactContainer) return;
 
-    if (!hasIssues) {
-        categoriesContainer.innerHTML =
-            '<div class="validation-success" style="text-align: center; padding: 2rem;">🎉 Perfect! No validation issues found.</div>';
-        return;
-    }
-
-    // Prepare categories for grouping issues
-    const categories = {
-        "Structural Integrity": {
-            id: "critical-errors",
-            results: [],
-        },
-        "Resource Flow": { id: "resource-issues", results: [] },
-        Scheduling: { id: "scheduling-conflicts", results: [] },
-        Optimization: {
-            id: "optimization-suggestions",
-            results: [],
-        },
+    // Calculate stats for each category
+    const stats = {
+        total: results.length,
+        errors: results.filter(r => r.status === 'error').length,
+        warnings: results.filter(r => r.status === 'warning').length,
+        suggestions: results.filter(r => r.status === 'suggestion').length,
+        success: results.filter(r => r.status === 'success').length
     };
 
-    // Create a map for quick metric lookup
-    const metricMap = new Map(
-        window.metricsCatalog.map((m) => [m.id, m]),
-    );
+    // Update stat counters
+    updateValidationStats(stats);
 
-    // Group results by category
-    results.forEach((result) => {
-        if (result.status === "success") return; // Don't display success messages in the detailed view
+    // Group results by status
+    const grouped = {
+        errors: results.filter(r => r.status === 'error'),
+        warnings: results.filter(r => r.status === 'warning'), 
+        suggestions: results.filter(r => r.status === 'suggestion'),
+        success: results.filter(r => r.status === 'success')
+    };
 
-        const metric = metricMap.get(result.metricId);
-        if (metric && categories[metric.category]) {
-            categories[metric.category].results.push({
-                ...result,
-                severity: metric.severity, // Pass severity for UI styling
-            });
-        }
-    });
+    // Display grouped results
+    displayValidationGroup('errors', grouped.errors, '❌');
+    displayValidationGroup('warnings', grouped.warnings, '⚠️');
+    displayValidationGroup('suggestions', grouped.suggestions, '💡');
+    displayValidationGroup('passed', grouped.success, '✅', true); // collapsed by default
 
-    let html = "";
-    for (const [categoryName, categoryData] of Object.entries(
-        categories,
-    )) {
-        if (categoryData.results.length > 0) {
-            html += `
-                <div class="validation-category ${categoryData.id}">
-                    <h4>${categoryName} (${categoryData.results.length})</h4>
-                    ${categoryData.results
-                        .map(
-                            (result) => `
-                        <div class="validation-issue ${result.severity || "warning"}">
-                            ${result.message}
-                        </div>
-                    `,
-                        )
-                        .join("")}
+    // Apply current filter
+    applyValidationFilter();
+
+    // Setup interactive elements if not already done
+    if (!compactContainer.hasAttribute('data-initialized')) {
+        setupValidationInteractions();
+        compactContainer.setAttribute('data-initialized', 'true');
+    }
+}
+
+function updateValidationStats(stats) {
+    const elements = {
+        total: document.getElementById('total-metrics-count'),
+        errors: document.getElementById('error-metrics-count'),
+        warnings: document.getElementById('warning-metrics-count'),
+        suggestions: document.getElementById('suggestion-metrics-count'),
+        success: document.getElementById('success-metrics-count')
+    };
+
+    if (elements.total) elements.total.textContent = stats.total;
+    if (elements.errors) elements.errors.textContent = stats.errors;
+    if (elements.warnings) elements.warnings.textContent = stats.warnings;
+    if (elements.suggestions) elements.suggestions.textContent = stats.suggestions;
+    if (elements.success) elements.success.textContent = stats.success;
+}
+
+function displayValidationGroup(groupId, results, icon, collapsedByDefault = false) {
+    const groupElement = document.getElementById(`${groupId}-group`);
+    const contentElement = document.getElementById(`${groupId}-group-content`);
+
+    if (!groupElement || !contentElement) return;
+
+    // Show/hide group based on whether it has results
+    if (results.length > 0) {
+        groupElement.style.display = 'block';
+
+        // Sort results to float custom metrics to the top
+        const mergedCatalog = getMergedMetricsCatalog();
+        const sortedResults = [...results].sort((a, b) => {
+            const metricA = mergedCatalog.find(m => m.id === a.metricId);
+            const metricB = mergedCatalog.find(m => m.id === b.metricId);
+            
+            const isCustomA = metricA?.source === 'custom';
+            const isCustomB = metricB?.source === 'custom';
+            
+            // Custom metrics first
+            if (isCustomA && !isCustomB) return -1;
+            if (!isCustomA && isCustomB) return 1;
+            
+            // Within same type (custom/built-in), sort alphabetically by metric name
+            const nameA = metricA?.name || a.metricId;
+            const nameB = metricB?.name || b.metricId;
+            return nameA.localeCompare(nameB);
+        });
+
+        // Generate HTML for results
+        const html = sortedResults.map(result => {
+            const statusIcon = getStatusIcon(result.status);
+            const metricName = getMetricDisplayName(result.metricId);
+            
+            return `
+                <div class="validation-result-item ${result.status}" data-metric-id="${result.metricId}">
+                    <div class="validation-result-status ${result.status}">
+                        ${statusIcon}
+                    </div>
+                    <div class="validation-result-details">
+                        <div class="validation-result-name">${metricName}</div>
+                        <div class="validation-result-message">${result.message}</div>
+                    </div>
                 </div>
             `;
+        }).join('');
+
+        contentElement.innerHTML = html;
+
+        // Handle collapsed state for passed group
+        if (collapsedByDefault) {
+            contentElement.classList.add('collapsed');
+        } else {
+            contentElement.classList.remove('collapsed');
         }
+    } else {
+        groupElement.style.display = 'none';
     }
-    categoriesContainer.innerHTML = html;
+}
+
+function getStatusIcon(status) {
+    const icons = {
+        error: '❌',
+        warning: '⚠️', 
+        suggestion: '💡',
+        success: '✅'
+    };
+    return icons[status] || '❓';
+}
+
+function getMetricDisplayName(metricId) {
+    // Try to get a more friendly name from the merged metrics catalog
+    const mergedCatalog = getMergedMetricsCatalog();
+    const metric = mergedCatalog.find(m => m.id === metricId);
+    return metric?.name || metricId;
+}
+
+function setupValidationInteractions() {
+    // Setup clickable stat items for filtering
+    document.querySelectorAll('.stat-item.clickable').forEach(item => {
+        item.addEventListener('click', () => {
+            const filterValue = item.dataset.filter;
+            const filterSelect = document.getElementById('validation-filter');
+            if (filterSelect) {
+                filterSelect.value = filterValue;
+                applyValidationFilter();
+                
+                // Update visual state
+                document.querySelectorAll('.stat-item.clickable').forEach(s => s.classList.remove('active'));
+                item.classList.add('active');
+            }
+        });
+    });
+
+    // Setup filter dropdown
+    const filterSelect = document.getElementById('validation-filter');
+    if (filterSelect) {
+        filterSelect.addEventListener('change', applyValidationFilter);
+    }
+
+    // Setup collapsible passed group (click directly on passed group)
+    const passedGroup = document.getElementById('passed-group');
+    if (passedGroup) {
+        passedGroup.addEventListener('click', () => {
+            const content = document.getElementById('passed-group-content');
+            if (content) {
+                const isCollapsed = content.classList.contains('collapsed');
+                if (isCollapsed) {
+                    content.classList.remove('collapsed');
+                } else {
+                    content.classList.add('collapsed');
+                }
+            }
+        });
+    }
+}
+
+function applyValidationFilter() {
+    const filterSelect = document.getElementById('validation-filter');
+    const filterValue = filterSelect?.value || 'all';
+
+    // Get all validation groups
+    const groups = {
+        errors: document.getElementById('errors-group'),
+        warnings: document.getElementById('warnings-group'),
+        suggestions: document.getElementById('suggestions-group'),
+        passed: document.getElementById('passed-group')
+    };
+
+    // Update stat item visual states
+    document.querySelectorAll('.stat-item.clickable').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    const activeStatItem = document.querySelector(`[data-filter="${filterValue}"]`);
+    if (activeStatItem) {
+        activeStatItem.classList.add('active');
+    }
+
+    // Apply filter logic
+    switch (filterValue) {
+        case 'all':
+            // Reset all groups and items to their original state
+            Object.values(groups).forEach(group => {
+                if (!group) return;
+                
+                // Show group if it has any items
+                const hasItems = group.querySelector('.validation-result-item');
+                group.style.display = hasItems ? 'block' : 'none';
+                
+                // Show all items within groups
+                const items = group.querySelectorAll('.validation-result-item');
+                items.forEach(item => item.style.display = 'flex');
+                
+                // Reset group counts to original values
+                const countElement = group.querySelector('.group-count');
+                if (countElement) {
+                    countElement.textContent = items.length;
+                }
+            });
+            break;
+            
+        case 'errors':
+            showOnlyGroup('errors', groups);
+            break;
+            
+        case 'warnings':
+            showOnlyGroup('warnings', groups);
+            break;
+            
+        case 'suggestions':
+            showOnlyGroup('suggestions', groups);
+            break;
+            
+        case 'passed':
+            showOnlyGroup('passed', groups);
+            // Auto-expand passed group when filtering to it
+            const passedGroup = groups.passed;
+            const passedContent = document.getElementById('passed-group-content');
+            if (passedGroup && passedContent) {
+                passedContent.classList.remove('collapsed');
+                passedGroup.classList.add('expanded');
+            }
+            break;
+            
+        case 'custom':
+            filterBySource('custom', groups);
+            break;
+            
+        case 'builtin':
+            filterBySource('builtin', groups);
+            break;
+    }
+}
+
+function showOnlyGroup(targetGroupId, groups) {
+    Object.entries(groups).forEach(([groupId, group]) => {
+        if (group) {
+            if (groupId === targetGroupId) {
+                // Only show if it has content
+                const hasContent = group.querySelector('.validation-result-item');
+                group.style.display = hasContent ? 'block' : 'none';
+            } else {
+                group.style.display = 'none';
+            }
+        }
+    });
+}
+
+function filterBySource(source, groups) {
+    // Show all groups but filter their content by source
+    Object.values(groups).forEach(group => {
+        if (!group) return;
+        
+        const items = group.querySelectorAll('.validation-result-item');
+        let visibleCount = 0;
+        
+        items.forEach(item => {
+            const metricId = item.dataset.metricId;
+            const isCustomMetric = metricId && metricId.startsWith('custom.');
+            const shouldShow = (source === 'custom') ? isCustomMetric : !isCustomMetric;
+            
+            item.style.display = shouldShow ? 'flex' : 'none';
+            if (shouldShow) visibleCount++;
+        });
+        
+        // Show/hide group based on visible items
+        group.style.display = visibleCount > 0 ? 'block' : 'none';
+        
+        // Update group count
+        const countElement = group.querySelector('.group-count');
+        if (countElement) {
+            countElement.textContent = visibleCount;
+        }
+    });
 }
 
 function initializeExperimentalLLM() {
@@ -2501,23 +2729,18 @@ document
 
 // Setup save/load button event listeners
 function setupSaveLoadButtons() {
-    console.log("INIT: Setting up save/load buttons.");
     
     const saveBtn = document.getElementById("save-simulation-btn");
     const loadBtn = document.getElementById("load-simulation-btn");
     
     if (saveBtn) {
         saveBtn.addEventListener("click", openSaveDialog);
-        console.log("INIT: Save button event listener attached.");
     } else {
-        console.error("INIT: Save button not found!");
     }
     
     if (loadBtn) {
         loadBtn.addEventListener("click", openLoadDialog);
-        console.log("INIT: Load button event listener attached.");
     } else {
-        console.error("INIT: Load button not found!");
     }
     
     // Setup copy save code button
@@ -2565,30 +2788,20 @@ function setupSaveLoadButtons() {
                 }
             }
         });
-        console.log("INIT: Copy save code button event listener attached.");
     } else {
-        console.log("INIT: Copy save code button not found (will be available when save modal opens).");
     }
 }
 
 // Setup metrics mode toggle functionality
 function setupMetricsMode() {
-    console.log("INIT: Setting up metrics mode toggle.");
     
     const toggleBtn = document.getElementById("metrics-mode-toggle");
     const playgroundTop = document.querySelector(".playground-top");
     
     if (!toggleBtn) {
-        console.error("INIT: Metrics mode toggle button not found!");
         return;
     }
     
-    // Debug: Check if required containers exist
-    console.log("DEBUG: Checking metrics editor containers...");
-    console.log("- metrics-catalog-editor:", !!document.getElementById('metrics-catalog-editor'));
-    console.log("- metrics-validator-editor:", !!document.getElementById('metrics-validator-editor'));
-    console.log("- json-editor-metrics:", !!document.getElementById('json-editor-metrics'));
-    console.log("- metrics-editor-panel:", !!document.getElementById('metrics-editor-panel'));
     
     // Load saved mode preference
     const savedMode = localStorage.getItem('uaw-metrics-mode');
@@ -2602,21 +2815,20 @@ function setupMetricsMode() {
         isMetricsMode = !isMetricsMode;
         localStorage.setItem('uaw-metrics-mode', isMetricsMode.toString());
         updateMetricsMode();
-        console.log("METRICS: Mode toggled to:", isMetricsMode ? "Metrics Mode" : "Standard Mode");
     });
-    
-    console.log("INIT: Metrics mode toggle setup complete. Current mode:", isMetricsMode ? "Metrics Mode" : "Standard Mode");
 }
 
 function updateMetricsMode() {
     const toggleBtn = document.getElementById("metrics-mode-toggle");
     const playgroundTop = document.querySelector(".playground-top");
+    const specialTitle = document.querySelector("h1.special-title");
     
     if (isMetricsMode) {
         // Switch to metrics mode
-        toggleBtn.textContent = "Metrics Mode";
+        toggleBtn.textContent = "Close Metrics Editor";
         toggleBtn.classList.add("metrics-active");
         playgroundTop.classList.add("metrics-mode");
+        if (specialTitle) specialTitle.textContent = "Metrics Editor";
         
         // Setup left panel tabs for metrics mode
         setupLeftPanelTabs();
@@ -2635,7 +2847,6 @@ function updateMetricsMode() {
             
             // Trigger layout updates for all editors after everything is initialized
             setTimeout(() => {
-                console.log("METRICS: Triggering layout updates for all editors");
                 
                 if (window.metricsJsonEditor) {
                     window.metricsJsonEditor.layout();
@@ -2652,16 +2863,23 @@ function updateMetricsMode() {
                 
                 // Move existing components to metrics mode layout
                 moveComponentsToMetricsMode();
+                
+                // Setup validation panel for metrics mode
+                setupMetricsValidationPanel();
             }, 300);
         }, 200);
     } else {
         // Switch to standard mode
-        toggleBtn.textContent = "Standard Mode";
+        toggleBtn.textContent = "Open Metrics Editor";
         toggleBtn.classList.remove("metrics-active");
         playgroundTop.classList.remove("metrics-mode");
+        if (specialTitle) specialTitle.textContent = "Playground";
         
         // Move components back to standard mode layout
         moveComponentsToStandardMode();
+        
+        // Reset validation panel to standard mode
+        resetValidationPanelToStandard();
         
         // Reset any custom flex sizing that might have been applied in metrics mode
         setTimeout(() => {
@@ -2680,7 +2898,6 @@ function updateMetricsMode() {
 }
 
 function setupLeftPanelTabs() {
-    console.log("METRICS: Setting up left panel tabs...");
     
     const leftTabButtons = document.querySelectorAll('.left-tab-btn');
     const leftTabContents = document.querySelectorAll('.left-tab-content');
@@ -2702,7 +2919,6 @@ function setupLeftPanelTabs() {
 }
 
 function switchLeftTab(targetTab) {
-    console.log('METRICS: Switching left tab to:', targetTab);
     
     const leftTabButtons = document.querySelectorAll('.left-tab-btn');
     const leftTabContents = document.querySelectorAll('.left-tab-content');
@@ -2730,7 +2946,6 @@ function switchLeftTab(targetTab) {
 }
 
 function createMetricsJsonEditor() {
-    console.log("METRICS: Creating JSON editor for metrics mode...");
     
     const container = document.getElementById('json-editor-metrics');
     if (!container) {
@@ -2739,13 +2954,11 @@ function createMetricsJsonEditor() {
     }
     
     if (window.metricsJsonEditor) {
-        console.log("METRICS: JSON editor already exists");
         return;
     }
     
     // Wait for Monaco to be available
     if (typeof monaco === 'undefined') {
-        console.log("METRICS: Monaco not available, retrying in 100ms");
         setTimeout(createMetricsJsonEditor, 100);
         return;
     }
@@ -2791,14 +3004,12 @@ function createMetricsJsonEditor() {
             });
         }
         
-        console.log("METRICS: JSON editor created successfully");
     } catch (error) {
         console.error("METRICS: Error creating JSON editor:", error);
     }
 }
 
 function moveComponentsToMetricsMode() {
-    console.log("METRICS: Moving components to metrics mode layout...");
     
     // Move simulation content
     const simulationTab = document.getElementById('simulation-tab');
@@ -2809,7 +3020,6 @@ function moveComponentsToMetricsMode() {
         while (simulationTab.firstChild) {
             simulationRenderLeftTab.appendChild(simulationTab.firstChild);
         }
-        console.log("METRICS: Moved simulation content");
     }
     
     // Move space editor content
@@ -2821,7 +3031,6 @@ function moveComponentsToMetricsMode() {
         while (spaceEditorTab.firstChild) {
             spaceEditorLeftTab.appendChild(spaceEditorTab.firstChild);
         }
-        console.log("METRICS: Moved space editor content");
         
         // Refresh space editor after moving
         setTimeout(() => refreshSpaceEditor(), 100);
@@ -2829,7 +3038,6 @@ function moveComponentsToMetricsMode() {
 }
 
 function moveComponentsToStandardMode() {
-    console.log("METRICS: Moving components back to standard mode layout...");
     
     // Move simulation content back
     const simulationTab = document.getElementById('simulation-tab');
@@ -2840,7 +3048,6 @@ function moveComponentsToStandardMode() {
         while (simulationRenderLeftTab.firstChild) {
             simulationTab.appendChild(simulationRenderLeftTab.firstChild);
         }
-        console.log("METRICS: Moved simulation content back");
     }
     
     // Move space editor content back
@@ -2852,7 +3059,6 @@ function moveComponentsToStandardMode() {
         while (spaceEditorLeftTab.firstChild) {
             spaceEditorTab.appendChild(spaceEditorLeftTab.firstChild);
         }
-        console.log("METRICS: Moved space editor content back");
         
         // Refresh space editor after moving back
         setTimeout(() => refreshSpaceEditor(), 100);
@@ -2860,7 +3066,6 @@ function moveComponentsToStandardMode() {
 }
 
 function refreshSpaceEditor() {
-    console.log("METRICS: Refreshing space editor...");
     
     if (spaceEditor) {
         try {
@@ -2889,7 +3094,6 @@ function refreshSpaceEditor() {
                 setTimeout(() => spaceEditor.zoomToFit(), 50);
             }
             
-            console.log("METRICS: Space editor refreshed successfully");
         } catch (error) {
             console.error("METRICS: Error refreshing space editor:", error);
         }
@@ -2899,7 +3103,6 @@ function refreshSpaceEditor() {
 }
 
 function initializeMetricsEditor() {
-    console.log("METRICS: Initializing metrics editor...");
     
     if (!window.MetricsEditor) {
         console.error("METRICS: MetricsEditor class not found!");
@@ -2910,13 +3113,545 @@ function initializeMetricsEditor() {
         metricsEditor = new MetricsEditor();
         metricsEditor.initialize().then(success => {
             if (success) {
-                console.log("METRICS: Metrics editor initialized successfully");
             } else {
                 console.error("METRICS: Failed to initialize metrics editor");
             }
         });
     } catch (error) {
         console.error("METRICS: Error creating metrics editor:", error);
+    }
+}
+
+function setupMetricsValidationPanel() {
+    console.log("METRICS: Setting up validation panel for metrics mode");
+    
+    const metricsControls = document.getElementById("metrics-mode-controls");
+    const runValidationBtn = document.getElementById("run-custom-validation");
+    
+    // Show metrics-specific validation controls
+    if (metricsControls) metricsControls.style.display = 'flex';
+    
+    // Setup custom validation button
+    if (runValidationBtn) {
+        runValidationBtn.addEventListener('click', runCustomValidation);
+    }
+    
+    // Setup add metric modal
+    setupAddMetricModal();
+    
+    // Run initial validation with custom metrics
+    runCustomValidation();
+}
+
+function resetValidationPanelToStandard() {
+    console.log("METRICS: Resetting validation panel to standard mode");
+    
+    const metricsControls = document.getElementById("metrics-mode-controls");
+    
+    // Hide metrics-specific controls
+    if (metricsControls) metricsControls.style.display = 'none';
+}
+
+function runCustomValidation() {
+    console.log("METRICS: Running custom validation");
+    
+    try {
+        const simulationData = getCurrentSimulationData();
+        if (!simulationData) {
+            console.warn("METRICS: No simulation data available");
+            return;
+        }
+        
+        // Get merged metrics catalog (built-in + custom)
+        const mergedCatalog = getMergedMetricsCatalog();
+        const customValidator = getCustomValidatorCode();
+        
+        // Run validation with merged catalog and custom code
+        const validator = new SimulationValidator(simulationData);
+        const results = validator.runChecks(mergedCatalog, customValidator);
+        
+        // Display results in compact format
+        displayCompactValidationResults(results);
+        
+    } catch (error) {
+        console.error("METRICS: Error running custom validation:", error);
+        displayValidationError(error.message);
+    }
+}
+
+function getCustomMetricsCatalog() {
+    // First try to get from metrics editor if available
+    if (metricsEditor && metricsEditor.catalogEditor) {
+        try {
+            const catalogContent = metricsEditor.catalogEditor.getValue();
+            return JSON.parse(catalogContent) || [];
+        } catch (error) {
+            console.warn("METRICS: Invalid JSON in custom catalog from editor:", error);
+        }
+    }
+    
+    // Fallback to localStorage
+    try {
+        const storedCatalog = localStorage.getItem('uaw-metrics-catalog-custom');
+        if (storedCatalog) {
+            return JSON.parse(storedCatalog) || [];
+        }
+    } catch (error) {
+        console.warn("METRICS: Invalid JSON in stored custom catalog:", error);
+    }
+    
+    return [];
+}
+
+function getMergedMetricsCatalog() {
+    const builtInCatalog = window.metricsCatalog || [];
+    const customCatalog = getCustomMetricsCatalog();
+    
+    // Create a map to handle duplicates (custom metrics override built-in ones with same ID)
+    const mergedMap = new Map();
+    
+    // Add built-in metrics first
+    builtInCatalog.forEach(metric => {
+        mergedMap.set(metric.id, { ...metric, source: 'builtin' });
+    });
+    
+    // Add custom metrics (will override built-in if same ID)
+    customCatalog.forEach(metric => {
+        mergedMap.set(metric.id, { ...metric, source: 'custom' });
+    });
+    
+    return Array.from(mergedMap.values());
+}
+
+function getCustomValidatorCode() {
+    // First try to get from metrics editor if available
+    if (metricsEditor && metricsEditor.validatorEditor) {
+        return metricsEditor.validatorEditor.getValue();
+    }
+    
+    // Fallback to localStorage
+    return localStorage.getItem('uaw-metrics-validator-custom') || '';
+}
+
+function displayCompactValidationResults(results) {
+    // Use the new grouped validation display
+    displayGroupedValidationResults(results);
+}
+
+function filterValidationResults() {
+    // Legacy function - now handled by applyValidationFilter
+    applyValidationFilter();
+}
+
+function displayValidationError(message) {
+    // Display error as a single error result
+    const errorResult = [{
+        metricId: 'validation.error',
+        status: 'error',
+        message: message
+    }];
+    
+    displayGroupedValidationResults(errorResult);
+}
+
+// Metric Management Modal Functions
+function setupAddMetricModal() {
+    const addMetricBtn = document.getElementById("add-metric-btn");
+    const modal = document.getElementById("add-metric-modal");
+    const form = document.getElementById("add-metric-form");
+    const cancelBtn = document.getElementById("metric-cancel-btn");
+    const confirmBtn = document.getElementById("metric-add-btn");
+    
+    // Open modal
+    if (addMetricBtn) {
+        addMetricBtn.addEventListener('click', openAddMetricModal);
+    }
+    
+    // Close modal
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeAddMetricModal);
+    }
+    
+    // Add metric
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', addCustomMetric);
+    }
+    
+    // Setup form handlers
+    setupMetricFormHandlers();
+}
+
+function openAddMetricModal() {
+    const modal = document.getElementById("add-metric-modal");
+    if (modal) {
+        modal.style.display = 'flex';
+        
+        // Reset form
+        const form = document.getElementById("add-metric-form");
+        if (form) form.reset();
+        
+        // Focus on first input
+        const nameInput = document.getElementById("metric-name-input");
+        if (nameInput) setTimeout(() => nameInput.focus(), 100);
+    }
+}
+
+function closeAddMetricModal() {
+    const modal = document.getElementById("add-metric-modal");
+    if (modal) modal.style.display = 'none';
+}
+
+function setupMetricFormHandlers() {
+    const nameInput = document.getElementById("metric-name-input");
+    const categoryInput = document.getElementById("metric-category-input");
+    const idInput = document.getElementById("metric-id-input");
+    const functionInput = document.getElementById("metric-function-input");
+    const hasParamsCheckbox = document.getElementById("metric-has-params");
+    const paramsSection = document.getElementById("metric-params-section");
+    
+    // Auto-generate ID and function name when name or category changes
+    if (nameInput && categoryInput && idInput && functionInput) {
+        nameInput.addEventListener('input', updateGeneratedFields);
+        categoryInput.addEventListener('change', updateGeneratedFields);
+    }
+    
+    // Toggle parameters section
+    if (hasParamsCheckbox && paramsSection) {
+        hasParamsCheckbox.addEventListener('change', () => {
+            paramsSection.style.display = hasParamsCheckbox.checked ? 'block' : 'none';
+        });
+    }
+}
+
+function updateGeneratedFields() {
+    const nameInput = document.getElementById("metric-name-input");
+    const categoryInput = document.getElementById("metric-category-input");
+    const idInput = document.getElementById("metric-id-input");
+    const functionInput = document.getElementById("metric-function-input");
+    const idStatus = document.getElementById("metric-id-status");
+    const functionStatus = document.getElementById("metric-function-status");
+    
+    const name = nameInput?.value.trim();
+    const category = categoryInput?.value;
+    
+    if (name && category) {
+        // Generate ID: category.name (lowercase, underscores)
+        const categorySlug = category.toLowerCase().replace(/\s+/g, '_');
+        const nameSlug = name.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '_');
+        const generatedId = `custom.${categorySlug}.${nameSlug}`;
+        
+        // Generate function name: validateCamelCase
+        const camelCaseName = name
+            .replace(/[^a-z0-9\s]/gi, '')
+            .replace(/\s+(.)/g, (match, char) => char.toUpperCase())
+            .replace(/^./, char => char.toUpperCase());
+        const generatedFunction = `validate${camelCaseName}`;
+        
+        if (idInput) idInput.value = generatedId;
+        if (functionInput) functionInput.value = generatedFunction;
+        
+        // Check for duplicates
+        checkForDuplicates(generatedId, generatedFunction, idStatus, functionStatus);
+    } else {
+        // Clear fields if name or category is empty
+        if (idInput) idInput.value = '';
+        if (functionInput) functionInput.value = '';
+        if (idStatus) idStatus.textContent = 'Auto-generated based on category and name';
+        if (functionStatus) functionStatus.textContent = 'Auto-generated JavaScript function name';
+    }
+}
+
+function checkForDuplicates(generatedId, generatedFunction, idStatus, functionStatus) {
+    // Check existing metrics catalog for duplicate IDs
+    const existingMetrics = [...(window.metricsCatalog || [])];
+    
+    // Add custom metrics from editor if available
+    if (metricsEditor && metricsEditor.catalogEditor) {
+        try {
+            const customMetrics = JSON.parse(metricsEditor.catalogEditor.getValue());
+            existingMetrics.push(...customMetrics);
+        } catch (e) {
+            // Ignore parse errors
+        }
+    }
+    
+    // Check for duplicate ID
+    const idExists = existingMetrics.some(m => m.id === generatedId);
+    if (idStatus) {
+        if (idExists) {
+            idStatus.textContent = '⚠️ This ID already exists - please change name or category';
+            idStatus.style.color = '#856404';
+        } else {
+            idStatus.textContent = '✓ ID is available';
+            idStatus.style.color = '#28a745';
+        }
+    }
+    
+    // Check for duplicate function name
+    let functionExists = false;
+    if (metricsEditor && metricsEditor.validatorEditor) {
+        const validatorCode = metricsEditor.validatorEditor.getValue();
+        functionExists = validatorCode.includes(`function ${generatedFunction}(`);
+    }
+    
+    if (functionStatus) {
+        if (functionExists) {
+            functionStatus.textContent = '⚠️ This function name already exists';
+            functionStatus.style.color = '#856404';
+        } else {
+            functionStatus.textContent = '✓ Function name is available';
+            functionStatus.style.color = '#28a745';
+        }
+    }
+}
+
+function addCustomMetric() {
+    const form = document.getElementById("add-metric-form");
+    const formData = new FormData(form);
+    
+    // Collect form data
+    const metricData = {
+        id: document.getElementById("metric-id-input").value,
+        name: document.getElementById("metric-name-input").value,
+        emoji: document.getElementById("metric-emoji-input").value,
+        category: document.getElementById("metric-category-input").value,
+        severity: document.getElementById("metric-severity-input").value,
+        description: document.getElementById("metric-description-input").value,
+        function: document.getElementById("metric-function-input").value,
+        validationLogic: document.getElementById("metric-validation-logic").value,
+        hasParams: document.getElementById("metric-has-params").checked,
+        params: document.getElementById("metric-params-input").value
+    };
+    
+    // Validate required fields
+    const requiredFields = ['id', 'name', 'emoji', 'category', 'severity', 'description', 'function'];
+    const missingFields = requiredFields.filter(field => !metricData[field]);
+    
+    if (missingFields.length > 0) {
+        alert(`Please fill in all required fields: ${missingFields.join(', ')}`);
+        return;
+    }
+    
+    // Validate parameters JSON if provided
+    let parsedParams = null;
+    if (metricData.hasParams && metricData.params) {
+        try {
+            parsedParams = JSON.parse(metricData.params);
+        } catch (error) {
+            alert('Invalid JSON in parameters field. Please check your syntax.');
+            return;
+        }
+    }
+    
+    try {
+        // Generate metric catalog entry
+        const catalogEntry = generateMetricCatalogEntry(metricData, parsedParams);
+        
+        // Generate validator function
+        const validatorFunction = generateValidatorFunction(metricData);
+        
+        // Insert into editors
+        insertMetricIntoCatalog(catalogEntry);
+        insertFunctionIntoValidator(validatorFunction);
+        
+        // Close modal and show success
+        closeAddMetricModal();
+        showNotification(`✅ Custom metric "${metricData.name}" added successfully!`);
+        
+        // Re-run validation to include new metric
+        if (isMetricsMode) {
+            setTimeout(runCustomValidation, 500);
+        }
+        
+    } catch (error) {
+        console.error('Error adding custom metric:', error);
+        alert('Failed to add metric: ' + error.message);
+    }
+}
+
+function generateMetricCatalogEntry(metricData, parsedParams) {
+    const entry = {
+        id: metricData.id,
+        name: metricData.name,
+        emoji: metricData.emoji,
+        category: metricData.category,
+        severity: metricData.severity,
+        source: "custom",
+        function: metricData.function,
+        description: metricData.description,
+        validation_type: "computational"
+    };
+    
+    if (parsedParams) {
+        entry.params = parsedParams;
+    }
+    
+    return entry;
+}
+
+function generateValidatorFunction(metricData) {
+    const functionName = metricData.function;
+    const template = getValidationTemplate(metricData.validationLogic);
+    
+    return `
+// ${metricData.name} - ${metricData.description}
+function ${functionName}(metric) {
+    const simulation = this.simulation;
+    const tasks = simulation.tasks || [];
+    const objects = simulation.objects || [];
+    
+    // Get parameters from metric definition
+    const params = metric.params || {};
+    
+    ${template}
+}
+`;
+}
+
+function getValidationTemplate(logicType) {
+    const templates = {
+        basic: `
+    // Basic validation template
+    let hasIssue = false;
+    let issueMessage = '';
+    
+    // Add your validation logic here
+    if (tasks.length === 0) {
+        hasIssue = true;
+        issueMessage = 'No tasks found in simulation';
+    }
+    
+    this.addResult({
+        metricId: metric.id,
+        status: hasIssue ? 'warning' : 'success',
+        message: hasIssue ? issueMessage : 'Validation passed'
+    });`,
+        
+        resource: `
+    // Resource validation template
+    const resources = objects.filter(obj => obj.type === 'resource' || obj.type === 'product');
+    
+    for (const resource of resources) {
+        const quantity = resource.properties?.quantity || 0;
+        
+        // Example: Check for negative quantities
+        if (quantity < 0) {
+            this.addResult({
+                metricId: metric.id,
+                status: 'error',
+                message: \`Resource '\${resource.id}' has negative quantity: \${quantity}\`
+            });
+            return;
+        }
+    }
+    
+    this.addResult({
+        metricId: metric.id,
+        status: 'success',
+        message: \`Validated \${resources.length} resources\`
+    });`,
+        
+        timing: `
+    // Timing validation template
+    for (const task of tasks) {
+        const startTime = task.start || "00:00";
+        const duration = task.duration || 0;
+        
+        // Example: Check for extremely long tasks
+        if (duration > 480) { // More than 8 hours
+            this.addResult({
+                metricId: metric.id,
+                status: 'warning',
+                message: \`Task '\${task.id}' has unusually long duration: \${duration} minutes\`
+            });
+        }
+    }
+    
+    this.addResult({
+        metricId: metric.id,
+        status: 'success',
+        message: 'Task timing validation completed'
+    });`,
+        
+        dependency: `
+    // Dependency validation template
+    for (const task of tasks) {
+        const dependencies = task.depends_on || [];
+        
+        // Check if all dependencies exist
+        for (const depId of dependencies) {
+            const depTask = tasks.find(t => t.id === depId);
+            if (!depTask) {
+                this.addResult({
+                    metricId: metric.id,
+                    status: 'error',
+                    message: \`Task '\${task.id}' depends on missing task: \${depId}\`
+                });
+                return;
+            }
+        }
+    }
+    
+    this.addResult({
+        metricId: metric.id,
+        status: 'success',
+        message: 'Task dependencies validated'
+    });`,
+        
+        custom: `
+    // Custom validation logic
+    // TODO: Implement your custom validation logic here
+    
+    // Example structure:
+    // 1. Analyze simulation data
+    // 2. Check for issues or conditions
+    // 3. Report results using this.addResult()
+    
+    this.addResult({
+        metricId: metric.id,
+        status: 'info',
+        message: 'Custom validation function - please implement your logic'
+    });`
+    };
+    
+    return templates[logicType] || templates.custom;
+}
+
+function insertMetricIntoCatalog(catalogEntry) {
+    if (!metricsEditor || !metricsEditor.catalogEditor) {
+        throw new Error('Metrics catalog editor not available');
+    }
+    
+    try {
+        const currentContent = metricsEditor.catalogEditor.getValue();
+        const currentCatalog = JSON.parse(currentContent);
+        
+        // Add new metric to catalog
+        currentCatalog.push(catalogEntry);
+        
+        // Update editor with formatted JSON
+        const updatedContent = JSON.stringify(currentCatalog, null, 2);
+        metricsEditor.catalogEditor.setValue(updatedContent);
+        
+    } catch (error) {
+        throw new Error('Failed to insert metric into catalog: ' + error.message);
+    }
+}
+
+function insertFunctionIntoValidator(functionCode) {
+    if (!metricsEditor || !metricsEditor.validatorEditor) {
+        throw new Error('Metrics validator editor not available');
+    }
+    
+    try {
+        const currentContent = metricsEditor.validatorEditor.getValue();
+        
+        // Insert at the end of the file, before any existing footer
+        const newContent = currentContent + '\n' + functionCode;
+        metricsEditor.validatorEditor.setValue(newContent);
+        
+    } catch (error) {
+        throw new Error('Failed to insert function into validator: ' + error.message);
     }
 }
 
@@ -3026,38 +3761,228 @@ function downloadSimulationFile(data, filename) {
     URL.revokeObjectURL(url);
 }
 
+function hasCustomMetrics() {
+    // Check if there are any custom metrics in localStorage
+    const customCatalog = localStorage.getItem('uaw-metrics-catalog-custom');
+    const customValidator = localStorage.getItem('uaw-metrics-validator-custom');
+    
+    if (!customCatalog || !customValidator) return false;
+    
+    // Check if catalog has meaningful content (not just empty array)
+    try {
+        const catalog = JSON.parse(customCatalog);
+        return Array.isArray(catalog) && catalog.length > 0;
+    } catch {
+        return false;
+    }
+}
+
+async function downloadSimulationWithMetrics(simulationData, baseName) {
+    // Simple check with brief wait for JSZip
+    let attempts = 0;
+    while (!window.JSZip && !window.JSZipFailed && attempts < 20) {
+        if (attempts === 0) console.log('⏳ Waiting for JSZip...');
+        await new Promise(resolve => setTimeout(resolve, 250));
+        attempts++;
+    }
+
+    if (!window.JSZip) {
+        console.error('JSZip not available - falling back to JSON save');
+        alert('ZIP file creation is not available. Saving as JSON instead.');
+        downloadSimulationFile(simulationData, `${baseName}.json`);
+        return;
+    }
+    
+    console.log('✅ JSZip ready, creating zip file...');
+
+    try {
+        const zip = new JSZip();
+    
+    // Add simulation data
+    zip.file('simulation.json', simulationData);
+    
+        // Add custom metrics (create empty/default files if none exist)
+        const customCatalog = localStorage.getItem('uaw-metrics-catalog-custom');
+        const customValidator = localStorage.getItem('uaw-metrics-validator-custom');
+        
+        // Add metrics catalog (empty array if no custom metrics exist)
+        const catalogData = customCatalog || '[]';
+        zip.file('metrics-catalog-custom.json', catalogData);
+        
+        // Add validator (basic template if no custom validator exists)
+        const validatorData = customValidator || `// Custom Simulation Validator
+// This file contains custom validation functions for your simulation
+
+// Example custom validation function:
+// function validateCustomRule(simulation, params = {}) {
+//     // Your custom validation logic here
+//     return { passed: true, message: "Custom validation passed" };
+// }
+
+// Add your custom validation functions here
+`;
+        zip.file('simulation-validator-custom.js', validatorData);
+    
+    // Add README for the zip contents
+    const readmeContent = `# UAW Simulation Package
+
+This package contains:
+
+## Files
+- **simulation.json**: The main simulation data
+- **metrics-catalog-custom.json**: Custom metrics definitions
+- **simulation-validator-custom.js**: Custom validation functions
+
+## Usage
+1. Open UAW Playground (${window.location.origin})
+2. Use "Load Simulation" and select this zip file
+3. Switch to Metrics Mode to see your custom metrics
+4. Custom metrics will be automatically loaded and integrated
+
+Generated on: ${new Date().toISOString()}
+UAW Version: Metrics Editor Mode
+`;
+    
+    zip.file('README.md', readmeContent);
+    
+        // Generate and download zip
+        const content = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(content);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${baseName || 'uaw-simulation'}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Error creating zip file:', error);
+        // Fallback to regular JSON save
+        downloadSimulationFile(simulationData, `${baseName}.json`);
+    }
+}
+
 // Simple file upload function
 function loadSimulationFromFileInput() {
     return new Promise((resolve, reject) => {
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.json,.uaw';
+        input.accept = '.json,.uaw,.zip';
         
-        input.onchange = function(e) {
+        input.onchange = async function(e) {
             const file = e.target.files[0];
             if (!file) {
                 reject(new Error('No file selected'));
                 return;
             }
             
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const contents = e.target.result;
-                    JSON.parse(contents); // Validate JSON
-                    resolve({ success: true, data: contents, filename: file.name });
-                } catch (error) {
-                    reject(new Error('Invalid JSON file'));
+            try {
+                if (file.name.endsWith('.zip')) {
+                    // Handle zip file with custom metrics
+                    await loadSimulationFromZip(file, resolve, reject);
+                } else {
+                    // Handle regular JSON file
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const contents = e.target.result;
+                            JSON.parse(contents); // Validate JSON
+                            resolve({ success: true, data: contents, filename: file.name });
+                        } catch (error) {
+                            reject(new Error('Invalid JSON file'));
+                        }
+                    };
+                    reader.onerror = function() {
+                        reject(new Error('Failed to read file'));
+                    };
+                    reader.readAsText(file);
                 }
-            };
-            reader.onerror = function() {
-                reject(new Error('Failed to read file'));
-            };
-            reader.readAsText(file);
+            } catch (error) {
+                reject(new Error('Failed to process file: ' + error.message));
+            }
         };
         
         input.click();
     });
+}
+
+async function loadSimulationFromZip(file, resolve, reject) {
+    // Simple check with brief wait for JSZip
+    let attempts = 0;
+    while (!window.JSZip && !window.JSZipFailed && attempts < 20) {
+        if (attempts === 0) console.log('⏳ Waiting for JSZip for zip loading...');
+        await new Promise(resolve => setTimeout(resolve, 250));
+        attempts++;
+    }
+
+    if (!window.JSZip) {
+        reject(new Error('ZIP file support not available. Please use a JSON file instead.'));
+        return;
+    }
+
+    try {
+        const zip = new JSZip();
+        const zipContent = await zip.loadAsync(file);
+        
+        // Look for simulation.json in the zip
+        const simulationFile = zipContent.file('simulation.json');
+        if (!simulationFile) {
+            reject(new Error('No simulation.json found in ZIP file'));
+            return;
+        }
+        
+        // Extract simulation data
+        const simulationData = await simulationFile.async('string');
+        
+        // Validate simulation JSON
+        let parsedSimulation;
+        try {
+            parsedSimulation = JSON.parse(simulationData);
+        } catch (error) {
+            reject(new Error('Invalid JSON in simulation.json'));
+            return;
+        }
+        
+        // Extract custom metrics if they exist
+        const customCatalogFile = zipContent.file('metrics-catalog-custom.json');
+        const customValidatorFile = zipContent.file('simulation-validator-custom.js');
+        
+        let customCatalog = null;
+        let customValidator = null;
+        
+        if (customCatalogFile) {
+            try {
+                const catalogData = await customCatalogFile.async('string');
+                customCatalog = JSON.parse(catalogData);
+            } catch (error) {
+                console.warn('Failed to parse custom metrics catalog:', error);
+            }
+        }
+        
+        if (customValidatorFile) {
+            try {
+                customValidator = await customValidatorFile.async('string');
+            } catch (error) {
+                console.warn('Failed to read custom validator:', error);
+            }
+        }
+        
+        // Don't apply custom metrics yet - they will be applied when Load button is clicked
+        
+        resolve({ 
+            success: true, 
+            data: simulationData, 
+            filename: file.name,
+            hasCustomMetrics: !!(customCatalog || customValidator),
+            customMetricsCount: Array.isArray(customCatalog) ? customCatalog.length : 0,
+            customCatalog: customCatalog,
+            customValidator: customValidator
+        });
+        
+    } catch (error) {
+        console.error('Error loading ZIP file:', error);
+        reject(new Error('Failed to read ZIP file: ' + error.message));
+    }
 }
 
 // Check if user has accepted disclaimer this session
@@ -3104,6 +4029,19 @@ function openSaveDialog() {
             localSaveNameDiv.style.display = 'block';
             confirmBtn.disabled = false;
             confirmBtn.textContent = 'Save to File';
+            
+            // Show/hide custom metrics option - visible whenever in metrics editor mode
+            const customMetricsOption = document.getElementById('custom-metrics-save-option');
+            if (customMetricsOption) {
+                const shouldShow = isMetricsMode;
+                customMetricsOption.style.display = shouldShow ? 'block' : 'none';
+                
+                // Auto-check if user is in metrics mode with custom metrics
+                const checkbox = document.getElementById('include-custom-metrics-checkbox');
+                if (checkbox && shouldShow && hasCustomMetrics()) {
+                    checkbox.checked = true;
+                }
+            }
         } else {
             localSaveNameDiv.style.display = 'none';
             if (hasAcceptedDisclaimer()) {
@@ -3159,22 +4097,36 @@ function openSaveDialog() {
                 return;
             }
 
+            // Check if custom metrics should be included
+            const includeCustomMetrics = document.getElementById('include-custom-metrics-checkbox')?.checked || false;
+
             // Show loading
             localSaveNameDiv.style.display = 'none';
             loadingDiv.style.display = 'block';
             confirmBtn.disabled = true;
 
             try {
-                // Create clean filename and download
+                // Create clean filename
                 const cleanName = fileName.replace(/[<>:"/\\|?*]/g, '-').trim().substring(0, 50);
-                const downloadFileName = `${cleanName || 'uaw-simulation'}.json`;
-                downloadSimulationFile(simulationData, downloadFileName);
+                
+                if (includeCustomMetrics) {
+                    // Create zip file with simulation + custom metrics (even if empty)
+                    await downloadSimulationWithMetrics(simulationData, cleanName);
+                } else {
+                    // Standard JSON file download
+                    const downloadFileName = `${cleanName || 'uaw-simulation'}.json`;
+                    downloadSimulationFile(simulationData, downloadFileName);
+                }
                 
                 loadingDiv.style.display = 'none';
                 successDiv.style.display = 'block';
                 document.getElementById('cloud-save-result').style.display = 'none';
                 document.getElementById('local-save-result').style.display = 'block';
-                document.getElementById('saved-filename').textContent = downloadFileName;
+                
+                const finalFileName = includeCustomMetrics ? 
+                    `${cleanName || 'uaw-simulation'}.zip` : 
+                    `${cleanName || 'uaw-simulation'}.json`;
+                document.getElementById('saved-filename').textContent = finalFileName;
                 
                 // Clear save code since we're not using cloud
                 loadedSaveCode = null;
@@ -3289,6 +4241,10 @@ function openLoadDialog() {
 
     modal.style.display = 'flex';
 
+    // Variables to store ZIP custom metrics data
+    let pendingCustomCatalog = null;
+    let pendingCustomValidator = null;
+
     // Handle file browse
     browseBtn.addEventListener('click', async function() {
         try {
@@ -3298,9 +4254,20 @@ function openLoadDialog() {
             fileInfo.style.display = 'block';
             confirmBtn.disabled = false;
             errorDiv.style.display = 'none';
+            
+            // Store custom metrics data for later processing
+            pendingCustomCatalog = result.customCatalog || null;
+            pendingCustomValidator = result.customValidator || null;
+            
+            // Show indication if custom metrics are present
+            if (result.hasCustomMetrics) {
+                fileName.textContent += ` (includes ${result.customMetricsCount} custom metrics)`;
+            }
         } catch (error) {
             showLoadError(error.message);
             selectedFileData = null;
+            pendingCustomCatalog = null;
+            pendingCustomValidator = null;
             fileInfo.style.display = 'none';
             confirmBtn.disabled = true;
         }
@@ -3327,11 +4294,51 @@ function openLoadDialog() {
                 editor.setValue(selectedFileData);
                 loadedSaveCode = null; // Clear cloud save code
                 
-                // Close modal
-                modal.style.display = 'none';
-                
-                // Show success message
-                showNotification('Simulation loaded from file successfully!');
+                // Apply custom metrics if they exist
+                if (pendingCustomCatalog || pendingCustomValidator) {
+                    console.log('📦 Applying custom metrics from ZIP file...');
+                    
+                    // Store custom metrics in localStorage
+                    if (pendingCustomCatalog) {
+                        localStorage.setItem('uaw-metrics-catalog-custom', JSON.stringify(pendingCustomCatalog, null, 2));
+                    }
+                    
+                    if (pendingCustomValidator) {
+                        localStorage.setItem('uaw-metrics-validator-custom', pendingCustomValidator);
+                    }
+                    
+                    // Save current JSON editor content before refresh to prevent loss
+                    if (editor) {
+                        try {
+                            const currentContent = editor.getValue();
+                            localStorage.setItem('uaw-json-editor-content', currentContent);
+                            console.log('✅ Saved current JSON editor content before refresh');
+                        } catch (e) {
+                            console.warn('⚠️ Could not save editor content before refresh:', e);
+                        }
+                    }
+                    
+                    // Close modal
+                    modal.style.display = 'none';
+                    
+                    // Show notification and refresh
+                    const metricsCount = Array.isArray(pendingCustomCatalog) ? pendingCustomCatalog.length : 0;
+                    showNotification(
+                        `📦 Loaded simulation with custom metrics! (${metricsCount} custom metrics imported). Page will refresh to apply changes...`
+                    );
+                    
+                    // Refresh the page after a brief delay
+                    setTimeout(() => {
+                        console.log('🔄 Refreshing page to apply loaded custom metrics...');
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    // Close modal
+                    modal.style.display = 'none';
+                    
+                    // Show success message
+                    showNotification('Simulation loaded from file successfully!');
+                }
             } catch (error) {
                 showLoadError('Failed to load simulation: ' + error.message);
             }

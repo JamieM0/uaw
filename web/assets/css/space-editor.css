@@ -1,5 +1,5 @@
 /* --- Tab Bar & Content --- */
-.tab-bar { display: flex; border-bottom: 2px solid var(--border-color); background: var(--bg-light); flex-shrink: 0; }
+.tab-bar { display: flex; border-bottom: 2px solid var(--border-color); background: var(--bg-light); flex-shrink: 0; align-items: center; }
 .tab-btn { padding: 0.75rem 1rem; border: none; background: transparent; cursor: pointer; font-size: 0.875rem; font-weight: 500; color: var(--text-light); border-bottom: 3px solid transparent; }
 .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
 .tab-btn:hover { background: var(--border-color); }

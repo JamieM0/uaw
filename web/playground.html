@@ -34,6 +34,81 @@
 
         <!-- Monaco Editor for JSON syntax highlighting -->
         <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
+        
+        <!-- JSZip - Load after Monaco to avoid AMD conflicts -->
+        <script>
+            // Load JSZip after Monaco Editor is ready to avoid AMD conflicts
+            let jszipLoadAttempted = false;
+            
+            function loadJSZip() {
+                if (jszipLoadAttempted) return;
+                jszipLoadAttempted = true;
+                
+                console.log('🔄 Loading JSZip...');
+                
+                // Temporarily disable AMD to force global registration
+                const originalDefine = window.define;
+                window.define = undefined;
+                
+                // Try local first
+                const localScript = document.createElement('script');
+                localScript.src = '/assets/js/jszip.min.js';
+                localScript.onload = () => {
+                    console.log('✅ JSZip loaded from local file');
+                    // Restore AMD after a brief delay
+                    setTimeout(() => {
+                        window.define = originalDefine;
+                        if (typeof window.JSZip !== 'undefined') {
+                            window.JSZipReady = true;
+                            console.log('✅ JSZip available globally');
+                        } else {
+                            console.log('⚠️ JSZip not found globally, trying CDN...');
+                            loadJSZipFromCDN();
+                        }
+                    }, 100);
+                };
+                localScript.onerror = () => {
+                    window.define = originalDefine;
+                    console.log('⚠️ Local JSZip failed, trying CDN...');
+                    loadJSZipFromCDN();
+                };
+                document.head.appendChild(localScript);
+            }
+            
+            function loadJSZipFromCDN() {
+                // Temporarily disable AMD to force global registration
+                const originalDefine = window.define;
+                window.define = undefined;
+                
+                const cdnScript = document.createElement('script');
+                cdnScript.src = 'https://unpkg.com/jszip@3.10.1/dist/jszip.min.js';
+                cdnScript.onload = () => {
+                    console.log('✅ JSZip loaded from CDN');
+                    // Restore AMD after a brief delay
+                    setTimeout(() => {
+                        window.define = originalDefine;
+                        if (typeof window.JSZip !== 'undefined') {
+                            window.JSZipReady = true;
+                            console.log('✅ JSZip available globally from CDN');
+                        } else {
+                            console.error('❌ JSZip not found after CDN load');
+                            window.JSZipFailed = true;
+                        }
+                    }, 100);
+                };
+                cdnScript.onerror = () => {
+                    window.define = originalDefine;
+                    console.error('❌ JSZip failed from all sources');
+                    window.JSZipFailed = true;
+                };
+                document.head.appendChild(cdnScript);
+            }
+            
+            // Load JSZip after DOM is ready and Monaco has had time to initialize
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(loadJSZip, 1000); // Wait 1 second for Monaco to settle
+            });
+        </script>
 
     </head>
     <body>
@@ -94,7 +169,10 @@
 
                     <div class="control-buttons">
                         <button id="metrics-mode-toggle" class="mode-toggle-btn" title="Toggle Metrics Editor Mode">
-                            Standard Mode
+                            Open Metrics Editor
+                        </button>
+                        <button id="add-metric-btn" class="btn btn-secondary" style="display: none;" title="Add Custom Metric">
+                            + Add Metric
                         </button>
                         <button id="render-simulation-btn" class="hidden">
                             Render
@@ -282,9 +360,6 @@
 
                     <div class="metrics-editor-panel" id="metrics-editor-panel" style="display: none;">
                         <div class="resize-handle-vertical metrics-resize"></div>
-                        <div class="panel-header">
-                            <h3>Metrics Editor</h3>
-                        </div>
                         <div class="panel-content">
                             <div class="metrics-tab-bar">
                                 <button class="metrics-tab-btn active" data-tab="catalog">metrics-catalog-custom.json</button>
@@ -316,13 +391,83 @@
                                     ✓ Valid JSON
                                 </div>
                             </div>
+                            
+                            <!-- Validation Controls -->
+                            <div class="validation-controls" id="validation-controls">
+                                <div class="validation-filters">
+                                    <label for="validation-filter">Show:</label>
+                                    <select id="validation-filter">
+                                        <option value="all">All Metrics</option>
+                                        <option value="errors">Errors Only</option>
+                                        <option value="warnings">Warnings Only</option>
+                                        <option value="suggestions">Suggestions Only</option>
+                                        <option value="passed">Passed Only</option>
+                                        <option value="custom">Custom Only</option>
+                                        <option value="builtin">Built-in Only</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Inline Statistics -->
+                                <div class="validation-stats-inline">
+                                    <span class="stat-item clickable" data-filter="all" id="total-stat">
+                                        <span class="stat-count" id="total-metrics-count">0</span>
+                                        <span class="stat-label">Total</span>
+                                    </span>
+                                    <span class="stat-item clickable" data-filter="errors" id="error-stat">
+                                        <span class="stat-count error" id="error-metrics-count">0</span>
+                                        <span class="stat-label">Errors</span>
+                                    </span>
+                                    <span class="stat-item clickable" data-filter="warnings" id="warning-stat">
+                                        <span class="stat-count warning" id="warning-metrics-count">0</span>
+                                        <span class="stat-label">Warnings</span>
+                                    </span>
+                                    <span class="stat-item clickable" data-filter="suggestions" id="suggestion-stat">
+                                        <span class="stat-count suggestion" id="suggestion-metrics-count">0</span>
+                                        <span class="stat-label">Suggestions</span>
+                                    </span>
+                                    <span class="stat-item clickable" data-filter="passed" id="passed-stat">
+                                        <span class="stat-count success" id="success-metrics-count">0</span>
+                                        <span class="stat-label">Passed</span>
+                                    </span>
+                                </div>
+                                
+                                <div class="metrics-mode-controls" id="metrics-mode-controls" style="display: none;">
+                                    <button id="run-custom-validation" class="btn-primary">Run Custom Validation</button>
+                                </div>
+                            </div>
                         </div>
+                        
                         <div class="validation-content" id="validation-content">
-                            <div
-                                class="validation-categories"
-                                id="validation-categories"
-                            >
-                                <!-- Validation results will be populated here -->
+                            <div class="validation-compact" id="validation-compact">
+                                <div class="validation-results-grouped" id="validation-results-grouped">
+                                    <!-- Errors Group -->
+                                    <div class="validation-group error" id="errors-group" style="display: none;">
+                                        <div class="validation-group-content" id="errors-group-content">
+                                            <!-- Error results will be populated here -->
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Warnings Group -->
+                                    <div class="validation-group warning" id="warnings-group" style="display: none;">
+                                        <div class="validation-group-content" id="warnings-group-content">
+                                            <!-- Warning results will be populated here -->
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Suggestions Group -->
+                                    <div class="validation-group suggestion" id="suggestions-group" style="display: none;">
+                                        <div class="validation-group-content" id="suggestions-group-content">
+                                            <!-- Suggestion results will be populated here -->
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Passed Group (collapsible by default) -->
+                                    <div class="validation-group success collapsible" id="passed-group" style="display: none;">
+                                        <div class="validation-group-content collapsed" id="passed-group-content">
+                                            <!-- Passed results will be populated here -->
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -371,6 +516,16 @@
                     <label for="local-file-name">File Name:</label>
                     <input type="text" id="local-file-name" placeholder="Enter simulation name..." maxlength="50">
                     <small>A descriptive name for your simulation (e.g., "Restaurant Kitchen Process")</small>
+                    
+                    <div class="custom-metrics-save-option" id="custom-metrics-save-option" style="margin-top: 1rem;">
+                        <label>
+                            <input type="checkbox" id="include-custom-metrics-checkbox">
+                            Include custom metrics in save file (creates .zip with simulation + metrics)
+                        </label>
+                        <small id="custom-metrics-help" style="display: block; margin-top: 0.25rem; color: var(--text-light);">
+                            When enabled, saves your custom metrics catalog and validator code along with the simulation
+                        </small>
+                    </div>
                 </div>
                 <div id="save-success" style="display: none;" class="save-success">
                     <p><strong>✅ Save Successful!</strong></p>
@@ -659,6 +814,97 @@
                 </form>
                 
                 <div id="feedback-message" class="feedback-message" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Add Metric Modal -->
+        <div id="add-metric-modal" class="dialog-overlay" style="display: none;">
+            <div class="dialog" style="max-width: 600px;">
+                <h3>🔧 Add Custom Metric</h3>
+                <p>Create a new validation metric that will be automatically inserted into your metrics catalog and validator.</p>
+                
+                <form id="add-metric-form" class="metric-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="metric-name-input">Metric Name:</label>
+                            <input type="text" id="metric-name-input" placeholder="e.g., Task Duration Validation" required>
+                            <small>A descriptive name for your validation rule</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="metric-emoji-input">Emoji:</label>
+                            <input type="text" id="metric-emoji-input" placeholder="🔧" maxlength="2" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="metric-category-input">Category:</label>
+                        <select id="metric-category-input" required>
+                            <option value="">Select category...</option>
+                            <option value="Custom Validation">Custom Validation</option>
+                            <option value="Resource Flow">Resource Flow</option>
+                            <option value="Scheduling">Scheduling</option>
+                            <option value="Quality Assurance">Quality Assurance</option>
+                            <option value="Performance">Performance</option>
+                            <option value="Safety">Safety</option>
+                            <option value="Compliance">Compliance</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="metric-severity-input">Severity:</label>
+                        <select id="metric-severity-input" required>
+                            <option value="info">Info - Informational message</option>
+                            <option value="warning" selected>Warning - Potential issue to review</option>
+                            <option value="error">Error - Critical validation failure</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="metric-description-input">Description:</label>
+                        <textarea id="metric-description-input" placeholder="Describe what this metric validates and why it's important..." rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="metric-validation-logic">Validation Logic Template:</label>
+                        <select id="metric-validation-logic">
+                            <option value="basic">Basic Check - Simple validation pattern</option>
+                            <option value="resource">Resource Check - Validate resource quantities/states</option>
+                            <option value="timing">Timing Check - Validate task scheduling and timing</option>
+                            <option value="dependency">Dependency Check - Validate task dependencies</option>
+                            <option value="custom">Custom Logic - Write your own validation</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="metric-has-params"> 
+                            This metric accepts custom parameters
+                        </label>
+                        <div id="metric-params-section" style="display: none; margin-top: 0.5rem;">
+                            <textarea id="metric-params-input" placeholder='{"param1": "default_value", "param2": 42}' rows="2"></textarea>
+                            <small>JSON object defining parameter names and default values</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Auto-generated fields at bottom -->
+                    <div class="form-row auto-generated-fields">
+                        <div class="form-group">
+                            <label for="metric-id-input">Metric ID:</label>
+                            <input type="text" id="metric-id-input" placeholder="custom.validation.task_duration" readonly>
+                            <small id="metric-id-status">Auto-generated based on category and name</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="metric-function-input">Function Name:</label>
+                            <input type="text" id="metric-function-input" placeholder="validateTaskDuration" readonly>
+                            <small id="metric-function-status">Auto-generated JavaScript function name</small>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="dialog-buttons">
+                    <button type="button" class="btn-secondary" id="metric-cancel-btn">Cancel</button>
+                    <button type="button" class="btn-primary" id="metric-add-btn">Add Metric</button>
+                </div>
             </div>
         </div>
 

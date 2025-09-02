@@ -12,6 +12,10 @@ class MetricsEditor {
         this.catalogTemplate = this.getDefaultCatalog();
         this.validatorTemplate = this.getDefaultValidator();
         
+        // Debounced validation
+        this.validationTimeout = null;
+        this.validationDelay = 500; // 500ms delay
+        
         // Load saved content from localStorage
         this.loadSavedContent();
     }
@@ -120,9 +124,11 @@ class MetricsEditor {
                     automaticLayout: true
                 });
                 
-                // Auto-save on change
+                // Auto-save, syntax validation and debounced validation on change
                 this.catalogEditor.onDidChangeModelContent(() => {
                     this.saveCatalogContent();
+                    this.validateJsonSyntax();
+                    this.scheduleValidation();
                 });
                 
                 console.log('MetricsEditor: Catalog editor initialized successfully');
@@ -156,9 +162,11 @@ class MetricsEditor {
                     automaticLayout: true
                 });
                 
-                // Auto-save on change
+                // Auto-save, syntax validation and debounced validation on change
                 this.validatorEditor.onDidChangeModelContent(() => {
                     this.saveValidatorContent();
+                    this.validateJavaScriptSyntax();
+                    this.scheduleValidation();
                 });
                 
                 console.log('MetricsEditor: Validator editor initialized successfully');
@@ -258,7 +266,6 @@ class MetricsEditor {
         
         document.addEventListener('mouseup', () => {
             if (isResizing) {
-                console.log('🔧 RESIZE: Mouseup - ending resize operation');
                 isResizing = false;
                 document.body.style.cursor = '';
             }
@@ -317,6 +324,7 @@ class MetricsEditor {
                 "source": "custom",
                 "function": "validateSampleCheck",
                 "description": "This is an example custom metric. Replace with your own validation logic.",
+                "validation_type": "computational",
                 "params": {
                     "example_parameter": "default_value"
                 }
@@ -362,7 +370,7 @@ function validateSampleCheck(metric) {
         this.addResult({
             metricId: metric.id,
             status: 'success',
-            message: \`Found \${tasks.length} tasks in simulation. Parameter: \${exampleParam}\`
+            message: \`Found \$\{tasks.length\} tasks in simulation. Parameter: \$\{exampleParam\}\`
         });
     }
 }
@@ -376,6 +384,120 @@ function validateSampleCheck(metric) {
     addNewMetric(metricData) {
         console.log('MetricsEditor: Adding new metric:', metricData);
         // This will be implemented in a later phase
+    }
+    
+    // Debounced validation methods
+    scheduleValidation() {
+        // Clear any existing timeout
+        if (this.validationTimeout) {
+            clearTimeout(this.validationTimeout);
+        }
+        
+        // Schedule new validation
+        this.validationTimeout = setTimeout(() => {
+            this.runDebouncedValidation();
+        }, this.validationDelay);
+    }
+    
+    runDebouncedValidation() {
+        console.log('MetricsEditor: Running debounced validation...');
+        
+        // Only run validation if we're in metrics mode
+        if (typeof window.isMetricsMode !== 'undefined' && window.isMetricsMode) {
+            if (typeof window.runCustomValidation === 'function') {
+                try {
+                    window.runCustomValidation();
+                } catch (error) {
+                    console.warn('MetricsEditor: Debounced validation failed:', error);
+                }
+            }
+        }
+        
+        // Clear timeout reference
+        this.validationTimeout = null;
+    }
+    
+    // Method to trigger immediate validation (bypasses debounce)
+    runImmediateValidation() {
+        if (this.validationTimeout) {
+            clearTimeout(this.validationTimeout);
+            this.validationTimeout = null;
+        }
+        this.runDebouncedValidation();
+    }
+    
+    // Syntax validation methods
+    validateJsonSyntax() {
+        if (!this.catalogEditor) return;
+        
+        try {
+            const content = this.catalogEditor.getValue();
+            if (content.trim()) {
+                JSON.parse(content);
+            }
+            // Clear any existing markers
+            monaco.editor.setModelMarkers(this.catalogEditor.getModel(), 'json-syntax', []);
+        } catch (error) {
+            // Add syntax error marker
+            const markers = [{
+                severity: monaco.MarkerSeverity.Error,
+                message: `JSON Syntax Error: ${error.message}`,
+                startLineNumber: 1,
+                startColumn: 1,
+                endLineNumber: 1,
+                endColumn: 1000
+            }];
+            
+            // Try to get more specific error location if possible
+            if (error.message.includes('position')) {
+                const match = error.message.match(/position (\d+)/);
+                if (match) {
+                    const position = parseInt(match[1]);
+                    const model = this.catalogEditor.getModel();
+                    const positionObj = model.getPositionAt(position);
+                    markers[0].startLineNumber = positionObj.lineNumber;
+                    markers[0].startColumn = positionObj.column;
+                    markers[0].endLineNumber = positionObj.lineNumber;
+                    markers[0].endColumn = positionObj.column + 10;
+                }
+            }
+            
+            monaco.editor.setModelMarkers(this.catalogEditor.getModel(), 'json-syntax', markers);
+        }
+    }
+    
+    validateJavaScriptSyntax() {
+        if (!this.validatorEditor) return;
+        
+        try {
+            const content = this.validatorEditor.getValue();
+            if (content.trim()) {
+                // Basic syntax check using Function constructor
+                new Function(content);
+            }
+            // Clear any existing markers
+            monaco.editor.setModelMarkers(this.validatorEditor.getModel(), 'js-syntax', []);
+        } catch (error) {
+            // Add syntax error marker
+            const markers = [{
+                severity: monaco.MarkerSeverity.Error,
+                message: `JavaScript Syntax Error: ${error.message}`,
+                startLineNumber: 1,
+                startColumn: 1,
+                endLineNumber: 1,
+                endColumn: 1000
+            }];
+            
+            // Try to extract line number from error message
+            const lineMatch = error.message.match(/line (\d+)/);
+            if (lineMatch) {
+                const lineNumber = parseInt(lineMatch[1]);
+                markers[0].startLineNumber = lineNumber;
+                markers[0].endLineNumber = lineNumber;
+            }
+            
+            monaco.editor.setModelMarkers(this.validatorEditor.getModel(), 'js-syntax', markers);
+        }
     }
 }
 
