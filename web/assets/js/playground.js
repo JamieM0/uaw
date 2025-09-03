@@ -2276,7 +2276,7 @@ function displayGroupedValidationResults(results) {
     displayValidationGroup('errors', grouped.errors, '❌');
     displayValidationGroup('warnings', grouped.warnings, '⚠️');
     displayValidationGroup('suggestions', grouped.suggestions, '💡');
-    displayValidationGroup('passed', grouped.success, '✅', true); // collapsed by default
+    displayValidationGroup('passed', grouped.success, '✅', false); // show passed messages by default
 
     // Apply current filter
     applyValidationFilter();
@@ -2340,12 +2340,11 @@ function displayValidationGroup(groupId, results, icon, collapsedByDefault = fal
             
             return `
                 <div class="validation-result-item ${result.status}" data-metric-id="${result.metricId}">
-                    <div class="validation-result-status ${result.status}">
-                        ${statusIcon}
-                    </div>
+                    <div class="validation-result-status ${result.status}"></div>
                     <div class="validation-result-details">
-                        <div class="validation-result-name">${metricName}</div>
-                        <div class="validation-result-message">${result.message}</div>
+                        <div class="validation-result-name">
+                            ${metricName} <span class="validation-message-inline">— ${result.message}</span>
+                        </div>
                     </div>
                 </div>
             `;
@@ -2365,21 +2364,25 @@ function displayValidationGroup(groupId, results, icon, collapsedByDefault = fal
 }
 
 function getStatusIcon(status) {
-    const icons = {
-        error: '❌',
-        warning: '⚠️', 
-        suggestion: '💡',
-        success: '✅'
-    };
-    return icons[status] || '❓';
+    // Return empty string since we'll use CSS for visual indicators
+    return '';
 }
 
 function getMetricDisplayName(metricId) {
     // Try to get a more friendly name from the merged metrics catalog
     const mergedCatalog = getMergedMetricsCatalog();
     const metric = mergedCatalog.find(m => m.id === metricId);
-    return metric?.name || metricId;
+    
+    if (!metric) {
+        return metricId;
+    }
+    
+    // For custom metrics, show ID; for built-in, show name
+    const displayName = metric.source === 'custom' ? metric.id : metric.name;
+    
+    return displayName;
 }
+
 
 function setupValidationInteractions() {
     // Setup clickable stat items for filtering
