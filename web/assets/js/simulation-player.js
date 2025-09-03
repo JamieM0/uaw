@@ -137,14 +137,28 @@ class SimulationPlayer {
 
     updateLiveObjectState() {
         // Track objects that have been created or deleted at current timeline position
+        // Initialize live objects dynamically based on available object types
         this.liveObjects = {
-            equipment: [...this.simData.equipment],
-            resources: [...this.simData.resources],
-            actors: [...this.simData.actors || []],
-            products: [...this.simData.products || []],
             created: [], // Objects created during simulation
             deleted: [] // Objects deleted during simulation (with their stored state)
         };
+        
+        // Add all object types dynamically
+        Object.keys(this.simData).forEach(key => {
+            // Skip non-object-type keys
+            if (['tasks', 'start_time', 'end_time', 'start_time_minutes', 'end_time_minutes', 'total_duration_minutes', 'article_title', 'domain'].includes(key)) {
+                return;
+            }
+            
+            // Check if this key represents an object type (arrays of objects)
+            if (Array.isArray(this.simData[key]) && this.simData[key].length > 0) {
+                // Verify it's actually an object type by checking if items have typical object properties
+                const firstItem = this.simData[key][0];
+                if (firstItem && (firstItem.id || firstItem.type)) {
+                    this.liveObjects[key] = [...(this.simData[key] || [])];
+                }
+            }
+        });
 
         const sortedTasks = [...(this.simData.tasks || [])].sort((a,b) => a.start_minutes - b.start_minutes);
         
@@ -170,23 +184,20 @@ class SimulationPlayer {
                             };
                             this.liveObjects.created.push(createdObject);
                             
-                            // Add to appropriate category
-                            if (newObj.type === 'equipment') {
-                                this.liveObjects.equipment.push(createdObject);
-                            } else if (newObj.type === 'resource') {
-                                this.liveObjects.resources.push(createdObject);
-                            } else if (newObj.type === 'actor') {
-                                this.liveObjects.actors.push(createdObject);
-                            } else if (newObj.type === 'product') {
-                                this.liveObjects.products.push(createdObject);
+                            // Add to appropriate category dynamically
+                            if (newObj.type && this.liveObjects[newObj.type]) {
+                                this.liveObjects[newObj.type].push(createdObject);
                             }
                         } else if (!shouldCreate && this.liveObjects.created.find(obj => obj.id === newObj.id)) {
                             // Remove the object (revert creation)
                             this.liveObjects.created = this.liveObjects.created.filter(obj => obj.id !== newObj.id);
-                            this.liveObjects.equipment = this.liveObjects.equipment.filter(obj => obj.id !== newObj.id);
-                            this.liveObjects.resources = this.liveObjects.resources.filter(obj => obj.id !== newObj.id);
-                            this.liveObjects.actors = this.liveObjects.actors.filter(obj => obj.id !== newObj.id);
-                            this.liveObjects.products = this.liveObjects.products.filter(obj => obj.id !== newObj.id);
+                            
+                            // Remove from all object type arrays dynamically
+                            Object.keys(this.liveObjects).forEach(type => {
+                                if (Array.isArray(this.liveObjects[type])) {
+                                    this.liveObjects[type] = this.liveObjects[type].filter(obj => obj.id !== newObj.id);
+                                }
+                            });
                         }
                     });
                 }
@@ -206,11 +217,12 @@ class SimulationPlayer {
                                     deletedBy: task.id
                                 });
                                 
-                                // Remove from live arrays
-                                this.liveObjects.equipment = this.liveObjects.equipment.filter(obj => obj.id !== objectId);
-                                this.liveObjects.resources = this.liveObjects.resources.filter(obj => obj.id !== objectId);
-                                this.liveObjects.actors = this.liveObjects.actors.filter(obj => obj.id !== objectId);
-                                this.liveObjects.products = this.liveObjects.products.filter(obj => obj.id !== objectId);
+                                // Remove from live arrays dynamically
+                                Object.keys(this.liveObjects).forEach(type => {
+                                    if (Array.isArray(this.liveObjects[type])) {
+                                        this.liveObjects[type] = this.liveObjects[type].filter(obj => obj.id !== objectId);
+                                    }
+                                });
                             }
                         } else if (!shouldDelete && this.liveObjects.deleted.find(obj => obj.id === objectId)) {
                             // Restore the object (revert deletion)
@@ -218,15 +230,9 @@ class SimulationPlayer {
                             if (deletedObj) {
                                 this.liveObjects.deleted = this.liveObjects.deleted.filter(obj => obj.id !== objectId);
                                 
-                                // Restore to appropriate category
-                                if (deletedObj.type === 'equipment') {
-                                    this.liveObjects.equipment.push(deletedObj);
-                                } else if (deletedObj.type === 'resource') {
-                                    this.liveObjects.resources.push(deletedObj);
-                                } else if (deletedObj.type === 'actor') {
-                                    this.liveObjects.actors.push(deletedObj);
-                                } else if (deletedObj.type === 'product') {
-                                    this.liveObjects.products.push(deletedObj);
+                                // Restore to appropriate category dynamically
+                                if (deletedObj.type && this.liveObjects[deletedObj.type]) {
+                                    this.liveObjects[deletedObj.type].push(deletedObj);
                                 }
                             }
                         }
@@ -237,11 +243,16 @@ class SimulationPlayer {
     }
 
     findObjectById(objectId) {
-        return this.simData.equipment.find(obj => obj.id === objectId) ||
-               this.simData.resources.find(obj => obj.id === objectId) ||
-               (this.simData.actors || []).find(obj => obj.id === objectId) ||
-               (this.simData.products || []).find(obj => obj.id === objectId) ||
-               (this.liveObjects?.created || []).find(obj => obj.id === objectId);
+        // Search through all object types dynamically
+        for (const [key, objects] of Object.entries(this.simData)) {
+            if (Array.isArray(objects)) {
+                const found = objects.find(obj => obj && obj.id === objectId);
+                if (found) return found;
+            }
+        }
+        
+        // Also check created objects
+        return (this.liveObjects?.created || []).find(obj => obj.id === objectId);
     }
 
     getDefaultEmojiForType(type) {
@@ -267,7 +278,7 @@ class SimulationPlayer {
         
         if (objectType === 'equipment') {
             this.updateEquipmentTypeState(objectType, panel, liveObjects);
-        } else if (objectType === 'resources') {
+        } else if (objectType === 'resource') {
             this.updateResourceTypeState(objectType, panel, liveObjects);
         } else {
             this.updateGenericObjectTypeState(objectType, panel, liveObjects);

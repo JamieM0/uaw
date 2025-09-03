@@ -188,7 +188,12 @@ require(["vs/editor/editor.main"], function () {
 
     // --- EVENT HANDLERS ---
     editor.onDidChangeModelContent(() => {
-        if (autoRender) { debounceRender(); }
+        if (autoRender) { 
+            debounceRender(); 
+        } else {
+            // Even if auto-render is off, we still want to create new panels immediately
+            updateDynamicPanels();
+        }
 
         if (tutorialManager && tutorialManager.isActive) {
             tutorialManager.runStepValidation();
@@ -750,7 +755,7 @@ function findObjectStateModifierAtTime(objectId, timeInMinutes) {
         return null;
     }
     
-    const sortedTasks = [...currentSimulationData.tasks].sort((a,b) => a.start_minutes - b.start_minutes);
+    const sortedTasks = [...(currentSimulationData.tasks || [])].sort((a,b) => a.start_minutes - b.start_minutes);
     let currentModifier = null;
     
     for (const task of sortedTasks) {
@@ -1760,12 +1765,19 @@ function processSimulationData(simulationData) {
     let actualLastTaskEnd = startTimeMinutes;
 
     const allObjects = sim.objects || [];
-    const actors = allObjects.filter(o => o.type === 'actor');
-    const equipment = allObjects.filter(o => o.type === 'equipment');
-    const resources = allObjects.filter(o => o.type === 'resource');
-    const products = allObjects.filter(o => o.type === 'product');
+    
+    // Group objects by type dynamically (no hardcoded filtering)
+    const objectsByType = {};
+    allObjects.forEach(obj => {
+        if (!obj || !obj.type) return; // Skip invalid objects
+        if (!objectsByType[obj.type]) {
+            objectsByType[obj.type] = [];
+        }
+        objectsByType[obj.type].push(obj);
+    });
 
     const tasksWithMinutes = (sim.tasks || []).map(task => {
+        if (!task) return null;
         let taskStartMinutes;
         try {
             const [taskHour, taskMin] = (task.start || "00:00").split(":").map(Number);
@@ -1777,7 +1789,7 @@ function processSimulationData(simulationData) {
         const taskEndMinutes = taskStartMinutes + taskDuration;
         actualLastTaskEnd = Math.max(actualLastTaskEnd, taskEndMinutes);
         return { ...task, start_minutes: taskStartMinutes, end_minutes: taskEndMinutes };
-    });
+    }).filter(task => task !== null);
     
     // --- START OF THE UNIFIED SCALING FIX ---
 
@@ -1827,27 +1839,38 @@ function processSimulationData(simulationData) {
         actorWorkloads[task.actor_id] = (actorWorkloads[task.actor_id] || 0) + (task.duration || 0);
     });
 
-    const processedActors = actors.map(actor => {
-        const workload = actorWorkloads[actor.id] || 0;
-        // Utilization should also be based on the visual duration of the workday shown.
-        const utilization = visualTotalDuration > 0 ? (workload / visualTotalDuration) * 100 : 0;
-        return { ...actor, utilization_percentage: Math.round(utilization * 10) / 10 };
+    // Calculate utilization for all objects that have tasks
+    const objectsWithTasks = [];
+    allObjects.forEach(obj => {
+        if (!obj) return;
+        const workload = actorWorkloads[obj.id] || 0;
+        if (workload > 0) { // Only include objects that have tasks
+            // Utilization should also be based on the visual duration of the workday shown.
+            const utilization = visualTotalDuration > 0 ? (workload / visualTotalDuration) * 100 : 0;
+            objectsWithTasks.push({ ...obj, utilization_percentage: Math.round(utilization * 10) / 10 });
+        }
     });
 
-    return {
+    const result = {
         start_time: startTime,
         end_time: visualEndTimeStr, // Use the new visual end time
         start_time_minutes: startTimeMinutes,
         end_time_minutes: visualEndTimeMinutes, // Use the new visual end time
         total_duration_minutes: visualTotalDuration, // This is now the unified duration
-        actors: processedActors,
-        equipment: equipment,
-        resources: resources,
-        products: products,
         tasks: processedTasks,
         article_title: sim.meta?.article_title || "Process Simulation",
         domain: sim.meta?.domain || "General",
     };
+    
+    // Add objects with tasks to a special "timeline_actors" group for timeline rendering
+    result.timeline_actors = objectsWithTasks;
+    
+    // Add all object types dynamically
+    Object.entries(objectsByType).forEach(([type, objects]) => {
+        result[type] = objects;
+    });
+    
+    return result;
 }
 
 // Render simulation with resources display
@@ -1951,7 +1974,9 @@ function renderSimulation() {
         actorLanes.style.cssText =
             "padding: 1rem; width: 100%; box-sizing: border-box;";
 
-        for (const actor of currentSimulationData.actors) {
+        // Use objects that have tasks (regardless of type)
+        const actors = currentSimulationData.timeline_actors || [];
+        for (const actor of actors) {
             const lane = document.createElement("div");
             lane.className = "actor-lane";
             lane.style.cssText =
@@ -1961,8 +1986,22 @@ function renderSimulation() {
             actorLabel.className = "actor-label";
             actorLabel.style.cssText =
                 "width: 150px; padding: 0.5rem; background: var(--bg-light); border-radius: var(--border-radius-sm); margin-right: 1rem; flex-shrink: 0;";
+            // Determine display role based on object type
+            let displayRole;
+            if (actor.type === 'actor') {
+                displayRole = actor.properties?.role || actor.name;
+            } else if (actor.type === 'equipment') {
+                displayRole = `${actor.name} (Equipment)`;
+            } else if (actor.type === 'resource') {
+                displayRole = `${actor.name} (Resource)`;
+            } else if (actor.type === 'product') {
+                displayRole = `${actor.name} (Product)`;
+            } else {
+                displayRole = `${actor.name} (${actor.type})`;
+            }
+            
             actorLabel.innerHTML = `
-                <strong>${actor.properties.role || actor.name}</strong><br>
+                <strong>${displayRole}</strong><br>
                 <small>Utilization: ${actor.utilization_percentage}%</small>
             `;
             lane.appendChild(actorLabel);
@@ -2030,92 +2069,6 @@ function renderSimulation() {
         timeline.appendChild(actorLanes);
         container.appendChild(timeline);
 
-        const equipmentAndResourcesContainer =
-            document.createElement("div");
-        // **NEW** Equipment Panel
-
-        if (currentSimulationData.equipment && currentSimulationData.equipment.length > 0) {
-            // Calculate final equipment states chronologically
-            const finalEquipmentStates = {};
-            currentSimulationData.equipment.forEach(e => {
-                finalEquipmentStates[e.id] = e.state || 'available';
-            });
-
-            const sortedTasks = [...(currentSimulationData.tasks || [])].sort((a,b) => (a.start || "00:00").localeCompare(b.start || "00:00"));
-            
-            sortedTasks.forEach(task => {
-                // Handle old-style equipment_interactions
-                (task.equipment_interactions || []).forEach(interaction => {
-                    // If the equipment is in the correct starting state...
-                    if(finalEquipmentStates[interaction.id] === interaction.from_state) {
-                        //...its new state is the 'to_state', unless it reverts.
-                        finalEquipmentStates[interaction.id] = interaction.revert_after === true ? interaction.from_state : interaction.to_state;
-                    }
-                });
-                
-                // Handle new-style interactions
-                (task.interactions || []).forEach(interaction => {
-                    const stateChanges = interaction.property_changes?.state;
-                    if (stateChanges && finalEquipmentStates[interaction.object_id] === stateChanges.from) {
-                        finalEquipmentStates[interaction.object_id] = interaction.revert_after === true ? stateChanges.from : stateChanges.to;
-                    }
-                });
-            });
-
-            const equipmentPanel = document.createElement("div");
-            equipmentPanel.className = "resources-panel";
-            equipmentPanel.innerHTML = `
-                <h5>⚙️ Equipment (Final States)</h5>
-                <div class="resource-grid">
-                    ${currentSimulationData.equipment
-                        .map(
-                            (item) => `
-                        <div class="resource-item">
-                            <div class="resource-emoji">${item.emoji || "❓"}</div>
-                            <div class="resource-info">
-                                <div class="resource-name">${item.name || item.id}</div>
-                                <div class="resource-state ${finalEquipmentStates[item.id]}">${finalEquipmentStates[item.id]}</div>
-                            </div>
-                        </div>
-                    `,
-                        )
-                        .join("")}
-                </div>
-            `;
-            equipmentAndResourcesContainer.appendChild(
-                equipmentPanel,
-            );
-        }
-
-        // **UPDATED** Resources (Consumables) Panel
-        if (
-            currentSimulationData.resources &&
-            currentSimulationData.resources.length > 0
-        ) {
-            const resourcesPanel = document.createElement("div");
-            resourcesPanel.className = "resources-panel";
-            resourcesPanel.innerHTML = `
-                <h5>📦 Resources (Consumables)</h5>
-                <div class="resource-grid">
-                    ${currentSimulationData.resources
-                        .map(
-                            (resource) => `
-                        <div class="resource-item">
-                            <div class="resource-emoji">${resource.emoji || "❓"}</div>
-                            <div class="resource-info">
-                                <div class="resource-name">${resource.id}</div>
-                                <div class="resource-state available">Stock: ${resource.properties.quantity} ${resource.properties.unit}</div>
-                            </div>
-                        </div>
-                    `,
-                        )
-                        .join("")}
-                </div>
-            `;
-            equipmentAndResourcesContainer.appendChild(
-                resourcesPanel,
-            );
-        }
 
         // --- Dynamic State Panels ---
         const liveStateContainer = document.createElement('div');
@@ -2127,10 +2080,20 @@ function renderSimulation() {
         // Create panels dynamically based on object types in simulation data
         const detectedTypes = new Set();
         
-        // Add types that have existing objects
-        ['equipment', 'resources', 'actors', 'products'].forEach(type => {
-            if (currentSimulationData[type] && currentSimulationData[type].length > 0) {
-                detectedTypes.add(type);
+        // Add types that have existing objects (both standard and custom types)
+        Object.keys(currentSimulationData).forEach(key => {
+            // Skip non-object-type keys
+            if (['tasks', 'start_time', 'end_time', 'start_time_minutes', 'end_time_minutes', 'total_duration_minutes', 'article_title', 'domain', 'timeline_actors'].includes(key)) {
+                return;
+            }
+            
+            // Check if this key represents an object type (arrays of objects)
+            if (Array.isArray(currentSimulationData[key]) && currentSimulationData[key].length > 0) {
+                // Verify it's actually an object type by checking if items have typical object properties
+                const firstItem = currentSimulationData[key][0];
+                if (firstItem && (firstItem.id || firstItem.type)) {
+                    detectedTypes.add(key);
+                }
             }
         });
         
@@ -2163,11 +2126,16 @@ function renderSimulation() {
         stats.className = "simulation-stats";
         stats.style.cssText =
             "display: flex; gap: 2rem; padding: 1rem; background: var(--bg-light); border-radius: var(--border-radius-md); margin-top: 1rem;";
+        // Generate stats dynamically based on available object types
+        const objectStats = Object.entries(currentSimulationData)
+            .filter(([key, value]) => Array.isArray(value) && !['tasks'].includes(key) && !['start_time', 'end_time', 'start_time_minutes', 'end_time_minutes', 'total_duration_minutes', 'article_title', 'domain'].includes(key))
+            .map(([type, objects]) => `<div class="stat-item"><strong>${type.charAt(0).toUpperCase() + type.slice(1)}:</strong> ${objects.length}</div>`)
+            .join('');
+        
         stats.innerHTML = `
             <div class="stat-item"><strong>Total Duration:</strong> ${currentSimulationData.total_duration_minutes} minutes</div>
-            <div class="stat-item"><strong>Actors:</strong> ${currentSimulationData.actors.length}</div>
             <div class="stat-item"><strong>Tasks:</strong> ${currentSimulationData.tasks.length}</div>
-            ${currentSimulationData.resources ? `<div class="stat-item"><strong>Resources:</strong> ${currentSimulationData.resources.length}</div>` : ""}
+            ${objectStats}
         `;
         container.appendChild(stats);
 
@@ -2189,7 +2157,89 @@ function renderSimulation() {
 let renderTimeout;
 function debounceRender() {
     clearTimeout(renderTimeout);
+    // Check for new types and create panels before rendering
+    updateDynamicPanels();
     renderTimeout = setTimeout(renderSimulation, 500);
+}
+
+// Function to dynamically create new object panels when types are added
+function updateDynamicPanels() {
+    try {
+        const jsonText = editor.getValue();
+        const simulationData = JSON.parse(jsonText);
+        const processedData = processSimulationData(simulationData);
+        
+        const detectedTypes = new Set();
+        
+        // Add types that have existing objects (both standard and custom types)
+        Object.keys(processedData).forEach(key => {
+            // Skip non-object-type keys
+            if (['tasks', 'start_time', 'end_time', 'start_time_minutes', 'end_time_minutes', 'total_duration_minutes', 'article_title', 'domain', 'timeline_actors'].includes(key)) {
+                return;
+            }
+            
+            // Check if this key represents an object type (arrays of objects with type property)
+            if (Array.isArray(processedData[key]) && processedData[key].length > 0) {
+                // Verify it's actually an object type by checking if items have typical object properties
+                const firstItem = processedData[key][0];
+                if (firstItem && (firstItem.id || firstItem.type)) {
+                    detectedTypes.add(key);
+                }
+            }
+        });
+        
+        // Also check for objects that will be created during tasks
+        (processedData.tasks || []).forEach(task => {
+            (task.interactions || []).forEach(interaction => {
+                if (interaction.add_objects) {
+                    interaction.add_objects.forEach(obj => {
+                        if (obj.type) {
+                            detectedTypes.add(obj.type);
+                        }
+                    });
+                }
+            });
+        });
+        
+        // Find existing live state container
+        let liveStateContainer = document.getElementById('live-state-container');
+        if (!liveStateContainer) {
+            // If there's no container yet, we'll let renderSimulation create it
+            return;
+        }
+        
+        // Get existing panel types
+        const existingPanels = new Set();
+        document.querySelectorAll('[id^="live-"][id$="-panel"]').forEach(panel => {
+            const match = panel.id.match(/^live-(.+)-panel$/);
+            if (match) {
+                existingPanels.add(match[1]);
+            }
+        });
+        
+        // Create panels for new types
+        const newTypes = Array.from(detectedTypes).filter(type => !existingPanels.has(type));
+        newTypes.forEach(objectType => {
+            const panel = document.createElement("div");
+            panel.id = `live-${objectType}-panel`;
+            panel.className = "resources-panel";
+            panel.innerHTML = `<h5>${objectType} (at <span class="live-time">00:00</span>)</h5><div class="resource-grid"></div>`;
+            liveStateContainer.appendChild(panel);
+            
+            console.log(`🔧 Dynamic panel created for new type: ${objectType}`);
+        });
+        
+        // Update SimulationPlayer to recognize new panels if it exists
+        if (player && newTypes.length > 0) {
+            // Refresh the live panels in the player
+            player.ui.livePanels = player.findLivePanels();
+            console.log(`🔄 SimulationPlayer updated with ${newTypes.length} new panel(s)`);
+        }
+        
+    } catch (e) {
+        // Silent fail - just means JSON is being edited and might be invalid
+        // This is normal during typing
+    }
 }
 
 function updateAutoRenderUI() {
@@ -2281,11 +2331,8 @@ function displayGroupedValidationResults(results) {
     // Apply current filter
     applyValidationFilter();
 
-    // Setup interactive elements if not already done
-    if (!compactContainer.hasAttribute('data-initialized')) {
-        setupValidationInteractions();
-        compactContainer.setAttribute('data-initialized', 'true');
-    }
+    // Setup interactive elements - always refresh to ensure proper event handling
+    setupValidationInteractions();
 }
 
 function updateValidationStats(stats) {
@@ -2385,42 +2432,49 @@ function getMetricDisplayName(metricId) {
 
 
 function setupValidationInteractions() {
-    // Setup clickable stat items for filtering
-    document.querySelectorAll('.stat-item.clickable').forEach(item => {
-        item.addEventListener('click', () => {
-            const filterValue = item.dataset.filter;
-            const filterSelect = document.getElementById('validation-filter');
-            if (filterSelect) {
-                filterSelect.value = filterValue;
-                applyValidationFilter();
-                
-                // Update visual state
-                document.querySelectorAll('.stat-item.clickable').forEach(s => s.classList.remove('active'));
-                item.classList.add('active');
+    // Use event delegation to avoid needing to re-attach listeners
+    // Remove any existing delegated listeners first
+    const validationContainer = document.querySelector('.validation-panel');
+    if (validationContainer && !validationContainer.hasAttribute('data-validation-listeners-attached')) {
+        
+        // Delegated event listener for stat items
+        validationContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.stat-item.clickable')) {
+                const statItem = e.target.closest('.stat-item.clickable');
+                const filterValue = statItem.dataset.filter;
+                const filterSelect = document.getElementById('validation-filter');
+                if (filterSelect) {
+                    filterSelect.value = filterValue;
+                    applyValidationFilter();
+                    
+                    // Update visual state
+                    document.querySelectorAll('.stat-item.clickable').forEach(s => s.classList.remove('active'));
+                    statItem.classList.add('active');
+                }
             }
-        });
-    });
-
-    // Setup filter dropdown
-    const filterSelect = document.getElementById('validation-filter');
-    if (filterSelect) {
-        filterSelect.addEventListener('change', applyValidationFilter);
-    }
-
-    // Setup collapsible passed group (click directly on passed group)
-    const passedGroup = document.getElementById('passed-group');
-    if (passedGroup) {
-        passedGroup.addEventListener('click', () => {
-            const content = document.getElementById('passed-group-content');
-            if (content) {
-                const isCollapsed = content.classList.contains('collapsed');
-                if (isCollapsed) {
-                    content.classList.remove('collapsed');
-                } else {
-                    content.classList.add('collapsed');
+            
+            // Handle passed group collapsible
+            if (e.target.closest('#passed-group') && !e.target.closest('.validation-result-item')) {
+                const content = document.getElementById('passed-group-content');
+                if (content) {
+                    const isCollapsed = content.classList.contains('collapsed');
+                    if (isCollapsed) {
+                        content.classList.remove('collapsed');
+                    } else {
+                        content.classList.add('collapsed');
+                    }
                 }
             }
         });
+        
+        // Setup filter dropdown (only once)
+        const filterSelect = document.getElementById('validation-filter');
+        if (filterSelect && !filterSelect.hasAttribute('data-listener-attached')) {
+            filterSelect.addEventListener('change', applyValidationFilter);
+            filterSelect.setAttribute('data-listener-attached', 'true');
+        }
+        
+        validationContainer.setAttribute('data-validation-listeners-attached', 'true');
     }
 }
 
@@ -2506,9 +2560,19 @@ function showOnlyGroup(targetGroupId, groups) {
     Object.entries(groups).forEach(([groupId, group]) => {
         if (group) {
             if (groupId === targetGroupId) {
-                // Only show if it has content
-                const hasContent = group.querySelector('.validation-result-item');
+                // Reset all items in the target group to be visible
+                const items = group.querySelectorAll('.validation-result-item');
+                items.forEach(item => item.style.display = 'flex');
+                
+                // Show group if it has any items
+                const hasContent = items.length > 0;
                 group.style.display = hasContent ? 'block' : 'none';
+                
+                // Reset group count to show all items
+                const countElement = group.querySelector('.group-count');
+                if (countElement) {
+                    countElement.textContent = items.length;
+                }
             } else {
                 group.style.display = 'none';
             }
@@ -2520,6 +2584,9 @@ function filterBySource(source, groups) {
     // Show all groups but filter their content by source
     Object.values(groups).forEach(group => {
         if (!group) return;
+        
+        // First show the group (in case it was hidden by a previous filter)
+        group.style.display = 'block';
         
         const items = group.querySelectorAll('.validation-result-item');
         let visibleCount = 0;
@@ -2533,8 +2600,10 @@ function filterBySource(source, groups) {
             if (shouldShow) visibleCount++;
         });
         
-        // Show/hide group based on visible items
-        group.style.display = visibleCount > 0 ? 'block' : 'none';
+        // Hide group if no items are visible after filtering
+        if (visibleCount === 0) {
+            group.style.display = 'none';
+        }
         
         // Update group count
         const countElement = group.querySelector('.group-count');
@@ -3005,6 +3074,12 @@ function createMetricsJsonEditor() {
                     validateJSON();
                 }
             });
+        }
+        
+        // Attach emoji picker to the metrics JSON editor
+        if (window.emojiPicker) {
+            window.emojiPicker.attachToMonaco(window.metricsJsonEditor);
+            console.log('METRICS: Attached emoji picker to metrics JSON editor');
         }
         
     } catch (error) {

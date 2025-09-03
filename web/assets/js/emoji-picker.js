@@ -500,29 +500,153 @@ class EmojiPicker {
             setTimeout(() => searchInput.focus(), 100);
         }
         
-        console.log('EmojiPicker: Shown for Monaco editor');
     }
     
     positionPickerForMonaco(editor, position) {
-        if (!editor || !position || !this.container) return;
+        if (!editor || !position || !this.container) {
+            console.warn('EmojiPicker: positionPickerForMonaco called with invalid parameters', {editor, position, container: this.container});
+            return;
+        }
         
         // Get Monaco editor container position
-        const editorContainer = editor.getDomNode();
+        const monacoInnerNode = editor.getDomNode();
+        if (!monacoInnerNode) {
+            console.warn('EmojiPicker: Could not get Monaco editor DOM node');
+            return;
+        }
+        
+        // Check if we're in a metrics editor by looking at the container hierarchy
+        const isInMetricsEditor = monacoInnerNode.closest('.metrics-editor-panel') !== null;
+        const isInMetricsJsonEditor = monacoInnerNode.closest('#json-editor-metrics-container') !== null;
+        console.log('EmojiPicker: In metrics editor:', isInMetricsEditor, 'In metrics JSON editor:', isInMetricsJsonEditor);
+        
+        // Walk up the DOM tree to find a container with actual dimensions
+        let editorContainer = monacoInnerNode;
+        let foundValidContainer = false;
+        let attempts = 0;
+        const maxAttempts = 5;
+        
+        while (!foundValidContainer && editorContainer && attempts < maxAttempts) {
+            const rect = editorContainer.getBoundingClientRect();
+            
+            // Try multiple ways to detect a valid container
+            const hasValidRect = rect.width > 0 && rect.height > 0;
+            const hasValidClient = editorContainer.clientWidth > 0 && editorContainer.clientHeight > 0;
+            const hasValidScroll = editorContainer.scrollWidth > 0 && editorContainer.scrollHeight > 0;
+            
+            if (hasValidRect || hasValidClient || hasValidScroll) {
+                foundValidContainer = true;
+                break;
+            }
+            
+            editorContainer = editorContainer.parentElement;
+            attempts++;
+        }
+        
+        if (!foundValidContainer) {
+            console.warn('EmojiPicker: Could not find a Monaco container with valid dimensions');
+            // Try multiple fallback approaches, prioritizing metrics editor containers if applicable
+            let fallbackSelectors;
+            if (isInMetricsEditor || isInMetricsJsonEditor) {
+                fallbackSelectors = [
+                    '#metrics-catalog-editor',
+                    '#metrics-validator-editor', 
+                    '.metrics-editor-panel',
+                    '#json-editor-metrics-container',
+                    '.left-tab-content.active',
+                    '.playground-left',
+                    '.standard-mode-layout'
+                ];
+            } else {
+                fallbackSelectors = [
+                    '.playground-left',
+                    '.standard-mode-layout', 
+                    '.json-editor-panel',
+                    '.panel-content',
+                    '#json-editor'
+                ];
+            }
+            
+            for (const selector of fallbackSelectors) {
+                const fallbackContainer = document.querySelector(selector);
+                if (fallbackContainer) {
+                    const fallbackRect = fallbackContainer.getBoundingClientRect();
+                    
+                    if (fallbackRect.width > 0 && fallbackRect.height > 0) {
+                        editorContainer = fallbackContainer;
+                        foundValidContainer = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!foundValidContainer) {
+                console.warn('EmojiPicker: No fallback container found, using document body');
+                // Ultimate fallback - position relative to viewport
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                
+                this.container.style.position = 'fixed';
+                this.container.style.top = '20%';
+                this.container.style.left = '50%';
+                this.container.style.transform = 'translateX(-50%)';
+                this.container.style.zIndex = '10000';
+                
+                return;
+            }
+        }
+        
+        // Use the container with actual dimensions
         const editorRect = editorContainer.getBoundingClientRect();
         
         // Calculate approximate cursor position
         const lineHeight = editor.getOption(monaco.editor.EditorOption.lineHeight);
         const fontSize = editor.getOption(monaco.editor.EditorOption.fontSize);
         
-        // Approximate cursor position (this is simplified)
-        const cursorX = editorRect.left + (position.column - 1) * (fontSize * 0.6);
-        const cursorY = editorRect.top + (position.lineNumber - 1) * lineHeight;
+        let cursorX, cursorY;
+        
+        // Try to get the actual cursor position using Monaco's API
+        try {
+            const scrolledPosition = editor.getScrolledVisiblePosition(position);
+            console.log('EmojiPicker: Monaco getScrolledVisiblePosition result:', scrolledPosition);
+            
+            if (scrolledPosition && scrolledPosition.top !== null && scrolledPosition.left !== null) {
+                // Monaco returned valid coordinates - use them relative to the fallback container
+                cursorX = editorRect.left + scrolledPosition.left;
+                cursorY = editorRect.top + scrolledPosition.top;
+                console.log('EmojiPicker: Using Monaco API positioning');
+            } else {
+                throw new Error('Monaco API returned null position');
+            }
+        } catch (error) {
+            console.warn('EmojiPicker: Monaco API positioning failed, using fallback:', error);
+            
+            // Position picker intelligently based on container type and size
+            if (isInMetricsEditor || isInMetricsJsonEditor) {
+                // For metrics editors, position more conservatively to avoid overflow
+                cursorX = editorRect.left + Math.min(150, editorRect.width * 0.2);
+                cursorY = editorRect.top + Math.min(80, editorRect.height * 0.15);
+                console.log('EmojiPicker: Using metrics editor positioning');
+            } else if (!foundValidContainer || editorRect.width > 600) {
+                // Position in the left portion of large containers
+                cursorX = editorRect.left + Math.min(200, editorRect.width * 0.25);
+                cursorY = editorRect.top + Math.min(100, editorRect.height * 0.2);
+                console.log('EmojiPicker: Using fallback positioning within large container');
+            } else {
+                // Use normal cursor position calculation for correctly sized containers
+                cursorX = editorRect.left + (position.column - 1) * (fontSize * 0.6);
+                cursorY = editorRect.top + (position.lineNumber - 1) * lineHeight;
+                console.log('EmojiPicker: Using normal cursor calculation');
+            }
+        }
         
         const pickerHeight = 400;
         const pickerWidth = 320;
         
-        let top = cursorY + lineHeight + window.scrollY + 5;
+        // Position below the cursor line, adding an extra line height to avoid overlap
+        let top = cursorY + (lineHeight * 2) + window.scrollY + 5;
         let left = cursorX + window.scrollX;
+        
         
         // Adjust if picker would go off screen
         if (top + pickerHeight > window.innerHeight + window.scrollY) {
@@ -538,10 +662,12 @@ class EmojiPicker {
             left = editorRect.left + 10;
         }
         
+        
         this.container.style.position = 'absolute';
         this.container.style.top = `${top}px`;
         this.container.style.left = `${left}px`;
         this.container.style.zIndex = '10000';
+        this.container.style.transform = ''; // Clear any transform from fallbacks
     }
     
     show(inputElement = null, customCallback = null) {
@@ -566,7 +692,6 @@ class EmojiPicker {
             setTimeout(() => searchInput.focus(), 100);
         }
         
-        console.log('EmojiPicker: Shown');
     }
     
     hide() {
@@ -581,11 +706,12 @@ class EmojiPicker {
         this.monacoEditor = null;
         this.monacoPosition = null;
         
-        console.log('EmojiPicker: Hidden');
     }
     
     positionPicker(inputElement) {
-        if (!inputElement || !this.container) return;
+        if (!inputElement || !this.container) {
+            return;
+        }
         
         const rect = inputElement.getBoundingClientRect();
         const pickerHeight = 300; // Approximate picker height
@@ -607,6 +733,7 @@ class EmojiPicker {
         this.container.style.top = `${top}px`;
         this.container.style.left = `${left}px`;
         this.container.style.zIndex = '10000';
+        this.container.style.transform = ''; // Clear any transform from fallbacks
     }
     
     handleDocumentClick(e) {

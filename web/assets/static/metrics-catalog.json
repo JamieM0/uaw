@@ -130,5 +130,20 @@
     "severity": "error",
     "validation_type": "computational",
     "computation": { "engine": "javascript", "function_name": "validateTaskProximity" }
+  },
+  {
+    "id": "schema.integrity.disallowed_types",
+    "name": "Disallowed Object Types",
+    "description": "Ensures no objects use internally reserved types that could cause system conflicts.",
+    "category": "Structural Integrity",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { 
+      "engine": "javascript", 
+      "function_name": "validateDisallowedTypes",
+      "params": {
+        "disallowed_types": ["timeline_actors"]
+      }
+    }
   }
 ]

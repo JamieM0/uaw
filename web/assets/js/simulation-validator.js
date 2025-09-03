@@ -700,4 +700,25 @@ class SimulationValidator {
       this.addResult({ metricId: metric.id, status: 'success', message: 'All object interactions are valid.' });
     }
   }
+
+  validateDisallowedTypes(metric) {
+    const objects = this.simulation.objects || [];
+    const disallowedTypes = metric.computation.params?.disallowed_types || [];
+    let issueFound = false;
+
+    for (const obj of objects) {
+      if (disallowedTypes.includes(obj.type)) {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Object '${obj.id}' uses disallowed type '${obj.type}'. This type is reserved for internal system use and may cause conflicts.`
+        });
+        issueFound = true;
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'No disallowed object types found.' });
+    }
+  }
 }

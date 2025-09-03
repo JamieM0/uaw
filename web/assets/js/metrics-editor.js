@@ -133,6 +133,12 @@ class MetricsEditor {
                 
                 console.log('MetricsEditor: Catalog editor initialized successfully');
                 
+                // Attach emoji picker to catalog editor
+                if (window.emojiPicker) {
+                    window.emojiPicker.attachToMonaco(this.catalogEditor);
+                    console.log('MetricsEditor: Attached emoji picker to catalog editor');
+                }
+                
                 // Force layout after creation
                 setTimeout(() => {
                     this.catalogEditor.layout();
@@ -170,6 +176,12 @@ class MetricsEditor {
                 });
                 
                 console.log('MetricsEditor: Validator editor initialized successfully');
+                
+                // Attach emoji picker to validator editor
+                if (window.emojiPicker) {
+                    window.emojiPicker.attachToMonaco(this.validatorEditor);
+                    console.log('MetricsEditor: Attached emoji picker to validator editor');
+                }
                 
                 // Force layout after creation
                 setTimeout(() => {
