@@ -297,11 +297,11 @@ class SpaceEditor {
                 loc.shape.depth = 50; // Default depth
             }
             if (!loc.layer) {
-                loc.layer = 0; // Default layer
+                loc.layer = "ground"; // Default layer (string)
             }
             // Initialize transition layers for transition zones
             if (loc.isTransition && !loc.transitionLayers) {
-                loc.transitionLayers = [loc.layer || 0];
+                loc.transitionLayers = [loc.layer || "ground"];
             }
         });
         
@@ -378,11 +378,11 @@ class SpaceEditor {
         // Rebuild dropdown
         layerFilter.innerHTML = '<option value="all">All Layers</option>';
         
-        const sortedLayers = Array.from(this.availableLayers).sort((a, b) => a - b);
+        const sortedLayers = Array.from(this.availableLayers).sort();
         sortedLayers.forEach(layer => {
             const option = document.createElement('option');
             option.value = layer;
-            option.textContent = `Layer ${layer}`;
+            option.textContent = layer;
             layerFilter.appendChild(option);
         });
 
@@ -405,15 +405,13 @@ class SpaceEditor {
             if (this.activeLayer === 'all') {
                 shouldShow = true;
             } else {
-                const activeLayerNum = parseInt(this.activeLayer);
-                
                 if (loc.isTransition && loc.transitionLayers) {
                     // For transition zones, show if the active layer is in the transition layers
-                    shouldShow = loc.transitionLayers.includes(activeLayerNum);
+                    shouldShow = loc.transitionLayers.includes(this.activeLayer);
                 } else {
                     // For regular locations, use the single layer
-                    const locationLayer = loc.layer || 0;
-                    shouldShow = locationLayer === activeLayerNum;
+                    const locationLayer = loc.layer || "ground";
+                    shouldShow = locationLayer === this.activeLayer;
                 }
             }
             
@@ -478,7 +476,8 @@ class SpaceEditor {
             
             // Update z-index for hierarchy (children appear above parents)
             const hierarchyDepth = this.getHierarchyDepth(loc.id);
-            const baseZIndex = Math.floor((loc.shape.y + loc.shape.x) / 10) + (loc.layer || 0) * 1000;
+            const layerZIndex = this.getLayerZIndex(loc.layer || "ground");
+            const baseZIndex = Math.floor((loc.shape.y + loc.shape.x) / 10) + layerZIndex * 1000;
             rectEl.style.zIndex = baseZIndex + hierarchyDepth * 10;
         });
     }
@@ -499,6 +498,14 @@ class SpaceEditor {
         }
         
         return depth;
+    }
+
+    getLayerZIndex(layerName) {
+        // Convert string layer names to numeric z-index values for proper stacking
+        // Create a sorted array of all unique layer names and use index as z-value
+        const sortedLayers = Array.from(this.availableLayers).sort();
+        const index = sortedLayers.indexOf(layerName);
+        return index >= 0 ? index : 0;
     }
 
     applySnapping(proposedX, proposedY) {
@@ -665,13 +672,13 @@ class SpaceEditor {
         transitionLayersSelect.innerHTML = '';
         
         // Get all available layers from the layer dropdown
-        const sortedLayers = Array.from(this.availableLayers).sort((a, b) => a - b);
+        const sortedLayers = Array.from(this.availableLayers).sort();
         
         // Add all layer options
         sortedLayers.forEach(layer => {
             const option = document.createElement('option');
             option.value = layer;
-            option.textContent = `Layer ${layer}`;
+            option.textContent = layer;
             
             // Select if it's in the location's transition layers
             if (loc.transitionLayers && loc.transitionLayers.includes(layer)) {
@@ -688,7 +695,7 @@ class SpaceEditor {
         // Add event listener for changes
         newTransitionLayersSelect.addEventListener('change', (e) => {
             const selectedOptions = Array.from(e.target.selectedOptions);
-            loc.transitionLayers = selectedOptions.map(option => parseInt(option.value));
+            loc.transitionLayers = selectedOptions.map(option => option.value);
             
             // Update the visual representation
             this.updateRectElement(loc);
@@ -980,35 +987,55 @@ class SpaceEditor {
         const widthM = (loc.shape.height / this.pixelsPerMeter).toFixed(2);  // Z = width (UP-DOWN in 2D view)
         const heightM = ((loc.shape.depth || 50) / this.pixelsPerMeter).toFixed(2);  // Y = height (vertical space, not rendered)
         
+        // Convert position pixels to meters
+        const posXM = (loc.shape.x / this.pixelsPerMeter).toFixed(2);
+        const posYM = (0 / this.pixelsPerMeter).toFixed(2); // Y position is always 0 in 2D view
+        const posZM = (loc.shape.y / this.pixelsPerMeter).toFixed(2); // Z position maps to CSS top
+        
         this.propsPanel.innerHTML = `
             <div class="prop-field">
                 <label for="prop-name">Name</label>
                 <input type="text" id="prop-name" value="${loc.name || ''}">
             </div>
-            <div class="prop-field">
-                <label for="prop-length">Length (X)</label>
-                <div class="input-group">
-                    <input type="number" id="prop-length" value="${lengthM}" step="0.1" min="0.1">
-                    <span>m</span>
+            
+            <div class="prop-section">
+                <label class="section-label">Position</label>
+                <div class="inline-inputs">
+                    <div class="inline-input-group">
+                        <label for="prop-pos-x">X</label>
+                        <input type="number" id="prop-pos-x" value="${posXM}" step="0.1">
+                    </div>
+                    <div class="inline-input-group">
+                        <label for="prop-pos-y">Y</label>
+                        <input type="number" id="prop-pos-y" value="${posYM}" step="0.1">
+                    </div>
+                    <div class="inline-input-group">
+                        <label for="prop-pos-z">Z</label>
+                        <input type="number" id="prop-pos-z" value="${posZM}" step="0.1">
+                    </div>
                 </div>
             </div>
-            <div class="prop-field">
-                <label for="prop-height">Height (Y)</label>
-                <div class="input-group">
-                    <input type="number" id="prop-height" value="${heightM}" step="0.1" min="0.1">
-                    <span>m</span>
-                </div>
-            </div>
-            <div class="prop-field">
-                <label for="prop-width">Width (Z)</label>
-                <div class="input-group">
-                    <input type="number" id="prop-width" value="${widthM}" step="0.1" min="0.1">
-                    <span>m</span>
+            
+            <div class="prop-section">
+                <label class="section-label">Dimensions (m)</label>
+                <div class="inline-inputs">
+                    <div class="inline-input-group">
+                        <label for="prop-length">Length (X)</label>
+                        <input type="number" id="prop-length" value="${lengthM}" step="0.1" min="0.1">
+                    </div>
+                    <div class="inline-input-group">
+                        <label for="prop-height">Height (Y)</label>
+                        <input type="number" id="prop-height" value="${heightM}" step="0.1" min="0.1">
+                    </div>
+                    <div class="inline-input-group">
+                        <label for="prop-width">Width (Z)</label>
+                        <input type="number" id="prop-width" value="${widthM}" step="0.1" min="0.1">
+                    </div>
                 </div>
             </div>
             <div class="prop-field" style="display: ${loc.isTransition ? 'none' : 'block'};" id="single-layer-field">
                 <label for="prop-layer">Layer</label>
-                <input type="number" id="prop-layer" value="${loc.layer || 0}" min="0" step="1">
+                <input type="text" id="prop-layer" value="${loc.layer || 'ground'}">
             </div>
             <div class="prop-field">
                 <label for="prop-parent">Parent Location</label>
@@ -1084,6 +1111,29 @@ class SpaceEditor {
             }
         });
         
+        // Position event listeners
+        document.getElementById('prop-pos-x').addEventListener('change', e => {
+            const newPosXM = parseFloat(e.target.value);
+            loc.shape.x = newPosXM * this.pixelsPerMeter;  // X position maps to CSS left
+            this.updateRectElement(loc);
+            this.updateJson();
+        });
+
+        document.getElementById('prop-pos-y').addEventListener('change', e => {
+            // Y position is not used in the 2D view but could be stored for 3D compatibility
+            // For now, this doesn't affect the visual representation
+            const newPosYM = parseFloat(e.target.value);
+            // Could store in loc.shape.z if needed for 3D compatibility in the future
+        });
+
+        document.getElementById('prop-pos-z').addEventListener('change', e => {
+            const newPosZM = parseFloat(e.target.value);
+            loc.shape.y = newPosZM * this.pixelsPerMeter;  // Z position maps to CSS top
+            this.updateRectElement(loc);
+            this.updateJson();
+        });
+
+        // Dimension event listeners
         document.getElementById('prop-length').addEventListener('change', e => {
             const newLengthM = parseFloat(e.target.value);
             if (this.locations.length === 1) {
@@ -1092,7 +1142,7 @@ class SpaceEditor {
             loc.shape.width = newLengthM * this.pixelsPerMeter;  // X = length (LEFT-RIGHT) maps to CSS width
             loc.shape.height = parseFloat(document.getElementById('prop-width').value) * this.pixelsPerMeter;  // Z = width (UP-DOWN) maps to CSS height
             loc.shape.depth = parseFloat(document.getElementById('prop-height').value) * this.pixelsPerMeter;  // Y = height (vertical space)
-            this.loadLayout({ meta: { pixels_per_unit: this.pixelsPerMeter }, locations: this.locations });
+            this.updateRectElement(loc);
             this.updateJson();
         });
 
@@ -1110,7 +1160,7 @@ class SpaceEditor {
         });
 
         document.getElementById('prop-layer').addEventListener('change', e => {
-            const newLayer = parseInt(e.target.value);
+            const newLayer = e.target.value.trim() || 'ground';
             loc.layer = newLayer;
             this.updateRectElement(loc);
             this.updateLayerDropdown();
@@ -1131,7 +1181,7 @@ class SpaceEditor {
                 loc.connectedLocations = [];
             }
             if (loc.isTransition && !loc.transitionLayers) {
-                loc.transitionLayers = [loc.layer || 0];
+                loc.transitionLayers = [loc.layer || "ground"];
             }
             document.getElementById('single-layer-field').style.display = loc.isTransition ? 'none' : 'block';
             document.getElementById('transition-layers-field').style.display = loc.isTransition ? 'block' : 'none';
@@ -1183,7 +1233,8 @@ class SpaceEditor {
         }
         
         // Set z-index based on position for proper layering
-        const zIndex = Math.floor((loc.shape.y + loc.shape.x) / 10) + (loc.layer || 0) * 1000;
+        const layerZIndex = this.getLayerZIndex(loc.layer || "ground");
+        const zIndex = Math.floor((loc.shape.y + loc.shape.x) / 10) + layerZIndex * 1000;
         rectEl.style.zIndex = zIndex;
     }
 

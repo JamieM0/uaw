@@ -44,8 +44,6 @@
                 if (jszipLoadAttempted) return;
                 jszipLoadAttempted = true;
                 
-                console.log('🔄 Loading JSZip...');
-                
                 // Temporarily disable AMD to force global registration
                 const originalDefine = window.define;
                 window.define = undefined;
@@ -54,22 +52,18 @@
                 const localScript = document.createElement('script');
                 localScript.src = '/assets/js/jszip.min.js';
                 localScript.onload = () => {
-                    console.log('✅ JSZip loaded from local file');
                     // Restore AMD after a brief delay
                     setTimeout(() => {
                         window.define = originalDefine;
                         if (typeof window.JSZip !== 'undefined') {
                             window.JSZipReady = true;
-                            console.log('✅ JSZip available globally');
                         } else {
-                            console.log('⚠️ JSZip not found globally, trying CDN...');
                             loadJSZipFromCDN();
                         }
                     }, 100);
                 };
                 localScript.onerror = () => {
                     window.define = originalDefine;
-                    console.log('⚠️ Local JSZip failed, trying CDN...');
                     loadJSZipFromCDN();
                 };
                 document.head.appendChild(localScript);
@@ -83,22 +77,18 @@
                 const cdnScript = document.createElement('script');
                 cdnScript.src = 'https://unpkg.com/jszip@3.10.1/dist/jszip.min.js';
                 cdnScript.onload = () => {
-                    console.log('✅ JSZip loaded from CDN');
                     // Restore AMD after a brief delay
                     setTimeout(() => {
                         window.define = originalDefine;
                         if (typeof window.JSZip !== 'undefined') {
                             window.JSZipReady = true;
-                            console.log('✅ JSZip available globally from CDN');
                         } else {
-                            console.error('❌ JSZip not found after CDN load');
                             window.JSZipFailed = true;
                         }
                     }, 100);
                 };
                 cdnScript.onerror = () => {
                     window.define = originalDefine;
-                    console.error('❌ JSZip failed from all sources');
                     window.JSZipFailed = true;
                 };
                 document.head.appendChild(cdnScript);

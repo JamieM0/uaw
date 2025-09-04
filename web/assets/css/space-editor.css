@@ -209,3 +209,13 @@
 .prop-field .input-group { display: flex; align-items: center; }
 .prop-field .input-group input { flex: 1; }
 .prop-field .input-group span { padding: 0 0.5rem; background: #e9ecef; border: 1px solid var(--border-color); border-left: none; height: 34px; line-height: 34px; border-radius: 0 4px 4px 0; }
+
+/* --- Property Section Styles --- */
+.prop-section { margin-bottom: 1rem; }
+.prop-section .section-label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark); border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem; }
+
+/* --- Inline Input Styles --- */
+.inline-inputs { display: flex; gap: 0.4rem; flex-wrap: nowrap; }
+.inline-input-group { flex: 0 1 auto; width: 85px; max-width: 85px; }
+.inline-input-group label { display: block; font-size: 0.7rem; font-weight: 500; margin-bottom: 0.25rem; color: var(--text-light); text-align: center; }
+.inline-input-group input { width: 100%; padding: 0.3rem 0.2rem; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; font-size: 0.75rem; text-align: center; }

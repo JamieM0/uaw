@@ -2226,14 +2226,12 @@ function updateDynamicPanels() {
             panel.innerHTML = `<h5>${objectType} (at <span class="live-time">00:00</span>)</h5><div class="resource-grid"></div>`;
             liveStateContainer.appendChild(panel);
             
-            console.log(`🔧 Dynamic panel created for new type: ${objectType}`);
         });
         
         // Update SimulationPlayer to recognize new panels if it exists
         if (player && newTypes.length > 0) {
             // Refresh the live panels in the player
             player.ui.livePanels = player.findLivePanels();
-            console.log(`🔄 SimulationPlayer updated with ${newTypes.length} new panel(s)`);
         }
         
     } catch (e) {
@@ -3079,7 +3077,6 @@ function createMetricsJsonEditor() {
         // Attach emoji picker to the metrics JSON editor
         if (window.emojiPicker) {
             window.emojiPicker.attachToMonaco(window.metricsJsonEditor);
-            console.log('METRICS: Attached emoji picker to metrics JSON editor');
         }
         
     } catch (error) {
@@ -3201,7 +3198,6 @@ function initializeMetricsEditor() {
 }
 
 function setupMetricsValidationPanel() {
-    console.log("METRICS: Setting up validation panel for metrics mode");
     
     const metricsControls = document.getElementById("metrics-mode-controls");
     const runValidationBtn = document.getElementById("run-custom-validation");
@@ -3222,7 +3218,6 @@ function setupMetricsValidationPanel() {
 }
 
 function resetValidationPanelToStandard() {
-    console.log("METRICS: Resetting validation panel to standard mode");
     
     const metricsControls = document.getElementById("metrics-mode-controls");
     
@@ -3231,7 +3226,6 @@ function resetValidationPanelToStandard() {
 }
 
 function runCustomValidation() {
-    console.log("METRICS: Running custom validation");
     
     try {
         const simulationData = getCurrentSimulationData();
@@ -3859,19 +3853,15 @@ async function downloadSimulationWithMetrics(simulationData, baseName) {
     // Simple check with brief wait for JSZip
     let attempts = 0;
     while (!window.JSZip && !window.JSZipFailed && attempts < 20) {
-        if (attempts === 0) console.log('⏳ Waiting for JSZip...');
         await new Promise(resolve => setTimeout(resolve, 250));
         attempts++;
     }
 
     if (!window.JSZip) {
-        console.error('JSZip not available - falling back to JSON save');
         alert('ZIP file creation is not available. Saving as JSON instead.');
         downloadSimulationFile(simulationData, `${baseName}.json`);
         return;
     }
-    
-    console.log('✅ JSZip ready, creating zip file...');
 
     try {
         const zip = new JSZip();
@@ -3988,7 +3978,6 @@ async function loadSimulationFromZip(file, resolve, reject) {
     // Simple check with brief wait for JSZip
     let attempts = 0;
     while (!window.JSZip && !window.JSZipFailed && attempts < 20) {
-        if (attempts === 0) console.log('⏳ Waiting for JSZip for zip loading...');
         await new Promise(resolve => setTimeout(resolve, 250));
         attempts++;
     }

@@ -436,6 +436,32 @@ class SimulationPlayer {
 
     updateGenericObjectTypeState(objectType, panel, liveObjects) {
         // For actors, products, and any other generic object types
+        // Calculate dynamic states based on task interactions (same logic as equipment)
+        const states = {};
+        liveObjects.forEach(obj => { states[obj.id] = obj.properties?.state || 'available'; });
+
+        const sortedTasks = [...(this.simData.tasks || [])].sort((a,b) => a.start_minutes - b.start_minutes);
+        
+        for (const task of sortedTasks) {
+            if (task.start_minutes > this.playheadTime) break; // No need to process future tasks
+            
+            // Handle new-style interactions for generic objects
+            (task.interactions || []).forEach(interaction => {
+                const targetObject = liveObjects?.find(obj => obj.id === interaction.object_id);
+                if (targetObject) {
+                    const stateChanges = interaction.property_changes?.state;
+                    if (stateChanges) {
+                        const isTaskActive = this.playheadTime >= task.start_minutes && this.playheadTime < task.end_minutes;
+                        if (isTaskActive) {
+                            states[interaction.object_id] = stateChanges.to;
+                        } else {
+                            states[interaction.object_id] = interaction.revert_after === true ? stateChanges.from : stateChanges.to;
+                        }
+                    }
+                }
+            });
+        }
+
         // Sort objects chronologically by their creation time, then by their id
         const sortedObjects = [...liveObjects].sort((a, b) => {
             const aCreated = this.liveObjects?.created?.find(obj => obj.id === a.id);
@@ -456,7 +482,7 @@ class SimulationPlayer {
                 <div class="resource-emoji">${item.emoji || "❓"}</div>
                 <div class="resource-info">
                     <div class="resource-name">${item.name || item.id}${isCreated ? ' ✨' : ''}</div>
-                    <div class="resource-state available">${item.type || objectType}</div>
+                    <div class="resource-state ${states[item.id]}">${states[item.id]}</div>
                 </div>
             </div>
             `;
