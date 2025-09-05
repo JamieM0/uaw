@@ -144,7 +144,7 @@ A `product` is the output or an intermediate item created during the process.
   "id": "mixed_dough",
   "type": "product",
   "name": "Mixed Dough",
-  "emoji": "덩",
+  "emoji": "🍞",
   "properties": {
     "unit": "batch",
     "quantity": 0,
