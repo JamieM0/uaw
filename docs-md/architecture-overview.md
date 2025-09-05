@@ -3,11 +3,24 @@
 ## Table of Contents
 
 - [Architecture Overview](#page-1)
+- [Simulation and Playground](#simulation-and-playground)
 - [Core Utilities and Functionality](#page-2)
 - [Example Workflows and Use Cases](#page-3)
 - [Extending and Customizing Routines](#page-4)
 - [Natural Language Processing and Simplification](#page-5)
 - [Search Query Generation and Information Retrieval](#page-6)
+
+---
+
+<a id='simulation-and-playground'></a>
+## Simulation and Playground
+
+The Universal Automation Wiki includes a powerful, interactive Simulation Playground for creating, editing, and validating process simulations.
+
+- **[Playground Guide](./playground/playground-guide.md)**: A comprehensive overview of the playground's features and a deep dive into the `simulation.json` schema.
+- **[Space Editor Guide](./playground/space-editor-guide.md)**: A guide to the visual tool for defining the physical layout of your simulation.
+- **[Saving and Loading Simulations](./playground/save-load.md)**: Instructions on how to save your simulations locally or to the cloud.
+- **[The Metrics Editor](./simulations/metrics-editor.md)**: A detailed guide on how to create your own custom validation logic.
 
 <a id='page-1'></a>
 
