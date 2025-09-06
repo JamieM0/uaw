@@ -76,6 +76,7 @@ function initializePlayground() {
     }
     
     initializeTutorial();
+    initializeEmojiPicker();
     initializeExperimentalLLM();
 
     renderSimulation();
@@ -161,6 +162,56 @@ function setupRenderButton() {
                 renderSimulation();
             }
         });
+    }
+}
+
+async function initializeEmojiPicker() {
+    try {
+        // Create and initialize emoji picker
+        emojiPicker = new EmojiPicker({
+            theme: 'uaw',
+            searchPlaceholder: 'Search workplace emojis...',
+            maxRecentEmojis: 24
+        });
+        
+        const initialized = await emojiPicker.initialize();
+        
+        if (initialized) {
+            // Attach to existing emoji input fields by ID
+            const taskEmojiInput = document.getElementById('task-emoji-input');
+            const objectEmojiInput = document.getElementById('object-emoji-input');
+            
+            if (taskEmojiInput) {
+                emojiPicker.attachToInput(taskEmojiInput, { autoOpen: true });
+            }
+            
+            if (objectEmojiInput) {
+                emojiPicker.attachToInput(objectEmojiInput, { autoOpen: true });
+            }
+            
+            // Attach to all emoji input fields by class
+            const emojiFields = document.querySelectorAll('.object-emoji, input[maxlength="2"]');
+            emojiFields.forEach(field => {
+                // Skip if already attached by ID
+                if (field.id === 'task-emoji-input' || field.id === 'object-emoji-input') {
+                    return;
+                }
+                
+                emojiPicker.attachToInput(field, { autoOpen: true });
+            });
+            
+            // Attach to Monaco editor if available
+            if (editor) {
+                emojiPicker.attachToMonaco(editor);
+            }
+            
+            // Make emoji picker globally accessible for dynamic field attachment
+            window.emojiPicker = emojiPicker;
+        } else {
+            console.warn("INIT: Emoji picker failed to initialize");
+        }
+    } catch (error) {
+        console.error("INIT: Emoji picker initialization error:", error);
     }
 }
 

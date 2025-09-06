@@ -202,7 +202,7 @@ body {
 
 /* Metrics mode layout */
 .playground-top.metrics-mode .playground-left {
-    flex: 0 0 40%;
+    width: 40%;
     display: flex;
     flex-direction: column;
 }
@@ -215,10 +215,12 @@ body {
     display: flex !important;
     flex: 1;
     flex-direction: column;
+    width: auto !important;
+    min-width: 0 !important;
 }
 
 .playground-top.metrics-mode .metrics-editor-panel {
-    flex: 0 0 60%;
+    width: 60%;
     display: flex !important;
     flex-direction: column;
 }
@@ -335,6 +337,8 @@ body {
     flex: 1;
     overflow: hidden;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .metrics-editor-panel .panel-content {
@@ -558,17 +562,30 @@ body {
 }
 
 .json-editor-resize-container {
-    width: 100%;
-    height: 100%;
-    min-height: 200px;
+    display: flex;
+    flex: 1;
+    min-height: 0;
     position: relative;
     overflow: hidden;
 }
 
 #json-editor-metrics {
-    width: 100%;
-    height: 100%;
-    min-height: 200px;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+}
+
+/* Force Monaco editor to respect container size during resize */
+#json-editor-metrics .monaco-editor {
+    min-width: 0 !important;
+}
+
+#json-editor-metrics .monaco-editor .overflow-guard {
+    min-width: 0 !important;
+}
+
+#json-editor-metrics .monaco-editor .monaco-scrollable-element {
+    min-width: 0 !important;
 }
 
 .metrics-resize {
@@ -1943,6 +1960,67 @@ optgroup[label*="Products"] {
     font-weight: 400;
     color: rgb(18, 108, 168); /* --primary-color-rgb */
 }
+
+
+/* === INTERACTIONS MODAL STYLES === */
+
+.interaction-group {
+    background: #f8f9fa;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.interaction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.interaction-header h5 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.btn-remove {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-light);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.btn-remove:hover {
+    background: var(--error-color);
+    border-color: var(--error-color);
+    color: white;
+}
+
+.interaction-fields .form-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.inline-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: normal;
+}
+
+.inline-checkbox input {
+    width: auto;
+    margin: 0;
+}
+
 
 /* === FEEDBACK MODAL STYLES === */
 .feedback-form {

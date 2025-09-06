@@ -10,6 +10,7 @@ let isDragging = false;
 let draggedTask = null;
 let dragStartX = 0;
 let dragStartY = 0;
+let dragOffsetX = 0; // Offset from left edge of task to cursor
 let originalTaskData = null;
 
 // Resize variables
@@ -425,7 +426,7 @@ function renderSimulation() {
 // Debounced rendering
 function debounceRender() {
     clearTimeout(renderTimeout);
-    renderTimeout = setTimeout(renderSimulation, 500);
+    renderTimeout = setTimeout(renderSimulation, 0);
 }
 
 // Drag and drop functionality
@@ -438,6 +439,9 @@ function initializeDragAndDrop() {
 function handleMouseDown(e) {
     const taskElement = e.target.closest('.task-block');
     if (!taskElement) return;
+
+    // Stop the event from bubbling up to the track, which would trigger scrubbing
+    e.stopPropagation();
 
     const rect = taskElement.getBoundingClientRect();
     const relativeX = e.clientX - rect.left;
@@ -480,6 +484,10 @@ function handleMouseDown(e) {
         dragStartX = e.clientX;
         dragStartY = e.clientY;
         
+        // Calculate offset from left edge of task to cursor position
+        const rect = taskElement.getBoundingClientRect();
+        dragOffsetX = e.clientX - rect.left;
+        
         originalTaskData = {
             taskId: taskElement.dataset.taskId,
             actorId: taskElement.dataset.actorId,
@@ -503,10 +511,10 @@ function handleMouseMove(e) {
         const newPosition = calculateNewTimeFromPosition(e.clientX, trackElement);
         const taskStartMinutes = parseTimeToMinutes(originalStartTime);
         
-        let newDuration;
+        let newDuration, newStartMinutes = taskStartMinutes;
         if (resizeType === 'left') {
             // Resizing from the left edge
-            const newStartMinutes = newPosition;
+            newStartMinutes = newPosition;
             const originalEndMinutes = taskStartMinutes + originalDuration;
             newDuration = originalEndMinutes - newStartMinutes;
         } else {
@@ -517,19 +525,47 @@ function handleMouseMove(e) {
         // Minimum duration constraint
         newDuration = Math.max(1, Math.round(newDuration));
         
-        // Update preview
+        // Update preview tooltip
         durationPreview.textContent = `${newDuration} minutes`;
         durationPreview.style.left = `${e.clientX + 10}px`;
         durationPreview.style.top = `${e.clientY - 10}px`;
         
-    } else if (isDragging && draggedTask) {
-        const deltaX = e.clientX - dragStartX;
-        const deltaY = e.clientY - dragStartY;
+        // Apply immediate visual feedback to the task block
+        const totalDurationMinutes = currentSimulationData.total_duration_minutes;
+        const startTimeMinutes = currentSimulationData.start_time_minutes;
         
-        // Only show drag feedback after significant movement
-        if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
-            draggedTask.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        if (resizeType === 'left') {
+            // Update both position and width for left edge resize
+            const newStartPercentage = ((newStartMinutes - startTimeMinutes) / totalDurationMinutes) * 100;
+            const newDurationPercentage = (newDuration / totalDurationMinutes) * 100;
+            resizeHandle.style.left = `${newStartPercentage}%`;
+            resizeHandle.style.width = `${newDurationPercentage}%`;
+        } else {
+            // Update only width for right edge resize
+            const newDurationPercentage = (newDuration / totalDurationMinutes) * 100;
+            resizeHandle.style.width = `${newDurationPercentage}%`;
         }
+        
+    } else if (isDragging && draggedTask) {
+        // --- START OF DRAG FIX ---
+        const trackElement = draggedTask.closest('.task-track');
+        if (!trackElement) return;
+
+        // Calculate the new position of the left edge of the task
+        const newLeftX = e.clientX - dragOffsetX;
+
+        // Convert this pixel position to a percentage of the track width
+        const trackRect = trackElement.getBoundingClientRect();
+        const relativeX = newLeftX - trackRect.left;
+        let newStartPercentage = (relativeX / trackRect.width) * 100;
+
+        // Clamp the value between 0 and (100 - task_width)
+        const taskWidthPercentage = parseFloat(draggedTask.style.width);
+        newStartPercentage = Math.max(0, Math.min(newStartPercentage, 100 - taskWidthPercentage));
+
+        // Apply the new position directly to the 'left' property
+        draggedTask.style.left = `${newStartPercentage}%`;
+        // --- END OF DRAG FIX ---
     }
 }
 
@@ -564,7 +600,7 @@ function handleMouseUp(e) {
             updateTaskDurationInJSON(taskId, newDuration, newStartTime);
         }
         
-        // Clean up resize state
+        // Clean up resize state but don't reset styles immediately to avoid visual jump
         resizeHandle.classList.remove('resizing');
         if (durationPreview) {
             durationPreview.remove();
@@ -577,27 +613,31 @@ function handleMouseUp(e) {
     } else if (isDragging && draggedTask) {
         const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
         const newTrack = elementBelow?.closest('.task-track');
+        const currentTrack = draggedTask.closest('.task-track');
         
-        if (newTrack && newTrack !== draggedTask.closest('.task-track')) {
+        if (newTrack) {
             const newActorId = newTrack.dataset.actorId;
-            const newTime = calculateNewTimeFromPosition(e.clientX, newTrack);
+            // Account for the drag offset when calculating final position
+            const newTime = calculateNewTimeFromPosition(e.clientX - dragOffsetX, newTrack);
             
             if (newActorId && newTime !== null) {
-                updateTaskInJSON(originalTaskData.taskId, newActorId, newTime);
+                // Check if position actually changed (either different track or different time)
+                const originalTimeMinutes = parseTimeToMinutes(originalTaskData.start);
+                if (newTrack !== currentTrack || Math.abs(newTime - originalTimeMinutes) > 1) {
+                    updateTaskInJSON(originalTaskData.taskId, newActorId, newTime);
+                }
             }
         }
         
-        // Reset task appearance
+        // Reset task appearance and clear transform immediately
         draggedTask.style.opacity = '';
         draggedTask.style.zIndex = '';
         draggedTask.style.transform = '';
         
-        // Clean up drag state
-        setTimeout(() => {
-            isDragging = false;
-            draggedTask = null;
-            originalTaskData = null;
-        }, 100);
+        // Clean up drag state immediately
+        isDragging = false;
+        draggedTask = null;
+        originalTaskData = null;
     }
 }
 

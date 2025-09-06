@@ -60,8 +60,7 @@ function openAddObjectModal() {
     }
 }
 
-function updateObjectTypeFields(type, container) {
-    const context = getCurrentTimelineContext();
+function getObjectTypeFieldsHTML(type, context, counter) {
     const locationOptions = context.locations.map(loc => 
         `<option value="${loc.id}">${loc.name}</option>`
     ).join('');
@@ -71,77 +70,71 @@ function updateObjectTypeFields(type, container) {
     switch (type) {
         case 'actor':
             fieldsHTML = `
-                <div class="dialog-field">
+                <div class="form-group">
                     <label>Role</label>
-                    <input type="text" name="role" placeholder="e.g., Baker, Assistant">
+                    <input type="text" name="new_object_role_${counter}" placeholder="e.g., Baker, Assistant">
                 </div>
-                <div class="dialog-field">
+                <div class="form-group">
                     <label>Cost per Hour ($)</label>
-                    <input type="number" name="cost_per_hour" min="0" step="0.01" placeholder="25.00">
+                    <input type="number" name="new_object_cost_per_hour_${counter}" min="0" step="0.01" placeholder="25.00">
                 </div>
             `;
             break;
-            
         case 'equipment':
             fieldsHTML = `
-                <div class="dialog-field">
+                <div class="form-group">
                     <label>Initial State</label>
-                    <input type="text" name="state" placeholder="e.g., clean, available">
+                    <input type="text" name="new_object_state_${counter}" placeholder="e.g., clean, available">
                 </div>
-                <div class="dialog-field">
+                <div class="form-group">
                     <label>Capacity</label>
-                    <input type="number" name="capacity" min="1" placeholder="1">
+                    <input type="number" name="new_object_capacity_${counter}" min="1" placeholder="1">
                 </div>
             `;
             break;
-            
         case 'resource':
             fieldsHTML = `
-                <div class="dialog-field">
+                <div class="form-group">
                     <label>Unit</label>
-                    <input type="text" name="unit" placeholder="e.g., kg, liter, pieces">
+                    <input type="text" name="new_object_unit_${counter}" placeholder="e.g., kg, liter, pieces">
                 </div>
-                <div class="dialog-field">
+                <div class="form-group">
                     <label>Initial Quantity</label>
-                    <input type="number" name="quantity" min="0" step="0.1" placeholder="10">
+                    <input type="number" name="new_object_quantity_${counter}" min="0" step="0.1" placeholder="10">
                 </div>
             `;
             break;
-            
         case 'product':
             fieldsHTML = `
-                <div class="dialog-field">
+                <div class="form-group">
                     <label>Unit</label>
-                    <input type="text" name="unit" placeholder="e.g., batch, loaves, pieces">
+                    <input type="text" name="new_object_unit_${counter}" placeholder="e.g., batch, loaves, pieces">
                 </div>
-                <div class="dialog-field">
+                <div class="form-group">
                     <label>Initial Quantity</label>
-                    <input type="number" name="quantity" min="0" step="0.1" placeholder="0">
+                    <input type="number" name="new_object_quantity_${counter}" min="0" step="0.1" placeholder="0">
                 </div>
             `;
             break;
-            
-        default:
-            fieldsHTML = `
-                <div class="dialog-field">
-                    <label>Custom Properties (JSON)</label>
-                    <textarea name="custom_properties" placeholder='{"property": "value"}'></textarea>
-                </div>
-            `;
     }
     
-    // Add location field for all types
     fieldsHTML += `
-        <div class="dialog-field">
+        <div class="form-group">
             <label>Location</label>
-            <select name="location">
+            <select name="new_object_location_${counter}">
                 <option value="">Select location...</option>
                 ${locationOptions}
             </select>
         </div>
     `;
     
-    container.innerHTML = fieldsHTML;
+    return fieldsHTML;
+}
+
+
+function updateObjectTypeFields(type, container) {
+    const context = getCurrentTimelineContext();
+    container.innerHTML = getObjectTypeFieldsHTML(type, context, 'modal');
 }
 
 // Open add task modal  
@@ -152,15 +145,17 @@ function openAddTaskModal() {
     const startTimeInput = document.getElementById('task-start-input');
     
     // Clear form
-    modal.querySelectorAll('input, select').forEach(input => {
-        if (input.type === 'checkbox') input.checked = false;
-        else if (input.type === 'radio') {
-            if (input.value === 'duration') input.checked = true;
-            else input.checked = false;
+    modal.querySelectorAll('input, select, textarea').forEach(input => {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+            input.checked = false;
         } else {
             input.value = '';
         }
     });
+    if (document.querySelector('input[name="time-input-mode"][value="duration"]')) {
+        document.querySelector('input[name="time-input-mode"][value="duration"]').checked = true;
+    }
+
     
     // Clear interactions
     document.getElementById('interactions-container').innerHTML = '';
@@ -173,12 +168,15 @@ function openAddTaskModal() {
     if (actorSelect) {
         actorSelect.innerHTML = '<option value="">Select actor/object...</option>';
         Object.entries(context.objectsByType).forEach(([type, objects]) => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = type.charAt(0).toUpperCase() + type.slice(1);
             objects.forEach(obj => {
                 const option = document.createElement('option');
                 option.value = obj.id;
-                option.textContent = `${obj.name} (${type})`;
-                actorSelect.appendChild(option);
+                option.textContent = obj.name;
+                optgroup.appendChild(option);
             });
+            actorSelect.appendChild(optgroup);
         });
     }
     
@@ -243,6 +241,11 @@ function setupTimeInputToggle() {
             }
         });
     });
+
+    const checkedRadio = document.querySelector('input[name="time-input-mode"]:checked');
+    if (checkedRadio) {
+        checkedRadio.dispatchEvent(new Event('change'));
+    }
 }
 
 // Add interaction
@@ -253,135 +256,157 @@ function addInteraction() {
     
     const objectOptions = [];
     Object.entries(context.objectsByType).forEach(([type, objects]) => {
-        objects.forEach(obj => {
-            objectOptions.push(`<option value="${obj.id}">${obj.name} (${type})</option>`);
-        });
+        const groupLabel = type.charAt(0).toUpperCase() + type.slice(1);
+        const options = objects.map(obj => `<option value="${obj.id}">${obj.name}</option>`).join('');
+        objectOptions.push(`<optgroup label="${groupLabel}">${options}</optgroup>`);
     });
     
     const interactionHTML = `
         <div class="interaction-group" id="interaction-${interactionCounter}">
             <div class="interaction-header">
-                <h4>Interaction ${interactionCounter}</h4>
-                <button type="button" class="btn-danger-small" onclick="removeInteraction(this)">×</button>
+                <h5>Interaction ${interactionCounter}</h5>
+                <button type="button" class="btn-remove" onclick="removeInteraction(this)">Remove</button>
             </div>
             
-            <div class="dialog-field">
-                <label>Object</label>
-                <select name="interaction_object_${interactionCounter}" required>
-                    <option value="">Select object...</option>
-                    ${objectOptions.join('')}
-                </select>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Change Type</label>
+                    <select name="interaction_change_type_${interactionCounter}" onchange="toggleInteractionFields(this)">
+                        <option value="from_to">From/To</option>
+                        <option value="delta">Delta</option>
+                        <option value="add_object">Add Object</option>
+                        <option value="remove_object">Remove Object</option>
+                    </select>
+                </div>
+                <div class="form-group object-selection-group">
+                    <label>Object</label>
+                    <select name="interaction_object_${interactionCounter}" required>
+                        <option value="">Select object...</option>
+                        ${objectOptions.join('')}
+                    </select>
+                </div>
             </div>
-            
-            <div class="dialog-field">
-                <label>Property Changes</label>
-                <div class="property-changes-container" id="properties-${interactionCounter}">
-                    <button type="button" class="btn-secondary-small" onclick="addPropertyChange(this, null)">Add Property Change</button>
+
+            <div class="interaction-fields">
+                <div class="form-row from-to-fields">
+                    <div class="form-group">
+                        <label>Property</label>
+                        <input type="text" name="interaction_property_${interactionCounter}" placeholder="e.g., state, quantity">
+                    </div>
+                    <div class="form-group">
+                        <label>From</label>
+                        <input type="text" name="interaction_from_${interactionCounter}" placeholder="current value">
+                    </div>
+                    <div class="form-group">
+                        <label>To</label>
+                        <input type="text" name="interaction_to_${interactionCounter}" placeholder="new value">
+                    </div>
+                </div>
+
+                <div class="form-row delta-fields" style="display: none;">
+                    <div class="form-group">
+                        <label>Property</label>
+                        <input type="text" name="interaction_property_delta_${interactionCounter}" placeholder="e.g., quantity">
+                    </div>
+                    <div class="form-group">
+                        <label>Delta</label>
+                        <input type="number" name="interaction_delta_${interactionCounter}" placeholder="e.g., -1 or 5">
+                    </div>
+                </div>
+                
+                <div class="add-object-fields" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>New Object Type</label>
+                            <select name="new_object_type_${interactionCounter}" onchange="updateInteractionObjectTypeFields(this)">
+                                <option value="">Select type...</option>
+                                <option value="actor">Actor</option>
+                                <option value="equipment">Equipment</option>
+                                <option value="resource">Resource</option>
+                                <option value="product">Product</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>New Object ID</label>
+                            <input type="text" name="new_object_id_${interactionCounter}" placeholder="e.g., new_bread_loaf">
+                        </div>
+                        <div class="form-group">
+                            <label>New Object Name</label>
+                            <input type="text" name="new_object_name_${interactionCounter}" placeholder="e.g., Fresh Bread">
+                        </div>
+                         <div class="form-group">
+                            <label>Emoji</label>
+                            <input type="text" name="new_object_emoji_${interactionCounter}" placeholder="🍞" maxlength="2">
+                        </div>
+                    </div>
+                    <div class="form-row type-specific-fields-container">
+                        <!-- Type-specific fields will be injected here -->
+                    </div>
                 </div>
             </div>
             
-            <div class="dialog-field">
-                <label>
+            <div class="form-group revert-checkbox-group">
+                <label class="inline-checkbox">
                     <input type="checkbox" name="revert_after_${interactionCounter}">
-                    Revert after task completes
+                    Revert After Task
                 </label>
             </div>
         </div>
     `;
     
     container.insertAdjacentHTML('beforeend', interactionHTML);
+
+    const newEmojiInput = container.querySelector(`input[name="new_object_emoji_${interactionCounter}"]`);
+    if (newEmojiInput && window.emojiPicker) {
+        window.emojiPicker.attachToInput(newEmojiInput, { autoOpen: true });
+    }
 }
+
+function updateInteractionObjectTypeFields(selectElement) {
+    const type = selectElement.value;
+    const group = selectElement.closest('.interaction-group');
+    const container = group.querySelector('.type-specific-fields-container');
+    const counter = group.id.split('-')[1];
+    const context = getCurrentTimelineContext();
+    container.innerHTML = getObjectTypeFieldsHTML(type, context, counter);
+}
+
+
+function toggleInteractionFields(selectElement) {
+    const group = selectElement.closest('.interaction-group');
+    const objectSelection = group.querySelector('.object-selection-group');
+    const fromTo = group.querySelector('.from-to-fields');
+    const delta = group.querySelector('.delta-fields');
+    const addObject = group.querySelector('.add-object-fields');
+    const revertCheckbox = group.querySelector('.revert-checkbox-group');
+
+    // Hide all by default
+    objectSelection.style.display = 'none';
+    fromTo.style.display = 'none';
+    delta.style.display = 'none';
+    addObject.style.display = 'none';
+    revertCheckbox.style.display = 'block'; // Show by default
+
+    if (selectElement.value === 'from_to') {
+        objectSelection.style.display = 'block';
+        fromTo.style.display = 'flex';
+    } else if (selectElement.value === 'delta') {
+        objectSelection.style.display = 'block';
+        delta.style.display = 'flex';
+    } else if (selectElement.value === 'add_object') {
+        addObject.style.display = 'block';
+        revertCheckbox.style.display = 'none'; // Cannot revert adding an object
+    } else if (selectElement.value === 'remove_object') {
+        objectSelection.style.display = 'block';
+    }
+}
+
 
 // Remove interaction
 function removeInteraction(button) {
     const interactionGroup = button.closest('.interaction-group');
     if (interactionGroup) {
         interactionGroup.remove();
-    }
-}
-
-// Add property change
-function addPropertyChange(buttonOrContainer, objectOptions = null) {
-    const container = buttonOrContainer.classList?.contains('property-changes-container') 
-        ? buttonOrContainer 
-        : buttonOrContainer.closest('.property-changes-container');
-    
-    if (!container) return;
-    
-    const changeId = Date.now() + Math.random();
-    
-    const changeHTML = `
-        <div class="property-change" id="change-${changeId}">
-            <div class="property-change-row">
-                <select name="change_type_${changeId}">
-                    <option value="simple">Simple Change</option>
-                    <option value="delta">Delta Change</option>
-                    <option value="add_object">Add Object</option>
-                </select>
-                
-                <input type="text" name="property_name_${changeId}" placeholder="Property name">
-                
-                <div class="property-value-fields" id="value-fields-${changeId}">
-                    <input type="text" name="from_value_${changeId}" placeholder="From">
-                    <input type="text" name="to_value_${changeId}" placeholder="To">
-                </div>
-                
-                <div class="property-add-object-fields" id="add-object-fields-${changeId}" style="display: none;">
-                    <input type="text" name="new_object_id_${changeId}" placeholder="New object ID">
-                    <input type="text" name="new_object_name_${changeId}" placeholder="Object name">
-                </div>
-                
-                <button type="button" class="btn-danger-small" onclick="removePropertyChange(this)">×</button>
-            </div>
-        </div>
-    `;
-    
-    // Find the button and insert before it
-    const addButton = container.querySelector('button');
-    if (addButton) {
-        addButton.insertAdjacentHTML('beforebegin', changeHTML);
-    } else {
-        container.insertAdjacentHTML('beforeend', changeHTML);
-    }
-    
-    // Setup change type handler
-    const changeTypeSelect = document.querySelector(`select[name="change_type_${changeId}"]`);
-    const valueFields = document.getElementById(`value-fields-${changeId}`);
-    const addObjectFields = document.getElementById(`add-object-fields-${changeId}`);
-    
-    changeTypeSelect.addEventListener('change', function() {
-        const changeDiv = this.closest('.property-change');
-        const addObjectFields = changeDiv.querySelector('.property-add-object-fields');
-        const valueFields = changeDiv.querySelector('.property-value-fields');
-        
-        if (this.value === 'add_object') {
-            valueFields.style.display = 'none';
-            addObjectFields.style.display = 'block';
-        } else {
-            valueFields.style.display = 'block';
-            addObjectFields.style.display = 'none';
-        }
-        
-        // Update placeholders based on change type
-        const fromInput = valueFields.querySelector('input[name*="from_value"]');
-        const toInput = valueFields.querySelector('input[name*="to_value"]');
-        
-        if (this.value === 'delta') {
-            fromInput.style.display = 'none';
-            toInput.placeholder = 'Delta value (e.g., -1, +5)';
-        } else {
-            fromInput.style.display = 'block';
-            fromInput.placeholder = 'From';
-            toInput.placeholder = 'To';
-        }
-    });
-}
-
-// Remove property change
-function removePropertyChange(button) {
-    const propertyChange = button.closest('.property-change');
-    if (propertyChange) {
-        propertyChange.remove();
     }
 }
 
@@ -393,28 +418,25 @@ function addObjectToSimulation() {
         const objectName = document.getElementById('object-name-input').value;
         const objectId = document.getElementById('object-id-input').value;
         const emoji = document.getElementById('object-emoji-input').value;
-        const location = document.getElementById('object-location-input').value;
-        const currentJson = JSON.parse(editor.getValue());
-        
         
         if (!objectType || !objectName) {
             alert('Please fill in object type and name');
             return;
         }
+        
+        const currentJson = JSON.parse(editor.getValue());
         const finalObjectId = objectId || getNextAvailableId(objectType, currentJson.simulation.objects || []);
         
-        // Build properties object based on type
-        const properties = { location };
-        
-        // Get type-specific fields from the dynamically generated form fields
+        const properties = {};
         const fieldsContainer = document.getElementById('object-type-specific-fields');
         const inputs = fieldsContainer.querySelectorAll('input, select, textarea');
         inputs.forEach(input => {
-            if (input.value && input.name) {
+            const name = input.name.replace('_modal', '');
+            if (input.value && name) {
                 if (input.type === 'number') {
-                    properties[input.name] = parseFloat(input.value) || parseInt(input.value);
+                    properties[name] = parseFloat(input.value) || parseInt(input.value);
                 } else {
-                    properties[input.name] = input.value;
+                    properties[name] = input.value;
                 }
             }
         });
@@ -430,19 +452,14 @@ function addObjectToSimulation() {
             newObject.emoji = emoji;
         }
         
-        // Add to simulation
         if (!currentJson.simulation.objects) {
             currentJson.simulation.objects = [];
         }
         currentJson.simulation.objects.push(newObject);
         
-        // Update editor
         editor.setValue(JSON.stringify(currentJson, null, 2));
+        modal.style.display = 'none';
         
-        // Close modal
-        document.getElementById('add-object-modal').style.display = 'none';
-        
-        // Re-render if auto-render is on
         if (autoRender) {
             renderSimulation();
         }
@@ -464,14 +481,13 @@ function addTaskToSimulation() {
         const location = document.getElementById('task-location-select').value;
         const startTime = document.getElementById('task-start-input').value;
         
-        if (!emoji || !actorId || !location || !startTime) {
+        if (!taskId || !emoji || !actorId || !location || !startTime) {
             alert('Please fill in all required fields');
             return;
         }
+        
         const currentJson = JSON.parse(editor.getValue());
         
-        
-        // Calculate duration or end time
         let duration;
         const timeInputMode = document.querySelector('input[name="time-input-mode"]:checked').value;
         if (timeInputMode === 'duration') {
@@ -488,7 +504,6 @@ function addTaskToSimulation() {
             return;
         }
         
-        // Build task object
         const newTask = {
             id: taskId,
             emoji: emoji,
@@ -500,88 +515,77 @@ function addTaskToSimulation() {
             interactions: []
         };
         
-        // Process interactions
         const interactionGroups = document.querySelectorAll('.interaction-group');
-        interactionGroups.forEach((group, index) => {
-            const interactionCounter = group.id.split('-')[1];
-            const objectSelect = group.querySelector(`select[name="interaction_object_${interactionCounter}"]`);
-            const revertCheckbox = group.querySelector(`input[name="revert_after_${interactionCounter}"]`);
-            const objectId = objectSelect ? objectSelect.value : null;
-            const revertAfter = revertCheckbox ? revertCheckbox.checked : false;
-            
-            if (!objectId) return;
-            
+        interactionGroups.forEach(group => {
+            const counter = group.id.split('-')[1];
+            const changeType = group.querySelector(`select[name="interaction_change_type_${counter}"]`).value;
+            const objectId = group.querySelector(`select[name="interaction_object_${counter}"]`).value;
+            const revertAfter = group.querySelector(`input[name="revert_after_${counter}"]`).checked;
+
             const interaction = {
-                object_id: objectId,
-                property_changes: {},
                 revert_after: revertAfter
             };
-            
-            // Process property changes for this interaction
-            const propertyChanges = group.querySelectorAll('.property-change');
-            propertyChanges.forEach(change => {
-                const changeId = change.id.split('-')[1];
-                const changeTypeSelect = change.querySelector(`select[name="change_type_${changeId}"]`);
-                const propertyNameInput = change.querySelector(`input[name="property_name_${changeId}"]`);
-                const changeType = changeTypeSelect ? changeTypeSelect.value : null;
-                const propertyName = propertyNameInput ? propertyNameInput.value : null;
-                
-                if (!propertyName) return;
-                
-                if (changeType === 'add_object') {
-                    // Handle add object
-                    const newObjectIdInput = change.querySelector(`input[name="new_object_id_${changeId}"]`);
-                    const newObjectNameInput = change.querySelector(`input[name="new_object_name_${changeId}"]`);
-                    const newObjectId = newObjectIdInput ? newObjectIdInput.value : null;
-                    const newObjectName = newObjectNameInput ? newObjectNameInput.value : null;
-                    
-                    if (newObjectId && newObjectName) {
-                        if (!interaction.add_objects) interaction.add_objects = [];
-                        interaction.add_objects.push({
-                            id: newObjectId,
-                            type: 'product', // Default type for dynamically added objects
-                            name: newObjectName,
-                            properties: { location: location }
-                        });
-                    }
-                } else if (changeType === 'delta') {
-                    // Handle delta change
-                    const toValueInput = change.querySelector(`input[name="to_value_${changeId}"]`);
-                    const deltaValue = toValueInput ? toValueInput.value : null;
-                    if (deltaValue !== null && deltaValue !== '') {
-                        interaction.property_changes[propertyName] = { delta: parseFloat(deltaValue) || deltaValue };
-                    }
-                } else {
-                    // Handle simple from/to change
-                    const fromValueInput = change.querySelector(`input[name="from_value_${changeId}"]`);
-                    const toValueInput = change.querySelector(`input[name="to_value_${changeId}"]`);
-                    const fromValue = fromValueInput ? fromValueInput.value : null;
-                    const toValue = toValueInput ? toValueInput.value : null;
-                    if (toValue !== null && toValue !== '') {
-                        interaction.property_changes[propertyName] = { 
-                            from: fromValue || undefined, 
-                            to: parseFloat(toValue) || toValue 
-                        };
-                    }
+
+            if (changeType === 'from_to' || changeType === 'delta' || changeType === 'remove_object') {
+                if (!objectId) return;
+                interaction.object_id = objectId;
+            }
+
+            if (changeType === 'from_to') {
+                const property = group.querySelector(`input[name="interaction_property_${counter}"]`).value;
+                const from = group.querySelector(`input[name="interaction_from_${counter}"]`).value;
+                const to = group.querySelector(`input[name="interaction_to_${counter}"]`).value;
+                if (property && to) {
+                    interaction.property_changes = { [property]: { from: from || undefined, to: to } };
+                    newTask.interactions.push(interaction);
                 }
-            });
-            
-            newTask.interactions.push(interaction);
+            } else if (changeType === 'delta') {
+                const property = group.querySelector(`input[name="interaction_property_delta_${counter}"]`).value;
+                const delta = group.querySelector(`input[name="interaction_delta_${counter}"]`).value;
+                if (property && delta) {
+                    interaction.property_changes = { [property]: { delta: parseFloat(delta) } };
+                    newTask.interactions.push(interaction);
+                }
+            } else if (changeType === 'add_object') {
+                const newObjectType = group.querySelector(`select[name="new_object_type_${counter}"]`).value;
+                const newObjectId = group.querySelector(`input[name="new_object_id_${counter}"]`).value;
+                const newObjectName = group.querySelector(`input[name="new_object_name_${counter}"]`).value;
+                const newObjectEmoji = group.querySelector(`input[name="new_object_emoji_${counter}"]`).value;
+
+                if (newObjectType && newObjectId && newObjectName) {
+                    const newObject = {
+                        id: newObjectId,
+                        type: newObjectType,
+                        name: newObjectName,
+                        properties: {}
+                    };
+                    if (newObjectEmoji) newObject.emoji = newObjectEmoji;
+
+                    const propInputs = group.querySelectorAll('.type-specific-fields-container input, .type-specific-fields-container select');
+                    propInputs.forEach(input => {
+                        if (input.value && input.name) {
+                            const propName = input.name.replace(`new_object_`, '').replace(`_${counter}`, '');
+                            newObject.properties[propName] = input.value;
+                        }
+                    });
+                    
+                    interaction.add_objects = [newObject];
+                    newTask.interactions.push(interaction);
+                }
+            } else if (changeType === 'remove_object') {
+                interaction.remove_objects = [objectId];
+                newTask.interactions.push(interaction);
+            }
         });
         
-        // Add to simulation
         if (!currentJson.simulation.tasks) {
             currentJson.simulation.tasks = [];
         }
         currentJson.simulation.tasks.push(newTask);
         
-        // Update editor
         editor.setValue(JSON.stringify(currentJson, null, 2));
-        
-        // Close modal
         document.getElementById('add-task-modal').style.display = 'none';
         
-        // Re-render if auto-render is on
         if (autoRender) {
             renderSimulation();
         }

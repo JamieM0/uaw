@@ -153,6 +153,15 @@ function toggleFullscreen() {
     }
 }
 
+// Store references to event handlers for cleanup
+let resizeHandlers = {
+    verticalHandler: null,
+    metricsHandler: null,
+    horizontalHandler: null,
+    mouseMoveHandler: null,
+    mouseUpHandler: null
+};
+
 // Resize handles initialization
 function initializeResizeHandles() {
     const verticalHandle = document.querySelector(
@@ -172,37 +181,55 @@ function initializeResizeHandles() {
         document.querySelector(".playground-bottom");
     const playgroundMain =
         document.querySelector(".playground-main");
+    const dragOverlay = document.getElementById('drag-overlay');
+
+    // Clean up existing event handlers to prevent duplicates
+    if (resizeHandlers.verticalHandler && verticalHandle) {
+        verticalHandle.removeEventListener("mousedown", resizeHandlers.verticalHandler);
+    }
+    if (resizeHandlers.metricsHandler && metricsHandle) {
+        metricsHandle.removeEventListener("mousedown", resizeHandlers.metricsHandler);
+    }
+    if (resizeHandlers.horizontalHandler && horizontalHandle) {
+        horizontalHandle.removeEventListener("mousedown", resizeHandlers.horizontalHandler);
+    }
 
     let isDragging = false;
     let dragType = "";
 
     // Standard mode vertical resize handle
     if (verticalHandle) {
-        verticalHandle.addEventListener("mousedown", (e) => {
+        resizeHandlers.verticalHandler = (e) => {
             isDragging = true;
             dragType = "vertical-standard";
+            if (dragOverlay) dragOverlay.style.display = 'block';
             document.body.style.cursor = "col-resize";
             e.preventDefault();
-        });
+        };
+        verticalHandle.addEventListener("mousedown", resizeHandlers.verticalHandler);
     }
 
     // Metrics mode vertical resize handle
     if (metricsHandle) {
-        metricsHandle.addEventListener("mousedown", (e) => {
+        resizeHandlers.metricsHandler = (e) => {
             isDragging = true;
             dragType = "vertical-metrics";
+            if (dragOverlay) dragOverlay.style.display = 'block';
             document.body.style.cursor = "col-resize";
             e.preventDefault();
-        });
+        };
+        metricsHandle.addEventListener("mousedown", resizeHandlers.metricsHandler);
     }
 
     if (horizontalHandle) {
-        horizontalHandle.addEventListener("mousedown", (e) => {
+        resizeHandlers.horizontalHandler = (e) => {
             isDragging = true;
             dragType = "horizontal";
+            if (dragOverlay) dragOverlay.style.display = 'block';
             document.body.style.cursor = "row-resize";
             e.preventDefault();
-        });
+        };
+        horizontalHandle.addEventListener("mousedown", resizeHandlers.horizontalHandler);
     }
 
     document.addEventListener("mousemove", (e) => {
@@ -222,7 +249,7 @@ function initializeResizeHandles() {
                 simulationPanel.style.width = 100 - newWidth + "%";
             }
         } else if (dragType === "vertical-metrics") {
-            // Handle metrics mode vertical resize
+            // Handle metrics mode vertical resize - simplified approach like the old version
             const playgroundLeft = document.querySelector(".playground-left");
             const metricsPanel = document.querySelector(".metrics-editor-panel");
             const containerRect = playgroundTop.getBoundingClientRect();
@@ -233,10 +260,23 @@ function initializeResizeHandles() {
                         containerRect.width) *
                     100;
 
+                // Allow wider range for metrics editor
                 if (newWidth >= 20 && newWidth <= 80) {
-                    // Update CSS custom properties for metrics mode layout
-                    playgroundLeft.style.flex = `0 0 ${newWidth}%`;
-                    metricsPanel.style.flex = `0 0 ${100 - newWidth}%`;
+                    // Use setProperty with !important to override CSS
+                    playgroundLeft.style.setProperty('width', `${newWidth}%`, 'important');
+                    metricsPanel.style.setProperty('width', `${100 - newWidth}%`, 'important');
+                    
+                    // Force layout recalculation
+                    playgroundLeft.offsetWidth; // Force reflow
+                    metricsPanel.offsetWidth;   // Force reflow
+                    
+                    // Force Monaco editor layout recalculation during resize
+                    if (window.metricsJsonEditor) {
+                        // Use requestAnimationFrame to ensure DOM has updated
+                        requestAnimationFrame(() => {
+                            window.metricsJsonEditor.layout();
+                        });
+                    }
                 }
             }
         } else if (dragType === "horizontal") {
@@ -253,6 +293,7 @@ function initializeResizeHandles() {
         if (isDragging) {
             isDragging = false;
             dragType = "";
+            if (dragOverlay) dragOverlay.style.display = 'none';
             document.body.style.cursor = "default";
         }
     });

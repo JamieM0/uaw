@@ -30,6 +30,7 @@ function updateMetricsMode() {
     const toggleBtn = document.getElementById("metrics-mode-toggle");
     const playgroundTop = document.querySelector(".playground-top");
     const specialTitle = document.querySelector("h1.special-title");
+    const fullscreenBtn = document.getElementById("fullscreen-btn");
     
     if (isMetricsMode) {
         // Switch to metrics mode
@@ -39,6 +40,11 @@ function updateMetricsMode() {
         
         if (specialTitle) {
             specialTitle.textContent = "Metrics Editor";
+        }
+        
+        // Hide fullscreen button in metrics mode
+        if (fullscreenBtn) {
+            fullscreenBtn.classList.add("hidden");
         }
         
         // Move components to metrics mode layout
@@ -62,6 +68,12 @@ function updateMetricsMode() {
         // Initialize metrics editor component
         initializeMetricsEditor();
         
+        // Re-initialize resize handles since metrics mode handles are now visible
+        console.log("RESIZE-DEBUG: Re-initializing resize handles for metrics mode");
+        if (typeof initializeResizeHandles === 'function') {
+            initializeResizeHandles();
+        }
+        
     } else {
         // Switch back to standard mode
         toggleBtn.textContent = "Metrics Editor";
@@ -70,6 +82,11 @@ function updateMetricsMode() {
         
         if (specialTitle) {
             specialTitle.textContent = "Playground";
+        }
+        
+        // Show fullscreen button in standard mode
+        if (fullscreenBtn) {
+            fullscreenBtn.classList.remove("hidden");
         }
         
         // Move components back to standard layout
