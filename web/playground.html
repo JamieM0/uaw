@@ -319,9 +319,9 @@
                         <div class="metrics-mode-layout" style="display: none;">
                             <div class="left-panel-tabs">
                                 <div class="tab-bar">
-                                    <button class="left-tab-btn active" data-tab="json-editor">JSON Editor</button>
-                                    <button class="left-tab-btn" data-tab="simulation-render">Simulation Render</button>
-                                    <button class="left-tab-btn" data-tab="space-editor">Space Editor</button>
+                                    <button class="left-tab-btn active" data-left-tab="json-editor">JSON Editor</button>
+                                    <button class="left-tab-btn" data-left-tab="simulation-render">Simulation Render</button>
+                                    <button class="left-tab-btn" data-left-tab="space-editor">Space Editor</button>
                                 </div>
                                 
                                 <div class="left-tab-content-wrapper">
@@ -906,7 +906,18 @@
         </div>
 
         <script src="/assets/js/context-menu.js"></script>
-        <script src="/assets/js/playground.js"></script>
+        
+        <!-- Playground modules in dependency order -->
+        <script src="/assets/js/playground/playground-utils.js"></script>
+        <script src="/assets/js/playground/playground-ui.js"></script>
+        <script src="/assets/js/playground/playground-validation.js"></script>
+        <script src="/assets/js/playground/playground-timeline.js"></script>
+        <script src="/assets/js/playground/playground-save-load.js"></script>
+        <script src="/assets/js/playground/playground-metrics-editor.js"></script>
+        <script src="/assets/js/playground/playground-objects.js"></script>
+        <script src="/assets/js/playground/playground-features.js"></script>
+        <script src="/assets/js/playground/playground-editor.js"></script>
+        <script src="/assets/js/playground/playground-core.js"></script>
     </body>
 </html>
 
