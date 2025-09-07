@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentation - Universal Automation Wiki</title>
+    <title>{{ title }} - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
-    <link rel="stylesheet" href="/assets/css/category.css"> <!-- For nav cards -->
+    <link rel="stylesheet" href="/assets/css/category.css">
     <link rel="stylesheet" href="/assets/css/responsive.css">
-    <link rel="stylesheet" href="/assets/css/documentation.css"> <!-- Added documentation styles -->
+    <link rel="stylesheet" href="/assets/css/documentation.css">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,32 +22,64 @@
 <body>
     <div id="header-placeholder"></div>
 
-    <div class="docs-layout">
-        <div id="sidebar-placeholder"></div>
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
 
-        <main>
-            <section class="hero">
-                <div class="container">
-                    <h1>{{ title }}</h1>
-                    <p class="hero-subtitle">{{ subtitle }}</p>
-                </div>
-            </section>
-            <div class="spacer"></div>
-            <section class="content-section">
-                <div class="spacer"></div>
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    {% for crumb in breadcrumbs %}
+                                        {% if crumb.url %}
+                                            <li><a href="{{ crumb.url }}">{{ crumb.name }}</a></li>
+                                        {% else %}
+                                            <li aria-current="page">{{ crumb.name }}</li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">{{ title }}</h1>
+                            {% if subtitle %}
+                            <p class="docs-page-subtitle">{{ subtitle }}</p>
+                            {% endif %}
+                        </div>
+                    </header>
 
-                {{ content|safe }}
-            </section>
-
-        </main>
+                    <div class="docs-content">
+                        {{ content|safe }}
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
     </div>
 
     <div id="footer-placeholder"></div>
 
     <script src="/assets/js/components.js"></script>
-<script type="module">
+    <script type="module">
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        mermaid.initialize({ startOnLoad: true });
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
     </script>
     <script src="/assets/js/main.js"></script>
     <script src="/assets/js/documentation.js"></script>

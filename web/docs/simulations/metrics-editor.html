@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Metrics Editor - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/simulations/">Simulations</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">The Metrics Editor</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">The Metrics Editor</h1>
+                            
+                            <p class="docs-page-subtitle">The Metrics Editor is a powerful, advanced mode within the Simulation Playground that allows you to create, edit, and test your own custom validation metrics. It transforms the playground into a full development environment for extending the UAW&#39;s validation capabilities.</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>The Metrics Editor is a powerful, advanced mode within the Simulation Playground that allows you to create, edit, and test your own custom validation metrics. It transforms the playground into a full development environment for extending the UAW's validation capabilities.</p>
+<h2 id="accessing-the-metrics-editor">Accessing the Metrics Editor<a class="headerlink" href="#accessing-the-metrics-editor" title="Permanent link">&para;</a></h2>
+<p>You can switch to the Metrics Editor by clicking the "Open Metrics Editor" button in the playground's header. This will change the layout to reveal the two core components of the editor.</p>
+<h2 id="metrics-editor-layout">Metrics Editor Layout<a class="headerlink" href="#metrics-editor-layout" title="Permanent link">&para;</a></h2>
+<p>When you enter Metrics Editor mode, the interface is rearranged:</p>
+<ol class="docs-list docs-list-ordered">
+<li><strong>Left Panel:</strong> This panel contains tabs for viewing the <strong>JSON Editor</strong>, the <strong>Simulation Render</strong>, and the <strong>Space Editor</strong>, allowing you to see the simulation you are testing against.</li>
+<li><strong>Right Panel (Metrics Editor):</strong> This panel is the main workspace for editing metrics and contains two tabs:<ul class="docs-list">
+<li><strong><code class="docs-inline-code">metrics-catalog-custom.json</code>:</strong> A JSON editor for defining the metadata of your custom metrics.</li>
+<li><strong><code class="docs-inline-code">simulation-validator-custom.js</code>:</strong> A JavaScript editor for writing the implementation logic for your custom metrics.</li>
+</ul>
+</li>
+</ol>
+<p>All content in the Metrics Editor is saved to your browser's <code class="docs-inline-code">localStorage</code>, so your custom work persists between sessions.</p>
+<h2 id="defining-a-custom-metric">Defining a Custom Metric<a class="headerlink" href="#defining-a-custom-metric" title="Permanent link">&para;</a></h2>
+<p>Metrics are defined as JSON objects in the <code class="docs-inline-code">metrics-catalog-custom.json</code> file. Each metric definition must include the following fields:</p>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">id</code></td>
+<td>string</td>
+<td>A unique identifier for the metric (e.g., <code class="docs-inline-code">custom.quality.check_oven_temp</code>).</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">name</code></td>
+<td>string</td>
+<td>A human-readable name for the metric (e.g., "Oven Temperature Check").</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">emoji</code></td>
+<td>string</td>
+<td>An emoji to visually represent the metric.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">category</code></td>
+<td>string</td>
+<td>The category the metric belongs to (e.g., "Quality Assurance").</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">severity</code></td>
+<td>string</td>
+<td>The severity of a failure: <code class="docs-inline-code">error</code>, <code class="docs-inline-code">warning</code>, or <code class="docs-inline-code">suggestion</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">source</code></td>
+<td>string</td>
+<td>Must be set to <code class="docs-inline-code">"custom"</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">function</code></td>
+<td>string</td>
+<td>The name of the JavaScript function that implements the validation logic.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">description</code></td>
+<td>string</td>
+<td>A detailed description of what the metric validates.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">params</code></td>
+<td>object</td>
+<td>(Optional) An object defining default parameters for the metric.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="example-metric-definition">Example Metric Definition<a class="headerlink" href="#example-metric-definition" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;custom.equipment.check_mixer_usage&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Check Mixer Usage&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🌀&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;category&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Equipment Utilization&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;severity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;warning&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;custom&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;validateMixerUsage&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Checks if the mixer is used in any task that doesn&#39;t involve mixing.&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;validation_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computational&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h2 id="writing-a-custom-validation-function">Writing a Custom Validation Function<a class="headerlink" href="#writing-a-custom-validation-function" title="Permanent link">&para;</a></h2>
+<p>The logic for your custom metric is written in the <code class="docs-inline-code">simulation-validator-custom.js</code> file. The function name must match the <code class="docs-inline-code">function</code> field in your metric's catalog definition.</p>
+<h3 id="the-validation-context">The Validation Context<a class="headerlink" href="#the-validation-context" title="Permanent link">&para;</a></h3>
+<p>Each validation function is executed within a specific context, giving you access to the simulation data and helper methods:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">this.simulation</code>: The full, parsed <code class="docs-inline-code">simulation</code> object from the JSON editor.</li>
+<li><code class="docs-inline-code">this.addResult(resultObject)</code>: A method to report the result of your validation. The <code class="docs-inline-code">resultObject</code> should have <code class="docs-inline-code">metricId</code>, <code class="docs-inline-code">status</code> ('success', 'warning', 'error'), and a <code class="docs-inline-code">message</code>.</li>
+<li><code class="docs-inline-code">metric.params</code>: An object containing any parameters passed to the metric from its definition in the catalog.</li>
+</ul>
+<h3 id="example-validation-function">Example Validation Function<a class="headerlink" href="#example-validation-function" title="Permanent link">&para;</a></h3>
+<p>This function corresponds to the example metric definition above.</p>
+<div class="codehilite"><pre><span></span><code><span class="cm">/**</span>
+<span class="cm"> * Checks if the mixer is used in any task that doesn&#39;t involve mixing.</span>
+<span class="cm"> */</span>
+<span class="kd">function</span><span class="w"> </span><span class="nx">validateMixerUsage</span><span class="p">(</span><span class="nx">metric</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">simulation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">simulation</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">simulation</span><span class="p">.</span><span class="nx">tasks</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">[];</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nx">foundIncorrectUsage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">task</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">tasks</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">usesMixer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">task</span><span class="p">.</span><span class="nx">interactions</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">[]).</span><span class="nx">some</span><span class="p">(</span>
+<span class="w">            </span><span class="nx">interaction</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">interaction</span><span class="p">.</span><span class="nx">object_id</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s1">&#39;mixer&#39;</span>
+<span class="w">        </span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">usesMixer</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="nx">task</span><span class="p">.</span><span class="nx">id</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">().</span><span class="nx">includes</span><span class="p">(</span><span class="s1">&#39;mix&#39;</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nx">foundIncorrectUsage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">addResult</span><span class="p">({</span>
+<span class="w">                </span><span class="nx">metricId</span><span class="o">:</span><span class="w"> </span><span class="nx">metric</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span>
+<span class="w">                </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;warning&#39;</span><span class="p">,</span>
+<span class="w">                </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="sb">`Task &#39;</span><span class="si">${</span><span class="nx">task</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">&#39; uses the mixer but does not seem to be a mixing task.`</span>
+<span class="w">            </span><span class="p">});</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span><span class="w"> </span><span class="c1">// Report first instance and stop</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">foundIncorrectUsage</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">addResult</span><span class="p">({</span>
+<span class="w">            </span><span class="nx">metricId</span><span class="o">:</span><span class="w"> </span><span class="nx">metric</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span>
+<span class="w">            </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;success&#39;</span><span class="p">,</span>
+<span class="w">            </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;All mixer usages appear to be in appropriate tasks.&#39;</span>
+<span class="w">        </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

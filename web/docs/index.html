@@ -6,9 +6,9 @@
     <title>Documentation - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
-    <link rel="stylesheet" href="/assets/css/category.css"> <!-- For nav cards -->
+    <link rel="stylesheet" href="/assets/css/category.css">
     <link rel="stylesheet" href="/assets/css/responsive.css">
-    <link rel="stylesheet" href="/assets/css/documentation.css"> <!-- Added documentation styles -->
+    <link rel="stylesheet" href="/assets/css/documentation.css">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,73 +17,109 @@
         /* Placeholder styles to prevent layout shift */
         #header-placeholder { min-height: 70px; }
         #footer-placeholder { min-height: 250px; }
-        /* Other inline styles removed and moved to documentation.css */
     </style>
 </head>
 <body>
-    <!-- Header placeholder to be filled by components.js -->
     <div id="header-placeholder"></div>
 
-    <div class="docs-layout"> <!-- Added layout wrapper -->
-        <div id="sidebar-placeholder"></div>
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
 
-        <main>
-            <section class="hero">
-                <div class="container">
-                    <h1>Documentation</h1> <!-- Simplified Title -->
-                    <p class="hero-subtitle">Explore guides and resources for the Universal Automation Wiki.</p> <!-- Simplified Subtitle -->
-                </div>
-            </section>
-
-            <section class="doc-intro">
-                <div class="container">
-                    <div class="section-header">
-                        <h2>Explore Documentation Sections</h2>
-                    </div>
-                <div class="category-grid">
-                    <div class="category-card">
-                        <div class="category-icon">
-                            <!-- Reusing an icon, replace if a better one exists -->
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    <li><a href="/">Home</a></li>
+                                    <li aria-current="page">Documentation</li>
+                                </ol>
+                            </nav>
                         </div>
-                        <h3>Standards</h3>
-                        <p>Standards for the Universal Automation Wiki</p>
-                        <a href="standards" class="category-link">View Standards</a>
-                    </div>
-                    <div class="category-card">
-                        <div class="category-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">Documentation</h1>
+                            <p class="docs-page-subtitle">Comprehensive guides, reference materials, and resources for the Universal Automation Wiki platform. Navigate through the sections using the sidebar to explore different areas of the system.</p>
                         </div>
-                        <h3>Routines</h3>
-                        <p>Routines for the Universal Automation Wiki</p>
-                        <a href="routines" class="category-link">View Standards</a>
-                    </div>
-                    <div class="category-card">
-                        <div class="category-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>Welcome to the Universal Automation Wiki documentation hub. This comprehensive resource center provides detailed guides, technical references, and practical examples to help you effectively use and contribute to the UAW platform.</p>
+
+                        <h2 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h2>
+                        
+                        <p>The documentation is organized into several key sections, accessible through the navigation sidebar.</p>
+
+                        <h2 id="recommended-reading">Recommended Starting Points<a class="headerlink" href="#recommended-reading" title="Permanent link">&para;</a></h2>
+                        
+                        <div class="docs-card-grid">
+                            <div class="docs-recommendation-card">
+                                <h4><a href="/docs/architecture-overview.html">Architecture Overview</a></h4>
+                                <p>Understand the foundational concepts and system design behind UAW's process automation approach.</p>
+                            </div>
+
+                            <div class="docs-recommendation-card">
+                                <h4><a href="/docs/playground/playground-guide.html">Playground Guide</a></h4>
+                                <p>Learn to use UAW's interactive simulation environment for creating and testing process workflows.</p>
+                            </div>
+
+                            <div class="docs-recommendation-card">
+                                <h4><a href="/docs/simulations/validation.html">Validation System</a></h4>
+                                <p>Explore UAW's robust validation framework that ensures simulation accuracy and completeness.</p>
+                            </div>
                         </div>
-                        <h3>Simulations</h3>
-                        <p>Simulations for the Universal Automation Wiki</p>
-                        <a href="simulations/validation.html" class="category-link">View Simulation Documentation</a>
+
+                        <h2 id="navigation-guide">How to Navigate<a class="headerlink" href="#navigation-guide" title="Permanent link">&para;</a></h2>
+                        
+                        <p>Use the <strong>sidebar navigation</strong> on the left to browse through different documentation sections:</p>
+                        
+                        <ul class="docs-list">
+                            <li><strong>Click section headers</strong> (Playground, Routines, etc.) to expand and view available pages</li>
+                            <li><strong>Active sections</strong> remain expanded when you're viewing pages within them</li>
+                            <li><strong>Current page</strong> is highlighted with a colored indicator for easy reference</li>
+                            <li><strong>Browser search functionality</strong> - Use Ctrl/Cmd+F to find specific terms across the current page</li>
+                        </ul>
+
+                        <h2 id="feedback-contribution">Feedback & Contribution<a class="headerlink" href="#feedback-contribution" title="Permanent link">&para;</a></h2>
+                        
+                        <p>The UAW documentation is continuously evolving. If you find areas that need clarification, spot errors, or have suggestions for improvement:</p>
+                        
+                        <ul class="docs-list">
+                            <li>Documentation issues can be reported through the main UAW repository</li>
+                            <li>Each page is generated from source materials that can be updated by contributors</li>
+                            <li>The system supports multiple output formats and automatic regeneration</li>
+                        </ul>
+
+                        <p>Ready to explore? <strong>Use the sidebar navigation</strong> to dive into any section that interests you, or start with the recommended reading above.</p>
                     </div>
-                </div>
-            </div>
-        </section>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
 
-        </main>
-    </div> <!-- Closed layout wrapper -->
-
-    <!-- Footer placeholder to be filled by components.js -->
     <div id="footer-placeholder"></div>
 
-    <!-- Load components.js first to ensure header/footer are loaded before other scripts -->
     <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
     <script src="/assets/js/main.js"></script>
     <script src="/assets/js/documentation.js"></script>
     <script>renderDocumentationSidebar('#sidebar-placeholder');</script>

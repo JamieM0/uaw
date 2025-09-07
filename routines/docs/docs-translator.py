@@ -5,6 +5,7 @@ import markdown
 from markdown.extensions.codehilite import CodeHiliteExtension
 from markdown.extensions.fenced_code import FencedCodeExtension
 from markdown.extensions.tables import TableExtension
+from markdown.extensions import wikilinks
 import os
 import sys
 import pathlib
@@ -12,11 +13,11 @@ import re
 import glob
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-# Define paths for the UAW workspace
-UAW_ROOT = os.path.expanduser("~/Developer/uaw") # Adjust this path as needed
+# Define paths for the UAW workspace - use current directory
+UAW_ROOT = os.path.abspath(".")
 UAW_TEMPLATE_DIR = os.path.join(UAW_ROOT, "templates")
 UAW_DOCS_MD_DIR = os.path.join(UAW_ROOT, "docs-md")
-UAW_DOCS_DIR = os.path.join(UAW_ROOT, "docs")
+UAW_DOCS_DIR = os.path.join(UAW_ROOT, "web", "docs")
 
 def compute_output_path(input_path):
     """Computes the default output path from the input Markdown path."""
@@ -42,11 +43,39 @@ def compute_output_path(input_path):
             output_path = os.path.splitext(output_path)[0] + '.html'
             return output_path
     
-    # Fall back to replacing docs-md with docs in the path string
-    output_path = input_path.replace("docs-md", "docs").replace(".md", ".html")
+    # Fall back to replacing docs-md with web/docs in the path string
+    output_path = input_path.replace("docs-md", "web/docs").replace(".md", ".html")
     return output_path
 
-def parse_markdown(content):
+def generate_breadcrumbs(input_path, title):
+    """Generate breadcrumb navigation based on file path."""
+    breadcrumbs = [{"name": "Home", "url": "/"}]
+    breadcrumbs.append({"name": "Documentation", "url": "/docs/"})
+    
+    # Extract relative path from docs-md directory
+    if os.path.isabs(input_path) and input_path.startswith(UAW_DOCS_MD_DIR):
+        rel_path = os.path.relpath(input_path, UAW_DOCS_MD_DIR)
+    else:
+        rel_path = input_path
+    
+    # Split path into parts
+    path_parts = os.path.dirname(rel_path).split(os.sep) if os.path.dirname(rel_path) else []
+    
+    # Add intermediate directory parts
+    current_path = "/docs"
+    for part in path_parts:
+        if part and part != ".":  # Skip empty and current directory parts
+            current_path += f"/{part}"
+            # Capitalize and clean up directory names
+            display_name = part.replace("-", " ").replace("_", " ").title()
+            breadcrumbs.append({"name": display_name, "url": f"{current_path}/"})
+    
+    # Add final page (no URL since it's current page)
+    breadcrumbs.append({"name": title, "url": None})
+    
+    return breadcrumbs
+
+def parse_markdown(content, input_path=None):
     """Extracts title and subtitle, and converts Markdown to HTML."""
     title = "Untitled"
     subtitle = ""
@@ -83,22 +112,42 @@ def parse_markdown(content):
 
     # Set up custom Markdown extensions with proper code highlighting
     extensions = [
-        TableExtension(),
-        FencedCodeExtension(),
-        CodeHiliteExtension(
-            noclasses=False,   # Use CSS classes instead of inline styles
-            linenums=False,    # No line numbers by default
-            css_class="codehilite"  # CSS class to use
-        )
+        'markdown.extensions.tables',
+        'markdown.extensions.fenced_code',
+        'markdown.extensions.codehilite',
+        'markdown.extensions.attr_list',
+        'markdown.extensions.def_list',
+        'markdown.extensions.footnotes',
+        'markdown.extensions.md_in_html',
+        'markdown.extensions.toc'
     ]
+    
+    extension_configs = {
+        'markdown.extensions.codehilite': {
+            'noclasses': False,   # Use CSS classes instead of inline styles
+            'linenums': False,    # No line numbers by default
+            'css_class': "codehilite"  # CSS class to use
+        },
+        'markdown.extensions.toc': {
+            'permalink': True
+        }
+    }
     
     # Convert the markdown content (without title) to HTML with syntax highlighting
     try:
-        html_content = markdown.markdown(content_for_html, extensions=extensions)
+        html_content = markdown.markdown(
+            content_for_html, 
+            extensions=extensions, 
+            extension_configs=extension_configs
+        )
         
         # Post-process HTML to ensure code blocks are properly formatted
         # This adds any language-specific class for better syntax highlighting
         html_content = post_process_code_blocks(html_content)
+        
+        # Post-process for better inline elements and tables
+        html_content = post_process_inline_elements(html_content)
+        
     except Exception as e:
         raise RuntimeError(f"Markdown conversion failed: {e}")
 
@@ -128,6 +177,45 @@ def post_process_code_blocks(html_content):
     
     # Replace using regex
     html_content = re.sub(pattern_no_lang, replacement_no_lang, html_content, flags=re.DOTALL)
+    
+    return html_content
+
+def post_process_inline_elements(html_content):
+    """
+    Post-process HTML content to enhance inline elements and tables.
+    """
+    # Wrap tables with a responsive container
+    html_content = re.sub(
+        r'<table>(.*?)</table>',
+        r'<div class="table-container"><table class="docs-table">\1</table></div>',
+        html_content,
+        flags=re.DOTALL
+    )
+    
+    # Add classes to various elements for better styling
+    # Add class to blockquotes
+    html_content = re.sub(
+        r'<blockquote>(.*?)</blockquote>',
+        r'<blockquote class="docs-blockquote">\1</blockquote>',
+        html_content,
+        flags=re.DOTALL
+    )
+    
+    # Add classes to lists
+    html_content = re.sub(r'<ul>', r'<ul class="docs-list">', html_content)
+    html_content = re.sub(r'<ol>', r'<ol class="docs-list docs-list-ordered">', html_content)
+    
+    # Enhance inline code elements
+    html_content = re.sub(
+        r'<code>([^<]+)</code>',
+        r'<code class="docs-inline-code">\1</code>',
+        html_content
+    )
+    
+    # Add classes to headings for consistent styling
+    html_content = re.sub(r'<h2>', r'<h2 class="docs-heading">', html_content)
+    html_content = re.sub(r'<h3>', r'<h3 class="docs-heading">', html_content)
+    html_content = re.sub(r'<h4>', r'<h4 class="docs-heading">', html_content)
     
     return html_content
 
@@ -307,13 +395,16 @@ def process_markdown_file(input_path, output_path=None, template_path="documenta
 
         # Parse markdown for title, subtitle, and convert to HTML
         try:
-            title, subtitle, html_content = parse_markdown(markdown_content)
+            title, subtitle, html_content = parse_markdown(markdown_content, input_path)
         except RuntimeError as e:
              print(f"Error parsing Markdown file '{input_path}': {e}", file=sys.stderr)
              return False
         except Exception as e:
             print(f"Unexpected error during Markdown parsing '{input_path}': {e}", file=sys.stderr)
             return False
+
+        # Generate breadcrumbs based on file path
+        breadcrumbs = generate_breadcrumbs(input_path, title)
 
         # Determine output path if not provided
         if not output_path:
@@ -365,7 +456,8 @@ def process_markdown_file(input_path, output_path=None, template_path="documenta
             output_html = template.render(
                 title=title,
                 subtitle=subtitle,
-                content=html_content + highlight_css
+                content=html_content + highlight_css,
+                breadcrumbs=breadcrumbs
             )
         except Exception as e:
             print(f"Error rendering template: {e}", file=sys.stderr)
@@ -474,13 +566,75 @@ def process_folder(folder_path, output_dir=None, template_path="documentation-pa
     
     return success_count, failure_count
 
+def regenerate_all_docs(template_path="documentation-page-template.html", 
+                       template_dir=UAW_TEMPLATE_DIR, inline_css=False):
+    """
+    Regenerate all documentation files from docs-md to web/docs.
+    
+    Returns:
+        Tuple of (success_count, failure_count)
+    """
+    print("Regenerating all documentation files...")
+    print(f"Source: {UAW_DOCS_MD_DIR}")
+    print(f"Output: {UAW_DOCS_DIR}")
+    print()
+    
+    # Find all markdown files recursively in docs-md
+    markdown_files = []
+    for root, dirs, files in os.walk(UAW_DOCS_MD_DIR):
+        for file in files:
+            if file.endswith('.md'):
+                abs_path = os.path.join(root, file)
+                markdown_files.append(abs_path)
+    
+    if not markdown_files:
+        print("ERROR: No markdown files found in docs-md directory")
+        return 0, 0
+    
+    print(f"Found {len(markdown_files)} markdown files to process")
+    print()
+    
+    success_count = 0
+    failure_count = 0
+    
+    for markdown_file in markdown_files:
+        # Get relative path for display
+        rel_path = os.path.relpath(markdown_file, UAW_DOCS_MD_DIR)
+        print(f"Processing: {rel_path}")
+        
+        # Process the file using existing function
+        success = process_markdown_file(
+            markdown_file,
+            output_path=None,  # Let function compute output path
+            template_path=template_path,
+            template_dir=template_dir,
+            inline_css=inline_css
+        )
+        
+        if success:
+            success_count += 1
+            print(f"   SUCCESS")
+        else:
+            failure_count += 1
+            print(f"   FAILED")
+        print()
+    
+    print("="*50)
+    print(f"Regeneration complete:")
+    print(f"   {success_count} files succeeded")
+    print(f"   {failure_count} files failed")
+    print("="*50)
+    
+    return success_count, failure_count
+
 def main():
     parser = argparse.ArgumentParser(description="Convert Markdown documentation to HTML using a template.")
     
     # Create a mutually exclusive group for input_file and input_folder
-    input_group = parser.add_mutually_exclusive_group(required=True)
+    input_group = parser.add_mutually_exclusive_group(required=False)
     input_group.add_argument("--input-file", help="Path to the source Markdown file (e.g., routines/utils.md)")
     input_group.add_argument("--input-folder", help="Path to the folder containing markdown files to process")
+    input_group.add_argument("--regenerate", action="store_true", help="Regenerate all documentation files from docs-md to web/docs")
     
     parser.add_argument("--output", help="Path to the output HTML file (for single file) or directory (for folder)")
     parser.add_argument("--template", default="documentation-page-template.html", help="Name of the HTML template file.")
@@ -498,6 +652,19 @@ def main():
         for rel_path in sorted(available_files.keys()):
             print(f"  {rel_path}")
         sys.exit(0)
+    
+    # Check if we should regenerate all docs
+    if args.regenerate:
+        success_count, failure_count = regenerate_all_docs(
+            template_path=args.template,
+            template_dir=args.template_dir,
+            inline_css=args.inline_css
+        )
+        
+        if failure_count > 0:
+            sys.exit(1)
+        else:
+            sys.exit(0)
 
     template_path = args.template
     template_dir = args.template_dir
@@ -525,6 +692,12 @@ def main():
             sys.exit(1)
         else:
             sys.exit(0)
+    
+    # Require at least one input method if not using regenerate or list-files
+    if not any([args.input_file, args.input_folder, args.regenerate, args.list_files]):
+        print("Error: Must specify --input-file, --input-folder, --regenerate, or --list-files", file=sys.stderr)
+        parser.print_help()
+        sys.exit(1)
     
     # Process a single markdown file
     elif args.input_file:

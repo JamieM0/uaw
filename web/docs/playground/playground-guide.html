@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation Playground Guide - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/playground/">Playground</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">Simulation Playground Guide</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">Simulation Playground Guide</h1>
+                            
+                            <p class="docs-page-subtitle">The Simulation Playground is an interactive, web-based tool for creating, editing, visualizing, and validating real-world process simulations. It serves as a complete Integrated Development Environment (IDE) for the Universal Automation Wiki&#39;s simulation data.</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>The Simulation Playground is an interactive, web-based tool for creating, editing, visualizing, and validating real-world process simulations. It serves as a complete Integrated Development Environment (IDE) for the Universal Automation Wiki's simulation data.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The Playground is designed to give you immediate feedback on your simulation design. You can edit the underlying JSON data and see the changes reflected in a visual timeline in real-time. This tight feedback loop allows for rapid prototyping and refinement of process models.</p>
+<h2 id="layout">Layout<a class="headerlink" href="#layout" title="Permanent link">&para;</a></h2>
+<p>The Playground interface is divided into three main panels:</p>
+<ol class="docs-list docs-list-ordered">
+<li><strong>JSON Editor Panel (Left):</strong> This panel contains the raw <code class="docs-inline-code">simulation.json</code> data for your process. It uses the Monaco editor, providing features like syntax highlighting, auto-formatting, and error checking for the JSON format.</li>
+<li><strong>Simulation Panel (Right):</strong> This is where the simulation is visualized. It has two tabs:<ul class="docs-list">
+<li><strong>Simulation Render:</strong> Displays an interactive timeline of the process, showing actors, tasks, and their durations.</li>
+<li><strong>Space Editor:</strong> Provides a 2D canvas for defining the physical layout and locations used in the simulation.</li>
+</ul>
+</li>
+<li><strong>Validation Panel (Bottom):</strong> This panel displays the results of running the simulation against the project's metrics catalog. It shows a summary of errors, warnings, suggestions, and passed checks, helping you identify issues and areas for improvement in your simulation.</li>
+</ol>
+<h2 id="interacting-with-the-simulation">Interacting with the Simulation<a class="headerlink" href="#interacting-with-the-simulation" title="Permanent link">&para;</a></h2>
+<p>The Playground offers several ways to interact with and modify your simulation directly from the UI, which will automatically update the JSON data.</p>
+<h3 id="timeline-interaction">Timeline Interaction<a class="headerlink" href="#timeline-interaction" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
+<li><strong>Move Task:</strong> Click and drag a task block on the timeline to a different actor's lane or to a different time slot. This will update the task's <code class="docs-inline-code">actor_id</code> and <code class="docs-inline-code">start</code> time.</li>
+<li><strong>Resize Task:</strong> Hover over the left or right edge of a task block until the cursor changes to a resize icon. Click and drag to change the task's <code class="docs-inline-code">duration</code>.</li>
+<li><strong>Jump to Definition:</strong> Clicking on a task block will highlight the corresponding task object in the JSON editor, allowing you to quickly find and edit its details.</li>
+</ul>
+<h3 id="adding-objects-and-tasks">Adding Objects and Tasks<a class="headerlink" href="#adding-objects-and-tasks" title="Permanent link">&para;</a></h3>
+<p>You can use the <code class="docs-inline-code">+ Object</code> and <code class="docs-inline-code">+ Task</code> buttons in the header to open modals for adding new elements to your simulation. These modals provide a user-friendly form for entering the required data, which is then inserted into the <code class="docs-inline-code">simulation.json</code> file.</p>
+<h2 id="the-simulationjson-schema-a-deep-dive">The <code class="docs-inline-code">simulation.json</code> Schema: A Deep Dive<a class="headerlink" href="#the-simulationjson-schema-a-deep-dive" title="Permanent link">&para;</a></h2>
+<p>The core of every simulation is a single JSON object. Understanding its structure is key to building effective and realistic process models. The root of your JSON must contain a single key, <code class="docs-inline-code">"simulation"</code>, which holds all the data for the process.</p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;meta&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;layout&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="high-level-structure">High-Level Structure<a class="headerlink" href="#high-level-structure" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
+<li><code class="docs-inline-code">meta</code>: Contains descriptive information about the simulation.</li>
+<li><code class="docs-inline-code">config</code>: Defines the overall timing and units for the simulation.</li>
+<li><code class="docs-inline-code">layout</code>: (Optional) Defines the physical spaces for the simulation. See the <a href="./space-editor-guide.md">Space Editor Guide</a> for details.</li>
+<li><code class="docs-inline-code">objects</code>: An array of all the people, equipment, and materials involved in the process.</li>
+<li><code class="docs-inline-code">tasks</code>: An array of all the actions and steps that make up the process.</li>
+</ul>
+<hr />
+<h3 id="defining-objects">Defining Objects<a class="headerlink" href="#defining-objects" title="Permanent link">&para;</a></h3>
+<p>The <code class="docs-inline-code">objects</code> array is where you define every person, piece of equipment, raw material, and product in your simulation. Each object is a dictionary with a set of base properties and a <code class="docs-inline-code">properties</code> object for type-specific data.</p>
+<h4 id="base-object-properties">Base Object Properties<a class="headerlink" href="#base-object-properties" title="Permanent link">&para;</a></h4>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">id</code></td>
+<td>string</td>
+<td>A unique identifier for the object (e.g., <code class="docs-inline-code">baker</code>, <code class="docs-inline-code">oven</code>).</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">type</code></td>
+<td>string</td>
+<td>The type of the object (e.g., <code class="docs-inline-code">actor</code>, <code class="docs-inline-code">equipment</code>).</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">name</code></td>
+<td>string</td>
+<td>A human-readable name for display (e.g., "Head Chef").</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">emoji</code></td>
+<td>string</td>
+<td>(Optional) An emoji to represent the object visually.</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="standard-object-types">Standard Object Types<a class="headerlink" href="#standard-object-types" title="Permanent link">&para;</a></h4>
+<p>The system has four standard object types, each with its own recommended <code class="docs-inline-code">properties</code>.</p>
+<p><strong>1. <code class="docs-inline-code">actor</code></strong>
+An <code class="docs-inline-code">actor</code> is a person or agent that performs tasks.</p>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;baker&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;actor&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Baker&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Head Baker&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;cost_per_hour&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_area&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<ul class="docs-list">
+<li><code class="docs-inline-code">role</code>: The actor's job title or function.</li>
+<li><code class="docs-inline-code">cost_per_hour</code>: A numerical value used for cost analysis metrics.</li>
+<li><code class="docs-inline-code">location</code>: The initial physical location of the actor, corresponding to an ID in the <code class="docs-inline-code">layout</code> object.</li>
+</ul>
+<p><strong>2. <code class="docs-inline-code">equipment</code></strong>
+<code class="docs-inline-code">equipment</code> represents tools, machinery, or other non-consumable items.</p>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oven&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;equipment&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Commercial Oven&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🔥&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;available&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;capacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oven_area&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<ul class="docs-list">
+<li><code class="docs-inline-code">state</code>: The initial state of the equipment (e.g., <code class="docs-inline-code">clean</code>, <code class="docs-inline-code">dirty</code>, <code class="docs-inline-code">in-use</code>). This is a crucial property that can be changed by tasks.</li>
+<li><code class="docs-inline-code">capacity</code>: A number indicating how many items the equipment can handle at once.</li>
+<li><code class="docs-inline-code">location</code>: The equipment's physical location.</li>
+</ul>
+<p><strong>3. <code class="docs-inline-code">resource</code></strong>
+A <code class="docs-inline-code">resource</code> is a consumable material used in the process.</p>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flour&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;resource&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Flour&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🌾&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kg&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_area&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<ul class="docs-list">
+<li><code class="docs-inline-code">unit</code>: The unit of measurement (e.g., <code class="docs-inline-code">kg</code>, <code class="docs-inline-code">liter</code>, <code class="docs-inline-code">g</code>).</li>
+<li><code class="docs-inline-code">quantity</code>: The starting amount of the resource. This can be modified by tasks.</li>
+<li><code class="docs-inline-code">location</code>: The resource's storage location.</li>
+</ul>
+<p><strong>4. <code class="docs-inline-code">product</code></strong>
+A <code class="docs-inline-code">product</code> is the output or an intermediate item created during the process.</p>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixed_dough&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;product&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Mixed Dough&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🍞&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;batch&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_area&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<ul class="docs-list">
+<li><code class="docs-inline-code">unit</code>: The unit of measurement for the product.</li>
+<li><code class="docs-inline-code">quantity</code>: The initial quantity, which is typically <code class="docs-inline-code">0</code>. Tasks will increase this value.</li>
+</ul>
+<h4 id="custom-object-types">Custom Object Types<a class="headerlink" href="#custom-object-types" title="Permanent link">&para;</a></h4>
+<p>You are not limited to the four standard types. The system is flexible, allowing you to define your own object types. This is useful for creating more specialized and realistic simulations.</p>
+<p><strong>Why create a custom type?</strong>
+Imagine you are simulating a delivery service. You could create a <code class="docs-inline-code">vehicle</code> type with properties like <code class="docs-inline-code">fuel_level</code> and <code class="docs-inline-code">max_speed</code>.</p>
+<p><em>Example of a custom <code class="docs-inline-code">vehicle</code> type:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;delivery_van_1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vehicle&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Main Delivery Van&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🚚&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;fuel_level_percent&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;max_payload_kg&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;idle&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;depot&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>The simulation will render this custom object and its properties, and you can create tasks that interact with its custom properties (e.g., a "drive_route" task that decreases <code class="docs-inline-code">fuel_level_percent</code>).</p>
+<hr />
+<h3 id="defining-tasks">Defining Tasks<a class="headerlink" href="#defining-tasks" title="Permanent link">&para;</a></h3>
+<p>The <code class="docs-inline-code">tasks</code> array defines the sequence of actions that make up your process. Each task is an object with several key properties.</p>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">id</code></td>
+<td>string</td>
+<td>A unique identifier for the task (e.g., <code class="docs-inline-code">mix_dough</code>).</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">emoji</code></td>
+<td>string</td>
+<td>(Optional) An emoji to represent the task on the timeline.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">actor_id</code></td>
+<td>string</td>
+<td>The <code class="docs-inline-code">id</code> of the object performing the task. This can be an <code class="docs-inline-code">actor</code>, but also <code class="docs-inline-code">equipment</code> for self-operating tasks.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">start</code></td>
+<td>string</td>
+<td>The start time of the task in <code class="docs-inline-code">HH:MM</code> format.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">duration</code></td>
+<td>number</td>
+<td>The duration of the task in minutes.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">location</code></td>
+<td>string</td>
+<td>The <code class="docs-inline-code">id</code> of the location where the task takes place.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">depends_on</code></td>
+<td>array</td>
+<td>(Optional) A list of task <code class="docs-inline-code">id</code>s that must be completed before this task can begin.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">interactions</code></td>
+<td>array</td>
+<td>(Optional) A list of actions this task performs on objects in the simulation.</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Example Task:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mix_dough&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🥄&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;baker&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;06:55&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_area&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;depends_on&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;measure_flour&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;activate_yeast&quot;</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<hr />
+<h3 id="task-interactions-the-engine-of-the-simulation">Task Interactions: The Engine of the Simulation<a class="headerlink" href="#task-interactions-the-engine-of-the-simulation" title="Permanent link">&para;</a></h3>
+<p>The <code class="docs-inline-code">interactions</code> array is the most powerful part of a task definition. It's how you make your simulation dynamic by changing the state of objects. An interaction is an object that describes a change.</p>
+<h4 id="1-property_changes">1. <code class="docs-inline-code">property_changes</code><a class="headerlink" href="#1-property_changes" title="Permanent link">&para;</a></h4>
+<p>This is the most common interaction type. It allows you to change the value of any property of any object.</p>
+<p><strong>A) Changing State (From/To)</strong>
+Use this to change a text-based property, like an equipment's <code class="docs-inline-code">state</code>.</p>
+<p><em>Example:</em> A task that makes a mixer dirty.</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixer&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;clean&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dirty&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</code></pre></div>
+
+<p>The <code class="docs-inline-code">from</code> value is used by the validation engine to ensure the simulation is realistic (e.g., you can't make a mixer dirty if it's already dirty).</p>
+<p><strong>B) Changing a Numerical Value (Delta)</strong>
+Use this to increase or decrease a number, like a resource's <code class="docs-inline-code">quantity</code>.</p>
+<p><em>Example:</em> A task that uses up 15g of yeast.</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;yeast&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;delta&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-15</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</code></pre></div>
+
+<p>This is more flexible than <code class="docs-inline-code">from</code>/<code class="docs-inline-code">to</code> for numerical values, as you don't need to know the starting quantity.</p>
+<h4 id="2-add_objects">2. <code class="docs-inline-code">add_objects</code><a class="headerlink" href="#2-add_objects" title="Permanent link">&para;</a></h4>
+<p>This interaction allows a task to create one or more new objects and add them to the simulation. This is perfect for tasks that produce something new.</p>
+<p><em>Example:</em> A "receive_shipment" task that adds new resources to the inventory.</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;add_objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;resource&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;new_flour_shipment&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Fresh Flour&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🌾&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kg&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;storage_room&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</code></pre></div>
+
+<h4 id="3-remove_objects">3. <code class="docs-inline-code">remove_objects</code><a class="headerlink" href="#3-remove_objects" title="Permanent link">&para;</a></h4>
+<p>This interaction allows a task to remove an object from the simulation. This is useful for representing items that are fully consumed, discarded, or delivered.</p>
+<p><em>Example:</em> A "deliver_order" task that removes the final product from the simulation.</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;remove_objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;baked_bread_order_123&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</code></pre></div>
+
+<p>By combining these different object and task definitions, you can create rich, dynamic, and realistic simulations of almost any process.</p>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

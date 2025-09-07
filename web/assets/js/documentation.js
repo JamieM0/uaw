@@ -1,63 +1,173 @@
 /**
  * @module documentation
  * Provides functionality to render the documentation sidebar navigation.
+ * Auto-generates navigation structure from actual HTML files in the docs directory.
  */
 
-// Define the structure of the documentation navigation tree.
-// Paths should be relative to the web root.
-const docsTree = [
-  { title: "Home", path: "/docs" },
-  {
-    title: "Standards",
-    path: "/docs/standards",
-    children: [
-      { title: "- Automation Status", path: "/docs/standards/automation-status" }
-    ]
-  },
-  {
-    title: "Routines",
-    path: "/docs/routines",
-    children: [
-      { title: "- Assemble", path: "/docs/routines/assemble" },
-      { title: "- Automation Adoption", path: "/docs/routines/automation-adoption" },
-      { title: "- Basic English", path: "/docs/routines/basic-english" },
-      { title: "- Current Implementations", path: "/docs/routines/current-implementations" },
-      { title: "- Docs Translator", path: "/docs/routines/docs-translator" },
-      { title: "- Expand Node", path: "/docs/routines/expand-node" },
-      { title: "- Extract Steps", path: "/docs/routines/extract-steps" },
-      { title: "- Flow Maker", path: "/docs/routines/flow-maker" },
-      { title: "- Future Technology", path: "/docs/routines/future-technology" },
-      { title: "- Generate Automation Challenges", path: "/docs/routines/generate-automation-challenges" },
-      { title: "- Generate Automation Timeline", path: "/docs/routines/generate-automation-timeline" },
-      { title: "- Generate Metadata", path: "/docs/routines/generate-metadata" },
-      { title: "- Hallucinate Tree", path: "/docs/routines/hallucinate-tree" },
-      { title: "- Merge Duplicate Facts", path: "/docs/routines/merge-duplicate-facts" },
-      { title: "- Prompt", path: "/docs/routines/prompt" },
-      { title: "- Reconstructor", path: "/docs/routines/reconstructor" },
-      { title: "- Return Analysis", path: "/docs/routines/return-analysis" },
-      { title: "- Search Queries", path: "/docs/routines/search-queries" },
-      { title: "- Simplified Technical English", path: "/docs/routines/simplified-technical-english" },
-      { title: "- Specifications Industrial", path: "/docs/routines/specifications-industrial" },
-      { title: "- Summary", path: "/docs/routines/summary" },
-      { title: "- Utils", path: "/docs/routines/utils" }
-    ]
-  },
-  {
-    title: "Simulations",
-    path: "#",
-    children: [
-      { title: "- Validation", path: "/docs/simulations/validation" },
-      { title: "- Constraints", path: "/docs/simulations/constraints" },
-    ]
-  },
-  {
-    title: "Playground",
-    path: "#",
-    children: [
-      { title: "- Saving & Loading", path: "/docs/playground/save-load" }
-    ]
+// Auto-generated documentation structure based on file system
+// This will be populated dynamically by the generateDocsStructure function
+let docsTree = [];
+
+// Static mapping for known documentation files with their proper titles
+// This helps provide clean titles without having to fetch each HTML file
+const docTitles = {
+  // Root level
+  'architecture-overview': 'Architecture Overview',
+  
+  // Playground section
+  'playground-guide': 'Playground Guide',
+  'save-load': 'Save & Load System',
+  'space-editor-guide': 'Space Editor Guide',
+  
+  // Routines section
+  'assemble': 'Assemble',
+  'automation-adoption': 'Automation Adoption',
+  'basic-english': 'Basic English',
+  'current-implementations': 'Current Implementations',
+  'docs-translator': 'Docs Translator',
+  'expand-node': 'Expand Node',
+  'extract-steps': 'Extract Steps',
+  'flow-maker': 'Flow Maker',
+  'future-technology': 'Future Technology',
+  'generate-automation-challenges': 'Generate Automation Challenges',
+  'generate-automation-timeline': 'Generate Automation Timeline',
+  'generate-metadata': 'Generate Metadata',
+  'hallucinate-tree': 'Hallucinate Tree',
+  'merge-duplicate-facts': 'Merge Duplicate Facts',
+  'prompt': 'Prompt',
+  'reconstructor': 'Reconstructor',
+  'return-analysis': 'Return Analysis',
+  'search-queries': 'Search Queries',
+  'simplified-technical-english': 'Simplified Technical English',
+  'specifications-industrial': 'Specifications Industrial',
+  'summary': 'Summary',
+  'utils': 'Utils',
+  
+  // Simulations section
+  'constraints': 'Constraints',
+  'metrics-editor': 'Metrics Editor',
+  'validation': 'Validation',
+  
+  // Standards section
+  'automation-status': 'Automation Status'
+};
+
+// Section display names for better presentation
+const sectionNames = {
+  'playground': 'Playground',
+  'routines': 'Routines',
+  'simulations': 'Simulations',
+  'standards': 'Standards'
+};
+
+/**
+ * Converts filename to a clean display title
+ * @param {string} filename - The filename without extension
+ * @returns {string} - Clean display title
+ */
+function getDocTitle(filename) {
+  // Use static mapping if available
+  if (docTitles[filename]) {
+    return docTitles[filename];
   }
-];
+  
+  // Otherwise, convert kebab-case to Title Case
+  return filename
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
+ * Generates the documentation structure from the known file structure
+ * This simulates auto-discovery but uses the known structure for performance
+ */
+function generateDocsStructure() {
+  const structure = [];
+  
+  // Define the known structure based on the file system
+  const fileStructure = {
+    // Root level files (excluding index.html)
+    root: [
+      'architecture-overview'
+    ],
+    
+    // Sections with their files
+    sections: {
+      'playground': [
+        'playground-guide',
+        'save-load',
+        'space-editor-guide'
+      ],
+      'routines': [
+        'assemble',
+        'automation-adoption',
+        'basic-english',
+        'current-implementations',
+        'docs-translator',
+        'expand-node',
+        'extract-steps',
+        'flow-maker',
+        'future-technology',
+        'generate-automation-challenges',
+        'generate-automation-timeline',
+        'generate-metadata',
+        'hallucinate-tree',
+        'merge-duplicate-facts',
+        'prompt',
+        'reconstructor',
+        'return-analysis',
+        'search-queries',
+        'simplified-technical-english',
+        'specifications-industrial',
+        'summary',
+        'utils'
+      ],
+      'simulations': [
+        'constraints',
+        'metrics-editor',
+        'validation'
+      ],
+      'standards': [
+        'automation-status'
+      ]
+    }
+  };
+  
+  // Add Documentation Home first
+  structure.push({
+    title: 'Documentation Home',
+    path: '/docs/',
+    type: 'page'
+  });
+  
+  // Add root level items
+  fileStructure.root.forEach(filename => {
+    structure.push({
+      title: getDocTitle(filename),
+      path: `/docs/${filename}.html`,
+      type: 'page'
+    });
+  });
+  
+  // Add sections with their pages
+  Object.entries(fileStructure.sections).forEach(([sectionKey, files]) => {
+    const section = {
+      title: sectionNames[sectionKey] || getDocTitle(sectionKey),
+      path: `#${sectionKey}`, // No actual page, just a section
+      type: 'section',
+      children: files.map(filename => ({
+        title: getDocTitle(filename),
+        path: `/docs/${sectionKey}/${filename}.html`,
+        type: 'page'
+      }))
+    };
+    
+    structure.push(section);
+  });
+  
+  return structure;
+}
 
 /**
  * Checks if the given item or any of its descendants match the current path.
@@ -66,12 +176,18 @@ const docsTree = [
  * @returns {boolean} - True if the item or a descendant is the current page.
  */
 function isCurrentOrAncestor(item, currentPath) {
-  if (item.path === currentPath) {
+  // Normalize paths for comparison (remove trailing .html, handle both with/without)
+  const normalizedItemPath = item.path.replace(/\.html$/, '');
+  const normalizedCurrentPath = currentPath.replace(/\.html$/, '');
+  
+  if (normalizedItemPath === normalizedCurrentPath) {
     return true;
   }
+  
   if (item.children) {
     return item.children.some(child => isCurrentOrAncestor(child, currentPath));
   }
+  
   return false;
 }
 
@@ -84,64 +200,93 @@ function isCurrentOrAncestor(item, currentPath) {
 function buildList(items, currentPath, isSubmenu = false) {
   const ul = document.createElement('ul');
   if (isSubmenu) {
-    ul.classList.add('submenu');
+    ul.classList.add('docs-submenu');
+  } else {
+    ul.classList.add('docs-nav-list');
   }
 
   items.forEach(item => {
     const li = document.createElement('li');
     const a = document.createElement('a');
-    a.href = item.path;
+    
+    // Set up the link
+    if (item.type === 'section') {
+      // Section headers are not clickable but expand/collapse
+      a.href = 'javascript:void(0)';
+      a.setAttribute('role', 'button');
+      a.setAttribute('aria-expanded', 'false');
+      li.classList.add('docs-section');
+    } else {
+      // Regular page links
+      a.href = item.path;
+      li.classList.add('docs-page');
+    }
+    
     a.textContent = item.title;
 
+    // Handle sections with children
     if (item.children && item.children.length > 0) {
       li.classList.add('has-children');
-      // Make parent item clickable to toggle submenu
-      a.href = 'javascript:void(0)'; // Prevent navigation
+      
+      // Add expand/collapse functionality for sections
       a.addEventListener('click', (e) => {
         e.preventDefault();
-        li.classList.toggle('open');
-        // Ensure the link still navigates if it's a direct page link too
-        // For now, we assume parent items are categories, not pages themselves
-        // If a parent could be a page, this logic needs adjustment
+        const isOpen = li.classList.toggle('open');
+        a.setAttribute('aria-expanded', isOpen.toString());
+        
+        // Smooth animation for the submenu
+        const submenu = li.querySelector('.docs-submenu');
+        if (submenu) {
+          if (isOpen) {
+            submenu.style.maxHeight = submenu.scrollHeight + 'px';
+          } else {
+            submenu.style.maxHeight = '0';
+          }
+        }
       });
-    } else if (isSubmenu) {
-      li.classList.add('submenu-item');
-    } else {
-      li.classList.add('main-topic-item');
     }
 
+    // Check if current or ancestor
+    const isCurrent = isCurrentOrAncestor(item, currentPath) && item.type === 'page';
+    const isAncestor = !isCurrent && item.children && 
+                      item.children.some(child => isCurrentOrAncestor(child, currentPath));
 
-    const isCurrent = item.path === currentPath;
-    // An ancestor is active if one of its children is the current path
-    const isAncestor = !isCurrent && item.children && item.children.some(child => isCurrentOrAncestor(child, currentPath));
-
-    // Always append the link directly
-    li.appendChild(a);
-
-    // Add 'active' class if it's the current page or an ancestor
+    // Add active states
     if (isCurrent) {
       a.classList.add('active');
+      li.classList.add('current-page');
     }
+    
     if (isAncestor) {
-      // If an ancestor is active, it should also be open
-      li.classList.add('open');
-      // The direct link of the ancestor itself might not be 'active' unless it's also the current page
-      // but we want to highlight it if a child is active.
-      // We can add a specific class for this or rely on styling .has-children.open > a
-      a.classList.add('active-ancestor'); // New class for styling active ancestors
+      li.classList.add('open', 'active-section');
+      a.classList.add('active-ancestor');
+      a.setAttribute('aria-expanded', 'true');
     }
 
+    // Create the list item structure
+    li.appendChild(a);
 
+    // Add children if they exist
     if (item.children && item.children.length > 0) {
-      const childrenUl = buildList(item.children, currentPath, true); // Pass true for isSubmenu
-      li.appendChild(childrenUl);
-      // If it's an ancestor of the current page, ensure it's open by default
+      const childrenUl = buildList(item.children, currentPath, true);
+      childrenUl.classList.add('docs-submenu');
+      
+      // Set initial state for submenu
       if (isAncestor) {
-        li.classList.add('open');
+        // Use setTimeout to ensure DOM is rendered and scrollHeight is accurate
+        setTimeout(() => {
+          childrenUl.style.maxHeight = childrenUl.scrollHeight + 'px';
+        }, 0);
+      } else {
+        childrenUl.style.maxHeight = '0';
       }
+      
+      li.appendChild(childrenUl);
     }
+    
     ul.appendChild(li);
   });
+  
   return ul;
 }
 
@@ -155,23 +300,26 @@ function renderDocumentationSidebar(containerSelector) {
     console.error(`Documentation sidebar container not found: ${containerSelector}`);
     return;
   }
-  // Ensure container has the 'sidebar' class
-  // The 'sidebar' class should only be on the <aside> element, not the container
+
+  // Generate the docs structure dynamically
+  docsTree = generateDocsStructure();
 
   // Clear existing content
   container.innerHTML = '';
 
-  // Create the aside wrapper
+  // Create the aside wrapper with improved structure
   const aside = document.createElement('aside');
-  aside.classList.add('sidebar'); // Add sidebar class to the aside element
+  aside.classList.add('sidebar');
 
   // Create the nav element
   const nav = document.createElement('nav');
-  nav.setAttribute('aria-label', 'Documentation pages');
+  nav.setAttribute('aria-label', 'Documentation navigation');
+  nav.classList.add('docs-nav');
 
-  // Add the 'Documentation' header inside nav
+  // Add the 'Documentation' header with modern styling
   const header = document.createElement('h3');
   header.textContent = 'Documentation';
+  header.classList.add('docs-nav-header');
   nav.appendChild(header);
 
   // Build the navigation list
@@ -182,12 +330,15 @@ function renderDocumentationSidebar(containerSelector) {
   // Append nav to aside, and aside to container
   aside.appendChild(nav);
   container.appendChild(aside);
+  
+  // Add smooth scroll behavior for internal navigation
+  nav.addEventListener('click', (e) => {
+    if (e.target.tagName === 'A' && e.target.href && !e.target.href.includes('javascript:')) {
+      // Add a subtle loading state for better UX
+      e.target.style.opacity = '0.7';
+      setTimeout(() => {
+        e.target.style.opacity = '1';
+      }, 150);
+    }
+  });
 }
-
-// Example usage (optional, could be called from another script or inline):
-// document.addEventListener('DOMContentLoaded', () => {
-//   renderDocumentationSidebar('#documentation-sidebar-container');
-// });
-
-// Export the function if using modules (adjust based on project setup)
-// export { renderDocumentationSidebar, docsTree };

@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentation - Universal Automation Wiki</title>
+    <title>Automation Status Taxonomy - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
-    <link rel="stylesheet" href="/assets/css/category.css"> <!-- For nav cards -->
+    <link rel="stylesheet" href="/assets/css/category.css">
     <link rel="stylesheet" href="/assets/css/responsive.css">
-    <link rel="stylesheet" href="/assets/css/documentation.css"> <!-- Added documentation styles -->
+    <link rel="stylesheet" href="/assets/css/documentation.css">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,175 +17,210 @@
         /* Placeholder styles to prevent layout shift */
         #header-placeholder { min-height: 70px; }
         #footer-placeholder { min-height: 250px; }
-        /* Other inline styles removed and moved to documentation.css */
     </style>
 </head>
 <body>
-    <!-- Header placeholder to be filled by components.js -->
     <div id="header-placeholder"></div>
 
-    <div class="docs-layout"> <!-- Added layout wrapper -->
-        <div id="sidebar-placeholder"></div>
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
 
-        <main>
-            <section class="hero">
-                <div class="container">
-                    <h1>Automation Status</h1>
-                    <p class="hero-subtitle">This document outlines a detailed taxonomy for classifying the level of automation applied to various tasks, processes, or systems. It ranges from completely manual operations to fully autonomous systems capable of self-management and evolution.</p>
-                </div>
-            </section>
-            <div class="spacer"></div>
-            <section class="content-section">
-                <details class="collapsible-diagram">
-                    <summary>View Automation Stages Diagram</summary>
-                    <pre class="mermaid">
-graph LR
-    A[Manual] --> B(Tool-Supported);
-    B --> C(Guided);
-    C --> D(Scripted);
-    D --> E(Coordinated);
-    E --> F(Self-Managing);
-    F --> G(Self-Evolving);
-                    </pre>
-                </details>
-                <div class="spacer"></div>
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/standards/">Standards</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">Automation Status Taxonomy</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">Automation Status Taxonomy</h1>
+                            
+                            <p class="docs-page-subtitle">This document outlines a detailed taxonomy for classifying the level of automation applied to various tasks, processes, or systems. It ranges from completely manual operations to fully autonomous systems capable of self-management and evolution.</p>
+                            
+                        </div>
+                    </header>
 
-                <h2>1. No Automation/Manual</h2>
-                <p><strong>Definition:</strong> Tasks are performed entirely by humans without the aid of any automated tools or systems. Every action, decision, and step relies solely on human intervention and physical or cognitive effort. The process is fundamentally manual from initiation to completion.</p>
-                <p><strong>Key Criteria:</strong></p>
-                <ul>
-                    <li><strong>Human Initiative:</strong> Every step requires direct human initiation and execution.</li>
-                    <li><strong>Basic Tooling:</strong> Only non-automated, basic instruments (e.g., hand tools, simple measuring devices) might be used.</li>
-                    <li><strong>No Digital Assistance:</strong> Absence of software, scripts, or digital interfaces to guide or perform actions.</li>
-                    <li><strong>Direct Sensory Feedback:</strong> Reliance on human senses for monitoring and control.</li>
-                </ul>
-                <p><strong>Examples:</strong></p>
-                <ul>
-                    <li>Manually calculating inventory levels using pen and paper.</li>
-                    <li>Hand-drafting architectural blueprints.</li>
-                    <li>Assembling a product using only hand tools without power assistance.</li>
-                    <li>Sorting physical mail by hand based on destination addresses.</li>
-                </ul>
+                    <div class="docs-content">
+                        <p>This document outlines a detailed taxonomy for classifying the level of automation applied to various tasks, processes, or systems. It ranges from completely manual operations to fully autonomous systems capable of self-management and evolution.</p>
+<h2 id="1-no-automation">1. No Automation<a class="headerlink" href="#1-no-automation" title="Permanent link">&para;</a></h2>
+<ul class="docs-list">
+<li><strong>Definition:</strong> Tasks are performed entirely by humans without the aid of any automated tools or systems. Every action, decision, and step relies solely on human intervention and physical or cognitive effort. The process is fundamentally manual from initiation to completion.</li>
+<li><strong>Key Criteria:</strong><ul class="docs-list">
+<li><strong>Human Initiative:</strong> Every step requires direct human initiation and execution.</li>
+<li><strong>Basic Tooling:</strong> Only non-automated, basic instruments (e.g., hand tools, simple measuring devices) might be used.</li>
+<li><strong>No Digital Assistance:</strong> Absence of software, scripts, or digital interfaces to guide or perform actions.</li>
+<li><strong>Direct Sensory Feedback:</strong> Reliance on human senses for monitoring and control.</li>
+</ul>
+</li>
+<li><strong>Examples:</strong><ul class="docs-list">
+<li>Manually calculating inventory levels using pen and paper.</li>
+<li>Hand-drafting architectural blueprints.</li>
+<li>Assembling a product using only hand tools without power assistance.</li>
+<li>Sorting physical mail by hand based on destination addresses.</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-assisted-automation">2. Assisted Automation<a class="headerlink" href="#2-assisted-automation" title="Permanent link">&para;</a></h2>
+<ul class="docs-list">
+<li><strong>Definition:</strong> Humans operate specialized tools, equipment, or graphical user interfaces (GUIs) that simplify or enhance manual tasks but do not execute them automatically. These tools require continuous human input and control for each step.</li>
+<li><strong>Key Criteria:</strong><ul class="docs-list">
+<li><strong>Tool-Enhanced Manual Work:</strong> Technology aids human operators but doesn't replace their direct involvement in task execution.</li>
+<li><strong>Step-by-Step Human Control:</strong> Each significant action requires explicit human command via the tool or interface.</li>
+<li><strong>No Automated Logic:</strong> The tools lack independent decision-making or sequence execution capabilities.</li>
+<li><strong>Efficiency Gain:</strong> Tools primarily offer speed, precision, or ease-of-use improvements over purely manual methods.</li>
+</ul>
+</li>
+<li><strong>Examples:</strong><ul class="docs-list">
+<li>Using a calculator for complex arithmetic instead of manual calculation.</li>
+<li>Employing a word processor for document creation instead of handwriting.</li>
+<li>Using a power drill instead of a manual screwdriver for assembly.</li>
+<li>Utilizing a GUI-based configuration tool that requires manual input for each setting.</li>
+</ul>
+</li>
+</ul>
+<h2 id="3-guided-automation">3. Guided Automation<a class="headerlink" href="#3-guided-automation" title="Permanent link">&para;</a></h2>
+<ul class="docs-list">
+<li><strong>Definition:</strong> Systems provide context-aware suggestions, checklists, validation, or prompts to guide human operators through a process. Humans retain the authority to approve and execute actions, but the system offers partial decision support.</li>
+<li><strong>Key Criteria:</strong><ul class="docs-list">
+<li><strong>Contextual Guidance:</strong> System provides relevant information or recommendations based on the current task state.</li>
+<li><strong>Human Approval Required:</strong> Automated suggestions or plans must be confirmed or initiated by a human.</li>
+<li><strong>Partial Decision Support:</strong> The system assists in decision-making but doesn't make final choices autonomously.</li>
+<li><strong>Validation and Error Checking:</strong> Tools may automatically check for errors or inconsistencies in human input.</li>
+</ul>
+</li>
+<li><strong>Examples:</strong><ul class="docs-list">
+<li>Software offering spell-check and grammar suggestions as a user types.</li>
+<li>An installation wizard guiding a user through setup steps with defaults and validation.</li>
+<li>A diagnostic system suggesting potential causes for a reported fault, requiring human verification.</li>
+<li>An IDE providing code completion suggestions and syntax highlighting.</li>
+</ul>
+</li>
+</ul>
+<h2 id="4-scripted-automation">4. Scripted Automation<a class="headerlink" href="#4-scripted-automation" title="Permanent link">&para;</a></h2>
+<ul class="docs-list">
+<li><strong>Definition:</strong> Predefined scripts, macros, or batch processes execute a specific, repeatable sequence of tasks with minimal human intervention beyond initiation. These scripts automate routine workflows but typically have limited adaptability to variations.</li>
+<li><strong>Key Criteria:</strong><ul class="docs-list">
+<li><strong>Predefined Sequences:</strong> Automation follows a fixed, coded set of instructions.</li>
+<li><strong>Minimal Intervention (Post-Initiation):</strong> Once started, the script runs to completion unless an error occurs.</li>
+<li><strong>Repeatability:</strong> Designed for tasks performed frequently in the same manner.</li>
+<li><strong>Limited Adaptability:</strong> Scripts often require manual updates to handle changes in the environment or task requirements.</li>
+<li><strong>Requires Maintenance:</strong> Scripts need ongoing maintenance to ensure they function correctly as underlying systems change.</li>
+</ul>
+</li>
+<li><strong>Examples:</strong><ul class="docs-list">
+<li>A script that automatically backs up specific directories at a scheduled time.</li>
+<li>A macro in a spreadsheet program that formats data and generates a standard report.</li>
+<li>Automated test scripts that execute a predefined set of test cases against software.</li>
+<li>A batch job that processes daily transaction logs overnight.</li>
+</ul>
+</li>
+</ul>
+<h2 id="5-orchestrated-automation">5. Orchestrated Automation<a class="headerlink" href="#5-orchestrated-automation" title="Permanent link">&para;</a></h2>
+<ul class="docs-list">
+<li><strong>Definition:</strong> Multiple automated tools, scripts, and systems are coordinated through workflows managed by a central orchestrator (e.g., workflow engine, CI/CD pipeline, BPM system). Human intervention is typically limited to handling exceptions or complex decision points not covered by the automation logic.</li>
+<li><strong>Key Criteria:</strong><ul class="docs-list">
+<li><strong>Workflow Coordination:</strong> A central system manages the sequence, timing, and data flow between different automated components.</li>
+<li><strong>API Integration:</strong> Different tools and systems communicate and interact via APIs.</li>
+<li><strong>Conditional Logic:</strong> Workflows incorporate branching, loops, and conditional execution based on outcomes or data.</li>
+<li><strong>Exception Handling:</strong> Predefined procedures for managing errors or situations requiring human input.</li>
+<li><strong>State Management:</strong> The orchestrator tracks the progress and state of the end-to-end process.</li>
+</ul>
+</li>
+<li><strong>Examples:</strong><ul class="docs-list">
+<li>A CI/CD pipeline automatically building, testing, and deploying software across multiple environments.</li>
+<li>An order fulfillment system coordinating inventory checks, payment processing, packaging automation, and shipping logistics.</li>
+<li>A security orchestration platform automatically responding to alerts by correlating data, quarantining devices, and creating incident tickets.</li>
+<li>Business Process Management (BPM) software automating an employee onboarding process involving HR, IT, and facilities management systems.</li>
+</ul>
+</li>
+</ul>
+<h2 id="6-autonomic-automation-self-managing">6. Autonomic Automation (Self-Managing)<a class="headerlink" href="#6-autonomic-automation-self-managing" title="Permanent link">&para;</a></h2>
+<ul class="docs-list">
+<li><strong>Definition:</strong> Systems possess self-management capabilities, allowing them to monitor their own state, adapt to changing conditions, and optimize performance based on predefined policies or goals, without requiring direct human commands for routine operations.</li>
+<li><strong>Key Criteria:</strong><ul class="docs-list">
+<li><strong>Self-Configuration:</strong> Systems can configure themselves based on high-level policies.</li>
+<li><strong>Self-Healing:</strong> Systems can detect failures and automatically take corrective actions (e.g., restarting components, rerouting traffic).</li>
+<li><strong>Self-Optimization:</strong> Systems continuously adjust parameters to improve performance, efficiency, or resource utilization.</li>
+<li><strong>Self-Protection:</strong> Systems can defend against intrusions or failures automatically.</li>
+<li><strong>Policy-Driven:</strong> Operations are governed by defined rules and objectives rather than explicit step-by-step instructions.</li>
+<li><strong>Minimal Human Oversight:</strong> Humans primarily set policies and monitor overall system health, intervening only for major issues or policy changes.</li>
+</ul>
+</li>
+<li><strong>Examples:</strong><ul class="docs-list">
+<li>Cloud platforms automatically scaling application resources up or down based on real-time traffic load.</li>
+<li>Adaptive database systems that automatically optimize query plans or reallocate storage based on usage patterns.</li>
+<li>Network infrastructure that dynamically reroutes traffic to avoid congestion or link failures.</li>
+<li>A climate control system in a building that adjusts temperature and airflow based on occupancy sensors and energy price signals.</li>
+</ul>
+</li>
+</ul>
+<h2 id="7-fully-autonomous-self-evolving">7. Fully Autonomous (Self-Evolving)<a class="headerlink" href="#7-fully-autonomous-self-evolving" title="Permanent link">&para;</a></h2>
+<ul class="docs-list">
+<li><strong>Definition:</strong> End-to-end processes operate continuously and adapt over time without any human involvement, potentially using machine learning or AI to improve their strategies and decision-making based on experience and outcomes. The system essentially learns and evolves.</li>
+<li><strong>Key Criteria:</strong><ul class="docs-list">
+<li><strong>Zero Human Triggers:</strong> Operates entirely independently, initiating and completing tasks without external human commands.</li>
+<li><strong>Continuous Learning &amp; Adaptation:</strong> Systems improve their performance, strategies, and underlying models over time based on data and feedback loops.</li>
+<li><strong>Self-Governing:</strong> Makes high-level strategic decisions within its domain based on learned objectives.</li>
+<li><strong>High Complexity Handling:</strong> Capable of managing highly complex, dynamic, and unpredictable environments.</li>
+<li><strong>Transparency &amp; Auditability:</strong> While operating independently, provides clear logs and explanations for its actions and decisions.</li>
+</ul>
+</li>
+<li><strong>Examples:</strong><ul class="docs-list">
+<li>A fully autonomous supply chain that manages inventory, orders, production, and logistics globally, learning from market trends and disruptions.</li>
+<li>An AI-driven investment portfolio manager that continuously analyzes markets, adjusts holdings, and refines its trading strategies based on performance.</li>
+<li>Advanced scientific research platforms that can design experiments, execute them using robotics, analyze data, and formulate new hypotheses autonomously.</li>
+<li>A theoretical future power grid that autonomously balances generation, distribution, and consumption across diverse sources and demands, learning optimal patterns over time.</li>
+</ul>
+</li>
+</ul>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
 
-                <h2>2. Tool Supported</h2>
-                <p><strong>Definition:</strong> Humans operate specialized tools, equipment, or graphical user interfaces (GUIs) that simplify or enhance manual tasks but do not execute them automatically. These tools require continuous human input and control for each step.</p>
-                <p><strong>Key Criteria:</strong></p>
-                <ul>
-                    <li><strong>Tool-Enhanced Manual Work:</strong> Technology aids human operators but doesn't replace their direct involvement in task execution.</li>
-                    <li><strong>Step-by-Step Human Control:</strong> Each significant action requires explicit human command via the tool or interface.</li>
-                    <li><strong>No Automated Logic:</strong> The tools lack independent decision-making or sequence execution capabilities.</li>
-                    <li><strong>Efficiency Gain:</strong> Tools primarily offer speed, precision, or ease-of-use improvements over purely manual methods.</li>
-                </ul>
-                <p><strong>Examples:</strong></p>
-                <ul>
-                    <li>Using a calculator for complex arithmetic instead of manual calculation.</li>
-                    <li>Employing a word processor for document creation instead of handwriting.</li>
-                    <li>Using a power drill instead of a manual screwdriver for assembly.</li>
-                    <li>Utilizing a GUI-based configuration tool that requires manual input for each setting.</li>
-                </ul>
-
-                <h2>3. Support Automation</h2>
-                <p><strong>Definition:</strong> Systems provide context-aware suggestions, checklists, validation, or prompts to guide human operators through a process. Humans retain the authority to approve and execute actions, but the system offers partial decision support.</p>
-                <p><strong>Key Criteria:</strong></p>
-                <ul>
-                    <li><strong>Contextual Guidance:</strong> System provides relevant information or recommendations based on the current task state.</li>
-                    <li><strong>Human Approval Required:</strong> Automated suggestions or plans must be confirmed or initiated by a human.</li>
-                    <li><strong>Partial Decision Support:</strong> The system assists in decision-making but doesn't make final choices autonomously.</li>
-                    <li><strong>Validation and Error Checking:</strong> Tools may automatically check for errors or inconsistencies in human input.</li>
-                </ul>
-                <p><strong>Examples:</strong></p>
-                <ul>
-                    <li>Software offering spell-check and grammar suggestions as a user types.</li>
-                    <li>An installation wizard guiding a user through setup steps with defaults and validation.</li>
-                    <li>A diagnostic system suggesting potential causes for a reported fault, requiring human verification.</li>
-                    <li>An IDE providing code completion suggestions and syntax highlighting.</li>
-                </ul>
-
-                <h2>4. Scripted Automation</h2>
-                <p><strong>Definition:</strong> Predefined scripts, macros, or batch processes execute a specific, repeatable sequence of tasks with minimal human intervention beyond initiation. These scripts automate routine workflows but typically have limited adaptability to variations.</p>
-                <p><strong>Key Criteria:</strong></p>
-                <ul>
-                    <li><strong>Predefined Sequences:</strong> Automation follows a fixed, coded set of instructions.</li>
-                    <li><strong>Minimal Intervention (Post-Initiation):</strong> Once started, the script runs to completion unless an error occurs.</li>
-                    <li><strong>Repeatability:</strong> Designed for tasks performed frequently in the same manner.</li>
-                    <li><strong>Limited Adaptability:</strong> Scripts often require manual updates to handle changes in the environment or task requirements.</li>
-                    <li><strong>Requires Maintenance:</strong> Scripts need ongoing maintenance to ensure they function correctly as underlying systems change.</li>
-                </ul>
-                <p><strong>Examples:</strong></p>
-                <ul>
-                    <li>A script that automatically backs up specific directories at a scheduled time.</li>
-                    <li>A macro in a spreadsheet program that formats data and generates a standard report.</li>
-                    <li>Automated test scripts that execute a predefined set of test cases against software.</li>
-                    <li>A batch job that processes daily transaction logs overnight.</li>
-                </ul>
-
-                <h2>5. Coordinated Automation</h2>
-                <p><strong>Definition:</strong> Multiple automated tools, scripts, and systems are coordinated through workflows managed by a central orchestrator (e.g., workflow engine, CI/CD pipeline, BPM system). Human intervention is typically limited to handling exceptions or complex decision points not covered by the automation logic.</p>
-                <p><strong>Key Criteria:</strong></p>
-                <ul>
-                    <li><strong>Workflow Coordination:</strong> A central system manages the sequence, timing, and data flow between different automated components.</li>
-                    <li><strong>API Integration:</strong> Different tools and systems communicate and interact via APIs.</li>
-                    <li><strong>Conditional Logic:</strong> Workflows incorporate branching, loops, and conditional execution based on outcomes or data.</li>
-                    <li><strong>Exception Handling:</strong> Predefined procedures for managing errors or situations requiring human input.</li>
-                    <li><strong>State Management:</strong> The orchestrator tracks the progress and state of the end-to-end process.</li>
-                </ul>
-                <p><strong>Examples:</strong></p>
-                <ul>
-                    <li>A CI/CD pipeline automatically building, testing, and deploying software across multiple environments.</li>
-                    <li>An order fulfillment system coordinating inventory checks, payment processing, packaging automation, and shipping logistics.</li>
-                    <li>A security orchestration platform automatically responding to alerts by correlating data, quarantining devices, and creating incident tickets.</li>
-                    <li>Business Process Management (BPM) software automating an employee onboarding process involving HR, IT, and facilities management systems.</li>
-                </ul>
-
-                <h2>6. Self-Managing Automation</h2>
-                <p><strong>Definition:</strong> Systems possess self-management capabilities, allowing them to monitor their own state, adapt to changing conditions, and optimize performance based on predefined policies or goals, without requiring direct human commands for routine operations.</p>
-                <p><strong>Key Criteria:</strong></p>
-                <ul>
-                    <li><strong>Self-Configuration:</strong> Systems can configure themselves based on high-level policies.</li>
-                    <li><strong>Self-Healing:</strong> Systems can detect failures and automatically take corrective actions (e.g., restarting components, rerouting traffic).</li>
-                    <li><strong>Self-Optimization:</strong> Systems continuously adjust parameters to improve performance, efficiency, or resource utilization.</li>
-                    <li><strong>Self-Protection:</strong> Systems can defend against intrusions or failures automatically.</li>
-                    <li><strong>Policy-Driven:</strong> Operations are governed by defined rules and objectives rather than explicit step-by-step instructions.</li>
-                    <li><strong>Minimal Human Oversight:</strong> Humans primarily set policies and monitor overall system health, intervening only for major issues or policy changes.</li>
-                </ul>
-                <p><strong>Examples:</strong></p>
-                <ul>
-                    <li>Cloud platforms automatically scaling application resources up or down based on real-time traffic load.</li>
-                    <li>Adaptive database systems that automatically optimize query plans or reallocate storage based on usage patterns.</li>
-                    <li>Network infrastructure that dynamically reroutes traffic to avoid congestion or link failures.</li>
-                    <li>A climate control system in a building that adjusts temperature and airflow based on occupancy sensors and energy price signals.</li>
-                </ul>
-
-                <h2>7. Fully Autonomous (Self-Evolving)</h2>
-                <p><strong>Definition:</strong> End-to-end processes operate continuously and adapt over time without any human involvement, potentially using machine learning or AI to improve their strategies and decision-making based on experience and outcomes. The system essentially learns and evolves.</p>
-                <p><strong>Key Criteria:</strong></p>
-                <ul>
-                    <li><strong>Zero Human Triggers:</strong> Operates entirely independently, initiating and completing tasks without external human commands.</li>
-                    <li><strong>Continuous Learning & Adaptation:</strong> Systems improve their performance, strategies, and underlying models over time based on data and feedback loops.</li>
-                    <li><strong>Self-Governing:</strong> Makes high-level strategic decisions within its domain based on learned objectives.</li>
-                    <li><strong>High Complexity Handling:</strong> Capable of managing highly complex, dynamic, and unpredictable environments.</li>
-                    <li><strong>Transparency & Auditability:</strong> While operating independently, provides clear logs and explanations for its actions and decisions.</li>
-                </ul>
-                <p><strong>Examples:</strong></p>
-                <ul>
-                    <li>A fully autonomous supply chain that manages inventory, orders, production, and logistics globally, learning from market trends and disruptions.</li>
-                    <li>An AI-driven investment portfolio manager that continuously analyzes markets, adjusts holdings, and refines its trading strategies based on performance.</li>
-                    <li>Advanced scientific research platforms that can design experiments, execute them using robotics, analyze data, and formulate new hypotheses autonomously.</li>
-                    <li>A theoretical future power grid that autonomously balances generation, distribution, and consumption across diverse sources and demands, learning optimal patterns over time.</li>
-                </ul>
-            </section> <!-- Close section wrapper -->
-
-        </main>
-    </div> <!-- Closed layout wrapper -->
-
-    <!-- Footer placeholder to be filled by components.js -->
     <div id="footer-placeholder"></div>
 
-    <!-- Load components.js first to ensure header/footer are loaded before other scripts -->
     <script src="/assets/js/components.js"></script>
-<script type="module">
+    <script type="module">
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        mermaid.initialize({ startOnLoad: true });
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
     </script>
     <script src="/assets/js/main.js"></script>
     <script src="/assets/js/documentation.js"></script>

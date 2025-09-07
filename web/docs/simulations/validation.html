@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentation - Universal Automation Wiki</title>
+    <title>UAW Simulation &amp; Validation System - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
-    <link rel="stylesheet" href="/assets/css/category.css"> <!-- For nav cards -->
+    <link rel="stylesheet" href="/assets/css/category.css">
     <link rel="stylesheet" href="/assets/css/responsive.css">
-    <link rel="stylesheet" href="/assets/css/documentation.css"> <!-- Added documentation styles -->
+    <link rel="stylesheet" href="/assets/css/documentation.css">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,32 +22,57 @@
 <body>
     <div id="header-placeholder"></div>
 
-    <div class="docs-layout">
-        <div id="sidebar-placeholder"></div>
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
 
-        <main>
-            <section class="hero">
-                <div class="container">
-                    <h1>UAW Simulation &amp; Validation System</h1>
-                    <p class="hero-subtitle">This document outlines the architecture and standards for the Universal Automation Wiki&#39;s simulation and validation engine. This system is designed to be robust, extensible, and community-driven, providing trustworthy, business-ready analysis of automation processes.</p>
-                </div>
-            </section>
-            <div class="spacer"></div>
-            <section class="content-section">
-                <div class="spacer"></div>
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/simulations/">Simulations</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">UAW Simulation &amp; Validation System</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">UAW Simulation &amp; Validation System</h1>
+                            
+                            <p class="docs-page-subtitle">This document outlines the architecture and standards for the Universal Automation Wiki&#39;s simulation and validation engine. This system is designed to be robust, extensible, and community-driven, providing trustworthy, business-ready analysis of automation processes.</p>
+                            
+                        </div>
+                    </header>
 
-                <h1>UAW Simulation &amp; Validation System</h1>
-<p>This document outlines the architecture and standards for the Universal Automation Wiki's simulation and validation engine. This system is designed to be robust, extensible, and community-driven, providing trustworthy, business-ready analysis of automation processes.</p>
-<h2>Core Concepts</h2>
+                    <div class="docs-content">
+                        <p>This document outlines the architecture and standards for the Universal Automation Wiki's simulation and validation engine. This system is designed to be robust, extensible, and community-driven, providing trustworthy, business-ready analysis of automation processes.</p>
+<h2 id="core-concepts">Core Concepts<a class="headerlink" href="#core-concepts" title="Permanent link">&para;</a></h2>
 <p>The system is built on three pillars: a standardized <strong>Simulation Schema</strong>, a central <strong>Metrics Catalog</strong>, and a client-side <strong>Validation Engine</strong>.</p>
-<h3>1. The Simulation Schema</h3>
-<p>All simulations must adhere to a strict schema. The key distinction is between <code>equipment</code> (persistent objects with states) and <code>resources</code> (consumable items).</p>
-<ul>
-<li><strong><code>equipment</code></strong>: An array of objects that exist throughout the simulation. Each has an <code>id</code>, <code>name</code>, <code>emoji</code>, and a starting <code>state</code> (e.g., "clean", "available").</li>
-<li><strong><code>resources</code></strong>: An array of consumable items. Each has an <code>id</code>, <code>unit</code>, and <code>starting_stock</code>.</li>
-<li><strong><code>tasks</code></strong>: The core of the simulation. Tasks interact with the world via two primary mechanisms:<ul>
-<li><code>consumes</code> / <code>produces</code>: For depleting and creating <code>resources</code>.</li>
-<li><code>equipment_interactions</code>: An array describing how the task uses and changes the <code>state</code> of <code>equipment</code>.</li>
+<h3 id="1-the-simulation-schema">1. The Simulation Schema<a class="headerlink" href="#1-the-simulation-schema" title="Permanent link">&para;</a></h3>
+<p>All simulations must adhere to a strict schema. The key distinction is between <code class="docs-inline-code">equipment</code> (persistent objects with states) and <code class="docs-inline-code">resources</code> (consumable items).</p>
+<ul class="docs-list">
+<li><strong><code class="docs-inline-code">equipment</code></strong>: An array of objects that exist throughout the simulation. Each has an <code class="docs-inline-code">id</code>, <code class="docs-inline-code">name</code>, <code class="docs-inline-code">emoji</code>, and a starting <code class="docs-inline-code">state</code> (e.g., "clean", "available").</li>
+<li><strong><code class="docs-inline-code">resources</code></strong>: An array of consumable items. Each has an <code class="docs-inline-code">id</code>, <code class="docs-inline-code">unit</code>, and <code class="docs-inline-code">starting_stock</code>.</li>
+<li><strong><code class="docs-inline-code">tasks</code></strong>: The core of the simulation. Tasks interact with the world via two primary mechanisms:<ul class="docs-list">
+<li><code class="docs-inline-code">consumes</code> / <code class="docs-inline-code">produces</code>: For depleting and creating <code class="docs-inline-code">resources</code>.</li>
+<li><code class="docs-inline-code">equipment_interactions</code>: An array describing how the task uses and changes the <code class="docs-inline-code">state</code> of <code class="docs-inline-code">equipment</code>.</li>
 </ul>
 </li>
 </ul>
@@ -62,51 +87,67 @@
 <span class="p">}</span>
 </code></pre></div>
 
-<h3>2. The Metrics Catalog</h3>
-<p>The single source of truth for all validation is <code>/assets/static/metrics-catalog.json</code>. This file contains a list of <strong>Metric Definition Objects</strong>, each describing a single, atomic check.</p>
-<p>Each metric has a <code>validation_type</code> which can be:
-*   <strong><code>computational</code></strong>: A deterministic check run by a JavaScript function in the browser. These are fast and objective.
-*   <strong><code>llm</code></strong>: (Future) A qualitative check that sends a formatted prompt to a local LLM for nuanced, "realism" assessments.</p>
-<h3>3. The Validation Engine</h3>
-<p>The file <code>/web/assets/js/simulation-validator.js</code> contains the runtime for all <code>computational</code> metrics. It is a JavaScript class that:
+<h3 id="2-the-metrics-catalog">2. The Metrics Catalog<a class="headerlink" href="#2-the-metrics-catalog" title="Permanent link">&para;</a></h3>
+<p>The single source of truth for all validation is <code class="docs-inline-code">/assets/static/metrics-catalog.json</code>. This file contains a list of <strong>Metric Definition Objects</strong>, each describing a single, atomic check.</p>
+<p>Each metric has a <code class="docs-inline-code">validation_type</code> which can be:
+*   <strong><code class="docs-inline-code">computational</code></strong>: A deterministic check run by a JavaScript function in the browser. These are fast and objective.
+*   <strong><code class="docs-inline-code">llm</code></strong>: (Future) A qualitative check that sends a formatted prompt to a local LLM for nuanced, "realism" assessments.</p>
+<h3 id="3-the-validation-engine">3. The Validation Engine<a class="headerlink" href="#3-the-validation-engine" title="Permanent link">&para;</a></h3>
+<p>The file <code class="docs-inline-code">/web/assets/js/simulation-validator.js</code> contains the runtime for all <code class="docs-inline-code">computational</code> metrics. It is a JavaScript class that:
 1.  Loads the simulation JSON.
-2.  Iterates through the <code>metrics-catalog.json</code>.
+2.  Iterates through the <code class="docs-inline-code">metrics-catalog.json</code>.
 3.  Executes the JavaScript function specified by each metric.
-4.  Collects and returns a structured list of results (<code>success</code>, <code>error</code>, <code>warning</code>, <code>info</code>).</p>
-<h2>How Validation Works</h2>
+4.  Collects and returns a structured list of results (<code class="docs-inline-code">success</code>, <code class="docs-inline-code">error</code>, <code class="docs-inline-code">warning</code>, <code class="docs-inline-code">info</code>).</p>
+<h2 id="how-validation-works">How Validation Works<a class="headerlink" href="#how-validation-works" title="Permanent link">&para;</a></h2>
 <p>The process is fully automated in the Simulation Playground:</p>
-<ol>
+<ol class="docs-list docs-list-ordered">
 <li><strong>Edit &amp; Render:</strong> As you edit the JSON, the simulation is rendered.</li>
 <li><strong>Run Checks:</strong> The Validation Engine runs all computational checks from the catalog against the current JSON.</li>
 <li><strong>Display Results:</strong> The results are grouped by category (Structural Integrity, Resource Flow, Scheduling, Optimization) and displayed with color-coding based on severity.</li>
 </ol>
-<h3>Business Readiness Score</h3>
+<h3 id="business-readiness-score">Business Readiness Score<a class="headerlink" href="#business-readiness-score" title="Permanent link">&para;</a></h3>
 <p>While not a direct metric, the playground can calculate a "Business Readiness" score based on the validation results. This provides a high-level indicator of the simulation's quality, weighted by the severity of the issues found.</p>
-<h2>Contributing New Metrics</h2>
+<h2 id="contributing-new-metrics">Contributing New Metrics<a class="headerlink" href="#contributing-new-metrics" title="Permanent link">&para;</a></h2>
 <p>The power of this system comes from its extensibility. To add a new validation check:</p>
-<ol>
+<ol class="docs-list docs-list-ordered">
 <li><strong>Propose the Metric:</strong> Open a "Metric/Constraint Proposal" issue on GitHub. Describe the logic, provide examples of passing/failing cases, and suggest a JSON definition.</li>
 <li><strong>Discuss &amp; Refine:</strong> The community and maintainers will discuss the proposal.</li>
-<li><strong>Implement via Pull Request:</strong> Once approved, a contributor can open a PR that includes:<ul>
-<li>The new Metric Definition Object added to <code>metrics-catalog.json</code>.</li>
-<li>If computational, the new corresponding function added to <code>simulation-validator.js</code>.</li>
+<li><strong>Implement via Pull Request:</strong> Once approved, a contributor can open a PR that includes:<ul class="docs-list">
+<li>The new Metric Definition Object added to <code class="docs-inline-code">metrics-catalog.json</code>.</li>
+<li>If computational, the new corresponding function added to <code class="docs-inline-code">simulation-validator.js</code>.</li>
 </ul>
 </li>
 </ol>
 <p>This workflow allows us to systematically build a comprehensive library of validation checks.</p>
 <hr />
-<p><em>This system deprecates the legacy files <code>constraint_config.json</code> and <code>maintenance_rules.json</code>. Their logic has been migrated into the more modular and extensible Metrics Catalog.</em></p>
-            </section>
-
-        </main>
+<p><em>This system deprecates the legacy files <code class="docs-inline-code">constraint_config.json</code> and <code class="docs-inline-code">maintenance_rules.json</code>. Their logic has been migrated into the more modular and extensible Metrics Catalog.</em></p>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
     </div>
 
     <div id="footer-placeholder"></div>
 
     <script src="/assets/js/components.js"></script>
-<script type="module">
+    <script type="module">
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        mermaid.initialize({ startOnLoad: true });
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
     </script>
     <script src="/assets/js/main.js"></script>
     <script src="/assets/js/documentation.js"></script>

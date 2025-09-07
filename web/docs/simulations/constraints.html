@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentation - Universal Automation Wiki</title>
+    <title>UAW Metric &amp; Constraint ID Standardization - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
-    <link rel="stylesheet" href="/assets/css/category.css"> <!-- For nav cards -->
+    <link rel="stylesheet" href="/assets/css/category.css">
     <link rel="stylesheet" href="/assets/css/responsive.css">
-    <link rel="stylesheet" href="/assets/css/documentation.css"> <!-- Added documentation styles -->
+    <link rel="stylesheet" href="/assets/css/documentation.css">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,23 +22,49 @@
 <body>
     <div id="header-placeholder"></div>
 
-    <div class="docs-layout">
-        <div id="sidebar-placeholder"></div>
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
 
-        <main>
-            <section class="hero">
-                <div class="container">
-                    <h1>UAW Metric &amp; Constraint ID Standardization</h1>
-                    <p class="hero-subtitle">To ensure the system remains organized and scalable, all metric IDs will follow a three-level `TOP.MIDDLE.SPECIFIC` structure. This creates a clear, predictable, and self-documenting namespace.</p>
-                </div>
-            </section>
-            <div class="spacer"></div>
-            <section class="content-section">
-                <div class="spacer"></div>
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/simulations/">Simulations</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">UAW Metric &amp; Constraint ID Standardization</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">UAW Metric &amp; Constraint ID Standardization</h1>
+                            
+                            <p class="docs-page-subtitle">To ensure the system remains organized and scalable, all metric IDs will follow a three-level `TOP.MIDDLE.SPECIFIC` structure. This creates a clear, predictable, and self-documenting namespace.</p>
+                            
+                        </div>
+                    </header>
 
-                <p>To ensure the system remains organized and scalable, all metric IDs will follow a three-level <code>TOP.MIDDLE.SPECIFIC</code> structure. This creates a clear, predictable, and self-documenting namespace.</p>
-<h2>Structure Overview</h2>
-<table>
+                    <div class="docs-content">
+                        <p>To ensure the system remains organized and scalable, all metric IDs will follow a three-level <code class="docs-inline-code">TOP.MIDDLE.SPECIFIC</code> structure. This creates a clear, predictable, and self-documenting namespace.</p>
+<h2 id="structure-overview">Structure Overview<a class="headerlink" href="#structure-overview" title="Permanent link">&para;</a></h2>
+<div class="table-container"><table class="docs-table">
 <thead>
 <tr>
 <th>Level</th>
@@ -50,24 +76,24 @@
 <tr>
 <td><strong>TOP</strong></td>
 <td>The highest-level domain the metric belongs to.<br><em>What part of the simulation is this about?</em></td>
-<td><code>schema</code>, <code>actor</code>, <code>equipment</code>, <code>resource</code>, <code>task</code>, <code>temporal</code>, <code>economic</code>, <code>optimization</code></td>
+<td><code class="docs-inline-code">schema</code>, <code class="docs-inline-code">actor</code>, <code class="docs-inline-code">equipment</code>, <code class="docs-inline-code">resource</code>, <code class="docs-inline-code">task</code>, <code class="docs-inline-code">temporal</code>, <code class="docs-inline-code">economic</code>, <code class="docs-inline-code">optimization</code></td>
 </tr>
 <tr>
 <td><strong>MIDDLE</strong></td>
 <td>A sub-category specifying the type of check.<br><em>What property is being checked?</em></td>
-<td><code>integrity</code>, <code>scheduling</code>, <code>utilization</code>, <code>state</code>, <code>capacity</code>, <code>flow</code>, <code>definition</code>, <code>dependency</code>, <code>profitability</code>, <code>efficiency</code></td>
+<td><code class="docs-inline-code">integrity</code>, <code class="docs-inline-code">scheduling</code>, <code class="docs-inline-code">utilization</code>, <code class="docs-inline-code">state</code>, <code class="docs-inline-code">capacity</code>, <code class="docs-inline-code">flow</code>, <code class="docs-inline-code">definition</code>, <code class="docs-inline-code">dependency</code>, <code class="docs-inline-code">profitability</code>, <code class="docs-inline-code">efficiency</code></td>
 </tr>
 <tr>
 <td><strong>SPECIFIC</strong></td>
 <td>A concise, snake_case name for the specific rule.<br><em>What is the exact problem?</em></td>
-<td><code>missing_root</code>, <code>overlap</code>, <code>exceeded</code>, <code>negative_stock</code>, <code>unreachable</code>, <code>negative_margin</code></td>
+<td><code class="docs-inline-code">missing_root</code>, <code class="docs-inline-code">overlap</code>, <code class="docs-inline-code">exceeded</code>, <code class="docs-inline-code">negative_stock</code>, <code class="docs-inline-code">unreachable</code>, <code class="docs-inline-code">negative_margin</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
-<h2>Detailed Level Breakdown</h2>
-<h3>Top Level</h3>
-<ul>
+<h2 id="detailed-level-breakdown">Detailed Level Breakdown<a class="headerlink" href="#detailed-level-breakdown" title="Permanent link">&para;</a></h2>
+<h3 id="top-level">Top Level<a class="headerlink" href="#top-level" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
 <li><strong>schema</strong>: Rules about the structural correctness of the JSON itself.</li>
 <li><strong>actor</strong>: Rules concerning the actors (people, machines).</li>
 <li><strong>equipment</strong>: Rules for non-consumable tools and objects.</li>
@@ -77,12 +103,12 @@
 <li><strong>economic</strong>: Rules for financial viability (costs, revenue, profitability).</li>
 <li><strong>optimization</strong>: Suggestions for improvement that are not strictly errors.</li>
 </ul>
-<h3>Middle Level</h3>
-<ul>
+<h3 id="middle-level">Middle Level<a class="headerlink" href="#middle-level" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
 <li><strong>integrity</strong>: Checks for structural soundness and completeness.</li>
 <li><strong>scheduling</strong>: Checks for timing, overlaps, and assignments.</li>
 <li><strong>utilization</strong>: Analyzes how effectively actors/equipment are used.</li>
-<li><strong>state</strong>: Validates the logical transitions of equipment states (e.g., <code>clean -&gt; dirty</code>).</li>
+<li><strong>state</strong>: Validates the logical transitions of equipment states (e.g., <code class="docs-inline-code">clean -&gt; dirty</code>).</li>
 <li><strong>capacity</strong>: Checks if equipment usage exceeds its defined capacity.</li>
 <li><strong>flow</strong>: Tracks the consumption and production of resources over time.</li>
 <li><strong>definition</strong>: Validates that defined items (e.g., resources) are used correctly.</li>
@@ -90,17 +116,33 @@
 <li><strong>profitability</strong>: Analyzes financial outcomes.</li>
 <li><strong>efficiency</strong>: Identifies opportunities for improvement (e.g., reducing idle time).</li>
 </ul>
-            </section>
-
-        </main>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
     </div>
 
     <div id="footer-placeholder"></div>
 
     <script src="/assets/js/components.js"></script>
-<script type="module">
+    <script type="module">
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        mermaid.initialize({ startOnLoad: true });
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
     </script>
     <script src="/assets/js/main.js"></script>
     <script src="/assets/js/documentation.js"></script>

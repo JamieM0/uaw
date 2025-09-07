@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentation - Universal Automation Wiki</title>
+    <title>Playground Save/Load System Documentation - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
-    <link rel="stylesheet" href="/assets/css/category.css"> <!-- For nav cards -->
+    <link rel="stylesheet" href="/assets/css/category.css">
     <link rel="stylesheet" href="/assets/css/responsive.css">
-    <link rel="stylesheet" href="/assets/css/documentation.css"> <!-- Added documentation styles -->
+    <link rel="stylesheet" href="/assets/css/documentation.css">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,45 +22,70 @@
 <body>
     <div id="header-placeholder"></div>
 
-    <div class="docs-layout">
-        <div id="sidebar-placeholder"></div>
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
 
-        <main>
-            <section class="hero">
-                <div class="container">
-                    <h1>Playground Save/Load System Documentation</h1>
-                    <p class="hero-subtitle">The Universal Automation Wiki playground includes a comprehensive save/load system that allows users to save their simulations to a remote server and retrieve them later using unique 16-character save codes. This system is designed to be non-destructive, secure, and scalable.</p>
-                </div>
-            </section>
-            <div class="spacer"></div>
-            <section class="content-section">
-                <div class="spacer"></div>
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/playground/">Playground</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">Playground Save/Load System Documentation</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">Playground Save/Load System Documentation</h1>
+                            
+                            <p class="docs-page-subtitle">The Universal Automation Wiki&#39;s playground features a comprehensive save/load system, allowing users to save their simulations to a remote server and retrieve them later using unique 16-character save codes. This system is designed to be non-destructive, secure, and scalable.</p>
+                            
+                        </div>
+                    </header>
 
-                <p>The Universal Automation Wiki playground includes a comprehensive save/load system that allows users to save their simulations to a remote server and retrieve them later using unique 16-character save codes. This system is designed to be non-destructive, secure, and scalable.</p>
-<h2>System Overview</h2>
-<img src="/assets/images/docs/save-load-architecture.png" alt="Playground Save/Load System Architecture Diagram" style="max-width:100%;height:auto;">
+                    <div class="docs-content">
+                        <p>The Universal Automation Wiki's playground features a comprehensive save/load system, allowing users to save their simulations to a remote server and retrieve them later using unique 16-character save codes. This system is designed to be non-destructive, secure, and scalable.</p>
+<h2 id="system-overview">System Overview<a class="headerlink" href="#system-overview" title="Permanent link">&para;</a></h2>
 <p>The save/load system consists of three main components:</p>
-<ol>
+<ol class="docs-list docs-list-ordered">
 <li><strong>Frontend (Static Site)</strong>: JavaScript-based UI running in the user's browser</li>
 <li><strong>API Server</strong>: Node.js server running on Oracle Cloud Infrastructure  </li>
 <li><strong>Storage Backend</strong>: Private GitHub repository for persistent data storage</li>
 </ol>
-<h3>Key Design Principles</h3>
-<ul>
+<h3 id="key-design-principles">Key Design Principles<a class="headerlink" href="#key-design-principles" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
 <li><strong>Non-destructive</strong>: Every save creates a new entry, never overwrites existing data</li>
 <li><strong>Privacy-focused</strong>: Strong user consent process with clear warnings</li>
 <li><strong>Lineage tracking</strong>: Maintains history of simulation modifications for future diff features</li>
 <li><strong>Security through obscurity</strong>: 16-character alphanumeric save codes provide reasonable protection</li>
 <li><strong>Static-site compatible</strong>: Uses external API to enable smart features on GitHub Pages</li>
 </ul>
-<h2>Frontend Implementation</h2>
-<h3>User Interface Components</h3>
+<h2 id="frontend-implementation">Frontend Implementation<a class="headerlink" href="#frontend-implementation" title="Permanent link">&para;</a></h2>
+<h3 id="user-interface-components">User Interface Components<a class="headerlink" href="#user-interface-components" title="Permanent link">&para;</a></h3>
 <p>The playground includes two primary buttons in the top menu bar:</p>
-<ul>
+<ul class="docs-list">
 <li><strong>Save Simulation</strong>: Opens save modal with privacy warnings and generates save codes</li>
 <li><strong>Load Simulation</strong>: Opens load modal for entering existing save codes</li>
 </ul>
-<h3>Save Modal Structure</h3>
+<h3 id="save-modal-structure">Save Modal Structure<a class="headerlink" href="#save-modal-structure" title="Permanent link">&para;</a></h3>
 <div class="codehilite"><pre><span></span><code><span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;save-modal&quot;</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;dialog-overlay&quot;</span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;dialog&quot;</span><span class="p">&gt;</span>
         <span class="p">&lt;</span><span class="nt">h3</span><span class="p">&gt;</span>Save Simulation<span class="p">&lt;/</span><span class="nt">h3</span><span class="p">&gt;</span>
@@ -103,7 +128,7 @@
 <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
 </code></pre></div>
 
-<h3>Load Modal Structure</h3>
+<h3 id="load-modal-structure">Load Modal Structure<a class="headerlink" href="#load-modal-structure" title="Permanent link">&para;</a></h3>
 <div class="codehilite"><pre><span></span><code><span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;load-modal&quot;</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;dialog-overlay&quot;</span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;dialog&quot;</span><span class="p">&gt;</span>
         <span class="p">&lt;</span><span class="nt">h3</span><span class="p">&gt;</span>Load Simulation<span class="p">&lt;/</span><span class="nt">h3</span><span class="p">&gt;</span>
@@ -134,7 +159,7 @@
 <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
 </code></pre></div>
 
-<h3>JavaScript State Management</h3>
+<h3 id="javascript-state-management">JavaScript State Management<a class="headerlink" href="#javascript-state-management" title="Permanent link">&para;</a></h3>
 <p>The frontend maintains several key state variables:</p>
 <div class="codehilite"><pre><span></span><code><span class="c1">// Tracks the save code of a loaded simulation (for lineage)</span>
 <span class="kd">let</span><span class="w"> </span><span class="nx">loadedSaveCode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
@@ -143,13 +168,13 @@
 <span class="kd">let</span><span class="w"> </span><span class="nx">hasShownDisclaimer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span>
 </code></pre></div>
 
-<h4>LocalStorage Usage</h4>
+<h4 id="localstorage-usage">LocalStorage Usage<a class="headerlink" href="#localstorage-usage" title="Permanent link">&para;</a></h4>
 <p>The system uses browser LocalStorage to persist user preferences:</p>
-<ul>
-<li><code>uaw_playground_disclaimer_accepted</code>: Boolean indicating if user has accepted privacy terms</li>
+<ul class="docs-list">
+<li><code class="docs-inline-code">uaw_playground_disclaimer_accepted</code>: Boolean indicating if user has accepted privacy terms</li>
 <li>Persists across browser sessions to avoid repeatedly showing disclaimer</li>
 </ul>
-<h4>Event Listener Setup</h4>
+<h4 id="event-listener-setup">Event Listener Setup<a class="headerlink" href="#event-listener-setup" title="Permanent link">&para;</a></h4>
 <p>Event listeners are attached during the playground initialization phase to ensure DOM elements exist:</p>
 <div class="codehilite"><pre><span></span><code><span class="kd">function</span><span class="w"> </span><span class="nx">setupSaveLoadButtons</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;INIT: Setting up save/load buttons.&quot;</span><span class="p">);</span>
@@ -169,8 +194,8 @@
 <span class="p">}</span>
 </code></pre></div>
 
-<h3>Save Flow Logic</h3>
-<ol>
+<h3 id="save-flow-logic">Save Flow Logic<a class="headerlink" href="#save-flow-logic" title="Permanent link">&para;</a></h3>
+<ol class="docs-list docs-list-ordered">
 <li><strong>User clicks "Save Simulation"</strong></li>
 <li><strong>Privacy check</strong>: System checks if user has previously accepted disclaimer</li>
 <li>If not accepted: Show privacy warning and require checkbox consent</li>
@@ -180,7 +205,7 @@
 <li><strong>Success handling</strong>: Display save code and update session state</li>
 <li><strong>Error handling</strong>: Show user-friendly error messages for failures</li>
 </ol>
-<h4>Save Function Implementation</h4>
+<h4 id="save-function-implementation">Save Function Implementation<a class="headerlink" href="#save-function-implementation" title="Permanent link">&para;</a></h4>
 <div class="codehilite"><pre><span></span><code><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">saveSimulation</span><span class="p">(</span><span class="nx">data</span><span class="p">,</span><span class="w"> </span><span class="nx">previousSaveCode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">API_BASE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;https://api.universalautomation.wiki&#39;</span><span class="p">;</span>
 
@@ -202,8 +227,8 @@
 <span class="p">}</span>
 </code></pre></div>
 
-<h3>Load Flow Logic</h3>
-<ol>
+<h3 id="load-flow-logic">Load Flow Logic<a class="headerlink" href="#load-flow-logic" title="Permanent link">&para;</a></h3>
+<ol class="docs-list docs-list-ordered">
 <li><strong>User clicks "Load Simulation"</strong></li>
 <li><strong>Code input</strong>: Modal opens with input field for 16-character save code</li>
 <li><strong>Input validation</strong>: Auto-format to uppercase, alphanumeric only, 16 characters max</li>
@@ -212,7 +237,7 @@
 <li><strong>Lineage tracking</strong>: Store loaded save code for future saves</li>
 <li><strong>Success notification</strong>: Brief notification confirming load success</li>
 </ol>
-<h4>Load Function Implementation</h4>
+<h4 id="load-function-implementation">Load Function Implementation<a class="headerlink" href="#load-function-implementation" title="Permanent link">&para;</a></h4>
 <div class="codehilite"><pre><span></span><code><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">loadSimulation</span><span class="p">(</span><span class="nx">saveCode</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">API_BASE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;https://api.universalautomation.wiki&#39;</span><span class="p">;</span>
 
@@ -228,11 +253,11 @@
 <span class="p">}</span>
 </code></pre></div>
 
-<h2>Backend API Server</h2>
-<h3>Server Architecture</h3>
+<h2 id="backend-api-server">Backend API Server<a class="headerlink" href="#backend-api-server" title="Permanent link">&para;</a></h2>
+<h3 id="server-architecture">Server Architecture<a class="headerlink" href="#server-architecture" title="Permanent link">&para;</a></h3>
 <p>The API server is built with Node.js and Express, running on Oracle Cloud Infrastructure. It serves as a bridge between the static frontend and the GitHub storage backend.</p>
-<p><strong>Domain</strong>: <code>api.universalautomation.wiki</code>  </p>
-<h3>Apache Virtual Host Configuration</h3>
+<p><strong>Domain</strong>: <code class="docs-inline-code">api.universalautomation.wiki</code>  </p>
+<h3 id="apache-virtual-host-configuration">Apache Virtual Host Configuration<a class="headerlink" href="#apache-virtual-host-configuration" title="Permanent link">&para;</a></h3>
 <p>The server runs behind Apache as a reverse proxy:</p>
 <div class="codehilite"><pre><span></span><code><span class="nt">&lt;VirtualHost</span><span class="w"> </span><span class="s">*:443</span><span class="nt">&gt;</span>
 <span class="w">    </span><span class="nb">ServerName</span><span class="w"> </span>api.universalautomation.wiki
@@ -262,8 +287,8 @@
 <span class="nt">&lt;/VirtualHost&gt;</span>
 </code></pre></div>
 
-<h3>API Endpoints</h3>
-<h4>POST /playground/save</h4>
+<h3 id="api-endpoints">API Endpoints<a class="headerlink" href="#api-endpoints" title="Permanent link">&para;</a></h3>
+<h4 id="post-playgroundsave">POST /playground/save<a class="headerlink" href="#post-playgroundsave" title="Permanent link">&para;</a></h4>
 <p>Saves a simulation and returns a unique save code.</p>
 <p><strong>Request Body</strong>:</p>
 <div class="codehilite"><pre><span></span><code><span class="p">{</span>
@@ -288,7 +313,7 @@
 <span class="p">}</span>
 </code></pre></div>
 
-<h4>POST /playground/load</h4>
+<h4 id="post-playgroundload">POST /playground/load<a class="headerlink" href="#post-playgroundload" title="Permanent link">&para;</a></h4>
 <p>Retrieves a simulation by save code.</p>
 <p><strong>Request Body</strong>:</p>
 <div class="codehilite"><pre><span></span><code><span class="p">{</span>
@@ -311,7 +336,7 @@
 <span class="p">}</span>
 </code></pre></div>
 
-<h4>GET /health</h4>
+<h4 id="get-health">GET /health<a class="headerlink" href="#get-health" title="Permanent link">&para;</a></h4>
 <p>Health check endpoint for monitoring.</p>
 <p><strong>Response</strong>:</p>
 <div class="codehilite"><pre><span></span><code><span class="p">{</span>
@@ -320,7 +345,7 @@
 <span class="p">}</span>
 </code></pre></div>
 
-<h3>Save Code Generation</h3>
+<h3 id="save-code-generation">Save Code Generation<a class="headerlink" href="#save-code-generation" title="Permanent link">&para;</a></h3>
 <p>Save codes are 16-character alphanumeric strings using uppercase letters and digits:</p>
 <div class="codehilite"><pre><span></span><code><span class="kd">function</span><span class="w"> </span><span class="nx">generateSaveCode</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">chars</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789&#39;</span><span class="p">;</span>
@@ -337,11 +362,11 @@
 - Collision detection with retry logic
 - URL-safe and easy to communicate
 - No ambiguous characters (no lowercase, no special symbols)</p>
-<h3>GitHub Integration</h3>
+<h3 id="github-integration">GitHub Integration<a class="headerlink" href="#github-integration" title="Permanent link">&para;</a></h3>
 <p>The server uses the GitHub REST API to store simulations as JSON files in a private repository.</p>
-<h2>Storage Backend (GitHub Repository)</h2>
-<h3>Repository Structure</h3>
-<div class="codehilite"><pre><span></span><code>uaw-playground-saves/                    # Private GitHub repository
+<h2 id="storage-backend-github-repository">Storage Backend (GitHub Repository)<a class="headerlink" href="#storage-backend-github-repository" title="Permanent link">&para;</a></h2>
+<h3 id="repository-structure">Repository Structure<a class="headerlink" href="#repository-structure" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code class="docs-inline-code">uaw-playground-saves/                    # Private GitHub repository
 ├── README.md                           # Repository description
 └── playground-saves/                   # Simulation storage directory
     ├── README.md                       # Directory documentation
@@ -350,7 +375,7 @@
     └── ... (more simulation files)
 </code></pre></div>
 
-<h3>File Format and Metadata</h3>
+<h3 id="file-format-and-metadata">File Format and Metadata<a class="headerlink" href="#file-format-and-metadata" title="Permanent link">&para;</a></h3>
 <p>Each saved simulation is stored as a JSON file with comprehensive metadata:</p>
 <div class="codehilite"><pre><span></span><code><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;saveCode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ABC123DEF456GHI78&quot;</span><span class="p">,</span>
@@ -384,53 +409,53 @@
 <span class="p">}</span>
 </code></pre></div>
 
-<h4>Metadata Fields</h4>
-<ul>
+<h4 id="metadata-fields">Metadata Fields<a class="headerlink" href="#metadata-fields" title="Permanent link">&para;</a></h4>
+<ul class="docs-list">
 <li><strong>saveCode</strong>: The unique 16-character identifier for this simulation</li>
 <li><strong>previousSaveCode</strong>: The save code of the parent simulation (null for new simulations)</li>
 <li><strong>savedAt</strong>: ISO 8601 timestamp of when the simulation was saved</li>
 <li><strong>data</strong>: The actual simulation JSON object as created by the user</li>
 </ul>
-<h3>Commit Messages</h3>
+<h3 id="commit-messages">Commit Messages<a class="headerlink" href="#commit-messages" title="Permanent link">&para;</a></h3>
 <p>The system generates descriptive commit messages that indicate lineage:</p>
-<ul>
-<li><strong>New simulation</strong>: <code>Save simulation ABC123DEF456GHI78 (new)</code></li>
-<li><strong>Derived simulation</strong>: <code>Save simulation XYZ789UVW123STU456 (derived from ABC123DEF456GHI78)</code></li>
+<ul class="docs-list">
+<li><strong>New simulation</strong>: <code class="docs-inline-code">Save simulation ABC123DEF456GHI78 (new)</code></li>
+<li><strong>Derived simulation</strong>: <code class="docs-inline-code">Save simulation XYZ789UVW123STU456 (derived from ABC123DEF456GHI78)</code></li>
 </ul>
-<h3>Lineage Tracking for Future Features</h3>
-<p>The <code>previousSaveCode</code> field enables powerful future features:</p>
-<ol>
+<h3 id="lineage-tracking-for-future-features">Lineage Tracking for Future Features<a class="headerlink" href="#lineage-tracking-for-future-features" title="Permanent link">&para;</a></h3>
+<p>The <code class="docs-inline-code">previousSaveCode</code> field enables powerful future features:</p>
+<ol class="docs-list docs-list-ordered">
 <li><strong>Diff Visualization</strong>: Compare current simulation with its parent</li>
 <li><strong>Version History</strong>: Show the complete evolution of a simulation</li>
 <li><strong>Branching Analysis</strong>: Identify popular starting points for new simulations</li>
 <li><strong>Collaboration Features</strong>: Multiple users building on the same base simulation</li>
 </ol>
-<h2>Security Considerations</h2>
-<ul>
+<h2 id="security-considerations">Security Considerations<a class="headerlink" href="#security-considerations" title="Permanent link">&para;</a></h2>
+<ul class="docs-list">
 <li><strong>Clear Warnings</strong>: Prominent privacy notice explains data storage implications</li>
 <li><strong>User Consent</strong>: Explicit checkbox consent required before first save</li>
 <li><strong>No Personal Data</strong>: System only stores simulation JSON, no user identification</li>
 <li><strong>Private Repository</strong>: All simulations stored in private GitHub repository</li>
 </ul>
-<h2>Non-Destructive Architecture Benefits</h2>
-<h3>Why Non-Destructive?</h3>
+<h2 id="non-destructive-architecture-benefits">Non-Destructive Architecture Benefits<a class="headerlink" href="#non-destructive-architecture-benefits" title="Permanent link">&para;</a></h2>
+<h3 id="why-non-destructive">Why Non-Destructive?<a class="headerlink" href="#why-non-destructive" title="Permanent link">&para;</a></h3>
 <p>The original plan included "update" functionality that would overwrite existing simulations. This was changed to a non-destructive approach for several critical reasons:</p>
-<ol>
+<ol class="docs-list docs-list-ordered">
 <li><strong>Security</strong>: Prevents malicious users from guessing save codes and destroying others' work</li>
 <li><strong>Data Integrity</strong>: Ensures no simulation data is ever lost</li>
 <li><strong>Audit Trail</strong>: Maintains complete history for debugging and analysis</li>
 <li><strong>Future Features</strong>: Enables diff, merge, and collaboration features</li>
 </ol>
-<h3>Implementation Details</h3>
-<ul>
+<h3 id="implementation-details">Implementation Details<a class="headerlink" href="#implementation-details" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
 <li><strong>Always Generate New Codes</strong>: Every save operation creates a unique save code</li>
-<li><strong>Preserve Lineage</strong>: Track parent-child relationships through <code>previousSaveCode</code></li>
+<li><strong>Preserve Lineage</strong>: Track parent-child relationships through <code class="docs-inline-code">previousSaveCode</code></li>
 <li><strong>Immutable Storage</strong>: Once saved, simulation files are never modified</li>
 <li><strong>Version Trees</strong>: Multiple users can branch from the same parent simulation</li>
 </ul>
-<h2>User Experience Flow</h2>
-<h3>First-Time Save Experience</h3>
-<ol>
+<h2 id="user-experience-flow">User Experience Flow<a class="headerlink" href="#user-experience-flow" title="Permanent link">&para;</a></h2>
+<h3 id="first-time-save-experience">First-Time Save Experience<a class="headerlink" href="#first-time-save-experience" title="Permanent link">&para;</a></h3>
+<ol class="docs-list docs-list-ordered">
 <li>User creates or modifies a simulation in the playground</li>
 <li>User clicks "Save Simulation" button</li>
 <li>Privacy warning modal appears with detailed explanation</li>
@@ -440,16 +465,16 @@
 <li>Success modal displays save code with copy-to-clipboard functionality</li>
 <li>User's consent choice persists for future saves in this browser</li>
 </ol>
-<h3>Subsequent Save Experience</h3>
-<ol>
+<h3 id="subsequent-save-experience">Subsequent Save Experience<a class="headerlink" href="#subsequent-save-experience" title="Permanent link">&para;</a></h3>
+<ol class="docs-list docs-list-ordered">
 <li>User clicks "Save Simulation" button</li>
 <li>Privacy warning is skipped (already consented)</li>
 <li>Save process proceeds immediately</li>
 <li>New save code generated (even if loaded from existing simulation)</li>
-<li>Lineage preserved through <code>previousSaveCode</code> field</li>
+<li>Lineage preserved through <code class="docs-inline-code">previousSaveCode</code> field</li>
 </ol>
-<h3>Load Experience</h3>
-<ol>
+<h3 id="load-experience">Load Experience<a class="headerlink" href="#load-experience" title="Permanent link">&para;</a></h3>
+<ol class="docs-list docs-list-ordered">
 <li>User clicks "Load Simulation" button</li>
 <li>Modal opens with formatted input field (auto-uppercase, 16-char limit)</li>
 <li>User enters or pastes save code</li>
@@ -459,57 +484,73 @@
 <li>Simulation automatically renders in the visualization panel</li>
 <li>Success notification appears briefly</li>
 </ol>
-<h2>Error Handling</h2>
-<h3>Frontend Error Scenarios</h3>
-<ul>
+<h2 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
+<h3 id="frontend-error-scenarios">Frontend Error Scenarios<a class="headerlink" href="#frontend-error-scenarios" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
 <li><strong>Invalid JSON</strong>: User attempts to save malformed JSON</li>
 <li><strong>Network Failure</strong>: API server unreachable or slow</li>
 <li><strong>Invalid Save Code</strong>: User enters non-existent or malformed save code</li>
 <li><strong>Server Errors</strong>: API returns error response</li>
 </ul>
-<h3>Backend Error Scenarios</h3>
-<ul>
+<h3 id="backend-error-scenarios">Backend Error Scenarios<a class="headerlink" href="#backend-error-scenarios" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
 <li><strong>GitHub API Failures</strong>: Rate limiting, authentication issues, repository problems</li>
 <li><strong>Save Code Collisions</strong>: Extremely rare but handled with retry logic</li>
 <li><strong>Invalid Payloads</strong>: Malformed requests from frontend</li>
 <li><strong>Storage Failures</strong>: Disk space, permission issues</li>
 </ul>
-<h3>Error Messages</h3>
+<h3 id="error-messages">Error Messages<a class="headerlink" href="#error-messages" title="Permanent link">&para;</a></h3>
 <p>All error messages are user-friendly and actionable:</p>
-<ul>
+<ul class="docs-list">
 <li><strong>Save Errors</strong>: "Save failed: Please check your internet connection and try again"</li>
 <li><strong>Load Errors</strong>: "Save code not found: Please verify the code and try again"</li>
 <li><strong>Validation Errors</strong>: "Please fix JSON errors before saving"</li>
 </ul>
-<h2>Future Enhancement Possibilities</h2>
-<h3>Planned Features</h3>
-<ol>
+<h2 id="future-enhancement-possibilities">Future Enhancement Possibilities<a class="headerlink" href="#future-enhancement-possibilities" title="Permanent link">&para;</a></h2>
+<h3 id="planned-features">Planned Features<a class="headerlink" href="#planned-features" title="Permanent link">&para;</a></h3>
+<ol class="docs-list docs-list-ordered">
 <li><strong>Diff Visualization</strong>: Show changes between parent and child simulations</li>
 <li><strong>Version History Browser</strong>: Navigate through simulation evolution</li>
 <li><strong>Popular Simulations</strong>: Identify most-used base simulations</li>
 <li><strong>Collaboration Tools</strong>: Share and iterate on simulations</li>
 </ol>
-<h2>Conclusion</h2>
+<h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
 <p>The Universal Automation Wiki playground save/load system provides a robust, secure, and user-friendly way for users to persist and share their simulations. The non-destructive architecture ensures data integrity while enabling powerful future features. The system successfully bridges the gap between static site limitations and modern web application functionality.</p>
 <p>The implementation demonstrates several key architectural patterns:</p>
-<ul>
+<ul class="docs-list">
 <li><strong>Progressive Enhancement</strong>: Static site enhanced with dynamic features</li>
 <li><strong>Service-Oriented Architecture</strong>: Clean separation between frontend, API, and storage</li>
 <li><strong>Security by Design</strong>: Privacy warnings and consent management</li>
 <li><strong>Future-Proof Design</strong>: Metadata structure supports planned enhancements</li>
 </ul>
 <p>This system serves as a foundation for more advanced collaboration and analysis features while maintaining the simplicity and reliability that users expect from the Universal Automation Wiki platform.</p>
-            </section>
-
-        </main>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
     </div>
 
     <div id="footer-placeholder"></div>
 
     <script src="/assets/js/components.js"></script>
-<script type="module">
+    <script type="module">
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        mermaid.initialize({ startOnLoad: true });
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
     </script>
     <script src="/assets/js/main.js"></script>
     <script src="/assets/js/documentation.js"></script>
