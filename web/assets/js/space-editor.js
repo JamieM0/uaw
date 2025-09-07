@@ -37,7 +37,8 @@ class SpaceEditor {
             x: 0,
             y: 0,
             isPanning: false,
-            lastPan: { x: 0, y: 0 }
+            lastPan: { x: 0, y: 0 },
+            scrollSensitivity: 1
         };
 
         this.init();
@@ -111,6 +112,14 @@ class SpaceEditor {
             this.snapSettings.tolerance = parseInt(snapToleranceInput.value) || 10;
             snapToleranceInput.addEventListener('change', (e) => {
                 this.snapSettings.tolerance = parseInt(e.target.value);
+            });
+        }
+
+        const scrollSensitivitySlider = document.getElementById('space-scroll-sensitivity');
+        if (scrollSensitivitySlider) {
+            this.view.scrollSensitivity = parseFloat(scrollSensitivitySlider.value);
+            scrollSensitivitySlider.addEventListener('input', (e) => {
+                this.view.scrollSensitivity = parseFloat(e.target.value);
             });
         }
     }
@@ -495,7 +504,15 @@ class SpaceEditor {
 
     isDescendantOf(ancestorId, potentialDescendantId) {
         let currentId = potentialDescendantId;
+        const visited = new Set();
+
         while (currentId) {
+            if (visited.has(currentId)) {
+                console.error("Circular dependency detected in hierarchy involving ID:", currentId);
+                return true; // Prevent selection to avoid deepening the cycle
+            }
+            visited.add(currentId);
+
             const location = this.locations.find(l => l.id === currentId);
             if (!location || !location.parentId) break;
             

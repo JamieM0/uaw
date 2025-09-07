@@ -255,6 +255,8 @@
                                 <div class="tab-bar">
                                     <button class="tab-btn active" data-tab="timeline">Simulation Render</button>
                                     <button class="tab-btn" data-tab="space-editor">Space Editor</button>
+                                    <button class="tab-btn" data-tab="digital-space">Digital Space</button>
+                                    <button class="tab-btn" data-tab="display-editor">Display Editor</button>
                                 </div>
 
                                 <div class="tab-content-wrapper">
@@ -317,6 +319,88 @@
                                                             <label for="snap-tolerance">Snap Tolerance:</label>
                                                             <input type="number" id="snap-tolerance" value="10" min="1" max="50" step="1">
                                                             <span>px</span>
+                                                        </div>
+                                                        <div class="option-field">
+                                                            <label for="space-scroll-sensitivity">Scroll Sensitivity:</label>
+                                                            <input type="range" id="space-scroll-sensitivity" min="0.2" max="5" step="0.1" value="1">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="digital-space-tab" class="tab-content">
+                                        <div class="digital-space-container">
+                                            <div class="space-canvas" id="digital-space-canvas">
+                                                <div class="zoom-controls">
+                                                    <button type="button" class="zoom-btn zoom-in-btn" id="digital-zoom-in-btn" title="Zoom In">
+                                                        <span class="zoom-icon">+</span>
+                                                    </button>
+                                                    <button type="button" class="zoom-btn zoom-out-btn" id="digital-zoom-out-btn" title="Zoom Out">
+                                                        <span class="zoom-icon">−</span>
+                                                    </button>
+                                                    <button type="button" class="zoom-btn zoom-fit-btn" id="digital-zoom-fit-btn" title="Zoom to Fit">
+                                                        <span class="zoom-icon">⛶</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="properties-panel-container">
+                                                <div class="properties-panel-header">
+                                                    <h4>Digital Properties</h4>
+                                                    <div class="layer-controls">
+                                                        <label for="digital-layer-filter">Layer:</label>
+                                                        <select id="digital-layer-filter">
+                                                            <option value="all">All Layers</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div id="digital-properties-panel-content">
+                                                    <p class="placeholder">Digital space editor - model digital objects and storage locations.</p>
+                                                </div>
+                                                <div class="options-panel-container">
+                                                    <div class="options-panel-header">
+                                                        <h4>Options</h4>
+                                                    </div>
+                                                    <div id="digital-options-panel-content">
+                                                        <div class="option-field">
+                                                            <label for="digital-scroll-sensitivity">Scroll Sensitivity:</label>
+                                                            <input type="range" id="digital-scroll-sensitivity" min="0.2" max="5" step="0.1" value="2.5">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="display-editor-tab" class="tab-content">
+                                        <div class="display-editor-container">
+                                            <div class="space-canvas" id="display-canvas">
+                                                <div class="zoom-controls">
+                                                    <button type="button" class="zoom-btn zoom-in-btn" id="display-zoom-in-btn" title="Zoom In">
+                                                        <span class="zoom-icon">+</span>
+                                                    </button>
+                                                    <button type="button" class="zoom-btn zoom-out-btn" id="display-zoom-out-btn" title="Zoom Out">
+                                                        <span class="zoom-icon">−</span>
+                                                    </button>
+                                                    <button type="button" class="zoom-btn zoom-fit-btn" id="display-zoom-fit-btn" title="Zoom to Fit">
+                                                        <span class="zoom-icon">⛶</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="properties-panel-container">
+                                                <div class="properties-panel-header">
+                                                    <h4>Display Properties</h4>
+                                                </div>
+                                                <div id="display-properties-panel-content">
+                                                    <p class="placeholder">Display editor - model digital interface elements and interactions.</p>
+                                                </div>
+                                                <div class="options-panel-container">
+                                                    <div class="options-panel-header">
+                                                        <h4>Options</h4>
+                                                    </div>
+                                                    <div id="display-options-panel-content">
+                                                        <div class="option-field">
+                                                            <label for="display-scroll-sensitivity">Scroll Sensitivity:</label>
+                                                            <input type="range" id="display-scroll-sensitivity" min="0.2" max="5" step="0.1" value="2.5">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -923,6 +1007,9 @@
         <script src="/assets/js/playground/playground-ui.js"></script>
         <script src="/assets/js/playground/playground-validation.js"></script>
         <script src="/assets/js/playground/playground-timeline.js"></script>
+        <script src="/assets/js/playground/playground-timeline-extensions.js"></script>
+        <script src="/assets/js/playground/playground-digital-space.js"></script>
+        <script src="/assets/js/playground/playground-display-editor.js"></script>
         <script src="/assets/js/playground/playground-save-load.js"></script>
         <script src="/assets/js/playground/playground-metrics-editor.js"></script>
         <script src="/assets/js/playground/playground-objects.js"></script>

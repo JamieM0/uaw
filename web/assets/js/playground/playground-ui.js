@@ -35,6 +35,33 @@ function setupTabs() {
                     } catch(e) {
                     }
                 }
+            } else if (targetTab === 'digital-space') {
+                document.getElementById('digital-space-tab').classList.add('active');
+                // Initialize digital space editor when tab is first opened
+                if (digitalSpaceEditor) {
+                    const digitalCanvas = document.getElementById('digital-space-canvas');
+                    const digitalPropsPanel = document.getElementById('digital-properties-panel-content');
+                    if (!digitalSpaceEditor.canvas) {
+                        digitalSpaceEditor.initialize(digitalCanvas, digitalPropsPanel, editor);
+                    } else {
+                        // Refresh data from current simulation
+                        digitalSpaceEditor.loadFromSimulation();
+                    }
+                }
+            } else if (targetTab === 'display-editor') {
+                document.getElementById('display-editor-tab').classList.add('active');
+                // Initialize display editor when tab is first opened
+                if (displayEditor) {
+                    const displayCanvas = document.getElementById('display-canvas');
+                    const displayPropsPanel = document.getElementById('display-properties-panel-content');
+                    if (!displayEditor.canvas) {
+                        displayEditor.initialize(displayCanvas, displayPropsPanel, editor);
+                    } else {
+                        // Refresh data from current simulation
+                        displayEditor.loadFromSimulation();
+                        displayEditor.renderActiveDisplay();
+                    }
+                }
             }
         });
     });

@@ -50,6 +50,7 @@ pip3 install jinja2 requests jsonschema ollama json-repair python-dotenv
 - **routines/assemble.py**: Static site generator using Jinja2 templates
 - **routines/simulation.py**: Creates time-based process simulations from tree data
 - **web/assets/js/simulation-validator.js**: Client-side validation for playground
+- **web/assets/js/playground/**: Modularized playground components (see Playground Architecture)
 - **metrics/**: Persona-specific validation rules and definitions
 
 ### Data Flow Structure
@@ -83,6 +84,7 @@ Each generated article lives in `routines/flow/<uuid>/` containing:
 ### Static Assets
 - `web/assets/css/`: Styling and responsive design
 - `web/assets/js/`: Interactive features, Monaco editor integration
+- `web/assets/js/playground/`: Modularized playground JavaScript components
 - `web/assets/static/`: JSON data files and validation rules
 
 ## Important Notes
@@ -122,3 +124,47 @@ When working on implementation tasks, always follow this approach:
 
 This ensures alignment with user expectations and prevents rework from misunderstood requirements.
 - When stuck on a tricky problem, ALWAYS add detailed logs and ask for the log results. Remove these logs after the problem has been resolved.
+
+## Playground Architecture
+
+### Modularized System (Post-PR #25)
+The simulation playground has been completely modularized for better maintainability and efficiency. The system is now split into focused, single-responsibility modules:
+
+#### Core Modules
+- **playground-core.js**: Main initialization logic, global state management, and module orchestration
+- **playground-editor.js**: Monaco editor initialization, sample data management, and code editing features
+- **playground-ui.js**: Tab management, dialog handling, history system, and general UI utilities
+- **playground-validation.js**: Validation result display, filtering, and grouped result presentation
+
+#### Feature Modules  
+- **playground-timeline.js**: Timeline rendering, visualization, and timeline-specific interactions
+- **playground-objects.js**: Object and task management functionality, interaction handling
+- **playground-save-load.js**: Save/load functionality for simulations, import/export features
+- **playground-features.js**: Tutorial system, LLM integration, and additional playground features
+- **playground-metrics-editor.js**: Custom metrics creation and management system
+- **playground-utils.js**: General helper functions, time conversions, and shared utilities
+
+#### Module Organization Principles
+- **Single Responsibility**: Each module handles one specific aspect of functionality
+- **Clear Dependencies**: Modules have minimal interdependencies with well-defined interfaces
+- **Global State Management**: Core module manages shared state, other modules interact through defined APIs
+- **Incremental Loading**: Modules can be loaded and initialized independently as needed
+
+#### Integration Points
+- All modules are loaded via `playground.html` script tags in dependency order
+- Core module (`playground-core.js`) initializes after DOM load and coordinates other modules
+- Modules communicate through global variables and function calls defined in the core module
+- Each module follows the pattern: `// Module Name - Brief description` header comment
+
+#### Development Guidelines for Playground Modules
+When working with playground functionality:
+1. **Identify the correct module** for your changes based on functionality area
+2. **Follow naming conventions**: `playground-[feature-area].js`
+3. **Maintain module boundaries**: Don't mix responsibilities across modules
+4. **Update core module** if adding new global state or coordination logic
+5. **Test cross-module interactions** to ensure proper integration
+6. **Add new modules** when introducing entirely new feature areas that don't fit existing modules
+
+#### Legacy Code
+- **playground-old.js**: Original monolithic version, retained for reference but no longer used
+- **playground.html**: Updated to load all modular components instead of single file

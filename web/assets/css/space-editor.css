@@ -8,7 +8,9 @@
 .tab-content.active { display: flex; flex-direction: column; }
 
 /* --- Space Editor Layout --- */
-.space-editor-container { display: flex; height: 100%; }
+.space-editor-container,
+.digital-space-container,
+.display-editor-container { display: flex; height: 100%; }
 .space-canvas {
     flex: 1;
     position: relative;
@@ -237,6 +239,9 @@
     border-radius: 4px; 
     font-size: 0.8rem; 
 }
+.option-field input[type="range"] {
+    flex: 1;
+}
 
 /* --- Properties Panel Styles --- */
 .properties-panel-container { width: 300px; border-left: 2px solid var(--border-color); background: var(--bg-light); overflow-y: auto; flex-shrink: 0; }
@@ -264,3 +269,173 @@
 .inline-input-group { flex: 0 1 auto; width: 85px; max-width: 85px; }
 .inline-input-group label { display: block; font-size: 0.7rem; font-weight: 500; margin-bottom: 0.25rem; color: var(--text-light); text-align: center; }
 .inline-input-group input { width: 100%; padding: 0.3rem 0.2rem; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; font-size: 0.75rem; text-align: center; }
+
+/* --- Digital Space & Display Editor Styles --- */
+
+/* Digital Location Rectangles */
+.digital-location-rect {
+    position: absolute;
+    border: 2px solid #4CAF50;
+    background-color: rgba(76, 175, 80, 0.1);
+    cursor: pointer;
+    box-sizing: border-box;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--text-dark);
+    font-weight: 500;
+    text-align: center;
+    overflow: hidden;
+}
+
+.digital-location-rect.selected {
+    border-color: #2E7D32;
+    background-color: rgba(46, 125, 50, 0.2);
+    box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.3);
+}
+
+/* Digital World Container */
+.digital-world {
+    transform-origin: 0 0;
+    transition: transform 0.1s ease;
+}
+
+/* Display Editor Styles */
+.display-element-rect {
+    position: absolute;
+    border: 1px solid #cccccc;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    box-sizing: border-box;
+    user-select: none;
+    font-size: 12px;
+    color: #333333;
+    overflow: hidden;
+}
+
+.display-element-rect.selected {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.3);
+}
+
+.display-element-rect.drawing {
+    border: 2px dashed #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+.display-viewport {
+    position: absolute;
+    border: 2px solid #333;
+    background-color: #ffffff;
+    z-index: 0;
+}
+
+.display-world {
+    transform-origin: 0 0;
+    transition: transform 0.1s ease;
+}
+
+/* Element Content Styling */
+.element-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 2px;
+    font-size: 12px;
+    overflow: hidden;
+}
+
+.element-icon {
+    margin-right: 4px;
+    font-size: 14px;
+}
+
+.element-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Digital Objects List */
+.digital-objects-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-light);
+}
+
+.object-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 12px;
+}
+
+.object-item:last-child {
+    border-bottom: none;
+}
+
+.object-item:hover {
+    background: var(--border-color);
+}
+
+.object-icon {
+    font-size: 14px;
+    width: 16px;
+    text-align: center;
+}
+
+.object-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.object-location {
+    color: var(--text-light);
+    font-size: 10px;
+}
+
+.btn-danger-small {
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 50%;
+    background: #dc3545;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-danger-small:hover {
+    background: #c82333;
+}
+
+/* Display Controls */
+.display-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.display-controls label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-light);
+}
+
+.display-controls select {
+    padding: 4px 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 12px;
+    background: white;
+}

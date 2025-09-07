@@ -3,7 +3,7 @@
 
 // Global state variables
 let editor;
-let tutorialManager, player, spaceEditor, emojiPicker;
+let tutorialManager, player, spaceEditor, digitalSpaceEditor, displayEditor, emojiPicker;
 let tutorialData = null;
 let isPlaygroundInitialized = false; // Flag to prevent double-initialization
 let autoRender = true;
@@ -73,6 +73,28 @@ function initializePlayground() {
         spaceEditor = new SpaceEditor(canvas, propsPanel, editor);
     } else {
         console.error("INIT ERROR: Canvas or Properties Panel element not found!");
+    }
+
+    // Initialize Digital Space Editor
+    const digitalCanvas = document.getElementById('digital-space-canvas');
+    const digitalPropsPanel = document.getElementById('digital-properties-panel-content');
+    if (digitalCanvas && digitalPropsPanel) {
+        digitalSpaceEditor = new DigitalSpaceEditor();
+        // Initialize will be called when the tab is first opened
+        window.digitalSpaceEditor = digitalSpaceEditor; // Make it globally accessible for object deletion
+    } else {
+        console.error("INIT ERROR: Digital Space canvas or properties panel not found!");
+    }
+
+    // Initialize Display Editor
+    const displayCanvas = document.getElementById('display-canvas');
+    const displayPropsPanel = document.getElementById('display-properties-panel-content');
+    if (displayCanvas && displayPropsPanel) {
+        displayEditor = new DisplayEditor();
+        // Initialize will be called when the tab is first opened
+        window.displayEditor = displayEditor; // Make it globally accessible
+    } else {
+        console.error("INIT ERROR: Display canvas or properties panel not found!");
     }
     
     initializeTutorial();
