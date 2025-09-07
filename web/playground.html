@@ -13,6 +13,7 @@
         <link rel="stylesheet" href="/assets/css/simulation.css" />
         <link rel="stylesheet" href="/assets/css/space-editor.css" />
         <link rel="stylesheet" href="/assets/css/playground.css" />
+        <link rel="stylesheet" href="/assets/css/drag-overlay.css" />
         <link rel="stylesheet" href="/assets/css/emoji-picker.css" />
 
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
@@ -26,7 +27,6 @@
         <script src="/assets/js/simulation-validator.js"></script>
         <script src="/assets/js/space-editor.js"></script>
         <script src="/assets/js/emoji-picker.js"></script>
-        <script src="/assets/js/metrics-editor.js"></script>
 
         <script src="/assets/js/tutorial.js"></script>
         <script src="/assets/js/tutorial-validator.js"></script>
@@ -271,7 +271,19 @@
                                     </div>
                                     <div id="space-editor-tab" class="tab-content">
                                         <div class="space-editor-container">
-                                            <div class="space-canvas" id="space-canvas"></div>
+                                            <div class="space-canvas" id="space-canvas">
+                                                <div class="zoom-controls">
+                                                    <button type="button" class="zoom-btn zoom-in-btn" id="zoom-in-btn" title="Zoom In">
+                                                        <span class="zoom-icon">+</span>
+                                                    </button>
+                                                    <button type="button" class="zoom-btn zoom-out-btn" id="zoom-out-btn" title="Zoom Out">
+                                                        <span class="zoom-icon">−</span>
+                                                    </button>
+                                                    <button type="button" class="zoom-btn zoom-fit-btn" id="zoom-fit-btn" title="Zoom to Fit">
+                                                        <span class="zoom-icon">⛶</span>
+                                                    </button>
+                                                </div>
+                                            </div>
                                             <div class="properties-panel-container">
                                                 <div class="properties-panel-header">
                                                     <h4>Properties</h4>
@@ -319,9 +331,9 @@
                         <div class="metrics-mode-layout" style="display: none;">
                             <div class="left-panel-tabs">
                                 <div class="tab-bar">
-                                    <button class="left-tab-btn active" data-tab="json-editor">JSON Editor</button>
-                                    <button class="left-tab-btn" data-tab="simulation-render">Simulation Render</button>
-                                    <button class="left-tab-btn" data-tab="space-editor">Space Editor</button>
+                                    <button class="left-tab-btn active" data-left-tab="json-editor">JSON Editor</button>
+                                    <button class="left-tab-btn" data-left-tab="simulation-render">Simulation Render</button>
+                                    <button class="left-tab-btn" data-left-tab="space-editor">Space Editor</button>
                                 </div>
                                 
                                 <div class="left-tab-content-wrapper">
@@ -657,10 +669,6 @@
                         <label for="object-emoji-input">Emoji:</label>
                         <input type="text" id="object-emoji-input" placeholder="🔧" maxlength="2">
                     </div>
-                    <div class="form-group">
-                        <label for="object-location-input">Location:</label>
-                        <input type="text" id="object-location-input" placeholder="location_id">
-                    </div>
                     <div id="object-type-specific-fields">
                         <!-- Type-specific fields will be dynamically inserted here -->
                     </div>
@@ -905,8 +913,22 @@
             </div>
         </div>
 
+        <!-- Drag Overlay for Resizing -->
+        <div id="drag-overlay" class="drag-overlay"></div>
+
         <script src="/assets/js/context-menu.js"></script>
-        <script src="/assets/js/playground.js"></script>
+        
+        <!-- Playground modules in dependency order -->
+        <script src="/assets/js/playground/playground-utils.js"></script>
+        <script src="/assets/js/playground/playground-ui.js"></script>
+        <script src="/assets/js/playground/playground-validation.js"></script>
+        <script src="/assets/js/playground/playground-timeline.js"></script>
+        <script src="/assets/js/playground/playground-save-load.js"></script>
+        <script src="/assets/js/playground/playground-metrics-editor.js"></script>
+        <script src="/assets/js/playground/playground-objects.js"></script>
+        <script src="/assets/js/playground/playground-features.js"></script>
+        <script src="/assets/js/playground/playground-editor.js"></script>
+        <script src="/assets/js/playground/playground-core.js"></script>
     </body>
 </html>
 

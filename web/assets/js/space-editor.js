@@ -12,6 +12,7 @@ class SpaceEditor {
         this.selectedRectId = null;
         this.startCoords = { x: 0, y: 0 };
         this.dragOffset = { x: 0, y: 0 };
+        this.currentDragPosition = { x: 0, y: 0 };
         this.locations = [];
 
         this.isUpdatingJson = false;
@@ -57,6 +58,23 @@ class SpaceEditor {
         document.addEventListener('mouseup', this.onMouseUp.bind(this));
         document.addEventListener('keydown', this.onKeyDown.bind(this));
         document.addEventListener('keyup', this.onKeyUp.bind(this));
+
+        // Zoom button controls
+        const zoomInBtn = document.getElementById('zoom-in-btn');
+        const zoomOutBtn = document.getElementById('zoom-out-btn');
+        const zoomFitBtn = document.getElementById('zoom-fit-btn');
+        
+        if (zoomInBtn) {
+            zoomInBtn.addEventListener('click', () => this.zoomIn());
+        }
+        
+        if (zoomOutBtn) {
+            zoomOutBtn.addEventListener('click', () => this.zoomOut());
+        }
+        
+        if (zoomFitBtn) {
+            zoomFitBtn.addEventListener('click', () => this.zoomToFit());
+        }
         
         // Layer filtering
         const layerFilter = document.getElementById('layer-filter');
@@ -185,6 +203,38 @@ class SpaceEditor {
         this.view.x = (canvasWidth / 2) - (contentWidth / 2 + minX) * this.view.scale;
         this.view.y = (canvasHeight / 2) - (contentHeight / 2 + minY) * this.view.scale;
 
+        this.updateViewTransform();
+    }
+
+    zoomIn() {
+        const zoomFactor = 1.2; // 20% zoom in
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const centerX = canvasRect.width / 2;
+        const centerY = canvasRect.height / 2;
+        
+        const oldScale = this.view.scale;
+        this.view.scale = Math.min(5, this.view.scale * zoomFactor); // Cap max zoom at 5x
+        
+        // Zoom towards the center
+        this.view.x = centerX - (centerX - this.view.x) * (this.view.scale / oldScale);
+        this.view.y = centerY - (centerY - this.view.y) * (this.view.scale / oldScale);
+        
+        this.updateViewTransform();
+    }
+
+    zoomOut() {
+        const zoomFactor = 0.833; // ~20% zoom out (1/1.2)
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const centerX = canvasRect.width / 2;
+        const centerY = canvasRect.height / 2;
+        
+        const oldScale = this.view.scale;
+        this.view.scale = Math.max(0.1, this.view.scale * zoomFactor); // Cap min zoom at 0.1x
+        
+        // Zoom towards the center
+        this.view.x = centerX - (centerX - this.view.x) * (this.view.scale / oldScale);
+        this.view.y = centerY - (centerY - this.view.y) * (this.view.scale / oldScale);
+        
         this.updateViewTransform();
     }
 
@@ -777,10 +827,22 @@ class SpaceEditor {
         this.activeRectEl = e.target;
         this.selectedRectId = id;
         
+        // Calculate drag offset in world coordinates for proper alignment
+        const rect = this.canvas.getBoundingClientRect();
+        const screenX = e.clientX - rect.left;
+        const screenY = e.clientY - rect.top;
+        const worldMouseX = (screenX - this.view.x) / this.view.scale;
+        const worldMouseY = (screenY - this.view.y) / this.view.scale;
+        const rectWorldX = parseInt(this.activeRectEl.style.left) || 0;
+        const rectWorldY = parseInt(this.activeRectEl.style.top) || 0;
+        
         this.dragOffset = {
-            x: e.clientX - this.activeRectEl.getBoundingClientRect().left,
-            y: e.clientY - this.activeRectEl.getBoundingClientRect().top
+            x: worldMouseX - rectWorldX,
+            y: worldMouseY - rectWorldY
         };
+
+        // Initialize currentDragPosition to the starting position of the drag
+        this.currentDragPosition = { x: rectWorldX, y: rectWorldY };
         
         this.selectRect(id);
     }
@@ -826,11 +888,14 @@ class SpaceEditor {
             let worldX = (screenX - this.view.x) / this.view.scale;
             let worldY = (screenY - this.view.y) / this.view.scale;
 
-            const proposedX = worldX - this.dragOffset.x / this.view.scale;
-            const proposedY = worldY - this.dragOffset.y / this.view.scale;
+            const proposedX = worldX - this.dragOffset.x;
+            const proposedY = worldY - this.dragOffset.y;
 
             // Apply snapping
             const snappedPosition = this.applySnapping(proposedX, proposedY);
+
+            // Store the current drag position for proper mouse up handling
+            this.currentDragPosition = { x: snappedPosition.x, y: snappedPosition.y };
 
             this.activeRectEl.style.left = `${snappedPosition.x}px`;
             this.activeRectEl.style.top = `${snappedPosition.y}px`;
@@ -889,11 +954,11 @@ class SpaceEditor {
         } 
         // Finalize dragging an existing rectangle
         else if (this.isDragging && this.activeRectEl) {
-            // Immediately commit the position to prevent snapping back
+            // Commit the position using the stored drag position to prevent jumping
             const loc = this.locations.find(l => l.id === this.selectedRectId);
             if (loc) {
-                loc.shape.x = parseInt(this.activeRectEl.style.left);
-                loc.shape.y = parseInt(this.activeRectEl.style.top);
+                loc.shape.x = this.currentDragPosition.x;
+                loc.shape.y = this.currentDragPosition.y;
             }
             
             // Clear all dragging states immediately

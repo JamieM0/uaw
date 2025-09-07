@@ -722,3 +722,6 @@ class SimulationValidator {
     }
   }
 }
+
+// Export to global scope for playground usage
+window.SimulationValidator = SimulationValidator;
