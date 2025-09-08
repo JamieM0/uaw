@@ -126,6 +126,8 @@ class SpaceEditor {
 
     updateViewTransform() {
         this.world.style.transform = `translate(${this.view.x}px, ${this.view.y}px) scale(${this.view.scale})`;
+        // Update CSS custom property for dynamic font scaling
+        this.world.style.setProperty('--current-zoom-scale', this.view.scale);
     }
 
     nudgeSelectedRectangle(keyCode) {
@@ -402,7 +404,7 @@ class SpaceEditor {
         const rectEl = document.createElement('div');
         rectEl.className = 'location-rect';
         rectEl.dataset.id = loc.id;
-        rectEl.textContent = loc.name || loc.id;
+        rectEl.innerHTML = `<span class="location-text">${loc.name || loc.id}</span>`;
         rectEl.addEventListener('mousedown', (e) => this.onRectMouseDown(e, loc.id));
         
         // Apply 3D transformation
@@ -1162,7 +1164,10 @@ class SpaceEditor {
             // Only update the visual label immediately, don't modify the data model yet
             const rectEl = document.querySelector(`.location-rect[data-id="${this.selectedRectId}"]`);
             if (rectEl) {
-                rectEl.textContent = newName || loc.id; // Show text immediately or fallback to original ID
+                const textSpan = rectEl.querySelector('.location-text');
+                if (textSpan) {
+                    textSpan.textContent = newName || loc.id; // Show text immediately or fallback to original ID
+                }
                 this.adjustTextSize(rectEl);
             }
         });
@@ -1177,7 +1182,10 @@ class SpaceEditor {
             
             const rectEl = document.querySelector(`.location-rect[data-id="${this.selectedRectId}"]`);
             if (rectEl) {
-                rectEl.textContent = newName || newId;
+                const textSpan = rectEl.querySelector('.location-text');
+                if (textSpan) {
+                    textSpan.textContent = newName || newId;
+                }
                 rectEl.dataset.id = newId;
                 this.adjustTextSize(rectEl);
             }
@@ -1322,7 +1330,8 @@ class SpaceEditor {
 
     adjustTextSize(rectEl) {
         // Skip if no text content
-        if (!rectEl.textContent || rectEl.textContent.trim() === '') {
+        const textSpan = rectEl.querySelector('.location-text');
+        if (!textSpan || !textSpan.textContent || textSpan.textContent.trim() === '') {
             return;
         }
 
@@ -1346,7 +1355,7 @@ class SpaceEditor {
             tempEl.style.whiteSpace = 'nowrap';
             tempEl.style.fontFamily = getComputedStyle(rectEl).fontFamily || 'Inter, sans-serif';
             tempEl.style.fontWeight = getComputedStyle(rectEl).fontWeight || '600';
-            tempEl.textContent = rectEl.textContent;
+            tempEl.textContent = textSpan.textContent;
             document.body.appendChild(tempEl);
 
             // Decrease font size until text fits within the available width

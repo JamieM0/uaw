@@ -25,7 +25,6 @@ class DisplayEditor {
         
         // Cache for performance optimization
         this.canvasRect = null;
-        this.isMouseMoveThrottled = false;
         
         // Debouncing for JSON updates
         this.updateSimulationJsonTimeout = null;
@@ -37,6 +36,13 @@ class DisplayEditor {
             isPanning: false,
             lastPan: { x: 0, y: 0 },
             scrollSensitivity: 2.5
+        };
+
+        // Snapping options
+        this.snapSettings = {
+            xEnabled: false,
+            yEnabled: false,
+            tolerance: 10
         };
 
         // UI element types and their properties
@@ -64,6 +70,21 @@ class DisplayEditor {
         
         this.setupEventListeners();
         this.loadFromSimulation();
+        
+        // Listen for editor changes to reload display data
+        if (this.monacoEditor && this.monacoEditor.onDidChangeModelContent) {
+            this.monacoEditor.onDidChangeModelContent(() => {
+                // Only reload if we're not currently updating the JSON ourselves
+                if (!this.isUpdatingJson && !this.isUpdatingProperties) {
+                    setTimeout(() => {
+                        this.loadFromSimulation();
+                        // Re-render properties panel to update elements list
+                        this.renderPropertiesPanel();
+                    }, 50); // Small delay to ensure JSON has been processed
+                }
+            });
+        }
+        
         console.log("DISPLAY-EDITOR: Initialization complete");
     }
 
@@ -134,6 +155,32 @@ class DisplayEditor {
             this.view.scrollSensitivity = parseFloat(scrollSensitivitySlider.value);
             scrollSensitivitySlider.addEventListener('input', (e) => {
                 this.view.scrollSensitivity = parseFloat(e.target.value);
+            });
+        }
+
+        // Snapping options
+        const snapXCheckbox = document.getElementById('display-snap-x-enabled');
+        const snapYCheckbox = document.getElementById('display-snap-y-enabled');
+        const snapToleranceInput = document.getElementById('display-snap-tolerance');
+        
+        if (snapXCheckbox) {
+            this.snapSettings.xEnabled = snapXCheckbox.checked;
+            snapXCheckbox.addEventListener('change', (e) => {
+                this.snapSettings.xEnabled = e.target.checked;
+            });
+        }
+        
+        if (snapYCheckbox) {
+            this.snapSettings.yEnabled = snapYCheckbox.checked;
+            snapYCheckbox.addEventListener('change', (e) => {
+                this.snapSettings.yEnabled = e.target.checked;
+            });
+        }
+        
+        if (snapToleranceInput) {
+            this.snapSettings.tolerance = parseInt(snapToleranceInput.value) || 10;
+            snapToleranceInput.addEventListener('change', (e) => {
+                this.snapSettings.tolerance = parseInt(e.target.value);
             });
         }
     }
@@ -299,15 +346,6 @@ class DisplayEditor {
     }
 
     onMouseMove(e) {
-        // Simple throttle to prevent excessive updates
-        if (this.isMouseMoveThrottled) {
-            return;
-        }
-        this.isMouseMoveThrottled = true;
-        setTimeout(() => {
-            this.isMouseMoveThrottled = false;
-        }, 16); // ~60fps
-
         if (this.view.isPanning) {
             const deltaX = e.clientX - this.view.lastPan.x;
             const deltaY = e.clientY - this.view.lastPan.y;
@@ -351,9 +389,12 @@ class DisplayEditor {
             const newX = (e.clientX - rect.left - this.view.x) / this.view.scale - this.dragOffset.x;
             const newY = (e.clientY - rect.top - this.view.y) / this.view.scale - this.dragOffset.y;
             
-            this.currentDragPosition = { x: newX, y: newY };
-            this.activeRectEl.style.left = newX + 'px';
-            this.activeRectEl.style.top = newY + 'px';
+            // Apply snapping
+            const snappedPosition = this.applySnapping(newX, newY);
+            
+            this.currentDragPosition = { x: snappedPosition.x, y: snappedPosition.y };
+            this.activeRectEl.style.left = snappedPosition.x + 'px';
+            this.activeRectEl.style.top = snappedPosition.y + 'px';
         }
     }
 
@@ -512,6 +553,13 @@ class DisplayEditor {
         rectEl.style.height = element.bounds.height + 'px';
         rectEl.style.zIndex = element.z_index || 1;
         
+        // Prevent default browser dragging behavior
+        rectEl.draggable = false;
+        rectEl.addEventListener('dragstart', (e) => e.preventDefault());
+        rectEl.addEventListener('contextmenu', (e) => {
+            if (this.isDragging) e.preventDefault();
+        });
+        
         // Apply visual styling
         rectEl.style.border = `1px solid ${element.properties.border || '#cccccc'}`;
         rectEl.style.backgroundColor = element.properties.background || '#f0f0f0';
@@ -596,7 +644,13 @@ class DisplayEditor {
                     ${activeDisplay ? `
                         <div style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 0.5rem;">
                             <div><strong>${activeDisplay.name}</strong></div>
-                            <div>Size: ${activeDisplay.viewport.width} × ${activeDisplay.viewport.height}px</div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin: 4px 0;">
+                                <span>Size:</span>
+                                <input type="number" id="display-width" value="${activeDisplay.viewport.width}" min="100" step="10" style="width: 70px; padding: 2px 4px; border: 1px solid var(--border-color); border-radius: 3px; font-size: 0.75rem;">
+                                <span>×</span>
+                                <input type="number" id="display-height" value="${activeDisplay.viewport.height}" min="100" step="10" style="width: 70px; padding: 2px 4px; border: 1px solid var(--border-color); border-radius: 3px; font-size: 0.75rem;">
+                                <span>px</span>
+                            </div>
                             <div>Elements: ${activeDisplay.rectangles.length}</div>
                             ${activeDisplay.physical_object_id ? `<div>Linked to: ${activeDisplay.physical_object_id}</div>` : ''}
                         </div>
@@ -626,6 +680,11 @@ class DisplayEditor {
                     </div>
                 ` : ''}
             `;
+            
+            // Setup display property listeners if display is active
+            if (activeDisplay) {
+                this.setupDisplayPropertyListeners();
+            }
             return;
         }
 
@@ -751,6 +810,53 @@ class DisplayEditor {
         this.setupElementPropertyListeners();
     }
 
+    setupDisplayPropertyListeners() {
+        const activeDisplay = this.getActiveDisplay();
+        if (!activeDisplay) return;
+
+        // Display size inputs
+        const widthInput = document.getElementById('display-width');
+        const heightInput = document.getElementById('display-height');
+        
+        if (widthInput) {
+            widthInput.addEventListener('input', (e) => {
+                const rawValue = e.target.value;
+                if (rawValue !== '' && !isNaN(parseInt(rawValue))) {
+                    const newWidth = parseInt(rawValue);
+                    if (newWidth >= 100) {
+                        activeDisplay.viewport.width = newWidth;
+                        this.renderActiveDisplay();
+                        this.updateSimulationJson();
+                        
+                        // Refresh properties panel to update element count and other info if needed
+                        if (!this.selectedRectId) {
+                            this.renderPropertiesPanel();
+                        }
+                    }
+                }
+            });
+        }
+        
+        if (heightInput) {
+            heightInput.addEventListener('input', (e) => {
+                const rawValue = e.target.value;
+                if (rawValue !== '' && !isNaN(parseInt(rawValue))) {
+                    const newHeight = parseInt(rawValue);
+                    if (newHeight >= 100) {
+                        activeDisplay.viewport.height = newHeight;
+                        this.renderActiveDisplay();
+                        this.updateSimulationJson();
+                        
+                        // Refresh properties panel to update element count and other info if needed
+                        if (!this.selectedRectId) {
+                            this.renderPropertiesPanel();
+                        }
+                    }
+                }
+            });
+        }
+    }
+
     setupElementPropertyListeners() {
         const activeDisplay = this.getActiveDisplay();
         const element = activeDisplay?.rectangles.find(r => r.id === this.selectedRectId);
@@ -818,10 +924,17 @@ class DisplayEditor {
             const input = document.getElementById(`element-${prop}`);
             if (input) {
                 input.addEventListener('input', (e) => {
-                    const value = parseFloat(e.target.value) || 0;
-                    element.bounds[prop] = Math.max(value, prop.includes('width') || prop.includes('height') ? 10 : 0);
-                    this.renderElement(element);
-                    this.updateSimulationJson();
+                    const rawValue = e.target.value;
+                    // Only update if we have a valid numeric value
+                    if (rawValue !== '' && !isNaN(parseFloat(rawValue))) {
+                        const value = parseFloat(rawValue);
+                        const minValue = prop.includes('width') || prop.includes('height') ? 10 : 0;
+                        element.bounds[prop] = Math.max(value, minValue);
+                        this.renderElement(element);
+                        this.updateSimulationJson();
+                    }
+                    // If invalid input, don't update the element bounds but leave the input as-is
+                    // This allows users to clear fields temporarily while typing
                 });
             }
         });
@@ -860,9 +973,12 @@ class DisplayEditor {
         const zIndexInput = document.getElementById('element-z-index');
         if (zIndexInput) {
             zIndexInput.addEventListener('input', (e) => {
-                element.z_index = parseInt(e.target.value) || 1;
-                this.renderElement(element);
-                this.updateSimulationJson();
+                const rawValue = e.target.value;
+                if (rawValue !== '' && !isNaN(parseInt(rawValue))) {
+                    element.z_index = Math.max(parseInt(rawValue), 1);
+                    this.renderElement(element);
+                    this.updateSimulationJson();
+                }
             });
         }
 
@@ -975,7 +1091,21 @@ class DisplayEditor {
             const simulation = JSON.parse(jsonText);
             
             if (simulation.displays && Array.isArray(simulation.displays)) {
-                this.displays = [...simulation.displays];
+                // Ensure numeric values are properly preserved during JSON loading
+                this.displays = simulation.displays.map(display => ({
+                    ...display,
+                    rectangles: display.rectangles.map(rect => ({
+                        ...rect,
+                        bounds: {
+                            x: typeof rect.bounds.x === 'number' ? rect.bounds.x : parseFloat(rect.bounds.x) || 0,
+                            y: typeof rect.bounds.y === 'number' ? rect.bounds.y : parseFloat(rect.bounds.y) || 0,
+                            width: typeof rect.bounds.width === 'number' ? rect.bounds.width : parseFloat(rect.bounds.width) || 100,
+                            height: typeof rect.bounds.height === 'number' ? rect.bounds.height : parseFloat(rect.bounds.height) || 30
+                        },
+                        z_index: typeof rect.z_index === 'number' ? rect.z_index : parseInt(rect.z_index) || 1
+                    }))
+                }));
+                
                 if (this.displays.length > 0 && !this.activeDisplayId) {
                     this.activeDisplayId = this.displays[0].id;
                 }
@@ -1050,6 +1180,8 @@ class DisplayEditor {
     updateViewTransform() {
         if (this.world) {
             this.world.style.transform = `translate(${this.view.x}px, ${this.view.y}px) scale(${this.view.scale})`;
+            // Update CSS custom property for dynamic font scaling
+            this.world.style.setProperty('--current-zoom-scale', this.view.scale);
         }
     }
 
@@ -1088,8 +1220,23 @@ class DisplayEditor {
         const rect = this.canvasRect || this.canvas.getBoundingClientRect();
         const mouseX = (e.clientX - rect.left - this.view.x) / this.view.scale;
         const mouseY = (e.clientY - rect.top - this.view.y) / this.view.scale;
-        const rectX = parseFloat(rectEl.style.left) || 0;
-        const rectY = parseFloat(rectEl.style.top) || 0;
+        
+        // Safely parse element position with fallback to element bounds if style is corrupted
+        let rectX = parseFloat(rectEl.style.left);
+        let rectY = parseFloat(rectEl.style.top);
+        
+        if (isNaN(rectX) || isNaN(rectY)) {
+            const elementId = rectEl.dataset.elementId;
+            const activeDisplay = this.getActiveDisplay();
+            const element = activeDisplay?.rectangles.find(r => r.id === elementId);
+            if (element) {
+                rectX = isNaN(rectX) ? element.bounds.x : rectX;
+                rectY = isNaN(rectY) ? element.bounds.y : rectY;
+            } else {
+                rectX = isNaN(rectX) ? 0 : rectX;
+                rectY = isNaN(rectY) ? 0 : rectY;
+            }
+        }
         
         this.dragOffset = {
             x: mouseX - rectX,
@@ -1119,6 +1266,90 @@ class DisplayEditor {
         this.isDragging = false;
         this.activeRectEl = null;
         this.canvas.style.cursor = 'default';
+    }
+
+    applySnapping(proposedX, proposedY) {
+        if (!this.activeRectEl || (!this.snapSettings.xEnabled && !this.snapSettings.yEnabled)) {
+            return { x: proposedX, y: proposedY };
+        }
+
+        let snappedX = proposedX;
+        let snappedY = proposedY;
+        
+        const activeWidth = parseInt(this.activeRectEl.style.width) || 0;
+        const activeHeight = parseInt(this.activeRectEl.style.height) || 0;
+        
+        // Get snap targets from other elements
+        const snapTargets = [];
+        document.querySelectorAll('.display-element-rect').forEach(rect => {
+            if (rect === this.activeRectEl) return;
+            
+            const targetX = parseInt(rect.style.left) || 0;
+            const targetY = parseInt(rect.style.top) || 0;
+            const targetWidth = parseInt(rect.style.width) || 0;
+            const targetHeight = parseInt(rect.style.height) || 0;
+            
+            snapTargets.push({
+                left: targetX,
+                right: targetX + targetWidth,
+                top: targetY,
+                bottom: targetY + targetHeight
+            });
+        });
+
+        // X-axis snapping (horizontal alignment)
+        if (this.snapSettings.xEnabled) {
+            for (const target of snapTargets) {
+                // Snap left edge to left edge
+                if (Math.abs(proposedX - target.left) < this.snapSettings.tolerance) {
+                    snappedX = target.left;
+                    break;
+                }
+                // Snap left edge to right edge
+                if (Math.abs(proposedX - target.right) < this.snapSettings.tolerance) {
+                    snappedX = target.right;
+                    break;
+                }
+                // Snap right edge to left edge
+                if (Math.abs((proposedX + activeWidth) - target.left) < this.snapSettings.tolerance) {
+                    snappedX = target.left - activeWidth;
+                    break;
+                }
+                // Snap right edge to right edge
+                if (Math.abs((proposedX + activeWidth) - target.right) < this.snapSettings.tolerance) {
+                    snappedX = target.right - activeWidth;
+                    break;
+                }
+            }
+        }
+
+        // Y-axis snapping (vertical alignment)
+        if (this.snapSettings.yEnabled) {
+            for (const target of snapTargets) {
+                // Snap top edge to top edge
+                if (Math.abs(proposedY - target.top) < this.snapSettings.tolerance) {
+                    snappedY = target.top;
+                    break;
+                }
+                // Snap top edge to bottom edge
+                if (Math.abs(proposedY - target.bottom) < this.snapSettings.tolerance) {
+                    snappedY = target.bottom;
+                    break;
+                }
+                // Snap bottom edge to top edge
+                if (Math.abs((proposedY + activeHeight) - target.top) < this.snapSettings.tolerance) {
+                    snappedY = target.top - activeHeight;
+                    break;
+                }
+                // Snap bottom edge to bottom edge
+                if (Math.abs((proposedY + activeHeight) - target.bottom) < this.snapSettings.tolerance) {
+                    snappedY = target.bottom - activeHeight;
+                    break;
+                }
+            }
+        }
+
+        return { x: snappedX, y: snappedY };
     }
 
     cleanup() {

@@ -22,7 +22,6 @@ class DigitalSpaceEditor {
         
         // Cache for performance optimization
         this.canvasRect = null;
-        this.isMouseMoveThrottled = false;
         
         // Debouncing for JSON updates
         this.updateSimulationJsonTimeout = null;
@@ -44,7 +43,7 @@ class DigitalSpaceEditor {
             y: 0,
             isPanning: false,
             lastPan: { x: 0, y: 0 },
-            scrollSensitivity: 2.5
+            scrollSensitivity: 1.0
         };
     }
 
@@ -61,6 +60,21 @@ class DigitalSpaceEditor {
         
         this.setupEventListeners();
         this.loadFromSimulation();
+        
+        // Listen for editor changes to reload digital space data
+        if (this.monacoEditor && this.monacoEditor.onDidChangeModelContent) {
+            this.monacoEditor.onDidChangeModelContent(() => {
+                // Only reload if we're not currently updating the JSON ourselves
+                if (!this.isUpdatingJson) {
+                    setTimeout(() => {
+                        this.loadFromSimulation();
+                        // Re-render properties panel to update digital objects list
+                        this.renderPropertiesPanel();
+                    }, 50); // Small delay to ensure JSON has been processed
+                }
+            });
+        }
+        
         console.log("DIGITAL-SPACE: Initialization complete");
     }
 
@@ -129,6 +143,24 @@ class DigitalSpaceEditor {
     }
 
     onCanvasMouseDown(e) {
+        if (this.view.isPanning) {
+            this.view.lastPan = { x: e.clientX, y: e.clientY };
+            this.canvas.style.cursor = 'grabbing';
+            return;
+        }
+
+        // Only allow drawing/panning on the canvas itself or the world container
+        if (e.target !== this.canvas && !e.target.classList.contains('digital-world')) {
+            // Check if clicking on existing location
+            const clickedEl = e.target.closest('.digital-location-rect');
+            if (clickedEl) {
+                const locationId = clickedEl.dataset.locationId;
+                this.selectLocation(locationId);
+                this.startDragging(e, clickedEl);
+                return;
+            }
+        }
+
         // Update rect cache for accuracy during interaction
         this.updateCanvasRect();
         const x = (e.clientX - this.canvasRect.left - this.view.x) / this.view.scale;
@@ -136,21 +168,11 @@ class DigitalSpaceEditor {
 
         if (this.isDrawing) {
             this.startDrawing(x, y);
-            return;
-        }
-
-        // Check if clicking on existing location
-        const clickedEl = e.target.closest('.digital-location-rect');
-        if (clickedEl) {
-            const locationId = clickedEl.dataset.locationId;
-            this.selectLocation(locationId);
-            this.startDragging(e, clickedEl);
-        } else if (e.ctrlKey || e.metaKey) {
-            // Pan mode
+        } else {
+            // Start background panning when not in drawing mode
             this.view.isPanning = true;
             this.view.lastPan = { x: e.clientX, y: e.clientY };
-            this.canvas.style.cursor = 'move';
-        } else {
+            this.canvas.style.cursor = 'grabbing';
             this.deselectAll();
         }
     }
@@ -169,15 +191,6 @@ class DigitalSpaceEditor {
     }
 
     onMouseMove(e) {
-        // Simple throttle to prevent excessive updates
-        if (this.isMouseMoveThrottled) {
-            return;
-        }
-        this.isMouseMoveThrottled = true;
-        setTimeout(() => {
-            this.isMouseMoveThrottled = false;
-        }, 16); // ~60fps
-
         if (this.view.isPanning) {
             const deltaX = e.clientX - this.view.lastPan.x;
             const deltaY = e.clientY - this.view.lastPan.y;
@@ -343,14 +356,10 @@ class DigitalSpaceEditor {
     renderPropertiesPanel() {
         if (!this.selectedRectId) {
             this.propsPanel.innerHTML = `
-                <div class="property-group">
-                    <h4>Digital Space Management</h4>
-                    <button type="button" class="btn-primary" id="add-digital-location-btn">+ Add Location</button>
-                    <button type="button" class="btn-secondary" id="add-digital-object-btn">+ Add Object</button>
-                </div>
+                <p class="placeholder">Select a digital location, or click '+ Add Location' to create a new storage area.</p>
                 
-                <div class="property-group">
-                    <h4>Digital Objects</h4>
+                <div class="prop-section">
+                    <div class="section-label">Digital Objects</div>
                     <div class="digital-objects-list" id="digital-objects-list">
                         ${this.digitalObjects.map(obj => `
                             <div class="object-item" data-object-id="${obj.id}">
@@ -362,8 +371,6 @@ class DigitalSpaceEditor {
                         `).join('')}
                     </div>
                 </div>
-                
-                <p class="placeholder">Select a digital location to edit its properties.</p>
             `;
             this.setupEventListeners();
             return;
@@ -414,11 +421,17 @@ class DigitalSpaceEditor {
                     <input type="text" id="digital-physical-link" value="${location.physical_object_id || ''}" placeholder="e.g., server_rack_01">
                     <small style="color: var(--text-light); font-size: 0.75rem;">Links this digital location to a physical object</small>
                 </div>
-            </div>
-            
-            <div class="prop-section">
-                <label class="section-label">Position & Size</label>
                 
+                <div class="inline-inputs" style="margin-top: 1rem;">
+                    <div class="inline-input-group">
+                        <label for="digital-width">Width</label>
+                        <input type="number" id="digital-width" value="${location.width.toFixed(2)}" step="0.1" min="0.1">
+                    </div>
+                    <div class="inline-input-group">
+                        <label for="digital-height">Height</label>
+                        <input type="number" id="digital-height" value="${location.height.toFixed(2)}" step="0.1" min="0.1">
+                    </div>
+                </div>
                 <div class="inline-inputs">
                     <div class="inline-input-group">
                         <label for="digital-x">X (m)</label>
@@ -427,14 +440,6 @@ class DigitalSpaceEditor {
                     <div class="inline-input-group">
                         <label for="digital-y">Y (m)</label>
                         <input type="number" id="digital-y" value="${location.y.toFixed(2)}" step="0.1">
-                    </div>
-                    <div class="inline-input-group">
-                        <label for="digital-width">Width</label>
-                        <input type="number" id="digital-width" value="${location.width.toFixed(2)}" step="0.1" min="0.1">
-                    </div>
-                    <div class="inline-input-group">
-                        <label for="digital-height">Height</label>
-                        <input type="number" id="digital-height" value="${location.height.toFixed(2)}" step="0.1" min="0.1">
                     </div>
                 </div>
             </div>
@@ -550,6 +555,16 @@ class DigitalSpaceEditor {
             if (simulation.digital_space && simulation.digital_space.digital_locations) {
                 this.digitalLocations = [...simulation.digital_space.digital_locations];
                 this.renderAllLocations();
+                
+                // Reset view and zoom to fit on initial load (like Space Editor)
+                if (this.digitalLocations.length > 0 && !this.hasInitiallyLoaded) {
+                    this.view.scale = 1;
+                    this.view.x = 0;
+                    this.view.y = 0;
+                    this.updateViewTransform();
+                    this.zoomToFit();
+                    this.hasInitiallyLoaded = true;
+                }
             }
             
             // Load digital objects
@@ -604,12 +619,34 @@ class DigitalSpaceEditor {
 
     // Zoom and view methods (adapted from space editor)
     zoomIn() {
-        this.view.scale = Math.min(this.view.scale * 1.2, 5);
+        const zoomFactor = 1.2; // 20% zoom in
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const centerX = canvasRect.width / 2;
+        const centerY = canvasRect.height / 2;
+        
+        const oldScale = this.view.scale;
+        this.view.scale = Math.min(5, this.view.scale * zoomFactor); // Cap max zoom at 5x
+        
+        // Zoom towards the center
+        this.view.x = centerX - (centerX - this.view.x) * (this.view.scale / oldScale);
+        this.view.y = centerY - (centerY - this.view.y) * (this.view.scale / oldScale);
+        
         this.updateViewTransform();
     }
 
     zoomOut() {
-        this.view.scale = Math.max(this.view.scale / 1.2, 0.1);
+        const zoomFactor = 0.833; // ~20% zoom out (1/1.2)
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const centerX = canvasRect.width / 2;
+        const centerY = canvasRect.height / 2;
+        
+        const oldScale = this.view.scale;
+        this.view.scale = Math.max(0.1, this.view.scale * zoomFactor); // Cap min zoom at 0.1x
+        
+        // Zoom towards the center
+        this.view.x = centerX - (centerX - this.view.x) * (this.view.scale / oldScale);
+        this.view.y = centerY - (centerY - this.view.y) * (this.view.scale / oldScale);
+        
         this.updateViewTransform();
     }
 
@@ -649,36 +686,89 @@ class DigitalSpaceEditor {
     updateViewTransform() {
         if (this.world) {
             this.world.style.transform = `translate(${this.view.x}px, ${this.view.y}px) scale(${this.view.scale})`;
+            // Update CSS custom property for dynamic font scaling
+            this.world.style.setProperty('--current-zoom-scale', this.view.scale);
         }
     }
 
     onCanvasWheel(e) {
         e.preventDefault();
+        
+        // Detect scroll magnitude - different devices send different deltaY values
+        const rawDelta = Math.abs(e.deltaY);
+        const isTrackpad = rawDelta < 50; // Trackpads typically send smaller values
+        const isMouse = rawDelta >= 100;   // Mice typically send larger values
+        
+        // Normalize delta magnitude to a reasonable range
+        let normalizedDelta = Math.min(rawDelta / 100, 3); // Cap at 3x for very sensitive mice
+        if (isTrackpad) {
+            normalizedDelta = Math.min(rawDelta / 10, 1); // More gentle for trackpads
+        }
+        
+        const direction = e.deltaY > 0 ? -1 : 1;
+        const oldScale = this.view.scale;
+        
+        // Adaptive zoom speed based on current zoom level
+        // At 1x zoom: base speed, at higher zooms: slower, at lower zooms: faster
+        const baseSpeed = 0.02; // Much slower base speed
+        const adaptiveSpeed = baseSpeed * Math.pow(this.view.scale, 0.3); // Gentle scaling curve
+        
+        // Calculate zoom step with maximum limits
+        let zoomStep = direction * adaptiveSpeed * normalizedDelta;
+        
+        // Maximum zoom step limits to prevent dramatic jumps
+        const maxStep = this.view.scale * 0.15; // Never change more than 15% of current scale
+        zoomStep = Math.max(-maxStep, Math.min(maxStep, zoomStep));
+        
+        // Apply exponential zoom curve for smoother feel
+        if (direction > 0) {
+            // Zooming in: multiplicative
+            this.view.scale = Math.min(5, this.view.scale * (1 + Math.abs(zoomStep)));
+        } else {
+            // Zooming out: multiplicative
+            this.view.scale = Math.max(0.1, this.view.scale / (1 + Math.abs(zoomStep)));
+        }
+        
+        // Zoom towards the cursor
         const rect = this.canvasRect || this.canvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
-
-        const oldScale = this.view.scale;
-        const zoomSpeed = 0.001;
-        const delta = -e.deltaY * zoomSpeed * this.view.scrollSensitivity;
+        this.view.x = mouseX - (mouseX - this.view.x) * (this.view.scale / oldScale);
+        this.view.y = mouseY - (mouseY - this.view.y) * (this.view.scale / oldScale);
         
-        this.view.scale = Math.max(0.1, Math.min(5, this.view.scale + delta));
-        
-        const scaleDiff = this.view.scale - oldScale;
-        this.view.x -= (mouseX - this.view.x) * scaleDiff / oldScale;
-        this.view.y -= (mouseY - this.view.y) * scaleDiff / oldScale;
-
         this.updateViewTransform();
     }
 
     onKeyDown(e) {
+        // Don't intercept keys if user is typing in an input field
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.contentEditable === 'true') {
+            return;
+        }
+        
+        // Handle space key for panning
+        if (e.code === 'Space' && !this.view.isPanning) {
+            e.preventDefault();
+            this.view.isPanning = true;
+            this.canvas.style.cursor = 'grab';
+            return;
+        }
+        
         if (e.key === 'Delete' && this.selectedRectId) {
             this.deleteLocation(this.selectedRectId);
         }
     }
 
     onKeyUp(e) {
-        // Handle key release events if needed
+        // Don't intercept space key if user is typing in an input field
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.contentEditable === 'true') {
+            return;
+        }
+        
+        if (e.code === 'Space') {
+            this.view.isPanning = false;
+            // Set cursor based on current mode
+            this.canvas.style.cursor = this.isDrawing ? 'crosshair' : 'default';
+        }
     }
 
     startDragging(e, rectEl) {

@@ -37,7 +37,7 @@ class ContextMenuManager {
     }
 
     addSimulationRightClickListeners() {
-        // Use event delegation for both simulation and space editor elements
+        // Use event delegation for simulation, space editor, digital space, and display editor elements
         document.addEventListener('contextmenu', (e) => {
             // Check if right-click is on a task element in simulation render
             const taskElement = e.target.closest('.task-block');
@@ -54,6 +54,24 @@ class ContextMenuManager {
             if (rectElement && rectElement.closest('#space-canvas')) {
                 e.preventDefault();
                 this.showContextMenu(e, rectElement, 'location');
+                return;
+            }
+
+            // Check if right-click is on a digital location rectangle in digital space editor
+            const digitalLocationElement = e.target.closest('.digital-location-rect');
+            
+            if (digitalLocationElement && digitalLocationElement.closest('#digital-space-canvas')) {
+                e.preventDefault();
+                this.showContextMenu(e, digitalLocationElement, 'digital-location');
+                return;
+            }
+
+            // Check if right-click is on a display element in display editor
+            const displayElement = e.target.closest('.display-element-rect');
+            
+            if (displayElement && displayElement.closest('#display-canvas')) {
+                e.preventDefault();
+                this.showContextMenu(e, displayElement, 'display-element');
                 return;
             }
         });
@@ -114,6 +132,10 @@ class ContextMenuManager {
             this.deleteTask();
         } else if (this.currentTargetType === 'location') {
             this.deleteLocation();
+        } else if (this.currentTargetType === 'digital-location') {
+            this.deleteDigitalLocation();
+        } else if (this.currentTargetType === 'display-element') {
+            this.deleteDisplayElement();
         }
     }
 
@@ -202,6 +224,118 @@ class ContextMenuManager {
             }
         } catch (error) {
             console.error('ERROR deleting location:', error);
+        }
+    }
+
+    deleteDigitalLocation() {
+        const rectElement = this.currentTarget;
+        const locationId = rectElement.dataset.locationId;
+
+        if (!locationId) {
+            console.error('ERROR: No digital location ID found for deletion');
+            return;
+        }
+
+        try {
+            // Use the digital space editor's method to delete the location
+            if (typeof digitalSpaceEditor !== 'undefined' && digitalSpaceEditor) {
+                // Find the location in the digital space editor's digitalLocations array
+                const locationIndex = digitalSpaceEditor.digitalLocations.findIndex(loc => loc.id === locationId);
+                
+                if (locationIndex !== -1) {
+                    // Remove from digitalLocations array
+                    digitalSpaceEditor.digitalLocations.splice(locationIndex, 1);
+                    
+                    // Remove the visual element
+                    rectElement.remove();
+                    
+                    // Update the JSON in Monaco editor
+                    const currentJson = JSON.parse(editor.getValue());
+                    
+                    if (currentJson.simulation && currentJson.simulation.digital_space && currentJson.simulation.digital_space.digital_locations) {
+                        const digitalLocationIndex = currentJson.simulation.digital_space.digital_locations.findIndex(loc => loc.id === locationId);
+                        
+                        if (digitalLocationIndex !== -1) {
+                            currentJson.simulation.digital_space.digital_locations.splice(digitalLocationIndex, 1);
+                            editor.setValue(JSON.stringify(currentJson, null, 2));
+                        }
+                    }
+                    
+                    // Update digital space editor UI
+                    digitalSpaceEditor.renderProperties();
+                    digitalSpaceEditor.deselectAll();
+                    
+                    // Trigger validation
+                    validateJSON();
+                } else {
+                    console.error(`ERROR: Digital location ${locationId} not found in digital space editor`);
+                }
+            } else {
+                console.error('ERROR: digitalSpaceEditor is not available or not initialized yet');
+            }
+        } catch (error) {
+            console.error('ERROR deleting digital location:', error);
+        }
+    }
+
+    deleteDisplayElement() {
+        const rectElement = this.currentTarget;
+        const elementId = rectElement.dataset.elementId;
+
+        if (!elementId) {
+            console.error('ERROR: No display element ID found for deletion');
+            return;
+        }
+
+        try {
+            // Use the display editor's method to delete the element
+            if (typeof displayEditor !== 'undefined' && displayEditor) {
+                // Get the active display using the editor's method
+                const activeDisplay = displayEditor.getActiveDisplay();
+                
+                if (activeDisplay) {
+                    const elementIndex = activeDisplay.rectangles.findIndex(element => element.id === elementId);
+                    
+                    if (elementIndex !== -1) {
+                        // Remove from rectangles array
+                        activeDisplay.rectangles.splice(elementIndex, 1);
+                        
+                        // Remove the visual element
+                        rectElement.remove();
+                        
+                        // Update the JSON in Monaco editor
+                        const currentJson = JSON.parse(editor.getValue());
+                        
+                        if (currentJson.simulation && currentJson.simulation.displays) {
+                            const displayIndex = currentJson.simulation.displays.findIndex(disp => disp.id === activeDisplay.id);
+                            
+                            if (displayIndex !== -1 && currentJson.simulation.displays[displayIndex].rectangles) {
+                                const jsonElementIndex = currentJson.simulation.displays[displayIndex].rectangles.findIndex(element => element.id === elementId);
+                                
+                                if (jsonElementIndex !== -1) {
+                                    currentJson.simulation.displays[displayIndex].rectangles.splice(jsonElementIndex, 1);
+                                    editor.setValue(JSON.stringify(currentJson, null, 2));
+                                }
+                            }
+                        }
+                        
+                        // Update display editor UI
+                        displayEditor.renderProperties();
+                        displayEditor.deselectAll();
+                        
+                        // Trigger validation
+                        validateJSON();
+                    } else {
+                        console.error(`ERROR: Display element ${elementId} not found in active display`);
+                    }
+                } else {
+                    console.error('ERROR: No active display found in display editor');
+                }
+            } else {
+                console.error('ERROR: displayEditor is not available or not initialized yet');
+            }
+        } catch (error) {
+            console.error('ERROR deleting display element:', error);
         }
     }
 }
