@@ -20,6 +20,13 @@ class DigitalSpaceEditor {
         this.hasInitiallyLoaded = false;
         this.world = null;
         
+        // Cache for performance optimization
+        this.canvasRect = null;
+        this.isMouseMoveThrottled = false;
+        
+        // Debouncing for JSON updates
+        this.updateSimulationJsonTimeout = null;
+        
         // Layer management
         this.activeLayer = 'all';
         this.availableLayers = new Set();
@@ -83,6 +90,10 @@ class DigitalSpaceEditor {
         document.addEventListener('mouseup', this.onMouseUp.bind(this));
         document.addEventListener('keydown', this.onKeyDown.bind(this));
         document.addEventListener('keyup', this.onKeyUp.bind(this));
+        
+        // Cache canvas bounds on resize and initial load
+        this.updateCanvasRect();
+        window.addEventListener('resize', () => this.updateCanvasRect());
 
         // Zoom controls
         const zoomInBtn = document.getElementById('digital-zoom-in-btn');
@@ -111,10 +122,17 @@ class DigitalSpaceEditor {
         }
     }
 
+    updateCanvasRect() {
+        if (this.canvas) {
+            this.canvasRect = this.canvas.getBoundingClientRect();
+        }
+    }
+
     onCanvasMouseDown(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = (e.clientX - rect.left - this.view.x) / this.view.scale;
-        const y = (e.clientY - rect.top - this.view.y) / this.view.scale;
+        // Update rect cache for accuracy during interaction
+        this.updateCanvasRect();
+        const x = (e.clientX - this.canvasRect.left - this.view.x) / this.view.scale;
+        const y = (e.clientY - this.canvasRect.top - this.view.y) / this.view.scale;
 
         if (this.isDrawing) {
             this.startDrawing(x, y);
@@ -151,6 +169,15 @@ class DigitalSpaceEditor {
     }
 
     onMouseMove(e) {
+        // Simple throttle to prevent excessive updates
+        if (this.isMouseMoveThrottled) {
+            return;
+        }
+        this.isMouseMoveThrottled = true;
+        setTimeout(() => {
+            this.isMouseMoveThrottled = false;
+        }, 16); // ~60fps
+
         if (this.view.isPanning) {
             const deltaX = e.clientX - this.view.lastPan.x;
             const deltaY = e.clientY - this.view.lastPan.y;
@@ -162,7 +189,8 @@ class DigitalSpaceEditor {
         }
 
         if (this.isDrawing && this.activeRectEl) {
-            const rect = this.canvas.getBoundingClientRect();
+            // Use cached canvas rect with fallback
+            const rect = this.canvasRect || this.canvas.getBoundingClientRect();
             const currentX = (e.clientX - rect.left - this.view.x) / this.view.scale;
             const currentY = (e.clientY - rect.top - this.view.y) / this.view.scale;
             
@@ -178,7 +206,8 @@ class DigitalSpaceEditor {
         }
 
         if (this.isDragging && this.activeRectEl) {
-            const rect = this.canvas.getBoundingClientRect();
+            // Use cached canvas rect with fallback
+            const rect = this.canvasRect || this.canvas.getBoundingClientRect();
             const newX = (e.clientX - rect.left - this.view.x) / this.view.scale - this.dragOffset.x;
             const newY = (e.clientY - rect.top - this.view.y) / this.view.scale - this.dragOffset.y;
             
@@ -344,33 +373,33 @@ class DigitalSpaceEditor {
         if (!location) return;
 
         this.propsPanel.innerHTML = `
-            <div class="property-group">
-                <h4>Digital Location Properties</h4>
+            <div class="prop-section">
+                <label class="section-label">Location Properties</label>
                 
-                <div class="property-field">
+                <div class="prop-field">
                     <label for="digital-location-name">Name:</label>
                     <input type="text" id="digital-location-name" value="${location.name}">
                 </div>
                 
-                <div class="property-field">
+                <div class="prop-field">
                     <label for="digital-storage-type">Storage Type:</label>
                     <select id="digital-storage-type">
-                        <option value="file_system" ${location.storage_type === 'file_system' ? 'selected' : ''}>File System</option>
-                        <option value="database" ${location.storage_type === 'database' ? 'selected' : ''}>Database</option>
-                        <option value="cloud" ${location.storage_type === 'cloud' ? 'selected' : ''}>Cloud Storage</option>
-                        <option value="cache" ${location.storage_type === 'cache' ? 'selected' : ''}>Cache</option>
-                        <option value="backup" ${location.storage_type === 'backup' ? 'selected' : ''}>Backup Storage</option>
-                        <option value="network" ${location.storage_type === 'network' ? 'selected' : ''}>Network Storage</option>
-                        <option value="server" ${location.storage_type === 'server' ? 'selected' : ''}>Server</option>
+                        <option value="file_system" ${location.storage_type === 'file_system' ? 'selected' : ''}>💾 File System</option>
+                        <option value="database" ${location.storage_type === 'database' ? 'selected' : ''}>🗄️ Database</option>
+                        <option value="cloud" ${location.storage_type === 'cloud' ? 'selected' : ''}>☁️ Cloud Storage</option>
+                        <option value="cache" ${location.storage_type === 'cache' ? 'selected' : ''}>⚡ Cache</option>
+                        <option value="backup" ${location.storage_type === 'backup' ? 'selected' : ''}>💿 Backup Storage</option>
+                        <option value="network" ${location.storage_type === 'network' ? 'selected' : ''}>🌐 Network Storage</option>
+                        <option value="server" ${location.storage_type === 'server' ? 'selected' : ''}>🖥️ Server</option>
                     </select>
                 </div>
                 
-                <div class="property-field">
+                <div class="prop-field">
                     <label for="digital-capacity">Capacity (GB):</label>
-                    <input type="number" id="digital-capacity" value="${location.capacity_gb}" min="1">
+                    <input type="number" id="digital-capacity" value="${location.capacity_gb}" min="1" step="100">
                 </div>
                 
-                <div class="property-field">
+                <div class="prop-field">
                     <label for="digital-parent">Parent Location:</label>
                     <select id="digital-parent">
                         <option value="">None (Root Level)</option>
@@ -380,40 +409,38 @@ class DigitalSpaceEditor {
                     </select>
                 </div>
                 
-                <div class="property-field">
+                <div class="prop-field">
                     <label for="digital-physical-link">Linked Physical Object:</label>
-                    <input type="text" id="digital-physical-link" value="${location.physical_object_id || ''}" placeholder="physical_object_id">
+                    <input type="text" id="digital-physical-link" value="${location.physical_object_id || ''}" placeholder="e.g., server_rack_01">
+                    <small style="color: var(--text-light); font-size: 0.75rem;">Links this digital location to a physical object</small>
                 </div>
             </div>
             
-            <div class="property-group">
-                <h4>Position & Size</h4>
+            <div class="prop-section">
+                <label class="section-label">Position & Size</label>
                 
-                <div class="property-row">
-                    <div class="property-field">
-                        <label for="digital-x">X (m):</label>
+                <div class="inline-inputs">
+                    <div class="inline-input-group">
+                        <label for="digital-x">X (m)</label>
                         <input type="number" id="digital-x" value="${location.x.toFixed(2)}" step="0.1">
                     </div>
-                    <div class="property-field">
-                        <label for="digital-y">Y (m):</label>
+                    <div class="inline-input-group">
+                        <label for="digital-y">Y (m)</label>
                         <input type="number" id="digital-y" value="${location.y.toFixed(2)}" step="0.1">
                     </div>
-                </div>
-                
-                <div class="property-row">
-                    <div class="property-field">
-                        <label for="digital-width">Width (m):</label>
+                    <div class="inline-input-group">
+                        <label for="digital-width">Width</label>
                         <input type="number" id="digital-width" value="${location.width.toFixed(2)}" step="0.1" min="0.1">
                     </div>
-                    <div class="property-field">
-                        <label for="digital-height">Height (m):</label>
+                    <div class="inline-input-group">
+                        <label for="digital-height">Height</label>
                         <input type="number" id="digital-height" value="${location.height.toFixed(2)}" step="0.1" min="0.1">
                     </div>
                 </div>
             </div>
             
-            <div class="property-actions">
-                <button type="button" class="btn-danger" id="delete-digital-location">Delete Location</button>
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                <button type="button" class="btn-danger" id="delete-digital-location" style="width: 100%;">Delete Location</button>
             </div>
         `;
 
@@ -547,25 +574,32 @@ class DigitalSpaceEditor {
     updateSimulationJson() {
         if (this.isUpdatingJson || !this.monacoEditor) return;
         
-        try {
-            const jsonText = this.monacoEditor.getValue();
-            const simulation = JSON.parse(jsonText);
-            
-            // Ensure digital_space structure exists
-            if (!simulation.digital_space) {
-                simulation.digital_space = {};
-            }
-            
-            // Update digital locations
-            simulation.digital_space.digital_locations = this.digitalLocations;
-            simulation.digital_space.digital_objects = this.digitalObjects;
-            
-            this.isUpdatingJson = true;
-            this.monacoEditor.setValue(JSON.stringify(simulation, null, 2));
-            this.isUpdatingJson = false;
-        } catch (e) {
-            console.error("DIGITAL-SPACE: Error updating simulation JSON:", e);
+        // Debounce to prevent excessive updates and infinite loops
+        if (this.updateSimulationJsonTimeout) {
+            clearTimeout(this.updateSimulationJsonTimeout);
         }
+        
+        this.updateSimulationJsonTimeout = setTimeout(() => {
+            try {
+                const jsonText = this.monacoEditor.getValue();
+                const simulation = JSON.parse(jsonText);
+                
+                // Ensure digital_space structure exists
+                if (!simulation.digital_space) {
+                    simulation.digital_space = {};
+                }
+                
+                // Update digital locations
+                simulation.digital_space.digital_locations = this.digitalLocations;
+                simulation.digital_space.digital_objects = this.digitalObjects;
+                
+                this.isUpdatingJson = true;
+                this.monacoEditor.setValue(JSON.stringify(simulation, null, 2));
+                this.isUpdatingJson = false;
+            } catch (e) {
+                console.error("DIGITAL-SPACE: Error updating simulation JSON:", e);
+            }
+        }, 100); // 100ms debounce
     }
 
     // Zoom and view methods (adapted from space editor)
@@ -620,7 +654,7 @@ class DigitalSpaceEditor {
 
     onCanvasWheel(e) {
         e.preventDefault();
-        const rect = this.canvas.getBoundingClientRect();
+        const rect = this.canvasRect || this.canvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
 
@@ -651,11 +685,17 @@ class DigitalSpaceEditor {
         this.isDragging = true;
         this.activeRectEl = rectEl;
         
-        const rect = this.canvas.getBoundingClientRect();
+        // Disable ALL CSS animations/transitions during dragging for performance
+        rectEl.style.transition = 'none';
+        rectEl.style.transform = 'none';
+        rectEl.style.boxShadow = 'none';
+        rectEl.classList.add('dragging');
+        
+        const rect = this.canvasRect || this.canvas.getBoundingClientRect();
         const mouseX = (e.clientX - rect.left - this.view.x) / this.view.scale;
         const mouseY = (e.clientY - rect.top - this.view.y) / this.view.scale;
-        const rectX = parseFloat(rectEl.style.left);
-        const rectY = parseFloat(rectEl.style.top);
+        const rectX = parseFloat(rectEl.style.left) || 0;
+        const rectY = parseFloat(rectEl.style.top) || 0;
         
         this.dragOffset = {
             x: mouseX - rectX,
@@ -667,6 +707,14 @@ class DigitalSpaceEditor {
 
     finishDragging() {
         if (!this.isDragging || !this.selectedRectId) return;
+        
+        // Re-enable CSS styling after dragging
+        if (this.activeRectEl) {
+            this.activeRectEl.style.transition = '';
+            this.activeRectEl.style.transform = '';
+            this.activeRectEl.style.boxShadow = '';
+            this.activeRectEl.classList.remove('dragging');
+        }
         
         const location = this.digitalLocations.find(l => l.id === this.selectedRectId);
         if (location) {

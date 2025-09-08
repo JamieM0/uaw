@@ -330,7 +330,7 @@
                                         </div>
                                     </div>
                                     <div id="digital-space-tab" class="tab-content">
-                                        <div class="digital-space-container">
+                                        <div class="space-editor-container">
                                             <div class="space-canvas" id="digital-space-canvas">
                                                 <div class="zoom-controls">
                                                     <button type="button" class="zoom-btn zoom-in-btn" id="digital-zoom-in-btn" title="Zoom In">
@@ -346,25 +346,38 @@
                                             </div>
                                             <div class="properties-panel-container">
                                                 <div class="properties-panel-header">
-                                                    <h4>Digital Properties</h4>
+                                                    <h4>Digital Space</h4>
                                                     <div class="layer-controls">
-                                                        <label for="digital-layer-filter">Layer:</label>
+                                                        <label for="digital-layer-filter">Type:</label>
                                                         <select id="digital-layer-filter">
-                                                            <option value="all">All Layers</option>
+                                                            <option value="all">All Objects</option>
+                                                            <option value="storage">Storage</option>
+                                                            <option value="database">Database</option>
+                                                            <option value="cache">Cache</option>
+                                                            <option value="network">Network</option>
                                                         </select>
                                                     </div>
+                                                    <button id="add-digital-location-btn" class="btn btn-primary">+ Add Location</button>
                                                 </div>
                                                 <div id="digital-properties-panel-content">
-                                                    <p class="placeholder">Digital space editor - model digital objects and storage locations.</p>
+                                                    <p class="placeholder">Select a digital location, or click '+ Add Location' to create a new storage area.</p>
                                                 </div>
                                                 <div class="options-panel-container">
                                                     <div class="options-panel-header">
-                                                        <h4>Options</h4>
+                                                        <h4>Tools & Objects</h4>
                                                     </div>
                                                     <div id="digital-options-panel-content">
                                                         <div class="option-field">
+                                                            <button type="button" class="btn btn-secondary" id="add-digital-object-btn" style="width: 100%; margin-bottom: 0.5rem;">+ Add Digital Object</button>
+                                                        </div>
+                                                        <div class="option-field">
                                                             <label for="digital-scroll-sensitivity">Scroll Sensitivity:</label>
                                                             <input type="range" id="digital-scroll-sensitivity" min="0.2" max="5" step="0.1" value="2.5">
+                                                        </div>
+                                                        <div class="option-field">
+                                                            <label>
+                                                                <input type="checkbox" id="digital-show-connections" checked> Show Connections
+                                                            </label>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -372,7 +385,7 @@
                                         </div>
                                     </div>
                                     <div id="display-editor-tab" class="tab-content">
-                                        <div class="display-editor-container">
+                                        <div class="space-editor-container">
                                             <div class="space-canvas" id="display-canvas">
                                                 <div class="zoom-controls">
                                                     <button type="button" class="zoom-btn zoom-in-btn" id="display-zoom-in-btn" title="Zoom In">
@@ -388,19 +401,40 @@
                                             </div>
                                             <div class="properties-panel-container">
                                                 <div class="properties-panel-header">
-                                                    <h4>Display Properties</h4>
+                                                    <h4>Interface Design</h4>
+                                                    <div class="layer-controls">
+                                                        <label for="display-select">Display:</label>
+                                                        <select id="display-select">
+                                                            <option value="">No Display</option>
+                                                        </select>
+                                                    </div>
+                                                    <button id="add-display-btn" class="btn btn-primary">+ New Display</button>
                                                 </div>
                                                 <div id="display-properties-panel-content">
-                                                    <p class="placeholder">Display editor - model digital interface elements and interactions.</p>
+                                                    <p class="placeholder">Select a display or create a new one to start designing interface elements.</p>
                                                 </div>
                                                 <div class="options-panel-container">
                                                     <div class="options-panel-header">
-                                                        <h4>Options</h4>
+                                                        <h4>UI Elements</h4>
                                                     </div>
                                                     <div id="display-options-panel-content">
                                                         <div class="option-field">
+                                                            <button type="button" class="btn btn-secondary" id="add-display-element-btn" style="width: 100%; margin-bottom: 0.5rem;">+ Add Element</button>
+                                                        </div>
+                                                        <div class="option-field" style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                                                            <button type="button" class="element-quick-btn" data-element-type="button">🔘 Button</button>
+                                                            <button type="button" class="element-quick-btn" data-element-type="textbox">📝 Input</button>
+                                                            <button type="button" class="element-quick-btn" data-element-type="label">🏷️ Label</button>
+                                                            <button type="button" class="element-quick-btn" data-element-type="panel">📋 Panel</button>
+                                                        </div>
+                                                        <div class="option-field">
                                                             <label for="display-scroll-sensitivity">Scroll Sensitivity:</label>
                                                             <input type="range" id="display-scroll-sensitivity" min="0.2" max="5" step="0.1" value="2.5">
+                                                        </div>
+                                                        <div class="option-field">
+                                                            <label>
+                                                                <input type="checkbox" id="display-show-grid" checked> Show Grid
+                                                            </label>
                                                         </div>
                                                     </div>
                                                 </div>

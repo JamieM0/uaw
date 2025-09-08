@@ -145,5 +145,14 @@
         "disallowed_types": ["timeline_actors"]
       }
     }
+  },
+  {
+    "id": "display.spatial.elements_outside_bounds",
+    "name": "Display Elements Outside Bounds",
+    "description": "Checks if any display elements extend beyond the viewport boundaries of their display.",
+    "category": "Structural Integrity",
+    "severity": "warning",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateDisplayElementBounds" }
   }
 ]

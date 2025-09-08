@@ -19,11 +19,16 @@ class DisplayEditor {
 
         this.isUpdatingJson = false;
         this.hasInitiallyLoaded = false;
+        this.isUpdatingProperties = false;
         this.world = null;
+        this.showGrid = true;
         
         // Cache for performance optimization
         this.canvasRect = null;
         this.isMouseMoveThrottled = false;
+        
+        // Debouncing for JSON updates
+        this.updateSimulationJsonTimeout = null;
         
         this.view = {
             scale: 1,
@@ -86,6 +91,23 @@ class DisplayEditor {
                 this.deselectAll();
             });
         }
+
+        // Quick element buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('element-quick-btn')) {
+                const elementType = e.target.dataset.elementType;
+                this.createQuickElement(elementType);
+            }
+        });
+
+        // Grid toggle
+        const showGridCheckbox = document.getElementById('display-show-grid');
+        if (showGridCheckbox) {
+            showGridCheckbox.addEventListener('change', (e) => {
+                this.showGrid = e.target.checked;
+                this.updateGridVisibility();
+            });
+        }
         
         // Canvas interactions
         this.canvas.addEventListener('mousedown', this.onCanvasMouseDown.bind(this));
@@ -120,6 +142,58 @@ class DisplayEditor {
         this.isDrawingDisplay = true;
         this.canvas.style.cursor = 'crosshair';
         this.deselectAll();
+    }
+
+    createQuickElement(elementType) {
+        if (!this.getActiveDisplay()) {
+            alert('Please create or select a display first.');
+            return;
+        }
+
+        const typeInfo = this.elementTypes[elementType] || this.elementTypes.button;
+        const elementId = 'element_' + Date.now();
+        const element = {
+            id: elementId,
+            type: elementType,
+            bounds: {
+                x: 50 + Math.random() * 100,
+                y: 50 + Math.random() * 100,
+                width: typeInfo.defaultWidth,
+                height: typeInfo.defaultHeight
+            },
+            z_index: this.getNextZIndex(),
+            parent_id: null,
+            content: {
+                type: 'text',
+                value: elementType.charAt(0).toUpperCase() + elementType.slice(1),
+                alignment: 'center'
+            },
+            properties: {
+                visible: true,
+                clickable: elementType === 'button' || elementType === 'textbox',
+                background: elementType === 'button' ? '#007bff' : '#f0f0f0',
+                border: elementType === 'button' ? '#0056b3' : '#cccccc',
+                text_color: elementType === 'button' ? '#ffffff' : '#333333'
+            }
+        };
+
+        const activeDisplay = this.getActiveDisplay();
+        activeDisplay.rectangles.push(element);
+        this.renderElement(element);
+        this.selectElement(elementId);
+        this.updateSimulationJson();
+    }
+
+    updateGridVisibility() {
+        if (this.canvas) {
+            if (this.showGrid) {
+                this.canvas.style.backgroundImage = 'linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px)';
+                this.canvas.style.backgroundSize = '20px 20px';
+            } else {
+                this.canvas.style.backgroundImage = 'none';
+                this.canvas.style.backgroundSize = 'auto';
+            }
+        }
     }
 
     updateDisplaySelect() {
@@ -204,7 +278,7 @@ class DisplayEditor {
         this.activeRectEl.style.height = '0px';
         this.activeRectEl.style.border = '3px dashed #ff6b35';
         this.activeRectEl.style.backgroundColor = 'rgba(255, 107, 53, 0.1)';
-        this.activeRectEl.innerHTML = '<div style="position: absolute; top: -25px; left: 0; color: #ff6b35; font-size: 12px; font-weight: bold;">New Display</div>';
+        this.activeRectEl.innerHTML = '<div class="dimension-text" style="position: absolute; top: -25px; left: 0; color: #ff6b35; font-size: 12px; font-weight: bold;">New Display (0 × 0px)</div>';
         this.world.appendChild(this.activeRectEl);
     }
 
@@ -259,6 +333,16 @@ class DisplayEditor {
             this.activeRectEl.style.top = top + 'px';
             this.activeRectEl.style.width = width + 'px';
             this.activeRectEl.style.height = height + 'px';
+            
+            // Update dimensions display for display drawing
+            if (this.isDrawingDisplay) {
+                const widthRounded = Math.round(width);
+                const heightRounded = Math.round(height);
+                const dimensionText = this.activeRectEl.querySelector('.dimension-text');
+                if (dimensionText) {
+                    dimensionText.textContent = `New Display (${widthRounded} × ${heightRounded}px)`;
+                }
+            }
         }
 
         if (this.isDragging && this.activeRectEl) {
@@ -342,6 +426,8 @@ class DisplayEditor {
         
         // Render the new display
         this.renderActiveDisplay();
+        this.renderPropertiesPanel();
+        this.updateGridVisibility();
     }
 
     finishDrawing() {
@@ -397,6 +483,9 @@ class DisplayEditor {
         this.activeRectEl = null;
         this.isDrawing = false;
         this.canvas.style.cursor = 'default';
+        
+        // Re-render properties to update element list
+        this.renderPropertiesPanel();
     }
 
     getNextZIndex() {
@@ -432,11 +521,14 @@ class DisplayEditor {
         // Add content
         this.renderElementContent(rectEl, element);
         
-        this.world.appendChild(rectEl);
+        // Append to viewport if it exists, otherwise to world (for compatibility)
+        const container = this.viewport || this.world;
+        container.appendChild(rectEl);
     }
 
     renderElementContent(rectEl, element) {
         const typeInfo = this.elementTypes[element.type] || this.elementTypes.button;
+        const textColor = element.properties.text_color || '#333333';
         
         if (element.content.type === 'text') {
             rectEl.innerHTML = `
@@ -448,6 +540,7 @@ class DisplayEditor {
                     text-align: ${element.content.alignment || 'center'};
                     font-size: 12px;
                     overflow: hidden;
+                    color: ${textColor};
                 ">
                     <span class="element-icon">${typeInfo.icon}</span>
                     <span class="element-text">${element.content.value || ''}</span>
@@ -470,6 +563,7 @@ class DisplayEditor {
                     align-items: center; 
                     justify-content: center; 
                     height: 100%;
+                    color: ${textColor};
                 ">
                     ${typeInfo.icon}
                 </div>
@@ -495,21 +589,43 @@ class DisplayEditor {
 
     renderPropertiesPanel() {
         if (!this.selectedRectId) {
+            const activeDisplay = this.getActiveDisplay();
             this.propsPanel.innerHTML = `
-                <div class="property-group">
-                    <h4>Display Management</h4>
-                    <div class="property-field">
-                        <label for="display-select">Active Display:</label>
-                        <select id="display-select">
-                            ${this.displays.map(d => `<option value="${d.id}">${d.name}</option>`).join('')}
-                        </select>
-                    </div>
-                    <button type="button" class="btn-primary" id="add-display-btn">+ Draw New Display</button>
-                    <button type="button" class="btn-secondary" id="add-display-element-btn">+ Add Element</button>
+                <div class="prop-section">
+                    <label class="section-label">Display Overview</label>
+                    ${activeDisplay ? `
+                        <div style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 0.5rem;">
+                            <div><strong>${activeDisplay.name}</strong></div>
+                            <div>Size: ${activeDisplay.viewport.width} × ${activeDisplay.viewport.height}px</div>
+                            <div>Elements: ${activeDisplay.rectangles.length}</div>
+                            ${activeDisplay.physical_object_id ? `<div>Linked to: ${activeDisplay.physical_object_id}</div>` : ''}
+                        </div>
+                    ` : `
+                        <div style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 0.5rem; font-style: italic;">
+                            No display selected. Create a new display to start designing interfaces.
+                        </div>
+                    `}
                 </div>
-                <p class="placeholder">Select a display element to edit its properties.</p>
+                
+                ${activeDisplay ? `
+                    <div class="prop-section">
+                        <label class="section-label">Elements (${activeDisplay.rectangles.length})</label>
+                        <div class="elements-list" style="max-height: 120px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-light);">
+                            ${activeDisplay.rectangles.length > 0 ? activeDisplay.rectangles
+                                .sort((a, b) => (b.z_index || 1) - (a.z_index || 1))
+                                .map(element => `
+                                    <div class="element-item" data-element-id="${element.id}" style="display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-bottom: 1px solid var(--border-color); cursor: pointer; font-size: 12px;" onclick="window.displayEditor && window.displayEditor.selectElement('${element.id}')">
+                                        <span>${this.elementTypes[element.type]?.icon || '⬜'}</span>
+                                        <span style="flex: 1;">${element.content.value || element.type}</span>
+                                        <span style="color: var(--text-light); font-size: 10px;">z:${element.z_index || 1}</span>
+                                    </div>
+                                `).join('') : 
+                                '<div style="padding: 8px; text-align: center; color: var(--text-light); font-style: italic; font-size: 12px;">No elements added yet</div>'
+                            }
+                        </div>
+                    </div>
+                ` : ''}
             `;
-            this.setupEventListeners();
             return;
         }
 
@@ -518,19 +634,19 @@ class DisplayEditor {
         if (!element) return;
 
         this.propsPanel.innerHTML = `
-            <div class="property-group">
-                <h4>Element Properties</h4>
+            <div class="prop-section">
+                <label class="section-label">Element Properties</label>
                 
-                <div class="property-field">
+                <div class="prop-field">
                     <label for="element-type">Type:</label>
                     <select id="element-type">
                         ${Object.entries(this.elementTypes).map(([type, info]) => 
-                            `<option value="${type}" ${element.type === type ? 'selected' : ''}>${info.icon} ${type}</option>`
+                            `<option value="${type}" ${element.type === type ? 'selected' : ''}>${info.icon} ${type.charAt(0).toUpperCase() + type.slice(1)}</option>`
                         ).join('')}
                     </select>
                 </div>
                 
-                <div class="property-field">
+                <div class="prop-field">
                     <label for="element-parent">Parent Element:</label>
                     <select id="element-parent">
                         <option value="">None (Root Level)</option>
@@ -540,25 +656,26 @@ class DisplayEditor {
                     </select>
                 </div>
                 
-                <div class="property-field">
+                <div class="prop-field">
                     <label for="element-z-index">Z-Index (Layer):</label>
                     <input type="number" id="element-z-index" value="${element.z_index || 1}" min="1">
+                    <small style="color: var(--text-light); font-size: 0.75rem;">Higher numbers appear on top</small>
                 </div>
             </div>
             
-            <div class="property-group">
-                <h4>Content</h4>
+            <div class="prop-section">
+                <label class="section-label">Content</label>
                 
-                <div class="property-field">
+                <div class="prop-field">
                     <label for="content-type">Content Type:</label>
                     <select id="content-type">
-                        <option value="text" ${element.content.type === 'text' ? 'selected' : ''}>Text</option>
-                        <option value="image" ${element.content.type === 'image' ? 'selected' : ''}>Image</option>
-                        <option value="icon" ${element.content.type === 'icon' ? 'selected' : ''}>Icon Only</option>
+                        <option value="text" ${element.content.type === 'text' ? 'selected' : ''}>📝 Text</option>
+                        <option value="image" ${element.content.type === 'image' ? 'selected' : ''}>🖼️ Image</option>
+                        <option value="icon" ${element.content.type === 'icon' ? 'selected' : ''}>🎨 Icon Only</option>
                     </select>
                 </div>
                 
-                <div class="property-field" id="content-value-field">
+                <div class="prop-field" id="content-value-field">
                     ${element.content.type === 'image' ? `
                         <label for="content-file">Custom SVG/Image:</label>
                         <input type="file" id="content-file" accept=".svg,.png,.jpg,.jpeg,.gif,.webp" style="margin-bottom: 8px;">
@@ -569,77 +686,65 @@ class DisplayEditor {
                         <input type="text" id="content-value" value="${element.content.value || ''}" placeholder="Button text">
                     `}
                 </div>
-                
-                <div class="property-field">
-                    <label for="content-alignment">Alignment:</label>
-                    <select id="content-alignment">
-                        <option value="left" ${element.content.alignment === 'left' ? 'selected' : ''}>Left</option>
-                        <option value="center" ${element.content.alignment === 'center' ? 'selected' : ''}>Center</option>
-                        <option value="right" ${element.content.alignment === 'right' ? 'selected' : ''}>Right</option>
-                    </select>
-                </div>
             </div>
             
-            <div class="property-group">
-                <h4>Position & Size</h4>
+            <div class="prop-section">
+                <label class="section-label">Position & Size</label>
                 
-                <div class="property-row">
-                    <div class="property-field">
-                        <label for="element-x">X:</label>
+                <div class="inline-inputs">
+                    <div class="inline-input-group">
+                        <label for="element-x">X (px)</label>
                         <input type="number" id="element-x" value="${element.bounds.x}" step="1">
                     </div>
-                    <div class="property-field">
-                        <label for="element-y">Y:</label>
+                    <div class="inline-input-group">
+                        <label for="element-y">Y (px)</label>
                         <input type="number" id="element-y" value="${element.bounds.y}" step="1">
                     </div>
-                </div>
-                
-                <div class="property-row">
-                    <div class="property-field">
-                        <label for="element-width">Width:</label>
+                    <div class="inline-input-group">
+                        <label for="element-width">Width</label>
                         <input type="number" id="element-width" value="${element.bounds.width}" step="1" min="10">
                     </div>
-                    <div class="property-field">
-                        <label for="element-height">Height:</label>
+                    <div class="inline-input-group">
+                        <label for="element-height">Height</label>
                         <input type="number" id="element-height" value="${element.bounds.height}" step="1" min="10">
                     </div>
                 </div>
             </div>
             
-            <div class="property-group">
-                <h4>Appearance</h4>
+            <div class="prop-section">
+                <label class="section-label">Appearance</label>
                 
-                <div class="property-field">
-                    <label for="element-background">Background Color:</label>
-                    <input type="color" id="element-background" value="${element.properties.background || '#f0f0f0'}">
+                <div class="inline-inputs" style="margin-bottom: 0.5rem;">
+                    <div class="inline-input-group">
+                        <label for="element-background">Background</label>
+                        <input type="color" id="element-background" value="${element.properties.background || '#f0f0f0'}">
+                    </div>
+                    <div class="inline-input-group">
+                        <label for="element-border">Border</label>
+                        <input type="color" id="element-border" value="${element.properties.border || '#cccccc'}">
+                    </div>
+                    <div class="inline-input-group">
+                        <label for="element-text-color">Text</label>
+                        <input type="color" id="element-text-color" value="${element.properties.text_color || '#333333'}">
+                    </div>
                 </div>
                 
-                <div class="property-field">
-                    <label for="element-border">Border Color:</label>
-                    <input type="color" id="element-border" value="${element.properties.border || '#cccccc'}">
-                </div>
-                
-                <div class="property-field">
-                    <label for="element-text-color">Text Color:</label>
-                    <input type="color" id="element-text-color" value="${element.properties.text_color || '#333333'}">
-                </div>
-                
-                <div class="property-field">
+                <div class="prop-field">
                     <label>
                         <input type="checkbox" id="element-visible" ${element.properties.visible ? 'checked' : ''}> Visible
                     </label>
                 </div>
                 
-                <div class="property-field">
+                <div class="prop-field">
                     <label>
-                        <input type="checkbox" id="element-clickable" ${element.properties.clickable ? 'checked' : ''}> Clickable
+                        <input type="checkbox" id="element-clickable" ${element.properties.clickable ? 'checked' : ''}> Clickable/Interactive
                     </label>
                 </div>
             </div>
             
-            <div class="property-actions">
-                <button type="button" class="btn-secondary" id="duplicate-element">Duplicate</button>
-                <button type="button" class="btn-danger" id="delete-element">Delete</button>
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.5rem;">
+                <button type="button" class="btn-secondary" id="duplicate-element" style="flex: 1;">Duplicate</button>
+                <button type="button" class="btn-danger" id="delete-element" style="flex: 1;">Delete</button>
             </div>
         `;
 
@@ -672,11 +777,18 @@ class DisplayEditor {
             const input = document.getElementById(id);
             if (input) {
                 input.addEventListener('input', (e) => {
+                    this.isUpdatingProperties = true;
+                    
                     const prop = id.split('-')[1];
                     element.content[prop] = e.target.value;
                     this.renderElement(element);
                     if (prop === 'type') this.renderPropertiesPanel();
                     this.updateSimulationJson();
+                    
+                    // Use setTimeout to clear flag after all synchronous operations complete
+                    setTimeout(() => {
+                        this.isUpdatingProperties = false;
+                    }, 0);
                 });
             }
         });
@@ -716,12 +828,18 @@ class DisplayEditor {
 
         // Appearance properties
         ['background', 'border', 'text-color'].forEach(prop => {
-            const input = document.getElementById(`element-${prop.replace('-', '_')}`);
+            const input = document.getElementById(`element-${prop}`); // Use hyphen, not underscore
             if (input) {
                 input.addEventListener('input', (e) => {
-                    element.properties[prop.replace('-', '_')] = e.target.value;
+                    this.isUpdatingProperties = true;
+                    
+                    element.properties[prop.replace('-', '_')] = e.target.value; // Store with underscore in properties
                     this.renderElement(element);
                     this.updateSimulationJson();
+                    
+                    setTimeout(() => {
+                        this.isUpdatingProperties = false;
+                    }, 0);
                 });
             }
         });
@@ -824,17 +942,17 @@ class DisplayEditor {
         if (!activeDisplay) return;
 
         // Render display viewport boundary
-        const viewport = document.createElement('div');
-        viewport.className = 'display-viewport';
-        viewport.style.position = 'absolute';
-        viewport.style.left = '0px';
-        viewport.style.top = '0px';
-        viewport.style.width = activeDisplay.viewport.width + 'px';
-        viewport.style.height = activeDisplay.viewport.height + 'px';
-        viewport.style.border = '2px solid #333';
-        viewport.style.backgroundColor = '#ffffff';
-        viewport.style.zIndex = '0';
-        this.world.appendChild(viewport);
+        this.viewport = document.createElement('div');
+        this.viewport.className = 'display-viewport';
+        this.viewport.style.position = 'absolute';
+        this.viewport.style.left = '0px';
+        this.viewport.style.top = '0px';
+        this.viewport.style.width = activeDisplay.viewport.width + 'px';
+        this.viewport.style.height = activeDisplay.viewport.height + 'px';
+        this.viewport.style.border = '2px solid #333';
+        this.viewport.style.backgroundColor = '#ffffff';
+        this.viewport.style.zIndex = '0';
+        this.world.appendChild(this.viewport);
         
         // Render all elements
         activeDisplay.rectangles
@@ -846,6 +964,11 @@ class DisplayEditor {
 
     loadFromSimulation() {
         if (!this.monacoEditor) return;
+        
+        // Skip reloading if we're currently updating properties to prevent position reset
+        if (this.isUpdatingProperties) {
+            return;
+        }
 
         try {
             const jsonText = this.monacoEditor.getValue();
@@ -867,18 +990,25 @@ class DisplayEditor {
     updateSimulationJson() {
         if (this.isUpdatingJson || !this.monacoEditor) return;
         
-        try {
-            const jsonText = this.monacoEditor.getValue();
-            const simulation = JSON.parse(jsonText);
-            
-            simulation.displays = this.displays;
-            
-            this.isUpdatingJson = true;
-            this.monacoEditor.setValue(JSON.stringify(simulation, null, 2));
-            this.isUpdatingJson = false;
-        } catch (e) {
-            console.error("DISPLAY-EDITOR: Error updating simulation JSON:", e);
+        // Debounce to prevent excessive updates and infinite loops
+        if (this.updateSimulationJsonTimeout) {
+            clearTimeout(this.updateSimulationJsonTimeout);
         }
+        
+        this.updateSimulationJsonTimeout = setTimeout(() => {
+            try {
+                const jsonText = this.monacoEditor.getValue();
+                const simulation = JSON.parse(jsonText);
+                
+                simulation.displays = this.displays;
+                
+                this.isUpdatingJson = true;
+                this.monacoEditor.setValue(JSON.stringify(simulation, null, 2));
+                this.isUpdatingJson = false;
+            } catch (e) {
+                console.error("DISPLAY-EDITOR: Error updating simulation JSON:", e);
+            }
+        }, 100); // 100ms debounce
     }
 
     // View and zoom methods (same as digital space editor)
@@ -952,6 +1082,9 @@ class DisplayEditor {
         this.isDragging = true;
         this.activeRectEl = rectEl;
         
+        // Add dragging class to disable transitions/animations
+        rectEl.classList.add('dragging');
+        
         const rect = this.canvasRect || this.canvas.getBoundingClientRect();
         const mouseX = (e.clientX - rect.left - this.view.x) / this.view.scale;
         const mouseY = (e.clientY - rect.top - this.view.y) / this.view.scale;
@@ -976,6 +1109,11 @@ class DisplayEditor {
             element.bounds.y = this.currentDragPosition.y;
             this.updateSimulationJson();
             this.renderPropertiesPanel();
+        }
+        
+        // Remove dragging class to re-enable transitions/animations
+        if (this.activeRectEl) {
+            this.activeRectEl.classList.remove('dragging');
         }
         
         this.isDragging = false;

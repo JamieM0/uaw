@@ -4,6 +4,7 @@
  */
 class SimulationValidator {
   constructor(simulationData) {
+    this.simulationData = simulationData;  // Store full data
     this.simulation = simulationData ? simulationData.simulation : null;
     this.results = [];
   }
@@ -719,6 +720,69 @@ class SimulationValidator {
 
     if (!issueFound) {
       this.addResult({ metricId: metric.id, status: 'success', message: 'No disallowed object types found.' });
+    }
+  }
+
+  validateDisplayElementBounds(metric) {
+    // Check multiple possible locations for displays
+    let displays = [];
+    
+    // First try the root level of the full data (if available)
+    if (this.simulationData && this.simulationData.displays) {
+      displays = this.simulationData.displays;
+    }
+    // Then try inside simulation object
+    else if (this.simulation.displays) {
+      displays = this.simulation.displays;
+    }
+    // Then try display_space
+    else if (this.simulation.display_space && this.simulation.display_space.displays) {
+      displays = this.simulation.display_space.displays;
+    }
+    
+    console.log('DEBUG: displays found:', displays.length);
+    let issueFound = false;
+
+    for (const display of displays) {
+      const viewport = display.viewport || {};
+      const viewportWidth = viewport.width || 0;
+      const viewportHeight = viewport.height || 0;
+      const elements = display.rectangles || [];
+      console.log(`DEBUG: Display ${display.id}: ${viewportWidth}x${viewportHeight}, ${elements.length} elements`);
+
+      for (const element of elements) {
+        const bounds = element.bounds || {};
+        const elementLeft = bounds.x || 0;
+        const elementTop = bounds.y || 0;
+        const elementWidth = bounds.width || 0;
+        const elementHeight = bounds.height || 0;
+
+        console.log(`DEBUG: Element ${element.id}: x=${elementLeft}, y=${elementTop}, w=${elementWidth}, h=${elementHeight}`);
+
+        // Check if element extends beyond viewport bounds
+        const elementRight = elementLeft + elementWidth;
+        const elementBottom = elementTop + elementHeight;
+
+        console.log(`DEBUG: Bounds check: left=${elementLeft} < 0? ${elementLeft < 0}, top=${elementTop} < 0? ${elementTop < 0}, right=${elementRight} > ${viewportWidth}? ${elementRight > viewportWidth}, bottom=${elementBottom} > ${viewportHeight}? ${elementBottom > viewportHeight}`);
+
+        if (elementLeft < 0 || elementTop < 0 || 
+            elementRight > viewportWidth || elementBottom > viewportHeight) {
+          console.log('DEBUG: ELEMENT IS OUT OF BOUNDS!');
+          this.addResult({
+            metricId: metric.id,
+            status: 'warning',
+            message: `Display element '${element.id || 'unnamed'}' in display '${display.id || 'unnamed'}' extends outside viewport bounds. Element bounds: (${elementLeft}, ${elementTop}, ${elementWidth}×${elementHeight}), Viewport: ${viewportWidth}×${viewportHeight}.`
+          });
+          issueFound = true;
+        } else {
+          console.log('DEBUG: Element is within bounds');
+        }
+      }
+    }
+
+    if (!issueFound) {
+      console.log('DEBUG: No out-of-bounds elements found, marking as success');
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All display elements are within viewport bounds.' });
     }
   }
 }
