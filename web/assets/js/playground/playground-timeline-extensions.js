@@ -528,6 +528,12 @@ function initializeTimelineExtensions() {
     const originalProcessSimulationData = window.processSimulationData;
     if (typeof originalProcessSimulationData === 'function') {
         window.processSimulationData = function(simulationData) {
+            // Add safety check for simulationData
+            if (!simulationData) {
+                console.error('TIMELINE-EXTENSIONS: simulationData is undefined');
+                return { tasks: [] };
+            }
+            
             const result = originalProcessSimulationData(simulationData);
             
             // Process digital and display interactions for each task

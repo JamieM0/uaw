@@ -261,6 +261,38 @@ function addInteraction() {
         objectOptions.push(`<optgroup label="${groupLabel}">${options}</optgroup>`);
     });
     
+    // Add digital locations
+    if (context.digitalLocations && context.digitalLocations.length > 0) {
+        const digitalLocationOptions = context.digitalLocations.map(loc => 
+            `<option value="${loc.id}">${loc.name} (Digital Location)</option>`
+        ).join('');
+        objectOptions.push(`<optgroup label="Digital Locations">${digitalLocationOptions}</optgroup>`);
+    }
+    
+    // Add digital objects
+    if (context.digitalObjects && context.digitalObjects.length > 0) {
+        const digitalObjectOptions = context.digitalObjects.map(obj => 
+            `<option value="${obj.id}">${obj.name} (Digital Object)</option>`
+        ).join('');
+        objectOptions.push(`<optgroup label="Digital Objects">${digitalObjectOptions}</optgroup>`);
+    }
+    
+    // Add displays
+    if (context.displays && context.displays.length > 0) {
+        const displayOptions = context.displays.map(display => 
+            `<option value="${display.id}">${display.name} (Display)</option>`
+        ).join('');
+        objectOptions.push(`<optgroup label="Displays">${displayOptions}</optgroup>`);
+    }
+    
+    // Add display elements
+    if (context.displayElements && context.displayElements.length > 0) {
+        const displayElementOptions = context.displayElements.map(element => 
+            `<option value="${element.id}">${element.content.value || element.type} (Display Element)</option>`
+        ).join('');
+        objectOptions.push(`<optgroup label="Display Elements">${displayElementOptions}</optgroup>`);
+    }
+    
     const interactionHTML = `
         <div class="interaction-group" id="interaction-${interactionCounter}">
             <div class="interaction-header">
@@ -276,6 +308,8 @@ function addInteraction() {
                         <option value="delta">Delta</option>
                         <option value="add_object">Add Object</option>
                         <option value="remove_object">Remove Object</option>
+                        <option value="move_digital_object">Move Digital Object</option>
+                        <option value="move_display_element">Move Display Element</option>
                     </select>
                 </div>
                 <div class="form-group object-selection-group">
@@ -311,6 +345,40 @@ function addInteraction() {
                     <div class="form-group">
                         <label>Delta</label>
                         <input type="number" name="interaction_delta_${interactionCounter}" placeholder="e.g., -1 or 5">
+                    </div>
+                </div>
+                
+                <div class="move-digital-object-fields" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>From Digital Location:</label>
+                            <select name="from_digital_location_${interactionCounter}" class="from-location-select">
+                                <option value="">Select source location...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>To Digital Location:</label>
+                            <select name="to_digital_location_${interactionCounter}" class="to-location-select">
+                                <option value="">Select target location...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="move-display-element-fields" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>From Display:</label>
+                            <select name="from_display_${interactionCounter}" class="from-display-select">
+                                <option value="">Select source display...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>To Display:</label>
+                            <select name="to_display_${interactionCounter}" class="to-display-select">
+                                <option value="">Select target display...</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 
@@ -386,6 +454,12 @@ function toggleInteractionFields(selectElement) {
     delta.style.display = 'none';
     addObject.style.display = 'none';
     revertCheckbox.style.display = 'block'; // Show by default
+    
+    // Hide new interaction fields
+    const moveDigitalFields = group.querySelector('.move-digital-object-fields');
+    const moveDisplayFields = group.querySelector('.move-display-element-fields');
+    if (moveDigitalFields) moveDigitalFields.style.display = 'none';
+    if (moveDisplayFields) moveDisplayFields.style.display = 'none';
 
     if (selectElement.value === 'from_to') {
         objectSelection.style.display = 'block';
@@ -398,9 +472,51 @@ function toggleInteractionFields(selectElement) {
         revertCheckbox.style.display = 'none'; // Cannot revert adding an object
     } else if (selectElement.value === 'remove_object') {
         objectSelection.style.display = 'block';
+    } else if (selectElement.value === 'move_digital_object') {
+        objectSelection.style.display = 'block';
+        if (moveDigitalFields) {
+            moveDigitalFields.style.display = 'block';
+            populateDigitalLocationOptions(moveDigitalFields);
+        }
+    } else if (selectElement.value === 'move_display_element') {
+        objectSelection.style.display = 'block';
+        if (moveDisplayFields) {
+            moveDisplayFields.style.display = 'block';
+            populateDisplayOptions(moveDisplayFields);
+        }
     }
 }
 
+// Helper functions for populating move interaction dropdowns
+function populateDigitalLocationOptions(moveFields) {
+    const context = getCurrentTimelineContext();
+    const fromSelect = moveFields.querySelector('.from-location-select');
+    const toSelect = moveFields.querySelector('.to-location-select');
+    
+    if (fromSelect && toSelect && context.digitalLocations) {
+        const options = context.digitalLocations.map(loc => 
+            `<option value="${loc.id}">${loc.name}</option>`
+        ).join('');
+        
+        fromSelect.innerHTML = '<option value="">Select source location...</option>' + options;
+        toSelect.innerHTML = '<option value="">Select target location...</option>' + options;
+    }
+}
+
+function populateDisplayOptions(moveFields) {
+    const context = getCurrentTimelineContext();
+    const fromSelect = moveFields.querySelector('.from-display-select');
+    const toSelect = moveFields.querySelector('.to-display-select');
+    
+    if (fromSelect && toSelect && context.displays) {
+        const options = context.displays.map(display => 
+            `<option value="${display.id}">${display.name}</option>`
+        ).join('');
+        
+        fromSelect.innerHTML = '<option value="">Select source display...</option>' + options;
+        toSelect.innerHTML = '<option value="">Select target display...</option>' + options;
+    }
+}
 
 // Remove interaction
 function removeInteraction(button) {
@@ -582,6 +698,28 @@ function addTaskToSimulation() {
             } else if (changeType === 'remove_object') {
                 interaction.remove_objects = [objectId];
                 newTask.interactions.push(interaction);
+            } else if (changeType === 'move_digital_object') {
+                const fromLocationId = group.querySelector(`select[name="from_digital_location_${counter}"]`).value;
+                const toLocationId = group.querySelector(`select[name="to_digital_location_${counter}"]`).value;
+                if (objectId && fromLocationId && toLocationId) {
+                    interaction.move_digital_object = {
+                        object_id: objectId,
+                        from_location_id: fromLocationId,
+                        to_location_id: toLocationId
+                    };
+                    newTask.interactions.push(interaction);
+                }
+            } else if (changeType === 'move_display_element') {
+                const fromDisplayId = group.querySelector(`select[name="from_display_${counter}"]`).value;
+                const toDisplayId = group.querySelector(`select[name="to_display_${counter}"]`).value;
+                if (objectId && fromDisplayId && toDisplayId) {
+                    interaction.move_display_element = {
+                        element_id: objectId,
+                        from_display_id: fromDisplayId,
+                        to_display_id: toDisplayId
+                    };
+                    newTask.interactions.push(interaction);
+                }
             }
         });
         

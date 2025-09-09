@@ -221,6 +221,29 @@ function getCurrentTimelineContext() {
             objectsByType[obj.type].push(obj);
         });
         
+        // Get digital locations
+        const digitalLocations = simulation.digital_space?.digital_locations || [];
+        
+        // Get digital objects
+        const digitalObjects = simulation.digital_space?.digital_objects || [];
+        
+        // Get displays
+        const displays = simulation.displays || [];
+        
+        // Get display elements from all displays
+        const displayElements = [];
+        displays.forEach(display => {
+            if (display.rectangles) {
+                display.rectangles.forEach(element => {
+                    displayElements.push({
+                        ...element,
+                        display_id: display.id,
+                        display_name: display.name
+                    });
+                });
+            }
+        });
+        
         // Get time range info
         const config = sim.config || {};
         const startTime = config.start_time || "06:00";
@@ -229,6 +252,10 @@ function getCurrentTimelineContext() {
         return {
             locations,
             objectsByType,
+            digitalLocations,
+            digitalObjects,
+            displays,
+            displayElements,
             startTime,
             endTime,
             timeUnit: config.time_unit || "minute"
@@ -238,6 +265,10 @@ function getCurrentTimelineContext() {
         return {
             locations: [],
             objectsByType: {},
+            digitalLocations: [],
+            digitalObjects: [],
+            displays: [],
+            displayElements: [],
             startTime: "06:00",
             endTime: "18:00",
             timeUnit: "minute"

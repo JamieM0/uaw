@@ -23,7 +23,17 @@ let durationPreview = null;
 
 // Process simulation data with timeline calculations
 function processSimulationData(simulationData) {
+    if (!simulationData) {
+        console.error('TIMELINE: simulationData is undefined');
+        return { tasks: [], start_time_minutes: 360, end_time_minutes: 1080, total_duration_minutes: 720 };
+    }
+    
     const sim = simulationData.simulation;
+    if (!sim) {
+        console.error('TIMELINE: simulationData.simulation is undefined');
+        return { tasks: [], start_time_minutes: 360, end_time_minutes: 1080, total_duration_minutes: 720 };
+    }
+    
     const config = sim.config || {};
     const startTime = config.start_time || "06:00";
     const [startHour, startMin] = startTime.split(":").map(Number);
@@ -32,6 +42,11 @@ function processSimulationData(simulationData) {
     let actualLastTaskEnd = startTimeMinutes;
 
     const allObjects = sim.objects || [];
+    
+    // Include digital locations from the raw simulationData structure
+    if (simulationData.digital_space && simulationData.digital_space.digital_locations) {
+        allObjects.push(...simulationData.digital_space.digital_locations);
+    }
     
     // Group objects by type dynamically (no hardcoded filtering)
     const objectsByType = {};
@@ -174,11 +189,35 @@ function renderSimulation() {
         loadingOverlay.style.display = "flex";
         const jsonText = editor.getValue();
         const simulationData = JSON.parse(jsonText);
-        currentSimulationData =
-            processSimulationData(simulationData);
+        
+        // Debug: Log the structure to understand what we're getting
+        console.log('TIMELINE: simulationData structure:', Object.keys(simulationData));
+        
+        let dataToProcess = simulationData;
+        
+        if (simulationData.simulation) {
+            console.log('TIMELINE: simulationData.simulation keys:', Object.keys(simulationData.simulation));
+        } else {
+            console.log('TIMELINE: No simulation key found. Trying to adapt structure...');
+            
+            // If the JSON doesn't have a 'simulation' wrapper, try to adapt it
+            if (simulationData.config || simulationData.tasks || simulationData.objects) {
+                // The JSON is already in the 'simulation' format, wrap it
+                dataToProcess = {
+                    simulation: simulationData
+                };
+                console.log('TIMELINE: Wrapped flat JSON structure');
+            } else {
+                console.error('TIMELINE: Invalid simulation data structure:', simulationData);
+                simulationContent.innerHTML = '<p style="color: var(--error-color); text-align: center; margin-top: 2rem;">Cannot render: Invalid simulation data structure. Please check your JSON format.</p>';
+                return;
+            }
+        }
+        
+        currentSimulationData = processSimulationData(dataToProcess);
 
-        if (spaceEditor) {
-            spaceEditor.loadLayout(simulationData.simulation.layout);
+        if (spaceEditor && dataToProcess.simulation && dataToProcess.simulation.layout) {
+            spaceEditor.loadLayout(dataToProcess.simulation.layout);
         }
 
         simulationContent.innerHTML = "";

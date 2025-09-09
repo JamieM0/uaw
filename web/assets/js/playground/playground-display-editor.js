@@ -644,6 +644,11 @@ class DisplayEditor {
     }
 
     renderPropertiesPanel() {
+        // Check if editor is initialized
+        if (!this.propsPanel) {
+            return;
+        }
+        
         if (!this.selectedRectId) {
             const activeDisplay = this.getActiveDisplay();
             this.propsPanel.innerHTML = `
@@ -1059,6 +1064,11 @@ class DisplayEditor {
     }
 
     renderActiveDisplay() {
+        // Check if editor is initialized
+        if (!this.world) {
+            return;
+        }
+        
         // Clear existing elements
         this.world.innerHTML = '';
         
@@ -1410,6 +1420,18 @@ class DisplayEditor {
         }
 
         return { x: snappedX, y: snappedY };
+    }
+
+    refreshFromSimulation() {
+        // Called by simulation player when display elements might have moved
+        // Refresh the displays and re-render the active display
+        this.loadFromSimulation();
+        
+        // Re-render the active display to show any moved elements
+        this.renderActiveDisplay();
+        
+        // Refresh properties panel if needed
+        this.renderPropertiesPanel();
     }
 
     cleanup() {

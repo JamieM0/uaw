@@ -365,6 +365,11 @@ class DigitalSpaceEditor {
     }
 
     renderPropertiesPanel() {
+        // Check if editor is initialized
+        if (!this.propsPanel) {
+            return;
+        }
+        
         if (!this.selectedRectId) {
             this.propsPanel.innerHTML = `
                 <p class="placeholder">Select a digital location, or click '+ Add Location' to create a new storage area.</p>
@@ -941,6 +946,17 @@ class DigitalSpaceEditor {
     applyLayerFilter() {
         // Layer filtering logic if needed
         console.log("DIGITAL-SPACE: Layer filter applied:", this.activeLayer);
+    }
+
+    refreshFromSimulation() {
+        // Called by simulation player when digital objects might have moved
+        // Refresh the digital objects list and re-render properties if needed
+        this.loadFromSimulation();
+        
+        // If properties panel is showing the digital objects list, refresh it
+        if (!this.selectedRectId) {
+            this.renderPropertiesPanel();
+        }
     }
 
     cleanup() {
