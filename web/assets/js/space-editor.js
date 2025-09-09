@@ -40,6 +40,13 @@ class SpaceEditor {
             lastPan: { x: 0, y: 0 },
             scrollSensitivity: 1
         };
+        
+        // Space key timing for quick tap detection
+        this.spaceKeyState = {
+            isDown: false,
+            downTime: 0,
+            panActivated: false
+        };
 
         this.init();
         console.log("SPACE-EDITOR: Constructor finished.");
@@ -128,6 +135,9 @@ class SpaceEditor {
         this.world.style.transform = `translate(${this.view.x}px, ${this.view.y}px) scale(${this.view.scale})`;
         // Update CSS custom property for dynamic font scaling
         this.world.style.setProperty('--current-zoom-scale', this.view.scale);
+        // Update font-specific zoom scale with slower increase curve (40% reduction)
+        const fontZoomScale = Math.pow(this.view.scale, 0.6);
+        this.world.style.setProperty('--current-font-zoom-scale', fontZoomScale);
     }
 
     nudgeSelectedRectangle(keyCode) {
@@ -303,11 +313,22 @@ class SpaceEditor {
             return;
         }
         
-        // Handle space key for panning
-        if (e.code === 'Space' && !this.view.isPanning) {
+        // Handle space key for panning or zoom-to-fit
+        if (e.code === 'Space' && !this.spaceKeyState.isDown) {
             e.preventDefault();
-            this.view.isPanning = true;
-            this.canvas.style.cursor = 'grab';
+            this.spaceKeyState.isDown = true;
+            this.spaceKeyState.downTime = Date.now();
+            this.spaceKeyState.panActivated = false;
+            
+            // Start panning after a short delay to allow for quick taps
+            setTimeout(() => {
+                if (this.spaceKeyState.isDown && !this.view.isPanning) {
+                    this.view.isPanning = true;
+                    this.spaceKeyState.panActivated = true;
+                    this.canvas.style.cursor = 'grab';
+                    document.body.classList.add('space-editor-panning');
+                }
+            }, 150); // 150ms delay to detect quick taps
             return;
         }
         
@@ -325,10 +346,21 @@ class SpaceEditor {
             return;
         }
         
-        if (e.code === 'Space') {
+        if (e.code === 'Space' && this.spaceKeyState.isDown) {
+            const holdDuration = Date.now() - this.spaceKeyState.downTime;
+            
+            // If it was a quick tap (< 150ms) and panning wasn't activated, trigger zoom-to-fit
+            if (holdDuration < 150 && !this.spaceKeyState.panActivated) {
+                this.zoomToFit();
+            }
+            
+            // Clean up panning state regardless
             this.view.isPanning = false;
-            // Set cursor based on current mode
+            this.spaceKeyState.isDown = false;
+            this.spaceKeyState.panActivated = false;
+            document.body.classList.remove('space-editor-panning');
             this.canvas.style.cursor = this.isDrawing ? 'crosshair' : 'default';
+            document.body.classList.remove('disable-animations');
         }
     }
 
@@ -824,6 +856,8 @@ class SpaceEditor {
             this.view.isPanning = true;
             this.view.lastPan = { x: e.clientX, y: e.clientY };
             this.canvas.style.cursor = 'grabbing';
+            document.body.classList.add('space-editor-panning');
+            document.body.classList.add('disable-animations');
             this.deselectAll();
         }
     }
@@ -926,6 +960,8 @@ class SpaceEditor {
         if (this.view.isPanning && !this.isDrawing && !this.isDragging) {
             this.view.isPanning = false;
             this.canvas.style.cursor = 'default';
+            document.body.classList.remove('space-editor-panning');
+            document.body.classList.remove('disable-animations');
             return;
         }
 

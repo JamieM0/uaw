@@ -772,6 +772,7 @@ body {
     align-items: flex-start;
     gap: 0.5rem;
     font-size: var(--font-size-sm);
+    position: relative;
 }
 
 .validation-result-item:last-child {
@@ -835,6 +836,67 @@ body {
     font-weight: 500;
     color: var(--text-color);
     line-height: 1.4;
+}
+
+/* Action buttons container for builtin metrics in Metrics Editor mode */
+.validation-actions {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 0.25rem;
+    z-index: 10;
+}
+
+/* Example button for builtin metrics */
+.example-btn {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+.example-btn:hover {
+    opacity: 1;
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Disable button for builtin metrics */
+.disable-btn {
+    background: var(--bg-secondary);
+    border: 1px solid #dc3545;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    color: #dc3545;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+.disable-btn:hover {
+    opacity: 1;
+    background: #dc3545;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.example-btn:active,
+.disable-btn:active {
+    transform: scale(0.95);
+}
+
+/* Ensure validation result items have enough padding for the buttons */
+.validation-result-item:has(.validation-actions) {
+    padding-right: 6rem;
 }
 
 .validation-message-inline {
@@ -1687,6 +1749,7 @@ body.tutorial-active #auto-render-toggle {
 /* Live State Panel Styles */
 #live-state-container {
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     padding: 0 0.75rem; /* Match simulation-content padding */
 }
@@ -2364,4 +2427,30 @@ optgroup[label*="Products"] {
     font-family: monospace;
     font-weight: 600;
     color: var(--primary-color);
+}
+
+/* Disable animations during resize */
+body.resizing-active * {
+  transition: none !important;
+  animation: none !important;
+}
+
+body.dragging-active * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Monaco editor line highlighting for click-to-JSON feature */
+.highlighted-line {
+  background-color: rgba(255, 223, 0, 0.3) !important;
+  animation: highlightFade 2s ease-out;
+}
+
+@keyframes highlightFade {
+  0% {
+    background-color: rgba(255, 223, 0, 0.8) !important;
+  }
+  100% {
+    background-color: rgba(255, 223, 0, 0.1) !important;
+  }
 }

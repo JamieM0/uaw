@@ -37,6 +37,13 @@ class DisplayEditor {
             lastPan: { x: 0, y: 0 },
             scrollSensitivity: 2.5
         };
+        
+        // Space key timing for quick tap detection
+        this.spaceKeyState = {
+            isDown: false,
+            downTime: 0,
+            panActivated: false
+        };
 
         // Snapping options
         this.snapSettings = {
@@ -136,6 +143,7 @@ class DisplayEditor {
         document.addEventListener('mousemove', this.onMouseMove.bind(this));
         document.addEventListener('mouseup', this.onMouseUp.bind(this));
         document.addEventListener('keydown', this.onKeyDown.bind(this));
+        document.addEventListener('keyup', this.onKeyUp.bind(this));
         
         // Cache canvas bounds on resize and initial load
         this.updateCanvasRect();
@@ -1182,6 +1190,9 @@ class DisplayEditor {
             this.world.style.transform = `translate(${this.view.x}px, ${this.view.y}px) scale(${this.view.scale})`;
             // Update CSS custom property for dynamic font scaling
             this.world.style.setProperty('--current-zoom-scale', this.view.scale);
+            // Update font-specific zoom scale with slower increase curve (40% reduction)
+            const fontZoomScale = Math.pow(this.view.scale, 0.6);
+            this.world.style.setProperty('--current-font-zoom-scale', fontZoomScale);
         }
     }
 
@@ -1205,8 +1216,57 @@ class DisplayEditor {
     }
 
     onKeyDown(e) {
+        // Don't intercept keys if user is typing in an input field
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.contentEditable === 'true') {
+            return;
+        }
+        
+        // Handle space key for panning or zoom-to-fit
+        if (e.code === 'Space' && !this.spaceKeyState.isDown) {
+            e.preventDefault();
+            this.spaceKeyState.isDown = true;
+            this.spaceKeyState.downTime = Date.now();
+            this.spaceKeyState.panActivated = false;
+            
+            // Start panning after a short delay to allow for quick taps
+            setTimeout(() => {
+                if (this.spaceKeyState.isDown && !this.view.isPanning) {
+                    this.view.isPanning = true;
+                    this.spaceKeyState.panActivated = true;
+                    this.canvas.style.cursor = 'grab';
+                    document.body.classList.add('display-editor-panning');
+                    document.body.classList.add('disable-animations');
+                }
+            }, 150); // 150ms delay to detect quick taps
+            return;
+        }
+        
         if (e.key === 'Delete' && this.selectedRectId) {
             this.deleteElement(this.selectedRectId);
+        }
+    }
+
+    onKeyUp(e) {
+        // Don't intercept space key if user is typing in an input field
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.contentEditable === 'true') {
+            return;
+        }
+        
+        if (e.code === 'Space' && this.spaceKeyState.isDown) {
+            const holdDuration = Date.now() - this.spaceKeyState.downTime;
+            
+            // If it was a quick tap (< 150ms) and panning wasn't activated, trigger zoom-to-fit
+            if (holdDuration < 150 && !this.spaceKeyState.panActivated) {
+                this.zoomToFit();
+            }
+            
+            // Clean up panning state regardless
+            this.view.isPanning = false;
+            this.spaceKeyState.isDown = false;
+            this.spaceKeyState.panActivated = false;
+            document.body.classList.remove('display-editor-panning');
+            this.canvas.style.cursor = this.isDrawing ? 'crosshair' : 'default';
+            document.body.classList.remove('disable-animations');
         }
     }
 

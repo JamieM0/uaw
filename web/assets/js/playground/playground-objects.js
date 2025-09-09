@@ -449,7 +449,14 @@ function addObjectToSimulation() {
         };
         
         if (emoji) {
-            newObject.emoji = emoji;
+            newObject.properties.emoji = emoji;
+        }
+        
+        // Add default indicator_property for common types
+        if (objectType === 'resource') {
+            newObject.indicator_property = ['quantity'];
+        } else if (objectType === 'equipment') {
+            newObject.indicator_property = ['state'];
         }
         
         if (!currentJson.simulation.objects) {
@@ -559,7 +566,7 @@ function addTaskToSimulation() {
                         name: newObjectName,
                         properties: {}
                     };
-                    if (newObjectEmoji) newObject.emoji = newObjectEmoji;
+                    if (newObjectEmoji) newObject.properties.emoji = newObjectEmoji;
 
                     const propInputs = group.querySelectorAll('.type-specific-fields-container input, .type-specific-fields-container select');
                     propInputs.forEach(input => {

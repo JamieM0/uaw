@@ -45,6 +45,13 @@ class DigitalSpaceEditor {
             lastPan: { x: 0, y: 0 },
             scrollSensitivity: 1.0
         };
+        
+        // Space key timing for quick tap detection
+        this.spaceKeyState = {
+            isDown: false,
+            downTime: 0,
+            panActivated: false
+        };
     }
 
     initialize(canvasEl, propsPanelEl, editor) {
@@ -173,6 +180,8 @@ class DigitalSpaceEditor {
             this.view.isPanning = true;
             this.view.lastPan = { x: e.clientX, y: e.clientY };
             this.canvas.style.cursor = 'grabbing';
+            document.body.classList.add('digital-space-panning');
+            document.body.classList.add('disable-animations');
             this.deselectAll();
         }
     }
@@ -234,6 +243,8 @@ class DigitalSpaceEditor {
         if (this.view.isPanning) {
             this.view.isPanning = false;
             this.canvas.style.cursor = 'default';
+            document.body.classList.remove('digital-space-panning');
+            document.body.classList.remove('disable-animations');
             return;
         }
 
@@ -372,7 +383,6 @@ class DigitalSpaceEditor {
                     </div>
                 </div>
             `;
-            this.setupEventListeners();
             return;
         }
 
@@ -631,7 +641,13 @@ class DigitalSpaceEditor {
         this.view.x = centerX - (centerX - this.view.x) * (this.view.scale / oldScale);
         this.view.y = centerY - (centerY - this.view.y) * (this.view.scale / oldScale);
         
+        // Disable transitions during zoom to prevent blinking
+        document.body.classList.add('disable-animations');
         this.updateViewTransform();
+        // Re-enable transitions after a brief delay
+        setTimeout(() => {
+            document.body.classList.remove('disable-animations');
+        }, 10);
     }
 
     zoomOut() {
@@ -647,7 +663,13 @@ class DigitalSpaceEditor {
         this.view.x = centerX - (centerX - this.view.x) * (this.view.scale / oldScale);
         this.view.y = centerY - (centerY - this.view.y) * (this.view.scale / oldScale);
         
+        // Disable transitions during zoom to prevent blinking
+        document.body.classList.add('disable-animations');
         this.updateViewTransform();
+        // Re-enable transitions after a brief delay
+        setTimeout(() => {
+            document.body.classList.remove('disable-animations');
+        }, 10);
     }
 
     zoomToFit() {
@@ -655,7 +677,12 @@ class DigitalSpaceEditor {
             this.view.scale = 1;
             this.view.x = 0;
             this.view.y = 0;
+            // Disable transitions during zoom to prevent blinking
+            document.body.classList.add('disable-animations');
             this.updateViewTransform();
+            setTimeout(() => {
+                document.body.classList.remove('disable-animations');
+            }, 10);
             return;
         }
 
@@ -680,7 +707,12 @@ class DigitalSpaceEditor {
         this.view.x = (canvasRect.width - contentWidth * this.view.scale) / 2 - minX * this.view.scale;
         this.view.y = (canvasRect.height - contentHeight * this.view.scale) / 2 - minY * this.view.scale;
 
+        // Disable transitions during zoom to prevent blinking
+        document.body.classList.add('disable-animations');
         this.updateViewTransform();
+        setTimeout(() => {
+            document.body.classList.remove('disable-animations');
+        }, 10);
     }
 
     updateViewTransform() {
@@ -688,6 +720,9 @@ class DigitalSpaceEditor {
             this.world.style.transform = `translate(${this.view.x}px, ${this.view.y}px) scale(${this.view.scale})`;
             // Update CSS custom property for dynamic font scaling
             this.world.style.setProperty('--current-zoom-scale', this.view.scale);
+            // Update font-specific zoom scale with slower increase curve (40% reduction)
+            const fontZoomScale = Math.pow(this.view.scale, 0.6);
+            this.world.style.setProperty('--current-font-zoom-scale', fontZoomScale);
         }
     }
 
@@ -710,7 +745,7 @@ class DigitalSpaceEditor {
         
         // Adaptive zoom speed based on current zoom level
         // At 1x zoom: base speed, at higher zooms: slower, at lower zooms: faster
-        const baseSpeed = 0.02; // Much slower base speed
+        const baseSpeed = 0.014; // Reduced by 30% from space editor's 0.02 for gentler zoom
         const adaptiveSpeed = baseSpeed * Math.pow(this.view.scale, 0.3); // Gentle scaling curve
         
         // Calculate zoom step with maximum limits
@@ -736,7 +771,13 @@ class DigitalSpaceEditor {
         this.view.x = mouseX - (mouseX - this.view.x) * (this.view.scale / oldScale);
         this.view.y = mouseY - (mouseY - this.view.y) * (this.view.scale / oldScale);
         
+        // Disable transitions during mouse wheel zoom to prevent blinking
+        document.body.classList.add('disable-animations');
         this.updateViewTransform();
+        // Use a very short timeout to re-enable transitions quickly
+        setTimeout(() => {
+            document.body.classList.remove('disable-animations');
+        }, 5);
     }
 
     onKeyDown(e) {
@@ -745,11 +786,23 @@ class DigitalSpaceEditor {
             return;
         }
         
-        // Handle space key for panning
-        if (e.code === 'Space' && !this.view.isPanning) {
+        // Handle space key for panning or zoom-to-fit
+        if (e.code === 'Space' && !this.spaceKeyState.isDown) {
             e.preventDefault();
-            this.view.isPanning = true;
-            this.canvas.style.cursor = 'grab';
+            this.spaceKeyState.isDown = true;
+            this.spaceKeyState.downTime = Date.now();
+            this.spaceKeyState.panActivated = false;
+            
+            // Start panning after a short delay to allow for quick taps
+            setTimeout(() => {
+                if (this.spaceKeyState.isDown && !this.view.isPanning) {
+                    this.view.isPanning = true;
+                    this.spaceKeyState.panActivated = true;
+                    this.canvas.style.cursor = 'grab';
+                    document.body.classList.add('digital-space-panning');
+                    document.body.classList.add('disable-animations');
+                }
+            }, 150); // 150ms delay to detect quick taps
             return;
         }
         
@@ -764,10 +817,21 @@ class DigitalSpaceEditor {
             return;
         }
         
-        if (e.code === 'Space') {
+        if (e.code === 'Space' && this.spaceKeyState.isDown) {
+            const holdDuration = Date.now() - this.spaceKeyState.downTime;
+            
+            // If it was a quick tap (< 150ms) and panning wasn't activated, trigger zoom-to-fit
+            if (holdDuration < 150 && !this.spaceKeyState.panActivated) {
+                this.zoomToFit();
+            }
+            
+            // Clean up panning state regardless
             this.view.isPanning = false;
-            // Set cursor based on current mode
+            this.spaceKeyState.isDown = false;
+            this.spaceKeyState.panActivated = false;
+            document.body.classList.remove('digital-space-panning');
             this.canvas.style.cursor = this.isDrawing ? 'crosshair' : 'default';
+            document.body.classList.remove('disable-animations');
         }
     }
 

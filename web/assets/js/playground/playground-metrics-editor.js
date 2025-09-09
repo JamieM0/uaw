@@ -74,6 +74,9 @@ function updateMetricsMode() {
             initializeResizeHandles();
         }
         
+        // Refresh validation display to show example/disable buttons
+        refreshValidationDisplay();
+        
     } else {
         // Switch back to standard mode
         toggleBtn.textContent = "Metrics Editor";
@@ -103,6 +106,9 @@ function updateMetricsMode() {
         
         // Refresh space editor since layout may have changed
         refreshSpaceEditor();
+        
+        // Refresh validation display to hide example/disable buttons
+        refreshValidationDisplay();
     }
 }
 
@@ -253,6 +259,9 @@ function initializeMetricsCatalogEditor() {
     "params": {
       "example_parameter": "default_value"
     }
+  },
+  {
+    "disabled_metrics": []
   }
 ]`;
     
@@ -520,17 +529,29 @@ function getCustomMetricsCatalog() {
 
 // Get merged catalog (built-in + custom)
 function getMergedMetricsCatalog() {
-    const builtInCatalog = (window.metricsCatalog || []).map(metric => ({
-        ...metric,
-        source: 'builtin'
-    }));
+    const customCatalog = getCustomMetricsCatalog();
     
-    const customCatalog = getCustomMetricsCatalog().map(metric => ({
-        ...metric,
-        source: 'custom'
-    }));
+    // Get IDs of disabled builtin metrics from disabled_metrics array
+    const disabledMetricsEntry = customCatalog.find(item => item.disabled_metrics);
+    const disabledMetricIds = new Set(disabledMetricsEntry ? disabledMetricsEntry.disabled_metrics : []);
     
-    return [...builtInCatalog, ...customCatalog];
+    // Filter out disabled builtin metrics
+    const builtInCatalog = (window.metricsCatalog || [])
+        .filter(metric => !disabledMetricIds.has(metric.id))
+        .map(metric => ({
+            ...metric,
+            source: 'builtin'
+        }));
+    
+    // Only include actual custom metrics (not the disabled_metrics entry)
+    const activeCatalog = customCatalog
+        .filter(metric => !metric.disabled_metrics) // Exclude disabled_metrics entries
+        .map(metric => ({
+            ...metric,
+            source: 'custom'
+        }));
+    
+    return [...builtInCatalog, ...activeCatalog];
 }
 
 // Get custom validator code

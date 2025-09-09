@@ -32,22 +32,22 @@ const sampleSimulation = {
         },
         objects: [
             // --- ACTORS ---
-            { id: "baker", type: "actor", name: "Baker", properties: { role: "Baker", cost_per_hour: 25, location: "prep_area" } },
-            { id: "assistant", type: "actor", name: "Assistant", properties: { role: "Assistant Baker", cost_per_hour: 18, location: "prep_area" } },
+            { id: "baker", type: "actor", name: "Baker", properties: { role: "Baker", cost_per_hour: 25, location: "prep_area" }, indicator_property: ["state"] },
+            { id: "assistant", type: "actor", name: "Assistant", properties: { role: "Assistant Baker", cost_per_hour: 18, location: "prep_area" }, indicator_property: ["state"] },
             // --- EQUIPMENT ---
-            { id: "mixer", type: "equipment", name: "Stand Mixer", emoji: "🌀", properties: { state: "clean", capacity: 1, location: "prep_area" } },
-            { id: "oven", type: "equipment", name: "Commercial Oven", emoji: "🔥", properties: { state: "available", capacity: 4, location: "oven_area" } },
-            { id: "workspace", type: "equipment", name: "Prep Counter", emoji: "🏢", properties: { state: "clean", capacity: 2, location: "prep_area" } },
-            { id: "mixing_bowl", type: "equipment", name: "Mixing Bowl", emoji: "🥣", properties: { state: "clean", capacity: 1, location: "prep_area" } },
+            { id: "mixer", type: "equipment", name: "Stand Mixer", properties: { emoji: "🌀", state: "clean", capacity: 1, location: "prep_area" }, indicator_property: ["state"] },
+            { id: "oven", type: "equipment", name: "Commercial Oven", properties: { emoji: "🔥", state: "available", capacity: 4, location: "oven_area" }, indicator_property: ["state", "capacity"] },
+            { id: "workspace", type: "equipment", name: "Prep Counter", properties: { emoji: "🏢", state: "clean", capacity: 2, location: "prep_area" }, indicator_property: ["state"] },
+            { id: "mixing_bowl", type: "equipment", name: "Mixing Bowl", properties: { emoji: "🥣", state: "clean", capacity: 1, location: "prep_area" }, indicator_property: ["state"] },
             // --- RESOURCES (CONSUMABLES) ---
-            { id: "flour", type: "resource", name: "Flour", emoji: "🌾", properties: { unit: "kg", quantity: 50, location: "prep_area" } },
-            { id: "water", type: "resource", name: "Water", emoji: "💧", properties: { unit: "liter", quantity: 20, location: "prep_area" } },
-            { id: "yeast", type: "resource", name: "Yeast", emoji: "🦠", properties: { unit: "g", quantity: 500, location: "prep_area" } },
+            { id: "flour", type: "resource", name: "Flour", properties: { emoji: "🌾", unit: "kg", quantity: 50, location: "prep_area" }, indicator_property: ["quantity"] },
+            { id: "water", type: "resource", name: "Water", properties: { emoji: "💧", unit: "liter", quantity: 20, location: "prep_area" }, indicator_property: ["quantity"] },
+            { id: "yeast", type: "resource", name: "Yeast", properties: { emoji: "🦠", unit: "g", quantity: 500, location: "prep_area" }, indicator_property: ["quantity"] },
             // --- PRODUCTS (INTERMEDIATE & FINAL) ---
-            { id: "mixed_dough", type: "product", name: "Mixed Dough", emoji: "덩", properties: { unit: "batch", quantity: 0, location: "prep_area" } },
-            { id: "risen_dough", type: "product", name: "Risen Dough", emoji: "🍞", properties: { unit: "batch", quantity: 0, location: "prep_area" } },
-            { id: "shaped_loaves", type: "product", name: "Shaped Loaves", emoji: "🥖", properties: { unit: "loaves", quantity: 0, location: "oven_area" } },
-            { id: "baked_bread", type: "product", name: "Baked Bread", emoji: "🍞", properties: { unit: "loaves", quantity: 0, location: "oven_area" } }
+            { id: "mixed_dough", type: "product", name: "Mixed Dough", properties: { emoji: "🥖", unit: "batch", quantity: 0, location: "prep_area" }, indicator_property: ["quantity"] },
+            { id: "risen_dough", type: "product", name: "Risen Dough", properties: { emoji: "🍞", unit: "batch", quantity: 0, location: "prep_area" }, indicator_property: ["quantity"] },
+            { id: "shaped_loaves", type: "product", name: "Shaped Loaves", properties: { emoji: "🥖", unit: "loaves", quantity: 0, location: "oven_area" }, indicator_property: ["quantity"] },
+            { id: "baked_bread", type: "product", name: "Baked Bread", properties: { emoji: "🍞", unit: "loaves", quantity: 0, location: "oven_area" }, indicator_property: ["quantity"] }
         ],
         tasks: [
             {

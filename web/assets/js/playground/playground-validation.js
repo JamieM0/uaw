@@ -93,6 +93,18 @@ function displayValidationGroup(groupId, results, icon, collapsedByDefault = fal
         const html = sortedResults.map(result => {
             const statusIcon = getStatusIcon(result.status);
             const metricName = getMetricDisplayName(result.metricId);
+            const metric = mergedCatalog.find(m => m.id === result.metricId);
+            
+            // Add example and disable buttons for builtin metrics in Metrics Editor mode
+            let actionButtons = '';
+            if (isMetricsMode && metric && metric.source === 'builtin') {
+                actionButtons = `
+                    <div class="validation-actions">
+                        <button class="example-btn" data-metric-id="${result.metricId}" title="Insert validation code example">📋</button>
+                        <button class="disable-btn" data-metric-id="${result.metricId}" title="Disable this metric">Disable</button>
+                    </div>
+                `;
+            }
             
             return `
                 <div class="validation-result-item ${result.status}" data-metric-id="${result.metricId}">
@@ -102,6 +114,7 @@ function displayValidationGroup(groupId, results, icon, collapsedByDefault = fal
                             ${metricName} <span class="validation-message-inline">— ${result.message}</span>
                         </div>
                     </div>
+                    ${actionButtons}
                 </div>
             `;
         }).join('');
@@ -145,7 +158,7 @@ function setupValidationInteractions() {
     const validationContainer = document.querySelector('.validation-panel');
     if (validationContainer && !validationContainer.hasAttribute('data-validation-listeners-attached')) {
         
-        // Delegated event listener for stat items
+        // Delegated event listener for stat items and example buttons
         validationContainer.addEventListener('click', (e) => {
             if (e.target.closest('.stat-item.clickable')) {
                 const statItem = e.target.closest('.stat-item.clickable');
@@ -159,6 +172,22 @@ function setupValidationInteractions() {
                     document.querySelectorAll('.stat-item.clickable').forEach(s => s.classList.remove('active'));
                     statItem.classList.add('active');
                 }
+            }
+            
+            // Handle example button clicks
+            if (e.target.closest('.example-btn')) {
+                const exampleBtn = e.target.closest('.example-btn');
+                const metricId = exampleBtn.dataset.metricId;
+                insertValidationExample(metricId);
+                e.stopPropagation(); // Prevent event bubbling
+            }
+            
+            // Handle disable button clicks
+            if (e.target.closest('.disable-btn')) {
+                const actionBtn = e.target.closest('.disable-btn');
+                const metricId = actionBtn.dataset.metricId;
+                disableBuiltinMetric(metricId);
+                e.stopPropagation(); // Prevent event bubbling
             }
             
             // Handle passed group collapsible
@@ -340,4 +369,238 @@ function displayValidationError(message) {
         }
     ];
     displayGroupedValidationResults(errorResult);
+}
+
+// Function to insert validation example code
+function insertValidationExample(metricId) {
+    if (!isMetricsMode) return;
+    
+    // Get the metric from the catalog to find the function name
+    const mergedCatalog = getMergedMetricsCatalog();
+    const metric = mergedCatalog.find(m => m.id === metricId);
+    
+    if (!metric || metric.source !== 'builtin') {
+        console.warn('Cannot insert example: metric not found or not builtin');
+        return;
+    }
+    
+    const functionName = metric.computation?.function_name || metric.function;
+    if (!functionName) {
+        console.warn('Cannot insert example: no function name found');
+        return;
+    }
+    
+    // Extract the function code from the SimulationValidator class
+    const validationCode = extractValidationFunction(functionName);
+    if (!validationCode) {
+        console.warn('Cannot insert example: function code not found');
+        return;
+    }
+    
+    // Generate a custom version of the function
+    const customCode = generateCustomValidationCode(metric, functionName, validationCode);
+    
+    // Insert into the metrics validator editor
+    if (window.metricsValidatorEditor) {
+        const currentCode = window.metricsValidatorEditor.getValue();
+        const newCode = currentCode + '\n\n' + customCode;
+        window.metricsValidatorEditor.setValue(newCode);
+        
+        // Switch to the validator tab and focus
+        switchMetricsTab('validator');
+        window.metricsValidatorEditor.focus();
+        
+        // Scroll to the end to show the inserted code
+        const lineCount = window.metricsValidatorEditor.getModel().getLineCount();
+        window.metricsValidatorEditor.setPosition({ lineNumber: lineCount, column: 1 });
+    }
+}
+
+// Extract validation function source code from SimulationValidator
+function extractValidationFunction(functionName) {
+    try {
+        // Get the function from the SimulationValidator prototype
+        const validatorPrototype = SimulationValidator.prototype;
+        const func = validatorPrototype[functionName];
+        
+        if (typeof func !== 'function') {
+            return null;
+        }
+        
+        // Get the function source code
+        return func.toString();
+    } catch (e) {
+        console.error('Error extracting validation function:', e);
+        return null;
+    }
+}
+
+// Generate custom validation code based on builtin function
+function generateCustomValidationCode(metric, originalFunctionName, originalCode) {
+    // Create a custom function name to avoid conflicts
+    const customFunctionName = `custom${originalFunctionName.charAt(0).toUpperCase() + originalFunctionName.slice(1)}`;
+    
+    // Extract the function body (remove function declaration and outer braces)
+    let functionBody = originalCode;
+    const functionStart = functionBody.indexOf('{');
+    const functionEnd = functionBody.lastIndexOf('}');
+    
+    if (functionStart !== -1 && functionEnd !== -1) {
+        functionBody = functionBody.substring(functionStart + 1, functionEnd);
+    }
+    
+    // Replace references to 'this' with appropriate context
+    functionBody = functionBody.replace(/this\.simulation/g, 'this.simulation');
+    functionBody = functionBody.replace(/this\.addResult/g, 'this.addResult');
+    functionBody = functionBody.replace(/this\._timeToMinutes/g, 'this._timeToMinutes || _timeToMinutes');
+    
+    // Generate the custom validation function
+    const customCode = `/**
+ * Custom validation function based on: ${metric.name}
+ * Original metric ID: ${metric.id}
+ * 
+ * This is an example implementation. Customize it for your specific needs.
+ */
+function ${customFunctionName}(metric) {${functionBody}
+}`;
+
+    return customCode;
+}
+
+// Check if a builtin metric is disabled
+function isMetricDisabled(metricId) {
+    try {
+        const customCatalog = getCustomMetricsCatalog();
+        const disabledMetrics = customCatalog.find(item => item.disabled_metrics);
+        return disabledMetrics && disabledMetrics.disabled_metrics.includes(metricId);
+    } catch (e) {
+        return false;
+    }
+}
+
+// Disable a builtin metric by adding to disabled_metrics array
+function disableBuiltinMetric(metricId) {
+    try {
+        const customCatalog = getCustomMetricsCatalog();
+        
+        // Check if already disabled
+        if (isMetricDisabled(metricId)) return;
+        
+        // Find or create disabled_metrics entry
+        let disabledMetricsEntry = customCatalog.find(item => item.disabled_metrics);
+        
+        if (!disabledMetricsEntry) {
+            // Create new disabled_metrics entry
+            disabledMetricsEntry = {
+                disabled_metrics: []
+            };
+            customCatalog.push(disabledMetricsEntry);
+        }
+        
+        // Add metric ID to disabled list
+        if (!disabledMetricsEntry.disabled_metrics.includes(metricId)) {
+            disabledMetricsEntry.disabled_metrics.push(metricId);
+        }
+        
+        // Update the catalog in localStorage and editor
+        const catalogJson = JSON.stringify(customCatalog, null, 2);
+        localStorage.setItem('uaw-metrics-catalog-custom', catalogJson);
+        
+        if (window.metricsCatalogEditor) {
+            window.metricsCatalogEditor.setValue(catalogJson);
+        }
+        
+        // Re-run validation to reflect the change
+        if (typeof runCustomValidation === 'function') {
+            runCustomValidation();
+        } else {
+            // If not in custom validation mode, refresh current validation display
+            refreshValidationDisplay();
+        }
+        
+    } catch (e) {
+        console.error('Error disabling metric:', e);
+    }
+}
+
+// Enable a builtin metric by removing from disabled_metrics array
+function enableBuiltinMetric(metricId) {
+    try {
+        const customCatalog = getCustomMetricsCatalog();
+        
+        // Find disabled_metrics entry
+        const disabledMetricsEntry = customCatalog.find(item => item.disabled_metrics);
+        
+        if (disabledMetricsEntry && disabledMetricsEntry.disabled_metrics) {
+            // Remove metric ID from disabled list
+            const index = disabledMetricsEntry.disabled_metrics.indexOf(metricId);
+            if (index > -1) {
+                disabledMetricsEntry.disabled_metrics.splice(index, 1);
+            }
+            
+            // Remove the entire disabled_metrics entry if it's empty
+            if (disabledMetricsEntry.disabled_metrics.length === 0) {
+                const entryIndex = customCatalog.indexOf(disabledMetricsEntry);
+                if (entryIndex > -1) {
+                    customCatalog.splice(entryIndex, 1);
+                }
+            }
+        }
+        
+        // Update the catalog in localStorage and editor
+        const catalogJson = JSON.stringify(customCatalog, null, 2);
+        localStorage.setItem('uaw-metrics-catalog-custom', catalogJson);
+        
+        if (window.metricsCatalogEditor) {
+            window.metricsCatalogEditor.setValue(catalogJson);
+        }
+        
+        // Re-run validation to reflect the change
+        if (typeof runCustomValidation === 'function') {
+            runCustomValidation();
+        } else {
+            // If not in custom validation mode, refresh current validation display
+            refreshValidationDisplay();
+        }
+        
+    } catch (e) {
+        console.error('Error enabling metric:', e);
+    }
+}
+
+// Refresh the current validation display (re-run validation to update buttons/visibility)
+function refreshValidationDisplay() {
+    try {
+        // Get current simulation data
+        const currentSimulationData = getCurrentSimulationData();
+        if (!currentSimulationData) {
+            // No simulation to validate, clear display
+            displayValidationError('No simulation data to validate');
+            return;
+        }
+        
+        // Re-run validation with current data
+        if (isMetricsMode && typeof runCustomValidation === 'function') {
+            // In metrics mode, use custom validation
+            runCustomValidation();
+        } else {
+            // In standard mode, use built-in validation
+            if (typeof validateJSON === 'function') {
+                validateJSON();
+            } else if (typeof window.validateJSON === 'function') {
+                window.validateJSON();
+            } else {
+                // Fallback: run validation manually
+                const mergedCatalog = getMergedMetricsCatalog();
+                if (mergedCatalog && mergedCatalog.length > 0) {
+                    const validator = new SimulationValidator(currentSimulationData);
+                    const results = validator.runChecks(mergedCatalog);
+                    displayValidationResults(results);
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Error refreshing validation display:', e);
+        displayValidationError('Error refreshing validation display');
+    }
 }

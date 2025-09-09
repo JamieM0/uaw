@@ -97,10 +97,10 @@
     transition: none; /* Remove any transitions that could cause delays */
 }
 
-/* Dynamic font scaling for location labels */
+/* Dynamic font scaling for location labels - uses adjusted zoom scale for slower increase curve */
 .location-rect .location-text {
-    font-size: calc(12px / var(--current-zoom-scale, 1));
-    line-height: calc(1.2 / var(--current-zoom-scale, 1));
+    font-size: calc(12px / var(--current-font-zoom-scale, 1));
+    line-height: calc(1.2 / var(--current-font-zoom-scale, 1));
     transform-origin: center;
 }
 
@@ -329,13 +329,13 @@
 }
 
 .properties-panel-header h4 { 
-    margin: 0 0 8px 0; 
+    margin: 0; 
     font-size: 16px;
     font-weight: 600;
     color: var(--text-color);
 }
 
-.properties-panel-header .header-controls {
+.properties-panel-header-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -592,14 +592,14 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    padding: calc(2px / var(--current-zoom-scale, 1));
-    font-size: calc(12px / var(--current-zoom-scale, 1));
+    padding: calc(2px / var(--current-font-zoom-scale, 1));
+    font-size: calc(12px / var(--current-font-zoom-scale, 1));
     overflow: hidden;
     transform-origin: center;
 }
 
 .element-icon {
-    margin-right: calc(4px / var(--current-zoom-scale, 1));
+    margin-right: calc(4px / var(--current-font-zoom-scale, 1));
     font-size: 14px; /* Keep icon size constant */
 }
 
@@ -607,7 +607,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: calc(12px / var(--current-zoom-scale, 1)); /* Only scale the text */
+    font-size: calc(12px / var(--current-font-zoom-scale, 1)); /* Slower scaling curve - 40% reduction in increase rate */
 }
 
 /* Digital Objects List */
@@ -741,19 +741,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: calc(4px / var(--current-zoom-scale, 1));
-    font-size: calc(12px / var(--current-zoom-scale, 1));
+    gap: calc(4px / var(--current-font-zoom-scale, 1));
+    font-size: calc(12px / var(--current-font-zoom-scale, 1));
     font-weight: 500;
     text-align: center;
     width: 100%;
     height: 100%;
-    padding: calc(4px / var(--current-zoom-scale, 1));
+    padding: calc(4px / var(--current-font-zoom-scale, 1));
     box-sizing: border-box;
     transform-origin: center;
 }
 
 .location-icon {
-    font-size: calc(14px / var(--current-zoom-scale, 1));
+    font-size: calc(14px / var(--current-font-zoom-scale, 1));
     line-height: 1;
 }
 
@@ -848,4 +848,11 @@ input[type="color"]::-webkit-color-swatch {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+}
+
+body.digital-space-panning .digital-world *,
+body.space-panning .space-world *,
+body.disable-animations * {
+    transition: none !important;
+    animation: none !important;
 }

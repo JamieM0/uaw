@@ -302,6 +302,7 @@ function renderSimulation() {
                 taskElement.addEventListener("click", (e) => {
                     // Only handle click if no drag occurred
                     if (!isDragging) {
+                        e.stopPropagation(); // Prevent bubbling to track scrubbing handler
                         scrollToTaskInJSON(task.id);
                     }
                 });
@@ -456,6 +457,7 @@ function handleMouseDown(e) {
         originalDuration = parseInt(taskElement.dataset.duration);
         originalStartTime = taskElement.dataset.start;
         
+        document.body.classList.add('resizing-active');
         resizeHandle.classList.add('resizing');
         
         // Create duration preview overlay
@@ -479,6 +481,7 @@ function handleMouseDown(e) {
         e.preventDefault();
     } else {
         // Start dragging
+        document.body.classList.add('dragging-active');
         isDragging = true;
         draggedTask = taskElement;
         dragStartX = e.clientX;
@@ -601,6 +604,7 @@ function handleMouseUp(e) {
         }
         
         // Clean up resize state but don't reset styles immediately to avoid visual jump
+        document.body.classList.remove('resizing-active');
         resizeHandle.classList.remove('resizing');
         if (durationPreview) {
             durationPreview.remove();
@@ -635,6 +639,7 @@ function handleMouseUp(e) {
         draggedTask.style.transform = '';
         
         // Clean up drag state immediately
+        document.body.classList.remove('dragging-active');
         isDragging = false;
         draggedTask = null;
         originalTaskData = null;

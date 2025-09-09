@@ -35,8 +35,12 @@ class SimulationPlayer {
     }
 
     init() {
-        this.ui.playPauseBtn.addEventListener('click', () => this.togglePlay());
-        this.ui.speedSelect.addEventListener('change', (e) => this.setSpeed(e.target.value));
+        if (this.ui.playPauseBtn) {
+            this.ui.playPauseBtn.addEventListener('click', () => this.togglePlay());
+        }
+        if (this.ui.speedSelect) {
+            this.ui.speedSelect.addEventListener('change', (e) => this.setSpeed(e.target.value));
+        }
         this.initScrubbing();
         this.update(this.playheadTime);
     }
@@ -49,7 +53,9 @@ class SimulationPlayer {
 
     togglePlay() {
         this.isPlaying = !this.isPlaying;
-        this.ui.playPauseBtn.textContent = this.isPlaying ? '⏸️' : '▶️';
+        if (this.ui.playPauseBtn) {
+            this.ui.playPauseBtn.textContent = this.isPlaying ? '⏸️' : '▶️';
+        }
 
         if (this.isPlaying) {
             // --- START OF FIX ---
@@ -125,8 +131,12 @@ class SimulationPlayer {
 
         // 2. Update Time Displays
         const formattedTime = this.formatTime(this.playheadTime);
-        this.ui.currentTimeDisplay.textContent = formattedTime;
-        this.ui.liveTimeSpans.forEach(span => span.textContent = formattedTime);
+        if (this.ui.currentTimeDisplay) {
+            this.ui.currentTimeDisplay.textContent = formattedTime;
+        }
+        if (this.ui.liveTimeSpans) {
+            this.ui.liveTimeSpans.forEach(span => span.textContent = formattedTime);
+        }
         
         // 3. Calculate live object states (including created/deleted objects)
         this.updateLiveObjectState();
@@ -180,7 +190,7 @@ class SimulationPlayer {
                                 ...newObj,
                                 createdAt: task.start_minutes,
                                 createdBy: task.id,
-                                emoji: newObj.emoji || this.getDefaultEmojiForType(newObj.type)
+                                emoji: newObj.properties?.emoji || this.getDefaultEmojiForType(newObj.type)
                             };
                             this.liveObjects.created.push(createdObject);
                             
@@ -276,188 +286,82 @@ class SimulationPlayer {
 
         const liveObjects = this.liveObjects?.[objectType] || this.simData[objectType] || [];
         
-        if (objectType === 'equipment') {
-            this.updateEquipmentTypeState(objectType, panel, liveObjects);
-        } else if (objectType === 'resource') {
-            this.updateResourceTypeState(objectType, panel, liveObjects);
-        } else {
-            this.updateGenericObjectTypeState(objectType, panel, liveObjects);
-        }
+        // All object types now use the generic handler for full flexibility
+        this.updateGenericObjectTypeState(objectType, panel, liveObjects);
     }
 
-    updateEquipmentTypeState(objectType, panel, liveObjects) {
+
+    updateGenericObjectTypeState(objectType, panel, liveObjects) {
+        // Universal method to handle all object types with backward compatibility
         const states = {};
-        liveObjects.forEach(e => { states[e.id] = e.properties?.state || 'undefined'; });
+        const propertyOverrides = {}; // Track all property changes, not just state
+        const stocks = {}; // For resource quantity tracking
+        
+        liveObjects.forEach(obj => { 
+            states[obj.id] = obj.properties?.state || (objectType === 'equipment' ? 'undefined' : 'available');
+            propertyOverrides[obj.id] = {};
+            // Initialize quantities for resource-like objects
+            if (obj.properties?.quantity !== undefined) {
+                stocks[obj.id] = obj.properties.quantity;
+            }
+        });
 
         const sortedTasks = [...(this.simData.tasks || [])].sort((a,b) => a.start_minutes - b.start_minutes);
         
         for (const task of sortedTasks) {
             if (task.start_minutes > this.playheadTime) break; // No need to process future tasks
-
-            // Handle old-style equipment_interactions
-            (task.equipment_interactions || []).forEach(interaction => {
-                const isTaskActive = this.playheadTime >= task.start_minutes && this.playheadTime < task.end_minutes;
-                if (isTaskActive) {
-                    states[interaction.id] = interaction.to_state;
-                } else { // Task is finished
-                    states[interaction.id] = interaction.revert_after === true ? interaction.from_state : interaction.to_state;
-                }
-            });
             
-            // Handle new-style interactions for equipment
-            (task.interactions || []).forEach(interaction => {
-                const targetObject = liveObjects?.find(eq => eq.id === interaction.object_id);
-                if (targetObject) {
-                    const stateChanges = interaction.property_changes?.state;
-                    if (stateChanges) {
-                        const isTaskActive = this.playheadTime >= task.start_minutes && this.playheadTime < task.end_minutes;
-                        if (isTaskActive) {
-                            states[interaction.object_id] = stateChanges.to;
-                        } else { // Task is finished
-                            states[interaction.object_id] = interaction.revert_after === true ? stateChanges.from : stateChanges.to;
-                        }
+            // Handle old-style equipment_interactions (backward compatibility)
+            if (objectType === 'equipment') {
+                (task.equipment_interactions || []).forEach(interaction => {
+                    const isTaskActive = this.playheadTime >= task.start_minutes && this.playheadTime < task.end_minutes;
+                    if (isTaskActive) {
+                        states[interaction.id] = interaction.to_state;
+                    } else { // Task is finished
+                        states[interaction.id] = interaction.revert_after === true ? interaction.from_state : interaction.to_state;
                     }
-                }
-            });
-        }
-
-        // Sort objects chronologically by their creation time, then by their id
-        const sortedObjects = [...liveObjects].sort((a, b) => {
-            const aCreated = this.liveObjects?.created?.find(obj => obj.id === a.id);
-            const bCreated = this.liveObjects?.created?.find(obj => obj.id === b.id);
-            const aTime = aCreated?.createdAt || 0;
-            const bTime = bCreated?.createdAt || 0;
-            if (aTime !== bTime) return aTime - bTime;
-            return a.id.localeCompare(b.id);
-        });
-
-        // Render live equipment with creation/deletion indicators
-        panel.innerHTML = sortedObjects.map(item => {
-            const isCreated = this.liveObjects?.created?.find(obj => obj.id === item.id);
-            const createdClass = isCreated ? 'created-object' : '';
-            const createdTitle = isCreated ? `Created by ${isCreated.createdBy}` : '';
+                });
+            }
             
-            return `
-            <div class="resource-item ${createdClass}" title="${createdTitle}" data-object-id="${item.id}" style="cursor: pointer;">
-                <div class="resource-emoji">${item.emoji || "❓"}</div>
-                <div class="resource-info">
-                    <div class="resource-name">${item.name || item.id}${isCreated ? ' ✨' : ''}</div>
-                    <div class="resource-state ${states[item.id]}">${states[item.id]}</div>
-                </div>
-            </div>
-            `;
-        }).join("");
-        
-        // Add click event listeners to equipment items
-        panel.querySelectorAll('.resource-item[data-object-id]').forEach(item => {
-            item.addEventListener('click', () => {
-                const objectId = item.dataset.objectId;
-                if (window.handleObjectClick && typeof window.handleObjectClick === 'function') {
-                    window.handleObjectClick(objectId, this.playheadTime);
-                }
-            });
-        });
-    }
-
-    updateResourceTypeState(objectType, panel, liveObjects) {
-        const stocks = {};
-        liveObjects.forEach(r => { 
-            stocks[r.id] = r.properties?.quantity || 0; 
-        });
-
-        const sortedTasks = [...(this.simData.tasks || [])].sort((a,b) => a.start_minutes - b.start_minutes);
-
-        for (const task of sortedTasks) {
-            // Stop processing if the task hasn't started yet.
-            if (task.start_minutes > this.playheadTime) break;
-            
-            // Only account for tasks that have fully completed.
-            if (task.end_minutes <= this.playheadTime) {
-                // Handle old-style consumes/produces
+            // Handle old-style consumes/produces (backward compatibility for resources)
+            if (objectType === 'resource' && task.end_minutes <= this.playheadTime) {
+                // Only account for tasks that have fully completed
                 Object.entries(task.consumes || {}).forEach(([resId, amount]) => { 
                     if (stocks[resId] !== undefined) stocks[resId] -= amount; 
                 });
                 Object.entries(task.produces || {}).forEach(([resId, amount]) => { 
                     if (stocks[resId] !== undefined) stocks[resId] += amount; 
                 });
-                
-                // Handle new-style interactions for resources
-                (task.interactions || []).forEach(interaction => {
-                    const targetResource = liveObjects?.find(res => res.id === interaction.object_id);
-                    if (targetResource) {
-                        const quantityChanges = interaction.property_changes?.quantity;
-                        if (quantityChanges && quantityChanges.delta !== undefined) {
-                            if (stocks[interaction.object_id] !== undefined) {
-                                stocks[interaction.object_id] += quantityChanges.delta;
-                            }
-                        }
-                    }
-                });
             }
-        }
-
-        // Sort objects chronologically by their creation time, then by their id
-        const sortedObjects = [...liveObjects].sort((a, b) => {
-            const aCreated = this.liveObjects?.created?.find(obj => obj.id === a.id);
-            const bCreated = this.liveObjects?.created?.find(obj => obj.id === b.id);
-            const aTime = aCreated?.createdAt || 0;
-            const bTime = bCreated?.createdAt || 0;
-            if (aTime !== bTime) return aTime - bTime;
-            return a.id.localeCompare(b.id);
-        });
-
-        // Render live resources with creation/deletion indicators
-        panel.innerHTML = sortedObjects.map(resource => {
-            const isCreated = this.liveObjects?.created?.find(obj => obj.id === resource.id);
-            const createdClass = isCreated ? 'created-object' : '';
-            const createdTitle = isCreated ? `Created by ${isCreated.createdBy}` : '';
             
-            return `
-            <div class="resource-item ${createdClass}" title="${createdTitle}" data-object-id="${resource.id}" style="cursor: pointer;">
-                <div class="resource-emoji">${resource.emoji || "❓"}</div>
-                <div class="resource-info">
-                    <div class="resource-name">${resource.id}${isCreated ? ' ✨' : ''}</div>
-                    <div class="resource-state available">Stock: ${stocks[resource.id].toFixed(2)} ${resource.properties.unit}</div>
-                </div>
-            </div>
-            `;
-        }).join("");
-        
-        // Add click event listeners to resource items
-        panel.querySelectorAll('.resource-item[data-object-id]').forEach(item => {
-            item.addEventListener('click', () => {
-                const objectId = item.dataset.objectId;
-                if (window.handleObjectClick && typeof window.handleObjectClick === 'function') {
-                    window.handleObjectClick(objectId, this.playheadTime);
-                }
-            });
-        });
-    }
-
-    updateGenericObjectTypeState(objectType, panel, liveObjects) {
-        // For actors, products, and any other generic object types
-        // Calculate dynamic states based on task interactions (same logic as equipment)
-        const states = {};
-        liveObjects.forEach(obj => { states[obj.id] = obj.properties?.state || 'available'; });
-
-        const sortedTasks = [...(this.simData.tasks || [])].sort((a,b) => a.start_minutes - b.start_minutes);
-        
-        for (const task of sortedTasks) {
-            if (task.start_minutes > this.playheadTime) break; // No need to process future tasks
-            
-            // Handle new-style interactions for generic objects
+            // Handle new-style interactions for all object types
             (task.interactions || []).forEach(interaction => {
                 const targetObject = liveObjects?.find(obj => obj.id === interaction.object_id);
-                if (targetObject) {
-                    const stateChanges = interaction.property_changes?.state;
-                    if (stateChanges) {
-                        const isTaskActive = this.playheadTime >= task.start_minutes && this.playheadTime < task.end_minutes;
-                        if (isTaskActive) {
-                            states[interaction.object_id] = stateChanges.to;
-                        } else {
-                            states[interaction.object_id] = interaction.revert_after === true ? stateChanges.from : stateChanges.to;
+                if (targetObject && interaction.property_changes) {
+                    const isTaskActive = this.playheadTime >= task.start_minutes && this.playheadTime < task.end_minutes;
+                    
+                    // Process all property changes
+                    Object.entries(interaction.property_changes).forEach(([property, changes]) => {
+                        if (changes.to !== undefined) {
+                            let newValue;
+                            if (isTaskActive) {
+                                newValue = changes.to;
+                            } else { // Task is finished
+                                newValue = interaction.revert_after === true ? changes.from : changes.to;
+                            }
+                            
+                            if (property === 'state') {
+                                states[interaction.object_id] = newValue;
+                            } else {
+                                propertyOverrides[interaction.object_id][property] = newValue;
+                            }
+                        } else if (changes.delta !== undefined && property === 'quantity') {
+                            // Handle delta changes for quantities (only for completed tasks)
+                            if (task.end_minutes <= this.playheadTime && stocks[interaction.object_id] !== undefined) {
+                                stocks[interaction.object_id] += changes.delta;
+                            }
                         }
-                    }
+                    });
                 }
             });
         }
@@ -477,12 +381,59 @@ class SimulationPlayer {
             const createdClass = isCreated ? 'created-object' : '';
             const createdTitle = isCreated ? `Created by ${isCreated.createdBy}` : '';
             
+            // Apply property overrides from interactions
+            const currentEmoji = propertyOverrides[item.id]?.emoji || item.properties?.emoji || item.emoji || "❓";
+            
+            // Handle different display formats based on indicator_property
+            let stateDisplay;
+            const indicatorProperty = item.indicator_property || item.properties?.indicator_property;
+            
+            if (indicatorProperty) {
+                if (Array.isArray(indicatorProperty)) {
+                    // Multiple properties to display
+                    stateDisplay = indicatorProperty.map(prop => {
+                        if (prop === 'quantity' && stocks[item.id] !== undefined) {
+                            const unit = item.properties?.unit || '';
+                            return `${stocks[item.id].toFixed(2)} ${unit}`;
+                        } else if (prop === 'state') {
+                            return states[item.id];
+                        } else if (propertyOverrides[item.id][prop] !== undefined) {
+                            return propertyOverrides[item.id][prop];
+                        } else {
+                            return item.properties?.[prop] || '';
+                        }
+                    }).filter(val => val).join(' • ');
+                } else {
+                    // Single property to display
+                    if (indicatorProperty === 'quantity' && stocks[item.id] !== undefined) {
+                        const unit = item.properties?.unit || '';
+                        stateDisplay = `Stock: ${stocks[item.id].toFixed(2)} ${unit}`;
+                    } else if (indicatorProperty === 'state') {
+                        stateDisplay = states[item.id];
+                    } else if (propertyOverrides[item.id][indicatorProperty] !== undefined) {
+                        stateDisplay = propertyOverrides[item.id][indicatorProperty];
+                    } else {
+                        stateDisplay = item.properties?.[indicatorProperty] || '';
+                    }
+                }
+            } else {
+                // Fallback to legacy behavior
+                if (stocks[item.id] !== undefined) {
+                    // Resource-like objects with quantities
+                    const unit = item.properties?.unit || '';
+                    stateDisplay = `Stock: ${stocks[item.id].toFixed(2)} ${unit}`;
+                } else {
+                    // State-based objects (equipment, actors, products, etc.)
+                    stateDisplay = states[item.id];
+                }
+            }
+            
             return `
             <div class="resource-item ${createdClass}" title="${createdTitle}" data-object-id="${item.id}" style="cursor: pointer;">
-                <div class="resource-emoji">${item.emoji || "❓"}</div>
+                <div class="resource-emoji">${currentEmoji}</div>
                 <div class="resource-info">
                     <div class="resource-name">${item.name || item.id}${isCreated ? ' ✨' : ''}</div>
-                    <div class="resource-state ${states[item.id]}">${states[item.id]}</div>
+                    <div class="resource-state ${stocks[item.id] !== undefined ? 'available' : states[item.id]}">${stateDisplay}</div>
                 </div>
             </div>
             `;
@@ -532,9 +483,9 @@ class SimulationPlayer {
                 // Remove existing listeners to prevent duplicates
                 track.removeEventListener('mousedown', track._scrubHandler);
 
-                // Create and store the handler - only respond to left-clicks
+                // Create and store the handler - only respond to left-clicks on track background
                 track._scrubHandler = (e) => {
-                    if (e.button === 0) { // Only left-click
+                    if (e.button === 0 && !e.target.closest('.task-block')) { // Only left-click on background
                         startScrubbing(e, track);
                     }
                 };

@@ -108,12 +108,13 @@
                 <p>This playground is an interactive tool for testing and visualising automation workflows.</p>
                 <p>You can create, edit, and simulate complex processes to understand how they work and identify potential improvements.</p>
                 <p>The Universal Automation Wiki (UAW) project, including this playground, is open source. We welcome contributions and feedback from the community. You can find the project on <a href="https://github.com/JamieM0/uaw" target="_blank">GitHub</a>.</p>
-                <p><strong>Pro Tip:</strong> You can use emojis in any text field!
+                <p><strong>Tip:</strong> You can use emojis in any text field!
                 <ul>
                     <li>Press <strong>Ctrl + .</strong> or <strong>Cmd + .</strong> to open the emoji selector.</li>
                     <li>In the JSON editor, right-click and choose 'Insert Emoji'.</li>
                 </ul>
                 </p>
+                <p><strong>Tip:</strong> In space editors, you can quickly <strong>tap space</strong> to zoom to fit, or you can <strong>hold space</strong> to pan around.</p>
                 <div class="dialog-buttons" style="margin-top: 1rem; justify-content: center; flex-direction: column;">
                     <div style="margin-bottom: 1rem;">
                         <label>
@@ -288,8 +289,8 @@
                                             </div>
                                             <div class="properties-panel-container">
                                                 <div class="properties-panel-header">
-                                                    <h4>Properties</h4>
-                                                    <div class="header-controls">
+                                                    <div class="properties-panel-header-top">
+                                                        <h4>Properties</h4>
                                                         <button id="add-location-btn" class="btn btn-primary">+ Add</button>
                                                     </div>
                                                     <div class="layer-controls">
@@ -348,8 +349,9 @@
                                             </div>
                                             <div class="properties-panel-container">
                                                 <div class="properties-panel-header">
-                                                    <h4>Digital Space <button id="add-digital-location-btn" class="btn btn-primary btn-compact">+ Add Location</button></h4>
-                                                    <div class="header-controls">
+                                                    <div class="properties-panel-header-top">
+                                                        <h4>Digital Space</h4>
+                                                        <button id="add-digital-location-btn" class="btn btn-primary btn-compact">+ Add Location</button>
                                                     </div>
                                                     <div class="layer-controls">
                                                         <label for="digital-layer-filter">Type:</label>
@@ -404,7 +406,10 @@
                                             </div>
                                             <div class="properties-panel-container">
                                                 <div class="properties-panel-header">
-                                                    <h4>Display Editor <button id="add-display-btn" class="btn btn-primary btn-compact">+ Add Display</button></h4>
+                                                    <div class="properties-panel-header-top">
+                                                        <h4>Display Editor</h4>
+                                                        <button id="add-display-btn" class="btn btn-primary btn-compact">+ Add Display</button>
+                                                    </div>
                                                     <div class="layer-controls">
                                                         <label for="display-select">Display:</label>
                                                         <select id="display-select">
