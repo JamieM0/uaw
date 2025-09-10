@@ -157,6 +157,12 @@ function processSimulationData(simulationData) {
 
 // Render simulation with resources display
 function renderSimulation() {
+    // CRITICAL FIX: Prevent re-rendering during active playback or scrubbing
+    if (window.simulationPlayerActive) {
+        console.log('TIMELINE: Skipping renderSimulation() during active playback/scrubbing');
+        return;
+    }
+    
     const simulationContent =
         document.getElementById("simulation-content");
     const loadingOverlay =
@@ -455,6 +461,7 @@ function renderSimulation() {
             player.destroy();
         }
         player = new SimulationPlayer(currentSimulationData);
+        window.player = player; // Make globally accessible for spacebar functionality
     } catch (e) {
         simulationContent.innerHTML = `<p style="color: var(--error-color); text-align: center; margin-top: 2rem;">Render Error: ${e.message}</p>`;
         console.error("Render error:", e);

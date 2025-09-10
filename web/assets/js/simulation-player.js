@@ -45,6 +45,68 @@ class SimulationPlayer {
         }
         this.initScrubbing();
         this.update(this.playheadTime);
+        
+        // Initialize spacebar functionality globally (only once)
+        SimulationPlayer.initGlobalSpacebarPlayPause();
+    }
+
+    static initGlobalSpacebarPlayPause() {
+        // Prevent multiple initializations
+        if (SimulationPlayer.spacebarInitialized) {
+            return;
+        }
+        SimulationPlayer.spacebarInitialized = true;
+        
+        let spacebarPressed = false;
+        
+        // Add global keydown listener for spacebar play/pause
+        document.addEventListener('keydown', (e) => {
+            // Only trigger on spacebar (key code 32 or ' ')
+            if (e.code !== 'Space' && e.key !== ' ') {
+                return;
+            }
+            
+            // Prevent multiple triggers from key repeat
+            if (spacebarPressed) {
+                e.preventDefault();
+                return;
+            }
+            spacebarPressed = true;
+            
+            // Don't trigger if user is typing in input fields
+            const activeElement = document.activeElement;
+            if (activeElement && (
+                activeElement.tagName === 'INPUT' || 
+                activeElement.tagName === 'TEXTAREA' || 
+                activeElement.contentEditable === 'true' ||
+                activeElement.closest('.monaco-editor') // Monaco editor
+            )) {
+                spacebarPressed = false; // Reset flag
+                return;
+            }
+            
+            // Only trigger when simulation render tab is active
+            const simulationTab = document.getElementById('simulation-tab');
+            const isSimulationTabActive = simulationTab && simulationTab.classList.contains('active');
+            
+            if (isSimulationTabActive) {
+                e.preventDefault(); // Prevent page scroll
+                
+                // Find the current player instance and call togglePlay on it
+                if (window.player && typeof window.player.togglePlay === 'function') {
+                    window.player.togglePlay();
+                }
+            }
+            
+            spacebarPressed = false; // Reset flag after processing
+        });
+        
+        // Reset flag on keyup to handle key repeat properly
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'Space' || e.key === ' ') {
+                spacebarPressed = false;
+            }
+        });
     }
 
     formatTime(minutes) {
@@ -55,6 +117,10 @@ class SimulationPlayer {
 
     togglePlay() {
         this.isPlaying = !this.isPlaying;
+        
+        // CRITICAL FIX: Set global flag to prevent renderSimulation during playback
+        window.simulationPlayerActive = this.isPlaying;
+        
         if (this.ui.playPauseBtn) {
             this.ui.playPauseBtn.textContent = this.isPlaying ? '⏸️' : '▶️';
         }
@@ -62,7 +128,9 @@ class SimulationPlayer {
         if (this.isPlaying) {
             // --- START OF FIX ---
             // If playback is at the end, reset to the beginning.
-            if (this.playheadTime >= this.simData.end_time_minutes) {
+            // Add safety check to ensure end_time_minutes is valid
+            if (this.simData.end_time_minutes && this.playheadTime >= this.simData.end_time_minutes) {
+                console.log(`SIMULATION-PLAYER: Resetting playhead from ${this.playheadTime} to ${this.simData.start_time_minutes}`);
                 this.playheadTime = this.simData.start_time_minutes;
             }
             // Initialize lastFrameTime HERE, right before starting the loop.
@@ -592,7 +660,20 @@ class SimulationPlayer {
                     if (currentJson.simulation[arrayName] && Array.isArray(currentJson.simulation[arrayName])) {
                         const obj = currentJson.simulation[arrayName].find(obj => obj.id === objectId);
                         if (obj) {
-                            obj[property] = newValue;
+                            // Handle nested properties like "properties.emoji"
+                            const propertyPath = property.split('.');
+                            if (propertyPath.length > 1) {
+                                let current = obj;
+                                for (let i = 0; i < propertyPath.length - 1; i++) {
+                                    if (!current[propertyPath[i]]) {
+                                        current[propertyPath[i]] = {};
+                                    }
+                                    current = current[propertyPath[i]];
+                                }
+                                current[propertyPath[propertyPath.length - 1]] = newValue;
+                            } else {
+                                obj[property] = newValue;
+                            }
                             objectFound = true;
                         }
                     }
@@ -850,6 +931,10 @@ class SimulationPlayer {
         const startScrubbing = (e, track) => {
             isScrubbing = true;
             currentScrubTrack = track;
+            
+            // CRITICAL FIX: Set global flag to prevent renderSimulation during scrubbing
+            window.simulationPlayerActive = true;
+            
             if (this.isPlaying) this.togglePlay();
             onScrub(e);
 
@@ -857,6 +942,10 @@ class SimulationPlayer {
             document.addEventListener('mouseup', () => {
                 isScrubbing = false;
                 currentScrubTrack = null;
+                
+                // CRITICAL FIX: Clear global flag when scrubbing ends
+                window.simulationPlayerActive = false;
+                
                 document.removeEventListener('mousemove', onScrub);
             }, { once: true });
         };
