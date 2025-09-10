@@ -40,6 +40,7 @@ function processSimulationData(simulationData) {
     const startTimeMinutes = startHour * 60 + startMin;
 
     let actualLastTaskEnd = startTimeMinutes;
+    let actualFirstTaskStart = startTimeMinutes; // Track earliest task start
 
     const allObjects = sim.objects || [];
     
@@ -70,21 +71,28 @@ function processSimulationData(simulationData) {
         const taskDuration = task.duration || 0;
         const taskEndMinutes = taskStartMinutes + taskDuration;
         actualLastTaskEnd = Math.max(actualLastTaskEnd, taskEndMinutes);
+        actualFirstTaskStart = Math.min(actualFirstTaskStart, taskStartMinutes); // Track earliest start
         return { ...task, start_minutes: taskStartMinutes, end_minutes: taskEndMinutes };
     }).filter(task => task !== null);
     
     // --- START OF THE UNIFIED SCALING FIX ---
 
-    // 1. Determine the logical end time, including a small buffer for visuals.
+    // 1. Determine the actual visual start time (earliest task or config start)
+    const visualStartTimeMinutes = actualFirstTaskStart;
+    const visualStartHour = Math.floor(visualStartTimeMinutes / 60);
+    const visualStartMin = visualStartTimeMinutes % 60;
+    const visualStartTimeStr = `${String(visualStartHour).padStart(2, "0")}:${String(visualStartMin).padStart(2, "0")}`;
+
+    // 2. Determine the logical end time, including a small buffer for visuals.
     const logicalEndTime = actualLastTaskEnd + 30;
 
-    // 2. Calculate a visually clean, rounded-up total duration for the timeline.
+    // 3. Calculate a visually clean, rounded-up total duration for the timeline.
     // This becomes the single source of truth for all rendering.
-    const logicalTotalDuration = logicalEndTime - startTimeMinutes;
+    const logicalTotalDuration = logicalEndTime - visualStartTimeMinutes;
     const visualTotalDuration = Math.ceil(logicalTotalDuration / 60) * 60; // Round up to the next full hour.
 
-    // 3. Calculate the end time string based on this visual duration.
-    const visualEndTimeMinutes = startTimeMinutes + visualTotalDuration;
+    // 4. Calculate the end time string based on this visual duration.
+    const visualEndTimeMinutes = visualStartTimeMinutes + visualTotalDuration;
     const visualEndHour = Math.floor(visualEndTimeMinutes / 60);
     const visualEndMin = visualEndTimeMinutes % 60;
     const visualEndTimeStr = `${String(visualEndHour).padStart(2, "0")}:${String(visualEndMin).padStart(2, "0")}`;
@@ -110,8 +118,8 @@ function processSimulationData(simulationData) {
             ...task,
             display_name: displayName,
             emoji: emoji,
-            // All percentages now use the same, consistent denominator.
-            start_percentage: ((task.start_minutes - startTimeMinutes) / visualTotalDuration) * 100,
+            // All percentages now use the same, consistent denominator and dynamic start time.
+            start_percentage: ((task.start_minutes - visualStartTimeMinutes) / visualTotalDuration) * 100,
             duration_percentage: (task.duration / visualTotalDuration) * 100
         };
     });
@@ -134,9 +142,9 @@ function processSimulationData(simulationData) {
     });
 
     const result = {
-        start_time: startTime,
+        start_time: visualStartTimeStr, // Use the dynamic visual start time
         end_time: visualEndTimeStr, // Use the new visual end time
-        start_time_minutes: startTimeMinutes,
+        start_time_minutes: visualStartTimeMinutes, // Use the dynamic start time
         end_time_minutes: visualEndTimeMinutes, // Use the new visual end time
         total_duration_minutes: visualTotalDuration, // This is now the unified duration
         tasks: processedTasks,
@@ -473,7 +481,7 @@ function renderSimulation() {
 // Debounced rendering
 function debounceRender() {
     clearTimeout(renderTimeout);
-    renderTimeout = setTimeout(renderSimulation, 0);
+    renderTimeout = setTimeout(renderSimulation, 300); // Wait 300ms for user to finish typing
 }
 
 // Drag and drop functionality

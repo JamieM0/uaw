@@ -49,7 +49,38 @@ class SpaceEditor {
         };
 
         this.init();
+        this.setupEditorListener();
         console.log("SPACE-EDITOR: Constructor finished.");
+    }
+
+    setupEditorListener() {
+        // Listen for editor changes to reload space data
+        if (this.monacoEditor && this.monacoEditor.onDidChangeModelContent) {
+            this.monacoEditor.onDidChangeModelContent(() => {
+                // Only reload if we're not currently updating the JSON ourselves
+                if (!this.isUpdatingJson) {
+                    setTimeout(() => {
+                        this.loadFromSimulation();
+                    }, 50); // Small delay to ensure JSON has been processed
+                }
+            });
+        }
+    }
+
+    loadFromSimulation() {
+        if (!this.monacoEditor) return;
+
+        try {
+            const jsonText = this.monacoEditor.getValue();
+            const simulation = JSON.parse(jsonText);
+            
+            // Load layout data from simulation
+            if (simulation.simulation && simulation.simulation.layout) {
+                this.loadLayout(simulation.simulation.layout, false);
+            }
+        } catch (e) {
+            console.log("SPACE-EDITOR: Could not parse JSON for space layout");
+        }
     }
 
     init() {
@@ -806,14 +837,18 @@ class SpaceEditor {
     
     updateJson() {
         try {
+            console.log("SPACE-EDITOR: updateJson() called, isUpdatingJson:", this.isUpdatingJson);
             this.isUpdatingJson = true;
             const fullSim = JSON.parse(this.monacoEditor.getValue());
+            console.log("SPACE-EDITOR: Current fullSim:", fullSim);
             if (!fullSim.simulation) fullSim.simulation = {};
             fullSim.simulation.layout = {
                 meta: { units: 'meters', pixels_per_unit: this.pixelsPerMeter },
                 locations: this.locations
             };
+            console.log("SPACE-EDITOR: Updated locations:", this.locations);
             this.monacoEditor.setValue(JSON.stringify(fullSim, null, 2));
+            console.log("SPACE-EDITOR: JSON updated successfully");
             setTimeout(() => { this.isUpdatingJson = false; }, 5);
         } catch(e) { 
             this.isUpdatingJson = false;
@@ -1210,8 +1245,12 @@ class SpaceEditor {
         
         // Update the data model and JSON only when user stops editing or presses enter
         const updateNameData = () => {
+            console.log("SPACE-EDITOR: updateNameData() called");
             const newName = nameInput.value;
             const newId = newName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+            
+            console.log("SPACE-EDITOR: Updating name from", loc.name, "to", newName);
+            console.log("SPACE-EDITOR: Updating ID from", loc.id, "to", newId);
             
             loc.name = newName;
             loc.id = newId;
@@ -1227,6 +1266,7 @@ class SpaceEditor {
             }
             this.selectedRectId = newId;
             idInput.value = newId;
+            console.log("SPACE-EDITOR: About to call updateJson()");
             this.updateJson();
         };
         

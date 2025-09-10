@@ -104,8 +104,8 @@ function updateMetricsMode() {
             metricsControls.style.display = 'none';
         }
         
-        // Refresh space editor since layout may have changed
-        refreshSpaceEditor();
+        // Refresh all editors since layout may have changed
+        refreshAllEditors();
         
         // Refresh validation display to hide example/disable buttons
         refreshValidationDisplay();
@@ -145,6 +145,20 @@ function switchLeftTab(targetTab) {
             try {
                 const currentJson = JSON.parse(editor.getValue());
                 spaceEditor.loadLayout(currentJson.simulation.layout, true);
+            } catch(e) {
+                // Ignore parse errors
+            }
+        } else if (targetTab === 'digital-space' && digitalSpaceEditor) {
+            try {
+                const currentJson = JSON.parse(editor.getValue());
+                digitalSpaceEditor.loadLayout(currentJson.simulation.digital_space || {}, true);
+            } catch(e) {
+                // Ignore parse errors
+            }
+        } else if (targetTab === 'display-editor' && displayEditor) {
+            try {
+                const currentJson = JSON.parse(editor.getValue());
+                displayEditor.loadLayout(currentJson.simulation.displays || {}, true);
             } catch(e) {
                 // Ignore parse errors
             }
@@ -399,11 +413,27 @@ function moveComponentsToMetricsMode() {
     }
     
     // Move space editor to left panel tab
-    const spaceEditorContainer = document.querySelector('.space-editor-container');
+    const spaceEditorContainer = document.querySelector('#space-editor-tab .space-editor-container');
     const spaceEditorLeftTab = document.getElementById('space-editor-left-tab');
     
     if (spaceEditorContainer && spaceEditorLeftTab) {
         spaceEditorLeftTab.appendChild(spaceEditorContainer);
+    }
+    
+    // Move digital space editor to left panel tab
+    const digitalSpaceContainer = document.querySelector('#digital-space-tab .space-editor-container');
+    const digitalSpaceLeftTab = document.getElementById('digital-space-left-tab');
+    
+    if (digitalSpaceContainer && digitalSpaceLeftTab) {
+        digitalSpaceLeftTab.appendChild(digitalSpaceContainer);
+    }
+    
+    // Move display editor to left panel tab
+    const displayEditorContainer = document.querySelector('#display-editor-tab .space-editor-container');
+    const displayEditorLeftTab = document.getElementById('display-editor-left-tab');
+    
+    if (displayEditorContainer && displayEditorLeftTab) {
+        displayEditorLeftTab.appendChild(displayEditorContainer);
     }
     
     // Create secondary JSON editor for metrics mode
@@ -435,11 +465,27 @@ function moveComponentsToStandardMode() {
     }
     
     // Move space editor back to standard tab
-    const spaceEditorContainer = document.querySelector('.space-editor-container');
+    const spaceEditorContainer = document.querySelector('#space-editor-left-tab .space-editor-container');
     const spaceEditorTab = document.getElementById('space-editor-tab');
     
     if (spaceEditorContainer && spaceEditorTab) {
         spaceEditorTab.appendChild(spaceEditorContainer);
+    }
+    
+    // Move digital space editor back to standard tab
+    const digitalSpaceContainer = document.querySelector('#digital-space-left-tab .space-editor-container');
+    const digitalSpaceTab = document.getElementById('digital-space-tab');
+    
+    if (digitalSpaceContainer && digitalSpaceTab) {
+        digitalSpaceTab.appendChild(digitalSpaceContainer);
+    }
+    
+    // Move display editor back to standard tab
+    const displayEditorContainer = document.querySelector('#display-editor-left-tab .space-editor-container');
+    const displayEditorTab = document.getElementById('display-editor-tab');
+    
+    if (displayEditorContainer && displayEditorTab) {
+        displayEditorTab.appendChild(displayEditorContainer);
     }
 }
 
@@ -451,6 +497,26 @@ function refreshSpaceEditor() {
         } catch(e) {
             // Ignore JSON parse errors
         }
+    }
+}
+
+function refreshAllEditors() {
+    try {
+        const currentJson = JSON.parse(editor.getValue());
+        
+        if (spaceEditor) {
+            spaceEditor.loadLayout(currentJson.simulation.layout);
+        }
+        
+        if (digitalSpaceEditor) {
+            digitalSpaceEditor.loadLayout(currentJson.simulation.digital_space || {});
+        }
+        
+        if (displayEditor) {
+            displayEditor.loadLayout(currentJson.simulation.displays || {});
+        }
+    } catch(e) {
+        // Ignore JSON parse errors
     }
 }
 
