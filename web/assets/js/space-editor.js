@@ -1,6 +1,5 @@
 class SpaceEditor {
     constructor(canvasEl, propsPanelEl, editor) {
-        console.log("SPACE-EDITOR: Constructor called.");
         this.canvas = canvasEl;
         this.propsPanel = propsPanelEl;
         this.monacoEditor = editor;
@@ -50,7 +49,6 @@ class SpaceEditor {
 
         this.init();
         this.setupEditorListener();
-        console.log("SPACE-EDITOR: Constructor finished.");
     }
 
     setupEditorListener() {
@@ -79,7 +77,7 @@ class SpaceEditor {
                 this.loadLayout(simulation.simulation.layout, false);
             }
         } catch (e) {
-            console.log("SPACE-EDITOR: Could not parse JSON for space layout");
+            console.warn("SPACE-EDITOR: Could not parse JSON for space layout");
         }
     }
 
@@ -396,8 +394,6 @@ class SpaceEditor {
     }
 
     loadLayout(layoutData, forceZoomToFit = false) {
-        console.log("SPACE-EDITOR: loadLayout() called.", layoutData, "forceZoomToFit:", forceZoomToFit);
-
         const wasDrawing = this.isDrawing;
 
         if (!layoutData || !layoutData.locations) {
@@ -428,8 +424,6 @@ class SpaceEditor {
                 loc.transitionLayers = [loc.layer || "ground"];
             }
         });
-        
-        console.log(`SPACE-EDITOR: Loading ${this.locations.length} locations with scale ${this.pixelsPerMeter} px/m.`);
 
         this.world.innerHTML = ''; // Clear only the world container
         this.locations.forEach(loc => this.createRectElement(loc));
@@ -837,18 +831,14 @@ class SpaceEditor {
     
     updateJson() {
         try {
-            console.log("SPACE-EDITOR: updateJson() called, isUpdatingJson:", this.isUpdatingJson);
             this.isUpdatingJson = true;
             const fullSim = JSON.parse(this.monacoEditor.getValue());
-            console.log("SPACE-EDITOR: Current fullSim:", fullSim);
             if (!fullSim.simulation) fullSim.simulation = {};
             fullSim.simulation.layout = {
                 meta: { units: 'meters', pixels_per_unit: this.pixelsPerMeter },
                 locations: this.locations
             };
-            console.log("SPACE-EDITOR: Updated locations:", this.locations);
             this.monacoEditor.setValue(JSON.stringify(fullSim, null, 2));
-            console.log("SPACE-EDITOR: JSON updated successfully");
             setTimeout(() => { this.isUpdatingJson = false; }, 5);
         } catch(e) { 
             this.isUpdatingJson = false;
@@ -1245,12 +1235,10 @@ class SpaceEditor {
         
         // Update the data model and JSON only when user stops editing or presses enter
         const updateNameData = () => {
-            console.log("SPACE-EDITOR: updateNameData() called");
             const newName = nameInput.value;
             const newId = newName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-            
-            console.log("SPACE-EDITOR: Updating name from", loc.name, "to", newName);
-            console.log("SPACE-EDITOR: Updating ID from", loc.id, "to", newId);
+            loc.name = newName;
+            loc.id = newId;
             
             loc.name = newName;
             loc.id = newId;
@@ -1266,7 +1254,6 @@ class SpaceEditor {
             }
             this.selectedRectId = newId;
             idInput.value = newId;
-            console.log("SPACE-EDITOR: About to call updateJson()");
             this.updateJson();
         };
         

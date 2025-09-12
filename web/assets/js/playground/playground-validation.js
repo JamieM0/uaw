@@ -152,14 +152,28 @@ function getMetricDisplayName(metricId) {
     return displayName;
 }
 
+// Store references to event handlers for cleanup
+let validationEventHandlers = {
+    clickHandler: null,
+    filterChangeHandler: null
+};
+
 function setupValidationInteractions() {
-    // Use event delegation to avoid needing to re-attach listeners
-    // Remove any existing delegated listeners first
     const validationContainer = document.querySelector('.validation-panel');
-    if (validationContainer && !validationContainer.hasAttribute('data-validation-listeners-attached')) {
-        
+    const filterSelect = document.getElementById('validation-filter');
+    
+    // Clean up existing event handlers to prevent duplicates
+    if (validationEventHandlers.clickHandler && validationContainer) {
+        validationContainer.removeEventListener('click', validationEventHandlers.clickHandler);
+    }
+    if (validationEventHandlers.filterChangeHandler && filterSelect) {
+        filterSelect.removeEventListener('change', validationEventHandlers.filterChangeHandler);
+        filterSelect.removeAttribute('data-listener-attached');
+    }
+    
+    if (validationContainer) {
         // Delegated event listener for stat items and example buttons
-        validationContainer.addEventListener('click', (e) => {
+        validationEventHandlers.clickHandler = (e) => {
             if (e.target.closest('.stat-item.clickable')) {
                 const statItem = e.target.closest('.stat-item.clickable');
                 const filterValue = statItem.dataset.filter;
@@ -202,16 +216,16 @@ function setupValidationInteractions() {
                     }
                 }
             }
-        });
+        };
         
-        // Setup filter dropdown (only once)
-        const filterSelect = document.getElementById('validation-filter');
-        if (filterSelect && !filterSelect.hasAttribute('data-listener-attached')) {
-            filterSelect.addEventListener('change', applyValidationFilter);
-            filterSelect.setAttribute('data-listener-attached', 'true');
-        }
-        
-        validationContainer.setAttribute('data-validation-listeners-attached', 'true');
+        validationContainer.addEventListener('click', validationEventHandlers.clickHandler);
+    }
+    
+    // Setup filter dropdown
+    if (filterSelect) {
+        validationEventHandlers.filterChangeHandler = applyValidationFilter;
+        filterSelect.addEventListener('change', validationEventHandlers.filterChangeHandler);
+        filterSelect.setAttribute('data-listener-attached', 'true');
     }
 }
 
@@ -504,7 +518,11 @@ function disableBuiltinMetric(metricId) {
         
         // Update the catalog in localStorage and editor
         const catalogJson = JSON.stringify(customCatalog, null, 2);
-        localStorage.setItem('uaw-metrics-catalog-custom', catalogJson);
+        try {
+            localStorage.setItem('uaw-metrics-catalog-custom', catalogJson);
+        } catch (e) {
+            console.error('Error saving custom metrics catalog:', e.message);
+        }
         
         if (window.metricsCatalogEditor) {
             window.metricsCatalogEditor.setValue(catalogJson);
@@ -549,7 +567,11 @@ function enableBuiltinMetric(metricId) {
         
         // Update the catalog in localStorage and editor
         const catalogJson = JSON.stringify(customCatalog, null, 2);
-        localStorage.setItem('uaw-metrics-catalog-custom', catalogJson);
+        try {
+            localStorage.setItem('uaw-metrics-catalog-custom', catalogJson);
+        } catch (e) {
+            console.error('Error saving custom metrics catalog:', e.message);
+        }
         
         if (window.metricsCatalogEditor) {
             window.metricsCatalogEditor.setValue(catalogJson);

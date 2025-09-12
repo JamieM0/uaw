@@ -11,7 +11,7 @@ The UAW web frontend is a static site with rich interactive features, built with
 ### Quick Start
 ```bash
 cd web
-python3 -m http.server 8000
+python -m http.server 8000
 ```
 
 ### Access Points

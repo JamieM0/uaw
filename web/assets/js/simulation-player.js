@@ -7,6 +7,7 @@ class SimulationPlayer {
         this.animationFrameId = null;
         this.hasPropertyChanges = false;
         this.isUpdatingEditor = false;
+        this.isScrubbing = false;
 
         this.ui = {
             playPauseBtn: document.getElementById('player-play-pause-btn'),
@@ -130,7 +131,6 @@ class SimulationPlayer {
             // If playback is at the end, reset to the beginning.
             // Add safety check to ensure end_time_minutes is valid
             if (this.simData.end_time_minutes && this.playheadTime >= this.simData.end_time_minutes) {
-                console.log(`SIMULATION-PLAYER: Resetting playhead from ${this.playheadTime} to ${this.simData.start_time_minutes}`);
                 this.playheadTime = this.simData.start_time_minutes;
             }
             // Initialize lastFrameTime HERE, right before starting the loop.
@@ -195,7 +195,9 @@ class SimulationPlayer {
             track.appendChild(playheadClone);
         });
 
-        if (this.attachScrubbing) {
+        // Only attach scrubbing handlers if we're not currently scrubbing
+        // This prevents duplicate playheads during drag operations
+        if (this.attachScrubbing && !this.isScrubbing) {
             this.attachScrubbing();
         }
 
@@ -355,9 +357,6 @@ class SimulationPlayer {
                     // Find the display element and move it between displays
                     const elementData = this.findAndMoveDisplayElement(moveData.element_id, moveData.from_display_id, moveData.to_display_id, shouldMove, shouldRevert);
                     if (elementData && shouldMove) {
-                        // Element was successfully moved
-                        console.log(`Moved display element ${moveData.element_id} from ${moveData.from_display_id} to ${moveData.to_display_id}`);
-                        
                         // Mark as moved to prevent repeated execution
                         interaction.move_display_element._moved = true;
                         
@@ -514,9 +513,6 @@ class SimulationPlayer {
     }
 
     updateMonacoEditor() {
-        // CRITICAL FIX: Disable Monaco editor updates to prevent overwriting user's JSON
-        // The simData object is pointing to wrong simulation data containing duration_percentage
-        console.log('SIMULATION-PLAYER: updateMonacoEditor DISABLED to prevent data corruption');
         this.hasPropertyChanges = false; // Reset flag to prevent repeated attempts
         return;
         
@@ -535,7 +531,6 @@ class SimulationPlayer {
             // Wrap simData in the proper root structure that the editor expects
             const wrappedSimData = { simulation: this.simData };
             const updatedJson = JSON.stringify(wrappedSimData, null, 2);
-            console.log('SIMULATION-PLAYER: Updating Monaco editor with JSON:', updatedJson.substring(0, 200) + '...');
             editor.setValue(updatedJson);
             
             // Reset the changes flag since we've updated the editor
@@ -545,8 +540,6 @@ class SimulationPlayer {
             setTimeout(() => {
                 this.isUpdatingEditor = false;
             }, 100);
-            
-            console.log('SIMULATION-PLAYER: Successfully updated Monaco editor with simulation changes');
         } catch (error) {
             console.error('SIMULATION-PLAYER: Error updating Monaco editor:', error);
             this.isUpdatingEditor = false;
@@ -688,15 +681,13 @@ class SimulationPlayer {
                 // Update Monaco editor with the modified JSON
                 editor.setValue(JSON.stringify(currentJson, null, 2));
                 
-                console.log(`SIMULATION-PLAYER: Successfully updated ${property} to ${newValue} for object ${objectId} in Monaco editor`);
-                
                 // Reset flags after a delay
                 setTimeout(() => {
                     this.isUpdatingEditor = false;
                     window.simulationPlayerUpdatingEditor = false;
                 }, 200);
             } else {
-                console.log(`SIMULATION-PLAYER: Object ${objectId} not found in Monaco JSON for property update`);
+                console.warn(`SIMULATION-PLAYER: Object ${objectId} not found in Monaco JSON for property update`);
             }
         } catch (error) {
             console.error('SIMULATION-PLAYER: Error updating Monaco property:', error);
@@ -916,11 +907,10 @@ class SimulationPlayer {
     }
 
     initScrubbing() {
-        let isScrubbing = false;
         let currentScrubTrack = null;
 
         const onScrub = (e) => {
-            if (!isScrubbing || !currentScrubTrack) return;
+            if (!this.isScrubbing || !currentScrubTrack) return;
 
             const rect = currentScrubTrack.getBoundingClientRect();
             const percentage = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
@@ -929,7 +919,7 @@ class SimulationPlayer {
         };
 
         const startScrubbing = (e, track) => {
-            isScrubbing = true;
+            this.isScrubbing = true;
             currentScrubTrack = track;
             
             // CRITICAL FIX: Set global flag to prevent renderSimulation during scrubbing
@@ -940,7 +930,7 @@ class SimulationPlayer {
 
             document.addEventListener('mousemove', onScrub);
             document.addEventListener('mouseup', () => {
-                isScrubbing = false;
+                this.isScrubbing = false;
                 currentScrubTrack = null;
                 
                 // CRITICAL FIX: Clear global flag when scrubbing ends

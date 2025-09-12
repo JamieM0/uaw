@@ -32,8 +32,6 @@ class EmojiPicker {
     }
     
     async initialize() {
-        console.log('EmojiPicker: Initializing...');
-        
         try {
             // Load emoji data and aliases
             await Promise.all([
@@ -48,7 +46,6 @@ class EmojiPicker {
             document.addEventListener('click', this.handleDocumentClick);
             document.addEventListener('keydown', this.handleKeydown);
             
-            console.log('EmojiPicker: Initialized successfully');
             return true;
         } catch (error) {
             console.error('EmojiPicker: Initialization failed', error);
@@ -332,7 +329,6 @@ class EmojiPicker {
             this.monacoEditor.setPosition(newPosition);
             this.monacoEditor.focus();
             
-            console.log('EmojiPicker: Inserted emoji into Monaco editor:', emoji);
         } else if (this.activeInput) {
             // Insert emoji into the active input
             if (this.activeInput.tagName.toLowerCase() === 'input' || 
@@ -430,7 +426,6 @@ class EmojiPicker {
         // Mark input as emoji-enabled
         inputElement.classList.add('emoji-picker-enabled');
         
-        console.log('EmojiPicker: Attached to input element', inputElement);
     }
     
     attachToMonaco(monacoEditor) {
@@ -473,8 +468,6 @@ class EmojiPicker {
                 this.showForMonaco(editor, position);
             }
         });
-        
-        console.log('EmojiPicker: Attached to Monaco editor');
     }
     
     showForMonaco(editor, position) {
@@ -518,7 +511,7 @@ class EmojiPicker {
         // Check if we're in a metrics editor by looking at the container hierarchy
         const isInMetricsEditor = monacoInnerNode.closest('.metrics-editor-panel') !== null;
         const isInMetricsJsonEditor = monacoInnerNode.closest('#json-editor-metrics-container') !== null;
-        console.log('EmojiPicker: In metrics editor:', isInMetricsEditor, 'In metrics JSON editor:', isInMetricsJsonEditor);
+        console.warn('EmojiPicker: In metrics editor:', isInMetricsEditor, 'In metrics JSON editor:', isInMetricsJsonEditor);
         
         // Walk up the DOM tree to find a container with actual dimensions
         let editorContainer = monacoInnerNode;
@@ -608,35 +601,28 @@ class EmojiPicker {
         // Try to get the actual cursor position using Monaco's API
         try {
             const scrolledPosition = editor.getScrolledVisiblePosition(position);
-            console.log('EmojiPicker: Monaco getScrolledVisiblePosition result:', scrolledPosition);
             
             if (scrolledPosition && scrolledPosition.top !== null && scrolledPosition.left !== null) {
                 // Monaco returned valid coordinates - use them relative to the fallback container
                 cursorX = editorRect.left + scrolledPosition.left;
                 cursorY = editorRect.top + scrolledPosition.top;
-                console.log('EmojiPicker: Using Monaco API positioning');
             } else {
                 throw new Error('Monaco API returned null position');
             }
         } catch (error) {
-            console.warn('EmojiPicker: Monaco API positioning failed, using fallback:', error);
-            
             // Position picker intelligently based on container type and size
             if (isInMetricsEditor || isInMetricsJsonEditor) {
                 // For metrics editors, position more conservatively to avoid overflow
                 cursorX = editorRect.left + Math.min(150, editorRect.width * 0.2);
                 cursorY = editorRect.top + Math.min(80, editorRect.height * 0.15);
-                console.log('EmojiPicker: Using metrics editor positioning');
             } else if (!foundValidContainer || editorRect.width > 600) {
                 // Position in the left portion of large containers
                 cursorX = editorRect.left + Math.min(200, editorRect.width * 0.25);
                 cursorY = editorRect.top + Math.min(100, editorRect.height * 0.2);
-                console.log('EmojiPicker: Using fallback positioning within large container');
             } else {
                 // Use normal cursor position calculation for correctly sized containers
                 cursorX = editorRect.left + (position.column - 1) * (fontSize * 0.6);
                 cursorY = editorRect.top + (position.lineNumber - 1) * lineHeight;
-                console.log('EmojiPicker: Using normal cursor calculation');
             }
         }
         
@@ -819,7 +805,7 @@ class EmojiPicker {
         });
         
         if (attachedCount > 0) {
-            console.log(`EmojiPicker: Attached to ${attachedCount} dynamic emoji fields`);
+            console.warn(`EmojiPicker: Attached to ${attachedCount} dynamic emoji fields`);
         }
     }
     
@@ -833,7 +819,7 @@ class EmojiPicker {
             this.container.parentNode.removeChild(this.container);
         }
         
-        console.log('EmojiPicker: Destroyed');
+        console.warn('EmojiPicker: Destroyed');
     }
 }
 

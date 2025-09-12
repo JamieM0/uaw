@@ -165,11 +165,13 @@ function processSimulationData(simulationData) {
 
 // Render simulation with resources display
 function renderSimulation() {
-    // CRITICAL FIX: Prevent re-rendering during active playback or scrubbing
-    if (window.simulationPlayerActive) {
-        console.log('TIMELINE: Skipping renderSimulation() during active playback/scrubbing');
+    // Prevent recursive rendering loops
+    if (window.simulationPlayerActive || window.renderingInProgress) {
+        console.log('TIMELINE: Skipping renderSimulation() - already in progress');
         return;
     }
+    
+    window.renderingInProgress = true;
     
     const simulationContent =
         document.getElementById("simulation-content");
@@ -204,15 +206,11 @@ function renderSimulation() {
         const jsonText = editor.getValue();
         const simulationData = JSON.parse(jsonText);
         
-        // Debug: Log the structure to understand what we're getting
-        console.log('TIMELINE: simulationData structure:', Object.keys(simulationData));
-        
         let dataToProcess = simulationData;
         
         if (simulationData.simulation) {
-            console.log('TIMELINE: simulationData.simulation keys:', Object.keys(simulationData.simulation));
         } else {
-            console.log('TIMELINE: No simulation key found. Trying to adapt structure...');
+            console.warn('TIMELINE: No simulation key found. Trying to adapt structure...');
             
             // If the JSON doesn't have a 'simulation' wrapper, try to adapt it
             if (simulationData.config || simulationData.tasks || simulationData.objects) {
@@ -475,6 +473,7 @@ function renderSimulation() {
         console.error("Render error:", e);
     } finally {
         loadingOverlay.style.display = "none";
+        window.renderingInProgress = false;
     }
 }
 
@@ -492,225 +491,312 @@ function initializeDragAndDrop() {
 }
 
 function handleMouseDown(e) {
-    const taskElement = e.target.closest('.task-block');
-    if (!taskElement) return;
+    try {
+        // Check if simulation data is available
+        if (!currentSimulationData) {
+            console.warn('Cannot start drag/drop: No simulation data loaded');
+            return;
+        }
 
-    // Stop the event from bubbling up to the track, which would trigger scrubbing
-    e.stopPropagation();
+        const taskElement = e.target.closest('.task-block');
+        if (!taskElement) return;
 
-    const rect = taskElement.getBoundingClientRect();
-    const relativeX = e.clientX - rect.left;
-    const isLeftEdge = relativeX <= 8;
-    const isRightEdge = relativeX >= rect.width - 8;
+        // Stop the event from bubbling up to the track, which would trigger scrubbing
+        e.stopPropagation();
 
-    if (isLeftEdge || isRightEdge) {
-        // Start resizing
-        isResizing = true;
-        resizeType = isLeftEdge ? 'left' : 'right';
-        resizeHandle = taskElement;
-        originalDuration = parseInt(taskElement.dataset.duration);
-        originalStartTime = taskElement.dataset.start;
-        
-        document.body.classList.add('resizing-active');
-        resizeHandle.classList.add('resizing');
-        
-        // Create duration preview overlay
-        durationPreview = document.createElement('div');
-        durationPreview.className = 'duration-preview';
-        durationPreview.style.cssText = `
-            position: fixed;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            pointer-events: none;
-            z-index: 10000;
-            left: ${e.clientX + 10}px;
-            top: ${e.clientY - 10}px;
-        `;
-        durationPreview.textContent = `${originalDuration} minutes`;
-        document.body.appendChild(durationPreview);
-        
-        e.preventDefault();
-    } else {
-        // Start dragging
-        document.body.classList.add('dragging-active');
-        isDragging = true;
-        draggedTask = taskElement;
-        dragStartX = e.clientX;
-        dragStartY = e.clientY;
-        
-        // Calculate offset from left edge of task to cursor position
         const rect = taskElement.getBoundingClientRect();
-        dragOffsetX = e.clientX - rect.left;
-        
-        originalTaskData = {
-            taskId: taskElement.dataset.taskId,
-            actorId: taskElement.dataset.actorId,
-            start: taskElement.dataset.start,
-            duration: parseInt(taskElement.dataset.duration)
-        };
-        
-        taskElement.style.opacity = '0.7';
-        taskElement.style.zIndex = '1000';
-        
-        e.preventDefault();
+        const relativeX = e.clientX - rect.left;
+        const isLeftEdge = relativeX <= 8;
+        const isRightEdge = relativeX >= rect.width - 8;
+
+        if (isLeftEdge || isRightEdge) {
+            // Start resizing
+            isResizing = true;
+            resizeType = isLeftEdge ? 'left' : 'right';
+            resizeHandle = taskElement;
+            originalDuration = parseInt(taskElement.dataset.duration);
+            originalStartTime = taskElement.dataset.start;
+            
+            document.body.classList.add('resizing-active');
+            resizeHandle.classList.add('resizing');
+            
+            // Create duration preview overlay
+            durationPreview = document.createElement('div');
+            durationPreview.className = 'duration-preview';
+            durationPreview.style.cssText = `
+                position: fixed;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 0.5rem;
+                border-radius: 4px;
+                font-size: 0.75rem;
+                pointer-events: none;
+                z-index: 10000;
+                left: ${e.clientX + 10}px;
+                top: ${e.clientY - 10}px;
+            `;
+            durationPreview.textContent = `${originalDuration} minutes`;
+            document.body.appendChild(durationPreview);
+            
+            e.preventDefault();
+        } else {
+            // Start dragging
+            document.body.classList.add('dragging-active');
+            isDragging = true;
+            draggedTask = taskElement;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            
+            // Calculate offset from left edge of task to cursor position
+            const rect = taskElement.getBoundingClientRect();
+            dragOffsetX = e.clientX - rect.left;
+            
+            originalTaskData = {
+                taskId: taskElement.dataset.taskId,
+                actorId: taskElement.dataset.actorId,
+                start: taskElement.dataset.start,
+                duration: parseInt(taskElement.dataset.duration)
+            };
+            
+            taskElement.style.opacity = '0.7';
+            taskElement.style.zIndex = '1000';
+            
+            e.preventDefault();
+        }
+    } catch (error) {
+        console.error('Error in handleMouseDown:', error);
+        // Clean up any partial state
+        isResizing = false;
+        isDragging = false;
+        draggedTask = null;
+        resizeHandle = null;
     }
 }
 
 function handleMouseMove(e) {
-    if (isResizing && resizeHandle && durationPreview) {
-        const trackElement = resizeHandle.closest('.task-track');
-        if (!trackElement) return;
+    try {
+        if (isResizing && resizeHandle && durationPreview) {
+            // Check if simulation data is available
+            if (!currentSimulationData || typeof currentSimulationData.total_duration_minutes === 'undefined' || 
+                typeof currentSimulationData.start_time_minutes === 'undefined') {
+                console.warn('Cannot resize: Invalid simulation data');
+                return;
+            }
 
-        const trackRect = trackElement.getBoundingClientRect();
-        const newPosition = calculateNewTimeFromPosition(e.clientX, trackElement);
-        const taskStartMinutes = parseTimeToMinutes(originalStartTime);
-        
-        let newDuration, newStartMinutes = taskStartMinutes;
-        if (resizeType === 'left') {
-            // Resizing from the left edge
-            newStartMinutes = newPosition;
-            const originalEndMinutes = taskStartMinutes + originalDuration;
-            newDuration = originalEndMinutes - newStartMinutes;
-        } else {
-            // Resizing from the right edge  
-            newDuration = newPosition - taskStartMinutes;
-        }
-        
-        // Minimum duration constraint
-        newDuration = Math.max(1, Math.round(newDuration));
-        
-        // Update preview tooltip
-        durationPreview.textContent = `${newDuration} minutes`;
-        durationPreview.style.left = `${e.clientX + 10}px`;
-        durationPreview.style.top = `${e.clientY - 10}px`;
-        
-        // Apply immediate visual feedback to the task block
-        const totalDurationMinutes = currentSimulationData.total_duration_minutes;
-        const startTimeMinutes = currentSimulationData.start_time_minutes;
-        
-        if (resizeType === 'left') {
-            // Update both position and width for left edge resize
-            const newStartPercentage = ((newStartMinutes - startTimeMinutes) / totalDurationMinutes) * 100;
-            const newDurationPercentage = (newDuration / totalDurationMinutes) * 100;
-            resizeHandle.style.left = `${newStartPercentage}%`;
-            resizeHandle.style.width = `${newDurationPercentage}%`;
-        } else {
-            // Update only width for right edge resize
-            const newDurationPercentage = (newDuration / totalDurationMinutes) * 100;
-            resizeHandle.style.width = `${newDurationPercentage}%`;
-        }
-        
-    } else if (isDragging && draggedTask) {
-        // --- START OF DRAG FIX ---
-        const trackElement = draggedTask.closest('.task-track');
-        if (!trackElement) return;
+            const trackElement = resizeHandle.closest('.task-track');
+            if (!trackElement) return;
 
-        // Calculate the new position of the left edge of the task
-        const newLeftX = e.clientX - dragOffsetX;
-
-        // Convert this pixel position to a percentage of the track width
-        const trackRect = trackElement.getBoundingClientRect();
-        const relativeX = newLeftX - trackRect.left;
-        let newStartPercentage = (relativeX / trackRect.width) * 100;
-
-        // Clamp the value between 0 and (100 - task_width)
-        const taskWidthPercentage = parseFloat(draggedTask.style.width);
-        newStartPercentage = Math.max(0, Math.min(newStartPercentage, 100 - taskWidthPercentage));
-
-        // Apply the new position directly to the 'left' property
-        draggedTask.style.left = `${newStartPercentage}%`;
-        // --- END OF DRAG FIX ---
-    }
-}
-
-function handleMouseUp(e) {
-    if (isResizing && resizeHandle) {
-        const trackElement = resizeHandle.closest('.task-track');
-        if (trackElement) {
+            const trackRect = trackElement.getBoundingClientRect();
             const newPosition = calculateNewTimeFromPosition(e.clientX, trackElement);
-            const taskId = resizeHandle.dataset.taskId;
+            if (newPosition === null) return; // Invalid simulation data
             const taskStartMinutes = parseTimeToMinutes(originalStartTime);
             
-            let newDuration, newStartTime = originalStartTime;
-            
+            let newDuration, newStartMinutes = taskStartMinutes;
             if (resizeType === 'left') {
                 // Resizing from the left edge
-                const newStartMinutes = newPosition;
+                newStartMinutes = newPosition;
                 const originalEndMinutes = taskStartMinutes + originalDuration;
                 newDuration = originalEndMinutes - newStartMinutes;
-                
-                // Update start time
-                const hours = Math.floor(newStartMinutes / 60);
-                const mins = newStartMinutes % 60;
-                newStartTime = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
             } else {
-                // Resizing from the right edge
+                // Resizing from the right edge  
                 newDuration = newPosition - taskStartMinutes;
             }
             
             // Minimum duration constraint
             newDuration = Math.max(1, Math.round(newDuration));
             
-            updateTaskDurationInJSON(taskId, newDuration, newStartTime);
-        }
-        
-        // Clean up resize state but don't reset styles immediately to avoid visual jump
-        document.body.classList.remove('resizing-active');
-        resizeHandle.classList.remove('resizing');
-        if (durationPreview) {
-            durationPreview.remove();
-        }
-        isResizing = false;
-        resizeType = null;
-        resizeHandle = null;
-        durationPreview = null;
-        
-    } else if (isDragging && draggedTask) {
-        const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
-        const newTrack = elementBelow?.closest('.task-track');
-        const currentTrack = draggedTask.closest('.task-track');
-        
-        if (newTrack) {
-            const newActorId = newTrack.dataset.actorId;
-            // Account for the drag offset when calculating final position
-            const newTime = calculateNewTimeFromPosition(e.clientX - dragOffsetX, newTrack);
+            // Update preview tooltip
+            durationPreview.textContent = `${newDuration} minutes`;
+            durationPreview.style.left = `${e.clientX + 10}px`;
+            durationPreview.style.top = `${e.clientY - 10}px`;
             
-            if (newActorId && newTime !== null) {
-                // Check if position actually changed (either different track or different time)
-                const originalTimeMinutes = parseTimeToMinutes(originalTaskData.start);
-                if (newTrack !== currentTrack || Math.abs(newTime - originalTimeMinutes) > 1) {
-                    updateTaskInJSON(originalTaskData.taskId, newActorId, newTime);
+            // Apply immediate visual feedback to the task block
+            const totalDurationMinutes = currentSimulationData.total_duration_minutes;
+            const startTimeMinutes = currentSimulationData.start_time_minutes;
+            
+            if (resizeType === 'left') {
+                // Update both position and width for left edge resize
+                const newStartPercentage = ((newStartMinutes - startTimeMinutes) / totalDurationMinutes) * 100;
+                const newDurationPercentage = (newDuration / totalDurationMinutes) * 100;
+                resizeHandle.style.left = `${newStartPercentage}%`;
+                resizeHandle.style.width = `${newDurationPercentage}%`;
+            } else {
+                // Update only width for right edge resize
+                const newDurationPercentage = (newDuration / totalDurationMinutes) * 100;
+                resizeHandle.style.width = `${newDurationPercentage}%`;
+            }
+            
+        } else if (isDragging && draggedTask) {
+            // --- START OF DRAG FIX ---
+            const trackElement = draggedTask.closest('.task-track');
+            if (!trackElement) return;
+
+            // Calculate the new position of the left edge of the task
+            const newLeftX = e.clientX - dragOffsetX;
+
+            // Convert this pixel position to a percentage of the track width
+            const trackRect = trackElement.getBoundingClientRect();
+            const relativeX = newLeftX - trackRect.left;
+            let newStartPercentage = (relativeX / trackRect.width) * 100;
+
+            // Clamp the value between 0 and (100 - task_width)
+            const taskWidthPercentage = parseFloat(draggedTask.style.width);
+            newStartPercentage = Math.max(0, Math.min(newStartPercentage, 100 - taskWidthPercentage));
+
+            // Apply the new position directly to the 'left' property
+            draggedTask.style.left = `${newStartPercentage}%`;
+            // --- END OF DRAG FIX ---
+        }
+    } catch (error) {
+        console.error('Error in handleMouseMove:', error);
+        // Clean up any problematic state
+        if (isResizing) {
+            document.body.classList.remove('resizing-active');
+            if (resizeHandle) resizeHandle.classList.remove('resizing');
+            if (durationPreview) durationPreview.remove();
+            isResizing = false;
+            resizeType = null;
+            resizeHandle = null;
+            durationPreview = null;
+        }
+        if (isDragging) {
+            document.body.classList.remove('dragging-active');
+            if (draggedTask) {
+                draggedTask.style.opacity = '';
+                draggedTask.style.zIndex = '';
+            }
+            isDragging = false;
+            draggedTask = null;
+        }
+    }
+}
+
+function handleMouseUp(e) {
+    try {
+        if (isResizing && resizeHandle) {
+            const trackElement = resizeHandle.closest('.task-track');
+            if (trackElement && currentSimulationData) {
+                const newPosition = calculateNewTimeFromPosition(e.clientX, trackElement);
+                if (newPosition === null) return; // Invalid simulation data
+                const taskId = resizeHandle.dataset.taskId;
+                const taskStartMinutes = parseTimeToMinutes(originalStartTime);
+                
+                let newDuration, newStartTime = originalStartTime;
+                
+                if (resizeType === 'left') {
+                    // Resizing from the left edge
+                    const newStartMinutes = newPosition;
+                    const originalEndMinutes = taskStartMinutes + originalDuration;
+                    newDuration = originalEndMinutes - newStartMinutes;
+                    
+                    // Update start time
+                    const hours = Math.floor(newStartMinutes / 60);
+                    const mins = newStartMinutes % 60;
+                    newStartTime = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+                } else {
+                    // Resizing from the right edge
+                    newDuration = newPosition - taskStartMinutes;
+                }
+                
+                // Minimum duration constraint
+                newDuration = Math.max(1, Math.round(newDuration));
+                
+                updateTaskDurationInJSON(taskId, newDuration, newStartTime);
+            }
+            
+            // Clean up resize state but don't reset styles immediately to avoid visual jump
+            document.body.classList.remove('resizing-active');
+            resizeHandle.classList.remove('resizing');
+            if (durationPreview) {
+                durationPreview.remove();
+            }
+            isResizing = false;
+            resizeType = null;
+            resizeHandle = null;
+            durationPreview = null;
+            
+        } else if (isDragging && draggedTask) {
+            const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+            const newTrack = elementBelow?.closest('.task-track');
+            const currentTrack = draggedTask.closest('.task-track');
+            
+            if (newTrack && originalTaskData) {
+                const newActorId = newTrack.dataset.actorId;
+                // Account for the drag offset when calculating final position
+                const newTime = calculateNewTimeFromPosition(e.clientX - dragOffsetX, newTrack);
+                
+                if (newActorId && newTime !== null) {
+                    // Check if position actually changed (either different track or different time)
+                    const originalTimeMinutes = parseTimeToMinutes(originalTaskData.start);
+                    if (newTrack !== currentTrack || Math.abs(newTime - originalTimeMinutes) > 1) {
+                        updateTaskInJSON(originalTaskData.taskId, newActorId, newTime);
+                    }
                 }
             }
+            
+            // Reset task appearance and clear transform immediately
+            if (draggedTask) {
+                draggedTask.style.opacity = '';
+                draggedTask.style.zIndex = '';
+                draggedTask.style.transform = '';
+            }
+            
+            // Clean up drag state immediately
+            document.body.classList.remove('dragging-active');
+            isDragging = false;
+            draggedTask = null;
+            originalTaskData = null;
         }
-        
-        // Reset task appearance and clear transform immediately
-        draggedTask.style.opacity = '';
-        draggedTask.style.zIndex = '';
-        draggedTask.style.transform = '';
-        
-        // Clean up drag state immediately
-        document.body.classList.remove('dragging-active');
-        isDragging = false;
-        draggedTask = null;
-        originalTaskData = null;
+    } catch (error) {
+        console.error('Error in handleMouseUp:', error);
+        // Clean up all drag/resize state
+        if (isResizing) {
+            document.body.classList.remove('resizing-active');
+            if (resizeHandle) resizeHandle.classList.remove('resizing');
+            if (durationPreview) durationPreview.remove();
+            isResizing = false;
+            resizeType = null;
+            resizeHandle = null;
+            durationPreview = null;
+        }
+        if (isDragging) {
+            document.body.classList.remove('dragging-active');
+            if (draggedTask) {
+                draggedTask.style.opacity = '';
+                draggedTask.style.zIndex = '';
+                draggedTask.style.transform = '';
+            }
+            isDragging = false;
+            draggedTask = null;
+            originalTaskData = null;
+        }
     }
 }
 
 function calculateNewTimeFromPosition(clientX, trackElement) {
-    const trackRect = trackElement.getBoundingClientRect();
-    const relativeX = clientX - trackRect.left;
-    const percentage = (relativeX / trackRect.width) * 100;
-    const clampedPercentage = Math.max(0, Math.min(100, percentage));
-    
-    const totalMinutes = currentSimulationData.total_duration_minutes;
-    const startTimeMinutes = currentSimulationData.start_time_minutes;
-    const newTime = startTimeMinutes + (clampedPercentage / 100) * totalMinutes;
-    
-    return Math.round(newTime);
+    try {
+        // Check if simulation data is available
+        if (!currentSimulationData || 
+            typeof currentSimulationData.total_duration_minutes === 'undefined' || 
+            typeof currentSimulationData.start_time_minutes === 'undefined') {
+            console.warn('Cannot calculate time position: Invalid simulation data');
+            return null;
+        }
+
+        const trackRect = trackElement.getBoundingClientRect();
+        const relativeX = clientX - trackRect.left;
+        const percentage = (relativeX / trackRect.width) * 100;
+        const clampedPercentage = Math.max(0, Math.min(100, percentage));
+        
+        const totalMinutes = currentSimulationData.total_duration_minutes;
+        const startTimeMinutes = currentSimulationData.start_time_minutes;
+        const newTime = startTimeMinutes + (clampedPercentage / 100) * totalMinutes;
+        
+        return Math.round(newTime);
+    } catch (error) {
+        console.error('Error in calculateNewTimeFromPosition:', error);
+        return null;
+    }
 }
 
 function updateTaskInJSON(taskId, newActorId, newTimeMinutes) {

@@ -124,6 +124,17 @@ function loadSimulationFromFileInput() {
                     return;
                 }
                 
+                // Validate simulation structure
+                if (!Array.isArray(data.simulation.objects)) {
+                    alert('Invalid simulation file: simulation.objects must be an array');
+                    return;
+                }
+                
+                if (!Array.isArray(data.simulation.tasks)) {
+                    alert('Invalid simulation file: simulation.tasks must be an array');
+                    return;
+                }
+                
                 // Load into editor
                 editor.setValue(JSON.stringify(data, null, 2));
                 clearSaveState();
@@ -152,7 +163,11 @@ function hasAcceptedDisclaimer() {
 }
 
 function setDisclaimerAccepted() {
-    localStorage.setItem('uaw-privacy-disclaimer-accepted', 'true');
+    try {
+        localStorage.setItem('uaw-privacy-disclaimer-accepted', 'true');
+    } catch (e) {
+        console.warn('Could not save privacy disclaimer acceptance:', e.message);
+    }
 }
 
 // Clear save state
@@ -274,22 +289,42 @@ function openSaveDialog() {
                 const includeMetrics = includeCustomMetricsCheckbox.checked;
 
                 if (includeMetrics) {
-                    // This part needs JSZip, which is loaded asynchronously
+                    // Check JSZip availability early
                     if (!window.JSZip) {
-                        throw new Error("JSZip library is not loaded. Cannot create a zip file.");
+                        throw new Error("JSZip library is not loaded. Cannot create a zip file with custom metrics.");
                     }
-                    const zip = new JSZip();
-                    zip.file("simulation.json", simulationContent);
                     
-                    // Assuming getCustomMetricsContent() exists and returns { catalog, validator }
-                    const { catalog, validator } = getCustomMetricsContent(); 
-                    if (catalog) { zip.file("metrics-catalog-custom.json", catalog); }
-                    if (validator) { zip.file("simulation-validator-custom.js", validator); }
-                    
-                    const blob = await zip.generateAsync({ type: "blob" });
-                    const fileName = `${fileNameBase}.zip`;
-                    downloadSimulationFile(blob, fileName);
-                    savedFileNameSpan.textContent = fileName;
+                    try {
+                        const zip = new JSZip();
+                        zip.file("simulation.json", simulationContent);
+                        
+                        // Get custom metrics content with error handling
+                        let catalog, validator;
+                        try {
+                            const customContent = getCustomMetricsContent(); 
+                            catalog = customContent.catalog;
+                            validator = customContent.validator;
+                        } catch (metricsError) {
+                            console.warn('Error getting custom metrics content:', metricsError);
+                            // Continue with just simulation file
+                        }
+                        
+                        if (catalog) { zip.file("metrics-catalog-custom.json", catalog); }
+                        if (validator) { zip.file("simulation-validator-custom.js", validator); }
+                        
+                        const blob = await zip.generateAsync({ type: "blob" });
+                        const fileName = `${fileNameBase}.zip`;
+                        downloadSimulationFile(blob, fileName);
+                        savedFileNameSpan.textContent = fileName;
+                    } catch (zipError) {
+                        console.error('ZIP creation failed:', zipError);
+                        // Fallback to JSON save
+                        const blob = new Blob([simulationContent], { type: 'application/json' });
+                        const fileName = `${fileNameBase}.json`;
+                        downloadSimulationFile(blob, fileName);
+                        savedFileNameSpan.textContent = fileName;
+                        showNotification('ZIP creation failed, saved as JSON instead', 'warning');
+                    }
 
                 } else {
                     const blob = new Blob([simulationContent], { type: 'application/json' });

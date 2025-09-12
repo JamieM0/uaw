@@ -8,6 +8,14 @@ let tutorialData = null;
 let isPlaygroundInitialized = false; // Flag to prevent double-initialization
 let autoRender = true;
 
+// Initialization state tracking
+const initState = {
+    dataLoaded: false,
+    editorReady: false,
+    monacoLoadFailed: false,
+    dataLoadFailed: false
+};
+
 // Metrics Editor Variables
 let metricsEditor = null;
 let isMetricsMode = false;
@@ -25,7 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
     continueBtn.addEventListener('click', () => {
         welcomeOverlay.style.display = 'none';
         if (dontShowAgainCheckbox.checked) {
-            localStorage.setItem('uaw-playground-welcome-seen', 'true');
+            try {
+                localStorage.setItem('uaw-playground-welcome-seen', 'true');
+            } catch (e) {
+                console.warn('Could not save welcome preference:', e.message);
+            }
         }
     });
 });
@@ -48,13 +60,19 @@ Promise.all([
     tutorialData = tutData;
     window.metricsCatalog = metData;
     window.simulationLibrary = simLibData;
+    initState.dataLoaded = true;
+    
     // Populate simulation library dropdown
     populateSimulationLibrary();
-    // Now that data is ready, try to initialize.
-    // If the editor isn't ready, this will do nothing. The editor's callback will handle it.
+    
+    // Now that data is ready, try to initialize
     attemptInitializePlayground();
 }).catch(error => {
     console.error("FETCH FAILED: Critical error loading initial data.", error);
+    initState.dataLoadFailed = true;
+    showInitializationError('Failed to load required data files. Please refresh the page.', error);
+    // Still attempt initialization in case Monaco loaded - provide fallback experience
+    attemptInitializePlayground();
 });
 
 // Core initialization function
@@ -117,9 +135,31 @@ function attemptInitializePlayground() {
     // This function can be called from either async operation (fetch or monaco).
     // It will only run the actual initialization once all conditions are met.
     if (isPlaygroundInitialized) return; // Already done, do nothing.
-    if (editor && tutorialData && window.metricsCatalog && window.simulationLibrary) {
+    
+    // Check if we can proceed with full initialization
+    if (initState.editorReady && initState.dataLoaded) {
         isPlaygroundInitialized = true; // Set flag to prevent re-entry
         initializePlayground();
+        return;
+    }
+    
+    // Handle partial initialization scenarios
+    if (initState.monacoLoadFailed && initState.dataLoaded) {
+        isPlaygroundInitialized = true;
+        initializeFallbackEditor();
+        return;
+    }
+    
+    if (initState.editorReady && initState.dataLoadFailed) {
+        isPlaygroundInitialized = true;
+        initializeMinimalEditor();
+        return;
+    }
+    
+    // If both failed, show error but try basic initialization
+    if (initState.monacoLoadFailed && initState.dataLoadFailed) {
+        showInitializationError('Playground failed to initialize. Please check your internet connection and refresh the page.');
+        return;
     }
 }
 
@@ -184,6 +224,112 @@ function setupRenderButton() {
                 renderSimulation();
             }
         });
+    }
+}
+
+// Fallback initialization when Monaco fails to load
+function initializeFallbackEditor() {
+    // Create a basic textarea fallback
+    const editorContainer = document.getElementById("json-editor");
+    if (editorContainer) {
+        editorContainer.innerHTML = '<textarea id="fallback-editor" style="width: 100%; height: 100%; font-family: monospace; font-size: 14px; border: 1px solid #ccc; padding: 10px; resize: none;"></textarea>';
+        
+        const textarea = document.getElementById('fallback-editor');
+        const defaultData = window.simulationLibrary ? 
+            JSON.stringify({ simulation: window.simulationLibrary.simulations.find(s => s.id === 'breadmaking')?.simulation || {} }, null, 2) :
+            JSON.stringify({ simulation: { tasks: [], objects: [], layout: { width: 800, height: 600 } } }, null, 2);
+        
+        textarea.value = defaultData;
+        
+        // Create a simple editor interface that mimics Monaco's getValue/setValue
+        editor = {
+            getValue: () => textarea.value,
+            setValue: (value) => { textarea.value = value; },
+            onDidChangeModelContent: (callback) => {
+                textarea.addEventListener('input', callback);
+            }
+        };
+        
+        // Add basic event handling
+        textarea.addEventListener('input', () => {
+            if (autoRender) {
+                debounceRender();
+            } else {
+                updateDynamicPanels();
+            }
+            validateJSON();
+        });
+    }
+    
+    // Initialize core playground features
+    setupTabs();
+    updateAutoRenderUI();
+    initializeResizeHandles();
+    initializeDragAndDrop();
+    setupSaveLoadButtons();
+    setupRenderButton();
+    renderSimulation();
+    validateJSON();
+    
+    showInitializationError('Monaco editor failed to load. Using basic text editor.', null, 'warning');
+}
+
+// Minimal initialization when data files fail to load
+function initializeMinimalEditor() {
+    // Initialize with basic sample data
+    const basicSample = {
+        simulation: {
+            tasks: [{ id: 'task1', name: 'Example Task', emoji: '📋', duration: 60, startTime: 0 }],
+            objects: [{ id: 'obj1', name: 'Example Object', emoji: '🔧', x: 100, y: 100 }],
+            layout: { width: 800, height: 600 }
+        }
+    };
+    
+    if (editor) {
+        editor.setValue(JSON.stringify(basicSample, null, 2));
+    }
+    
+    // Initialize basic functionality
+    setupTabs();
+    updateAutoRenderUI();
+    setupRenderButton();
+    renderSimulation();
+    
+    showInitializationError('Data files failed to load. Some features may be limited.', null, 'warning');
+}
+
+// Error display function
+function showInitializationError(message, error = null, severity = 'error') {
+    const errorContainer = document.getElementById('validation-results') || document.getElementById('editor-panel');
+    if (!errorContainer) return;
+    
+    const errorDiv = document.createElement('div');
+    errorDiv.className = `initialization-error ${severity}`;
+    errorDiv.style.cssText = `
+        background: ${severity === 'error' ? '#fee' : '#ffc'};
+        border: 1px solid ${severity === 'error' ? '#f88' : '#fa0'};
+        color: ${severity === 'error' ? '#c00' : '#860'};
+        padding: 12px;
+        margin: 10px 0;
+        border-radius: 4px;
+        font-size: 14px;
+    `;
+    
+    errorDiv.innerHTML = `
+        <strong>${severity === 'error' ? '❌' : '⚠️'} Initialization ${severity === 'error' ? 'Error' : 'Warning'}</strong><br>
+        ${message}
+        ${error ? `<br><small>Technical details: ${error.message || error}</small>` : ''}
+    `;
+    
+    errorContainer.insertBefore(errorDiv, errorContainer.firstChild);
+    
+    // Auto-remove warnings after 10 seconds
+    if (severity === 'warning') {
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.parentNode.removeChild(errorDiv);
+            }
+        }, 10000);
     }
 }
 

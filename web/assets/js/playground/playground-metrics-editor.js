@@ -1,6 +1,46 @@
 // Playground Metrics Editor - Custom metrics creation and management
 // Universal Automation Wiki - Simulation Playground
 
+// Safe localStorage wrapper with user notification
+function safeSetItem(key, value) {
+    try {
+        localStorage.setItem(key, value);
+        return true;
+    } catch (e) {
+        if (e.name === 'QuotaExceededError') {
+            showStorageQuotaWarning();
+            console.error('LocalStorage quota exceeded when saving key:', key);
+        } else {
+            console.error('Error saving to localStorage:', e.message);
+        }
+        return false;
+    }
+}
+
+// Show visual warning to user about storage issues
+function showStorageQuotaWarning() {
+    // Create or show a warning banner
+    let warningBanner = document.getElementById('storage-quota-warning');
+    if (!warningBanner) {
+        warningBanner = document.createElement('div');
+        warningBanner.id = 'storage-quota-warning';
+        warningBanner.innerHTML = `
+            <div style="background: #ff6b35; color: white; padding: 10px; text-align: center; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                ⚠️ Storage Full: Your work cannot be automatically saved. Consider clearing browser data or reducing file size.
+                <button onclick="document.getElementById('storage-quota-warning').remove()" style="margin-left: 15px; background: white; color: #ff6b35; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Dismiss</button>
+            </div>
+        `;
+        document.body.appendChild(warningBanner);
+        
+        // Auto-dismiss after 10 seconds
+        setTimeout(() => {
+            if (warningBanner.parentNode) {
+                warningBanner.remove();
+            }
+        }, 10000);
+    }
+}
+
 // Setup metrics mode toggle functionality
 function setupMetricsMode() {
     
@@ -21,7 +61,7 @@ function setupMetricsMode() {
     // Add click event listener
     toggleBtn.addEventListener("click", () => {
         isMetricsMode = !isMetricsMode;
-        localStorage.setItem('uaw-metrics-mode', isMetricsMode.toString());
+        safeSetItem('uaw-metrics-mode', isMetricsMode.toString());
         updateMetricsMode();
     });
 }
@@ -69,7 +109,6 @@ function updateMetricsMode() {
         initializeMetricsEditor();
         
         // Re-initialize resize handles since metrics mode handles are now visible
-        console.log("RESIZE-DEBUG: Re-initializing resize handles for metrics mode");
         if (typeof initializeResizeHandles === 'function') {
             initializeResizeHandles();
         }
@@ -299,7 +338,7 @@ function initializeMetricsCatalogEditor() {
         
         window.metricsCatalogEditor.onDidChangeModelContent(() => {
             const content = window.metricsCatalogEditor.getValue();
-            localStorage.setItem('uaw-metrics-catalog-custom', content);
+            safeSetItem('uaw-metrics-catalog-custom', content);
         });
     });
 }
@@ -376,7 +415,7 @@ function validateSampleCheck(metric) {
         
         window.metricsValidatorEditor.onDidChangeModelContent(() => {
             const content = window.metricsValidatorEditor.getValue();
-            localStorage.setItem('uaw-metrics-validator-custom', content);
+            safeSetItem('uaw-metrics-validator-custom', content);
         });
     });
 }
@@ -840,11 +879,11 @@ function \${functionName}(metric) {
 function insertMetricIntoCatalog(catalogEntry) {
     const customCatalog = getCustomMetricsCatalog();
     customCatalog.push(catalogEntry);
-    localStorage.setItem('uaw-metrics-catalog-custom', JSON.stringify(customCatalog, null, 2));
+    safeSetItem('uaw-metrics-catalog-custom', JSON.stringify(customCatalog, null, 2));
 }
 
 function insertFunctionIntoValidator(functionCode) {
     const currentValidator = getCustomValidatorCode();
     const newValidator = currentValidator + '\n\n' + functionCode;
-    localStorage.setItem('uaw-metrics-validator-custom', newValidator);
+    safeSetItem('uaw-metrics-validator-custom', newValidator);
 }

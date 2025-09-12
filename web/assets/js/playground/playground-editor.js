@@ -1,6 +1,73 @@
 // Playground Editor - Monaco editor initialization and management
 // Universal Automation Wiki - Simulation Playground
 
+// LocalStorage quota checking utility
+function canStoreInLocalStorage(key, value) {
+    try {
+        // Check if localStorage is available
+        if (!window.localStorage) return false;
+        
+        // Calculate size of the data
+        const dataSize = new Blob([JSON.stringify(value)]).size;
+        const keySize = new Blob([key]).size;
+        const totalSize = dataSize + keySize;
+        
+        // Rough localStorage quota check (most browsers have 5-10MB)
+        // We'll be conservative and warn if storing more than 4MB total
+        const currentUsage = JSON.stringify(localStorage).length;
+        const maxSafeSize = 4 * 1024 * 1024; // 4MB
+        
+        return (currentUsage + totalSize) < maxSafeSize;
+    } catch (e) {
+        return false;
+    }
+}
+
+// Safe localStorage wrapper with error handling
+function safeSetItem(key, value) {
+    try {
+        if (!canStoreInLocalStorage(key, value)) {
+            console.warn(`Cannot save to localStorage: quota would be exceeded for key "${key}"`);
+            showStorageQuotaWarning();
+            return false;
+        }
+        localStorage.setItem(key, value);
+        return true;
+    } catch (e) {
+        if (e.name === 'QuotaExceededError') {
+            console.error('LocalStorage quota exceeded when saving key:', key);
+            showStorageQuotaWarning();
+        } else {
+            console.error('Error saving to localStorage:', e.message);
+        }
+        return false;
+    }
+}
+
+// Show visual warning to user about storage issues
+function showStorageQuotaWarning() {
+    // Create or show a warning banner
+    let warningBanner = document.getElementById('storage-quota-warning');
+    if (!warningBanner) {
+        warningBanner = document.createElement('div');
+        warningBanner.id = 'storage-quota-warning';
+        warningBanner.innerHTML = `
+            <div style="background: #ff6b35; color: white; padding: 10px; text-align: center; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                ⚠️ Storage Full: Your work cannot be automatically saved. Consider clearing browser data or reducing file size.
+                <button onclick="document.getElementById('storage-quota-warning').remove()" style="margin-left: 15px; background: white; color: #ff6b35; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Dismiss</button>
+            </div>
+        `;
+        document.body.appendChild(warningBanner);
+        
+        // Auto-dismiss after 10 seconds
+        setTimeout(() => {
+            if (warningBanner.parentNode) {
+                warningBanner.remove();
+            }
+        }, 10000);
+    }
+}
+
 // Sample simulation data with resources
 const sampleSimulation = {
     simulation: {
@@ -273,12 +340,40 @@ const sampleSimulation = {
     }
 };
 
-// Monaco editor initialization
+// Monaco editor initialization with timeout and error handling
 require.config({
     paths: { vs: "https://unpkg.com/monaco-editor@0.44.0/min/vs" },
 });
 
+// Set a timeout for Monaco loading
+const monacoTimeout = setTimeout(() => {
+    console.error('Monaco editor loading timed out');
+    if (typeof initState !== 'undefined') {
+        initState.monacoLoadFailed = true;
+        if (typeof attemptInitializePlayground === 'function') {
+            attemptInitializePlayground();
+        }
+    }
+}, 10000); // 10 second timeout
+
+// Handle require.js errors
+if (typeof require !== 'undefined' && require.onError) {
+    require.onError = function (err) {
+        console.error('RequireJS loading error:', err);
+        clearTimeout(monacoTimeout);
+        if (typeof initState !== 'undefined') {
+            initState.monacoLoadFailed = true;
+            if (typeof attemptInitializePlayground === 'function') {
+                attemptInitializePlayground();
+            }
+        }
+    };
+}
+
 require(["vs/editor/editor.main"], function () {
+    // Clear the timeout since Monaco loaded successfully
+    clearTimeout(monacoTimeout);
+    
     // Try to load saved content from localStorage first
     const savedContent = localStorage.getItem('uaw-json-editor-content');
     let initialData;
@@ -288,9 +383,9 @@ require(["vs/editor/editor.main"], function () {
             // Validate that saved content is valid JSON
             JSON.parse(savedContent);
             initialData = savedContent;
-            console.log('✅ Loaded saved JSON editor content from localStorage');
         } catch (e) {
-            console.warn('⚠️ Invalid saved JSON content, using default');
+            console.warn('Corrupted localStorage data detected, clearing:', e.message);
+            localStorage.removeItem('uaw-json-editor-content');
             initialData = null;
         }
     }
@@ -358,14 +453,17 @@ require(["vs/editor/editor.main"], function () {
             try {
                 const currentContent = editor.getValue();
                 JSON.parse(currentContent); // Validate JSON before saving
-                localStorage.setItem('uaw-json-editor-content', currentContent);
+                safeSetItem('uaw-json-editor-content', currentContent);
             } catch (e) {
                 // Don't save invalid JSON
             }
         }, 1000);
     });
 
-    // Now that the editor is ready, try to initialize the playground.
+    // Mark editor as ready and try to initialize the playground
+    if (typeof initState !== 'undefined') {
+        initState.editorReady = true;
+    }
     attemptInitializePlayground();
 });
 
@@ -394,11 +492,15 @@ function validateJSON() {
         // Get merged catalog (built-in + custom metrics)
         const mergedCatalog = getMergedMetricsCatalog();
         
-        if (mergedCatalog && mergedCatalog.length > 0 && window.SimulationValidator) {
+        // Only run simulation metrics validation if auto-validation is enabled
+        if (window.autoValidationEnabled !== false && mergedCatalog && mergedCatalog.length > 0 && window.SimulationValidator) {
             const validator = new window.SimulationValidator(parsed);
             const customValidator = getCustomValidatorCode();
             const validationResults = validator.runChecks(mergedCatalog, customValidator);
             displayValidationResults(validationResults);
+        } else if (window.autoValidationEnabled === false) {
+            // Clear validation results when auto-validation is disabled
+            displayValidationResults([]);
         }
 
         // Clear any syntax error highlighting
@@ -429,6 +531,34 @@ function validateJSON() {
             }
         }
         
+        return false;
+    }
+}
+
+// Manual validation function for when auto-validation is disabled
+function runManualValidation() {
+    const jsonText = editor.getValue();
+
+    if (!jsonText.trim()) {
+        return false;
+    }
+
+    try {
+        const parsed = JSON.parse(jsonText);
+        
+        // Get merged catalog (built-in + custom metrics)
+        const mergedCatalog = getMergedMetricsCatalog();
+        
+        if (mergedCatalog && mergedCatalog.length > 0 && window.SimulationValidator) {
+            const validator = new window.SimulationValidator(parsed);
+            const customValidator = getCustomValidatorCode();
+            const validationResults = validator.runChecks(mergedCatalog, customValidator);
+            displayValidationResults(validationResults);
+        }
+        
+        return true;
+    } catch (e) {
+        // JSON is invalid, don't run simulation validation
         return false;
     }
 }

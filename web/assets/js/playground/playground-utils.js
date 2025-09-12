@@ -20,13 +20,18 @@ function cleanDisplayName(name) {
 function getCurrentSimulationData() {
     try {
         const jsonText = editor.getValue().trim();
-        if (jsonText) {
-            return JSON.parse(jsonText);
+        if (!jsonText) {
+            return null;
         }
+        return JSON.parse(jsonText);
     } catch (e) {
-        // Invalid JSON
+        console.warn('Failed to parse simulation JSON:', e.message);
+        // Update UI to show parse error if possible
+        if (typeof updateJsonStatus === 'function') {
+            updateJsonStatus(false, e.message);
+        }
+        return null;
     }
-    return null;
 }
 
 // Find object state modifier at time

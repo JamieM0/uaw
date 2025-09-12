@@ -191,3 +191,54 @@ async function initializeEmojiPicker() {
         console.error("INIT: Emoji picker initialization error:", error);
     }
 }
+
+// Initialize auto-validation toggle functionality
+function initializeAutoValidationToggle() {
+    // Initialize auto-validation as enabled by default
+    if (window.autoValidationEnabled === undefined) {
+        window.autoValidationEnabled = true;
+    }
+
+    const toggleBtn = document.getElementById('toggle-auto-validate-btn');
+    const runValidationBtn = document.getElementById('run-validation-btn');
+    
+    function updateToggleUI() {
+        if (window.autoValidationEnabled) {
+            toggleBtn.textContent = 'Disable Auto-Validate';
+            runValidationBtn.style.display = 'none';
+        } else {
+            toggleBtn.textContent = 'Enable Auto-Validate';
+            runValidationBtn.style.display = 'inline-block';
+        }
+    }
+
+    // Set initial UI state
+    updateToggleUI();
+
+    // Handle toggle button click
+    toggleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelector('.dropdown-content').style.display = 'none'; // Hide dropdown
+        
+        window.autoValidationEnabled = !window.autoValidationEnabled;
+        updateToggleUI();
+        
+        // If auto-validation was re-enabled, run validation immediately
+        if (window.autoValidationEnabled && typeof validateJSON === 'function') {
+            validateJSON();
+        }
+    });
+
+    // Handle manual run validation button click
+    runValidationBtn.addEventListener('click', () => {
+        if (typeof runManualValidation === 'function') {
+            runManualValidation();
+        }
+    });
+}
+
+// Initialize toggle when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    // Wait a bit to ensure other components are initialized
+    setTimeout(initializeAutoValidationToggle, 100);
+});

@@ -108,6 +108,7 @@
                 <p>This playground is an interactive tool for testing and visualising automation workflows.</p>
                 <p>You can create, edit, and simulate complex processes to understand how they work and identify potential improvements.</p>
                 <p>The Universal Automation Wiki (UAW) project, including this playground, is open source. We welcome contributions and feedback from the community. You can find the project on <a href="https://github.com/JamieM0/uaw" target="_blank">GitHub</a>.</p>
+                <p>Please save your work regularly. The simulation playground is in early development, and we recommend keeping backups of your work. Remember some work may be stored in separate files ('metrics-catalog-custom.json' and 'simulation-validator-custom.js').</p>
                 <p><strong>Tip:</strong> You can use emojis in any text field!
                 <ul>
                     <li>Press <strong>Ctrl + .</strong> or <strong>Cmd + .</strong> to open the emoji selector.</li>
@@ -210,6 +211,7 @@
                             <div class="dropdown-content">
                                 <a href="#" id="start-tutorial-btn">Start Tutorial</a>
                                 <a href="#" id="start-llm-btn">Experimental LLM</a>
+                                <a href="#" id="toggle-auto-validate-btn">Disable Auto-Validate</a>
                             </div>
                         </div>
 
@@ -583,6 +585,7 @@
                                         <span class="stat-count success" id="success-metrics-count">0</span>
                                         <span class="stat-label">Passed</span>
                                     </span>
+                                    <button id="run-validation-btn" class="btn-primary" style="display: none; margin-left: 1rem;" title="Run validation manually">Run Validation</button>
                                 </div>
                                 
                                 <div class="metrics-mode-controls" id="metrics-mode-controls" style="display: none;">
