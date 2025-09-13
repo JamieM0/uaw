@@ -107,7 +107,7 @@ function displayValidationGroup(groupId, results, icon, collapsedByDefault = fal
             }
             
             return `
-                <div class="validation-result-item ${result.status}" data-metric-id="${result.metricId}">
+                <div class="validation-result-item ${result.status}" data-metric-id="${result.metricId}" data-clickable="true">
                     <div class="validation-result-status ${result.status}"></div>
                     <div class="validation-result-details">
                         <div class="validation-result-name">
@@ -204,6 +204,17 @@ function setupValidationInteractions() {
                 e.stopPropagation(); // Prevent event bubbling
             }
             
+            // Handle validation result item clicks
+            if (e.target.closest('.validation-result-item[data-clickable="true"]')) {
+                const resultItem = e.target.closest('.validation-result-item');
+                const message = resultItem.querySelector('.validation-message-inline');
+                if (message) {
+                    const messageText = message.textContent.replace('— ', '');
+                    jumpToValidationTarget(messageText);
+                    e.stopPropagation(); // Prevent event bubbling
+                }
+            }
+
             // Handle passed group collapsible
             if (e.target.closest('#passed-group') && !e.target.closest('.validation-result-item')) {
                 const content = document.getElementById('passed-group-content');
@@ -600,7 +611,7 @@ function refreshValidationDisplay() {
             displayValidationError('No simulation data to validate');
             return;
         }
-        
+
         // Re-run validation with current data
         if (isMetricsMode && typeof runCustomValidation === 'function') {
             // In metrics mode, use custom validation
@@ -624,5 +635,77 @@ function refreshValidationDisplay() {
     } catch (e) {
         console.error('Error refreshing validation display:', e);
         displayValidationError('Error refreshing validation display');
+    }
+}
+
+// Jump to the referenced JSON location from a validation message
+function jumpToValidationTarget(message) {
+    if (!message) return;
+
+    // Extract task or object IDs from validation messages using various patterns
+    let targetId = null;
+    let targetType = null;
+
+    // Pattern: Task 'task_id'
+    let match = message.match(/Task '([^']+)'/);
+    if (match) {
+        targetId = match[1];
+        targetType = 'task';
+    }
+
+    // Pattern: Object 'object_id'
+    if (!match) {
+        match = message.match(/Object '([^']+)'/);
+        if (match) {
+            targetId = match[1];
+            targetType = 'object';
+        }
+    }
+
+    // Pattern: Actor 'actor_id'
+    if (!match) {
+        match = message.match(/Actor '([^']+)'/);
+        if (match) {
+            targetId = match[1];
+            targetType = 'object';
+        }
+    }
+
+    // Pattern: Equipment 'equipment_id'
+    if (!match) {
+        match = message.match(/Equipment '([^']+)'/);
+        if (match) {
+            targetId = match[1];
+            targetType = 'object';
+        }
+    }
+
+    // Pattern: Resource 'resource_id'
+    if (!match) {
+        match = message.match(/Resource '([^']+)'/);
+        if (match) {
+            targetId = match[1];
+            targetType = 'object';
+        }
+    }
+
+    // Pattern: Product 'product_id'
+    if (!match) {
+        match = message.match(/Product '([^']+)'/);
+        if (match) {
+            targetId = match[1];
+            targetType = 'object';
+        }
+    }
+
+    // If we found a target, try to jump to it
+    if (targetId && targetType) {
+        if (targetType === 'task' && typeof scrollToTaskInJSON === 'function') {
+            scrollToTaskInJSON(targetId);
+        } else if (targetType === 'object' && typeof scrollToObjectInJSON === 'function') {
+            scrollToObjectInJSON(targetId);
+        }
+    } else {
+        console.log('No jumpable target found in validation message:', message);
     }
 }

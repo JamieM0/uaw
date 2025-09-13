@@ -11,9 +11,11 @@ The Playground is designed to give you immediate feedback on your simulation des
 The Playground interface is divided into three main panels:
 
 1.  **JSON Editor Panel (Left):** This panel contains the raw `simulation.json` data for your process. It uses the Monaco editor, providing features like syntax highlighting, auto-formatting, and error checking for the JSON format.
-2.  **Simulation Panel (Right):** This is where the simulation is visualized. It has two tabs:
+2.  **Simulation Panel (Right):** This is where the simulation is visualized. It has multiple tabs:
     *   **Simulation Render:** Displays an interactive timeline of the process, showing actors, tasks, and their durations.
     *   **Space Editor:** Provides a 2D canvas for defining the physical layout and locations used in the simulation.
+    *   **Digital Space:** Advanced 3D editor for digital locations and digital objects with spatial manipulation capabilities.
+    *   **Display Editor:** Interface for creating and managing digital displays and screen elements.
 3.  **Validation Panel (Bottom):** This panel displays the results of running the simulation against the project's metrics catalog. It shows a summary of errors, warnings, suggestions, and passed checks, helping you identify issues and areas for improvement in your simulation.
 
 ## Interacting with the Simulation
@@ -29,6 +31,241 @@ The Playground offers several ways to interact with and modify your simulation d
 ### Adding Objects and Tasks
 
 You can use the `+ Object` and `+ Task` buttons in the header to open modals for adding new elements to your simulation. These modals provide a user-friendly form for entering the required data, which is then inserted into the `simulation.json` file.
+
+## Digital Space Editor
+
+The Digital Space Editor provides a way to model digital locations and digital objects. This is essential for simulating modern digital processes.
+
+### Accessing the Digital Space Editor
+
+1. Click the **Digital Space** tab in the Simulation Panel
+2. The environment will initialize with your current simulation objects
+3. Drag and Drop to create and re-arrange digital locations
+
+### Digital Space Features
+
+#### Object Placement and Management
+- **Drag and Drop:** Select digital objects from the object palette and place them in the space
+- **Snapping:** X and Z axis snapping for precise positioning
+- **Layer Organization:** Organize objects into layers for complex scenes
+
+#### Navigation Controls
+- **Pan:** Hold space and move the mouse, or click and hold outside a location while moving the mouse to pan
+- **Zoom:** Mouse wheel to zoom in and out (or use the zoom buttons) - zoom sensitivity can be adjusted
+- **Zoom-to-fit:** Tap the space bar to zoom-to-fit. Or use the 3rd zoom button.
+
+#### Digital Object Types
+
+**Digital Location**
+Digital locations represent virtual spaces that exist within digital systems:
+
+```json
+{
+  "id": "virtual_warehouse",
+  "type": "digital_location",
+  "name": "Virtual Warehouse Environment",
+  "properties": {
+    "environment_type": "warehouse_simulation",
+    "coordinate_system": "cartesian_3d",
+    "bounds": {
+      "x": { "min": -50, "max": 50 },
+      "y": { "min": 0, "max": 20 },
+      "z": { "min": -50, "max": 50 }
+    },
+    "lighting": "industrial",
+    "physics_enabled": true
+  }
+}
+```
+
+**Digital Object**
+Digital objects are virtual items that exist and interact within digital spaces:
+
+```json
+{
+  "id": "inventory_scanner",
+  "type": "digital_object",
+  "name": "Digital Inventory Scanner",
+  "properties": {
+    "digital_type": "scanner_interface",
+    "position": { "x": 10, "y": 5, "z": -15 },
+    "rotation": { "x": 0, "y": 45, "z": 0 },
+    "scale": { "x": 1, "y": 1, "z": 1 },
+    "interactive": true,
+    "scan_radius": 5.0,
+    "digital_location": "virtual_warehouse"
+  }
+}
+```
+
+### Digital Space Workflow Example
+
+```json
+{
+  "simulation": {
+    "objects": [
+      {
+        "id": "virtual_warehouse",
+        "type": "digital_location",
+        "name": "Warehouse Management System",
+        "properties": {
+          "environment_type": "logistics_hub",
+          "coordinate_system": "cartesian_3d"
+        }
+      },
+      {
+        "id": "inventory_bot",
+        "type": "digital_object",
+        "name": "Automated Inventory Bot",
+        "properties": {
+          "digital_type": "autonomous_agent",
+          "position": { "x": 0, "y": 0, "z": 0 },
+          "movement_speed": 2.5,
+          "digital_location": "virtual_warehouse"
+        }
+      }
+    ],
+    "tasks": [
+      {
+        "id": "scan_inventory",
+        "actor_id": "inventory_bot",
+        "start": "08:00",
+        "duration": 30,
+        "location": "virtual_warehouse",
+        "interactions": [
+          {
+            "object_id": "inventory_bot",
+            "property_changes": {
+              "position": {
+                "from": { "x": 0, "y": 0, "z": 0 },
+                "to": { "x": 25, "y": 0, "z": 10 }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## Display Editor
+
+The Display Editor allows you to create and manage digital displays and screen elements within your simulation. This is crucial for modeling modern digital interfaces and human-computer interaction workflows.
+
+### Display Object Type
+
+Displays represent screens, monitors, or any digital interface elements:
+
+```json
+{
+  "id": "control_monitor",
+  "type": "display",
+  "name": "Production Control Monitor",
+  "properties": {
+    "display_type": "control_interface",
+    "resolution": { "width": 1920, "height": 1080 },
+    "location": "control_room",
+    "viewport": {
+      "x": 0, "y": 0, "width": 1920, "height": 1080
+    },
+    "active": true
+  }
+}
+```
+
+### Screen Element Object Type
+
+Screen elements are interactive components that exist within displays:
+
+```json
+{
+  "id": "temperature_gauge",
+  "type": "screen_element",
+  "name": "Oven Temperature Display",
+  "properties": {
+    "element_type": "label",
+    "display_id": "control_monitor",
+    "position": { "x": 100, "y": 50 },
+    "dimensions": { "width": 200, "height": 30 },
+    "text": "Temperature: 180°C",
+    "font_size": 16,
+    "color": "red",
+    "visible": true
+  }
+}
+```
+
+### Display Editor Features
+
+#### Screen Element Types
+- **Window:** Container elements that represent application windows or main interface areas
+- **Button:** Interactive clickable elements for user input and actions
+- **Textbox:** Input fields for text entry and editing
+- **Label:** Static text elements for displaying information and field labels
+- **Panel:** Container elements for grouping related interface components
+- **Menu:** Navigation elements including menu bars, context menus, and dropdown menus
+- **Dialog:** Modal windows for user interactions, confirmations, and data entry
+
+#### Display Management
+- **Element Positioning:** Drag and drop elements within display boundaries
+- **Layering:** Z-index management for overlapping elements
+- **Responsive Layout:** Automatic scaling for different display resolutions
+- **Animation Timeline:** Sync screen element changes with task timeline
+
+### Complete Display Example
+
+```json
+{
+  "simulation": {
+    "objects": [
+      {
+        "id": "production_dashboard",
+        "type": "display",
+        "name": "Production Line Dashboard",
+        "properties": {
+          "display_type": "dashboard",
+          "resolution": { "width": 1920, "height": 1080 },
+          "location": "control_room",
+          "active": true
+        }
+      },
+      {
+        "id": "production_counter",
+        "type": "screen_element",
+        "name": "Units Produced Counter",
+        "properties": {
+          "element_type": "label",
+          "display_id": "production_dashboard",
+          "position": { "x": 50, "y": 50 },
+          "dimensions": { "width": 300, "height": 80 },
+          "text": "0 units",
+          "font_size": 24,
+          "color": "green",
+          "visible": true
+        }
+      }
+    ],
+    "tasks": [
+      {
+        "id": "update_production_count",
+        "actor_id": "system",
+        "start": "09:30",
+        "duration": 1,
+        "interactions": [
+          {
+            "object_id": "production_counter",
+            "property_changes": {
+              "text": { "from": "0 units", "to": "1 unit" },
+              "color": { "from": "green", "to": "blue" }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+```
 
 ## The `simulation.json` Schema: A Deep Dive
 
@@ -71,7 +308,7 @@ The `objects` array is where you define every person, piece of equipment, raw ma
 
 #### Standard Object Types
 
-The system has four standard object types, each with its own recommended `properties`.
+The system supports multiple object types, each with its own recommended `properties`.
 
 **1. `actor`**
 An `actor` is a person or agent that performs tasks.
@@ -127,12 +364,14 @@ A `resource` is a consumable material used in the process.
   "properties": {
     "unit": "kg",
     "quantity": 50,
+    "cost_per_unit": 0.50,
     "location": "prep_area"
   }
 }
 ```
 *   `unit`: The unit of measurement (e.g., `kg`, `liter`, `g`).
 *   `quantity`: The starting amount of the resource. This can be modified by tasks.
+*   `cost_per_unit`: Cost per unit for economic analysis.
 *   `location`: The resource's storage location.
 
 **4. `product`**
@@ -148,16 +387,95 @@ A `product` is the output or an intermediate item created during the process.
   "properties": {
     "unit": "batch",
     "quantity": 0,
+    "revenue_per_unit": 5.50,
     "location": "prep_area"
   }
 }
 ```
 *   `unit`: The unit of measurement for the product.
 *   `quantity`: The initial quantity, which is typically `0`. Tasks will increase this value.
+*   `revenue_per_unit`: Revenue per unit for economic analysis.
+
+**5. `digital_location`**
+A `digital_location` represents virtual spaces within digital systems.
+
+*Example:*
+```json
+{
+  "id": "virtual_control_room",
+  "type": "digital_location",
+  "name": "Virtual Control Center",
+  "properties": {
+    "environment_type": "control_interface",
+    "coordinate_system": "cartesian_3d",
+    "bounds": {
+      "x": { "min": -10, "max": 10 },
+      "y": { "min": 0, "max": 5 },
+      "z": { "min": -10, "max": 10 }
+    }
+  }
+}
+```
+
+**6. `digital_object`**
+A `digital_object` represents virtual items that exist within digital spaces.
+
+*Example:*
+```json
+{
+  "id": "data_processor",
+  "type": "digital_object",
+  "name": "Real-time Data Processor",
+  "properties": {
+    "digital_type": "processing_unit",
+    "position": { "x": 0, "y": 2, "z": 0 },
+    "processing_capacity": 1000,
+    "digital_location": "virtual_control_room"
+  }
+}
+```
+
+**7. `display`**
+A `display` represents screens, monitors, or digital interface elements.
+
+*Example:*
+```json
+{
+  "id": "main_dashboard",
+  "type": "display",
+  "name": "Production Dashboard",
+  "properties": {
+    "display_type": "dashboard",
+    "resolution": { "width": 1920, "height": 1080 },
+    "location": "control_room",
+    "active": true
+  }
+}
+```
+
+**8. `screen_element`**
+A `screen_element` represents interactive components within displays.
+
+*Example:*
+```json
+{
+  "id": "status_indicator",
+  "type": "screen_element",
+  "name": "System Status Light",
+  "properties": {
+    "element_type": "indicator",
+    "display_id": "main_dashboard",
+    "position": { "x": 100, "y": 100 },
+    "dimensions": { "width": 50, "height": 50 },
+    "color": "green",
+    "visible": true
+  }
+}
+```
 
 #### Custom Object Types
 
-You are not limited to the four standard types. The system is flexible, allowing you to define your own object types. This is useful for creating more specialized and realistic simulations.
+You are not limited to the standard types. The system is flexible, allowing you to define your own object types. This is useful for creating more specialized and realistic simulations.
 
 **Why create a custom type?**
 Imagine you are simulating a delivery service. You could create a `vehicle` type with properties like `fuel_level` and `max_speed`.
@@ -250,7 +568,24 @@ Use this to increase or decrease a number, like a resource's `quantity`.
   }
 ]
 ```
-This is more flexible than `from`/`to` for numerical values, as you don't need to know the starting quantity.
+
+**C) Changing Position (3D Coordinates)**
+For digital objects, you can change their position in 3D space:
+
+*Example:* Moving a digital object in virtual space.
+```json
+"interactions": [
+  {
+    "object_id": "inventory_bot",
+    "property_changes": {
+      "position": {
+        "from": { "x": 0, "y": 0, "z": 0 },
+        "to": { "x": 25, "y": 0, "z": 10 }
+      }
+    }
+  }
+]
+```
 
 #### 2. `add_objects`
 

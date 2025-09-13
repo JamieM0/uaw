@@ -380,7 +380,7 @@ class DigitalSpaceEditor {
                         ${this.digitalObjects.map(obj => `
                             <div class="object-item" data-object-id="${obj.id}">
                                 <span class="object-icon">${this.getObjectIcon(obj.type)}</span>
-                                <span class="object-name">${obj.name}</span>
+                                <span class="object-name clickable" onclick="digitalSpaceEditor.renameDigitalObject('${obj.id}')" title="Click to rename">${obj.name}</span>
                                 <span class="object-location">${this.getLocationName(obj.location_id)}</span>
                                 <button class="btn-danger-small" onclick="digitalSpaceEditor.deleteDigitalObject('${obj.id}')">×</button>
                             </div>
@@ -889,10 +889,18 @@ class DigitalSpaceEditor {
     }
 
     createNewDigitalObject() {
+        // Prompt user for object name
+        const objectName = prompt('Enter a name for the digital object:', 'New Digital Object');
+        
+        // If user cancels or enters empty name, don't create object
+        if (!objectName || objectName.trim() === '') {
+            return;
+        }
+
         const objectId = 'digital_obj_' + Date.now();
         const newObject = {
             id: objectId,
-            name: 'New Digital Object',
+            name: objectName.trim(),
             type: 'file',
             location_id: this.digitalLocations.length > 0 ? this.digitalLocations[0].id : null,
             size_mb: 1,
@@ -906,6 +914,23 @@ class DigitalSpaceEditor {
         };
 
         this.digitalObjects.push(newObject);
+        this.renderPropertiesPanel();
+        this.updateSimulationJson();
+    }
+
+    renameDigitalObject(objectId) {
+        const object = this.digitalObjects.find(obj => obj.id === objectId);
+        if (!object) return;
+
+        const newName = prompt('Enter a new name for the digital object:', object.name);
+        
+        // If user cancels or enters empty name, don't rename
+        if (!newName || newName.trim() === '') {
+            return;
+        }
+
+        object.name = newName.trim();
+        object.modified_time = new Date().toISOString();
         this.renderPropertiesPanel();
         this.updateSimulationJson();
     }

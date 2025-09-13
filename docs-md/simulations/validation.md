@@ -57,6 +57,144 @@ The process is fully automated in the Simulation Playground:
 
 While not a direct metric, the playground can calculate a "Business Readiness" score based on the validation results. This provides a high-level indicator of the simulation's quality, weighted by the severity of the issues found.
 
+## Economic Validation
+
+The UAW system includes comprehensive economic validation to ensure simulations are financially realistic and profitable. This is critical for business decision-making and investment analysis.
+
+### Profitability Analysis
+
+The **Negative Profitability** metric (`economic.profitability.negative_margin`) performs a complete economic analysis:
+
+**Calculation Formula:**
+- **Total Revenue** = Sum of (revenue_per_unit × quantity produced) for final products
+- **Total Costs** = Labor Costs + Resource Costs
+- **Labor Costs** = Sum of (actor cost_per_hour × task duration in hours)
+- **Resource Costs** = Sum of (resource cost_per_unit × quantity consumed)
+- **Profit** = Total Revenue - Total Costs
+
+### Economic Properties Setup
+
+#### Actor Labor Costs
+Actors require a `cost_per_hour` property for labor cost calculation:
+
+```json
+{
+  "id": "baker",
+  "type": "actor",
+  "name": "Professional Baker",
+  "properties": {
+    "cost_per_hour": 25.00
+  }
+}
+```
+
+#### Resource Costs
+Resources and materials need `cost_per_unit` for consumption costs:
+
+```json
+{
+  "id": "flour",
+  "type": "resource",
+  "name": "All-Purpose Flour",
+  "properties": {
+    "cost_per_unit": 0.50,
+    "quantity": 100
+  }
+}
+```
+
+#### Product Revenue
+Products need `revenue_per_unit` to generate revenue:
+
+```json
+{
+  "id": "baked_bread",
+  "type": "product",
+  "name": "Freshly Baked Bread",
+  "properties": {
+    "revenue_per_unit": 5.50,
+    "quantity": 0
+  }
+}
+```
+
+### Complete Economic Example
+
+```json
+{
+  "simulation": {
+    "objects": [
+      {
+        "id": "baker",
+        "type": "actor",
+        "properties": { "cost_per_hour": 20.00 }
+      },
+      {
+        "id": "flour",
+        "type": "resource",
+        "properties": {
+          "cost_per_unit": 0.50,
+          "quantity": 10
+        }
+      },
+      {
+        "id": "baked_bread",
+        "type": "product",
+        "properties": {
+          "revenue_per_unit": 8.00,
+          "quantity": 0
+        }
+      }
+    ],
+    "tasks": [
+      {
+        "id": "bake_bread",
+        "actor_id": "baker",
+        "start": "09:00",
+        "duration": 60,
+        "consumes": { "flour": 2 },
+        "produces": { "baked_bread": 4 }
+      }
+    ]
+  }
+}
+```
+
+**Economic Analysis:**
+- Revenue: 4 units × $8.00 = **$32.00**
+- Labor Cost: 1 hour × $20.00 = **$20.00**
+- Material Cost: 2 units × $0.50 = **$1.00**
+- **Profit: $32.00 - $21.00 = $11.00** ✓
+
+### Configuring Final Products
+
+The profitability metric only counts revenue from products listed in the `final_product_ids` parameter. By default, this is `["baked_bread"]` but can be customized in the metrics catalog for your specific simulation domain.
+
+### New-Style Economic Interactions
+
+The system also supports the new Universal Object Model interaction syntax for economic modeling:
+
+```json
+{
+  "id": "production_task",
+  "actor_id": "worker",
+  "interactions": [
+    {
+      "object_id": "raw_material",
+      "property_changes": {
+        "quantity": { "delta": -5 }
+      }
+    },
+    {
+      "object_id": "finished_product",
+      "property_changes": {
+        "quantity": { "delta": 2 }
+      }
+    }
+  ]
+}
+```
+
 ## Contributing New Metrics
 
 The power of this system comes from its extensibility. To add a new validation check:

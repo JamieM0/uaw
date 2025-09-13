@@ -691,6 +691,16 @@ body {
     text-align: center;
 }
 
+/* Generic clickable styles */
+.clickable {
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.clickable:hover {
+    color: var(--primary-color);
+}
+
 .stat-item.clickable {
     cursor: pointer;
     padding: 0.25rem;
@@ -773,6 +783,15 @@ body {
     gap: 0.5rem;
     font-size: var(--font-size-sm);
     position: relative;
+}
+
+.validation-result-item[data-clickable="true"] {
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.validation-result-item[data-clickable="true"]:hover {
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 .validation-result-item:last-child {

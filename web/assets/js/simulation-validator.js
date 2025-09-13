@@ -777,6 +777,857 @@ class SimulationValidator {
       this.addResult({ metricId: metric.id, status: 'success', message: 'All display elements are within viewport bounds.' });
     }
   }
+
+  validateTaskDuration(metric) {
+    const tasks = this.simulation.tasks || [];
+    let issueFound = false;
+
+    for (const task of tasks) {
+      const duration = task.duration;
+      
+      // Check if duration exists and is valid
+      if (duration === undefined || duration === null) {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Task '${task.id}' is missing a duration value.`
+        });
+        issueFound = true;
+      } else if (typeof duration === 'string') {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Task '${task.id}' has invalid duration '${duration}' - duration must be a number, not a string.`
+        });
+        issueFound = true;
+      } else if (typeof duration !== 'number') {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Task '${task.id}' has invalid duration '${duration}' - duration must be a number.`
+        });
+        issueFound = true;
+      } else if (!Number.isInteger(duration)) {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Task '${task.id}' has invalid duration '${duration}' - duration must be an integer.`
+        });
+        issueFound = true;
+      } else if (duration <= 0) {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Task '${task.id}' has invalid duration '${duration}' - duration must be positive.`
+        });
+        issueFound = true;
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All task durations are valid positive integers.' });
+    }
+  }
+
+  validateStartTimeFormat(metric) {
+    const tasks = this.simulation.tasks || [];
+    let issueFound = false;
+
+    for (const task of tasks) {
+      const startTime = task.start;
+      
+      // Check if start time exists and is valid
+      if (startTime === undefined || startTime === null) {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Task '${task.id}' is missing a start time value.`
+        });
+        issueFound = true;
+      } else if (typeof startTime !== 'string') {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Task '${task.id}' has invalid start time '${startTime}' - start time must be a string in HH:MM format.`
+        });
+        issueFound = true;
+      } else if (!startTime.match(/^\d{2}:\d{2}$/)) {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Task '${task.id}' has invalid start time format '${startTime}' - must be in HH:MM format (e.g., "09:30").`
+        });
+        issueFound = true;
+      } else {
+        // Additional check for valid time values
+        const [hours, minutes] = startTime.split(':').map(Number);
+        if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Task '${task.id}' has invalid start time '${startTime}' - hours must be 00-23 and minutes must be 00-59.`
+          });
+          issueFound = true;
+        }
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All task start times are in valid HH:MM format.' });
+    }
+  }
+
+  validateObjectReferences(metric) {
+    const objects = this.simulation.objects || [];
+    const objectIds = new Set(objects.map(o => o.id));
+    const tasks = this.simulation.tasks || [];
+    let issueFound = false;
+
+    for (const task of tasks) {
+      // Check actor_id reference
+      if (task.actor_id !== undefined && task.actor_id !== null) {
+        if (typeof task.actor_id !== 'string') {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Task '${task.id}' has invalid actor_id '${task.actor_id}' - actor_id must be a string.`
+          });
+          issueFound = true;
+        } else if (!objectIds.has(task.actor_id)) {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Task '${task.id}' references non-existent object '${task.actor_id}' as actor_id.`
+          });
+          issueFound = true;
+        }
+      }
+
+      // Check interactions object_id references
+      for (const interaction of (task.interactions || [])) {
+        if (interaction.object_id !== undefined && interaction.object_id !== null) {
+          if (typeof interaction.object_id !== 'string') {
+            this.addResult({
+              metricId: metric.id,
+              status: 'error',
+              message: `Task '${task.id}' has interaction with invalid object_id '${interaction.object_id}' - object_id must be a string.`
+            });
+            issueFound = true;
+          } else if (!objectIds.has(interaction.object_id)) {
+            this.addResult({
+              metricId: metric.id,
+              status: 'error',
+              message: `Task '${task.id}' has interaction with non-existent object '${interaction.object_id}'.`
+            });
+            issueFound = true;
+          }
+        }
+      }
+
+      // Check equipment_interactions id references (legacy support)
+      for (const interaction of (task.equipment_interactions || [])) {
+        if (interaction.id !== undefined && interaction.id !== null) {
+          if (typeof interaction.id !== 'string') {
+            this.addResult({
+              metricId: metric.id,
+              status: 'error',
+              message: `Task '${task.id}' has equipment interaction with invalid id '${interaction.id}' - id must be a string.`
+            });
+            issueFound = true;
+          } else if (!objectIds.has(interaction.id)) {
+            this.addResult({
+              metricId: metric.id,
+              status: 'error',
+              message: `Task '${task.id}' has equipment interaction with non-existent object '${interaction.id}'.`
+            });
+            issueFound = true;
+          }
+        }
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All task object references are valid strings pointing to existing objects.' });
+    }
+  }
+
+  validateTaskIds(metric) {
+    const tasks = this.simulation.tasks || [];
+    const taskIds = new Set();
+    let issueFound = false;
+
+    for (const task of tasks) {
+      // Check if task ID is missing, null, or empty
+      if (task.id === undefined || task.id === null || task.id === '') {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Task has missing, null, or empty ID. Task data: ${JSON.stringify(task, null, 2).substring(0, 200)}...`
+        });
+        issueFound = true;
+        continue;
+      }
+
+      // Check if task ID is not a string
+      if (typeof task.id !== 'string') {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Task ID '${task.id}' is not a string. Task IDs must be strings.`
+        });
+        issueFound = true;
+        continue;
+      }
+
+      // Check for duplicate task IDs
+      if (taskIds.has(task.id)) {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Duplicate task ID found: '${task.id}'. All task IDs must be unique.`
+        });
+        issueFound = true;
+      } else {
+        taskIds.add(task.id);
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All task IDs are valid, unique, non-empty strings.' });
+    }
+  }
+
+  validateObjectIds(metric) {
+    const objects = this.simulation.objects || [];
+    const objectIds = new Set();
+    let issueFound = false;
+
+    for (const obj of objects) {
+      // Check if object ID is missing, null, or empty
+      if (obj.id === undefined || obj.id === null || obj.id === '') {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Object has missing, null, or empty ID. Object data: ${JSON.stringify(obj, null, 2).substring(0, 200)}...`
+        });
+        issueFound = true;
+        continue;
+      }
+
+      // Check if object ID is not a string
+      if (typeof obj.id !== 'string') {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Object ID '${obj.id}' is not a string. Object IDs must be strings.`
+        });
+        issueFound = true;
+        continue;
+      }
+
+      // Check for duplicate object IDs
+      if (objectIds.has(obj.id)) {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Duplicate object ID found: '${obj.id}'. All object IDs must be unique.`
+        });
+        issueFound = true;
+      } else {
+        objectIds.add(obj.id);
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All object IDs are valid, unique, non-empty strings.' });
+    }
+  }
+
+  validateRequiredProperties(metric) {
+    const objects = this.simulation.objects || [];
+    let issueFound = false;
+
+    // Define required properties for each object type
+    const requiredPropertiesByType = {
+      'actor': ['name'],
+      'resource': ['quantity'],
+      'product': ['quantity'],
+      'equipment': ['state'],
+      'location': ['name'],
+      'tool': ['name'],
+      'material': ['quantity'],
+      'ingredient': ['quantity']
+    };
+
+    for (const obj of objects) {
+      const objType = obj.type;
+      const requiredProps = requiredPropertiesByType[objType];
+
+      // Skip validation if no required properties defined for this type
+      if (!requiredProps) {
+        continue;
+      }
+
+      // Check if properties object exists
+      if (!obj.properties || typeof obj.properties !== 'object') {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Object '${obj.id}' of type '${objType}' is missing the properties object.`
+        });
+        issueFound = true;
+        continue;
+      }
+
+      // Check each required property
+      for (const requiredProp of requiredProps) {
+        // Check if property exists at root level or in properties object
+        const hasPropertyAtRoot = requiredProp in obj && obj[requiredProp] !== undefined && obj[requiredProp] !== null;
+        const hasPropertyInProperties = obj.properties && requiredProp in obj.properties && obj.properties[requiredProp] !== undefined && obj.properties[requiredProp] !== null;
+
+        if (!hasPropertyAtRoot && !hasPropertyInProperties) {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Object '${obj.id}' of type '${objType}' is missing required property '${requiredProp}'.`
+          });
+          issueFound = true;
+        }
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All objects have their required properties defined.' });
+    }
+  }
+
+  validatePropertyTypes(metric) {
+    const objects = this.simulation.objects || [];
+    let issueFound = false;
+
+    // Define expected property types for each object type
+    const expectedPropertyTypes = {
+      'actor': {
+        'name': 'string',
+        'cost_per_hour': 'number',
+        'location': 'string',
+        'skill_level': 'number'
+      },
+      'resource': {
+        'quantity': 'number',
+        'cost_per_unit': 'number',
+        'location': 'string',
+        'name': 'string'
+      },
+      'product': {
+        'quantity': 'number',
+        'revenue_per_unit': 'number',
+        'cost_per_unit': 'number',
+        'location': 'string',
+        'name': 'string'
+      },
+      'equipment': {
+        'state': 'string',
+        'capacity': 'number',
+        'location': 'string',
+        'name': 'string'
+      },
+      'location': {
+        'name': 'string',
+        'x': 'number',
+        'y': 'number',
+        'width': 'number',
+        'height': 'number'
+      },
+      'tool': {
+        'name': 'string',
+        'location': 'string',
+        'condition': 'string'
+      },
+      'material': {
+        'quantity': 'number',
+        'cost_per_unit': 'number',
+        'location': 'string',
+        'name': 'string'
+      },
+      'ingredient': {
+        'quantity': 'number',
+        'cost_per_unit': 'number',
+        'location': 'string',
+        'name': 'string'
+      }
+    };
+
+    for (const obj of objects) {
+      const objType = obj.type;
+      const expectedTypes = expectedPropertyTypes[objType];
+
+      // Skip validation if no type definitions for this object type
+      if (!expectedTypes || !obj.properties) {
+        continue;
+      }
+
+      // Check each property that exists on the object
+      for (const [propName, propValue] of Object.entries(obj.properties)) {
+        const expectedType = expectedTypes[propName];
+
+        // Skip if no expected type defined for this property
+        if (!expectedType) {
+          continue;
+        }
+
+        // Skip null/undefined values (handled by required properties check)
+        if (propValue === null || propValue === undefined) {
+          continue;
+        }
+
+        const actualType = typeof propValue;
+
+        if (actualType !== expectedType) {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Object '${obj.id}' of type '${objType}' has invalid type for property '${propName}'. Expected ${expectedType}, but got ${actualType}. Value: '${propValue}'`
+          });
+          issueFound = true;
+        }
+
+        // Additional validation for numbers (check for NaN)
+        if (expectedType === 'number' && actualType === 'number' && isNaN(propValue)) {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Object '${obj.id}' of type '${objType}' has NaN value for numeric property '${propName}'.`
+          });
+          issueFound = true;
+        }
+
+        // Additional validation for strings (check for empty strings where meaningful)
+        if (expectedType === 'string' && actualType === 'string' && propName === 'name' && propValue.trim() === '') {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Object '${obj.id}' of type '${objType}' has empty string for name property.`
+          });
+          issueFound = true;
+        }
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All object properties have valid data types.' });
+    }
+  }
+
+  validateTaskEndTimeOverflow(metric) {
+    const tasks = this.simulation.tasks || [];
+    let issueFound = false;
+
+    for (const task of tasks) {
+      const startTime = task.start;
+      const duration = task.duration;
+
+      // Skip if start time or duration is invalid (handled by other validations)
+      if (!startTime || !duration || typeof startTime !== 'string' || typeof duration !== 'number') {
+        continue;
+      }
+
+      const startMinutes = this._timeToMinutes(startTime);
+      if (startMinutes === null) continue;
+
+      const endMinutes = startMinutes + duration;
+      const endHours = Math.floor(endMinutes / 60);
+      const endMins = endMinutes % 60;
+
+      // Check if task extends beyond 24:00 (1440 minutes)
+      if (endMinutes >= 1440) {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Task '${task.id}' ends at ${endHours}:${String(endMins).padStart(2, '0')}, which exceeds 24:00 and causes day boundary overflow.`
+        });
+        issueFound = true;
+      }
+
+      // Check if task extends beyond reasonable working hours (e.g., past 23:59)
+      if (endMinutes > 1439) {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Task '${task.id}' has invalid end time calculation (${endHours}:${String(endMins).padStart(2, '0')}).`
+        });
+        issueFound = true;
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All task end times are within valid daily boundaries.' });
+    }
+  }
+
+  validateCircularDependencies(metric) {
+    const tasks = this.simulation.tasks || [];
+    const taskMap = new Map(tasks.map(task => [task.id, task]));
+    let issueFound = false;
+
+    // Depth-first search to detect cycles
+    const visited = new Set();
+    const recursionStack = new Set();
+
+    const hasCycle = (taskId, path = []) => {
+      if (recursionStack.has(taskId)) {
+        // Found a cycle - construct the cycle path
+        const cycleStart = path.indexOf(taskId);
+        const cyclePath = path.slice(cycleStart).concat([taskId]);
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Circular dependency detected: ${cyclePath.join(' → ')}`
+        });
+        return true;
+      }
+
+      if (visited.has(taskId)) {
+        return false;
+      }
+
+      visited.add(taskId);
+      recursionStack.add(taskId);
+
+      const task = taskMap.get(taskId);
+      if (task && task.depends_on) {
+        for (const depId of task.depends_on) {
+          if (taskMap.has(depId)) {
+            if (hasCycle(depId, [...path, taskId])) {
+              return true;
+            }
+          }
+        }
+      }
+
+      recursionStack.delete(taskId);
+      return false;
+    };
+
+    // Check each task for cycles
+    for (const task of tasks) {
+      if (!visited.has(task.id)) {
+        if (hasCycle(task.id)) {
+          issueFound = true;
+        }
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'No circular dependencies found in task dependency chains.' });
+    }
+  }
+
+  validateSelfReferencingDependencies(metric) {
+    const tasks = this.simulation.tasks || [];
+    let issueFound = false;
+
+    for (const task of tasks) {
+      if (task.depends_on && task.depends_on.includes(task.id)) {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Task '${task.id}' has a self-referencing dependency (depends on itself).`
+        });
+        issueFound = true;
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'No self-referencing dependencies found.' });
+    }
+  }
+
+  validateMissingTaskDependencies(metric) {
+    const tasks = this.simulation.tasks || [];
+    const taskIds = new Set(tasks.map(t => t.id));
+    let issueFound = false;
+
+    for (const task of tasks) {
+      if (task.depends_on) {
+        for (const depId of task.depends_on) {
+          if (!taskIds.has(depId)) {
+            this.addResult({
+              metricId: metric.id,
+              status: 'error',
+              message: `Task '${task.id}' depends on non-existent task '${depId}'.`
+            });
+            issueFound = true;
+          }
+        }
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All task dependencies reference existing tasks.' });
+    }
+  }
+
+  validateResourceQuantities(metric) {
+    const objects = this.simulation.objects || [];
+    const resources = objects.filter(o => o.type === 'resource' || o.type === 'product' || o.type === 'material' || o.type === 'ingredient');
+    let issueFound = false;
+
+    for (const resource of resources) {
+      const quantity = resource.properties?.quantity;
+
+      if (quantity !== undefined && quantity !== null) {
+        if (typeof quantity !== 'number') {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Resource '${resource.id}' has invalid quantity '${quantity}' - quantity must be a number.`
+          });
+          issueFound = true;
+        } else if (quantity < 0) {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Resource '${resource.id}' has negative quantity '${quantity}' - quantities must be non-negative.`
+          });
+          issueFound = true;
+        } else if (isNaN(quantity)) {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Resource '${resource.id}' has NaN quantity value.`
+          });
+          issueFound = true;
+        }
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All resource quantities are valid non-negative numbers.' });
+    }
+  }
+
+  validateEquipmentCapacity(metric) {
+    const objects = this.simulation.objects || [];
+    const equipment = objects.filter(o => o.type === 'equipment');
+    let issueFound = false;
+
+    for (const eq of equipment) {
+      const capacity = eq.properties?.capacity;
+
+      if (capacity !== undefined && capacity !== null) {
+        if (typeof capacity !== 'number') {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Equipment '${eq.id}' has invalid capacity '${capacity}' - capacity must be a number.`
+          });
+          issueFound = true;
+        } else if (!Number.isInteger(capacity)) {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Equipment '${eq.id}' has non-integer capacity '${capacity}' - capacity must be an integer.`
+          });
+          issueFound = true;
+        } else if (capacity <= 0) {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Equipment '${eq.id}' has invalid capacity '${capacity}' - capacity must be positive.`
+          });
+          issueFound = true;
+        } else if (isNaN(capacity)) {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Equipment '${eq.id}' has NaN capacity value.`
+          });
+          issueFound = true;
+        }
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All equipment capacity values are valid positive integers.' });
+    }
+  }
+
+  validateStateTransitions(metric) {
+    const objects = this.simulation.objects || [];
+    const equipment = objects.filter(o => o.type === 'equipment');
+    const equipmentMap = new Map(equipment.map(e => [e.id, e]));
+    const tasks = this.simulation.tasks || [];
+    let issueFound = false;
+
+    // Define valid state transitions
+    const validTransitions = {
+      'available': ['in_use', 'maintenance', 'dirty'],
+      'in_use': ['available', 'dirty', 'maintenance', 'broken'],
+      'dirty': ['cleaning', 'maintenance'],
+      'cleaning': ['available'],
+      'maintenance': ['available'],
+      'broken': ['maintenance']
+    };
+
+    for (const [eqId, equipmentDef] of equipmentMap.entries()) {
+      const initialState = equipmentDef.properties?.state || 'available';
+
+      // Find all tasks that interact with this equipment
+      const relevantTasks = tasks
+        .filter(t => {
+          const hasOldStyle = (t.equipment_interactions || []).some(i => i.id === eqId);
+          const hasNewStyle = (t.interactions || []).some(i => i.object_id === eqId && i.property_changes?.state);
+          return hasOldStyle || hasNewStyle;
+        })
+        .sort((a, b) => (a.start || "00:00").localeCompare(b.start || "00:00"));
+
+      let currentState = initialState;
+
+      for (const task of relevantTasks) {
+        // Get interaction for this equipment (try both old and new style)
+        let interaction = (task.equipment_interactions || []).find(i => i.id === eqId);
+
+        if (!interaction) {
+          // Look for new-style interactions
+          const newInteraction = (task.interactions || []).find(i => i.object_id === eqId);
+          if (newInteraction && newInteraction.property_changes?.state) {
+            const stateChanges = newInteraction.property_changes.state;
+            interaction = {
+              id: eqId,
+              from_state: stateChanges.from,
+              to_state: stateChanges.to,
+              revert_after: newInteraction.revert_after || false
+            };
+          }
+        }
+
+        if (!interaction) continue;
+
+        const fromState = interaction.from_state;
+        const toState = interaction.to_state;
+
+        // Check if the transition is valid
+        if (fromState && toState) {
+          const allowedNextStates = validTransitions[fromState];
+          if (allowedNextStates && !allowedNextStates.includes(toState)) {
+            this.addResult({
+              metricId: metric.id,
+              status: 'error',
+              message: `Invalid state transition for equipment '${eqId}' in task '${task.id}': cannot transition from '${fromState}' to '${toState}'. Valid transitions from '${fromState}': ${allowedNextStates.join(', ')}.`
+            });
+            issueFound = true;
+          }
+
+          // Check if the expected from_state matches current state
+          if (currentState !== fromState) {
+            this.addResult({
+              metricId: metric.id,
+              status: 'error',
+              message: `State transition error for equipment '${eqId}' in task '${task.id}': expected state '${fromState}' but equipment is in state '${currentState}'.`
+            });
+            issueFound = true;
+          }
+
+          // Update current state for next iteration
+          currentState = interaction.revert_after ? fromState : toState;
+        }
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All equipment state transitions are logically valid.' });
+    }
+  }
+
+  validateResourceTypeConsistency(metric) {
+    const objects = this.simulation.objects || [];
+    const objectMap = new Map(objects.map(o => [o.id, o]));
+    const tasks = this.simulation.tasks || [];
+    let issueFound = false;
+
+    // Track type of each object throughout the simulation
+    const objectTypes = new Map();
+
+    // Initialize with original types
+    for (const obj of objects) {
+      objectTypes.set(obj.id, obj.type);
+    }
+
+    // Check interactions for type consistency
+    for (const task of tasks) {
+      // Check old-style consumes/produces
+      for (const resId of Object.keys(task.consumes || {})) {
+        const originalObj = objectMap.get(resId);
+        if (originalObj && !['resource', 'product', 'material', 'ingredient'].includes(originalObj.type)) {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Task '${task.id}' tries to consume '${resId}' which is of type '${originalObj.type}', but only resources, products, materials, and ingredients can be consumed.`
+          });
+          issueFound = true;
+        }
+      }
+
+      for (const resId of Object.keys(task.produces || {})) {
+        const originalObj = objectMap.get(resId);
+        if (originalObj && !['resource', 'product', 'material', 'ingredient'].includes(originalObj.type)) {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Task '${task.id}' tries to produce '${resId}' which is of type '${originalObj.type}', but only resources, products, materials, and ingredients can be produced.`
+          });
+          issueFound = true;
+        }
+      }
+
+      // Check new-style interactions
+      for (const interaction of (task.interactions || [])) {
+        const obj = objectMap.get(interaction.object_id);
+        if (!obj) continue; // Handled by other validation
+
+        const expectedType = objectTypes.get(interaction.object_id);
+        if (!expectedType) continue;
+
+        // Check if interaction is appropriate for object type
+        if (interaction.property_changes?.quantity) {
+          if (!['resource', 'product', 'material', 'ingredient'].includes(expectedType)) {
+            this.addResult({
+              metricId: metric.id,
+              status: 'error',
+              message: `Task '${task.id}' tries to modify quantity of '${interaction.object_id}' which is of type '${expectedType}', but only resources, products, materials, and ingredients can have quantity modifications.`
+            });
+            issueFound = true;
+          }
+        }
+
+        if (interaction.property_changes?.state) {
+          if (!['equipment', 'tool'].includes(expectedType)) {
+            this.addResult({
+              metricId: metric.id,
+              status: 'error',
+              message: `Task '${task.id}' tries to modify state of '${interaction.object_id}' which is of type '${expectedType}', but only equipment and tools can have state modifications.`
+            });
+            issueFound = true;
+          }
+        }
+
+        // Check for type changes (objects shouldn't change types)
+        if (interaction.property_changes?.type) {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Task '${task.id}' tries to change the type of object '${interaction.object_id}' from '${expectedType}' to '${interaction.property_changes.type}'. Object types should remain consistent.`
+          });
+          issueFound = true;
+        }
+      }
+    }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All resources maintain consistent types throughout interactions.' });
+    }
+  }
 }
 
 // Export to global scope for playground usage

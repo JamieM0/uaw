@@ -97,7 +97,8 @@ function generateDocsStructure() {
       'playground': [
         'playground-guide',
         'save-load',
-        'space-editor-guide'
+        'space-editor-guide',
+        'display-editor-guide'
       ],
       'routines': [
         'assemble',
@@ -126,6 +127,8 @@ function generateDocsStructure() {
       'simulations': [
         'constraints',
         'metrics-editor',
+        'universal-object-model',
+        'validation-rules-reference',
         'validation'
       ],
       'standards': [

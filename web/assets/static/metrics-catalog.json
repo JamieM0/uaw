@@ -154,5 +154,140 @@
     "severity": "warning",
     "validation_type": "computational",
     "computation": { "engine": "javascript", "function_name": "validateDisplayElementBounds" }
+  },
+  {
+    "id": "task.integrity.invalid_duration",
+    "name": "Invalid Task Duration",
+    "description": "Ensures all task durations are positive integers.",
+    "category": "Structural Integrity",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateTaskDuration" }
+  },
+  {
+    "id": "task.integrity.invalid_start_time",
+    "name": "Invalid Start Time Format",
+    "description": "Ensures all task start times follow HH:MM string format.",
+    "category": "Structural Integrity",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateStartTimeFormat" }
+  },
+  {
+    "id": "task.integrity.invalid_object_reference",
+    "name": "Invalid Object Reference",
+    "description": "Ensures all tasks reference valid object IDs that exist in the simulation.",
+    "category": "Structural Integrity",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateObjectReferences" }
+  },
+  {
+    "id": "task.integrity.invalid_task_id",
+    "name": "Invalid Task ID",
+    "description": "Ensures task IDs are unique strings and not empty/null.",
+    "category": "Structural Integrity",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateTaskIds" }
+  },
+  {
+    "id": "object.integrity.invalid_object_id",
+    "name": "Invalid Object ID",
+    "description": "Ensures object IDs are unique strings and not empty/null.",
+    "category": "Structural Integrity",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateObjectIds" }
+  },
+  {
+    "id": "object.integrity.missing_required_properties",
+    "name": "Missing Required Properties",
+    "description": "Check that objects have required properties based on their type.",
+    "category": "Structural Integrity",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateRequiredProperties" }
+  },
+  {
+    "id": "object.integrity.invalid_property_types",
+    "name": "Invalid Property Types",
+    "description": "Validate that object properties match expected data types.",
+    "category": "Structural Integrity",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validatePropertyTypes" }
+  },
+  {
+    "id": "task.integrity.end_time_overflow",
+    "name": "Task End Time Overflow",
+    "description": "Check if task start + duration exceeds 24:00 or causes day boundary issues.",
+    "category": "Scheduling",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateTaskEndTimeOverflow" }
+  },
+  {
+    "id": "task.dependency.circular_reference",
+    "name": "Circular Dependencies",
+    "description": "Detect circular references in task dependency chains.",
+    "category": "Structural Integrity",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateCircularDependencies" }
+  },
+  {
+    "id": "task.dependency.self_reference",
+    "name": "Self-Referencing Dependencies",
+    "description": "Catch tasks that depend on themselves.",
+    "category": "Structural Integrity",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateSelfReferencingDependencies" }
+  },
+  {
+    "id": "task.dependency.missing_reference",
+    "name": "Missing Task Dependencies",
+    "description": "Validate that all referenced dependency IDs exist.",
+    "category": "Structural Integrity",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateMissingTaskDependencies" }
+  },
+  {
+    "id": "resource.integrity.invalid_quantity",
+    "name": "Invalid Quantity Values",
+    "description": "Ensure resource quantities are non-negative numbers.",
+    "category": "Structural Integrity",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateResourceQuantities" }
+  },
+  {
+    "id": "equipment.integrity.invalid_capacity",
+    "name": "Equipment Capacity Validation",
+    "description": "Check that equipment capacity values are positive integers.",
+    "category": "Structural Integrity",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateEquipmentCapacity" }
+  },
+  {
+    "id": "equipment.state.invalid_transitions",
+    "name": "Invalid State Transitions",
+    "description": "Validate that equipment state changes are logical (available→in_use→dirty, etc.).",
+    "category": "Scheduling",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateStateTransitions" }
+  },
+  {
+    "id": "resource.integrity.type_consistency",
+    "name": "Resource Type Consistency",
+    "description": "Ensure resources maintain consistent types throughout interactions.",
+    "category": "Structural Integrity",
+    "severity": "error",
+    "validation_type": "computational",
+    "computation": { "engine": "javascript", "function_name": "validateResourceTypeConsistency" }
   }
 ]
