@@ -210,6 +210,8 @@ function renderSimulation(skipJsonValidation = false) {
             } catch (e) {
                 simulationContent.innerHTML =
                     '<p style="color: var(--error-color); text-align: center; margin-top: 2rem;">Cannot render: Invalid JSON syntax</p>';
+                loadingOverlay.style.display = "none";
+                window.renderingInProgress = false;
                 return;
             }
         }

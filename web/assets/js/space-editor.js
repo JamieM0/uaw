@@ -16,6 +16,7 @@ class SpaceEditor {
 
         this.isUpdatingJson = false;
         this.hasInitiallyLoaded = false;
+        this.pendingSyncNeeded = false;
         this.world = document.createElement('div');
         this.world.className = 'space-world';
         this.canvas.appendChild(this.world);
@@ -880,6 +881,13 @@ class SpaceEditor {
         }
     }
 
+    checkPendingSync() {
+        if (this.pendingSyncNeeded && !this.isDrawing && !this.isDragging && !this.isUpdatingJson) {
+            this.pendingSyncNeeded = false;
+            this.loadFromSimulation();
+        }
+    }
+
     onCanvasMouseDown(e) {
         if (this.view.isPanning) {
             this.view.lastPan = { x: e.clientX, y: e.clientY };
@@ -920,6 +928,9 @@ class SpaceEditor {
         // Immediately clear any previous states
         this.isDrawing = false;
         this.canvas.classList.remove('is-dragging');
+
+        // Check for pending synchronization
+        setTimeout(() => this.checkPendingSync(), 0);
         
         // Clear any lingering collision states
         document.querySelectorAll('.location-rect.colliding').forEach(el => {
@@ -1011,6 +1022,9 @@ class SpaceEditor {
         if (this.isDrawing && this.activeRectEl) {
             this.isDrawing = false;
             this.canvas.style.cursor = 'default';
+
+            // Check for pending synchronization after drawing completes
+            setTimeout(() => this.checkPendingSync(), 0);
             
             const width = parseInt(this.activeRectEl.style.width);
             const height = parseInt(this.activeRectEl.style.height);
@@ -1061,6 +1075,9 @@ class SpaceEditor {
             // Clear all dragging states immediately
             this.isDragging = false;
             this.canvas.classList.remove('is-dragging');
+
+            // Check for pending synchronization after dragging completes
+            setTimeout(() => this.checkPendingSync(), 0);
             
             // Remove any collision styling immediately and fix border style without delay
             if (this.activeRectEl) {

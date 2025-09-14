@@ -217,17 +217,35 @@ function openSaveDialog() {
         saveLoadingDiv.style.display = 'none';
         saveConfirmBtn.style.display = 'inline-block';
         saveCancelBtn.textContent = 'Cancel';
-        
+
         cloudSaveResultDiv.style.display = 'none';
         localSaveResultDiv.style.display = 'none';
-        
-        // Default to local save
-        saveLocalRadio.checked = true;
-        saveCloudRadio.checked = false;
-        
+
+        // Check if we should hide cloud save option
+        const shouldHideCloudSave = isMetricsMode || hasCustomMetrics();
+        const cloudSaveOption = saveCloudRadio.closest('.save-method-option');
+
+        if (shouldHideCloudSave) {
+            // Hide cloud save option entirely
+            if (cloudSaveOption) {
+                cloudSaveOption.style.display = 'none';
+            }
+            // Force local save selection
+            saveLocalRadio.checked = true;
+            saveCloudRadio.checked = false;
+        } else {
+            // Show cloud save option
+            if (cloudSaveOption) {
+                cloudSaveOption.style.display = '';
+            }
+            // Default to local save
+            saveLocalRadio.checked = true;
+            saveCloudRadio.checked = false;
+        }
+
         cloudPrivacyWarning.style.display = 'none'; // Hide for local default
         localSaveNameDiv.style.display = 'block'; // Show for local default
-        
+
         privacyConsentCheckbox.checked = false;
         updateSaveButtonState(); // Set initial button state
 
@@ -253,6 +271,18 @@ function openSaveDialog() {
     };
 
     saveCloudRadio.onchange = () => {
+        // Prevent cloud save selection if in metrics mode or has custom metrics
+        const shouldHideCloudSave = isMetricsMode || hasCustomMetrics();
+        if (shouldHideCloudSave && saveCloudRadio.checked) {
+            // Force back to local save
+            saveLocalRadio.checked = true;
+            saveCloudRadio.checked = false;
+            cloudPrivacyWarning.style.display = 'none';
+            localSaveNameDiv.style.display = 'block';
+            updateSaveButtonState();
+            return;
+        }
+
         if (saveCloudRadio.checked) {
             cloudPrivacyWarning.style.display = 'block';
             localSaveNameDiv.style.display = 'none';

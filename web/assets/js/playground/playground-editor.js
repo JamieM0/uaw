@@ -44,7 +44,7 @@ function safeSetItem(key, value) {
     }
 }
 
-// Show visual warning to user about storage issues
+// Show visual warning to user about storage issues with recovery options
 function showStorageQuotaWarning() {
     // Create or show a warning banner
     let warningBanner = document.getElementById('storage-quota-warning');
@@ -52,20 +52,98 @@ function showStorageQuotaWarning() {
         warningBanner = document.createElement('div');
         warningBanner.id = 'storage-quota-warning';
         warningBanner.innerHTML = `
-            <div style="background: #ff6b35; color: white; padding: 10px; text-align: center; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-                ⚠️ Storage Full: Your work cannot be automatically saved. Consider clearing browser data or reducing file size.
-                <button onclick="document.getElementById('storage-quota-warning').remove()" style="margin-left: 15px; background: white; color: #ff6b35; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Dismiss</button>
+            <div style="background: #ff6b35; color: white; padding: 15px; text-align: center; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                <div style="margin-bottom: 10px;">⚠️ Storage Full: Your work cannot be automatically saved.</div>
+                <div style="font-weight: normal; margin-bottom: 10px;">Recovery Options:</div>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="clearOldSimulations()" style="background: white; color: #ff6b35; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">Clear Old Saves</button>
+                    <button onclick="downloadCurrentWork()" style="background: white; color: #ff6b35; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">Download Work</button>
+                    <button onclick="showStorageUsage()" style="background: white; color: #ff6b35; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">View Usage</button>
+                    <button onclick="document.getElementById('storage-quota-warning').remove()" style="background: rgba(255,255,255,0.3); color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">Dismiss</button>
+                </div>
             </div>
         `;
         document.body.appendChild(warningBanner);
-        
-        // Auto-dismiss after 10 seconds
-        setTimeout(() => {
-            if (warningBanner.parentNode) {
-                warningBanner.remove();
-            }
-        }, 10000);
+
+        // Don't auto-dismiss since users need time to choose recovery options
     }
+}
+
+// Recovery functions for localStorage quota issues
+function clearOldSimulations() {
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('uaw-') || key.startsWith('simulation-'))) {
+            keysToRemove.push(key);
+        }
+    }
+
+    if (keysToRemove.length === 0) {
+        alert('No old simulations found to clear.');
+        return;
+    }
+
+    if (confirm(`Found ${keysToRemove.length} saved simulation(s). Clear them to free up space?`)) {
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        alert(`Cleared ${keysToRemove.length} saved simulation(s). Try saving again.`);
+        document.getElementById('storage-quota-warning')?.remove();
+    }
+}
+
+function downloadCurrentWork() {
+    try {
+        const editor = getMonacoEditor();
+        if (editor) {
+            const content = editor.getValue();
+            const blob = new Blob([content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `uaw-simulation-${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('Work downloaded successfully. You can now clear storage or continue without auto-save.');
+        } else {
+            alert('No editor content found to download.');
+        }
+    } catch (e) {
+        alert('Failed to download work: ' + e.message);
+    }
+}
+
+function showStorageUsage() {
+    try {
+        const totalSize = JSON.stringify(localStorage).length;
+        const keys = [];
+
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key) {
+                const size = localStorage.getItem(key)?.length || 0;
+                keys.push({ key, size });
+            }
+        }
+
+        keys.sort((a, b) => b.size - a.size);
+
+        let message = `Total localStorage usage: ${Math.round(totalSize / 1024)}KB\n\nLargest items:\n`;
+        keys.slice(0, 5).forEach(item => {
+            message += `• ${item.key}: ${Math.round(item.size / 1024)}KB\n`;
+        });
+
+        message += `\nConsider clearing old simulations or downloading current work.`;
+        alert(message);
+    } catch (e) {
+        alert('Failed to calculate storage usage: ' + e.message);
+    }
+}
+
+// Helper function to get Monaco editor instance
+function getMonacoEditor() {
+    return window.monacoEditor || null;
 }
 
 // Sample simulation data with resources
@@ -441,6 +519,9 @@ require(["vs/editor/editor.main"], function () {
                 const currentJson = JSON.parse(editor.getValue());
                 spaceEditor.loadLayout(currentJson.simulation.layout);
             } catch(e) { /* Ignore parse errors during typing */ }
+        } else if (spaceEditor) {
+            // Mark that sync is needed when interaction prevents update
+            spaceEditor.pendingSyncNeeded = true;
         }
     });
 

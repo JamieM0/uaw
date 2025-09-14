@@ -49,17 +49,55 @@ async function syncSpaceEditorState() {
     }
 
     try {
-        // Wait a tick to ensure editor is ready
-        await new Promise(resolve => setTimeout(resolve, 10));
-
-        if (!editor) {
-            console.warn('Monaco editor not available for space editor sync');
+        // Check if Monaco editor is properly initialized (not just exists)
+        if (!editor || !editor.getValue || typeof editor.getValue !== 'function') {
+            console.warn('Monaco editor not properly initialized for space editor sync');
             return;
         }
 
-        const currentJson = JSON.parse(editor.getValue());
-        if (currentJson.simulation && currentJson.simulation.layout) {
-            spaceEditor.loadLayout(currentJson.simulation.layout, true);
+        // Multiple attempts to ensure editor and simulation data are ready
+        let attempts = 0;
+        const maxAttempts = 3;
+        let validSimulationData = null;
+
+        while (attempts < maxAttempts && !validSimulationData) {
+            attempts++;
+
+            // Wait progressively longer for each attempt
+            if (attempts > 1) {
+                await new Promise(resolve => setTimeout(resolve, attempts * 100));
+            }
+
+            try {
+                const jsonText = editor.getValue();
+                if (!jsonText || jsonText.trim() === '') {
+                    console.warn(`Attempt ${attempts}: No simulation data available yet for space editor`);
+                    continue;
+                }
+
+                const parsedData = JSON.parse(jsonText);
+
+                // Validate that we have a proper simulation structure
+                if (!parsedData.simulation || typeof parsedData.simulation !== 'object') {
+                    console.warn(`Attempt ${attempts}: Invalid simulation structure for space editor`);
+                    continue;
+                }
+
+                validSimulationData = parsedData;
+                break;
+            } catch (parseError) {
+                console.warn(`Attempt ${attempts}: Invalid JSON data for space editor:`, parseError.message);
+                continue;
+            }
+        }
+
+        if (!validSimulationData) {
+            console.warn('Failed to get valid simulation data after multiple attempts, deferring space editor initialization');
+            return;
+        }
+
+        if (validSimulationData.simulation && validSimulationData.simulation.layout) {
+            spaceEditor.loadLayout(validSimulationData.simulation.layout, true);
         }
     } catch (error) {
         console.warn('Failed to sync space editor state:', error.message);
@@ -81,25 +119,50 @@ async function syncDigitalSpaceState() {
             return;
         }
 
-        // Wait a tick to ensure DOM is ready
-        await new Promise(resolve => setTimeout(resolve, 10));
-
-        // Check if simulation data is available before initializing
-        if (!editor) {
-            console.warn('Monaco editor not available for digital space sync');
+        // Check if Monaco editor is properly initialized (not just exists)
+        if (!editor || !editor.getValue || typeof editor.getValue !== 'function') {
+            console.warn('Monaco editor not properly initialized for digital space sync');
             return;
         }
 
-        // Validate that we have valid simulation data
-        try {
-            const jsonText = editor.getValue();
-            if (!jsonText || jsonText.trim() === '') {
-                console.warn('No simulation data available yet for digital space');
-                return;
+        // Multiple attempts to ensure editor and simulation data are ready
+        let attempts = 0;
+        const maxAttempts = 3;
+        let validSimulationData = null;
+
+        while (attempts < maxAttempts && !validSimulationData) {
+            attempts++;
+
+            // Wait progressively longer for each attempt
+            if (attempts > 1) {
+                await new Promise(resolve => setTimeout(resolve, attempts * 100));
             }
-            JSON.parse(jsonText); // Test if valid JSON
-        } catch (parseError) {
-            console.warn('Invalid or incomplete simulation data for digital space:', parseError.message);
+
+            try {
+                const jsonText = editor.getValue();
+                if (!jsonText || jsonText.trim() === '') {
+                    console.warn(`Attempt ${attempts}: No simulation data available yet for digital space`);
+                    continue;
+                }
+
+                const parsedData = JSON.parse(jsonText);
+
+                // Validate that we have a proper simulation structure
+                if (!parsedData.simulation || typeof parsedData.simulation !== 'object') {
+                    console.warn(`Attempt ${attempts}: Invalid simulation structure for digital space`);
+                    continue;
+                }
+
+                validSimulationData = parsedData;
+                break;
+            } catch (parseError) {
+                console.warn(`Attempt ${attempts}: Invalid JSON data for digital space:`, parseError.message);
+                continue;
+            }
+        }
+
+        if (!validSimulationData) {
+            console.warn('Failed to get valid simulation data after multiple attempts, deferring digital space initialization');
             return;
         }
 
