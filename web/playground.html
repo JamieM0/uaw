@@ -258,7 +258,7 @@
                                 <div class="tab-bar">
                                     <button class="tab-btn active" data-tab="timeline">Simulation Render</button>
                                     <button class="tab-btn" data-tab="space-editor">Space Editor</button>
-                                    <button class="tab-btn" data-tab="digital-space">Digital Space</button>
+                                    <button class="tab-btn" data-tab="digital-space">Digital Locations</button>
                                     <button class="tab-btn" data-tab="display-editor">Display Editor</button>
                                 </div>
 
@@ -352,7 +352,7 @@
                                             <div class="properties-panel-container">
                                                 <div class="properties-panel-header">
                                                     <div class="properties-panel-header-top">
-                                                        <h4>Digital Space</h4>
+                                                        <h4>Digital Locations</h4>
                                                         <button id="add-digital-location-btn" class="btn btn-primary btn-compact">+ Add Location</button>
                                                     </div>
                                                     <div class="layer-controls">
@@ -476,7 +476,7 @@
                                     <button class="left-tab-btn active" data-left-tab="json-editor">JSON Editor</button>
                                     <button class="left-tab-btn" data-left-tab="simulation-render">Simulation Render</button>
                                     <button class="left-tab-btn" data-left-tab="space-editor">Space Editor</button>
-                                    <button class="left-tab-btn" data-left-tab="digital-space">Digital Space</button>
+                                    <button class="left-tab-btn" data-left-tab="digital-space">Digital Locations</button>
                                     <button class="left-tab-btn" data-left-tab="display-editor">Display Editor</button>
                                 </div>
                                 
@@ -672,7 +672,7 @@
                 <div class="local-save-name" id="local-save-name" style="display: none;">
                     <label for="local-file-name">File Name:</label>
                     <input type="text" id="local-file-name" placeholder="Enter simulation name..." maxlength="50">
-                    <small>A descriptive name for your simulation (e.g., "Restaurant Kitchen Process")</small>
+                    <small>A descriptive name for your simulation (e.g., "Restaurant Kitchen Process"). Do not include file extension.</small>
                     
                     <div class="custom-metrics-save-option" id="custom-metrics-save-option" style="margin-top: 1rem;">
                         <label>
@@ -1072,7 +1072,8 @@
         <div id="drag-overlay" class="drag-overlay"></div>
 
         <script src="/assets/js/context-menu.js"></script>
-        
+        <script src="/assets/js/html-sanitizer.js"></script>
+
         <!-- Playground modules in dependency order -->
         <script src="/assets/js/playground/playground-utils.js"></script>
         <script src="/assets/js/playground/playground-ui.js"></script>

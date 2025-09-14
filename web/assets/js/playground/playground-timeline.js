@@ -21,6 +21,9 @@ let originalDuration = 0;
 let originalStartTime = null;
 let durationPreview = null;
 
+// Drag time preview variable
+let timePreview = null;
+
 // Process simulation data with timeline calculations
 function processSimulationData(simulationData) {
     if (!simulationData) {
@@ -164,7 +167,7 @@ function processSimulationData(simulationData) {
 }
 
 // Render simulation with resources display
-function renderSimulation() {
+function renderSimulation(skipJsonValidation = false) {
     // Prevent recursive rendering loops
     if (window.simulationPlayerActive || window.renderingInProgress) {
         console.log('TIMELINE: Skipping renderSimulation() - already in progress');
@@ -185,24 +188,31 @@ function renderSimulation() {
             durationPreview.remove();
         }
     }
+    // Clean up any existing drag state
+    if (timePreview) {
+        timePreview.remove();
+    }
     isResizing = false;
     resizeType = null;
     resizeHandle = null;
     durationPreview = null;
     isDragging = false;
     draggedTask = null;
-
-    // Basic JSON syntax validation
-    try {
-        JSON.parse(editor.getValue());
-    } catch (e) {
-        simulationContent.innerHTML =
-            '<p style="color: var(--error-color); text-align: center; margin-top: 2rem;">Cannot render: Invalid JSON syntax</p>';
-        return;
-    }
+    timePreview = null;
 
     try {
         loadingOverlay.style.display = "flex";
+
+        // Basic JSON syntax validation (skip if already validated)
+        if (!skipJsonValidation) {
+            try {
+                JSON.parse(editor.getValue());
+            } catch (e) {
+                simulationContent.innerHTML =
+                    '<p style="color: var(--error-color); text-align: center; margin-top: 2rem;">Cannot render: Invalid JSON syntax</p>';
+                return;
+            }
+        }
         const jsonText = editor.getValue();
         const simulationData = JSON.parse(jsonText);
         
@@ -239,8 +249,8 @@ function renderSimulation() {
         const header = document.createElement("div");
         header.className = "simulation-header";
         header.innerHTML = `
-            <h4>${currentSimulationData.article_title}</h4>
-            <p>${currentSimulationData.domain} • ${currentSimulationData.start_time} - ${currentSimulationData.end_time} (${currentSimulationData.total_duration_minutes} minutes)</p>
+            <h4>${sanitizeHTML(currentSimulationData.article_title)}</h4>
+            <p>${sanitizeHTML(currentSimulationData.domain)} • ${sanitizeHTML(currentSimulationData.start_time)} - ${sanitizeHTML(currentSimulationData.end_time)} (${sanitizeHTML(currentSimulationData.total_duration_minutes)} minutes)</p>
         `;
         container.appendChild(header);
 
@@ -254,21 +264,23 @@ function renderSimulation() {
         timeMarkers.style.cssText =
             "position: relative; height: 30px; border-bottom: 1px solid var(--border-color); background: #f8f9fa;";
 
-         const totalMinutes =
-            currentSimulationData.total_duration_minutes;
-        const markerInterval = totalMinutes <= 120 ? 30 : 60; // use 30m for short sims, 60m for long
+         // Use the same scaling values as tasks (from processSimulationData unified scaling)
+        const visualTotalDuration = currentSimulationData.total_duration_minutes;
+        const visualStartTimeMinutes = currentSimulationData.start_time_minutes;
+
+        const markerInterval = visualTotalDuration <= 120 ? 30 : 60; // use 30m for short sims, 60m for long
 
         for (
             let minutes = 0;
-            minutes <= totalMinutes;
+            minutes <= visualTotalDuration;
             minutes += markerInterval
         ) {
             const marker = document.createElement("div");
             marker.className = "time-marker";
-            marker.style.cssText = `position: absolute; left: ${(minutes / totalMinutes) * 100}%; top: 5px; font-size: 0.75rem; color: var(--text-light); transform: translateX(-50%);`;
+            // Use same scaling logic as tasks: relative position within visual duration
+            marker.style.cssText = `position: absolute; left: ${(minutes / visualTotalDuration) * 100}%; top: 5px; font-size: 0.75rem; color: var(--text-light); transform: translateX(-50%);`;
 
-            const totalMinutesFromStart =
-                currentSimulationData.start_time_minutes + minutes;
+            const totalMinutesFromStart = visualStartTimeMinutes + minutes;
             const hours = Math.floor(totalMinutesFromStart / 60);
             const mins = totalMinutesFromStart % 60;
             marker.textContent = `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
@@ -322,8 +334,8 @@ function renderSimulation() {
             }
             
             actorLabel.innerHTML = `
-                <strong>${displayRole}</strong><br>
-                <small>Utilization: ${actor.utilization_percentage}%</small>
+                <strong>${sanitizeHTML(displayRole)}</strong><br>
+                <small>Utilization: ${sanitizeHTML(actor.utilization_percentage)}%</small>
             `;
             lane.appendChild(actorLabel);
 
@@ -346,8 +358,19 @@ function renderSimulation() {
 
                 taskElement.style.cssText = `position: absolute; left: ${task.start_percentage}%; width: ${task.duration_percentage}%; height: 30px; top: 5px; background: white; color: black; border: 2px solid var(--primary-color); border-radius: var(--border-radius-sm); font-size: 0.75rem; overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.5rem; user-select: none;`;
 
-                taskElement.innerHTML = `<span class="task-emoji">${task.emoji}</span>`;
-                taskElement.title = `${task.display_name} (${task.duration} minutes)`;
+                // Gracefully scale emoji down for tasks under 10 minutes
+                let emojiStyle = '';
+                if (task.duration < 10) {
+                    // Linear scale from 16px (at 10 minutes) down to 10px (at 1 minute)
+                    const normalSize = 16;
+                    const minSize = 10;
+                    const scaleFactor = Math.max(0, (task.duration - 1) / 9); // 0 at 1 minute, 1 at 10 minutes
+                    const emojiSize = minSize + (normalSize - minSize) * scaleFactor;
+                    emojiStyle = `style="font-size: ${emojiSize}px; line-height: 1;"`;
+                }
+
+                taskElement.innerHTML = `<span class="task-emoji" ${emojiStyle}>${sanitizeHTML(task.emoji)}</span>`;
+                taskElement.title = `${sanitizeHTML(task.display_name)} (${sanitizeHTML(task.duration)} minutes)`;
 
                 // Add click event listener as backup for jump functionality
                 taskElement.addEventListener("click", (e) => {
@@ -477,6 +500,9 @@ function renderSimulation() {
     }
 }
 
+// Make renderSimulation globally accessible
+window.renderSimulation = renderSimulation;
+
 // Debounced rendering
 function debounceRender() {
     clearTimeout(renderTimeout);
@@ -546,21 +572,42 @@ function handleMouseDown(e) {
             draggedTask = taskElement;
             dragStartX = e.clientX;
             dragStartY = e.clientY;
-            
+
             // Calculate offset from left edge of task to cursor position
             const rect = taskElement.getBoundingClientRect();
             dragOffsetX = e.clientX - rect.left;
-            
+
             originalTaskData = {
                 taskId: taskElement.dataset.taskId,
                 actorId: taskElement.dataset.actorId,
                 start: taskElement.dataset.start,
                 duration: parseInt(taskElement.dataset.duration)
             };
-            
+
             taskElement.style.opacity = '0.7';
             taskElement.style.zIndex = '1000';
-            
+            taskElement.style.overflow = 'visible'; // Allow overlay to show above
+
+            // Create time preview overlay
+            timePreview = document.createElement('div');
+            timePreview.className = 'duration-preview';
+            timePreview.style.cssText = `
+                position: absolute;
+                top: -25px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--primary-color);
+                color: white;
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-size: 0.7rem;
+                white-space: nowrap;
+                z-index: 1001;
+                pointer-events: none;
+            `;
+            timePreview.textContent = originalTaskData.start;
+            taskElement.appendChild(timePreview);
+
             e.preventDefault();
         }
     } catch (error) {
@@ -626,7 +673,7 @@ function handleMouseMove(e) {
                 resizeHandle.style.width = `${newDurationPercentage}%`;
             }
             
-        } else if (isDragging && draggedTask) {
+        } else if (isDragging && draggedTask && timePreview) {
             // --- START OF DRAG FIX ---
             const trackElement = draggedTask.closest('.task-track');
             if (!trackElement) return;
@@ -645,6 +692,15 @@ function handleMouseMove(e) {
 
             // Apply the new position directly to the 'left' property
             draggedTask.style.left = `${newStartPercentage}%`;
+
+            // Calculate and update time preview
+            const newTime = calculateNewTimeFromPosition(newLeftX, trackElement);
+            if (newTime !== null) {
+                const hours = Math.floor(newTime / 60);
+                const mins = newTime % 60;
+                const timeString = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+                timePreview.textContent = timeString;
+            }
             // --- END OF DRAG FIX ---
         }
     } catch (error) {
@@ -664,9 +720,14 @@ function handleMouseMove(e) {
             if (draggedTask) {
                 draggedTask.style.opacity = '';
                 draggedTask.style.zIndex = '';
+                draggedTask.style.overflow = ''; // Restore original overflow
+            }
+            if (timePreview) {
+                timePreview.remove();
             }
             isDragging = false;
             draggedTask = null;
+            timePreview = null;
         }
     }
 }
@@ -739,12 +800,19 @@ function handleMouseUp(e) {
                 draggedTask.style.opacity = '';
                 draggedTask.style.zIndex = '';
                 draggedTask.style.transform = '';
+                draggedTask.style.overflow = ''; // Restore original overflow
             }
-            
+
+            // Clean up time preview
+            if (timePreview) {
+                timePreview.remove();
+            }
+
             // Clean up drag state immediately
             document.body.classList.remove('dragging-active');
             isDragging = false;
             draggedTask = null;
+            timePreview = null;
             originalTaskData = null;
         }
     } catch (error) {
@@ -765,9 +833,14 @@ function handleMouseUp(e) {
                 draggedTask.style.opacity = '';
                 draggedTask.style.zIndex = '';
                 draggedTask.style.transform = '';
+                draggedTask.style.overflow = ''; // Restore original overflow
+            }
+            if (timePreview) {
+                timePreview.remove();
             }
             isDragging = false;
             draggedTask = null;
+            timePreview = null;
             originalTaskData = null;
         }
     }

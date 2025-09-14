@@ -11,7 +11,7 @@ function setupTabs() {
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', async () => {
             const targetTab = button.dataset.tab;
 
             tabButtons.forEach(btn => btn.classList.remove('active'));
@@ -27,44 +27,121 @@ function setupTabs() {
             } else if (targetTab === 'space-editor') {
                 document.getElementById('space-editor-tab').classList.add('active');
                 // Load current simulation data into space editor when tab is opened
-                if (spaceEditor) {
-                    try {
-                        const currentJson = JSON.parse(editor.getValue());
-                        // Force zoom to fit when switching to space editor tab
-                        spaceEditor.loadLayout(currentJson.simulation.layout, true);
-                    } catch(e) {
-                    }
-                }
+                await syncSpaceEditorState();
             } else if (targetTab === 'digital-space') {
                 document.getElementById('digital-space-tab').classList.add('active');
                 // Initialize digital space editor when tab is first opened
-                if (digitalSpaceEditor) {
-                    const digitalCanvas = document.getElementById('digital-space-canvas');
-                    const digitalPropsPanel = document.getElementById('digital-properties-panel-content');
-                    if (!digitalSpaceEditor.canvas) {
-                        digitalSpaceEditor.initialize(digitalCanvas, digitalPropsPanel, editor);
-                    } else {
-                        // Refresh data from current simulation
-                        digitalSpaceEditor.loadFromSimulation();
-                    }
-                }
+                await syncDigitalSpaceState();
             } else if (targetTab === 'display-editor') {
                 document.getElementById('display-editor-tab').classList.add('active');
                 // Initialize display editor when tab is first opened
-                if (displayEditor) {
-                    const displayCanvas = document.getElementById('display-canvas');
-                    const displayPropsPanel = document.getElementById('display-properties-panel-content');
-                    if (!displayEditor.canvas) {
-                        displayEditor.initialize(displayCanvas, displayPropsPanel, editor);
-                    } else {
-                        // Refresh data from current simulation
-                        displayEditor.loadFromSimulation();
-                        displayEditor.renderActiveDisplay();
-                    }
-                }
+                await syncDisplayEditorState();
             }
         });
     });
+}
+
+// State synchronization helper functions
+async function syncSpaceEditorState() {
+    if (!spaceEditor) {
+        console.warn('Space editor not initialized');
+        return;
+    }
+
+    try {
+        // Wait a tick to ensure editor is ready
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        if (!editor) {
+            console.warn('Monaco editor not available for space editor sync');
+            return;
+        }
+
+        const currentJson = JSON.parse(editor.getValue());
+        if (currentJson.simulation && currentJson.simulation.layout) {
+            spaceEditor.loadLayout(currentJson.simulation.layout, true);
+        }
+    } catch (error) {
+        console.warn('Failed to sync space editor state:', error.message);
+    }
+}
+
+async function syncDigitalSpaceState() {
+    if (!digitalSpaceEditor) {
+        console.warn('Digital space editor not initialized');
+        return;
+    }
+
+    try {
+        const digitalCanvas = document.getElementById('digital-space-canvas');
+        const digitalPropsPanel = document.getElementById('digital-properties-panel-content');
+
+        if (!digitalCanvas || !digitalPropsPanel) {
+            console.warn('Digital space canvas or properties panel not found');
+            return;
+        }
+
+        // Wait a tick to ensure DOM is ready
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        // Check if simulation data is available before initializing
+        if (!editor) {
+            console.warn('Monaco editor not available for digital space sync');
+            return;
+        }
+
+        // Validate that we have valid simulation data
+        try {
+            const jsonText = editor.getValue();
+            if (!jsonText || jsonText.trim() === '') {
+                console.warn('No simulation data available yet for digital space');
+                return;
+            }
+            JSON.parse(jsonText); // Test if valid JSON
+        } catch (parseError) {
+            console.warn('Invalid or incomplete simulation data for digital space:', parseError.message);
+            return;
+        }
+
+        if (!digitalSpaceEditor.canvas) {
+            digitalSpaceEditor.initialize(digitalCanvas, digitalPropsPanel, editor);
+        } else {
+            // Refresh data from current simulation
+            digitalSpaceEditor.loadFromSimulation();
+        }
+    } catch (error) {
+        console.warn('Failed to sync digital space state:', error.message);
+    }
+}
+
+async function syncDisplayEditorState() {
+    if (!displayEditor) {
+        console.warn('Display editor not initialized');
+        return;
+    }
+
+    try {
+        const displayCanvas = document.getElementById('display-canvas');
+        const displayPropsPanel = document.getElementById('display-properties-panel-content');
+
+        if (!displayCanvas || !displayPropsPanel) {
+            console.warn('Display canvas or properties panel not found');
+            return;
+        }
+
+        // Wait a tick to ensure DOM is ready
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        if (!displayEditor.canvas) {
+            displayEditor.initialize(displayCanvas, displayPropsPanel, editor);
+        } else {
+            // Refresh data from current simulation
+            displayEditor.loadFromSimulation();
+            displayEditor.renderActiveDisplay();
+        }
+    } catch (error) {
+        console.warn('Failed to sync display editor state:', error.message);
+    }
 }
 
 // History management

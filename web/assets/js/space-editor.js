@@ -112,7 +112,10 @@ class SpaceEditor {
         if (zoomFitBtn) {
             zoomFitBtn.addEventListener('click', () => this.zoomToFit());
         }
-        
+
+        // Initialize zoom button states
+        this.updateZoomButtonStates();
+
         // Layer filtering
         const layerFilter = document.getElementById('layer-filter');
         if (layerFilter) {
@@ -167,6 +170,19 @@ class SpaceEditor {
         // Update font-specific zoom scale with slower increase curve (40% reduction)
         const fontZoomScale = Math.pow(this.view.scale, 0.6);
         this.world.style.setProperty('--current-font-zoom-scale', fontZoomScale);
+    }
+
+    // Helper method to convert screen coordinates to world coordinates
+    screenToWorldCoordinates(screenX, screenY) {
+        const rect = this.canvas.getBoundingClientRect();
+        const canvasX = screenX - rect.left;
+        const canvasY = screenY - rect.top;
+
+        // Transform from screen space to world space
+        const worldX = (canvasX - this.view.x) / this.view.scale;
+        const worldY = (canvasY - this.view.y) / this.view.scale;
+
+        return { x: worldX, y: worldY };
     }
 
     nudgeSelectedRectangle(keyCode) {
@@ -254,6 +270,7 @@ class SpaceEditor {
         this.view.y = (canvasHeight / 2) - (contentHeight / 2 + minY) * this.view.scale;
 
         this.updateViewTransform();
+        this.updateZoomButtonStates();
     }
 
     zoomIn() {
@@ -270,6 +287,7 @@ class SpaceEditor {
         this.view.y = centerY - (centerY - this.view.y) * (this.view.scale / oldScale);
         
         this.updateViewTransform();
+        this.updateZoomButtonStates();
     }
 
     zoomOut() {
@@ -284,39 +302,53 @@ class SpaceEditor {
         // Zoom towards the center
         this.view.x = centerX - (centerX - this.view.x) * (this.view.scale / oldScale);
         this.view.y = centerY - (centerY - this.view.y) * (this.view.scale / oldScale);
-        
+
         this.updateViewTransform();
+        this.updateZoomButtonStates();
+    }
+
+    updateZoomButtonStates() {
+        const zoomInBtn = document.getElementById('zoom-in-btn');
+        const zoomOutBtn = document.getElementById('zoom-out-btn');
+
+        if (zoomInBtn) {
+            zoomInBtn.disabled = this.view.scale >= 5; // Max zoom limit
+        }
+
+        if (zoomOutBtn) {
+            zoomOutBtn.disabled = this.view.scale <= 0.1; // Min zoom limit
+        }
     }
 
     onCanvasWheel(e) {
         e.preventDefault();
-        
+
         // Detect scroll magnitude - different devices send different deltaY values
         const rawDelta = Math.abs(e.deltaY);
         const isTrackpad = rawDelta < 50; // Trackpads typically send smaller values
         const isMouse = rawDelta >= 100;   // Mice typically send larger values
-        
+
         // Normalize delta magnitude to a reasonable range
         let normalizedDelta = Math.min(rawDelta / 100, 3); // Cap at 3x for very sensitive mice
         if (isTrackpad) {
             normalizedDelta = Math.min(rawDelta / 10, 1); // More gentle for trackpads
         }
-        
+
         const direction = e.deltaY > 0 ? -1 : 1;
         const oldScale = this.view.scale;
-        
+
         // Adaptive zoom speed based on current zoom level
         // At 1x zoom: base speed, at higher zooms: slower, at lower zooms: faster
         const baseSpeed = 0.02; // Much slower base speed
         const adaptiveSpeed = baseSpeed * Math.pow(this.view.scale, 0.3); // Gentle scaling curve
-        
+
         // Calculate zoom step with maximum limits
         let zoomStep = direction * adaptiveSpeed * normalizedDelta;
-        
+
         // Maximum zoom step limits to prevent dramatic jumps
         const maxStep = this.view.scale * 0.15; // Never change more than 15% of current scale
         zoomStep = Math.max(-maxStep, Math.min(maxStep, zoomStep));
-        
+
         // Apply exponential zoom curve for smoother feel
         if (direction > 0) {
             // Zooming in: multiplicative
@@ -325,15 +357,17 @@ class SpaceEditor {
             // Zooming out: multiplicative
             this.view.scale = Math.max(0.1, this.view.scale / (1 + Math.abs(zoomStep)));
         }
-        
-        // Zoom towards the cursor
+
+        // Zoom towards the cursor - use proper coordinate conversion
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
-        this.view.x = mouseX - (mouseX - this.view.x) * (this.view.scale / oldScale);
-        this.view.y = mouseY - (mouseY - this.view.y) * (this.view.scale / oldScale);
-        
+        const scaleRatio = this.view.scale / oldScale;
+        this.view.x = mouseX - (mouseX - this.view.x) * scaleRatio;
+        this.view.y = mouseY - (mouseY - this.view.y) * scaleRatio;
+
         this.updateViewTransform();
+        this.updateZoomButtonStates();
     }
 
     onKeyDown(e) {
@@ -461,7 +495,7 @@ class SpaceEditor {
         const rectEl = document.createElement('div');
         rectEl.className = 'location-rect';
         rectEl.dataset.id = loc.id;
-        rectEl.innerHTML = `<span class="location-text">${loc.name || loc.id}</span>`;
+        rectEl.innerHTML = `<span class="location-text">${sanitizeHTML(loc.name || loc.id)}</span>`;
         rectEl.addEventListener('mousedown', (e) => this.onRectMouseDown(e, loc.id));
         
         // Apply 3D transformation
@@ -734,8 +768,8 @@ class SpaceEditor {
                 const connectionDiv = document.createElement('div');
                 connectionDiv.className = 'connection-item';
                 connectionDiv.innerHTML = `
-                    <span>${connectedLoc ? connectedLoc.name : connectionId}</span>
-                    <button type="button" class="remove-connection" data-index="${index}">×</button>
+                    <span>${sanitizeHTML(connectedLoc ? connectedLoc.name : connectionId)}</span>
+                    <button type="button" class="remove-connection" data-index="${sanitizeHTML(index)}">×</button>
                 `;
                 connectedDiv.appendChild(connectionDiv);
             });
@@ -858,20 +892,13 @@ class SpaceEditor {
 
         if (this.isDrawing) {
             // Convert screen coordinates to world coordinates
-            const rect = this.canvas.getBoundingClientRect();
-            const screenX = e.clientX - rect.left;
-            const screenY = e.clientY - rect.top;
-
-            // Transform to world coordinates accounting for zoom and pan
-            const worldX = (screenX - this.view.x) / this.view.scale;
-            const worldY = (screenY - this.view.y) / this.view.scale;
-
-            this.startCoords = { x: worldX, y: worldY };
+            const worldCoords = this.screenToWorldCoordinates(e.clientX, e.clientY);
+            this.startCoords = { x: worldCoords.x, y: worldCoords.y };
 
             this.activeRectEl = document.createElement('div');
             this.activeRectEl.className = 'location-rect selected';
-            this.activeRectEl.style.left = `${worldX}px`;
-            this.activeRectEl.style.top = `${worldY}px`;
+            this.activeRectEl.style.left = `${worldCoords.x}px`;
+            this.activeRectEl.style.top = `${worldCoords.y}px`;
             this.activeRectEl.style.width = '0px';
             this.activeRectEl.style.height = '0px';
 
@@ -906,17 +933,13 @@ class SpaceEditor {
         this.selectedRectId = id;
         
         // Calculate drag offset in world coordinates for proper alignment
-        const rect = this.canvas.getBoundingClientRect();
-        const screenX = e.clientX - rect.left;
-        const screenY = e.clientY - rect.top;
-        const worldMouseX = (screenX - this.view.x) / this.view.scale;
-        const worldMouseY = (screenY - this.view.y) / this.view.scale;
+        const worldMouseCoords = this.screenToWorldCoordinates(e.clientX, e.clientY);
         const rectWorldX = parseInt(this.activeRectEl.style.left) || 0;
         const rectWorldY = parseInt(this.activeRectEl.style.top) || 0;
         
         this.dragOffset = {
-            x: worldMouseX - rectWorldX,
-            y: worldMouseY - rectWorldY
+            x: worldMouseCoords.x - rectWorldX,
+            y: worldMouseCoords.y - rectWorldY
         };
 
         // Initialize currentDragPosition to the starting position of the drag
@@ -939,13 +962,10 @@ class SpaceEditor {
 
         // Handle Drawing a new rectangle
         if (this.isDrawing && this.activeRectEl) {
-            const rect = this.canvas.getBoundingClientRect();
-            const screenX = e.clientX - rect.left;
-            const screenY = e.clientY - rect.top;
-
             // Transform to world coordinates
-            const worldX = (screenX - this.view.x) / this.view.scale;
-            const worldY = (screenY - this.view.y) / this.view.scale;
+            const worldCoords = this.screenToWorldCoordinates(e.clientX, e.clientY);
+            const worldX = worldCoords.x;
+            const worldY = worldCoords.y;
 
             const width = Math.abs(worldX - this.startCoords.x);
             const height = Math.abs(worldY - this.startCoords.y);
@@ -959,12 +979,9 @@ class SpaceEditor {
         }
         // Handle Dragging an existing rectangle
         else if (this.isDragging && this.activeRectEl) {
-            const rect = this.canvas.getBoundingClientRect();
-            const screenX = e.clientX - rect.left;
-            const screenY = e.clientY - rect.top;
-
-            let worldX = (screenX - this.view.x) / this.view.scale;
-            let worldY = (screenY - this.view.y) / this.view.scale;
+            const worldCoords = this.screenToWorldCoordinates(e.clientX, e.clientY);
+            const worldX = worldCoords.x;
+            const worldY = worldCoords.y;
 
             const proposedX = worldX - this.dragOffset.x;
             const proposedY = worldY - this.dragOffset.y;

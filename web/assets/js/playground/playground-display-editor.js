@@ -598,18 +598,18 @@ class DisplayEditor {
                     overflow: hidden;
                     color: ${textColor};
                 ">
-                    <span class="element-icon">${typeInfo.icon}</span>
-                    <span class="element-text">${element.content.value || ''}</span>
+                    <span class="element-icon">${sanitizeHTML(typeInfo.icon)}</span>
+                    <span class="element-text">${sanitizeHTML(element.content.value || '')}</span>
                 </div>
             `;
         } else if (element.content.type === 'image') {
             rectEl.innerHTML = `
                 <div class="element-content" style="
-                    width: 100%; 
+                    width: 100%;
                     height: 100%;
                     overflow: hidden;
                 ">
-                    <img src="${element.content.value}" style="width: 100%; height: 100%; object-fit: cover;" draggable="false" />
+                    <img src="${sanitizeHTML(element.content.value)}" style="width: 100%; height: 100%; object-fit: cover;" draggable="false" />
                 </div>
             `;
         } else {
@@ -621,7 +621,7 @@ class DisplayEditor {
                     height: 100%;
                     color: ${textColor};
                 ">
-                    ${typeInfo.icon}
+                    ${sanitizeHTML(typeInfo.icon)}
                 </div>
             `;
         }

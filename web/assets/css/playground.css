@@ -676,6 +676,7 @@ body {
     display: flex;
     flex-direction: column;
     height: 100%;
+    overflow: hidden;
 }
 
 .validation-stats-inline {
@@ -752,6 +753,7 @@ body {
     overflow-y: auto;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
+    min-height: 0;
 }
 
 .validation-group {

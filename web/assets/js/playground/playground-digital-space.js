@@ -327,8 +327,8 @@ class DigitalSpaceEditor {
         const icon = this.getLocationIcon(location.storage_type);
         rectEl.innerHTML = `
             <div class="location-label">
-                <span class="location-icon">${icon}</span>
-                <span class="location-name">${location.name}</span>
+                <span class="location-icon">${sanitizeHTML(icon)}</span>
+                <span class="location-name">${sanitizeHTML(location.name)}</span>
             </div>
         `;
         
@@ -564,6 +564,10 @@ class DigitalSpaceEditor {
 
         try {
             const jsonText = this.monacoEditor.getValue();
+            if (!jsonText || jsonText.trim() === '') {
+                console.warn('DIGITAL-SPACE: No simulation data available');
+                return;
+            }
             const simulation = JSON.parse(jsonText);
             
             // Load digital locations

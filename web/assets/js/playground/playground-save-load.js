@@ -285,7 +285,7 @@ function openSaveDialog() {
                 localSaveResultDiv.style.display = 'none';
             } else {
                 // Mock save to local file
-                const fileNameBase = (localFileNameInput.value.trim() || 'simulation').replace(/\.json$|\.zip$/i, '');
+                const fileNameBase = localFileNameInput.value.trim() || 'simulation';
                 const includeMetrics = includeCustomMetricsCheckbox.checked;
 
                 if (includeMetrics) {

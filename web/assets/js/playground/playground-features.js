@@ -157,20 +157,25 @@ async function initializeEmojiPicker() {
             // Attach to existing emoji input fields by ID
             const taskEmojiInput = document.getElementById('task-emoji-input');
             const objectEmojiInput = document.getElementById('object-emoji-input');
-            
+            const metricEmojiInput = document.getElementById('metric-emoji-input');
+
             if (taskEmojiInput) {
                 emojiPicker.attachToInput(taskEmojiInput, { autoOpen: true });
             }
-            
+
             if (objectEmojiInput) {
                 emojiPicker.attachToInput(objectEmojiInput, { autoOpen: true });
+            }
+
+            if (metricEmojiInput) {
+                emojiPicker.attachToInput(metricEmojiInput, { autoOpen: true });
             }
             
             // Attach to all emoji input fields by class
             const emojiFields = document.querySelectorAll('.object-emoji, input[maxlength="2"]');
             emojiFields.forEach(field => {
                 // Skip if already attached by ID
-                if (field.id === 'task-emoji-input' || field.id === 'object-emoji-input') {
+                if (field.id === 'task-emoji-input' || field.id === 'object-emoji-input' || field.id === 'metric-emoji-input') {
                     return;
                 }
                 

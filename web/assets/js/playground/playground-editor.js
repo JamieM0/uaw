@@ -489,9 +489,24 @@ function validateJSON() {
             jsonStatus.title = "JSON syntax is valid";
         }
 
+        // Check if simulation content currently shows any error state and re-render if needed
+        const simulationContent = document.getElementById("simulation-content");
+        if (simulationContent && (
+            simulationContent.innerHTML.includes("Cannot render:") ||
+            simulationContent.innerHTML.includes("Render Error:") ||
+            simulationContent.innerHTML.includes("var(--error-color)")
+        )) {
+            // JSON is now valid after being in an error state, trigger a re-render
+            if (typeof window.renderSimulation === 'function') {
+                window.renderSimulation(true); // Skip JSON validation since we already validated
+            } else if (typeof renderSimulation === 'function') {
+                renderSimulation(true); // Skip JSON validation since we already validated
+            }
+        }
+
         // Get merged catalog (built-in + custom metrics)
         const mergedCatalog = getMergedMetricsCatalog();
-        
+
         // Only run simulation metrics validation if auto-validation is enabled
         if (window.autoValidationEnabled !== false && mergedCatalog && mergedCatalog.length > 0 && window.SimulationValidator) {
             const validator = new window.SimulationValidator(parsed);

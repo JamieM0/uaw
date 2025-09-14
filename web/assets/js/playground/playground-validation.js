@@ -92,26 +92,28 @@ function displayValidationGroup(groupId, results, icon, collapsedByDefault = fal
         // Generate HTML for results
         const html = sortedResults.map(result => {
             const statusIcon = getStatusIcon(result.status);
-            const metricName = getMetricDisplayName(result.metricId);
+            const metricName = sanitizeHTML(getMetricDisplayName(result.metricId));
+            const sanitizedMessage = sanitizeHTML(result.message);
             const metric = mergedCatalog.find(m => m.id === result.metricId);
-            
+
             // Add example and disable buttons for builtin metrics in Metrics Editor mode
             let actionButtons = '';
             if (isMetricsMode && metric && metric.source === 'builtin') {
+                const sanitizedMetricId = sanitizeHTML(result.metricId);
                 actionButtons = `
                     <div class="validation-actions">
-                        <button class="example-btn" data-metric-id="${result.metricId}" title="Insert validation code example">📋</button>
-                        <button class="disable-btn" data-metric-id="${result.metricId}" title="Disable this metric">Disable</button>
+                        <button class="example-btn" data-metric-id="${sanitizedMetricId}" title="Insert validation code example">📋</button>
+                        <button class="disable-btn" data-metric-id="${sanitizedMetricId}" title="Disable this metric">Disable</button>
                     </div>
                 `;
             }
-            
+
             return `
-                <div class="validation-result-item ${result.status}" data-metric-id="${result.metricId}" data-clickable="true">
+                <div class="validation-result-item ${result.status}" data-metric-id="${sanitizeHTML(result.metricId)}" data-clickable="true">
                     <div class="validation-result-status ${result.status}"></div>
                     <div class="validation-result-details">
                         <div class="validation-result-name">
-                            ${metricName} <span class="validation-message-inline">— ${result.message}</span>
+                            ${metricName} <span class="validation-message-inline">— ${sanitizedMessage}</span>
                         </div>
                     </div>
                     ${actionButtons}
