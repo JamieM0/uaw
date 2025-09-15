@@ -2,105 +2,115 @@
   <img src="https://raw.githubusercontent.com/jamiem0/uaw/main/web/assets/images/logo-primary-stacked.png" alt="UAW Logo"/>
 </p>
 
-The **Universal Automation Wiki (UAW)** is an open-source platform for mapping, simulating, and optimizing real-world processes. We aim to create a unified, data-driven knowledge base that tracks global automation progress, identifies technological gaps, and helps users explore opportunities for improvement in any domain.
+# Universal Automation Wiki
 
-Unlike traditional top-down planning, UAW uses a unique **"bottom-up" methodology** and **Iterative AI**. We start with existing, real-world components and build practical, grounded process models that can be simulated and validated against hundreds of metrics.
+The **Universal Automation Wiki (UAW)** is an interactive simulation platform for designing, validating, and optimising real-world automation processes. Build dynamic workflow models with drag-and-drop timeline editing, resource management, and real-time validation against hundreds of industry-standard metrics.
 
-**[Explore the Live Wiki](https://universalautomation.wiki)   or   [Try the Simulation Playground](https://universalautomation.wiki/playground)**
+Unlike traditional process documentation, UAW combines collaborative knowledge building with hands-on simulation capabilities, allowing users to not only explore automation processes but also test and validate them through our interactive playground.
+
+**[Try the Simulation Playground](https://universalautomation.wiki/playground.html)   |   [Explore the Wiki](https://universalautomation.wiki)**
 
 ---
 
-## The Problem: Siloed and Abstract Knowledge
+## The Problem: Abstract Planning vs. Real Implementation
 
-Today, understanding and planning automation is difficult. Knowledge is fragmented across different industries, progress relies on biased expert opinions, and most process maps are static diagrams that can't be tested or validated. This makes it incredibly hard to identify real technology gaps and create realistic automation roadmaps.
+Traditional automation planning relies on static diagrams and expert intuition, making it difficult to identify genuine bottlenecks, resource conflicts, or implementation challenges. Most process models can't be tested, validated, or optimised before expensive real-world implementation.
 
+## The Solution: Interactive Simulation-First Design with Knowledge Base Support
 
-## The Solution: A Dynamic, Data-Driven Wiki
+UAW bridges this gap with a **simulation-first approach** backed by collaborative knowledge building.
 
-UAW aims to tackle this by creating a **connected, transparent, and executable** knowledge base.
+*   **Interactive Timeline Modelling:** Design workflows with drag-and-drop task scheduling, resource allocation, and actor coordination.
+*   **Real-Time Validation:** Immediate feedback on structural integrity, resource conflicts, timing constraints, and economic feasibility.
+*   **Multi-Persona Analysis:** Evaluate simulations from different perspectives—hobbyist, researcher, investor, educator, field expert—with customised validation criteria.
+*   **Knowledge Base Integration:** Build upon a growing library of validated automation processes across industries.
 
-*   **Unified Platform:** Maps processes across all domains, from baking bread to manufacturing microchips.
-*   **Data-Driven:** Replaces subjective opinion with objective, community-validated metrics.
-*   **Dynamic Simulation:** Every process is a live simulation that can be tested, optimized, and improved.
-*   **Transparent:** Our "bottom-up" approach clearly shows where innovation is needed to achieve full automation.
+## Core Simulation Features
 
-## Core Features
+*   **Interactive Playground:** Web-based simulation editor with Monaco-powered JSON editing and visual timeline manipulation
+*   **Real-Time Validation Engine:** Validate against built-in metrics including resource flow analysis, timing constraints, economic calculations, and structural integrity checks
+*   **Custom Metrics in the Validation Engine:** Users can define their own custom metrics to validate their simulations and workflows
+*   **Visual Timeline Editor:** Drag-and-drop interface for editing task timing, resource allocation, and actor coordination
+*   **Process Breakdown Engine:** AI-powered hierarchical task decomposition using local LLMs for realistic workflow generation
+*   **Simulation Library:** Collection of validated automation processes sourced from wiki contributions
+*   **Community-Driven Validation:** Collaborative improvement of simulation models through community feedback
+*   **Extensible Metrics System:** Add custom validation rules and contribute to the growing metrics catalogue
 
-*   📚 **Hierarchical Process Mapping:** Articles break down complex tasks (e.g., *breadmaking*) into hierarchical JSON trees, creating a structured process map.
-*   ⚙️ **Interactive Process Simulation:** Every article includes a dynamic simulation view, showing actors, equipment, and tasks playing out over time.
-*   📊 **Extensible Validation Engine:** Simulations are checked against a growing catalog of metrics and constraints (`metrics-catalog.json`) to score their realism, efficiency, and business readiness.
-*   🔬 **Live Simulation Playground:** A powerful web-based tool to edit, render, and validate simulation JSON in real-time, with interactive drag-and-drop and resizing of tasks.
-*   🤖 **AI-Powered Generation:** Local Language Models (via Ollama) are used to generate the initial process trees and simulation data, providing a strong foundation for community improvement.
-*   🤝 **Community-Driven:** The platform is built to evolve through community contributions, with a formal process for proposing and implementing new validation metrics.
+## How Simulations Work
 
-## How It Works: Technical Overview
+UAW transforms abstract automation concepts into testable, interactive models:
 
-UAW is a static website powered by a backend generation pipeline.
+1.  **Process Design:** Use our interactive playground to design automation workflows with timeline-based task scheduling
+2.  **Resource Management:** Define actors, equipment, materials, and coordinate their interactions across the simulation timeline
+3.  **Real-Time Validation:** Simulations are continuously validated against structural, economic, and operational metrics as you design
+4.  **Multi-Perspective Analysis:** Evaluate your simulation from different viewpoints using persona-specific validation criteria
+5.  **Export & Iterate:** Save validated models as JSON for implementation planning, sharing, or further development
+6.  **Knowledge Base Contribution:** Share successful simulations back to the community wiki for others to learn from
 
-1.  **Content Generation:** A local LLM generates a process as a hierarchical `tree.json` file.
-2.  **Simulation Generation:** A Python script (`routines/simulation.py`) uses the LLM to convert the tree into a structured `simulation.json`, defining actors, equipment, resources, and tasks.
-3.  **Validation & Metrics:** The `simulation.json` is validated against a central `metrics_catalog.json` using local LLMs via ollama. 
-    The client-side **Simulation Playground** uses a JavaScript validator (`simulation-validator.js`) to provide real-time feedback.
-5.  **Static Site Rendering:** A Python script (`routines/assemble.py`) uses Jinja2 templates to render the final HTML pages, embedding the simulation data directly into the page for the JavaScript viewer to use.
-6.  **Deployment:** The entire `/web` directory is deployed as a static site via GitHub Pages.
+## Simulation Use Cases
+
+### Manufacturing Process Design
+Model production lines, quality control workflows, and equipment coordination with realistic timing constraints. Test resource allocation strategies and identify bottlenecks before physical implementation.
+
+### Service Workflow Optimisation
+Design customer service processes, healthcare delivery workflows, and administrative automation with multi-actor coordination. Validate timing and resource requirements.
+
+### Training & Demonstration
+Create interactive process models for training programmes. Visual timeline simulations make complex automation concepts tangible and understandable.
+
+### Investment & Feasibility Analysis
+Evaluate automation opportunities with economic metrics, ROI calculations, and operational feasibility analysis. Test scenarios before committing resources.
+
+### Research & Prototyping
+Prototype automation scenarios in a risk-free environment. Test different approaches and validate assumptions with quantitative metrics.
+
+### Compliance & Safety Planning
+Model workflows with safety constraints and regulatory requirements. Validate processes against compliance metrics before implementation.
 
 ## Contributing
 
-We welcome contributions of all kinds—from developers and domain experts to anyone passionate about automation. The best way to start is by improving simulations and our validation system.
+We welcome contributions to expand our simulation platform capabilities and knowledge base.
 
-#### 🌟 **Proposing a New Metric**
+#### 🌟 **Proposing New Validation Metrics**
 
-This is the most impactful way to contribute! Our goal is to build a massive catalog of validation checks.
+The most impactful way to contribute to our simulation capabilities:
 
-1.  **Have an idea?** Think of a new check (e.g., "Does the simulation account for equipment maintenance?" or "Is the cost of labor calculated correctly?").
-2.  **Propose it:** Open a **[New Metric Proposal](https://github.com/JamieM0/uaw/issues)** using our issue template.
-3.  **Discuss:** We'll discuss and refine the metric's definition with the community.
-4.  **Implement:** Once approved, you or another contributor can submit a Pull Request to add the metric to `metrics-catalog.json` and, if needed, implement the logic in `simulation-validator.js`.
+1.  **Identify a gap:** Consider metrics like "equipment maintenance scheduling", "energy consumption analysis", or "worker safety compliance"
+2.  **Propose it:** Open a **[New Metric Proposal](https://github.com/JamieM0/uaw/issues)** using our issue template
+3.  **Collaborate:** Discuss and refine the metric definition with the community
+4.  **Implement:** Submit a Pull Request adding the metric to `metrics-catalogue.json` and corresponding validation logic
 
-#### 💻 **Code Contributions**
+#### 💻 **Simulation Platform Development**
 
-1.  Fork the repository.
-2.  Create a new branch (`git checkout -b feature/your-awesome-feature`).
-3.  Make your changes.
-4.  Submit a Pull Request with a clear description of your changes.
+1.  Fork the repository
+2.  Create a feature branch (`git checkout -b feature/simulation-enhancement`)
+3.  Implement your changes to the playground, validation engine, or simulation models
+4.  Submit a Pull Request with a clear description
 
-Check out our **[Issues tab](https://github.com/jamiem0/uaw/issues)** for tasks that need help!
+#### 📚 **Knowledge Base Contributions**
 
-## Project Roadmap
+Share your automation expertise by contributing process documentation that feeds into our simulation library. Well-documented processes become the foundation for new simulation templates.
 
-We have an exciting future planned for UAW. Here are some of the key features on our roadmap:
-
--   [ ] **Batch Process Simulation:** Support for simulating multiple runs of a process (e.g., baking 100 loaves instead of 1).
--   [ ] **Advanced Economic Metrics:** Implement investor-focused checks for profitability, equipment ROI, and cost-per-unit analysis.
--   [ ] **LLM-Powered Validation:** Integrate local LLMs into the validation pipeline for nuanced "realism" checks.
--   [ ] **Real-World Pilot Program:** Partner with a business (like a local bakery) to validate and refine a simulation against real-world operational data.
--   [ ] **Community Contribution Workflow:** Streamline the process for users to submit improved simulations from the playground back to the main wiki.
+Check our **[Issues](https://github.com/jamiem0/uaw/issues)** for specific tasks that need help!
 
 ## Licensing
 
-The Universal Automation Wiki is an open-core project and uses a hybrid licensing model to protect the core engine while encouraging broad adoption and a commercial ecosystem.
+All files in this project are licensed under the **GNU Affero General Public License v3.0** unless explicitly stated otherwise. The full text of this licence can be found in the [LICENSE](LICENSE) file.
 
-The project is generally licensed under the **GNU Affero General Public License v3.0**, the full text of which can be found in the [LICENSE](LICENSE) file.
+**Enterprise Licensing:** For organisations requiring more flexible licensing terms for commercial deployment, enterprise licences are available for purchase. Please contact us at [contact@universalautomation.wiki](mailto:contact@universalautomation.wiki) to discuss enterprise licensing options that best suit your requirements.
 
-However, specific parts of the project intended for broader integration are licensed under the more permissive **Apache License 2.0**, the full text of which can be found in the [LICENSE-APACHE](LICENSE-APACHE) file. 
-
-This hybrid model is designed to create a clear legal and technical boundary. Proprietary modules or integrations that you build are not considered "derivative works" of the core engine, provided they interact with it solely through the components we have licensed under Apache 2.0. This ensures the AGPL's strong copyleft provisions do not extend to your custom code. As a result, you can confidently build commercial or private software on UAW, knowing your intellectual property remains your own.
-
-### Component Breakdown
-
-*   **AGPL-3.0 Licensed (The Core Engine):**
-    *   `/routines/simulation.py`
-    *   `/routines/constraint_processor.py`
-    *   All core simulation generation and validation logic.
-    *   This is the "heart" of UAW. Any modifications to this core code, when used over a network, must be shared back with the community.
-
-*   **Apache 2.0 Licensed (Modules & APIs):**
-    *   This includes all future client libraries, provider integrations, and pluggable modules designed to interact with the core engine. You can build proprietary, closed-source modules using these components without the AGPL obligations applying to your module code.
-
-If you are unsure of the relevant license, please get in touch.
+This licensing approach ensures the core platform remains open-source and community-driven whilst providing options for commercial organisations seeking to integrate UAW capabilities into proprietary systems.
 
 ## Contact
 
-For more information, please reach out via email at [contact@universalautomation.wiki](mailto:contact@universalautomation.wiki), or [jamie@jmatthews.uk](mailto:jamie@jmatthews.uk).
+**Get Started:** [Try the Simulation Playground](https://universalautomation.wiki/playground.html)
 
-Thank you for your interest in the Universal Automation Wiki!
+**Explore:** [Browse the Wiki](https://universalautomation.wiki)
+
+**Questions:** [contact@universalautomation.wiki](mailto:contact@universalautomation.wiki) | [jamie@jmatthews.uk](mailto:jamie@jmatthews.uk)
+
+**Contribute:** [GitHub Issues](https://github.com/jamiem0/uaw/issues) | [Metric Proposals](https://github.com/JamieM0/uaw/issues)
+
+---
+
+Thank you for your interest in the Universal Automation Wiki! Join us in building the future of interactive automation simulation.

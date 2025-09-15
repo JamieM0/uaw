@@ -21,9 +21,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
                 <nav class="main-nav">
                     <ul>
-                        <li><a href="/about">About</a></li>
+                        <li><a href="/playground.html">Playground</a></li>
+                        <li><a href="/#categories">Examples</a></li>
                         <li><a href="/docs">Documentation</a></li>
-                        <li><a href="/playground">Playground</a></li>
+                        <li><a href="/about.html">About</a></li>
                         <li><a href="https://github.com/JamieM0/uaw" target="_blank">GitHub</a></li>
                     </ul>
                 </nav>
@@ -54,8 +55,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         <div class="footer-links-column">
                             <h4>Platform</h4>
                             <ul>
-                                <li><a href="/about">About</a></li>
-                                <li><a href="/playground">Simulation Playground</a></li>
+                                <li><a href="/about.html">About</a></li>
+                                <li><a href="/playground.html">Simulation Playground</a></li>
                             </ul>
                         </div>
                         <div class="footer-links-column">
