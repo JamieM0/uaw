@@ -1709,6 +1709,72 @@ body.tutorial-active #auto-render-toggle {
     border-left: 1px solid var(--border-color);
 }
 
+    /* --- Dark-mode overrides for simulation render area --- */
+    /* Force simulation containers and common child elements to use dark backgrounds
+       so they don't show up as white when the page is in dark mode. These use
+       !important to beat any inline or component-specific white backgrounds. */
+    [data-theme="dark"] .simulation-panel,
+    [data-theme="dark"] .simulation-content,
+    [data-theme="dark"] .simulation-timeline,
+    [data-theme="dark"] .simulation-container,
+    [data-theme="dark"] .task-track,
+    [data-theme="dark"] .actor-lanes,
+    [data-theme="dark"] .actor-lane,
+    [data-theme="dark"] #digital-space-canvas,
+    [data-theme="dark"] #display-canvas,
+    [data-theme="dark"] .player-controls {
+        background: var(--bg-color, #0f1113) !important;
+        color: var(--text-color, #e6eef3) !important;
+    }
+
+    /* Child elements that may have hard-coded white backgrounds */
+    [data-theme="dark"] .task-block,
+    [data-theme="dark"] .resource-item,
+    [data-theme="dark"] .time-marker,
+    [data-theme="dark"] .simulation-playhead,
+    [data-theme="dark"] .task-block::before,
+    [data-theme="dark"] .task-block::after {
+        background: var(--bg-surface, #16171a) !important;
+        color: var(--text-color, #e6eef3) !important;
+        border-color: var(--border-color, #2a2d31) !important;
+    }
+
+    /* Ensure any canvas elements get a dark backing as well */
+    [data-theme="dark"] canvas {
+        background-color: transparent !important;
+    }
+
+    /* If there are inline styles setting white backgrounds, prefer these darker values */
+    [data-theme="dark"] [style*="background" i] {
+        background: var(--bg-surface, #16171a) !important;
+    }
+
+    /* Fix for simulation header and its border in dark mode */
+    [data-theme="dark"] .simulation-header {
+        background: var(--bg-surface, #16171a) !important;
+        color: var(--text-color, #e6eef3) !important;
+        border-color: var(--border-color, #2a2d31) !important;
+    }
+
+    [data-theme="dark"] .simulation-header,
+    [data-theme="dark"] .simulation-header * {
+        background: transparent !important;
+        color: var(--text-color, #e6eef3) !important;
+    }
+
+    /* Fix simulation-container border/shadow in dark mode */
+    [data-theme="dark"] .simulation-container {
+        background: var(--bg-color, #0f1113) !important;
+        border: 1px solid var(--border-color, #2a2d31) !important;
+        box-shadow: none !important;
+    }
+
+    [data-theme="dark"] .simulation-container * {
+        box-shadow: none !important;
+    }
+
+
+
 #player-play-pause-btn {
     font-size: 1.25rem;
     background: none;
@@ -2476,4 +2542,360 @@ body.dragging-active * {
   100% {
     background-color: rgba(255, 223, 0, 0.1) !important;
   }
+}
+
+/* Dark Mode Specific Styles */
+[data-theme="dark"] .playground-header {
+    background: rgba(26, 26, 26, 0.98);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    /* Firefox fallback */
+    background: rgba(26, 26, 26, 0.95);
+}
+
+[data-theme="dark"] .header-actions button {
+    background: var(--bg-light);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .header-actions button:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary-color);
+}
+
+[data-theme="dark"] .header-actions .action-btn {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+[data-theme="dark"] .header-actions .action-btn:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+[data-theme="dark"] .mode-toggle-btn.dark-active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.mode-toggle-btn.dark-active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+[data-theme="dark"] .dialog {
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .dialog input,
+[data-theme="dark"] .dialog select,
+[data-theme="dark"] .dialog textarea {
+    background: var(--bg-light);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .dialog input:focus,
+[data-theme="dark"] .dialog select:focus,
+[data-theme="dark"] .dialog textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 159, 219, 0.2);
+}
+
+[data-theme="dark"] .validation-result-item.error {
+    background: rgba(248, 113, 113, 0.1);
+}
+
+[data-theme="dark"] .validation-result-item.warning {
+    background: rgba(251, 191, 36, 0.1);
+}
+
+[data-theme="dark"] .validation-result-item.success {
+    background: rgba(74, 222, 128, 0.1);
+}
+
+[data-theme="dark"] .validation-result-item.suggestion {
+    background: rgba(74, 159, 219, 0.1);
+}
+
+/* Simulation Timeline Dark Mode Styles */
+[data-theme="dark"] .simulation-content {
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .simulation-timeline {
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .task-block {
+    background: var(--bg-light) !important;
+    color: var(--text-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+[data-theme="dark"] .task-block:hover {
+    background: var(--bg-hover) !important;
+    border-color: var(--primary-color) !important;
+}
+
+[data-theme="dark"] .actor-lane {
+    background: var(--bg-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .time-marker {
+    background: var(--bg-light);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .resource-item {
+    background: var(--bg-light);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .resource-info {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .resource-name {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .resources-panel {
+    background: var(--bg-light);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .tab-content {
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .tab-btn {
+    background: var(--bg-light);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .tab-btn.active {
+    background: var(--bg-color);
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+[data-theme="dark"] .tab-btn:hover {
+    background: var(--bg-hover);
+}
+
+/* Space Editor Dark Mode Styles */
+[data-theme="dark"] .space-canvas {
+    background-color: var(--bg-color) !important;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px) !important;
+}
+
+[data-theme="dark"] #digital-space-canvas {
+    background-color: var(--bg-color) !important;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px) !important;
+}
+
+[data-theme="dark"] #display-canvas {
+    background-color: var(--bg-color) !important;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px) !important;
+}
+
+[data-theme="dark"] .space-editor-container {
+    background: var(--bg-color);
+}
+
+[data-theme="dark"] .properties-panel-container {
+    background: var(--bg-light);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .properties-panel-header {
+    background: var(--bg-dark);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .options-panel-container {
+    background: var(--bg-light);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .options-panel-header {
+    background: var(--bg-dark);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #properties-panel-content,
+[data-theme="dark"] #digital-properties-panel-content,
+[data-theme="dark"] #display-properties-panel-content,
+[data-theme="dark"] #options-panel-content,
+[data-theme="dark"] #digital-options-panel-content,
+[data-theme="dark"] #display-options-panel-content {
+    background: var(--bg-light);
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .option-field {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .option-field label {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .option-field input,
+[data-theme="dark"] .option-field select {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .zoom-controls {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+[data-theme="dark"] .zoom-btn {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .zoom-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary-color);
+}
+
+/* Simulation Library Dropdown */
+[data-theme="dark"] .dropdown-content {
+    background: var(--bg-light);
+    border-color: var(--border-color);
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+}
+
+[data-theme="dark"] .dropdown-content a {
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .dropdown-content a:hover {
+    background: var(--bg-hover);
+}
+
+/* Additional Dark Mode Styles */
+[data-theme="dark"] .playground-main {
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .validation-panel {
+    background: var(--bg-light);
+}
+
+[data-theme="dark"] .validation-header {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .validation-content {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .validation-results-grouped {
+    background: var(--bg-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .btn,
+[data-theme="dark"] .btn-primary,
+[data-theme="dark"] .btn-secondary {
+    background: var(--bg-light);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .btn-primary {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+[data-theme="dark"] .btn:hover,
+[data-theme="dark"] .btn-secondary:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary-color);
+}
+
+[data-theme="dark"] .btn-primary:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+[data-theme="dark"] .placeholder {
+    color: var(--text-light);
+}
+
+/* Panel borders and dividers */
+[data-theme="dark"] .panel-content {
+    background: var(--bg-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .json-editor-panel {
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .simulation-panel {
+    background: var(--bg-color);
+}
+
+[data-theme="dark"] .playground-bottom {
+    background: var(--bg-light);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .playground-top {
+    border-color: var(--border-color);
+}
+
+/* Timeline Header and Background Dark Mode Styles */
+[data-theme="dark"] .timeline-header {
+    background: var(--bg-light) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .timeline-time-axis {
+    background: var(--bg-light) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .timeline-time-markers {
+    background: var(--bg-light);
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .gantt-actor-row {
+    border-color: var(--border-color) !important;
+    background: var(--bg-color);
+}
+
+[data-theme="dark"] .expanded-timeline-header {
+    background: var(--bg-light) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .expanded-timeline-header h5 {
+    color: var(--text-color) !important;
 }

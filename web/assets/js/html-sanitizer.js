@@ -7,11 +7,17 @@
  * @returns {string} - The sanitized HTML string
  */
 function sanitizeHTML(unsafe) {
-    if (typeof unsafe !== 'string') {
+    // Accept numbers and other primitive values by coercing to string.
+    // Preserve previous behavior for null/undefined by returning an empty string.
+    if (unsafe === null || unsafe === undefined) {
         return '';
     }
 
-    return unsafe
+    // Coerce to string so numeric values (like utilization percentages) are preserved
+    // and then escape dangerous characters.
+    const safeStr = String(unsafe);
+
+    return safeStr
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -27,6 +33,7 @@ function sanitizeHTML(unsafe) {
  * @returns {string} - The sanitized text
  */
 function sanitizeText(text) {
+    // Alias for sanitizeHTML; keep semantics identical (coerce primitives to string)
     return sanitizeHTML(text);
 }
 

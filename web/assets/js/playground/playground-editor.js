@@ -484,7 +484,7 @@ require(["vs/editor/editor.main"], function () {
         {
             value: initialData,
             language: "json",
-            theme: "vs",
+            theme: isDarkMode ? "vs-dark" : "vs",
             automaticLayout: true,
             minimap: { enabled: false },
             scrollBeyondLastLine: false,

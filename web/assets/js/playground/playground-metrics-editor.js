@@ -255,7 +255,7 @@ function createMetricsJsonEditor() {
         window.metricsJsonEditor = monaco.editor.create(metricsEditorContainer, {
             value: editor ? editor.getValue() : '',
             language: 'json',
-            theme: 'vs',
+            theme: isDarkMode ? 'vs-dark' : 'vs',
             automaticLayout: true,
             minimap: { enabled: false },
             scrollBeyondLastLine: false,
@@ -322,7 +322,7 @@ function initializeMetricsCatalogEditor() {
         window.metricsCatalogEditor = monaco.editor.create(catalogEditorContainer, {
             value: customCatalog,
             language: 'json',
-            theme: 'vs',
+            theme: isDarkMode ? 'vs-dark' : 'vs',
             automaticLayout: true,
             minimap: { enabled: false },
             scrollBeyondLastLine: false,
@@ -399,7 +399,7 @@ function validateSampleCheck(metric) {
         window.metricsValidatorEditor = monaco.editor.create(validatorEditorContainer, {
             value: customValidator,
             language: 'javascript',
-            theme: 'vs',
+            theme: isDarkMode ? 'vs-dark' : 'vs',
             automaticLayout: true,
             minimap: { enabled: false },
             scrollBeyondLastLine: false,
