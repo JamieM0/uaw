@@ -173,27 +173,38 @@ class SimulationPlayer {
         // 1. Update Playhead Position
         const percentage = (this.playheadTime - this.simData.start_time_minutes) / this.simData.total_duration_minutes;
 
-        //Remove existing playheads
-        document.querySelectorAll('.timeline-playhead').forEach(el => el.remove());
+        // Create playheads if they don't exist or track count changed, otherwise just reposition them
+        const existingPlayheads = document.querySelectorAll('.timeline-playhead');
+        const taskTracks = document.querySelectorAll('.task-track');
 
-        // Add playhead to each task track                                                                                  │
-        document.querySelectorAll('.task-track').forEach(track => {
-            const playheadClone = document.createElement('div');
-            playheadClone.className = 'timeline-playhead';
-            playheadClone.style.cssText = `
-                position: absolute;
-                left: ${percentage * 100}%;
-                top: 0;
-                bottom: 0;
-                width: 2px;
-                background: #FF0000;
-                z-index: 1000;
-                pointer-events: all;
-                box-shadow: 0 0 4px rgba(255, 0, 0, 0.5);
-                cursor: ew-resize;
-            `;
-            track.appendChild(playheadClone);
-        });
+        if (existingPlayheads.length === 0 || existingPlayheads.length !== taskTracks.length) {
+            // Remove any existing playheads before creating new ones
+            existingPlayheads.forEach(el => el.remove());
+
+            // Create playheads for each task track
+            taskTracks.forEach(track => {
+                const playheadClone = document.createElement('div');
+                playheadClone.className = 'timeline-playhead';
+                playheadClone.style.cssText = `
+                    position: absolute;
+                    left: ${percentage * 100}%;
+                    top: 0;
+                    bottom: 0;
+                    width: 2px;
+                    background: #FF0000;
+                    z-index: 1000;
+                    pointer-events: all;
+                    box-shadow: 0 0 4px rgba(255, 0, 0, 0.5);
+                    cursor: ew-resize;
+                `;
+                track.appendChild(playheadClone);
+            });
+        } else {
+            // Just reposition existing playheads
+            existingPlayheads.forEach(playhead => {
+                playhead.style.left = `${percentage * 100}%`;
+            });
+        }
 
         // Only attach scrubbing handlers if we're not currently scrubbing
         // This prevents duplicate playheads during drag operations

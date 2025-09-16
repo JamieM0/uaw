@@ -501,8 +501,11 @@ require(["vs/editor/editor.main"], function () {
 
     // Editor event handlers
     editor.onDidChangeModelContent(() => {
-        if (autoRender) { 
-            debounceRender(); 
+        if (autoRender) {
+            // Skip auto-render if the simulation player is updating the editor
+            if (!window.simulationPlayerUpdatingEditor) {
+                debounceRender();
+            }
         } else {
             // Even if auto-render is off, we still want to create new panels immediately
             updateDynamicPanels();

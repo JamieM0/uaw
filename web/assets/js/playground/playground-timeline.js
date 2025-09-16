@@ -488,10 +488,19 @@ function renderSimulation(skipJsonValidation = false) {
 
         simulationContent.appendChild(container);
 
+        // Preserve current playhead time across re-renders
+        const previousPlayhead = (window.player && typeof window.player.playheadTime === 'number')
+            ? window.player.playheadTime
+            : currentSimulationData.start_time_minutes;
+
         if (player && typeof player.destroy == 'function') {
             player.destroy();
         }
         player = new SimulationPlayer(currentSimulationData);
+        // Restore playhead position immediately after creating the player
+        if (typeof previousPlayhead === 'number') {
+            try { player.update(previousPlayhead); } catch (e) { /* noop */ }
+        }
         window.player = player; // Make globally accessible for spacebar functionality
     } catch (e) {
         simulationContent.innerHTML = `<p style="color: var(--error-color); text-align: center; margin-top: 2rem;">Render Error: ${e.message}</p>`;
@@ -507,6 +516,11 @@ window.renderSimulation = renderSimulation;
 
 // Debounced rendering
 function debounceRender() {
+    // Avoid scheduling renders during active scrubbing/playback or while the
+    // simulation player is writing back to the editor.
+    if (window.simulationPlayerActive || window.simulationPlayerUpdatingEditor) {
+        return;
+    }
     clearTimeout(renderTimeout);
     renderTimeout = setTimeout(renderSimulation, 300); // Wait 300ms for user to finish typing
 }
