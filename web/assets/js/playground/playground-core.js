@@ -131,6 +131,8 @@ function initializePlayground() {
   setupMetricsMode();
   setupDarkMode();
   setupRenderButton();
+  setupFullscreenButton();
+  setupUndoButton();
 
   const canvas = document.getElementById("space-canvas");
   const propsPanel = document.getElementById("properties-panel-content");
@@ -337,6 +339,11 @@ function initializeFallbackEditor() {
       }
       validateJSON();
     });
+
+    // Save initial state to history
+    if (typeof saveToHistory === 'function') {
+      saveToHistory();
+    }
   }
 
   // Initialize core playground features
@@ -347,6 +354,7 @@ function initializeFallbackEditor() {
   setupSaveLoadButtons();
   setupDarkMode();
   setupRenderButton();
+  setupUndoButton();
   renderSimulation();
   validateJSON();
 
@@ -387,6 +395,7 @@ function initializeMinimalEditor() {
   updateAutoRenderUI();
   setupDarkMode();
   setupRenderButton();
+  setupUndoButton();
   renderSimulation();
 
   showInitializationError(
@@ -594,4 +603,27 @@ function updateDarkModeButton() {
     darkModeToggle.classList.remove("dark-active");
     darkModeToggle.title = "Switch to Dark Mode";
   }
+}
+
+// Setup undo button
+function setupUndoButton() {
+  const undoBtn = document.getElementById("undo-btn");
+  if (undoBtn) {
+    undoBtn.addEventListener("click", undo);
+    // Update initial button state
+    if (typeof updateUndoButton === 'function') {
+      updateUndoButton();
+    }
+  }
+
+  // Add keyboard shortcut for Ctrl+Z
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+      // Only trigger if not in an input field (to avoid interfering with input undo)
+      if (!e.target.matches('input, textarea') && editor) {
+        e.preventDefault();
+        undo();
+      }
+    }
+  });
 }

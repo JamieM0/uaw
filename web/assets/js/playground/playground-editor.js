@@ -544,6 +544,11 @@ require(["vs/editor/editor.main"], function () {
         }, 1000);
     });
 
+    // Save initial state to history
+    if (typeof saveToHistory === 'function') {
+        saveToHistory();
+    }
+
     // Mark editor as ready and try to initialize the playground
     if (typeof initState !== 'undefined') {
         initState.editorReady = true;

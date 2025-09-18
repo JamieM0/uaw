@@ -248,7 +248,9 @@ function undo() {
 
 function updateUndoButton() {
     const undoBtn = document.getElementById("undo-btn");
-    undoBtn.disabled = historyIndex <= 0;
+    if (undoBtn) {
+        undoBtn.disabled = historyIndex <= 0;
+    }
 }
 
 // Auto-render UI
@@ -295,28 +297,38 @@ function generateId(prefix) {
     return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
+function setupFullscreenButton() {
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+    }
+}
+
 function toggleFullscreen() {
-    const container = document.querySelector('.playground-container');
+    const jsonEditorPanel = document.querySelector('.json-editor-panel');
+    const simulationPanel = document.querySelector('.simulation-panel');
     const btn = document.getElementById('fullscreen-btn');
-    
-    if (!document.fullscreenElement) {
-        if (container.requestFullscreen) {
-            container.requestFullscreen();
-        } else if (container.webkitRequestFullscreen) {
-            container.webkitRequestFullscreen();
-        } else if (container.msRequestFullscreen) {
-            container.msRequestFullscreen();
-        }
-        btn.textContent = 'Exit Fullscreen';
+
+    if (!jsonEditorPanel || !simulationPanel || !btn) {
+        console.error('Required elements not found for fullscreen toggle');
+        return;
+    }
+
+    // Check if we're currently in fullscreen mode
+    const isFullscreen = jsonEditorPanel.classList.contains('hidden');
+
+    if (!isFullscreen) {
+        // Enter fullscreen: hide Monaco Editor, expand right panel
+        jsonEditorPanel.classList.add('hidden');
+        simulationPanel.classList.add('fullscreen');
+        btn.textContent = '⛶';
+        btn.title = 'Exit fullscreen simulation view';
     } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
-        }
-        btn.textContent = 'Fullscreen';
+        // Exit fullscreen: show Monaco Editor, restore normal layout
+        jsonEditorPanel.classList.remove('hidden');
+        simulationPanel.classList.remove('fullscreen');
+        btn.textContent = '⛶';
+        btn.title = 'Toggle fullscreen simulation view';
     }
 }
 
