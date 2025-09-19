@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Automation Wiki - Premium Automation Simulation Platform</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;500;600;700&family=Rubik:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Brand Colors */
+            --primary: #126ca8;
+            --primary-light: #1A8FCE;
+            --primary-dark: #074672;
+            --accent-warm: #EE6C4D;
+
+            /* Glass Materials */
+            --chrome-material: rgba(255, 255, 255, 0.15);
+            --chrome-blur: 32px;
+            --regular-material: rgba(255, 255, 255, 0.1);
+            --regular-blur: 16px;
+            --thin-material: rgba(255, 255, 255, 0.05);
+            --thin-blur: 8px;
+
+            /* Typography */
+            --font-display: 'Geologica', system-ui, sans-serif;
+            --font-heading: 'Rubik', system-ui, sans-serif;
+            --font-body: 'Inter', system-ui, sans-serif;
+
+            /* Precision Grid */
+            --grid: 8px;
+            --grid-2: 16px;
+            --grid-3: 24px;
+            --grid-4: 32px;
+            --grid-6: 48px;
+            --grid-8: 64px;
+            --grid-12: 96px;
+            --grid-16: 128px;
+
+            /* Shadows */
+            --shadow-soft: 0 var(--grid) var(--grid-3) rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 var(--grid-2) var(--grid-4) rgba(0, 0, 0, 0.15);
+            --shadow-strong: 0 var(--grid-3) var(--grid-6) rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+
+        /* Glass Components */
+        .glass-chrome {
+            background: var(--chrome-material);
+            backdrop-filter: blur(var(--chrome-blur));
+            -webkit-backdrop-filter: blur(var(--chrome-blur));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .glass-regular {
+            background: var(--regular-material);
+            backdrop-filter: blur(var(--regular-blur));
+            -webkit-backdrop-filter: blur(var(--regular-blur));
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .glass-thin {
+            background: var(--thin-material);
+            backdrop-filter: blur(var(--thin-blur));
+            -webkit-backdrop-filter: blur(var(--thin-blur));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: var(--grid-2) var(--grid-4);
+            transition: all 0.3s ease;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--grid-2) var(--grid-4);
+            border-radius: var(--grid-2);
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--primary-dark);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: var(--grid-4);
+            list-style: none;
+        }
+
+        .nav-link {
+            font-family: var(--font-heading);
+            font-weight: 500;
+            color: var(--primary-dark);
+            text-decoration: none;
+            padding: var(--grid) var(--grid-2);
+            border-radius: var(--grid);
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: var(--thin-material);
+            backdrop-filter: blur(var(--thin-blur));
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--grid-12) var(--grid-4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 30%, rgba(18, 108, 168, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(26, 143, 206, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-glass {
+            padding: var(--grid-8) var(--grid-6);
+            border-radius: var(--grid-3);
+            margin-bottom: var(--grid-6);
+        }
+
+        .hero-title {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: clamp(32px, 5vw, 56px);
+            line-height: 1.1;
+            color: var(--primary-dark);
+            margin-bottom: var(--grid-3);
+        }
+
+        .hero-subtitle {
+            font-family: var(--font-body);
+            font-size: clamp(16px, 2.5vw, 20px);
+            color: #64748b;
+            margin-bottom: var(--grid-6);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-container {
+            display: flex;
+            gap: var(--grid-2);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            font-family: var(--font-heading);
+            font-weight: 500;
+            padding: var(--grid-2) var(--grid-4);
+            background: var(--primary-light);
+            color: white;
+            text-decoration: none;
+            border-radius: var(--grid-2);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-secondary {
+            font-family: var(--font-heading);
+            font-weight: 500;
+            padding: var(--grid-2) var(--grid-4);
+            color: var(--primary-dark);
+            text-decoration: none;
+            border-radius: var(--grid-2);
+            border: 1px solid rgba(18, 108, 168, 0.2);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(var(--regular-blur));
+            background: var(--regular-material);
+        }
+
+        .btn-secondary:hover {
+            background: var(--chrome-material);
+            backdrop-filter: blur(var(--chrome-blur));
+            transform: translateY(-1px);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--grid-4);
+        }
+
+        .section {
+            padding: var(--grid-12) 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: var(--grid-8);
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: clamp(28px, 4vw, 40px);
+            color: var(--primary-dark);
+            margin-bottom: var(--grid-2);
+        }
+
+        .section-subtitle {
+            font-family: var(--font-body);
+            font-size: 18px;
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Feature Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--grid-4);
+            margin-bottom: var(--grid-8);
+        }
+
+        .feature-card {
+            padding: var(--grid-4);
+            border-radius: var(--grid-2);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            background: var(--regular-material);
+            backdrop-filter: blur(var(--regular-blur));
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .feature-title {
+            font-family: var(--font-heading);
+            font-weight: 500;
+            font-size: 20px;
+            color: var(--primary-dark);
+            margin-bottom: var(--grid-2);
+        }
+
+        .feature-description {
+            font-family: var(--font-body);
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* Technical Specs */
+        .specs-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--grid-3);
+            margin: var(--grid-8) 0;
+        }
+
+        .spec-card {
+            padding: var(--grid-3);
+            border-radius: var(--grid-2);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .spec-card:hover {
+            background: var(--chrome-material);
+            backdrop-filter: blur(var(--chrome-blur));
+        }
+
+        .spec-number {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 32px;
+            color: var(--primary);
+            display: block;
+        }
+
+        .spec-label {
+            font-family: var(--font-body);
+            font-weight: 500;
+            color: var(--primary-dark);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Content Sections */
+        .content-section {
+            margin: var(--grid-8) 0;
+        }
+
+        .content-title {
+            font-family: var(--font-heading);
+            font-weight: 500;
+            font-size: 24px;
+            color: var(--primary-dark);
+            margin-bottom: var(--grid-3);
+        }
+
+        .content-text {
+            font-family: var(--font-body);
+            color: #475569;
+            line-height: 1.7;
+            margin-bottom: var(--grid-3);
+        }
+
+        .content-text strong {
+            font-weight: 500;
+            color: var(--primary-dark);
+        }
+
+        /* Enterprise Section */
+        .enterprise-section {
+            background: var(--regular-material);
+            backdrop-filter: blur(var(--regular-blur));
+            border-radius: var(--grid-3);
+            padding: var(--grid-8);
+            margin: var(--grid-8) 0;
+            text-align: center;
+        }
+
+        .enterprise-title {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 32px;
+            color: var(--primary-dark);
+            margin-bottom: var(--grid-4);
+        }
+
+        .enterprise-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: var(--grid-16);
+            padding: var(--grid-8) 0;
+            border-top: 1px solid rgba(18, 108, 168, 0.1);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--grid-6);
+            margin-bottom: var(--grid-6);
+        }
+
+        .footer-section {
+            padding: var(--grid-3);
+            border-radius: var(--grid-2);
+        }
+
+        .footer-title {
+            font-family: var(--font-heading);
+            font-weight: 500;
+            color: var(--primary-dark);
+            margin-bottom: var(--grid-2);
+        }
+
+        .footer-text {
+            font-family: var(--font-body);
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: var(--grid-4);
+            border-top: 1px solid rgba(18, 108, 168, 0.05);
+        }
+
+        .footer-bottom-text {
+            font-family: var(--font-body);
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: var(--grid-8) var(--grid-2);
+                min-height: 90vh;
+            }
+
+            .hero-glass {
+                padding: var(--grid-6) var(--grid-4);
+            }
+
+            .cta-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+                max-width: 280px;
+                text-align: center;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .specs-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .enterprise-section {
+                padding: var(--grid-6) var(--grid-4);
+            }
+        }
+
+        /* Scroll Enhancement */
+        .nav.scrolled {
+            background: var(--chrome-material);
+            backdrop-filter: blur(var(--chrome-blur));
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* Advanced Glass Effects */
+        @keyframes glassShimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .glass-enhanced {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-enhanced::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            background-size: 200% 100%;
+            animation: glassShimmer 3s infinite;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+        <div class="nav-content glass-regular">
+            <div class="logo">Universal Automation Wiki</div>
+            <ul class="nav-links">
+                <li><a href="#playground" class="nav-link">Playground</a></li>
+                <li><a href="#features" class="nav-link">Features</a></li>
+                <li><a href="#enterprise" class="nav-link">Enterprise</a></li>
+                <li><a href="#community" class="nav-link">Community</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-glass glass-chrome glass-enhanced">
+                <h1 class="hero-title">Test Your Ideas Without the Mess</h1>
+                <p class="hero-subtitle">
+                    Automation planning usually goes like this: read some case studies, make assumptions, build it, then discover it doesn't work. We think there's a better approach.
+                </p>
+            </div>
+            <p class="hero-subtitle">
+                Build automation workflows that actually behave like the real thing. Test resource conflicts, timing disasters, and bottlenecks before you waste time and money implementing them. No PowerPoint slides with convincing marketing - just working simulations that show you what breaks, and when.
+            </p>
+            <div class="cta-container">
+                <a href="playground.html" class="btn-primary">Start Simulating</a>
+                <a href="#features" class="btn-secondary">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Specifications -->
+    <section class="container">
+        <div class="specs-container">
+            <div class="spec-card glass-thin">
+                <span class="spec-number">100+</span>
+                <span class="spec-label">Validation Rules</span>
+            </div>
+            <div class="spec-card glass-thin">
+                <span class="spec-number">Real-Time</span>
+                <span class="spec-label">Computational Checks</span>
+            </div>
+            <div class="spec-card glass-thin">
+                <span class="spec-number">AGPL 3.0</span>
+                <span class="spec-label">Open Source</span>
+            </div>
+            <div class="spec-card glass-thin">
+                <span class="spec-number">Universal</span>
+                <span class="spec-label">Object Model</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="container section" id="features">
+        <div class="section-header">
+            <h2 class="section-title">About the Simulation Playground</h2>
+            <p class="section-subtitle">A sophisticated platform for testing automation workflows before implementation</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card glass-regular">
+                <h3 class="feature-title">Build Real Workflows</h3>
+                <p class="feature-description">
+                    What happens when a Monaco-powered JSON editor meets drag-and-drop timeline manipulation? A system that works how you want to work. Design processes with actors, equipment, and resources that interact like they would in the real world, or define your <em>own, custom</em> objects. There's no need for abstract boxes and arrows - actually see what's happening at a given time.
+                </p>
+            </div>
+
+            <div class="feature-card glass-regular">
+                <h3 class="feature-title">See What Breaks Immediately</h3>
+                <p class="feature-description">
+                    Our validation engine runs a growing library of computational checks as you design. Resource conflicts, timing violations, structural integrity, scheduling overlaps - all caught in real-time. Your simulation gets validated against profitability metrics, resource utilisation, equipment capacity constraints, and more before you finish building it.
+                </p>
+            </div>
+
+            <div class="feature-card glass-regular">
+                <h3 class="feature-title">Custom Metrics for Validation</h3>
+                <p class="feature-description">
+                    Got your own metrics? Define them in simple JavaScript in the powerful Metrics Editor. This infuses the power of the simulation playground with your own logic, enabling precise validation of all your simulations. Custom metrics ensure your simulations reflect exactly what matters most to you.
+                </p>
+            </div>
+
+            <div class="feature-card glass-regular">
+                <h3 class="feature-title">Physical. Digital. Displays.</h3>
+                <p class="feature-description">
+                    Simulation Playground has got support for physical and digital locations, as well as digital objects and a system for defining UI elements of displays. How complex is that backup workflow? How many flights of stairs does that delivery driver need to climb? How are the orders for my website handled? Answer all these questions and more with the simulation playground.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Engine Section -->
+    <section class="container section">
+        <div class="section-header">
+            <h2 class="section-title">How The Engine Actually Works</h2>
+            <p class="section-subtitle">Advanced simulation technology with enterprise-grade validation</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card glass-regular">
+                <h3 class="feature-title">Timeline-Based Modelling</h3>
+                <p class="feature-description">
+                    Visual drag-and-drop editor for task scheduling, resource allocation, and actor coordination. Move tasks between actors, resize durations, add dependencies—all whilst the validation engine runs computational checks in the background.
+                </p>
+            </div>
+
+            <div class="feature-card glass-regular">
+                <h3 class="feature-title">Real-Time Metrics Computation</h3>
+                <p class="feature-description">
+                    The validation system automatically computes throughput rates, resource efficiency percentages, labour utilisation, cost per unit, cycle times, and error rates. Instant feedback on whether your process makes economic sense, and ensures that it complies with the laws of physics.
+                </p>
+            </div>
+
+            <div class="feature-card glass-regular">
+                <h3 class="feature-title">Universal Object Model</h3>
+                <p class="feature-description">
+                    Standardised simulation schema that distinguishes between persistent equipment (with states like clean/dirty/in-use) and consumable resources (with quantities that get depleted). Tasks interact can interact with objects by modifying their properties.
+                </p>
+            </div>
+
+            <div class="feature-card glass-regular">
+                <h3 class="feature-title">Interactions Made Simple</h3>
+                <p class="feature-description">
+                    Tasks can make use of the 'interactions' concept. The simulation engine will execute the interactions defined in tasks when the task start time is reached. This means that tasks can modify objects in any way - from changing its emoji, to reducing the capacity of a server during a hardware upgrade.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases Section -->
+    <section class="container section">
+        <div class="section-header">
+            <h2 class="section-title">What You Can Simulate</h2>
+            <p class="section-subtitle">From manufacturing to software development, validate any automation workflow</p>
+        </div>
+
+        <div class="content-section">
+            <h3 class="content-title">Manufacturing Processes</h3>
+            <p class="content-text">
+                Production lines, quality control workflows, equipment coordination with realistic timing constraints. Model assembly operations, test resource allocation strategies, identify bottlenecks before physical implementation.
+            </p>
+        </div>
+
+        <div class="content-section">
+            <h3 class="content-title">Software Development</h3>
+            <p class="content-text">
+                CI/CD pipelines, automated testing workflows, deployment processes. See where your automation actually speeds things up vs where it just adds complexity.
+            </p>
+        </div>
+
+        <div class="content-section">
+            <h3 class="content-title">Service Operations</h3>
+            <p class="content-text">
+                Customer service processes, healthcare delivery workflows, administrative automation. Design multi-actor coordination and validate timing requirements against real constraints.
+            </p>
+        </div>
+
+        <div class="content-section">
+            <h3 class="content-title">Supply Chain & Logistics</h3>
+            <p class="content-text">
+                Warehouse operations, distribution workflows, inventory management. Model the flow of goods and identify genuine optimisation opportunities.
+            </p>
+        </div>
+
+        <div class="content-section">
+            <h3 class="content-title">Digital Infrastructure</h3>
+            <p class="content-text">
+                Computing workflows, telecommunications processes, automated system administration. Model the technical processes that actually run your business.
+            </p>
+        </div>
+
+        <div class="content-section">
+            <h3 class="content-title">Predict your revenue</h3>
+            <p class="content-text">
+                You can use the simulation playground to model your business' processes, and see the timescale over a longer period of time. This empowers you to see exactly how much revenue you are expected to receive over the course of months, or even years.
+            </p>
+        </div>
+    </section>
+
+    <!-- Beyond Simulation Section -->
+    <section class="container section">
+        <div class="section-header">
+            <h2 class="section-title">Beyond Just Simulation</h2>
+            <p class="section-subtitle">A complete ecosystem for automation development and validation</p>
+        </div>
+
+        <div class="content-section">
+            <h3 class="content-title">Community Knowledge Base</h3>
+            <p class="content-text">
+                The simulation playground connects to our growing wiki of validated automation processes. Learn from working examples, contribute your own discoveries, and build on proven approaches rather than starting from scratch.
+            </p>
+        </div>
+
+        <div class="content-section">
+            <h3 class="content-title">Real-World Applications</h3>
+            <p class="content-text">
+                The validation framework includes metrics that matter in actual business contexts: throughput analysis, resource efficiency calculations, economic feasibility checks, and operational constraint validation.
+            </p>
+        </div>
+
+        <div class="content-section">
+            <h3 class="content-title">Open Development</h3>
+            <p class="content-text">
+                The entire platform is transparent and community-driven. The validation engine, metrics catalogue, and simulation framework are all open for inspection and contribution. No black box algorithms, it's computational validation you can understand and extend.
+            </p>
+        </div>
+    </section>
+
+    <!-- Enterprise Section -->
+    <section class="container section" id="enterprise">
+        <div class="enterprise-section glass-chrome glass-enhanced">
+            <h2 class="enterprise-title">Enterprise Licensing</h2>
+            <div class="enterprise-content">
+                <div class="content-section">
+                    <h3 class="content-title">Licensing</h3>
+                    <p class="content-text">
+                        The Universal Automation Wiki project follows an 'open core' licensing model and uses the <strong>AGPL 3.0 license</strong>. That means that you're free to extend, improve, or otherwise modify the code for your purposes, however, your changes <em>legally must</em> be made public and open source, you must also adopt this license.
+                    </p>
+                </div>
+
+                <div class="content-section">
+                    <h3 class="content-title">Enterprise Licensing</h3>
+                    <p class="content-text">
+                        The Universal Automation Wiki will provide paying enterprises with an alternative license, the <strong>Apache 2.0 license</strong>, which will permit them to keep their changes private. If you're interested in purchasing an enterprise license, please email <strong>contact@universalautomation.wiki</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why This Matters Section -->
+    <section class="container section">
+        <div class="section-header">
+            <h2 class="section-title">Why This Matters</h2>
+            <p class="section-subtitle">Most automation projects fail because of predictable, preventable problems</p>
+        </div>
+
+        <div class="content-section">
+            <p class="content-text">
+                Most automation projects fail not because the technology doesn't work, but because the process design doesn't account for real-world constraints. Resource conflicts, timing dependencies, equipment limitations, and human factors. These are predictable problems that a simulation would catch early.
+            </p>
+            <p class="content-text">
+                By testing automation workflows in a validated simulation environment, you can identify genuine bottlenecks, understand real resource requirements, and make informed decisions about what's actually worth automating.
+            </p>
+        </div>
+    </section>
+
+    <!-- Get Started Section -->
+    <section class="container section" id="community">
+        <div class="section-header">
+            <h2 class="section-title">Get Started</h2>
+            <p class="section-subtitle">Ready to test your ideas before building them?</p>
+        </div>
+
+        <div class="content-section">
+            <p class="content-text">
+                Jump into the Simulation Playground and start building. There's a getting started tutorial under the 'Help' menu to help you get to grips with the interface. Build something, watch it run, see what breaks, fix it, repeat.
+            </p>
+            <p class="content-text">
+                The community wiki grows as more people contribute working simulations and insights. But even if you never share anything, you'll understand automation better by building one validated simulation than by reading a dozen theoretical papers.
+            </p>
+            <p class="content-text">
+                <strong>Ready to test your ideas before building them? Start simulating.</strong>
+            </p>
+        </div>
+
+        <div style="text-align: center; margin-top: 48px;">
+            <a href="playground.html" class="btn-primary" style="font-size: 18px; padding: 16px 32px;">Launch Simulation Playground</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section glass-thin">
+                    <h4 class="footer-title">Platform</h4>
+                    <p class="footer-text">
+                        Enterprise-grade automation simulation with real-time validation and computational metrics.
+                    </p>
+                </div>
+
+                <div class="footer-section glass-thin">
+                    <h4 class="footer-title">Open Source</h4>
+                    <p class="footer-text">
+                        AGPL 3.0 licensed with Apache 2.0 enterprise options. Transparent, extensible, community-driven.
+                    </p>
+                </div>
+
+                <div class="footer-section glass-thin">
+                    <h4 class="footer-title">Contact</h4>
+                    <p class="footer-text">
+                        Enterprise licensing: contact@universalautomation.wiki<br>
+                        Technical support and community resources available.
+                    </p>
+                </div>
+
+                <div class="footer-section glass-thin">
+                    <h4 class="footer-title">Technical Specs</h4>
+                    <p class="footer-text">
+                        Monaco Editor integration, Universal Object Model, real-time computational validation engine.
+                    </p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p class="footer-bottom-text">
+                    © 2024 Universal Automation Wiki. Premium automation simulation platform.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Navigation scroll effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('nav');
+            if (window.scrollY > 100) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Enhanced glass effects on scroll
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const rate = scrolled * -0.5;
+
+            document.querySelectorAll('.glass-enhanced').forEach(element => {
+                element.style.transform = `translateY(${rate * 0.1}px)`;
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements for animation
+        document.querySelectorAll('.feature-card, .spec-card, .content-section').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

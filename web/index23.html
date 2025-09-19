@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="description" content="Universal Automation Wiki — simulation playground and knowledge base for validated automation workflows." />
+  <meta name="theme-color" content="#0c0f14" />
+  <title>Universal Automation Wiki — Simulation Playground</title>
+
+  <!-- Fonts: Geologica (logo/headline), Rubik (subheads/nav), Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@600;700&family=Inter:wght@400;500;600&family=Rubik:wght@500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* Palette */
+      --bg: #0b0f16;
+      --bg-elev-1: rgba(255, 255, 255, 0.06);
+      --bg-elev-2: rgba(255, 255, 255, 0.10);
+      --bg-elev-3: rgba(255, 255, 255, 0.15);
+      --glass-border: rgba(255, 255, 255, 0.20);
+      --text: #eaf1ff;
+      --muted: #b7c2d6;
+      --accent: #6cc6ff;
+      --accent-2: #a78bfa;
+      --ok: #4ade80;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+
+      /* Blur constraints */
+      --blur-nav: 20px;           /* Navigation max */
+      --blur-standard: 16px;      /* Standard elements max */
+      --blur-focus: 33px;         /* Special focus areas only */
+
+      /* Shadows */
+      --shadow-lg: 0 8px 32px rgba(31, 38, 135, 0.20);
+      --shadow-md: 0 6px 24px rgba(20, 24, 40, 0.35);
+
+      /* Radii */
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 18px;
+
+      /* Layout */
+      --max-w: 1200px;
+      --gutter: 20px;
+    }
+
+    /* Base */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 600px at 20% -10%, #11203a 0%, transparent 60%),
+                  radial-gradient(1000px 500px at 100% 0%, #241a45 0%, transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container {
+      width: min(100% - 2*var(--gutter), var(--max-w));
+      margin-inline: auto;
+      position: relative;
+      container-type: inline-size; /* enables container queries */
+    }
+
+    /* Utilities */
+    .glass {
+      background: var(--bg-elev-2);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-lg);
+      -webkit-backdrop-filter: saturate(180%) blur(var(--blur-standard));
+      backdrop-filter: saturate(180%) blur(var(--blur-standard));
+    }
+    .glass-minimal {
+      background: var(--bg-elev-1);
+      border: 1px solid rgba(255,255,255,0.14);
+      -webkit-backdrop-filter: saturate(140%) blur(8px);
+      backdrop-filter: saturate(140%) blur(8px);
+    }
+    .glass-strong {
+      background: rgba(255,255,255,0.10);
+      border: 1px solid var(--glass-border);
+      -webkit-backdrop-filter: saturate(180%) blur(var(--blur-focus));
+      backdrop-filter: saturate(180%) blur(var(--blur-focus));
+    }
+    .glass-nav {
+      background: rgba(255,255,255,0.10);
+      border-bottom: 1px solid var(--glass-border);
+      -webkit-backdrop-filter: saturate(180%) blur(var(--blur-nav));
+      backdrop-filter: saturate(180%) blur(var(--blur-nav));
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.24);
+      background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.10));
+      color: var(--text);
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      text-decoration: none;
+      transition: transform 240ms ease, box-shadow 240ms ease, background 240ms ease, border-color 240ms ease;
+      will-change: transform;
+      -webkit-backdrop-filter: saturate(180%) blur(12px);
+      backdrop-filter: saturate(180%) blur(12px);
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(108, 198, 255, 0.25);
+      background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.12));
+      border-color: rgba(108, 198, 255, 0.50);
+    }
+    .btn:active { transform: translateY(0); }
+
+    .btn-primary { color: #0a0f14; background: linear-gradient(180deg, rgba(108,198,255,0.9), rgba(108,198,255,0.75)); border-color: rgba(108,198,255,0.8); }
+    .btn-primary:hover { background: linear-gradient(180deg, rgba(108,198,255,1), rgba(108,198,255,0.85)); }
+
+    .muted { color: var(--muted); }
+
+    /* Navigation */
+    header.site-header {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: saturate(180%) blur(var(--blur-nav));
+      -webkit-backdrop-filter: saturate(180%) blur(var(--blur-nav));
+    }
+    .nav-inner {
+      display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
+      padding: 14px 18px; border-bottom: 1px solid var(--glass-border);
+      background: rgba(255,255,255,0.10);
+    }
+    .brand {
+      display: flex; align-items: center; gap: 12px; font-family: Geologica, system-ui, sans-serif; font-weight: 700; letter-spacing: 0.2px;
+    }
+    .brand .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 0 0 3px rgba(108,198,255,0.2); }
+    nav.main-nav { justify-self: center; }
+    nav.main-nav a { font-family: Rubik, system-ui, sans-serif; font-weight: 500; color: var(--text); margin: 0 12px; opacity: 0.92; }
+    .nav-cta { justify-self: end; }
+
+    /* Hero */
+    .hero {
+      position: relative; padding: 72px 0 36px;
+      background: radial-gradient(1000px 520px at 40% 0%, rgba(108,198,255,0.08), transparent 60%),
+                  radial-gradient(900px 500px at 70% -10%, rgba(167,139,250,0.08), transparent 60%);
+      overflow: hidden;
+    }
+    .hero .orb {
+      position: absolute; filter: blur(80px); opacity: 0.22; pointer-events: none;
+      background: radial-gradient(closest-side, rgba(108,198,255,0.9), transparent);
+      width: 320px; height: 320px; border-radius: 50%; top: -40px; left: -60px; transform: translateZ(0);
+    }
+    .hero .orb.two {
+      background: radial-gradient(closest-side, rgba(167,139,250,0.9), transparent);
+      width: 260px; height: 260px; top: 120px; right: -40px; left: auto;
+    }
+
+    .hero-card {
+      position: relative; border-radius: 20px; padding: 32px; isolation: isolate;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid var(--glass-border);
+      -webkit-backdrop-filter: saturate(180%) blur(var(--blur-focus));
+      backdrop-filter: saturate(180%) blur(var(--blur-focus)); /* 33px focus area */
+      box-shadow: 0 12px 44px rgba(0,0,0,0.35);
+    }
+    .hero h1 { font-family: Geologica, system-ui, sans-serif; font-weight: 700; letter-spacing: 0.2px; margin: 0 0 10px; font-size: clamp(32px, 6.2vw, 56px); }
+    .hero h2 { font-family: Rubik, system-ui, sans-serif; font-weight: 600; margin: 0 0 12px; font-size: clamp(18px, 3vw, 22px); color: var(--accent); }
+    .hero p { margin: 0 0 18px; font-size: 16px; color: var(--muted); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+
+    /* Feature grid */
+    .features { padding: 36px 0 10px; }
+    .feature-grid {
+      display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    .feature-card {
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.15);
+      -webkit-backdrop-filter: saturate(180%) blur(var(--blur-standard));
+      backdrop-filter: saturate(180%) blur(var(--blur-standard));
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-lg);
+      padding: 18px;
+      transition: transform 240ms ease, box-shadow 240ms ease;
+      will-change: transform;
+    }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: 0 14px 42px rgba(31, 38, 135, 0.28); }
+    .feature-card h3 { font-family: Rubik, system-ui, sans-serif; font-weight: 600; margin: 0 0 8px; }
+    .feature-card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    /* Trust signals */
+    .trust { padding: 24px 0; }
+    .trust-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .trust-panel {
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      background: rgba(255,255,255,0.08);
+      -webkit-backdrop-filter: saturate(160%) blur(10px);
+      backdrop-filter: saturate(160%) blur(10px);
+      border: 1px solid rgba(255,255,255,0.16);
+    }
+    .trust-panel h4 { font-family: Rubik, system-ui, sans-serif; margin: 0 0 8px; font-weight: 600; }
+    .trust-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+    .trust-list li { color: var(--muted); font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); font-size: 12px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+    /* Demo preview */
+    .demo { padding: 28px 0 36px; }
+    .demo-wrap {
+      position: relative; border-radius: 18px; overflow: clip; isolation: isolate;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid var(--glass-border);
+      -webkit-backdrop-filter: saturate(180%) blur(var(--blur-standard));
+      backdrop-filter: saturate(180%) blur(var(--blur-standard));
+      box-shadow: var(--shadow-lg);
+    }
+    .demo-layer { position: absolute; inset: 0; pointer-events: none; }
+    .demo-layer.depth { background: radial-gradient(120% 80% at 60% -20%, rgba(108,198,255,0.10), transparent 60%), radial-gradient(100% 70% at 20% 120%, rgba(167,139,250,0.10), transparent 60%); mix-blend-mode: screen; }
+    .demo-iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; display: block; background: #0b0f16; }
+    .demo-toolbar { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; z-index: 2; }
+
+    /* Content sections */
+    section.content { padding: 20px 0; }
+    section.content h2 { font-family: Rubik, system-ui, sans-serif; font-weight: 600; margin: 0 0 10px; font-size: clamp(18px, 3vw, 22px); color: var(--text); }
+    section.content h3 { font-family: Rubik, system-ui, sans-serif; font-weight: 600; margin: 12px 0 8px; font-size: 18px; color: var(--text); }
+    section.content p { margin: 0 0 10px; color: var(--muted); }
+    section.content ul { margin: 0 0 10px 18px; color: var(--muted); }
+
+    /* Footer */
+    footer.site-footer { margin-top: 40px; padding: 24px 0 60px; background: radial-gradient(70% 120% at 100% 0%, rgba(108,198,255,0.06), transparent 60%); }
+    .footer-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .footer-col { padding: 14px; border-radius: 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+    .footer-col h5 { font-family: Rubik, system-ui, sans-serif; margin: 0 0 8px; font-weight: 600; }
+    .footer-col a { color: var(--muted); }
+
+    /* Container queries for layout refinements */
+    @container (min-width: 760px) {
+      .hero-card { padding: 40px; }
+      .hero p { font-size: 17px; }
+    }
+    @container (min-width: 1024px) {
+      .hero-actions { gap: 14px; }
+    }
+
+    /* Fallbacks when backdrop-filter is not supported */
+    @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+      .glass, .glass-minimal, .glass-strong, .glass-nav, .hero-card, .demo-wrap, .footer-col, .trust-panel, .feature-card, header.site-header {
+        background: rgba(20, 24, 40, 0.85);
+      }
+      body::after { /* subtle noise overlay */
+        content: ""; position: fixed; inset: 0; pointer-events: none; opacity: 0.06; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><filter id="n"><feTurbulence baseFrequency="0.8" numOctaves="2"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.4"/></svg>');
+      }
+    }
+
+    /* Accessibility: reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+      .btn, .feature-card { will-change: auto; }
+    }
+
+    /* Accessibility: high contrast/forced colors baseline */
+    @media (forced-colors: active) {
+      .glass, .glass-minimal, .glass-strong, .glass-nav, .hero-card, .demo-wrap, .footer-col, .trust-panel, .feature-card {
+        border: 1px solid CanvasText;
+        background: Canvas !important;
+        color: CanvasText !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Glass Navigation System -->
+  <header class="site-header glass-nav" role="banner">
+    <div class="container nav-inner" aria-label="Primary">
+      <div class="brand" aria-label="Universal Automation Wiki">
+        <span class="logo-dot" aria-hidden="true"></span>
+        <span>Universal Automation Wiki</span>
+      </div>
+
+      <nav class="main-nav" role="navigation" aria-label="Main">
+        <a href="#about">About</a>
+        <a href="#engine">Engine</a>
+        <a href="#simulate">Simulate</a>
+        <a href="#why">Why</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a class="btn btn-primary" href="./web/playground.html">
+          <span>Launch Playground</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17L17 7M17 7H8M17 7v9" stroke="#061018" stroke-width="2" stroke-linecap="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Glass Container -->
+  <section class="hero" id="top">
+    <div class="orb" aria-hidden="true"></div>
+    <div class="orb two" aria-hidden="true"></div>
+
+    <div class="container">
+      <div class="hero-card" role="region" aria-labelledby="hero-title">
+        <h1 id="hero-title">Test Your Ideas Without the Mess</h1>
+        <h2>Build automation that behaves like the real thing</h2>
+        <p>
+          Automation planning usually goes like this: read some case studies, make assumptions, build it, then discover it doesn't work. We think there's a better approach.
+        </p>
+        <p>
+          Build automation workflows that actually behave like the real thing. Test resource conflicts, timing disasters, and bottlenecks before you waste time and money implementing them. No PowerPoint slides with convincing marketing — just working simulations that show you what breaks, and when.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="./web/playground.html">Start Simulating</a>
+          <a class="btn" href="#about">How it works</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature Card Grid -->
+  <section class="features">
+    <div class="container feature-grid" aria-label="Feature overview">
+      <article class="feature-card" aria-labelledby="f1">
+        <h3 id="f1">Monaco + Timeline</h3>
+        <p>Design processes with actors, equipment, and resources. Write JSON or drag time blocks — both update the same simulation.</p>
+      </article>
+      <article class="feature-card" aria-labelledby="f2">
+        <h3 id="f2">Real-time Validation</h3>
+        <p>Conflicts, timing violations, capacity constraints — caught as you design. See what breaks immediately.</p>
+      </article>
+      <article class="feature-card" aria-labelledby="f3">
+        <h3 id="f3">Custom Metrics</h3>
+        <p>Define metrics in simple JavaScript. Validate what matters to you: profitability, utilisation, cycle times, and more.</p>
+      </article>
+      <article class="feature-card" aria-labelledby="f4">
+        <h3 id="f4">Physical + Digital</h3>
+        <p>Model equipment, spaces, and digital systems — including UI displays. Track steps across the real and virtual world.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- Trust Signal Glass Panels -->
+  <section class="trust" aria-labelledby="trust-title">
+    <div class="container trust-grid">
+      <div class="trust-panel" role="region" aria-labelledby="trust-title">
+        <h4 id="trust-title">Technical Credibility</h4>
+        <ul class="trust-list">
+          <li><span class="dot" style="background: var(--ok)"></span> Open source core (AGPL 3.0)</li>
+          <li><span class="dot" style="background: var(--accent)"></span> Transparent validation rules</li>
+          <li><span class="dot" style="background: var(--accent-2)"></span> Standardised simulation schema</li>
+        </ul>
+      </div>
+      <div class="trust-panel" role="region" aria-labelledby="trust-metrics">
+        <h4 id="trust-metrics">GitHub & Specs</h4>
+        <div class="badge" title="GitHub Stars"><span class="dot" style="background: gold"></span>Stars</div>
+        <div class="badge" title="Issues Welcome"><span class="dot" style="background: var(--ok)"></span>Issues Welcome</div>
+        <div class="badge" title="Docs"><span class="dot" style="background: var(--accent)"></span>Technical Docs</div>
+      </div>
+      <div class="trust-panel" role="region" aria-labelledby="trust-oss">
+        <h4 id="trust-oss">Licensing</h4>
+        <p class="muted">Open core under AGPL 3.0, with optional Apache 2.0 enterprise license for private changes.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Demo Preview -->
+  <section class="demo" id="simulate" aria-labelledby="demo-title">
+    <div class="container">
+      <h2 id="demo-title" style="margin: 0 0 12px; font-family: Rubik, system-ui, sans-serif; font-weight: 600;">Interactive Demo Preview</h2>
+      <div class="demo-wrap">
+        <div class="demo-layer depth" aria-hidden="true"></div>
+        <div class="demo-toolbar">
+          <a class="btn" href="./web/playground.html">Open Full Playground</a>
+        </div>
+        <iframe class="demo-iframe" src="./web/playground.html" title="Simulation Playground Preview" loading="lazy"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- Content Integration: About -->
+  <section id="about" class="content">
+    <div class="container">
+      <div class="glass" style="border-radius: 16px; padding: 18px;">
+        <h2>About the Simulation Playground</h2>
+        <h3>Build Real Workflows</h3>
+        <p>What happens when a Monaco-powered JSON editor meets drag-and-drop timeline manipulation? A system that works how you want to work. Design processes with actors, equipment, and resources that interact like they would in the real world, or define your <em>own, custom</em> objects. There's no need for abstract boxes and arrows — actually see what's happening at a given time.</p>
+
+        <h3>See What Breaks Immediately</h3>
+        <p>Our validation engine runs a growing library of computational checks as you design. Resource conflicts, timing violations, structural integrity, scheduling overlaps — all caught in real-time. Your simulation gets validated against profitability metrics, resource utilisation, equipment capacity constraints, and more before you finish building it.</p>
+
+        <h3>Custom Metrics for Validation</h3>
+        <p>Got your own metrics? Define them in simple JavaScript in the powerful Metrics Editor. This infuses the power of the simulation playground with your own logic, enabling precise validation of all your simulations. Custom metrics ensure your simulations reflect exactly what matters most to you.</p>
+
+        <h3>Physical. Digital. Displays.</h3>
+        <p>Simulation Playground has got support for physical and digital locations, as well as digital objects and a system for defining UI elements of displays. How complex is that backup workflow? How many flights of stairs does that delivery driver need to climb? How are the orders for my website handled? Answer all these questions and more with the simulation playground.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Engine Section -->
+  <section id="engine" class="content">
+    <div class="container">
+      <div class="glass" style="border-radius: 16px; padding: 18px;">
+        <h2>How The Engine Actually Works</h2>
+
+        <h3>Timeline-Based Modelling</h3>
+        <p>Visual drag-and-drop editor for task scheduling, resource allocation, and actor coordination. Move tasks between actors, resize durations, add dependencies — all whilst the validation engine runs computational checks in the background.</p>
+
+        <h3>Real-Time Metrics Computation</h3>
+        <p>The validation system automatically computes throughput rates, resource efficiency percentages, labour utilisation, cost per unit, cycle times, and error rates. Instant feedback on whether your process makes economic sense, and ensures that it complies with the laws of physics.</p>
+
+        <h3>Universal Object Model</h3>
+        <p>Standardised simulation schema that distinguishes between persistent equipment (with states like clean/dirty/in-use) and consumable resources (with quantities that get depleted). Tasks interact can interact with objects by modifying their properties.</p>
+
+        <h3>Interactions Made Simple</h3>
+        <p>Tasks can make use of the 'interactions' concept. The simulation engine will execute the interactions defined in tasks when the task start time is reached. This means that tasks can modify objects in any way — from changing its emoji, to reducing the capacity of a server during a hardware upgrade.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- What You Can Simulate -->
+  <section class="content" id="simulate-types">
+    <div class="container">
+      <div class="glass" style="border-radius: 16px; padding: 18px;">
+        <h2>What You Can Simulate</h2>
+        <h3>Manufacturing Processes</h3>
+        <p>Production lines, quality control workflows, equipment coordination with realistic timing constraints. Model assembly operations, test resource allocation strategies, identify bottlenecks before physical implementation.</p>
+
+        <h3>Software Development</h3>
+        <p>CI/CD pipelines, automated testing workflows, deployment processes. See where your automation actually speeds things up vs where it just adds complexity.</p>
+
+        <h3>Service Operations</h3>
+        <p>Customer service processes, healthcare delivery workflows, administrative automation. Design multi-actor coordination and validate timing requirements against real constraints.</p>
+
+        <h3>Supply Chain & Logistics</h3>
+        <p>Warehouse operations, distribution workflows, inventory management. Model the flow of goods and identify genuine optimisation opportunities.</p>
+
+        <h3>Digital Infrastructure</h3>
+        <p>Computing workflows, telecommunications processes, automated system administration. Model the technical processes that actually run your business.</p>
+
+        <h3>Predict your revenue</h3>
+        <p>You can use the simulation playground to model your business' processes, and see the timescale over a longer period of time. This empowers you to see exactly how much revenue you are expected to receive over the course of months, or even years.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Beyond Simulation -->
+  <section class="content" id="beyond">
+    <div class="container">
+      <div class="glass" style="border-radius: 16px; padding: 18px;">
+        <h2>Beyond Just Simulation</h2>
+
+        <h3>Community Knowledge Base</h3>
+        <p>The simulation playground connects to our growing wiki of validated automation processes. Learn from working examples, contribute your own discoveries, and build on proven approaches rather than starting from scratch.</p>
+
+        <h3>Real-World Applications</h3>
+        <p>The validation framework includes metrics that matter in actual business contexts: throughput analysis, resource efficiency calculations, economic feasibility checks, and operational constraint validation.</p>
+
+        <h3>Open Development</h3>
+        <p>The entire platform is transparent and community-driven. The validation engine, metrics catalogue, and simulation framework are all open for inspection and contribution. No black box algorithms, it's computational validation you can understand and extend.</p>
+
+        <h3>Licensing</h3>
+        <p>The Universal Automation Wiki project follows an 'open core' licensing model and uses the AGPL 3.0 license. That means that you're free to extend, improve, or otherwise modify the code for your purposes, however, your changes <em>legally must</em> be made public and open source, you must also adopt this license.</p>
+
+        <h3>Enterprise Licensing</h3>
+        <p>The Universal Automation Wiki will provide paying enterprises with an alternative license, the Apache 2.0 license, which will permit them to keep their changes private. If you're interested in purchasing an enterprise license, please email <a href="mailto:contact@universalautomation.wiki">contact@universalautomation.wiki</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why This Matters -->
+  <section class="content" id="why">
+    <div class="container">
+      <div class="glass" style="border-radius: 16px; padding: 18px;">
+        <h2>Why This Matters</h2>
+        <p>Most automation projects fail not because the technology doesn't work, but because the process design doesn't account for real-world constraints. Resource conflicts, timing dependencies, equipment limitations, and human factors. These are predictable problems that a simulation would catch early.</p>
+        <p>By testing automation workflows in a validated simulation environment, you can identify genuine bottlenecks, understand real resource requirements, and make informed decisions about what's actually worth automating.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Get Started -->
+  <section class="content" id="get-started">
+    <div class="container">
+      <div class="glass" style="border-radius: 16px; padding: 18px;">
+        <h2>Get Started</h2>
+        <p>Jump into the Simulation Playground and start building. There's a getting started tutorial under the 'Help' menu to help you get to grips with the interface. Build something, watch it run, see what breaks, fix it, repeat.</p>
+        <p>The community wiki grows as more people contribute working simulations and insights. But even if you never share anything, you'll understand automation better by building one validated simulation than by reading a dozen theoretical papers.</p>
+        <p>Ready to test your ideas before building them? Start simulating.</p>
+        <div style="margin-top: 10px">
+          <a class="btn btn-primary" href="./web/playground.html">Open the Playground</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer Glass Architecture -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container footer-grid">
+      <div class="footer-col">
+        <h5>Universal Automation Wiki</h5>
+        <p class="muted">Validated simulations, open metrics, and a community-driven knowledge base for real automation.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Resources</h5>
+        <ul class="trust-list">
+          <li><a href="./web/index.html">Website</a></li>
+          <li><a href="./web/playground.html">Playground</a></li>
+          <li><a href="./metrics/definitions.json">Metrics Catalogue</a></li>
+          <li><a href="./README.md">Repository Readme</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul class="trust-list">
+          <li><span class="badge"><span class="dot" style="background: var(--danger)"></span>AGPL 3.0</span></li>
+          <li><a href="#beyond">Enterprise Licensing (Apache 2.0)</a></li>
+          <li><a href="mailto:contact@universalautomation.wiki">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Feature: remove will-change after interaction/transition to avoid long-lived layers
+    (function(){
+      const interactive = document.querySelectorAll('.btn, .feature-card');
+      interactive.forEach(el => {
+        const cleanup = () => {
+          el.style.willChange = 'auto';
+          el.removeEventListener('transitionend', cleanup);
+        };
+        el.addEventListener('mouseenter', () => {
+          el.style.willChange = 'transform';
+          el.addEventListener('transitionend', cleanup);
+        });
+        el.addEventListener('mouseleave', cleanup);
+      });
+    })();
+
+    // Fallback: tag body when backdrop-filter is unsupported for any additional progressive enhancements
+    (function(){
+      const supported = CSS && (CSS.supports('backdrop-filter: blur(1px)') || CSS.supports('-webkit-backdrop-filter: blur(1px)'));
+      if (!supported) document.body.classList.add('no-backdrop');
+    })();
+  </script>
+</body>
+</html>
