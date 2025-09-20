@@ -4,9 +4,6 @@
 // Initialize tutorial system
 function initializeTutorial() {
     if (!tutorialData || !editor) return;
-    
-    // Initialize emoji picker when tutorial is initialized
-    initializeEmojiPicker();
 
     const playgroundElements = {
         panel: document.getElementById('tutorial-panel'),

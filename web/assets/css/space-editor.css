@@ -852,7 +852,9 @@ input[type="color"]::-webkit-color-swatch {
 
 body.digital-space-panning .digital-world *,
 body.space-panning .space-world *,
+body.display-editor-panning .display-world *,
 body.disable-animations * {
     transition: none !important;
     animation: none !important;
+    transform: none !important;
 }

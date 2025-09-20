@@ -8,12 +8,14 @@ class DisplayEditor {
         this.isDrawing = false;
         this.isDrawingDisplay = false;
         this.isDragging = false;
+        this.isPreparingToDrag = false;
         this.isResizing = false;
         this.activeRectEl = null;
         this.selectedRectId = null;
         this.startCoords = { x: 0, y: 0 };
         this.dragOffset = { x: 0, y: 0 };
         this.currentDragPosition = { x: 0, y: 0 };
+        this.initialMousePosition = { x: 0, y: 0 };
         this.displays = [];
         this.activeDisplayId = null;
 
@@ -25,9 +27,10 @@ class DisplayEditor {
         
         // Cache for performance optimization
         this.canvasRect = null;
-        
+
         // Debouncing for JSON updates
         this.updateSimulationJsonTimeout = null;
+
         
         this.view = {
             scale: 1,
@@ -289,7 +292,7 @@ class DisplayEditor {
         if (clickedEl) {
             const elementId = clickedEl.dataset.elementId;
             this.selectElement(elementId);
-            this.startDragging(e, clickedEl);
+            this.prepareForDrag(e, clickedEl);
         } else if (e.ctrlKey || e.metaKey) {
             // Pan mode
             this.view.isPanning = true;
@@ -380,14 +383,19 @@ class DisplayEditor {
             this.activeRectEl.style.width = width + 'px';
             this.activeRectEl.style.height = height + 'px';
             
-            // Update dimensions display for display drawing
-            if (this.isDrawingDisplay) {
-                const widthRounded = Math.round(width);
-                const heightRounded = Math.round(height);
-                const dimensionText = this.activeRectEl.querySelector('.dimension-text');
-                if (dimensionText) {
-                    dimensionText.textContent = `New Display (${widthRounded} × ${heightRounded}px)`;
-                }
+            // Skip text updates during dragging for performance
+            // Text will be updated when drawing is finished
+        }
+
+        // Check if we should start dragging based on mouse movement distance
+        if (this.isPreparingToDrag && this.activeRectEl) {
+            const deltaX = e.clientX - this.initialMousePosition.x;
+            const deltaY = e.clientY - this.initialMousePosition.y;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+            // Start dragging if mouse has moved more than 5 pixels
+            if (distance > 5) {
+                this.startDragging();
             }
         }
 
@@ -396,10 +404,10 @@ class DisplayEditor {
             const rect = this.canvasRect || this.canvas.getBoundingClientRect();
             const newX = (e.clientX - rect.left - this.view.x) / this.view.scale - this.dragOffset.x;
             const newY = (e.clientY - rect.top - this.view.y) / this.view.scale - this.dragOffset.y;
-            
+
             // Apply snapping
             const snappedPosition = this.applySnapping(newX, newY);
-            
+
             this.currentDragPosition = { x: snappedPosition.x, y: snappedPosition.y };
             this.activeRectEl.style.left = snappedPosition.x + 'px';
             this.activeRectEl.style.top = snappedPosition.y + 'px';
@@ -421,6 +429,10 @@ class DisplayEditor {
 
         if (this.isDragging) {
             this.finishDragging();
+        } else if (this.isPreparingToDrag) {
+            // User clicked but didn't drag - just clean up preparation state
+            this.isPreparingToDrag = false;
+            this.activeRectEl = null;
         }
     }
 
@@ -1280,45 +1292,69 @@ class DisplayEditor {
         }
     }
 
-    startDragging(e, rectEl) {
-        this.isDragging = true;
+    prepareForDrag(e, rectEl) {
+        this.isPreparingToDrag = true;
         this.activeRectEl = rectEl;
-        
-        // Add dragging class to disable transitions/animations
-        rectEl.classList.add('dragging');
-        
+        this.initialMousePosition = { x: e.clientX, y: e.clientY };
+
         const rect = this.canvasRect || this.canvas.getBoundingClientRect();
         const mouseX = (e.clientX - rect.left - this.view.x) / this.view.scale;
         const mouseY = (e.clientY - rect.top - this.view.y) / this.view.scale;
-        
+
         // Safely parse element position with fallback to element bounds if style is corrupted
         let rectX = parseFloat(rectEl.style.left);
         let rectY = parseFloat(rectEl.style.top);
-        
+
         if (isNaN(rectX) || isNaN(rectY)) {
             const elementId = rectEl.dataset.elementId;
             const activeDisplay = this.getActiveDisplay();
-            const element = activeDisplay?.rectangles.find(r => r.id === elementId);
-            if (element) {
-                rectX = isNaN(rectX) ? element.bounds.x : rectX;
-                rectY = isNaN(rectY) ? element.bounds.y : rectY;
+            if (activeDisplay) {
+                const element = this.findElementInDisplay(activeDisplay, elementId);
+                if (element) {
+                    rectX = element.x || 0;
+                    rectY = element.y || 0;
+                } else {
+                    rectX = 0;
+                    rectY = 0;
+                }
             } else {
-                rectX = isNaN(rectX) ? 0 : rectX;
-                rectY = isNaN(rectY) ? 0 : rectY;
+                rectX = 0;
+                rectY = 0;
             }
         }
-        
+
         this.dragOffset = {
             x: mouseX - rectX,
             y: mouseY - rectY
         };
-        
+    }
+
+    startDragging() {
+        this.isDragging = true;
+        this.isPreparingToDrag = false;
+
+        // Disable CSS animations/transitions directly on the dragged element for maximum performance
+        if (this.activeRectEl) {
+            this.activeRectEl.style.transition = 'none';
+            this.activeRectEl.style.transform = 'none';
+            this.activeRectEl.style.boxShadow = 'none';
+            this.activeRectEl.classList.add('dragging');
+        }
+
         this.canvas.style.cursor = 'move';
     }
 
     finishDragging() {
         if (!this.isDragging || !this.selectedRectId) return;
-        
+
+        // Re-enable CSS styling after dragging
+        if (this.activeRectEl) {
+            this.activeRectEl.style.transition = '';
+            this.activeRectEl.style.transform = '';
+            this.activeRectEl.style.boxShadow = '';
+            this.activeRectEl.classList.remove('dragging');
+        }
+
         const activeDisplay = this.getActiveDisplay();
         const element = activeDisplay?.rectangles.find(r => r.id === this.selectedRectId);
         if (element) {
@@ -1327,13 +1363,9 @@ class DisplayEditor {
             this.updateSimulationJson();
             this.renderPropertiesPanel();
         }
-        
-        // Remove dragging class to re-enable transitions/animations
-        if (this.activeRectEl) {
-            this.activeRectEl.classList.remove('dragging');
-        }
-        
+
         this.isDragging = false;
+        this.isPreparingToDrag = false;
         this.activeRectEl = null;
         this.canvas.style.cursor = 'default';
     }

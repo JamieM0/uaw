@@ -7,11 +7,13 @@ class SpaceEditor {
         this.pixelsPerMeter = 20;
         this.isDrawing = false;
         this.isDragging = false;
+        this.isPreparingToDrag = false;
         this.activeRectEl = null;
         this.selectedRectId = null;
         this.startCoords = { x: 0, y: 0 };
         this.dragOffset = { x: 0, y: 0 };
         this.currentDragPosition = { x: 0, y: 0 };
+        this.initialMousePosition = { x: 0, y: 0 };
         this.locations = [];
 
         this.isUpdatingJson = false;
@@ -924,30 +926,37 @@ class SpaceEditor {
     
     onRectMouseDown(e, id) {
         e.stopPropagation();
-        
+
         // Immediately clear any previous states
         this.isDrawing = false;
         this.canvas.classList.remove('is-dragging');
 
         // Check for pending synchronization
         setTimeout(() => this.checkPendingSync(), 0);
-        
+
         // Clear any lingering collision states
         document.querySelectorAll('.location-rect.colliding').forEach(el => {
             el.classList.remove('colliding');
         });
-        
-        // Set up new drag state
-        this.isDragging = true;
-        this.canvas.classList.add('is-dragging');
+
+        // Prepare for potential drag
+        this.prepareForDrag(e, id);
+
+        // Select the rectangle
+        this.selectRect(id);
+    }
+
+    prepareForDrag(e, id) {
+        this.isPreparingToDrag = true;
         this.activeRectEl = e.target;
         this.selectedRectId = id;
-        
+        this.initialMousePosition = { x: e.clientX, y: e.clientY };
+
         // Calculate drag offset in world coordinates for proper alignment
         const worldMouseCoords = this.screenToWorldCoordinates(e.clientX, e.clientY);
         const rectWorldX = parseInt(this.activeRectEl.style.left) || 0;
         const rectWorldY = parseInt(this.activeRectEl.style.top) || 0;
-        
+
         this.dragOffset = {
             x: worldMouseCoords.x - rectWorldX,
             y: worldMouseCoords.y - rectWorldY
@@ -955,8 +964,12 @@ class SpaceEditor {
 
         // Initialize currentDragPosition to the starting position of the drag
         this.currentDragPosition = { x: rectWorldX, y: rectWorldY };
-        
-        this.selectRect(id);
+    }
+
+    startDragging() {
+        this.isDragging = true;
+        this.isPreparingToDrag = false;
+        this.canvas.classList.add('is-dragging');
     }
 
     onMouseMove(e) {
@@ -987,6 +1000,17 @@ class SpaceEditor {
             this.activeRectEl.style.height = `${height}px`;
             this.activeRectEl.style.left = `${left}px`;
             this.activeRectEl.style.top = `${top}px`;
+        }
+        // Check if we should start dragging based on mouse movement distance
+        else if (this.isPreparingToDrag && this.activeRectEl) {
+            const deltaX = e.clientX - this.initialMousePosition.x;
+            const deltaY = e.clientY - this.initialMousePosition.y;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+            // Start dragging if mouse has moved more than 5 pixels
+            if (distance > 5) {
+                this.startDragging();
+            }
         }
         // Handle Dragging an existing rectangle
         else if (this.isDragging && this.activeRectEl) {
@@ -1074,6 +1098,7 @@ class SpaceEditor {
             
             // Clear all dragging states immediately
             this.isDragging = false;
+            this.isPreparingToDrag = false;
             this.canvas.classList.remove('is-dragging');
 
             // Check for pending synchronization after dragging completes
@@ -1089,8 +1114,11 @@ class SpaceEditor {
             
             // Update JSON after position is committed
             this.updateJson();
+        } else if (this.isPreparingToDrag) {
+            // User clicked but didn't drag - just clean up preparation state
+            this.isPreparingToDrag = false;
         }
-        
+
         // Clear activeRectEl reference
         this.activeRectEl = null;
     }

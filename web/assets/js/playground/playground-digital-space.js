@@ -8,11 +8,13 @@ class DigitalSpaceEditor {
         this.pixelsPerMeter = 20;
         this.isDrawing = false;
         this.isDragging = false;
+        this.isPreparingToDrag = false;
         this.activeRectEl = null;
         this.selectedRectId = null;
         this.startCoords = { x: 0, y: 0 };
         this.dragOffset = { x: 0, y: 0 };
         this.currentDragPosition = { x: 0, y: 0 };
+        this.initialMousePosition = { x: 0, y: 0 };
         this.digitalLocations = [];
         this.digitalObjects = [];
 
@@ -163,7 +165,7 @@ class DigitalSpaceEditor {
             if (clickedEl) {
                 const locationId = clickedEl.dataset.locationId;
                 this.selectLocation(locationId);
-                this.startDragging(e, clickedEl);
+                this.prepareForDrag(e, clickedEl);
                 return;
             }
         }
@@ -215,16 +217,28 @@ class DigitalSpaceEditor {
             const rect = this.canvasRect || this.canvas.getBoundingClientRect();
             const currentX = (e.clientX - rect.left - this.view.x) / this.view.scale;
             const currentY = (e.clientY - rect.top - this.view.y) / this.view.scale;
-            
+
             const width = Math.abs(currentX - this.startCoords.x);
             const height = Math.abs(currentY - this.startCoords.y);
             const left = Math.min(this.startCoords.x, currentX);
             const top = Math.min(this.startCoords.y, currentY);
-            
+
             this.activeRectEl.style.left = left + 'px';
             this.activeRectEl.style.top = top + 'px';
             this.activeRectEl.style.width = width + 'px';
             this.activeRectEl.style.height = height + 'px';
+        }
+
+        // Check if we should start dragging based on mouse movement distance
+        if (this.isPreparingToDrag && this.activeRectEl) {
+            const deltaX = e.clientX - this.initialMousePosition.x;
+            const deltaY = e.clientY - this.initialMousePosition.y;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+            // Start dragging if mouse has moved more than 5 pixels
+            if (distance > 5) {
+                this.startDragging(this.activeRectEl);
+            }
         }
 
         if (this.isDragging && this.activeRectEl) {
@@ -232,7 +246,7 @@ class DigitalSpaceEditor {
             const rect = this.canvasRect || this.canvas.getBoundingClientRect();
             const newX = (e.clientX - rect.left - this.view.x) / this.view.scale - this.dragOffset.x;
             const newY = (e.clientY - rect.top - this.view.y) / this.view.scale - this.dragOffset.y;
-            
+
             this.currentDragPosition = { x: newX, y: newY };
             this.activeRectEl.style.left = newX + 'px';
             this.activeRectEl.style.top = newY + 'px';
@@ -254,6 +268,10 @@ class DigitalSpaceEditor {
 
         if (this.isDragging) {
             this.finishDragging();
+        } else if (this.isPreparingToDrag) {
+            // User clicked but didn't drag - just clean up preparation state
+            this.isPreparingToDrag = false;
+            this.activeRectEl = null;
         }
     }
 
@@ -844,27 +862,33 @@ class DigitalSpaceEditor {
         }
     }
 
-    startDragging(e, rectEl) {
-        this.isDragging = true;
+    prepareForDrag(e, rectEl) {
+        this.isPreparingToDrag = true;
         this.activeRectEl = rectEl;
-        
-        // Disable ALL CSS animations/transitions during dragging for performance
-        rectEl.style.transition = 'none';
-        rectEl.style.transform = 'none';
-        rectEl.style.boxShadow = 'none';
-        rectEl.classList.add('dragging');
-        
+        this.initialMousePosition = { x: e.clientX, y: e.clientY };
+
         const rect = this.canvasRect || this.canvas.getBoundingClientRect();
         const mouseX = (e.clientX - rect.left - this.view.x) / this.view.scale;
         const mouseY = (e.clientY - rect.top - this.view.y) / this.view.scale;
         const rectX = parseFloat(rectEl.style.left) || 0;
         const rectY = parseFloat(rectEl.style.top) || 0;
-        
+
         this.dragOffset = {
             x: mouseX - rectX,
             y: mouseY - rectY
         };
-        
+    }
+
+    startDragging(rectEl) {
+        this.isDragging = true;
+        this.isPreparingToDrag = false;
+
+        // Disable ALL CSS animations/transitions during dragging for performance
+        rectEl.style.transition = 'none';
+        rectEl.style.transform = 'none';
+        rectEl.style.boxShadow = 'none';
+        rectEl.classList.add('dragging');
+
         this.canvas.style.cursor = 'move';
     }
 
@@ -888,6 +912,7 @@ class DigitalSpaceEditor {
         }
         
         this.isDragging = false;
+        this.isPreparingToDrag = false;
         this.activeRectEl = null;
         this.canvas.style.cursor = 'default';
     }
