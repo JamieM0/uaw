@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
-  <meta name="description" content="Universal Automation Wiki — simulation playground and knowledge base for validated automation workflows." />
+  <meta name="description" content="Universal Automation Wiki - simulation playground and knowledge base for validated automation workflows." />
   <meta name="theme-color" content="#0c0f14" />
-  <title>Universal Automation Wiki — Simulation Playground</title>
+  <title>Universal Automation Wiki - Simulation Playground</title>
 
   <!-- Fonts: Geologica (logo/headline), Rubik (subheads/nav), Inter (body) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
@@ -259,7 +259,7 @@
     }
     .brand .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 0 0 3px rgba(108,198,255,0.2); }
     nav.main-nav { justify-self: center; }
-    nav.main-nav a { font-family: Rubik, system-ui, sans-serif; font-weight: 500; color: var(--text); margin: 0 12px; opacity: 0.92; }
+    nav.main-nav a { font-family: Rubik, system-ui, sans-serif; font-weight: 500; color: var(--text); margin: 0 12px; opacity: 0.92; font-size: 16px; }
     .nav-cta { justify-self: end; display: flex; align-items: center; gap: 12px; }
 
     /* Hamburger menu */
@@ -483,7 +483,7 @@
     .feature-card .feature-icon svg {
       width: 28px;
       height: 28px;
-      color: rgba(11, 15, 22, 0.9);
+      color: white;
     }
     .feature-card h3 {
       font-family: Rubik, system-ui, sans-serif;
@@ -628,6 +628,244 @@
       color: var(--accent-2);
       border: 1px solid rgba(99, 102, 241, 0.25);
       box-shadow: 0 2px 8px rgba(99, 102, 241, 0.12);
+    }
+
+    /* Beyond Simulation Section */
+    .beyond-simulation {
+      padding: 80px 0;
+      position: relative;
+    }
+    .beyond-simulation::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+
+    /* Three Pillars Layout */
+    .pillars-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+      margin-bottom: 80px;
+      position: relative;
+    }
+    @media (max-width: 768px) {
+      .pillars-container {
+        grid-template-columns: 1fr;
+        gap: 60px;
+        margin-bottom: 60px;
+      }
+    }
+
+    .pillar {
+      text-align: center;
+      position: relative;
+      padding-top: 80px;
+    }
+    .pillar-number {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 3px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Geologica, system-ui, sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--accent);
+      box-shadow: 0 0 0 8px var(--bg);
+    }
+    .pillar h3 {
+      font-family: Rubik, system-ui, sans-serif;
+      font-weight: 600;
+      font-size: 20px;
+      color: var(--text);
+      margin: 0 0 16px;
+    }
+    .pillar p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* Connecting Lines Between Pillars */
+    .pillars-container::before {
+      content: '';
+      position: absolute;
+      top: 30px;
+      left: 20%;
+      right: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
+      opacity: 0.3;
+    }
+    @media (max-width: 768px) {
+      .pillars-container::before {
+        display: none;
+      }
+    }
+
+    /* Licensing Section */
+    .licensing-section {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .licensing-section::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, var(--accent), var(--accent-2), var(--accent));
+      border-radius: 24px;
+      z-index: -1;
+      opacity: 0.1;
+    }
+
+    .licensing-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+    .licensing-header svg {
+      color: var(--accent);
+    }
+    .licensing-header h3 {
+      font-family: Rubik, system-ui, sans-serif;
+      font-weight: 600;
+      font-size: 22px;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .licensing-content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .license-option {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 32px;
+      position: relative;
+      transition: all 300ms ease;
+    }
+    .license-option.primary {
+      border: 2px solid var(--ok);
+      background: rgba(34, 197, 94, 0.06);
+      transform: scale(1.02);
+      box-shadow: 0 8px 32px rgba(34, 197, 94, 0.15);
+    }
+    .license-option.secondary {
+      border-left: 3px solid var(--warn);
+      opacity: 0.85;
+      transform: scale(0.98);
+    }
+
+    .license-priority {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .license-option.primary .license-priority {
+      color: var(--ok);
+    }
+    .license-option.secondary .license-priority {
+      color: var(--warn);
+    }
+    .license-label {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin-bottom: 16px;
+    }
+    .license-type {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 6px 12px;
+      border-radius: 6px;
+    }
+    .license-option.primary .license-type {
+      background: var(--ok);
+      color: var(--bg);
+    }
+    .license-option.secondary .license-type {
+      background: var(--warn);
+      color: var(--bg);
+    }
+    .open-source .license-type {
+      background: var(--ok);
+      color: var(--bg);
+    }
+    .enterprise .license-type {
+      background: var(--warn);
+      color: var(--bg);
+    }
+
+    .license-option p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      margin: 0;
+    }
+    .license-option.primary p {
+      font-size: 15px;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .license-option.secondary p {
+      font-size: 13px;
+    }
+
+
+    /* Light Mode Adjustments */
+    [data-theme="light"] .beyond-simulation::before {
+      background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.6), transparent);
+    }
+    [data-theme="light"] .pillar-number {
+      background: var(--bg);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 8px var(--bg);
+    }
+    [data-theme="light"] .pillars-container::before {
+      background: linear-gradient(90deg, rgba(59, 130, 246, 0.4), rgba(99, 102, 241, 0.4), rgba(59, 130, 246, 0.4));
+    }
+    [data-theme="light"] .licensing-section {
+      background: rgba(59, 130, 246, 0.04);
+      border: 1px solid rgba(59, 130, 246, 0.15);
+    }
+    [data-theme="light"] .licensing-section::before {
+      background: linear-gradient(45deg, rgba(59, 130, 246, 0.2), rgba(99, 102, 241, 0.2), rgba(59, 130, 246, 0.2));
+    }
+    [data-theme="light"] .license-option {
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(59, 130, 246, 0.2);
     }
 
 
@@ -807,6 +1045,9 @@
       inset: 0;
       background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent 70%);
     }
+    .use-case-image svg {
+      color: white;
+    }
     .use-case-content {
       padding: 20px;
     }
@@ -898,7 +1139,7 @@
       justify-content: center;
       font-weight: 700;
       font-size: 16px;
-      color: #0a0f14;
+      color: white;
       z-index: 2;
       box-shadow: 0 4px 16px rgba(108, 198, 255, 0.3);
     }
@@ -1208,81 +1449,7 @@
       <h2 style="text-align: center; font-family: Rubik, system-ui, sans-serif; font-weight: 600; font-size: clamp(20px, 3.5vw, 28px); color: var(--text); margin: 0 0 8px;">How It Works</h2>
       <p style="text-align: center; color: var(--muted); font-size: 17px; margin: 0 0 16px;">Four core capabilities that make automation simulation actually useful</p>
 
-      <div class="showcase-grid">
-        <div class="showcase-item">
-          <div class="showcase-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
-              <path d="M8 12H16M8 8H12M8 16H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <circle cx="5" cy="8" r="1" fill="currentColor"/>
-              <circle cx="5" cy="12" r="1" fill="currentColor"/>
-              <circle cx="5" cy="16" r="1" fill="currentColor"/>
-            </svg>
-          </div>
-          <h3>Visual Workflows</h3>
-          <p>Design processes with drag-and-drop timeline manipulation and Monaco-powered JSON editing.</p>
-        </div>
-
-        <div class="showcase-item">
-          <div class="showcase-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.7088 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4906 2.02168 11.3407C2.16356 9.19077 2.99721 7.14613 4.39828 5.49707C5.79935 3.84802 7.69279 2.68748 9.79619 2.1875C11.8996 1.68753 14.1003 1.86205 16.07 2.69" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M22 4L12 14.01L9 11.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <h3>Real-time Validation</h3>
-          <p>Catch resource conflicts, timing violations, and structural issues as you design.</p>
-        </div>
-
-        <div class="showcase-item">
-          <div class="showcase-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 3V21H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M7 12L12 7L16 11L21 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="7" cy="12" r="2" fill="currentColor"/>
-              <circle cx="12" cy="7" r="2" fill="currentColor"/>
-              <circle cx="16" cy="11" r="2" fill="currentColor"/>
-              <circle cx="21" cy="6" r="2" fill="currentColor"/>
-            </svg>
-          </div>
-          <h3>Custom Metrics</h3>
-          <p>Define your own validation logic and success criteria with simple JavaScript.</p>
-        </div>
-
-        <div class="showcase-item">
-          <div class="showcase-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="12" cy="7" r="1" fill="currentColor"/>
-              <circle cx="12" cy="12" r="1" fill="currentColor"/>
-              <circle cx="12" cy="17" r="1" fill="currentColor"/>
-            </svg>
-          </div>
-          <h3>Universal Modeling</h3>
-          <p>Model physical spaces, digital systems, and UI displays in one unified platform.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Interactive Demo Preview -->
-  <section class="demo" id="simulate" aria-labelledby="demo-title">
-    <div class="container">
-      <div class="demo-header" style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;">
-        <h2 id="demo-title" style="margin: 0; font-family: Rubik, system-ui, sans-serif; font-weight: 600;">Interactive Demo Preview</h2>
-        <div class="demo-toolbar demo-toolbar--header">
-          <a class="btn" href="./playground">Open Full Playground</a>
-        </div>
-      </div>
-      <div class="demo-wrap">
-        <div class="demo-layer depth" aria-hidden="true"></div>
-        <iframe class="demo-iframe" src="./playground.html?embedded=true" title="Simulation Playground Preview" loading="lazy"></iframe>
-      </div>
-    </div>
-  </section>
-
+      
   <!-- Feature Card Grid -->
   <section class="features">
     <div class="container">
@@ -1295,7 +1462,7 @@
                 <path d="M7 8L10 12L7 16M13 16H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
-            <h3 id="f1">Monaco + Timeline</h3>
+            <h3 id="f1">Build Real Workflows</h3>
           </div>
           <p class="summary">Design processes with code or visually, with changes reflected in both.</p>
           <div class="arrow-cta" aria-hidden="true">
@@ -1311,7 +1478,7 @@
                 <path d="M12 6V8M12 16V18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </div>
-            <h3 id="f2">Real-time Validation</h3>
+            <h3 id="f2">See What Breaks Immediately</h3>
           </div>
           <p class="summary">Catch errors, resource conflicts, and timing violations as you design.</p>
           <div class="arrow-cta" aria-hidden="true">
@@ -1330,7 +1497,7 @@
                 <circle cx="21" cy="6" r="2" fill="currentColor"/>
               </svg>
             </div>
-            <h3 id="f3">Custom Metrics</h3>
+            <h3 id="f3">Custom Metrics for Validation</h3>
           </div>
           <p class="summary">Define your own success criteria and validation logic with JavaScript.</p>
           <div class="arrow-cta" aria-hidden="true">
@@ -1349,13 +1516,31 @@
                 <circle cx="12" cy="17" r="1" fill="currentColor"/>
               </svg>
             </div>
-            <h3 id="f4">Physical + Digital</h3>
+            <h3 id="f4">Physical. Digital. Displays.</h3>
           </div>
           <p class="summary">Model equipment, spaces, and digital systems, including UI displays.</p>
           <div class="arrow-cta" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.75 6.75L19.25 12M19.25 12L13.75 17.25M19.25 12H4.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
         </article>
+      </div>
+    </div>
+  </section>
+    </div>
+  </section>
+
+  <!-- Interactive Demo Preview -->
+  <section class="demo" id="simulate" aria-labelledby="demo-title">
+    <div class="container">
+      <div class="demo-header" style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;">
+        <h2 id="demo-title" style="margin: 0; font-family: Rubik, system-ui, sans-serif; font-weight: 600;">Interactive Demo Preview</h2>
+        <div class="demo-toolbar demo-toolbar--header">
+          <a class="btn" href="./playground">Launch Playground</a>
+        </div>
+      </div>
+      <div class="demo-wrap">
+        <div class="demo-layer depth" aria-hidden="true"></div>
+        <iframe class="demo-iframe" src="./playground.html?embedded=true" title="Simulation Playground Preview" loading="lazy"></iframe>
       </div>
     </div>
   </section>
@@ -1366,19 +1551,19 @@
   <div id="popup-monaco" class="feature-popup-card glass-strong" role="dialog" aria-modal="true" aria-labelledby="popup-title-monaco" aria-hidden="true">
     <button class="popup-close-btn" aria-label="Close">&times;</button>
     <h3 id="popup-title-monaco">Build Real Workflows</h3>
-    <p>What happens when a Monaco-powered JSON editor meets drag-and-drop timeline manipulation? A system that works how you want to work. Design processes with actors, equipment, and resources that interact like they would in the real world, or define your <em>own, custom</em> objects. There's no need for abstract boxes and arrows — actually see what's happening at a given time.</p>
+    <p>What happens when a Monaco-powered JSON editor meets drag-and-drop timeline manipulation? A system that works how you want to work. Design processes with actors, equipment, and resources that interact like they would in the real world, or define your <em>own, custom</em> objects. There's no need for abstract boxes and arrows - actually see what's happening at a given time.</p>
   </div>
 
   <div id="popup-validation" class="feature-popup-card glass-strong" role="dialog" aria-modal="true" aria-labelledby="popup-title-validation" aria-hidden="true">
     <button class="popup-close-btn" aria-label="Close">&times;</button>
     <h3 id="popup-title-validation">See What Breaks Immediately</h3>
-    <p>Our validation engine runs a growing library of computational checks as you design. Resource conflicts, timing violations, structural integrity, scheduling overlaps — all caught in real-time. Your simulation gets validated against profitability metrics, resource utilisation, equipment capacity constraints, and more before you finish building it.</p>
+    <p>Our validation engine runs a growing library of computational checks as you design. Resource conflicts, timing violations, structural integrity, scheduling overlaps - all caught in real-time. Your simulation gets validated against profitability metrics, resource utilisation, equipment capacity constraints, and more before you finish building it.</p>
   </div>
 
   <div id="popup-metrics" class="feature-popup-card glass-strong" role="dialog" aria-modal="true" aria-labelledby="popup-title-metrics" aria-hidden="true">
     <button class="popup-close-btn" aria-label="Close">&times;</button>
     <h3 id="popup-title-metrics">Custom Metrics for Validation</h3>
-    <p>Got your own metrics? Define them in simple JavaScript in the powerful Metrics Editor. This infuses the power of the simulation playground with your own logic, enabling precise validation of all your simulations. Custom metrics ensure your simulations reflect exactly what matters most to you.</p>
+    <p>Got your own metrics? Define them in simple JavaScript in the powerful Metrics Editor. This infuses the power of the simulation playground with your own logic, enabling precise validation of all your simulations. Custom metrics ensure your simulations are checked against exactly what matters most to you.</p>
   </div>
 
   <div id="popup-physical" class="feature-popup-card glass-strong" role="dialog" aria-modal="true" aria-labelledby="popup-title-physical" aria-hidden="true">
@@ -1398,7 +1583,7 @@
           <div class="process-step-number">1</div>
           <div class="process-step-content">
             <h3>Timeline-Based Modeling</h3>
-            <p>Visual drag-and-drop editor for task scheduling, resource allocation, and actor coordination. Move tasks between actors, resize durations, add dependencies.</p>
+            <p>Visual drag-and-drop editor for task scheduling, resource allocation, and actor coordination. Move tasks between actors, resize durations, add dependencies - all while the validation engine runs computational checks in the background.</p>
           </div>
         </div>
 
@@ -1406,7 +1591,7 @@
           <div class="process-step-number">2</div>
           <div class="process-step-content">
             <h3>Real-Time Metrics Computation</h3>
-            <p>Automatically computes throughput rates, resource efficiency, labor utilization, cost per unit, and cycle times. Instant feedback on economic viability.</p>
+            <p>Automatically computes throughput rates, resource efficiency, labor utilization, cost per unit, and cycle times. Get instant feedback on whether or not your simulation is makes economic sense, and ensure that it follows the laws of Physics!</p>
           </div>
         </div>
 
@@ -1414,7 +1599,7 @@
           <div class="process-step-number">3</div>
           <div class="process-step-content">
             <h3>Universal Object Model</h3>
-            <p>Standardized schema distinguishing between persistent equipment (with states) and consumable resources (with quantities that deplete).</p>
+            <p>Standardised simulation schema that distinguishes between persistent equipment (with states like clean/dirty/in-use) and consumable resources (with quantities that get depleted). Tasks interact can interact with objects by modifying their properties.</p>
           </div>
         </div>
 
@@ -1422,7 +1607,7 @@
           <div class="process-step-number">4</div>
           <div class="process-step-content">
             <h3>Interactions Made Simple</h3>
-            <p>Tasks execute interactions at runtime to modify objects dynamically — from changing emojis to reducing server capacity during upgrades.</p>
+            <p>Tasks can make use of the 'interactions' concept. The simulation engine will execute the interactions defined in tasks when the task start time is reached. This means that tasks can modify objects in any way - from changing its emoji, to reducing the capacity of a server during a hardware upgrade.</p>
           </div>
         </div>
       </div>
@@ -1436,7 +1621,7 @@
       <p style="text-align: center; color: var(--muted); font-size: 17px; margin: 0 0 16px;">Explore our growing collection of interactive simulations organised by industry domain</p>
 
       <div class="use-case-grid">
-  <div class="use-case-card" onclick="window.location.href='/food-production'" style="cursor: pointer;">
+  <a href="/food-production" class="use-case-card">
     <div class="use-case-image">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M8 3H5C3.89543 3 3 3.89543 3 5V8C3 9.10457 3.89543 10 5 10H8C9.10457 10 10 9.10457 10 8V5C10 3.89543 9.10457 3 8 3Z" stroke="currentColor" stroke-width="2"/>
@@ -1453,9 +1638,9 @@
       <h3>Food Production</h3>
       <p>Interactive simulations of automated food processing, baking workflows, beverage production, and more.</p>
     </div>
-  </div>
+  </a>
 
-  <div class="use-case-card" onclick="window.location.href='/technology'" style="cursor: pointer;">
+  <a href="/technology" class="use-case-card">
     <div class="use-case-image">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
@@ -1468,9 +1653,9 @@
       <h3>Technology</h3>
       <p>Simulations of automation in computing, software development, telecommunications, and digital infrastructure.</p>
     </div>
-  </div>
+  </a>
 
-  <div class="use-case-card" onclick="window.location.href='/manufacturing'" style="cursor: pointer;">
+  <a href="/manufacturing" class="use-case-card">
     <div class="use-case-image">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1482,9 +1667,9 @@
       <h3>Manufacturing</h3>
       <p>Industrial manufacturing automation simulations across different sectors and production workflows.</p>
     </div>
-  </div>
+  </a>
 
-  <div class="use-case-card" onclick="window.location.href='/transportation'" style="cursor: pointer;">
+  <a href="/transportation" class="use-case-card">
     <div class="use-case-image">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M3 12H21L19 8H5L3 12Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
@@ -1498,9 +1683,9 @@
       <h3>Transportation</h3>
       <p>Autonomous vehicle simulations, logistics automation workflows, and transportation system models.</p>
     </div>
-  </div>
+  </a>
 
-  <div class="use-case-card" onclick="window.location.href='/healthcare'" style="cursor: pointer;">
+  <a href="/healthcare" class="use-case-card">
     <div class="use-case-image">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M22 12H18L15 21L9 3L6 12H2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1510,9 +1695,9 @@
       <h3>Healthcare</h3>
       <p>Medical robotics simulations, diagnostic automation workflows, and healthcare delivery system models.</p>
     </div>
-  </div>
+  </a>
 
-  <div class="use-case-card" onclick="window.location.href='/entertainment'" style="cursor: pointer;">
+  <a href="/entertainment" class="use-case-card">
     <div class="use-case-image">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
@@ -1523,7 +1708,7 @@
       <h3>Entertainment</h3>
       <p>Interactive models of automated content creation, gaming systems, and entertainment production workflows.</p>
     </div>
-  </div>
+  </a>
 </div>
 
     </div>
@@ -1572,24 +1757,70 @@
     </div>
   </section>
 
+  <!-- Beyond Just Simulation Section -->
+  <section class="beyond-simulation" id="beyond-simulation">
+    <div class="container">
+      <h2 style="text-align: center; font-family: Rubik, system-ui, sans-serif; font-weight: 600; font-size: clamp(20px, 3.5vw, 28px); color: var(--text); margin: 0 0 8px;">Beyond Just Simulation</h2>
+      <p style="text-align: center; color: var(--muted); font-size: 17px; margin: 0 0 50px;">A complete ecosystem for automation knowledge and validation</p>
+
+      <!-- Three Main Pillars -->
+      <div class="pillars-container">
+        <div class="pillar">
+          <div class="pillar-number">01</div>
+          <h3>Community Knowledge Base</h3>
+          <p>The simulation playground connects to our growing wiki of validated automation processes. Learn from working examples, contribute your own discoveries, and build on proven approaches rather than starting from scratch.</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar-number">02</div>
+          <h3>Real-World Applications</h3>
+          <p>The validation framework includes metrics that matter in actual business contexts: throughput analysis, resource efficiency calculations, economic feasibility checks, and operational constraint validation.</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar-number">03</div>
+          <h3>Open Development</h3>
+          <p>The entire platform is transparent and community-driven. The validation engine, metrics catalogue, and simulation framework are all open for inspection and contribution. No black box algorithms, it's computational validation you can understand and extend.</p>
+        </div>
+      </div>
+
+      <!-- Licensing Section -->
+      <div class="licensing-section">
+        <div class="licensing-header">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <h3>Licensing</h3>
+        </div>
+        <div class="licensing-content">
+          <div class="license-option open-source primary">
+            <div class="license-label">
+              <span class="license-type">Open Source</span>
+            </div>
+            <p>The Universal Automation Wiki project follows an 'open core' licensing model and uses the AGPL 3.0 license. That means that you're free to extend, improve, or otherwise modify the code for your purposes, however, your changes legally must be made public and open source, you must also adopt this license.</p>
+          </div>
+          <div class="license-option enterprise secondary">
+            <div class="license-label">
+              <span class="license-type">Enterprise</span>
+            </div>
+            <p>The Universal Automation Wiki will provide paying enterprises with an alternative license, the Apache 2.0 license, which will permit them to keep their changes private. If you're interested in purchasing an enterprise license, please email contact@universalautomation.wiki.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Benefits Section -->
   <section class="benefits-section" id="why">
     <div class="container">
-      <h2 style="text-align: center; font-family: Rubik, system-ui, sans-serif; font-weight: 600; font-size: clamp(20px, 3.5vw, 28px); color: var(--text); margin: 0 0 8px;">Why This Matters</h2>
-      <p style="text-align: center; color: var(--muted); font-size: 17px; margin: 0 0 16px;">The difference between automation that works and automation that fails</p>
+      <h2 style="text-align: center; font-family: Rubik, system-ui, sans-serif; font-weight: 600; font-size: clamp(20px, 3.5vw, 28px); color: var(--text); margin: 0 0 24px;">Why This Matters</h2>
 
-      <div class="benefits-grid">
-        <div class="benefit-card">
-          <div class="benefit-icon">⚡</div>
-          <h3>Catch Problems Early</h3>
-          <p>Identify resource conflicts, timing dependencies, and bottlenecks before implementation saves time and money.</p>
-        </div>
-
-        <div class="benefit-card">
-          <div class="benefit-icon">🎯</div>
-          <h3>Make Informed Decisions</h3>
-          <p>Understand real resource requirements and validate what's actually worth automating with data, not guesswork.</p>
-        </div>
+      <div style="max-width: 800px; margin: 0 auto; text-align: left;">
+        <p style="color: var(--text); font-size: 18px; line-height: 1.6; margin: 0 0 20px;">
+          Most automation projects fail not because the technology doesn't work, but because the process design doesn't account for real-world constraints. Resource conflicts, timing dependencies, equipment limitations, and human factors. These are predictable problems that a simulation would catch early.
+        </p>
+        <p style="color: var(--text); font-size: 18px; line-height: 1.6; margin: 0;">
+          By testing automation workflows in a validated simulation environment, you can identify genuine bottlenecks, understand real resource requirements, and make informed decisions about what's actually worth automating.
+        </p>
       </div>
     </div>
   </section>
