@@ -17,6 +17,68 @@
         <link rel="stylesheet" href="/assets/css/emoji-picker.css" />
 
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+        <!-- Iframe-specific styles -->
+        <style>
+            /* Hide sections when loaded in iframe */
+            .iframe-embedded .json-editor-panel,
+            .iframe-embedded .tab-bar {
+                display: none !important;
+            }
+
+            /* Show only specific header elements in iframe */
+            .iframe-embedded .playground-header .logo,
+            .iframe-embedded .playground-header h1,
+            .iframe-embedded .playground-header .json-editor-buttons > *:not(#simulation-library-btn):not(.dropdown),
+            .iframe-embedded .playground-header .control-buttons > *:not(#dark-mode-toggle):not(#undo-btn),
+            .iframe-embedded .playground-header .action-buttons {
+                display: none !important;
+            }
+
+            /* Keep visible: Simulation Library, + Object, + Task, Dark Mode, Undo, Player Controls */
+            .iframe-embedded .playground-header .dropdown:has(#simulation-library-btn),
+            .iframe-embedded .playground-header .simulation-buttons,
+            .iframe-embedded .playground-header #dark-mode-toggle,
+            .iframe-embedded .playground-header #undo-btn,
+            .iframe-embedded .playground-header .player-controls {
+                display: flex !important;
+            }
+
+            /* Simplify header layout in iframe */
+            .iframe-embedded .playground-header .header-actions {
+                gap: 1rem;
+            }
+
+            /* Adjust layout when in iframe to account for header and validation panel */
+            .iframe-embedded .playground-top {
+                height: 50vh; /* Take up half the viewport */
+            }
+
+            .iframe-embedded .playground-bottom {
+                height: calc(50vh - 60px); /* Other half minus header height */
+            }
+
+            .iframe-embedded .simulation-panel {
+                width: 100%;
+                border-left: none;
+            }
+
+            .iframe-embedded .tab-content-wrapper {
+                border-top: none;
+            }
+
+            /* Ensure validation panel is visible and properly sized */
+            .iframe-embedded .validation-panel {
+                display: flex !important;
+                flex-direction: column;
+                height: 100%;
+            }
+
+            .iframe-embedded .validation-content {
+                flex: 1;
+                overflow-y: auto;
+            }
+        </style>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -100,6 +162,73 @@
             });
         </script>
 
+        <!-- Iframe detection script -->
+        <script>
+            // Detect if we're running in an iframe and apply appropriate styling
+            (function() {
+                function detectIframe() {
+                    // Method 1: Check URL parameter (most reliable for Safari)
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.get('embedded') === 'true') {
+                        return true;
+                    }
+
+                    // Method 2: Standard check
+                    try {
+                        if (window.self !== window.top) {
+                            return true;
+                        }
+                    } catch (e) {
+                        return true;
+                    }
+
+                    // Method 3: Check if we can access parent (Safari-specific)
+                    try {
+                        if (window.parent && window.parent !== window) {
+                            // Try to access parent's location to see if we're in an iframe
+                            const parentLoc = window.parent.location.href;
+                            return true;
+                        }
+                    } catch (e) {
+                        // Cross-origin iframe in Safari - this catch block indicates we're in an iframe
+                        return true;
+                    }
+
+                    // Method 4: Check frameElement
+                    try {
+                        if (window.frameElement !== null) {
+                            return true;
+                        }
+                    } catch (e) {
+                        return true;
+                    }
+
+                    // Method 5: Safari-specific viewport check
+                    // In Safari iframes, viewport dimensions might be constrained differently
+                    if (window.innerHeight < 600 && window.innerWidth < 800) {
+                        // Check if we have a referrer that's different from our current page
+                        if (document.referrer && document.referrer !== '' && document.referrer !== window.location.href) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
+                // Apply iframe-specific class immediately to prevent layout shift
+                if (detectIframe()) {
+                    document.documentElement.classList.add('iframe-embedded');
+                    // Also hide the welcome overlay when in iframe
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const welcomeOverlay = document.getElementById('welcome-overlay');
+                        if (welcomeOverlay) {
+                            welcomeOverlay.style.display = 'none';
+                        }
+                    });
+                }
+            })();
+        </script>
+
     </head>
     <body>
         <div id="welcome-overlay" class="dialog-overlay" style="display: flex;">
@@ -123,7 +252,11 @@
                             Don't show again
                         </label>
                     </div>
-                    <button type="button" class="btn-primary" id="welcome-continue-btn">Continue</button>
+                    <button type="button" class="btn-primary" id="welcome-continue-btn" style="display: none;">Continue</button>
+                    <div style="display: flex; justify-content: center; gap: 1rem;">
+                        <button type="button" class="btn-secondary" id="skip-tutorial-btn">Skip Tutorial</button>
+                        <button type="button" class="btn-primary" id="start-tutorial-welcome-btn">Start Tutorial</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -239,7 +372,6 @@
                 </div>
                 <div class="tutorial-footer">
                     <button id="tutorial-prev-btn">Back</button>
-                    <button id="tutorial-skip-btn" style="display: none;">Skip</button>
                     <button id="tutorial-next-btn" disabled>Next</button>
                 </div>
             </div>
@@ -1066,6 +1198,9 @@
 
         <!-- Context Menu -->
         <div id="context-menu" class="context-menu" style="display: none;">
+            <div class="context-menu-item" id="context-menu-edit">
+                Edit
+            </div>
             <div class="context-menu-item" id="context-menu-delete">
                 Delete
             </div>
@@ -1091,6 +1226,27 @@
         <script src="/assets/js/playground/playground-features.js"></script>
         <script src="/assets/js/playground/playground-editor.js"></script>
         <script src="/assets/js/playground/playground-core.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const continueBtn = document.getElementById('welcome-continue-btn');
+                const skipBtn = document.getElementById('skip-tutorial-btn');
+                const startBtn = document.getElementById('start-tutorial-welcome-btn');
+                const realStartBtn = document.getElementById('start-tutorial-btn');
+
+                if (skipBtn && continueBtn) {
+                    skipBtn.addEventListener('click', () => {
+                        continueBtn.click();
+                    });
+                }
+
+                if (startBtn && continueBtn && realStartBtn) {
+                    startBtn.addEventListener('click', () => {
+                        continueBtn.click();
+                        realStartBtn.click();
+                    });
+                }
+            });
+        </script>
     </body>
 </html>
 

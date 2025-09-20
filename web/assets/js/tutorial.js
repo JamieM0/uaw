@@ -9,12 +9,6 @@ class TutorialManager {
         this.elements.nextBtn.addEventListener('click', () => this.nextStep());
         this.elements.prevBtn.addEventListener('click', () => this.prevStep());
         this.elements.exitBtn.addEventListener('click', () => this.end());
-        
-        // Add skip button functionality
-        const skipBtn = document.getElementById('tutorial-skip-btn');
-        if (skipBtn) {
-            skipBtn.addEventListener('click', () => this.skipStep());
-        }
     }
 
     start() {
@@ -144,12 +138,6 @@ class TutorialManager {
         this.editor.setValue(JSON.stringify(step.initial_json, null, 2));
 
         this.updateNavButtons();
-        
-        // Show skip button only for step 6 (JSON editing)
-        const skipBtn = document.getElementById('tutorial-skip-btn');
-        if (skipBtn) {
-            skipBtn.style.display = (step.id === 'json_editing_mastery') ? 'inline-block' : 'none';
-        }
         
         if (window.renderSimulation) {
             window.renderSimulation();

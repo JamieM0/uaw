@@ -3,10 +3,11 @@
 class ContextMenuManager {
     constructor() {
         this.contextMenu = document.getElementById('context-menu');
+        this.editMenuItem = document.getElementById('context-menu-edit');
         this.deleteMenuItem = document.getElementById('context-menu-delete');
         this.currentTarget = null;
         this.currentTargetType = null;
-        
+
         this.init();
     }
 
@@ -23,6 +24,12 @@ class ContextMenuManager {
             if (e.key === 'Escape') {
                 this.hideContextMenu();
             }
+        });
+
+        // Handle edit menu item click
+        this.editMenuItem.addEventListener('click', () => {
+            this.handleEdit();
+            this.hideContextMenu();
         });
 
         // Handle delete menu item click
@@ -121,6 +128,60 @@ class ContextMenuManager {
         this.contextMenu.style.display = 'none';
         this.currentTarget = null;
         this.currentTargetType = null;
+    }
+
+    handleEdit() {
+        if (!this.currentTarget || !this.currentTargetType) {
+            return;
+        }
+
+        if (this.currentTargetType === 'task') {
+            this.editTask();
+        } else if (this.currentTargetType === 'location') {
+            // TODO: Implement location editing if needed
+            console.log('Location editing not yet implemented');
+        } else if (this.currentTargetType === 'digital-location') {
+            // TODO: Implement digital location editing if needed
+            console.log('Digital location editing not yet implemented');
+        } else if (this.currentTargetType === 'display-element') {
+            // TODO: Implement display element editing if needed
+            console.log('Display element editing not yet implemented');
+        }
+    }
+
+    editTask() {
+        const taskElement = this.currentTarget;
+        const taskId = taskElement.dataset.taskId;
+
+        if (!taskId) {
+            console.error('ERROR: No task ID found for editing');
+            return;
+        }
+
+        try {
+            // Get current simulation data from Monaco editor
+            const currentJson = JSON.parse(editor.getValue());
+
+            // Find the task to edit
+            if (currentJson.simulation && currentJson.simulation.tasks) {
+                const task = currentJson.simulation.tasks.find(t => t.id === taskId);
+
+                if (task) {
+                    // Call the edit function from playground-objects.js
+                    if (typeof openEditTaskModal === 'function') {
+                        openEditTaskModal(task);
+                    } else {
+                        console.error('ERROR: openEditTaskModal function not found');
+                    }
+                } else {
+                    console.error(`ERROR: Task ${taskId} not found in simulation data`);
+                }
+            } else {
+                console.error('ERROR: No simulation.tasks found in JSON');
+            }
+        } catch (error) {
+            console.error('ERROR editing task:', error);
+        }
     }
 
     handleDelete() {

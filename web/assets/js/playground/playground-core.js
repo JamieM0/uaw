@@ -27,17 +27,26 @@ let isMetricsMode = false;
 
 // Dark Mode Variables
 let isDarkMode = false;
+let isEmbedded = false;
 
 // Welcome overlay handling
 document.addEventListener("DOMContentLoaded", () => {
-  // Apply dark mode as early as possible
-  try {
-    const savedDarkMode = localStorage.getItem("uaw-playground-dark-mode");
-    if (savedDarkMode === "true") {
-      document.documentElement.setAttribute("data-theme", "dark");
+  // Check if embedded first, then apply appropriate theme
+  const urlParams = new URLSearchParams(window.location.search);
+  const isEmbeddedCheck = urlParams.get('embedded') === 'true' || window.self !== window.top;
+
+  if (!isEmbeddedCheck) {
+    // Only apply saved dark mode preference if not embedded
+    try {
+      const savedDarkMode = localStorage.getItem("uaw-playground-dark-mode");
+      if (savedDarkMode === "true") {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    } catch (e) {
+      console.warn("Could not load dark mode preference:", e.message);
     }
-  } catch (e) {
-    console.warn("Could not load dark mode preference:", e.message);
+  } else {
+    console.log("Embedded mode detected, skipping early theme application");
   }
 
   const welcomeOverlay = document.getElementById("welcome-overlay");
@@ -181,6 +190,15 @@ function initializePlayground() {
   setTimeout(() => {
     if (typeof setupValidationInteractions === "function") {
       setupValidationInteractions();
+    }
+
+    // Auto-filter to "Passed Only" when in embedded/iframe mode
+    if (document.documentElement.classList.contains('iframe-embedded')) {
+      const validationFilter = document.getElementById('validation-filter');
+      if (validationFilter && typeof applyValidationFilter === "function") {
+        validationFilter.value = 'passed';
+        applyValidationFilter();
+      }
     }
   }, 100);
 }
@@ -505,23 +523,36 @@ async function initializeEmojiPicker() {
 
 // Dark Mode Functionality
 function setupDarkMode() {
-  // Load saved dark mode preference
-  try {
-    const savedDarkMode = localStorage.getItem("uaw-playground-dark-mode");
-    isDarkMode = savedDarkMode === "true";
-  } catch (e) {
-    console.warn("Could not load dark mode preference:", e.message);
-    isDarkMode = false;
-  }
+  // Check if we're embedded in an iframe
+  isEmbedded = detectEmbedded();
 
-  // Apply initial theme
-  applyDarkMode();
+  if (isEmbedded) {
+    // In embedded mode, sync with parent page theme
+    syncWithParentTheme();
+    // Hide the theme toggle button in embedded mode
+    const darkModeToggle = document.getElementById("dark-mode-toggle");
+    if (darkModeToggle) {
+      darkModeToggle.style.display = "none";
+    }
+  } else {
+    // Standard mode: Load saved dark mode preference
+    try {
+      const savedDarkMode = localStorage.getItem("uaw-playground-dark-mode");
+      isDarkMode = savedDarkMode === "true";
+    } catch (e) {
+      console.warn("Could not load dark mode preference:", e.message);
+      isDarkMode = false;
+    }
 
-  // Setup dark mode toggle button
-  const darkModeToggle = document.getElementById("dark-mode-toggle");
-  if (darkModeToggle) {
-    darkModeToggle.addEventListener("click", toggleDarkMode);
-    updateDarkModeButton();
+    // Apply initial theme
+    applyDarkMode();
+
+    // Setup dark mode toggle button
+    const darkModeToggle = document.getElementById("dark-mode-toggle");
+    if (darkModeToggle) {
+      darkModeToggle.addEventListener("click", toggleDarkMode);
+      updateDarkModeButton();
+    }
   }
 }
 
@@ -541,12 +572,26 @@ function toggleDarkMode() {
 function applyDarkMode() {
   const documentElement = document.documentElement;
 
-  if (isDarkMode) {
-    documentElement.setAttribute("data-theme", "dark");
-    applyMonacoDarkTheme();
+  if (isEmbedded) {
+    // In embedded mode, match parent page logic:
+    // Dark mode: no data-theme attribute, Light mode: data-theme="light"
+    if (isDarkMode) {
+      documentElement.removeAttribute("data-theme");
+      applyMonacoDarkTheme();
+    } else {
+      documentElement.setAttribute("data-theme", "light");
+      applyMonacoLightTheme();
+    }
   } else {
-    documentElement.removeAttribute("data-theme");
-    applyMonacoLightTheme();
+    // Standalone mode: original playground logic
+    // Dark mode: data-theme="dark", Light mode: no data-theme attribute
+    if (isDarkMode) {
+      documentElement.setAttribute("data-theme", "dark");
+      applyMonacoDarkTheme();
+    } else {
+      documentElement.removeAttribute("data-theme");
+      applyMonacoLightTheme();
+    }
   }
 }
 
@@ -602,6 +647,92 @@ function updateDarkModeButton() {
     darkModeToggle.textContent = "☾ Dark";
     darkModeToggle.classList.remove("dark-active");
     darkModeToggle.title = "Switch to Dark Mode";
+  }
+}
+
+function detectEmbedded() {
+  // Method 1: Check URL parameter (most reliable)
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('embedded') === 'true') {
+    console.log("Detected embedded via URL parameter");
+    return true;
+  }
+
+  // Method 2: Standard iframe detection
+  try {
+    const isEmbedded = window.self !== window.top;
+    console.log("Iframe detection result:", isEmbedded);
+    return isEmbedded;
+  } catch (e) {
+    console.log("Cross-origin iframe detected");
+    return true; // Cross-origin iframe
+  }
+}
+
+function syncWithParentTheme() {
+  // Add a small delay to ensure parent page has loaded its theme
+  setTimeout(() => {
+    try {
+      // Try to access parent's theme
+      const parentTheme = window.parent.document.documentElement.getAttribute('data-theme');
+
+      console.log("Parent theme detected:", parentTheme);
+
+      // Parent page logic: no data-theme = dark mode, data-theme="light" = light mode
+      if (parentTheme === 'light') {
+        isDarkMode = false;
+        console.log("Setting playground to light mode");
+      } else {
+        isDarkMode = true; // default to dark mode like parent
+        console.log("Setting playground to dark mode");
+      }
+
+      // Apply the theme
+      applyDarkMode();
+
+      // Set up a listener to sync theme changes from parent
+      setupParentThemeListener();
+
+    } catch (e) {
+      // Cross-origin iframe - can't access parent, default to dark mode
+      console.warn("Cannot access parent theme (cross-origin), defaulting to dark mode:", e.message);
+      isDarkMode = true;
+      applyDarkMode();
+    }
+  }, 100); // Small delay to let parent finish loading
+}
+
+function setupParentThemeListener() {
+  try {
+    // Create a MutationObserver to watch for theme changes in parent
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+          const parentTheme = window.parent.document.documentElement.getAttribute('data-theme');
+          const newIsDarkMode = parentTheme !== 'light';
+
+          console.log("Parent theme changed to:", parentTheme, "newIsDarkMode:", newIsDarkMode);
+
+          if (newIsDarkMode !== isDarkMode) {
+            isDarkMode = newIsDarkMode;
+            console.log("Updating playground theme to match parent");
+            applyDarkMode();
+          }
+        }
+      });
+    });
+
+    // Start observing the parent's documentElement for attribute changes
+    observer.observe(window.parent.document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+
+    console.log("Parent theme listener set up successfully");
+
+  } catch (e) {
+    // Cross-origin - can't set up listener
+    console.warn("Cannot set up parent theme listener (cross-origin):", e.message);
   }
 }
 

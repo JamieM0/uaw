@@ -212,9 +212,15 @@ function openAddTaskModal() {
     }
     
     if (addBtn) {
+        // Reset button text to "Add" for add mode
+        addBtn.textContent = 'Add Task';
+        // Clear any existing mode data
+        modal.dataset.mode = 'add';
+        modal.dataset.taskId = '';
+
         addBtn.onclick = (e) => {
             e.preventDefault();
-            addTaskToSimulation();
+            saveTaskToSimulation(); // Use unified save function
         };
     }
     
@@ -248,6 +254,213 @@ function setupTimeInputToggle() {
     }
 }
 
+// Open edit task modal
+function openEditTaskModal(task) {
+    const modal = document.getElementById('add-task-modal');
+    const actorSelect = document.getElementById('task-actor-select');
+    const locationSelect = document.getElementById('task-location-select');
+    const startTimeInput = document.getElementById('task-start-input');
+    const taskIdInput = document.getElementById('task-id-input');
+    const taskEmojiInput = document.getElementById('task-emoji-input');
+    const taskDurationInput = document.getElementById('task-duration-input');
+    const taskEndTimeInput = document.getElementById('task-end-time-input');
+
+    // Clear form first
+    modal.querySelectorAll('input, select, textarea').forEach(input => {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+            input.checked = false;
+        } else {
+            input.value = '';
+        }
+    });
+
+    // Set mode to duration input by default
+    if (document.querySelector('input[name="time-input-mode"][value="duration"]')) {
+        document.querySelector('input[name="time-input-mode"][value="duration"]').checked = true;
+    }
+
+    // Clear interactions
+    document.getElementById('interactions-container').innerHTML = '';
+    interactionCounter = 0;
+
+    // Populate dropdowns from current simulation
+    const context = getCurrentTimelineContext();
+
+    // Populate actors/objects
+    if (actorSelect) {
+        actorSelect.innerHTML = '<option value="">Select actor/object...</option>';
+        Object.entries(context.objectsByType).forEach(([type, objects]) => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = type.charAt(0).toUpperCase() + type.slice(1);
+            objects.forEach(obj => {
+                const option = document.createElement('option');
+                option.value = obj.id;
+                option.textContent = obj.name;
+                optgroup.appendChild(option);
+            });
+            actorSelect.appendChild(optgroup);
+        });
+    }
+
+    // Populate locations
+    if (locationSelect) {
+        locationSelect.innerHTML = '<option value="">Select location...</option>';
+        context.locations.forEach(loc => {
+            const option = document.createElement('option');
+            option.value = loc.id;
+            option.textContent = loc.name;
+            locationSelect.appendChild(option);
+        });
+    }
+
+    // Populate form with existing task data
+    if (taskIdInput) taskIdInput.value = task.id || '';
+    if (taskEmojiInput) taskEmojiInput.value = task.emoji || '';
+    if (actorSelect) actorSelect.value = task.actor_id || '';
+    if (locationSelect) locationSelect.value = task.location || '';
+    if (startTimeInput) startTimeInput.value = task.start || '';
+    if (taskDurationInput) taskDurationInput.value = task.duration || '';
+
+    // Calculate end time if needed
+    if (task.start && task.duration) {
+        const startMinutes = parseTimeToMinutes(task.start);
+        const endMinutes = startMinutes + (task.duration || 0);
+        const endTime = minutesToTimeString(endMinutes);
+        if (taskEndTimeInput) taskEndTimeInput.value = endTime;
+    }
+
+    // Populate interactions if they exist
+    if (task.interactions && task.interactions.length > 0) {
+        task.interactions.forEach(interaction => {
+            addInteraction();
+            const lastInteractionGroup = document.querySelector('.interaction-group:last-child');
+            if (lastInteractionGroup) {
+                const counter = lastInteractionGroup.id.split('-')[1];
+
+                // Determine interaction type and populate fields
+                if (interaction.property_changes) {
+                    const propertyName = Object.keys(interaction.property_changes)[0];
+                    const changeData = interaction.property_changes[propertyName];
+
+                    if (changeData.hasOwnProperty('from') && changeData.hasOwnProperty('to')) {
+                        // From/To interaction
+                        const changeTypeSelect = lastInteractionGroup.querySelector(`select[name="interaction_change_type_${counter}"]`);
+                        const objectSelect = lastInteractionGroup.querySelector(`select[name="interaction_object_${counter}"]`);
+                        const propertyInput = lastInteractionGroup.querySelector(`input[name="interaction_property_${counter}"]`);
+                        const fromInput = lastInteractionGroup.querySelector(`input[name="interaction_from_${counter}"]`);
+                        const toInput = lastInteractionGroup.querySelector(`input[name="interaction_to_${counter}"]`);
+
+                        if (changeTypeSelect) changeTypeSelect.value = 'from_to';
+                        if (objectSelect) objectSelect.value = interaction.object_id || '';
+                        if (propertyInput) propertyInput.value = propertyName;
+                        if (fromInput) fromInput.value = changeData.from || '';
+                        if (toInput) toInput.value = changeData.to || '';
+
+                        toggleInteractionFields(changeTypeSelect);
+                    } else if (changeData.hasOwnProperty('delta')) {
+                        // Delta interaction
+                        const changeTypeSelect = lastInteractionGroup.querySelector(`select[name="interaction_change_type_${counter}"]`);
+                        const objectSelect = lastInteractionGroup.querySelector(`select[name="interaction_object_${counter}"]`);
+                        const propertyInput = lastInteractionGroup.querySelector(`input[name="interaction_property_delta_${counter}"]`);
+                        const deltaInput = lastInteractionGroup.querySelector(`input[name="interaction_delta_${counter}"]`);
+
+                        if (changeTypeSelect) changeTypeSelect.value = 'delta';
+                        if (objectSelect) objectSelect.value = interaction.object_id || '';
+                        if (propertyInput) propertyInput.value = propertyName;
+                        if (deltaInput) deltaInput.value = changeData.delta || '';
+
+                        toggleInteractionFields(changeTypeSelect);
+                    }
+                } else if (interaction.add_objects) {
+                    // Add object interaction
+                    const changeTypeSelect = lastInteractionGroup.querySelector(`select[name="interaction_change_type_${counter}"]`);
+                    if (changeTypeSelect) {
+                        changeTypeSelect.value = 'add_object';
+                        toggleInteractionFields(changeTypeSelect);
+
+                        const addedObject = interaction.add_objects[0];
+                        if (addedObject) {
+                            const newObjectTypeSelect = lastInteractionGroup.querySelector(`select[name="new_object_type_${counter}"]`);
+                            const newObjectIdInput = lastInteractionGroup.querySelector(`input[name="new_object_id_${counter}"]`);
+                            const newObjectNameInput = lastInteractionGroup.querySelector(`input[name="new_object_name_${counter}"]`);
+                            const newObjectEmojiInput = lastInteractionGroup.querySelector(`input[name="new_object_emoji_${counter}"]`);
+
+                            if (newObjectTypeSelect) newObjectTypeSelect.value = addedObject.type || '';
+                            if (newObjectIdInput) newObjectIdInput.value = addedObject.id || '';
+                            if (newObjectNameInput) newObjectNameInput.value = addedObject.name || '';
+                            if (newObjectEmojiInput) newObjectEmojiInput.value = addedObject.properties?.emoji || '';
+
+                            // Trigger type-specific fields update
+                            if (newObjectTypeSelect) {
+                                updateInteractionObjectTypeFields(newObjectTypeSelect);
+
+                                // Populate type-specific properties
+                                if (addedObject.properties) {
+                                    Object.entries(addedObject.properties).forEach(([key, value]) => {
+                                        if (key !== 'emoji') {
+                                            const propertyInput = lastInteractionGroup.querySelector(`input[name="new_object_${key}_${counter}"], select[name="new_object_${key}_${counter}"]`);
+                                            if (propertyInput) propertyInput.value = value;
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+                } else if (interaction.remove_objects) {
+                    // Remove object interaction
+                    const changeTypeSelect = lastInteractionGroup.querySelector(`select[name="interaction_change_type_${counter}"]`);
+                    const objectSelect = lastInteractionGroup.querySelector(`select[name="interaction_object_${counter}"]`);
+
+                    if (changeTypeSelect) changeTypeSelect.value = 'remove_object';
+                    if (objectSelect) objectSelect.value = interaction.remove_objects[0] || '';
+
+                    toggleInteractionFields(changeTypeSelect);
+                }
+
+                // Set revert after checkbox
+                const revertCheckbox = lastInteractionGroup.querySelector(`input[name="revert_after_${counter}"]`);
+                if (revertCheckbox) revertCheckbox.checked = !!interaction.revert_after;
+            }
+        });
+    }
+
+    // Setup time input toggle
+    setupTimeInputToggle();
+
+    // Set the modal to edit mode
+    modal.dataset.mode = 'edit';
+    modal.dataset.taskId = task.id;
+
+    modal.style.display = 'flex';
+
+    // Setup close button and form submission for task modal
+    const cancelBtn = document.getElementById('task-cancel-btn');
+    const addBtn = document.getElementById('task-add-btn');
+
+    if (cancelBtn) {
+        cancelBtn.onclick = () => {
+            modal.style.display = 'none';
+            modal.dataset.mode = '';
+            modal.dataset.taskId = '';
+        };
+    }
+
+    if (addBtn) {
+        // Change button text to "Save" for edit mode
+        addBtn.textContent = 'Save';
+        addBtn.onclick = (e) => {
+            e.preventDefault();
+            saveTaskToSimulation(); // Use a new function that handles both add and edit
+        };
+    }
+
+    // Setup add interaction button
+    const addInteractionBtn = document.getElementById('add-interaction-btn');
+    if (addInteractionBtn) {
+        addInteractionBtn.onclick = addInteraction;
+    }
+}
+
 // Add interaction
 function addInteraction() {
     interactionCounter++;
@@ -260,7 +473,15 @@ function addInteraction() {
         const options = objects.map(obj => `<option value="${obj.id}">${obj.name}</option>`).join('');
         objectOptions.push(`<optgroup label="${groupLabel}">${options}</optgroup>`);
     });
-    
+
+    // Add physical locations
+    if (context.locations && context.locations.length > 0) {
+        const locationOptions = context.locations.map(loc =>
+            `<option value="${loc.id}">${loc.name} (Physical Location)</option>`
+        ).join('');
+        objectOptions.push(`<optgroup label="Physical Locations">${locationOptions}</optgroup>`);
+    }
+
     // Add digital locations
     if (context.digitalLocations && context.digitalLocations.length > 0) {
         const digitalLocationOptions = context.digitalLocations.map(loc => 
@@ -740,5 +961,176 @@ function addTaskToSimulation() {
     } catch (error) {
         console.error('Error adding task:', error);
         alert(`Error adding task: ${error.message}`);
+    }
+}
+
+// Unified save task function that handles both add and edit modes
+function saveTaskToSimulation() {
+    try {
+        const modal = document.getElementById('add-task-modal');
+        const isEditMode = modal.dataset.mode === 'edit';
+        const editTaskId = modal.dataset.taskId;
+
+        const taskId = document.getElementById('task-id-input').value || generateUniqueId('task');
+        const emoji = document.getElementById('task-emoji-input').value || '📋';
+        const actorId = document.getElementById('task-actor-select').value;
+        const location = document.getElementById('task-location-select').value;
+        const startTime = document.getElementById('task-start-input').value;
+
+        if (!taskId || !emoji || !actorId || !location || !startTime) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        const currentJson = JSON.parse(editor.getValue());
+
+        let duration;
+        const timeInputMode = document.querySelector('input[name="time-input-mode"]:checked').value;
+        if (timeInputMode === 'duration') {
+            duration = parseInt(document.getElementById('task-duration-input').value);
+        } else {
+            const endTime = document.getElementById('task-end-time-input').value;
+            const startMinutes = parseTimeToMinutes(startTime);
+            const endMinutes = parseTimeToMinutes(endTime);
+            duration = endMinutes - startMinutes;
+        }
+
+        if (!duration || duration <= 0) {
+            alert('Please provide a valid duration');
+            return;
+        }
+
+        const newTask = {
+            id: taskId,
+            emoji: emoji,
+            actor_id: actorId,
+            start: startTime,
+            duration: duration,
+            location: location,
+            depends_on: [],
+            interactions: []
+        };
+
+        // Process interactions (same logic as before)
+        const interactionGroups = document.querySelectorAll('.interaction-group');
+        interactionGroups.forEach(group => {
+            const counter = group.id.split('-')[1];
+            const changeType = group.querySelector(`select[name="interaction_change_type_${counter}"]`).value;
+            const objectId = group.querySelector(`select[name="interaction_object_${counter}"]`).value;
+            const revertAfter = group.querySelector(`input[name="revert_after_${counter}"]`).checked;
+
+            const interaction = {
+                revert_after: revertAfter
+            };
+
+            if (changeType === 'from_to' || changeType === 'delta' || changeType === 'remove_object') {
+                if (!objectId) return;
+                interaction.object_id = objectId;
+            }
+
+            if (changeType === 'from_to') {
+                const property = group.querySelector(`input[name="interaction_property_${counter}"]`).value;
+                const from = group.querySelector(`input[name="interaction_from_${counter}"]`).value;
+                const to = group.querySelector(`input[name="interaction_to_${counter}"]`).value;
+                if (property && to) {
+                    interaction.property_changes = { [property]: { from: from || undefined, to: to } };
+                    newTask.interactions.push(interaction);
+                }
+            } else if (changeType === 'delta') {
+                const property = group.querySelector(`input[name="interaction_property_delta_${counter}"]`).value;
+                const delta = group.querySelector(`input[name="interaction_delta_${counter}"]`).value;
+                if (property && delta) {
+                    interaction.property_changes = { [property]: { delta: parseFloat(delta) } };
+                    newTask.interactions.push(interaction);
+                }
+            } else if (changeType === 'add_object') {
+                const newObjectType = group.querySelector(`select[name="new_object_type_${counter}"]`).value;
+                const newObjectId = group.querySelector(`input[name="new_object_id_${counter}"]`).value;
+                const newObjectName = group.querySelector(`input[name="new_object_name_${counter}"]`).value;
+                const newObjectEmoji = group.querySelector(`input[name="new_object_emoji_${counter}"]`).value;
+
+                if (newObjectType && newObjectId && newObjectName) {
+                    const newObject = {
+                        id: newObjectId,
+                        type: newObjectType,
+                        name: newObjectName,
+                        properties: {}
+                    };
+                    if (newObjectEmoji) newObject.properties.emoji = newObjectEmoji;
+
+                    const propInputs = group.querySelectorAll('.type-specific-fields-container input, .type-specific-fields-container select');
+                    propInputs.forEach(input => {
+                        if (input.value && input.name) {
+                            const propName = input.name.replace(`new_object_`, '').replace(`_${counter}`, '');
+                            newObject.properties[propName] = input.value;
+                        }
+                    });
+
+                    interaction.add_objects = [newObject];
+                    newTask.interactions.push(interaction);
+                }
+            } else if (changeType === 'remove_object') {
+                interaction.remove_objects = [objectId];
+                newTask.interactions.push(interaction);
+            } else if (changeType === 'move_digital_object') {
+                const fromLocationId = group.querySelector(`select[name="from_digital_location_${counter}"]`).value;
+                const toLocationId = group.querySelector(`select[name="to_digital_location_${counter}"]`).value;
+                if (objectId && fromLocationId && toLocationId) {
+                    interaction.move_digital_object = {
+                        object_id: objectId,
+                        from_location_id: fromLocationId,
+                        to_location_id: toLocationId
+                    };
+                    newTask.interactions.push(interaction);
+                }
+            } else if (changeType === 'move_display_element') {
+                const fromDisplayId = group.querySelector(`select[name="from_display_${counter}"]`).value;
+                const toDisplayId = group.querySelector(`select[name="to_display_${counter}"]`).value;
+                if (objectId && fromDisplayId && toDisplayId) {
+                    interaction.move_display_element = {
+                        element_id: objectId,
+                        from_display_id: fromDisplayId,
+                        to_display_id: toDisplayId
+                    };
+                    newTask.interactions.push(interaction);
+                }
+            }
+        });
+
+        if (!currentJson.simulation.tasks) {
+            currentJson.simulation.tasks = [];
+        }
+
+        if (isEditMode && editTaskId) {
+            // Edit mode: Find and replace existing task
+            const taskIndex = currentJson.simulation.tasks.findIndex(t => t.id === editTaskId);
+            if (taskIndex !== -1) {
+                currentJson.simulation.tasks[taskIndex] = newTask;
+                showNotification(`Updated task: ${taskId}`);
+            } else {
+                console.error(`Task ${editTaskId} not found for editing`);
+                alert(`Error: Task ${editTaskId} not found for editing`);
+                return;
+            }
+        } else {
+            // Add mode: Add new task
+            currentJson.simulation.tasks.push(newTask);
+            showNotification(`Added task: ${taskId}`);
+        }
+
+        editor.setValue(JSON.stringify(currentJson, null, 2));
+        modal.style.display = 'none';
+
+        // Clear mode data
+        modal.dataset.mode = '';
+        modal.dataset.taskId = '';
+
+        if (autoRender) {
+            renderSimulation();
+        }
+
+    } catch (error) {
+        console.error('Error saving task:', error);
+        alert(`Error saving task: ${error.message}`);
     }
 }

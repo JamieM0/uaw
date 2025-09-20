@@ -388,9 +388,21 @@ class SimulationPlayer {
             }
         }
         
-        // Also search in nested structures like digital_space.digital_locations
+        // Search in layout locations
+        if (this.simData.layout?.locations) {
+            const found = this.simData.layout.locations.find(obj => obj && obj.id === objectId);
+            if (found) return found;
+        }
+
+        // Search in digital_space.digital_locations (simulation level)
         if (this.simData.digital_space && this.simData.digital_space.digital_locations) {
             const found = this.simData.digital_space.digital_locations.find(obj => obj && obj.id === objectId);
+            if (found) return found;
+        }
+
+        // Search in digital_space.digital_objects (simulation level)
+        if (this.simData.digital_space && this.simData.digital_space.digital_objects) {
+            const found = this.simData.digital_space.digital_objects.find(obj => obj && obj.id === objectId);
             if (found) return found;
         }
         
@@ -399,7 +411,7 @@ class SimulationPlayer {
     }
 
     findDigitalObjectById(objectId) {
-        // Check if digital_space exists in simData
+        // Check if digital_space exists in simData (keeping for backward compatibility)
         if (this.simData.digital_space && this.simData.digital_space.digital_objects) {
             return this.simData.digital_space.digital_objects.find(obj => obj.id === objectId);
         }
@@ -525,7 +537,6 @@ class SimulationPlayer {
 
     updateMonacoEditor() {
         this.hasPropertyChanges = false; // Reset flag to prevent repeated attempts
-        return;
         
         // Get reference to the Monaco editor
         const editor = window.playgroundCore?.monacoEditor || window.editor;
@@ -658,16 +669,66 @@ class SimulationPlayer {
                 }
             }
             
-            // Search in other object arrays if needed
+            // Search all arrays in simulation object dynamically
             if (!objectFound && currentJson.simulation) {
-                ['objects', 'equipment', 'resource', 'actor', 'product', 'storage'].forEach(arrayName => {
-                    if (currentJson.simulation[arrayName] && Array.isArray(currentJson.simulation[arrayName])) {
-                        const obj = currentJson.simulation[arrayName].find(obj => obj.id === objectId);
-                        if (obj) {
-                            // Handle nested properties like "properties.emoji"
+                Object.entries(currentJson.simulation).forEach(([arrayName, arrayValue]) => {
+                    // Skip non-array properties and known non-object arrays
+                    if (!Array.isArray(arrayValue) || ['tasks'].includes(arrayName)) {
+                        return;
+                    }
+
+                    const obj = arrayValue.find(obj => obj && obj.id === objectId);
+                    if (obj) {
+                        // Handle nested properties like "properties.emoji"
+                        const propertyPath = property.split('.');
+                        if (propertyPath.length > 1) {
+                            let current = obj;
+                            for (let i = 0; i < propertyPath.length - 1; i++) {
+                                if (!current[propertyPath[i]]) {
+                                    current[propertyPath[i]] = {};
+                                }
+                                current = current[propertyPath[i]];
+                            }
+                            current[propertyPath[propertyPath.length - 1]] = newValue;
+                        } else {
+                            obj[property] = newValue;
+                        }
+                        objectFound = true;
+                    }
+                });
+            }
+
+            // Search in layout.locations
+            if (!objectFound && currentJson.simulation?.layout?.locations) {
+                const obj = currentJson.simulation.layout.locations.find(obj => obj.id === objectId);
+                if (obj) {
+                    const propertyPath = property.split('.');
+                    if (propertyPath.length > 1) {
+                        let current = obj;
+                        for (let i = 0; i < propertyPath.length - 1; i++) {
+                            if (!current[propertyPath[i]]) {
+                                current[propertyPath[i]] = {};
+                            }
+                            current = current[propertyPath[i]];
+                        }
+                        current[propertyPath[propertyPath.length - 1]] = newValue;
+                    } else {
+                        obj[property] = newValue;
+                    }
+                    objectFound = true;
+                }
+            }
+
+            // Search in displays for display elements
+            if (!objectFound && currentJson.displays) {
+                for (const display of currentJson.displays) {
+                    if (display.rectangles) {
+                        const element = display.rectangles.find(el => el.id === objectId);
+                        if (element) {
+                            // Handle nested properties like "properties.border"
                             const propertyPath = property.split('.');
                             if (propertyPath.length > 1) {
-                                let current = obj;
+                                let current = element;
                                 for (let i = 0; i < propertyPath.length - 1; i++) {
                                     if (!current[propertyPath[i]]) {
                                         current[propertyPath[i]] = {};
@@ -676,14 +737,58 @@ class SimulationPlayer {
                                 }
                                 current[propertyPath[propertyPath.length - 1]] = newValue;
                             } else {
-                                obj[property] = newValue;
+                                element[property] = newValue;
                             }
                             objectFound = true;
+                            break;
                         }
                     }
-                });
+                }
             }
-            
+
+            // Search in digital_space.digital_objects
+            if (!objectFound && currentJson.simulation?.digital_space?.digital_objects) {
+                const obj = currentJson.simulation.digital_space.digital_objects.find(obj => obj.id === objectId);
+                if (obj) {
+                    // Handle nested properties like "properties.capacity_gb"
+                    const propertyPath = property.split('.');
+                    if (propertyPath.length > 1) {
+                        let current = obj;
+                        for (let i = 0; i < propertyPath.length - 1; i++) {
+                            if (!current[propertyPath[i]]) {
+                                current[propertyPath[i]] = {};
+                            }
+                            current = current[propertyPath[i]];
+                        }
+                        current[propertyPath[propertyPath.length - 1]] = newValue;
+                    } else {
+                        obj[property] = newValue;
+                    }
+                    objectFound = true;
+                }
+            }
+
+            // Also check root level digital_space for consistency
+            if (!objectFound && currentJson.digital_space?.digital_objects) {
+                const obj = currentJson.digital_space.digital_objects.find(obj => obj.id === objectId);
+                if (obj) {
+                    const propertyPath = property.split('.');
+                    if (propertyPath.length > 1) {
+                        let current = obj;
+                        for (let i = 0; i < propertyPath.length - 1; i++) {
+                            if (!current[propertyPath[i]]) {
+                                current[propertyPath[i]] = {};
+                            }
+                            current = current[propertyPath[i]];
+                        }
+                        current[propertyPath[propertyPath.length - 1]] = newValue;
+                    } else {
+                        obj[property] = newValue;
+                    }
+                    objectFound = true;
+                }
+            }
+
             if (objectFound) {
                 // CRITICAL: Set flag to prevent timeline re-render
                 this.isUpdatingEditor = true;
@@ -827,6 +932,25 @@ class SimulationPlayer {
                             if (task.end_minutes <= this.playheadTime && stocks[interaction.object_id] !== undefined) {
                                 stocks[interaction.object_id] += changes.delta;
                             }
+                        }
+                    });
+                } else if (!targetObject && interaction.property_changes) {
+                    // Handle display elements that weren't found in regular object searches
+                    const isTaskActive = this.playheadTime >= task.start_minutes && this.playheadTime < task.end_minutes;
+
+                    Object.entries(interaction.property_changes).forEach(([property, changes]) => {
+                        if (changes.to !== undefined) {
+                            let newValue;
+                            if (isTaskActive) {
+                                newValue = changes.to;
+                            } else { // Task is finished
+                                newValue = interaction.revert_after === true ? changes.from : changes.to;
+                            }
+
+                            // Try to update display element property directly via Monaco
+                            // For display elements, properties like "border" should be nested under "properties"
+                            const displayProperty = property.startsWith('properties.') ? property : `properties.${property}`;
+                            this.updateMonacoProperty(interaction.object_id, displayProperty, newValue);
                         }
                     });
                 }
