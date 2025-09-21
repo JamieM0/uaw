@@ -7,13 +7,18 @@ class SpaceEditor {
         this.pixelsPerMeter = 20;
         this.isDrawing = false;
         this.isDragging = false;
-        this.isPreparingToDrag = false;
+    this.isPreparingToDrag = false;
+    this.isResizing = false;
+    this.isPreparingToResize = false;
         this.activeRectEl = null;
         this.selectedRectId = null;
         this.startCoords = { x: 0, y: 0 };
         this.dragOffset = { x: 0, y: 0 };
         this.currentDragPosition = { x: 0, y: 0 };
         this.initialMousePosition = { x: 0, y: 0 };
+    this.resizeDirection = null; // 'n','s','e','w','ne','nw','se','sw'
+    this.resizeStartRect = null; // {x,y,width,height}
+    this.resizeLabelEl = null; // DOM element for size indicator
         this.locations = [];
 
         this.isUpdatingJson = false;
@@ -456,6 +461,8 @@ class SpaceEditor {
         this.isDragging = false;
         this.isPreparingToDrag = false;
         this.isDrawing = false;
+    this.isResizing = false;
+    this.isPreparingToResize = false;
         this.view.isPanning = false;
 
         // Clean up canvas state
@@ -471,6 +478,7 @@ class SpaceEditor {
 
         // Clear active element reference
         this.activeRectEl = null;
+    this.hideResizeLabel();
 
         // Re-enable animations
         this.enableAnimations('context-menu-cleanup');
@@ -804,6 +812,105 @@ class SpaceEditor {
         return { x: snappedX, y: snappedY };
     }
 
+    // Apply snapping while resizing. Adjusts the moving edges based on dir.
+    // bounds: {x, y, width, height} in world px
+    // dir: one of 'n','s','e','w','ne','nw','se','sw'
+    applyResizeSnappingBounds(bounds, dir) {
+        if (!this.activeRectEl || (!this.snapSettings.xEnabled && !this.snapSettings.zEnabled)) {
+            return bounds;
+        }
+
+        const tolerance = this.snapSettings.tolerance;
+        let { x, y, width, height } = bounds;
+        const right = x + width;
+        const bottom = y + height;
+
+        // Collect snap targets from other rectangles
+        const targets = [];
+        document.querySelectorAll('.location-rect').forEach(rect => {
+            if (rect === this.activeRectEl) return;
+            const tx = parseInt(rect.style.left) || 0;
+            const ty = parseInt(rect.style.top) || 0;
+            const tw = parseInt(rect.style.width) || 0;
+            const th = parseInt(rect.style.height) || 0;
+            targets.push({ left: tx, right: tx + tw, top: ty, bottom: ty + th });
+        });
+
+        // Horizontal snapping (X axis) — left/right edges
+        if (this.snapSettings.xEnabled && (dir.includes('e') || dir.includes('w'))) {
+            // Moving right edge
+            if (dir.includes('e')) {
+                for (const t of targets) {
+                    // Snap right to target left
+                    if (Math.abs((x + width) - t.left) <= tolerance) {
+                        width = Math.max(5, t.left - x);
+                        break;
+                    }
+                    // Snap right to target right
+                    if (Math.abs((x + width) - t.right) <= tolerance) {
+                        width = Math.max(5, t.right - x);
+                        break;
+                    }
+                }
+            }
+            // Moving left edge
+            if (dir.includes('w')) {
+                for (const t of targets) {
+                    // Snap left to target left
+                    if (Math.abs(x - t.left) <= tolerance) {
+                        x = Math.min(right - 5, t.left);
+                        width = Math.max(5, right - x);
+                        break;
+                    }
+                    // Snap left to target right
+                    if (Math.abs(x - t.right) <= tolerance) {
+                        x = Math.min(right - 5, t.right);
+                        width = Math.max(5, right - x);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Vertical snapping (Z axis visualized as Y) — top/bottom edges
+        if (this.snapSettings.zEnabled && (dir.includes('n') || dir.includes('s'))) {
+            // Moving bottom edge
+            if (dir.includes('s')) {
+                for (const t of targets) {
+                    // Snap bottom to target top
+                    if (Math.abs((y + height) - t.top) <= tolerance) {
+                        height = Math.max(5, t.top - y);
+                        break;
+                    }
+                    // Snap bottom to target bottom
+                    if (Math.abs((y + height) - t.bottom) <= tolerance) {
+                        height = Math.max(5, t.bottom - y);
+                        break;
+                    }
+                }
+            }
+            // Moving top edge
+            if (dir.includes('n')) {
+                for (const t of targets) {
+                    // Snap top to target top
+                    if (Math.abs(y - t.top) <= tolerance) {
+                        y = Math.min(bottom - 5, t.top);
+                        height = Math.max(5, bottom - y);
+                        break;
+                    }
+                    // Snap top to target bottom
+                    if (Math.abs(y - t.bottom) <= tolerance) {
+                        y = Math.min(bottom - 5, t.bottom);
+                        height = Math.max(5, bottom - y);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return { x, y, width, height };
+    }
+
     populateConnectedLocations(loc) {
         const connectedDiv = document.getElementById('connected-locations-list');
         const addBtn = document.getElementById('add-connection-btn');
@@ -1001,16 +1108,194 @@ class SpaceEditor {
             this.activeRectEl.classList.remove('dragging');
         }
 
+    // Avoid triggering pending synchronization during drag start; it will be checked after drag completes
+
         // Clear any lingering collision states
         document.querySelectorAll('.location-rect.colliding').forEach(el => {
             el.classList.remove('colliding');
         });
 
-        // Prepare for potential drag
-        this.prepareForDrag(e, id);
+        // Determine if this should be a resize or drag based on cursor proximity to edges
+        const dir = this.getResizeDirection(rectEl, e, 6);
+        if (dir) {
+            this.prepareForResize(e, id, dir);
+        } else {
+            // Prepare for potential drag
+            this.prepareForDrag(e, id);
+        }
 
         // Select the rectangle
         this.selectRect(id);
+    }
+
+    // Determine resize direction based on mouse position near edges
+    getResizeDirection(rectEl, event, threshold = 6) {
+        const rect = rectEl.getBoundingClientRect();
+        const nearLeft = (event.clientX - rect.left) <= threshold;
+        const nearRight = (rect.right - event.clientX) <= threshold;
+        const nearTop = (event.clientY - rect.top) <= threshold;
+        const nearBottom = (rect.bottom - event.clientY) <= threshold;
+
+        let dir = null;
+        if (nearTop && nearLeft) dir = 'nw';
+        else if (nearTop && nearRight) dir = 'ne';
+        else if (nearBottom && nearLeft) dir = 'sw';
+        else if (nearBottom && nearRight) dir = 'se';
+        else if (nearLeft) dir = 'w';
+        else if (nearRight) dir = 'e';
+        else if (nearTop) dir = 'n';
+        else if (nearBottom) dir = 's';
+        return dir;
+    }
+
+    prepareForResize(e, id, dir) {
+        this.isPreparingToResize = true;
+        this.activeRectEl = e.currentTarget;
+        this.selectedRectId = id;
+        this.resizeDirection = dir;
+        this.initialMousePosition = { x: e.clientX, y: e.clientY };
+
+        // Capture starting rect (in world px)
+        const startX = parseInt(this.activeRectEl.style.left) || 0;
+        const startY = parseInt(this.activeRectEl.style.top) || 0;
+        const startW = parseInt(this.activeRectEl.style.width) || this.activeRectEl.offsetWidth;
+        const startH = parseInt(this.activeRectEl.style.height) || this.activeRectEl.offsetHeight;
+        this.resizeStartRect = { x: startX, y: startY, width: startW, height: startH };
+
+        // Set cursor style
+        const cursorMap = { n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize', ne: 'nesw-resize', nw: 'nwse-resize', se: 'nwse-resize', sw: 'nesw-resize' };
+        this.canvas.style.cursor = cursorMap[dir] || 'default';
+
+        // Show meters label
+        this.showResizeLabelMeters(startW, startH);
+    }
+
+    startResizing() {
+        this.isResizing = true;
+        this.isPreparingToResize = false;
+        if (this.activeRectEl) {
+            this.activeRectEl.classList.remove('enable-transitions');
+            this.activeRectEl.classList.add('dragging');
+        }
+        this.disableAnimations('dragging');
+    }
+
+    performResize(e) {
+        if (!this.activeRectEl || !this.resizeStartRect) return;
+
+        const world = this.screenToWorldCoordinates(e.clientX, e.clientY);
+        const start = this.resizeStartRect;
+        const minW = 5, minH = 5;
+
+        let newX = start.x, newY = start.y, newW = start.width, newH = start.height;
+        const right = start.x + start.width;
+        const bottom = start.y + start.height;
+        const dir = this.resizeDirection;
+
+        if (dir.includes('e')) {
+            newW = Math.max(minW, world.x - start.x);
+        }
+        if (dir.includes('s')) {
+            newH = Math.max(minH, world.y - start.y);
+        }
+        if (dir.includes('w')) {
+            newX = Math.min(world.x, right - minW);
+            newW = Math.max(minW, right - newX);
+        }
+        if (dir.includes('n')) {
+            newY = Math.min(world.y, bottom - minH);
+            newH = Math.max(minH, bottom - newY);
+        }
+
+        // Apply snapping to the moving edges
+        const snapped = this.applyResizeSnappingBounds({ x: newX, y: newY, width: newW, height: newH }, dir);
+        newX = snapped.x; newY = snapped.y; newW = snapped.width; newH = snapped.height;
+
+        // Re-enforce minimums considering fixed opposite edges
+        if (dir.includes('w')) {
+            newX = Math.min(newX, right - minW);
+            newW = Math.max(minW, right - newX);
+        }
+        if (dir.includes('n')) {
+            newY = Math.min(newY, bottom - minH);
+            newH = Math.max(minH, bottom - newY);
+        }
+        if (dir.includes('e')) {
+            newW = Math.max(minW, newW);
+        }
+        if (dir.includes('s')) {
+            newH = Math.max(minH, newH);
+        }
+
+        this.activeRectEl.style.left = `${newX}px`;
+        this.activeRectEl.style.top = `${newY}px`;
+        this.activeRectEl.style.width = `${newW}px`;
+        this.activeRectEl.style.height = `${newH}px`;
+
+        // Update meters label
+        this.showResizeLabelMeters(newW, newH);
+    }
+
+    finishResizing() {
+        if (!this.isResizing || !this.selectedRectId) return;
+
+        // Restore transitions
+        if (this.activeRectEl) {
+            this.activeRectEl.classList.add('enable-transitions');
+            this.activeRectEl.classList.remove('dragging');
+        }
+        this.enableAnimations('dragging');
+
+        // Commit changes to model
+        const loc = this.locations.find(l => l.id === this.selectedRectId);
+        if (loc) {
+            const newX = parseInt(this.activeRectEl.style.left) || 0;
+            const newY = parseInt(this.activeRectEl.style.top) || 0;
+            const newW = parseInt(this.activeRectEl.style.width) || this.activeRectEl.offsetWidth;
+            const newH = parseInt(this.activeRectEl.style.height) || this.activeRectEl.offsetHeight;
+            loc.shape.x = newX;
+            loc.shape.y = newY;
+            loc.shape.width = newW;
+            loc.shape.height = newH;
+            this.updateRectElement(loc);
+            this.updateJson();
+            this.renderPropertiesPanel();
+        }
+
+        this.hideResizeLabel();
+        this.isResizing = false;
+        this.isPreparingToResize = false;
+        this.resizeDirection = null;
+        this.resizeStartRect = null;
+        this.canvas.style.cursor = 'default';
+    }
+
+    showResizeLabelMeters(widthPx, heightPx) {
+        // Convert to meters based on pixelsPerMeter
+        const lenM = (widthPx / this.pixelsPerMeter).toFixed(2);
+        const widM = (heightPx / this.pixelsPerMeter).toFixed(2);
+        if (!this.resizeLabelEl) {
+            this.resizeLabelEl = document.createElement('div');
+            this.resizeLabelEl.className = 'dimension-text';
+            this.resizeLabelEl.style.position = 'absolute';
+            this.resizeLabelEl.style.top = '-18px';
+            this.resizeLabelEl.style.left = '0px';
+            this.resizeLabelEl.style.background = 'rgba(0,0,0,0.7)';
+            this.resizeLabelEl.style.color = '#fff';
+            this.resizeLabelEl.style.padding = '1px 4px';
+            this.resizeLabelEl.style.borderRadius = '3px';
+            this.resizeLabelEl.style.fontSize = '10px';
+            this.resizeLabelEl.style.pointerEvents = 'none';
+            if (this.activeRectEl) this.activeRectEl.appendChild(this.resizeLabelEl);
+        }
+        this.resizeLabelEl.textContent = `${lenM} m × ${widM} m`;
+    }
+
+    hideResizeLabel() {
+        if (this.resizeLabelEl && this.resizeLabelEl.parentElement) {
+            this.resizeLabelEl.parentElement.removeChild(this.resizeLabelEl);
+        }
+        this.resizeLabelEl = null;
     }
 
     prepareForDrag(e, id) {
@@ -1087,6 +1372,17 @@ class SpaceEditor {
             this.activeRectEl.style.top = `${top}px`;
         }
         // Check if we should start dragging based on mouse movement distance
+        else if (this.isPreparingToResize && this.activeRectEl) {
+            const deltaX = e.clientX - this.initialMousePosition.x;
+            const deltaY = e.clientY - this.initialMousePosition.y;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            if (distance > 5) {
+                this.startResizing();
+            }
+        }
+        else if (this.isResizing && this.activeRectEl) {
+            this.performResize(e);
+        }
         else if (this.isPreparingToDrag && this.activeRectEl) {
             const deltaX = e.clientX - this.initialMousePosition.x;
             const deltaY = e.clientY - this.initialMousePosition.y;
@@ -1109,7 +1405,7 @@ class SpaceEditor {
             }
         }
         // Handle Dragging an existing rectangle
-        else if (this.isDragging && this.activeRectEl) {
+    else if (this.isDragging && this.activeRectEl) {
             const worldCoords = this.screenToWorldCoordinates(e.clientX, e.clientY);
             const worldX = worldCoords.x;
             const worldY = worldCoords.y;
@@ -1126,6 +1422,26 @@ class SpaceEditor {
             this.activeRectEl.style.left = `${snappedPosition.x}px`;
             this.activeRectEl.style.top = `${snappedPosition.y}px`;
             this.checkCollisions();
+        }
+        // Hover: show resize cursor near edges when idle
+        else if (!this.isDrawing && !this.isDragging && !this.isResizing && !this.isPreparingToDrag && !this.isPreparingToResize) {
+            let hovered = null;
+            const elements = Array.from(document.querySelectorAll('.location-rect'));
+            for (let i = elements.length - 1; i >= 0; i--) {
+                const el = elements[i];
+                const rect = el.getBoundingClientRect();
+                if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                    hovered = el;
+                    break;
+                }
+            }
+            if (hovered) {
+                const dir = this.getResizeDirection(hovered, e, 6);
+                const cursorMap = { n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize', ne: 'nesw-resize', nw: 'nwse-resize', se: 'nwse-resize', sw: 'nesw-resize' };
+                this.canvas.style.cursor = dir ? cursorMap[dir] : 'default';
+            } else {
+                this.canvas.style.cursor = 'default';
+            }
         }
     }
     
@@ -1211,7 +1527,9 @@ class SpaceEditor {
 
             // Update JSON after position is committed
             this.updateJson();
-        } else if (this.isPreparingToDrag) {
+        } else if (this.isResizing && this.activeRectEl) {
+            this.finishResizing();
+        } else if (this.isPreparingToDrag || this.isPreparingToResize) {
             // User clicked but didn't drag - use comprehensive cleanup
             this.cleanupDragStates();
         }

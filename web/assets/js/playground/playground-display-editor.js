@@ -9,13 +9,18 @@ class DisplayEditor {
         this.isDrawingDisplay = false;
         this.isDragging = false;
         this.isPreparingToDrag = false;
-        this.isResizing = false;
+    this.isResizing = false;
+    this.isPreparingToResize = false;
         this.activeRectEl = null;
         this.selectedRectId = null;
         this.startCoords = { x: 0, y: 0 };
         this.dragOffset = { x: 0, y: 0 };
         this.currentDragPosition = { x: 0, y: 0 };
         this.initialMousePosition = { x: 0, y: 0 };
+    this.resizeDirection = null; // 'n','s','e','w','ne','nw','se','sw'
+    this.resizeStartRect = null; // {x,y,width,height}
+    this.resizeTargetType = null; // 'element' | 'viewport'
+    this.resizeLabelEl = null; // size indicator during resize
         this.displays = [];
         this.activeDisplayId = null;
 
@@ -293,13 +298,29 @@ class DisplayEditor {
         if (clickedEl) {
             const elementId = clickedEl.dataset.elementId;
             this.selectElement(elementId);
-            this.prepareForDrag(e, clickedEl);
+            // If near edge, prepare for resize instead of drag
+            const dir = this.getResizeDirection(e, clickedEl, 6);
+            if (dir) {
+                this.prepareForResize(e, clickedEl, 'element', dir);
+            } else {
+                this.prepareForDrag(e, clickedEl);
+            }
         } else if (e.ctrlKey || e.metaKey) {
             // Pan mode
             this.view.isPanning = true;
             this.view.lastPan = { x: e.clientX, y: e.clientY };
             this.canvas.style.cursor = 'move';
         } else {
+            // If clicking near viewport edge, allow resizing the display viewport
+            const activeDisplay = this.getActiveDisplay();
+            if (activeDisplay && this.viewport) {
+                const dir = this.getResizeDirection(e, this.viewport, 8);
+                if (dir) {
+                    this.deselectAll();
+                    this.prepareForResize(e, this.viewport, 'viewport', dir);
+                    return;
+                }
+            }
             this.deselectAll();
         }
     }
@@ -380,6 +401,18 @@ class DisplayEditor {
             this.view.lastPan = { x: e.clientX, y: e.clientY };
             this.updateViewTransform();
             return;
+        }
+
+        // Update hover cursor for resize affordance when idle
+        if (!this.isDrawing && !this.isDrawingDisplay && !this.isDragging && !this.isResizing && !this.isPreparingToDrag && !this.isPreparingToResize) {
+            const hoveredEl = this.getTopElementAt(e.clientX, e.clientY) || this.viewport;
+            if (hoveredEl) {
+                const dir = this.getResizeDirection(e, hoveredEl, hoveredEl === this.viewport ? 8 : 6);
+                const cursorMap = { n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize', ne: 'nesw-resize', nw: 'nwse-resize', se: 'nwse-resize', sw: 'nesw-resize' };
+                this.canvas.style.cursor = dir ? cursorMap[dir] : 'default';
+            } else {
+                this.canvas.style.cursor = 'default';
+            }
         }
 
         if ((this.isDrawing || this.isDrawingDisplay) && this.activeRectEl) {
@@ -470,6 +503,238 @@ class DisplayEditor {
             this.isPreparingToResize = false;
             this.activeRectEl = null;
         }
+    }
+
+    // ----- Resize helpers -----
+    getResizeDirection(e, rectEl, threshold = 6) {
+        const rect = rectEl.getBoundingClientRect();
+        const relX = (e.clientX - rect.left) / (rect.right - rect.left);
+        const relY = (e.clientY - rect.top) / (rect.bottom - rect.top);
+        const nearLeft = (e.clientX - rect.left) <= threshold;
+        const nearRight = (rect.right - e.clientX) <= threshold;
+        const nearTop = (e.clientY - rect.top) <= threshold;
+        const nearBottom = (rect.bottom - e.clientY) <= threshold;
+
+        let dir = null;
+        if (nearTop && nearLeft) dir = 'nw';
+        else if (nearTop && nearRight) dir = 'ne';
+        else if (nearBottom && nearLeft) dir = 'sw';
+        else if (nearBottom && nearRight) dir = 'se';
+        else if (nearLeft) dir = 'w';
+        else if (nearRight) dir = 'e';
+        else if (nearTop) dir = 'n';
+        else if (nearBottom) dir = 's';
+        return dir;
+    }
+
+    prepareForResize(e, rectEl, targetType, dir) {
+        this.isPreparingToResize = true;
+        this.activeRectEl = rectEl;
+        this.resizeTargetType = targetType; // 'element' | 'viewport'
+        this.resizeDirection = dir;
+        this.initialMousePosition = { x: e.clientX, y: e.clientY };
+
+        // Capture starting rect in world coordinates (styles are already px relative to world)
+        const startX = parseFloat(rectEl.style.left) || 0;
+        const startY = parseFloat(rectEl.style.top) || 0;
+        const startW = parseFloat(rectEl.style.width) || rectEl.offsetWidth;
+        const startH = parseFloat(rectEl.style.height) || rectEl.offsetHeight;
+        this.resizeStartRect = { x: startX, y: startY, width: startW, height: startH };
+
+        // Show size label
+        this.showResizeLabel(rectEl, targetType === 'viewport' ? `${Math.round(startW)} × ${Math.round(startH)} px` : `${Math.round(startW)} × ${Math.round(startH)} px`);
+
+        // Set cursor
+        const cursorMap = { n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize', ne: 'nesw-resize', nw: 'nwse-resize', se: 'nwse-resize', sw: 'nesw-resize' };
+        this.canvas.style.cursor = cursorMap[dir] || 'default';
+    }
+
+    startResizing() {
+        this.isResizing = true;
+        this.isPreparingToResize = false;
+        if (this.activeRectEl) {
+            this.activeRectEl.style.transition = 'none';
+            this.activeRectEl.classList.add('resizing');
+        }
+        document.body.classList.add('disable-animations');
+    }
+
+    performResize(e) {
+        if (!this.activeRectEl || !this.resizeStartRect) return;
+
+        // Convert mouse to world coords
+        const rect = this.canvasRect || this.canvas.getBoundingClientRect();
+        const mouseX = (e.clientX - rect.left - this.view.x) / this.view.scale;
+        const mouseY = (e.clientY - rect.top - this.view.y) / this.view.scale;
+
+        const minW = 10, minH = 10;
+        const start = this.resizeStartRect;
+        let newX = start.x, newY = start.y, newW = start.width, newH = start.height;
+
+        const dir = this.resizeDirection;
+        const right = start.x + start.width;
+        const bottom = start.y + start.height;
+
+        if (dir.includes('e')) {
+            newW = Math.max(minW, mouseX - start.x);
+        }
+        if (dir.includes('s')) {
+            newH = Math.max(minH, mouseY - start.y);
+        }
+        if (dir.includes('w')) {
+            newX = Math.min(mouseX, right - minW);
+            newW = Math.max(minW, right - newX);
+        }
+        if (dir.includes('n')) {
+            newY = Math.min(mouseY, bottom - minH);
+            newH = Math.max(minH, bottom - newY);
+        }
+
+        // Optional snapping for element resizing (not for viewport)
+        if (this.resizeTargetType === 'element') {
+            const snapped = this.applyResizeSnappingBounds(this.activeRectEl, { x: newX, y: newY, width: newW, height: newH }, this.resizeDirection, this.snapSettings, '.display-element-rect');
+            newX = snapped.x; newY = snapped.y; newW = snapped.width; newH = snapped.height;
+        }
+
+        // Apply to element styles
+        this.activeRectEl.style.left = newX + 'px';
+        this.activeRectEl.style.top = newY + 'px';
+        this.activeRectEl.style.width = newW + 'px';
+        this.activeRectEl.style.height = newH + 'px';
+
+        // Update size label
+        this.showResizeLabel(this.activeRectEl, `${Math.round(newW)} × ${Math.round(newH)} px`);
+    }
+
+    // Snap bounds during resize so moved edges align to nearby edges
+    applyResizeSnappingBounds(activeEl, bounds, dir, snapSettings, selector) {
+        if (!snapSettings || (!snapSettings.xEnabled && !snapSettings.yEnabled)) return bounds;
+        const tol = snapSettings.tolerance || 10;
+
+        const targets = [];
+        document.querySelectorAll(selector).forEach(el => {
+            if (el === activeEl) return;
+            const x = parseFloat(el.style.left) || 0;
+            const y = parseFloat(el.style.top) || 0;
+            const w = parseFloat(el.style.width) || el.offsetWidth;
+            const h = parseFloat(el.style.height) || el.offsetHeight;
+            targets.push({ left: x, right: x + w, top: y, bottom: y + h });
+        });
+
+        let { x, y, width, height } = bounds;
+        const right = x + width;
+        const bottom = y + height;
+
+        // Horizontal snapping (left/right edges)
+        if (snapSettings.xEnabled) {
+            if (dir.includes('w')) {
+                for (const t of targets) {
+                    if (Math.abs(x - t.left) <= tol) { const newLeft = t.left; width = right - newLeft; x = newLeft; break; }
+                    if (Math.abs(x - t.right) <= tol) { const newLeft = t.right; width = right - newLeft; x = newLeft; break; }
+                }
+            }
+            if (dir.includes('e')) {
+                for (const t of targets) {
+                    if (Math.abs(right - t.left) <= tol) { width = t.left - x; break; }
+                    if (Math.abs(right - t.right) <= tol) { width = t.right - x; break; }
+                }
+            }
+        }
+
+        // Vertical snapping (top/bottom edges)
+        if (snapSettings.yEnabled) {
+            if (dir.includes('n')) {
+                for (const t of targets) {
+                    if (Math.abs(y - t.top) <= tol) { const newTop = t.top; height = bottom - newTop; y = newTop; break; }
+                    if (Math.abs(y - t.bottom) <= tol) { const newTop = t.bottom; height = bottom - newTop; y = newTop; break; }
+                }
+            }
+            if (dir.includes('s')) {
+                for (const t of targets) {
+                    if (Math.abs(bottom - t.top) <= tol) { height = t.top - y; break; }
+                    if (Math.abs(bottom - t.bottom) <= tol) { height = t.bottom - y; break; }
+                }
+            }
+        }
+
+        // Enforce minimums
+        width = Math.max(10, width);
+        height = Math.max(10, height);
+        return { x, y, width, height };
+    }
+
+    finishResizing() {
+        if (!this.isResizing || !this.activeRectEl) return;
+
+        // Re-enable animations
+        this.activeRectEl.style.transition = '';
+        this.activeRectEl.classList.remove('resizing');
+        document.body.classList.remove('disable-animations');
+
+        const newX = parseFloat(this.activeRectEl.style.left) || 0;
+        const newY = parseFloat(this.activeRectEl.style.top) || 0;
+        const newW = parseFloat(this.activeRectEl.style.width) || this.activeRectEl.offsetWidth;
+        const newH = parseFloat(this.activeRectEl.style.height) || this.activeRectEl.offsetHeight;
+
+        if (this.resizeTargetType === 'viewport') {
+            const activeDisplay = this.getActiveDisplay();
+            if (activeDisplay) {
+                activeDisplay.viewport.width = Math.round(newW);
+                activeDisplay.viewport.height = Math.round(newH);
+                // Viewport should remain at 0,0
+                this.viewport.style.left = '0px';
+                this.viewport.style.top = '0px';
+                this.updateSimulationJson();
+                this.renderActiveDisplay();
+                this.renderPropertiesPanel();
+            }
+        } else if (this.resizeTargetType === 'element' && this.selectedRectId) {
+            const activeDisplay = this.getActiveDisplay();
+            const element = activeDisplay?.rectangles.find(r => r.id === this.selectedRectId);
+            if (element) {
+                element.bounds.x = newX;
+                element.bounds.y = newY;
+                element.bounds.width = Math.round(newW);
+                element.bounds.height = Math.round(newH);
+                this.updateSimulationJson();
+                this.renderPropertiesPanel();
+            }
+        }
+
+        // Cleanup
+        this.hideResizeLabel();
+        this.isResizing = false;
+        this.isPreparingToResize = false;
+        this.resizeDirection = null;
+        this.resizeStartRect = null;
+        this.resizeTargetType = null;
+        this.activeRectEl = null;
+        this.canvas.style.cursor = 'default';
+    }
+
+    showResizeLabel(anchorEl, text) {
+        if (!this.resizeLabelEl) {
+            this.resizeLabelEl = document.createElement('div');
+            this.resizeLabelEl.className = 'dimension-text';
+            this.resizeLabelEl.style.position = 'absolute';
+            this.resizeLabelEl.style.top = '-18px';
+            this.resizeLabelEl.style.left = '0px';
+            this.resizeLabelEl.style.background = 'rgba(0,0,0,0.7)';
+            this.resizeLabelEl.style.color = '#fff';
+            this.resizeLabelEl.style.padding = '1px 4px';
+            this.resizeLabelEl.style.borderRadius = '3px';
+            this.resizeLabelEl.style.fontSize = '10px';
+            this.resizeLabelEl.style.pointerEvents = 'none';
+            anchorEl.appendChild(this.resizeLabelEl);
+        }
+        this.resizeLabelEl.textContent = text;
+    }
+
+    hideResizeLabel() {
+        if (this.resizeLabelEl && this.resizeLabelEl.parentElement) {
+            this.resizeLabelEl.parentElement.removeChild(this.resizeLabelEl);
+        }
+        this.resizeLabelEl = null;
     }
 
     finishDrawingDisplay() {

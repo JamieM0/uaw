@@ -9,12 +9,16 @@ class DigitalSpaceEditor {
         this.isDrawing = false;
         this.isDragging = false;
         this.isPreparingToDrag = false;
+    this.isResizing = false;
+    this.isPreparingToResize = false;
         this.activeRectEl = null;
         this.selectedRectId = null;
         this.startCoords = { x: 0, y: 0 };
         this.dragOffset = { x: 0, y: 0 };
         this.currentDragPosition = { x: 0, y: 0 };
         this.initialMousePosition = { x: 0, y: 0 };
+    this.resizeDirection = null; // 'n','s','e','w','ne','nw','se','sw'
+    this.resizeStartRect = null; // {x,y,width,height}
         this.digitalLocations = [];
         this.digitalObjects = [];
 
@@ -167,7 +171,13 @@ class DigitalSpaceEditor {
             console.log('DIGITAL-SPACE: Clicked on location rect');
             const locationId = clickedEl.dataset.locationId;
             this.selectLocation(locationId);
-            this.prepareForDrag(e, clickedEl);
+            // If near edge, prepare for resize; otherwise drag
+            const dir = this.getResizeDirection(e, clickedEl, 6);
+            if (dir) {
+                this.prepareForResize(e, clickedEl, dir);
+            } else {
+                this.prepareForDrag(e, clickedEl);
+            }
             return;
         }
 
@@ -232,7 +242,20 @@ class DigitalSpaceEditor {
             return;
         }
 
-        if (this.isDrawing && this.activeRectEl) {
+        // Hover cursor for resize affordance when idle
+        if (!this.isDrawing && !this.isDragging && !this.isResizing && !this.isPreparingToDrag && !this.isPreparingToResize) {
+            const topEl = this.getTopElementAt ? this.getTopElementAt(e.clientX, e.clientY) : null;
+            const target = topEl?.rectEl || topEl?.el || null;
+            if (target) {
+                const dir = this.getResizeDirection(e, target, 6);
+                const cursorMap = { n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize', ne: 'nesw-resize', nw: 'nwse-resize', se: 'nwse-resize', sw: 'nesw-resize' };
+                this.canvas.style.cursor = dir ? cursorMap[dir] : 'default';
+            } else {
+                this.canvas.style.cursor = 'default';
+            }
+        }
+
+    if (this.isDrawing && this.activeRectEl) {
             // Use cached canvas rect with fallback
             const rect = this.canvasRect || this.canvas.getBoundingClientRect();
             const currentX = (e.clientX - rect.left - this.view.x) / this.view.scale;
@@ -248,7 +271,16 @@ class DigitalSpaceEditor {
         }
 
         // Check if we should start dragging based on mouse movement distance
-        if (this.isPreparingToDrag && this.activeRectEl) {
+        if (this.isPreparingToResize && this.activeRectEl) {
+            const deltaX = e.clientX - this.initialMousePosition.x;
+            const deltaY = e.clientY - this.initialMousePosition.y;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            if (distance > 5) {
+                this.startResizing();
+            }
+        } else if (this.isResizing && this.activeRectEl) {
+            this.performResize(e);
+        } else if (this.isPreparingToDrag && this.activeRectEl) {
             const deltaX = e.clientX - this.initialMousePosition.x;
             const deltaY = e.clientY - this.initialMousePosition.y;
             const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
@@ -284,13 +316,175 @@ class DigitalSpaceEditor {
             this.finishDrawing();
         }
 
-        if (this.isDragging) {
+        if (this.isResizing) {
+            this.finishResizing();
+        } else if (this.isDragging) {
             this.finishDragging();
-        } else if (this.isPreparingToDrag) {
+        } else if (this.isPreparingToDrag || this.isPreparingToResize) {
             // User clicked but didn't drag - just clean up preparation state
             this.isPreparingToDrag = false;
+            this.isPreparingToResize = false;
             this.activeRectEl = null;
         }
+    }
+
+    // ----- Resize helpers (no labels/indicators) -----
+    getResizeDirection(e, rectEl, threshold = 6) {
+        const rect = rectEl.getBoundingClientRect();
+        const nearLeft = (e.clientX - rect.left) <= threshold;
+        const nearRight = (rect.right - e.clientX) <= threshold;
+        const nearTop = (e.clientY - rect.top) <= threshold;
+        const nearBottom = (rect.bottom - e.clientY) <= threshold;
+        let dir = null;
+        if (nearTop && nearLeft) dir = 'nw';
+        else if (nearTop && nearRight) dir = 'ne';
+        else if (nearBottom && nearLeft) dir = 'sw';
+        else if (nearBottom && nearRight) dir = 'se';
+        else if (nearLeft) dir = 'w';
+        else if (nearRight) dir = 'e';
+        else if (nearTop) dir = 'n';
+        else if (nearBottom) dir = 's';
+        return dir;
+    }
+
+    prepareForResize(e, rectEl, dir) {
+        this.isPreparingToResize = true;
+        this.activeRectEl = rectEl;
+        this.resizeDirection = dir;
+        this.initialMousePosition = { x: e.clientX, y: e.clientY };
+
+        const startX = parseFloat(rectEl.style.left) || 0;
+        const startY = parseFloat(rectEl.style.top) || 0;
+        const startW = parseFloat(rectEl.style.width) || rectEl.offsetWidth;
+        const startH = parseFloat(rectEl.style.height) || rectEl.offsetHeight;
+        this.resizeStartRect = { x: startX, y: startY, width: startW, height: startH };
+
+        const cursorMap = { n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize', ne: 'nesw-resize', nw: 'nwse-resize', se: 'nwse-resize', sw: 'nesw-resize' };
+        this.canvas.style.cursor = cursorMap[dir] || 'default';
+    }
+
+    startResizing() {
+        this.isResizing = true;
+        this.isPreparingToResize = false;
+        if (this.activeRectEl) {
+            this.activeRectEl.style.transition = 'none';
+            this.activeRectEl.classList.add('resizing');
+        }
+        document.body.classList.add('disable-animations');
+    }
+
+    performResize(e) {
+        if (!this.activeRectEl || !this.resizeStartRect) return;
+        const rect = this.canvasRect || this.canvas.getBoundingClientRect();
+        const mouseX = (e.clientX - rect.left - this.view.x) / this.view.scale;
+        const mouseY = (e.clientY - rect.top - this.view.y) / this.view.scale;
+
+        const minW = 10, minH = 10;
+        const start = this.resizeStartRect;
+        let newX = start.x, newY = start.y, newW = start.width, newH = start.height;
+        const right = start.x + start.width;
+        const bottom = start.y + start.height;
+        const dir = this.resizeDirection;
+
+        if (dir.includes('e')) newW = Math.max(minW, mouseX - start.x);
+        if (dir.includes('s')) newH = Math.max(minH, mouseY - start.y);
+        if (dir.includes('w')) { newX = Math.min(mouseX, right - minW); newW = Math.max(minW, right - newX); }
+        if (dir.includes('n')) { newY = Math.min(mouseY, bottom - minH); newH = Math.max(minH, bottom - newY); }
+
+        // Snap edges to other digital location edges if enabled
+        if (this.applyResizeSnappingBounds) {
+            const snapped = this.applyResizeSnappingBounds(this.activeRectEl, { x: newX, y: newY, width: newW, height: newH }, this.resizeDirection, this.snapSettings, '.digital-location-rect');
+            newX = snapped.x; newY = snapped.y; newW = snapped.width; newH = snapped.height;
+        }
+
+        this.activeRectEl.style.left = newX + 'px';
+        this.activeRectEl.style.top = newY + 'px';
+        this.activeRectEl.style.width = newW + 'px';
+        this.activeRectEl.style.height = newH + 'px';
+    }
+
+    // Snap bounds during resize similar to drag snapping
+    applyResizeSnappingBounds(activeEl, bounds, dir, snapSettings, selector) {
+        if (!snapSettings || (!snapSettings.xEnabled && !snapSettings.yEnabled)) return bounds;
+        const tol = snapSettings.tolerance || 10;
+        const targets = [];
+        document.querySelectorAll(selector).forEach(el => {
+            if (el === activeEl) return;
+            const x = parseFloat(el.style.left) || 0;
+            const y = parseFloat(el.style.top) || 0;
+            const w = parseFloat(el.style.width) || el.offsetWidth;
+            const h = parseFloat(el.style.height) || el.offsetHeight;
+            targets.push({ left: x, right: x + w, top: y, bottom: y + h });
+        });
+
+        let { x, y, width, height } = bounds;
+        const right = x + width;
+        const bottom = y + height;
+
+        if (snapSettings.xEnabled) {
+            if (dir.includes('w')) {
+                for (const t of targets) {
+                    if (Math.abs(x - t.left) <= tol) { const nl = t.left; width = right - nl; x = nl; break; }
+                    if (Math.abs(x - t.right) <= tol) { const nl = t.right; width = right - nl; x = nl; break; }
+                }
+            }
+            if (dir.includes('e')) {
+                for (const t of targets) {
+                    if (Math.abs(right - t.left) <= tol) { width = t.left - x; break; }
+                    if (Math.abs(right - t.right) <= tol) { width = t.right - x; break; }
+                }
+            }
+        }
+
+        if (snapSettings.yEnabled) {
+            if (dir.includes('n')) {
+                for (const t of targets) {
+                    if (Math.abs(y - t.top) <= tol) { const nt = t.top; height = bottom - nt; y = nt; break; }
+                    if (Math.abs(y - t.bottom) <= tol) { const nt = t.bottom; height = bottom - nt; y = nt; break; }
+                }
+            }
+            if (dir.includes('s')) {
+                for (const t of targets) {
+                    if (Math.abs(bottom - t.top) <= tol) { height = t.top - y; break; }
+                    if (Math.abs(bottom - t.bottom) <= tol) { height = t.bottom - y; break; }
+                }
+            }
+        }
+
+        width = Math.max(10, width);
+        height = Math.max(10, height);
+        return { x, y, width, height };
+    }
+
+    finishResizing() {
+        if (!this.isResizing) return;
+        if (this.activeRectEl) {
+            this.activeRectEl.style.transition = '';
+            this.activeRectEl.classList.remove('resizing');
+        }
+        document.body.classList.remove('disable-animations');
+
+        const locationId = this.selectedRectId;
+        const location = this.digitalLocations.find(l => l.id === locationId);
+        if (location) {
+            const newX = parseFloat(this.activeRectEl.style.left) || 0;
+            const newY = parseFloat(this.activeRectEl.style.top) || 0;
+            const newW = parseFloat(this.activeRectEl.style.width) || this.activeRectEl.offsetWidth;
+            const newH = parseFloat(this.activeRectEl.style.height) || this.activeRectEl.offsetHeight;
+            location.x = newX / this.pixelsPerMeter;
+            location.y = newY / this.pixelsPerMeter;
+            location.width = newW / this.pixelsPerMeter;
+            location.height = newH / this.pixelsPerMeter;
+            this.updateSimulationJson();
+            this.renderPropertiesPanel();
+        }
+
+        this.isResizing = false;
+        this.isPreparingToResize = false;
+        this.resizeDirection = null;
+        this.resizeStartRect = null;
+        this.activeRectEl = null;
+        this.canvas.style.cursor = 'default';
     }
 
     finishDrawing() {
