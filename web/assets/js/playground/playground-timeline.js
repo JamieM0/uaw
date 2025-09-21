@@ -640,7 +640,7 @@ function handleMouseMove(e) {
     try {
         if (isResizing && resizeHandle && durationPreview) {
             // Check if simulation data is available
-            if (!currentSimulationData || typeof currentSimulationData.total_duration_minutes === 'undefined' || 
+            if (!currentSimulationData || typeof currentSimulationData.total_duration_minutes === 'undefined' ||
                 typeof currentSimulationData.start_time_minutes === 'undefined') {
                 console.warn('Cannot resize: Invalid simulation data');
                 return;
@@ -653,7 +653,7 @@ function handleMouseMove(e) {
             const newPosition = calculateNewTimeFromPosition(e.clientX, trackElement);
             if (newPosition === null) return; // Invalid simulation data
             const taskStartMinutes = parseTimeToMinutes(originalStartTime);
-            
+
             let newDuration, newStartMinutes = taskStartMinutes;
             if (resizeType === 'left') {
                 // Resizing from the left edge
@@ -661,22 +661,22 @@ function handleMouseMove(e) {
                 const originalEndMinutes = taskStartMinutes + originalDuration;
                 newDuration = originalEndMinutes - newStartMinutes;
             } else {
-                // Resizing from the right edge  
+                // Resizing from the right edge
                 newDuration = newPosition - taskStartMinutes;
             }
-            
+
             // Minimum duration constraint
             newDuration = Math.max(1, Math.round(newDuration));
-            
+
             // Update preview tooltip
             durationPreview.textContent = `${newDuration} minutes`;
             durationPreview.style.left = `${e.clientX + 10}px`;
             durationPreview.style.top = `${e.clientY - 10}px`;
-            
+
             // Apply immediate visual feedback to the task block
             const totalDurationMinutes = currentSimulationData.total_duration_minutes;
             const startTimeMinutes = currentSimulationData.start_time_minutes;
-            
+
             if (resizeType === 'left') {
                 // Update both position and width for left edge resize
                 const newStartPercentage = ((newStartMinutes - startTimeMinutes) / totalDurationMinutes) * 100;
@@ -688,16 +688,52 @@ function handleMouseMove(e) {
                 const newDurationPercentage = (newDuration / totalDurationMinutes) * 100;
                 resizeHandle.style.width = `${newDurationPercentage}%`;
             }
-            
+
         } else if (isDragging && draggedTask && timePreview) {
-            // --- START OF DRAG FIX ---
+            // Clear previous timeline highlights
+            document.querySelectorAll('.task-track').forEach(track => {
+                track.classList.remove('drag-target', 'drag-invalid');
+            });
+
+            // Find the timeline track under the cursor
+            const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+            const targetTrack = elementBelow?.closest('.task-track');
+            const currentTrack = draggedTask.closest('.task-track');
+
+            // Highlight the target timeline
+            if (targetTrack) {
+                if (targetTrack !== currentTrack) {
+                    // Cross-timeline move - highlight target
+                    targetTrack.classList.add('drag-target');
+                    // Update time preview to show the target actor
+                    const targetActorId = targetTrack.dataset.actorId;
+                    const newTime = calculateNewTimeFromPosition(e.clientX - dragOffsetX, targetTrack);
+                    if (newTime !== null) {
+                        const hours = Math.floor(newTime / 60);
+                        const mins = newTime % 60;
+                        const timeString = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+                        timePreview.textContent = `→ ${targetActorId} at ${timeString}`;
+                    }
+                } else {
+                    // Same timeline move - show just the time
+                    const newTime = calculateNewTimeFromPosition(e.clientX - dragOffsetX, targetTrack);
+                    if (newTime !== null) {
+                        const hours = Math.floor(newTime / 60);
+                        const mins = newTime % 60;
+                        const timeString = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+                        timePreview.textContent = timeString;
+                    }
+                }
+            } else {
+                // Not over a valid drop target
+                timePreview.textContent = 'Invalid drop zone';
+            }
+
+            // Calculate the new position of the left edge of the task in the original timeline
             const trackElement = draggedTask.closest('.task-track');
             if (!trackElement) return;
 
-            // Calculate the new position of the left edge of the task
             const newLeftX = e.clientX - dragOffsetX;
-
-            // Convert this pixel position to a percentage of the track width
             const trackRect = trackElement.getBoundingClientRect();
             const relativeX = newLeftX - trackRect.left;
             let newStartPercentage = (relativeX / trackRect.width) * 100;
@@ -708,16 +744,6 @@ function handleMouseMove(e) {
 
             // Apply the new position directly to the 'left' property
             draggedTask.style.left = `${newStartPercentage}%`;
-
-            // Calculate and update time preview
-            const newTime = calculateNewTimeFromPosition(newLeftX, trackElement);
-            if (newTime !== null) {
-                const hours = Math.floor(newTime / 60);
-                const mins = newTime % 60;
-                const timeString = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-                timePreview.textContent = timeString;
-            }
-            // --- END OF DRAG FIX ---
         }
     } catch (error) {
         console.error('Error in handleMouseMove:', error);
@@ -741,6 +767,10 @@ function handleMouseMove(e) {
             if (timePreview) {
                 timePreview.remove();
             }
+            // Clear timeline highlights
+            document.querySelectorAll('.task-track').forEach(track => {
+                track.classList.remove('drag-target', 'drag-invalid');
+            });
             isDragging = false;
             draggedTask = null;
             timePreview = null;
@@ -796,12 +826,12 @@ function handleMouseUp(e) {
             const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
             const newTrack = elementBelow?.closest('.task-track');
             const currentTrack = draggedTask.closest('.task-track');
-            
+
             if (newTrack && originalTaskData) {
                 const newActorId = newTrack.dataset.actorId;
                 // Account for the drag offset when calculating final position
                 const newTime = calculateNewTimeFromPosition(e.clientX - dragOffsetX, newTrack);
-                
+
                 if (newActorId && newTime !== null) {
                     // Check if position actually changed (either different track or different time)
                     const originalTimeMinutes = parseTimeToMinutes(originalTaskData.start);
@@ -810,7 +840,7 @@ function handleMouseUp(e) {
                     }
                 }
             }
-            
+
             // Reset task appearance and clear transform immediately
             if (draggedTask) {
                 draggedTask.style.opacity = '';
@@ -823,6 +853,11 @@ function handleMouseUp(e) {
             if (timePreview) {
                 timePreview.remove();
             }
+
+            // Clear timeline highlights
+            document.querySelectorAll('.task-track').forEach(track => {
+                track.classList.remove('drag-target', 'drag-invalid');
+            });
 
             // Clean up drag state immediately
             document.body.classList.remove('dragging-active');
@@ -854,6 +889,10 @@ function handleMouseUp(e) {
             if (timePreview) {
                 timePreview.remove();
             }
+            // Clear timeline highlights
+            document.querySelectorAll('.task-track').forEach(track => {
+                track.classList.remove('drag-target', 'drag-invalid');
+            });
             isDragging = false;
             draggedTask = null;
             timePreview = null;

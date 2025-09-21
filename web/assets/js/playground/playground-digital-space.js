@@ -567,12 +567,15 @@ class DigitalSpaceEditor {
         rectEl.style.border = '2px solid #4CAF50';
         rectEl.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
         
-        // Add icon and label
+        // Add icon and label with object count
         const icon = this.getLocationIcon(location.storage_type);
+        const objectCount = this.digitalObjects.filter(obj => obj.properties?.location_id === location.id).length;
+
         rectEl.innerHTML = `
             <div class="location-label">
                 <span class="location-icon">${sanitizeHTML(icon)}</span>
                 <span class="location-name">${sanitizeHTML(location.name)}</span>
+                ${objectCount > 0 ? `<span class="object-count-badge">${objectCount}</span>` : ''}
             </div>
         `;
         
@@ -619,16 +622,60 @@ class DigitalSpaceEditor {
                 <p class="placeholder">Select a digital location, or click '+ Add Location' to create a new storage area.</p>
                 
                 <div class="prop-section">
-                    <div class="section-label">Digital Objects</div>
+                    <div class="section-header">
+                        <div class="section-label">Digital Objects</div>
+                        <button class="btn btn-sm add-object-btn" onclick="digitalSpaceEditor.createNewDigitalObject()" title="Add new digital object">+ Add</button>
+                    </div>
                     <div class="digital-objects-list" id="digital-objects-list">
-                        ${this.digitalObjects.map(obj => `
-                            <div class="object-item" data-object-id="${obj.id}">
-                                <span class="object-icon">${this.getObjectIcon(obj.type)}</span>
-                                <span class="object-name clickable" onclick="digitalSpaceEditor.renameDigitalObject('${obj.id}')" title="Click to rename">${obj.name}</span>
-                                <span class="object-location">${this.getLocationName(obj.location_id)}</span>
-                                <button class="btn-danger-small" onclick="digitalSpaceEditor.deleteDigitalObject('${obj.id}')">×</button>
-                            </div>
-                        `).join('')}
+                        ${this.digitalObjects.length > 0 ? this.digitalObjects.map(obj => {
+                            const locationId = obj.properties?.location_id;
+                            const location = this.digitalLocations.find(loc => loc.id === locationId);
+                            const locationName = location ? location.name : 'No Location';
+                            const locationIcon = location ? this.getLocationIcon(location.storage_type) : '❓';
+                            const sizeMB = obj.properties?.size_mb || 1;
+
+                            return `
+                                <div class="object-item enhanced" data-object-id="${obj.id}">
+                                    <div class="object-header">
+                                        <span class="object-icon">${this.getObjectIcon(obj.type)}</span>
+                                        <span class="object-name clickable" onclick="digitalSpaceEditor.renameDigitalObject('${obj.id}')" title="Click to rename">${sanitizeHTML(obj.name)}</span>
+                                        <button class="btn-danger-small" onclick="digitalSpaceEditor.deleteDigitalObject('${obj.id}')" title="Delete object">×</button>
+                                    </div>
+                                    <div class="object-details">
+                                        <div class="object-detail-row">
+                                            <span class="detail-label">Type:</span>
+                                            <span class="detail-value">${obj.type}</span>
+                                        </div>
+                                        <div class="object-detail-row">
+                                            <span class="detail-label">Location:</span>
+                                            <span class="detail-value location-link" onclick="digitalSpaceEditor.selectLocationById('${locationId}')" title="Click to select location">
+                                                ${locationIcon} ${sanitizeHTML(locationName)}
+                                            </span>
+                                        </div>
+                                        <div class="object-detail-row">
+                                            <span class="detail-label">Size:</span>
+                                            <span class="detail-value">${sizeMB} MB</span>
+                                        </div>
+                                        ${obj.properties?.permissions ? `
+                                            <div class="object-detail-row">
+                                                <span class="detail-label">Access:</span>
+                                                <span class="detail-value">${obj.properties.permissions}</span>
+                                            </div>
+                                        ` : ''}
+                                        ${obj.properties?.encrypted ? `
+                                            <div class="object-detail-row">
+                                                <span class="detail-label">Security:</span>
+                                                <span class="detail-value encrypted">🔒 Encrypted</span>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                    <div class="object-actions">
+                                        <button class="btn btn-xs" onclick="digitalSpaceEditor.showMoveObjectDialog('${obj.id}')" title="Move to different location">Move</button>
+                                        <button class="btn btn-xs" onclick="digitalSpaceEditor.showEditObjectDialog('${obj.id}')" title="Edit object properties">Edit</button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('') : '<div class="empty-state">No digital objects yet. Click "Add" to create one.</div>'}
                     </div>
                 </div>
             `;
@@ -818,7 +865,7 @@ class DigitalSpaceEditor {
             if (simulation.digital_space && simulation.digital_space.digital_locations) {
                 this.digitalLocations = [...simulation.digital_space.digital_locations];
                 this.renderAllLocations();
-                
+
                 // Reset view and zoom to fit on initial load (like Space Editor)
                 if (this.digitalLocations.length > 0 && !this.hasInitiallyLoaded) {
                     this.view.scale = 1;
@@ -829,11 +876,14 @@ class DigitalSpaceEditor {
                     this.hasInitiallyLoaded = true;
                 }
             }
-            
+
             // Load digital objects
             if (simulation.digital_space && simulation.digital_space.digital_objects) {
                 this.digitalObjects = [...simulation.digital_space.digital_objects];
             }
+
+            // Render digital objects in their locations AFTER both locations and objects are loaded
+            this.renderDigitalObjectsInLocations();
         } catch (e) {
             console.log("DIGITAL-SPACE: Could not parse JSON for digital space");
         }
@@ -842,11 +892,298 @@ class DigitalSpaceEditor {
     renderAllLocations() {
         // Clear existing
         this.world.innerHTML = '';
-        
+
         // Render all locations
         this.digitalLocations.forEach(location => {
             this.renderLocation(location);
         });
+    }
+
+    renderDigitalObjectsInLocations() {
+        // Clear existing object displays
+        document.querySelectorAll('.digital-object-visual').forEach(el => el.remove());
+
+        // Group objects by location
+        const objectsByLocation = {};
+        this.digitalObjects.forEach(obj => {
+            const locationId = obj.properties?.location_id;
+            if (locationId) {
+                if (!objectsByLocation[locationId]) {
+                    objectsByLocation[locationId] = [];
+                }
+                objectsByLocation[locationId].push(obj);
+            }
+        });
+
+        // Render objects in each location
+        Object.entries(objectsByLocation).forEach(([locationId, objects]) => {
+            const locationEl = document.querySelector(`[data-location-id="${locationId}"]`);
+            if (locationEl) {
+                this.renderObjectsInLocation(locationEl, objects);
+            }
+        });
+    }
+
+    renderObjectsInLocation(locationEl, objects) {
+        if (!objects || objects.length === 0) return;
+
+        const locationRect = {
+            width: parseFloat(locationEl.style.width) || 100,
+            height: parseFloat(locationEl.style.height) || 100
+        };
+
+        // Calculate object size and grid layout
+        const padding = 4;
+        const maxObjectsPerRow = Math.floor(Math.sqrt(objects.length)) + 1;
+        const availableWidth = locationRect.width - (padding * 2);
+        const availableHeight = locationRect.height - (padding * 2);
+
+        // Calculate object size - it should scale down as more objects are added
+        const baseObjectSize = Math.min(24, Math.max(12, Math.min(availableWidth / maxObjectsPerRow, availableHeight / Math.ceil(objects.length / maxObjectsPerRow))));
+        const objectSize = Math.max(8, baseObjectSize - 2); // Minimum size of 8px
+
+        // Create a grid container for objects
+        const objectContainer = document.createElement('div');
+        objectContainer.className = 'digital-objects-container';
+        objectContainer.style.cssText = `
+            position: absolute;
+            top: ${padding}px;
+            left: ${padding}px;
+            width: ${availableWidth}px;
+            height: ${availableHeight}px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(${objectSize}px, 1fr));
+            gap: 2px;
+            align-content: start;
+            pointer-events: none;
+        `;
+
+        // Create visual representation for each object
+        objects.forEach(obj => {
+            const objectEl = document.createElement('div');
+            objectEl.className = 'digital-object-visual';
+            objectEl.dataset.objectId = obj.id;
+            objectEl.style.cssText = `
+                width: ${objectSize}px;
+                height: ${objectSize}px;
+                background: #fff;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: ${Math.max(8, objectSize * 0.6)}px;
+                cursor: grab;
+                transition: all 0.2s ease;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+                pointer-events: auto;
+                user-select: none;
+            `;
+
+            // Add icon based on object type
+            const icon = this.getObjectIcon(obj.type);
+            objectEl.innerHTML = icon;
+
+            // Enhanced tooltip with more information
+            const sizeMB = obj.properties?.size_mb || 1;
+            const permissions = obj.properties?.permissions || 'read_write';
+            const encrypted = obj.properties?.encrypted ? ' 🔒' : '';
+            const lastModified = obj.modified_time ? new Date(obj.modified_time).toLocaleDateString() : 'Unknown';
+
+            objectEl.title = `${obj.name} (${obj.type})\nSize: ${sizeMB} MB\nPermissions: ${permissions}${encrypted}\nLast Modified: ${lastModified}\n\nDrag to move between locations`;
+
+            // Add subtle visual feedback based on object properties
+            if (obj.properties?.encrypted) {
+                objectEl.style.border = '1px solid #28a745';
+                objectEl.style.borderWidth = '2px';
+            }
+
+            if (obj.properties?.size_mb > 100) {
+                objectEl.style.boxShadow = '0 1px 3px rgba(255, 193, 7, 0.3)';
+            }
+
+            // Add hover effect
+            objectEl.addEventListener('mouseenter', () => {
+                objectEl.style.transform = 'scale(1.1)';
+                objectEl.style.zIndex = '10';
+                objectEl.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+            });
+
+            objectEl.addEventListener('mouseleave', () => {
+                if (!objectEl.classList.contains('dragging')) {
+                    objectEl.style.transform = 'scale(1)';
+                    objectEl.style.zIndex = '1';
+                    objectEl.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
+                }
+            });
+
+            // Add drag functionality for moving between locations
+            this.addObjectDragListeners(objectEl, obj);
+
+            objectContainer.appendChild(objectEl);
+        });
+
+        locationEl.appendChild(objectContainer);
+    }
+
+    addObjectDragListeners(objectEl, digitalObject) {
+        let isDragging = false;
+        let dragStartPos = { x: 0, y: 0 };
+        let dragOffset = { x: 0, y: 0 };
+
+        const onMouseDown = (e) => {
+            // Don't start dragging locations if clicking on digital objects
+            e.stopPropagation();
+
+            isDragging = false;
+            dragStartPos = { x: e.clientX, y: e.clientY };
+
+            const rect = objectEl.getBoundingClientRect();
+            dragOffset = {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        };
+
+        const onMouseMove = (e) => {
+            const distance = Math.sqrt(
+                Math.pow(e.clientX - dragStartPos.x, 2) +
+                Math.pow(e.clientY - dragStartPos.y, 2)
+            );
+
+            if (distance > 5 && !isDragging) {
+                // Start dragging
+                isDragging = true;
+                objectEl.classList.add('dragging');
+                objectEl.style.position = 'fixed';
+                objectEl.style.zIndex = '1000';
+                objectEl.style.pointerEvents = 'none';
+                objectEl.style.transform = 'scale(1.2)';
+                objectEl.style.transition = 'none';
+                document.body.style.cursor = 'grabbing';
+
+                // Create highlight overlay for drop zones
+                this.createDropZoneOverlays();
+            }
+
+            if (isDragging) {
+                objectEl.style.left = (e.clientX - dragOffset.x) + 'px';
+                objectEl.style.top = (e.clientY - dragOffset.y) + 'px';
+
+                // Highlight potential drop zones
+                this.highlightDropZone(e.clientX, e.clientY);
+            }
+        };
+
+        const onMouseUp = (e) => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+
+            if (isDragging) {
+                // Find the drop target
+                const dropTarget = this.findDropTarget(e.clientX, e.clientY);
+
+                if (dropTarget && dropTarget !== digitalObject.properties?.location_id) {
+                    // Move object to new location
+                    this.moveDigitalObjectToLocation(digitalObject.id, dropTarget);
+                    console.log(`DIGITAL-SPACE: Moved ${digitalObject.name} to ${this.getLocationName(dropTarget)}`);
+                }
+
+                // Clean up
+                this.removeDropZoneOverlays();
+                objectEl.classList.remove('dragging');
+                objectEl.style.position = '';
+                objectEl.style.zIndex = '';
+                objectEl.style.pointerEvents = '';
+                objectEl.style.transform = '';
+                objectEl.style.transition = '';
+                objectEl.style.left = '';
+                objectEl.style.top = '';
+                document.body.style.cursor = '';
+
+                // Re-render objects in their new positions
+                this.renderDigitalObjectsInLocations();
+            }
+        };
+
+        objectEl.addEventListener('mousedown', onMouseDown);
+    }
+
+    createDropZoneOverlays() {
+        // Remove existing overlays
+        this.removeDropZoneOverlays();
+
+        this.digitalLocations.forEach(location => {
+            const locationEl = document.querySelector(`[data-location-id="${location.id}"]`);
+            if (locationEl) {
+                const overlay = document.createElement('div');
+                overlay.className = 'drop-zone-overlay';
+                overlay.dataset.locationId = location.id;
+
+                const rect = locationEl.getBoundingClientRect();
+                overlay.style.cssText = `
+                    position: fixed;
+                    left: ${rect.left}px;
+                    top: ${rect.top}px;
+                    width: ${rect.width}px;
+                    height: ${rect.height}px;
+                    border: 2px dashed #4CAF50;
+                    background: rgba(76, 175, 80, 0.1);
+                    pointer-events: none;
+                    z-index: 999;
+                    border-radius: 4px;
+                    opacity: 0.7;
+                `;
+
+                document.body.appendChild(overlay);
+            }
+        });
+    }
+
+    removeDropZoneOverlays() {
+        document.querySelectorAll('.drop-zone-overlay').forEach(el => el.remove());
+    }
+
+    highlightDropZone(clientX, clientY) {
+        const overlays = document.querySelectorAll('.drop-zone-overlay');
+        overlays.forEach(overlay => {
+            const rect = overlay.getBoundingClientRect();
+            const isOver = clientX >= rect.left && clientX <= rect.right &&
+                          clientY >= rect.top && clientY <= rect.bottom;
+
+            if (isOver) {
+                overlay.style.background = 'rgba(76, 175, 80, 0.3)';
+                overlay.style.borderColor = '#2E7D32';
+            } else {
+                overlay.style.background = 'rgba(76, 175, 80, 0.1)';
+                overlay.style.borderColor = '#4CAF50';
+            }
+        });
+    }
+
+    findDropTarget(clientX, clientY) {
+        const overlays = document.querySelectorAll('.drop-zone-overlay');
+        for (const overlay of overlays) {
+            const rect = overlay.getBoundingClientRect();
+            if (clientX >= rect.left && clientX <= rect.right &&
+                clientY >= rect.top && clientY <= rect.bottom) {
+                return overlay.dataset.locationId;
+            }
+        }
+        return null;
+    }
+
+    moveDigitalObjectToLocation(objectId, newLocationId) {
+        const object = this.digitalObjects.find(obj => obj.id === objectId);
+        if (object) {
+            object.properties.location_id = newLocationId;
+            object.modified_time = new Date().toISOString();
+            this.updateSimulationJson();
+            this.renderPropertiesPanel();
+        }
     }
 
     updateSimulationJson() {
@@ -1065,6 +1402,16 @@ class DigitalSpaceEditor {
         
         if (e.key === 'Delete' && this.selectedRectId) {
             this.deleteLocation(this.selectedRectId);
+        } else if (e.key === 'n' && (e.ctrlKey || e.metaKey)) {
+            // Ctrl+N or Cmd+N to create new digital object
+            e.preventDefault();
+            this.createNewDigitalObject();
+        } else if (e.key === 'l' && (e.ctrlKey || e.metaKey)) {
+            // Ctrl+L or Cmd+L to create new location
+            e.preventDefault();
+            this.isDrawing = true;
+            this.canvas.style.cursor = 'crosshair';
+            this.deselectAll();
         }
     }
 
@@ -1153,33 +1500,170 @@ class DigitalSpaceEditor {
     }
 
     createNewDigitalObject() {
-        // Prompt user for object name
-        const objectName = prompt('Enter a name for the digital object:', 'New Digital Object');
-        
-        // If user cancels or enters empty name, don't create object
-        if (!objectName || objectName.trim() === '') {
+        if (this.digitalLocations.length === 0) {
+            alert('Please create at least one digital location before adding digital objects.');
+            return;
+        }
+
+        this.showDigitalObjectModal();
+    }
+
+    showDigitalObjectModal() {
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('add-digital-object-modal');
+        if (!modal) {
+            modal = this.createDigitalObjectModal();
+            document.body.appendChild(modal);
+        }
+
+        // Reset form
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+
+        // Populate location dropdown
+        const locationSelect = modal.querySelector('#digital-object-location-select');
+        if (locationSelect) {
+            locationSelect.innerHTML = '<option value="">Select a digital location...</option>';
+            this.digitalLocations.forEach(location => {
+                const option = document.createElement('option');
+                option.value = location.id;
+                option.textContent = `${location.name} (${location.storage_type})`;
+                locationSelect.appendChild(option);
+            });
+        }
+
+        // Populate type dropdown
+        const typeSelect = modal.querySelector('#digital-object-type-select');
+        if (typeSelect) {
+            typeSelect.innerHTML = `
+                <option value="file">📄 File</option>
+                <option value="folder">📁 Folder</option>
+                <option value="database">🗃️ Database</option>
+                <option value="application">💻 Application</option>
+                <option value="service">⚙️ Service</option>
+                <option value="process">🔄 Process</option>
+                <option value="log">📋 Log</option>
+                <option value="backup">💾 Backup</option>
+                <option value="image">🖼️ Image</option>
+                <option value="video">🎥 Video</option>
+                <option value="audio">🎵 Audio</option>
+                <option value="archive">📦 Archive</option>
+            `;
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    createDigitalObjectModal() {
+        const modal = document.createElement('div');
+        modal.id = 'add-digital-object-modal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add Digital Object</h3>
+                    <button type="button" class="modal-close" onclick="this.closest('.modal-overlay').style.display='none'">&times;</button>
+                </div>
+                <form id="digital-object-form">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="digital-object-name">Name: <span class="required">*</span></label>
+                            <input type="text" id="digital-object-name" name="name" required placeholder="Enter object name..." />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="digital-object-type">Type: <span class="required">*</span></label>
+                            <select id="digital-object-type-select" name="type" required>
+                                <!-- Options populated dynamically -->
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="digital-object-location-select">Location: <span class="required">*</span></label>
+                            <select id="digital-object-location-select" name="location_id" required>
+                                <!-- Options populated dynamically -->
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="digital-object-size">Size (MB):</label>
+                            <input type="number" id="digital-object-size" name="size_mb" min="0" step="0.1" value="1" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="digital-object-permissions">Permissions:</label>
+                            <select id="digital-object-permissions" name="permissions">
+                                <option value="read_only">Read Only</option>
+                                <option value="read_write" selected>Read/Write</option>
+                                <option value="admin">Admin</option>
+                                <option value="execute">Execute</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="digital-object-encrypted" name="encrypted" />
+                                Encrypted
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').style.display='none'">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Object</button>
+                    </div>
+                </form>
+            </div>
+        `;
+
+        // Setup form submission
+        const form = modal.querySelector('#digital-object-form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleDigitalObjectFormSubmit(form);
+        });
+
+        return modal;
+    }
+
+    handleDigitalObjectFormSubmit(form) {
+        const formData = new FormData(form);
+        const name = formData.get('name').trim();
+        const type = formData.get('type');
+        const locationId = formData.get('location_id');
+        const sizeMb = parseFloat(formData.get('size_mb')) || 1;
+        const permissions = formData.get('permissions');
+        const encrypted = formData.has('encrypted');
+
+        if (!name || !type || !locationId) {
+            alert('Please fill in all required fields.');
             return;
         }
 
         const objectId = 'digital_obj_' + Date.now();
         const newObject = {
             id: objectId,
-            name: objectName.trim(),
-            type: 'file',
-            location_id: this.digitalLocations.length > 0 ? this.digitalLocations[0].id : null,
-            size_mb: 1,
+            name: name,
+            type: type,
             created_time: new Date().toISOString(),
             modified_time: new Date().toISOString(),
             properties: {
-                file_type: 'document',
-                permissions: 'read_write',
-                encrypted: false
+                location_id: locationId,
+                size_mb: sizeMb,
+                file_type: type === 'file' ? 'document' : type,
+                permissions: permissions,
+                encrypted: encrypted
             }
         };
 
         this.digitalObjects.push(newObject);
+        this.renderDigitalObjectsInLocations();
         this.renderPropertiesPanel();
         this.updateSimulationJson();
+
+        // Close modal
+        document.getElementById('add-digital-object-modal').style.display = 'none';
+
+        console.log(`DIGITAL-SPACE: Added digital object "${name}" to location "${this.getLocationName(locationId)}"`);
     }
 
     renameDigitalObject(objectId) {
@@ -1195,6 +1679,7 @@ class DigitalSpaceEditor {
 
         object.name = newName.trim();
         object.modified_time = new Date().toISOString();
+        this.renderDigitalObjectsInLocations();
         this.renderPropertiesPanel();
         this.updateSimulationJson();
     }
@@ -1203,9 +1688,149 @@ class DigitalSpaceEditor {
         const index = this.digitalObjects.findIndex(obj => obj.id === objectId);
         if (index >= 0) {
             this.digitalObjects.splice(index, 1);
+            this.renderDigitalObjectsInLocations();
             this.renderPropertiesPanel();
             this.updateSimulationJson();
         }
+    }
+
+    selectLocationById(locationId) {
+        if (locationId && locationId !== 'undefined' && this.digitalLocations.find(loc => loc.id === locationId)) {
+            this.selectLocation(locationId);
+        }
+    }
+
+    showMoveObjectDialog(objectId) {
+        const obj = this.digitalObjects.find(o => o.id === objectId);
+        if (!obj) return;
+
+        const currentLocationId = obj.properties?.location_id;
+        const locations = this.digitalLocations.filter(loc => loc.id !== currentLocationId);
+        if (locations.length === 0) {
+            alert('No other locations available to move to.');
+            return;
+        }
+
+        const locationOptions = locations.map(loc =>
+            `<option value="${loc.id}">${loc.name} (${loc.storage_type})</option>`
+        ).join('');
+
+        const currentLocation = this.digitalLocations.find(loc => loc.id === currentLocationId);
+        const currentLocationName = currentLocation ? currentLocation.name : 'Unknown';
+
+        const modal = this.createQuickModal('Move Digital Object', `
+            <p>Move <strong>${sanitizeHTML(obj.name)}</strong> from <em>${sanitizeHTML(currentLocationName)}</em> to:</p>
+            <div class="form-group">
+                <label>New Location:</label>
+                <select id="move-location-select" style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+                    ${locationOptions}
+                </select>
+            </div>
+        `, [
+            { text: 'Cancel', class: 'btn-secondary' },
+            { text: 'Move', class: 'btn-primary', action: () => {
+                const newLocationId = document.getElementById('move-location-select').value;
+                if (newLocationId) {
+                    this.moveDigitalObjectToLocation(objectId, newLocationId);
+                }
+            }}
+        ]);
+    }
+
+    showEditObjectDialog(objectId) {
+        const obj = this.digitalObjects.find(o => o.id === objectId);
+        if (!obj) return;
+
+        const modal = this.createQuickModal('Edit Digital Object', `
+            <div class="form-group">
+                <label>Name:</label>
+                <input type="text" id="edit-object-name" value="${sanitizeHTML(obj.name)}" style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div class="form-group">
+                <label>Size (MB):</label>
+                <input type="number" id="edit-object-size" value="${obj.properties?.size_mb || 1}" min="0" step="0.1" style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div class="form-group">
+                <label>Permissions:</label>
+                <select id="edit-object-permissions" style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="read_only" ${obj.properties?.permissions === 'read_only' ? 'selected' : ''}>Read Only</option>
+                    <option value="read_write" ${obj.properties?.permissions === 'read_write' ? 'selected' : ''}>Read/Write</option>
+                    <option value="admin" ${obj.properties?.permissions === 'admin' ? 'selected' : ''}>Admin</option>
+                    <option value="execute" ${obj.properties?.permissions === 'execute' ? 'selected' : ''}>Execute</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="edit-object-encrypted" ${obj.properties?.encrypted ? 'checked' : ''}>
+                    Encrypted
+                </label>
+            </div>
+        `, [
+            { text: 'Cancel', class: 'btn-secondary' },
+            { text: 'Save', class: 'btn-primary', action: () => {
+                const name = document.getElementById('edit-object-name').value.trim();
+                const size = parseFloat(document.getElementById('edit-object-size').value) || 1;
+                const permissions = document.getElementById('edit-object-permissions').value;
+                const encrypted = document.getElementById('edit-object-encrypted').checked;
+
+                if (name) {
+                    obj.name = name;
+                    obj.properties.size_mb = size;
+                    obj.properties.permissions = permissions;
+                    obj.properties.encrypted = encrypted;
+                    obj.modified_time = new Date().toISOString();
+
+                    this.renderDigitalObjectsInLocations();
+                    this.renderPropertiesPanel();
+                    this.updateSimulationJson();
+                }
+            }}
+        ]);
+    }
+
+    createQuickModal(title, content, buttons) {
+        // Remove existing quick modal
+        const existingModal = document.getElementById('quick-modal');
+        if (existingModal) existingModal.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'quick-modal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 400px;">
+                <div class="modal-header">
+                    <h3>${title}</h3>
+                    <button type="button" class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    ${content}
+                </div>
+                <div class="modal-footer">
+                    ${buttons.map((btn, index) =>
+                        `<button type="button" class="btn ${btn.class}" data-action="${index}">${btn.text}</button>`
+                    ).join('')}
+                </div>
+            </div>
+        `;
+
+        // Setup button actions
+        buttons.forEach((btn, index) => {
+            if (btn.action) {
+                const button = modal.querySelector(`[data-action="${index}"]`);
+                button.addEventListener('click', () => {
+                    btn.action();
+                    modal.remove();
+                });
+            } else {
+                const button = modal.querySelector(`[data-action="${index}"]`);
+                button.addEventListener('click', () => modal.remove());
+            }
+        });
+
+        document.body.appendChild(modal);
+        modal.style.display = 'flex';
+
+        return modal;
     }
 
     getObjectIcon(objectType) {
@@ -1227,7 +1852,7 @@ class DigitalSpaceEditor {
     }
 
     getLocationName(locationId) {
-        if (!locationId) return 'No Location';
+        if (!locationId || locationId === 'undefined') return 'No Location';
         const location = this.digitalLocations.find(l => l.id === locationId);
         return location ? location.name : 'Unknown Location';
     }
@@ -1241,7 +1866,8 @@ class DigitalSpaceEditor {
         // Called by simulation player when digital objects might have moved
         // Refresh the digital objects list and re-render properties if needed
         this.loadFromSimulation();
-        
+        this.renderDigitalObjectsInLocations();
+
         // If properties panel is showing the digital objects list, refresh it
         if (!this.selectedRectId) {
             this.renderPropertiesPanel();
@@ -1261,6 +1887,14 @@ class DigitalSpaceEditor {
         const digitalSpaceTab = document.querySelector('[data-tab="digital-space"]');
         return digitalSpaceTab && digitalSpaceTab.classList.contains('active');
     }
+}
+
+// Utility function for HTML sanitization
+function sanitizeHTML(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }
 
 // Export for global use

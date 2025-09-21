@@ -331,7 +331,7 @@ class SimulationValidator {
 
         const currentEnd = currentStart + (currentTask.duration || 0);
 
-        if (currentEnd > nextTask.start) {
+        if (currentEnd > nextStart) {
           this.addResult({
             metricId: metric.id,
             status: 'error',
@@ -469,12 +469,13 @@ class SimulationValidator {
   validateUnusedResources(metric) {
     const definedResources = new Set((this.simulation.objects || []).filter(o => o.type === 'resource' || o.type === 'product').map(r => r.id));
     const tasks = this.simulation.tasks || [];
+    const resources = (this.simulation.objects || []).filter(o => o.type === 'resource' || o.type === 'product');
 
     for (const task of tasks) {
       // Handle old-style consumes/produces
       Object.keys(task.consumes || {}).forEach(resId => definedResources.delete(resId));
       Object.keys(task.produces || {}).forEach(resId => definedResources.delete(resId));
-      
+
       // Handle new-style interactions
       for (const interaction of (task.interactions || [])) {
         const obj = resources.find(r => r.id === interaction.object_id);
@@ -1245,16 +1246,6 @@ class SimulationValidator {
           metricId: metric.id,
           status: 'error',
           message: `Task '${task.id}' ends at ${endHours}:${String(endMins).padStart(2, '0')}, which exceeds 24:00 and causes day boundary overflow.`
-        });
-        issueFound = true;
-      }
-
-      // Check if task extends beyond reasonable working hours (e.g., past 23:59)
-      if (endMinutes > 1439) {
-        this.addResult({
-          metricId: metric.id,
-          status: 'error',
-          message: `Task '${task.id}' has invalid end time calculation (${endHours}:${String(endMins).padStart(2, '0')}).`
         });
         issueFound = true;
       }

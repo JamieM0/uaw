@@ -187,6 +187,29 @@
     background-color: #f0f0f0 !important;
 }
 
+/* Drag and drop visual feedback for cross-timeline moves */
+.task-track.drag-target {
+    background-color: #e3f2fd !important;
+    border: 2px dashed #2196F3 !important;
+    animation: pulse-border 1s ease-in-out infinite alternate;
+}
+
+.task-track.drag-invalid {
+    background-color: #ffebee !important;
+    border: 2px dashed #f44336 !important;
+}
+
+@keyframes pulse-border {
+    from {
+        border-color: #2196F3;
+        box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
+    }
+    to {
+        border-color: #1976D2;
+        box-shadow: 0 0 10px rgba(33, 150, 243, 0.6);
+    }
+}
+
 .timeline-playhead {
     cursor: ew-resize !important;
 }

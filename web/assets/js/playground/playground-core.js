@@ -45,6 +45,12 @@ const AssetManager = {
 
       // Update the editor with the new simulation data
       editor.setValue(JSON.stringify(simulationData, null, 2));
+      // Auto-collapse assets object
+      setTimeout(async () => {
+        if (typeof autoCollapseAssetsObject === 'function') {
+          await autoCollapseAssetsObject();
+        }
+      }, 100);
 
       return assetReference;
     } catch (e) {
@@ -114,6 +120,12 @@ const AssetManager = {
 
       if (unusedAssets.length > 0) {
         editor.setValue(JSON.stringify(simulationData, null, 2));
+        // Auto-collapse assets object
+        setTimeout(() => {
+          if (typeof autoCollapseAssetsObject === 'function') {
+            autoCollapseAssetsObject();
+          }
+        }, 100);
         console.log(`Cleaned up ${unusedAssets.length} unused assets`);
       }
     } catch (e) {
@@ -386,6 +398,12 @@ function loadSimulationFromLibrary(simulationId) {
   // Load the simulation data into the editor
   const simulationData = { simulation: simulation.simulation };
   editor.setValue(JSON.stringify(simulationData, null, 2));
+  // Auto-collapse assets object
+  setTimeout(async () => {
+    if (typeof autoCollapseAssetsObject === 'function') {
+      await autoCollapseAssetsObject();
+    }
+  }, 100);
 
   if (autoRender) {
     renderSimulation();
@@ -515,6 +533,12 @@ function initializeMinimalEditor() {
 
   if (editor) {
     editor.setValue(JSON.stringify(basicSample, null, 2));
+    // Auto-collapse assets object
+    setTimeout(() => {
+      if (typeof autoCollapseAssetsObject === 'function') {
+        autoCollapseAssetsObject();
+      }
+    }, 100);
   }
 
   // Initialize basic functionality
@@ -666,6 +690,9 @@ function setupDarkMode() {
 }
 
 function toggleDarkMode() {
+  // Temporarily disable transitions during theme switch
+  document.body.classList.add('theme-switching');
+
   isDarkMode = !isDarkMode;
   applyDarkMode();
   updateDarkModeButton();
@@ -676,6 +703,11 @@ function toggleDarkMode() {
   } catch (e) {
     console.warn("Could not save dark mode preference:", e.message);
   }
+
+  // Re-enable transitions after a brief delay
+  setTimeout(() => {
+    document.body.classList.remove('theme-switching');
+  }, 50);
 }
 
 function applyDarkMode() {

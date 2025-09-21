@@ -1637,7 +1637,7 @@ class SpaceEditor {
             
             <div class="prop-section">
                 <label class="section-label">Position</label>
-                <div class="inline-inputs">
+                <div class="inline-inputs cols-3">
                     <div class="inline-input-group">
                         <label for="prop-pos-x">X</label>
                         <input type="number" id="prop-pos-x" value="${posXM}" step="0.1">
@@ -1655,7 +1655,7 @@ class SpaceEditor {
             
             <div class="prop-section">
                 <label class="section-label">Dimensions (m)</label>
-                <div class="inline-inputs">
+                <div class="inline-inputs cols-3">
                     <div class="inline-input-group">
                         <label for="prop-length">Length (X)</label>
                         <input type="number" id="prop-length" value="${lengthM}" step="0.1" min="0.1">

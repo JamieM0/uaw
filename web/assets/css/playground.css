@@ -1900,6 +1900,22 @@ body.tutorial-active #auto-render-toggle {
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
 }
 
+/* Enhanced number input spinner controls for modal forms */
+.form-group input[type="number"]::-webkit-outer-spin-button,
+.form-group input[type="number"]::-webkit-inner-spin-button {
+    opacity: 1;
+    height: 24px;
+    width: 24px;
+    cursor: pointer;
+    margin: 0;
+}
+
+.form-group input[type="number"]:hover::-webkit-outer-spin-button,
+.form-group input[type="number"]:hover::-webkit-inner-spin-button {
+    background: rgba(0, 123, 255, 0.1);
+    border-radius: 4px;
+}
+
 /* Time Input Toggle Styles */
 .time-input-toggle {
     display: flex;
@@ -2536,6 +2552,12 @@ body.resizing-active * {
 }
 
 body.dragging-active * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Disable transitions during theme switching */
+body.theme-switching * {
   transition: none !important;
   animation: none !important;
 }

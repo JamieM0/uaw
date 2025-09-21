@@ -137,6 +137,12 @@ function loadSimulationFromFileInput() {
                 
                 // Load into editor
                 editor.setValue(JSON.stringify(data, null, 2));
+                // Auto-collapse assets object
+                setTimeout(async () => {
+                    if (typeof autoCollapseAssetsObject === 'function') {
+                        await autoCollapseAssetsObject();
+                    }
+                }, 100);
                 clearSaveState();
                 
                 if (autoRender) {
@@ -441,6 +447,12 @@ function openLoadDialog() {
                     throw new Error('Invalid save code: missing simulation data');
                 }
                 editor.setValue(JSON.stringify({ simulation: saveData.simulation }, null, 2));
+                // Auto-collapse assets object
+                setTimeout(async () => {
+                    if (typeof autoCollapseAssetsObject === 'function') {
+                        await autoCollapseAssetsObject();
+                    }
+                }, 100);
                 if (autoRender) {
                     renderSimulation();
                 }

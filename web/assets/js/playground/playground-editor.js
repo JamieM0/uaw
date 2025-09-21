@@ -415,6 +415,10 @@ const sampleSimulation = {
                 ]
             }
         ]
+    },
+    assets: {
+        "image1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        "document1": "data:text/plain;base64,SGVsbG8gV29ybGQ="
     }
 };
 
@@ -544,6 +548,29 @@ require(["vs/editor/editor.main"], function () {
 
     window.monacoEditor = editor;
 
+    // Auto-collapse 'assets' object if it exists
+    setTimeout(async () => {
+        await autoCollapseAssetsObject();
+    }, 100); // Small delay to ensure editor is fully initialized
+
+    // Debounced auto-collapse for assets object
+    let autoCollapseTimeout;
+    let changeTimeout;
+    const debounceAutoCollapse = () => {
+        clearTimeout(autoCollapseTimeout);
+        autoCollapseTimeout = setTimeout(async () => {
+            try {
+                const content = editor.getValue();
+                // Only auto-collapse if content contains assets object
+                if (content.includes('"assets"')) {
+                    await autoCollapseAssetsObject();
+                }
+            } catch (e) {
+                // Ignore errors during typing
+            }
+        }, 1000); // 1 second delay to avoid conflicts with user typing
+    };
+
     // Editor event handlers
     editor.onDidChangeModelContent(() => {
         if (autoRender) {
@@ -571,13 +598,14 @@ require(["vs/editor/editor.main"], function () {
             // Mark that sync is needed when interaction prevents update
             spaceEditor.pendingSyncNeeded = true;
         }
-    });
 
-    let changeTimeout;
-    editor.onDidChangeModelContent(() => {
+        // Auto-collapse assets object after content changes (debounced)
+        debounceAutoCollapse();
+
+        // Handle history and localStorage saving
         clearTimeout(changeTimeout);
-        changeTimeout = setTimeout(() => { 
-            saveToHistory(); 
+        changeTimeout = setTimeout(() => {
+            saveToHistory();
             // Save current content to localStorage
             try {
                 const currentContent = editor.getValue();
@@ -600,6 +628,94 @@ require(["vs/editor/editor.main"], function () {
     }
     attemptInitializePlayground();
 });
+
+// Flag to track programmatic content changes
+let isProgrammaticChange = false;
+
+// Function to automatically collapse the 'assets' object
+async function autoCollapseAssetsObject() {
+    if (!editor || !monaco) return;
+
+    try {
+        const model = editor.getModel();
+        if (!model) return;
+
+        // Use Monaco's findNextMatch to locate the "assets" property
+        const assetsMatch = model.findNextMatch('"assets"\\s*:', { lineNumber: 1, column: 1 }, true, false, null, false);
+
+        if (!assetsMatch) {
+            // No assets object found
+            return;
+        }
+
+        const startLine = assetsMatch.range.startLineNumber;
+
+        // Find the opening brace after "assets":
+        let openBraceLine = startLine;
+        let openBraceFound = false;
+        const content = model.getValue();
+        const lines = content.split('\n');
+
+        // Look for the opening brace on the same line or subsequent lines
+        for (let i = startLine - 1; i < lines.length; i++) {
+            const line = lines[i];
+            if (line.includes('{')) {
+                openBraceLine = i + 1;
+                openBraceFound = true;
+                break;
+            }
+        }
+
+        if (!openBraceFound) return;
+
+        // Find the matching closing brace
+        let braceCount = 0;
+        let endLine = openBraceLine;
+
+        for (let i = openBraceLine - 1; i < lines.length; i++) {
+            const line = lines[i];
+            for (let j = 0; j < line.length; j++) {
+                const char = line[j];
+                if (char === '{') {
+                    braceCount++;
+                } else if (char === '}') {
+                    braceCount--;
+                    if (braceCount === 0) {
+                        endLine = i + 1;
+                        break;
+                    }
+                }
+            }
+            if (braceCount === 0) break;
+        }
+
+        // Create a selection for the entire assets object
+        if (endLine > startLine) {
+            const selection = new monaco.Selection(startLine, 1, endLine, 1);
+
+            // Set the selection
+            editor.setSelections([selection]);
+
+            // Use the createFoldingRangeFromSelection action
+            const foldAction = editor.getAction('editor.createFoldingRangeFromSelection');
+            if (foldAction) {
+                await foldAction.run();
+                console.log('Successfully collapsed assets object');
+            } else {
+                console.warn('createFoldingRangeFromSelection action not available');
+            }
+
+            // Clear selection and move cursor to top of file
+            setTimeout(() => {
+                editor.setSelection(new monaco.Selection(1, 1, 1, 1));
+                editor.setPosition({ lineNumber: 1, column: 1 });
+                editor.revealLine(1);
+            }, 50);
+        }
+    } catch (e) {
+        console.warn('Could not auto-collapse assets object:', e);
+    }
+}
 
 // JSON validation function
 function validateJSON() {
