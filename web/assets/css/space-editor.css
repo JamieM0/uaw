@@ -866,3 +866,40 @@ body.disable-animations * {
 .location-rect.enable-transitions {
     transition: left 0.05s ease, top 0.05s ease !important;
 }
+
+/* --- Resize Size Indicator Styles --- */
+.dimension-text {
+    position: absolute;
+    top: -25px;
+    left: 0px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #ffffff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    user-select: none;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+}
+
+/* Different colors for different resize contexts */
+.location-rect .dimension-text {
+    background: rgba(59, 130, 246, 0.9);
+    color: #ffffff;
+}
+
+.display-element-rect .dimension-text {
+    background: rgba(0, 123, 255, 0.9);
+    color: #ffffff;
+}
+
+.display-viewport .dimension-text {
+    background: rgba(255, 107, 53, 0.9);
+    color: #ffffff;
+}

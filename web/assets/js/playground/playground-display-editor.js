@@ -299,7 +299,7 @@ class DisplayEditor {
             const elementId = clickedEl.dataset.elementId;
             this.selectElement(elementId);
             // If near edge, prepare for resize instead of drag
-            const dir = this.getResizeDirection(e, clickedEl, 6);
+            const dir = this.getResizeDirection(e, clickedEl, 12);
             if (dir) {
                 this.prepareForResize(e, clickedEl, 'element', dir);
             } else {
@@ -314,7 +314,7 @@ class DisplayEditor {
             // If clicking near viewport edge, allow resizing the display viewport
             const activeDisplay = this.getActiveDisplay();
             if (activeDisplay && this.viewport) {
-                const dir = this.getResizeDirection(e, this.viewport, 8);
+                const dir = this.getResizeDirection(e, this.viewport, 12);
                 if (dir) {
                     this.deselectAll();
                     this.prepareForResize(e, this.viewport, 'viewport', dir);
@@ -407,7 +407,7 @@ class DisplayEditor {
         if (!this.isDrawing && !this.isDrawingDisplay && !this.isDragging && !this.isResizing && !this.isPreparingToDrag && !this.isPreparingToResize) {
             const hoveredEl = this.getTopElementAt(e.clientX, e.clientY) || this.viewport;
             if (hoveredEl) {
-                const dir = this.getResizeDirection(e, hoveredEl, hoveredEl === this.viewport ? 8 : 6);
+                const dir = this.getResizeDirection(e, hoveredEl, 12);
                 const cursorMap = { n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize', ne: 'nesw-resize', nw: 'nwse-resize', se: 'nwse-resize', sw: 'nesw-resize' };
                 this.canvas.style.cursor = dir ? cursorMap[dir] : 'default';
             } else {
@@ -506,7 +506,7 @@ class DisplayEditor {
     }
 
     // ----- Resize helpers -----
-    getResizeDirection(e, rectEl, threshold = 6) {
+    getResizeDirection(e, rectEl, threshold = 12) {
         const rect = rectEl.getBoundingClientRect();
         const relX = (e.clientX - rect.left) / (rect.right - rect.left);
         const relY = (e.clientY - rect.top) / (rect.bottom - rect.top);
@@ -524,6 +524,7 @@ class DisplayEditor {
         else if (nearRight) dir = 'e';
         else if (nearTop) dir = 'n';
         else if (nearBottom) dir = 's';
+
         return dir;
     }
 
@@ -713,21 +714,34 @@ class DisplayEditor {
     }
 
     showResizeLabel(anchorEl, text) {
-        if (!this.resizeLabelEl) {
-            this.resizeLabelEl = document.createElement('div');
-            this.resizeLabelEl.className = 'dimension-text';
-            this.resizeLabelEl.style.position = 'absolute';
-            this.resizeLabelEl.style.top = '-18px';
-            this.resizeLabelEl.style.left = '0px';
-            this.resizeLabelEl.style.background = 'rgba(0,0,0,0.7)';
-            this.resizeLabelEl.style.color = '#fff';
-            this.resizeLabelEl.style.padding = '1px 4px';
-            this.resizeLabelEl.style.borderRadius = '3px';
-            this.resizeLabelEl.style.fontSize = '10px';
-            this.resizeLabelEl.style.pointerEvents = 'none';
-            anchorEl.appendChild(this.resizeLabelEl);
-        }
+        // Remove existing label if it exists
+        this.hideResizeLabel();
+
+        // Create new label positioned relative to world, not the element
+        this.resizeLabelEl = document.createElement('div');
+        this.resizeLabelEl.className = 'dimension-text';
+        this.resizeLabelEl.style.position = 'absolute';
+        this.resizeLabelEl.style.zIndex = '1001';
+        this.resizeLabelEl.style.pointerEvents = 'none';
+        this.resizeLabelEl.style.background = 'rgba(0, 123, 255, 0.9)';
+        this.resizeLabelEl.style.color = '#ffffff';
+        this.resizeLabelEl.style.padding = '2px 6px';
+        this.resizeLabelEl.style.borderRadius = '4px';
+        this.resizeLabelEl.style.fontSize = '11px';
+        this.resizeLabelEl.style.fontWeight = '600';
+        this.resizeLabelEl.style.whiteSpace = 'nowrap';
         this.resizeLabelEl.textContent = text;
+
+        // Position relative to the element's current position in the world
+        const elementX = parseFloat(anchorEl.style.left) || 0;
+        const elementY = parseFloat(anchorEl.style.top) || 0;
+
+        // Position label above the element in world coordinates
+        this.resizeLabelEl.style.left = `${elementX}px`;
+        this.resizeLabelEl.style.top = `${elementY - 25}px`;
+
+        // Append to the world container, not the element
+        this.world.appendChild(this.resizeLabelEl);
     }
 
     hideResizeLabel() {

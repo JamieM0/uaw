@@ -1116,7 +1116,7 @@ class SpaceEditor {
         });
 
         // Determine if this should be a resize or drag based on cursor proximity to edges
-        const dir = this.getResizeDirection(rectEl, e, 6);
+        const dir = this.getResizeDirection(rectEl, e, 12);
         if (dir) {
             this.prepareForResize(e, id, dir);
         } else {
@@ -1129,7 +1129,7 @@ class SpaceEditor {
     }
 
     // Determine resize direction based on mouse position near edges
-    getResizeDirection(rectEl, event, threshold = 6) {
+    getResizeDirection(rectEl, event, threshold = 12) {
         const rect = rectEl.getBoundingClientRect();
         const nearLeft = (event.clientX - rect.left) <= threshold;
         const nearRight = (rect.right - event.clientX) <= threshold;
@@ -1145,6 +1145,7 @@ class SpaceEditor {
         else if (nearRight) dir = 'e';
         else if (nearTop) dir = 'n';
         else if (nearBottom) dir = 's';
+
         return dir;
     }
 
@@ -1274,21 +1275,37 @@ class SpaceEditor {
         // Convert to meters based on pixelsPerMeter
         const lenM = (widthPx / this.pixelsPerMeter).toFixed(2);
         const widM = (heightPx / this.pixelsPerMeter).toFixed(2);
-        if (!this.resizeLabelEl) {
-            this.resizeLabelEl = document.createElement('div');
-            this.resizeLabelEl.className = 'dimension-text';
-            this.resizeLabelEl.style.position = 'absolute';
-            this.resizeLabelEl.style.top = '-18px';
-            this.resizeLabelEl.style.left = '0px';
-            this.resizeLabelEl.style.background = 'rgba(0,0,0,0.7)';
-            this.resizeLabelEl.style.color = '#fff';
-            this.resizeLabelEl.style.padding = '1px 4px';
-            this.resizeLabelEl.style.borderRadius = '3px';
-            this.resizeLabelEl.style.fontSize = '10px';
-            this.resizeLabelEl.style.pointerEvents = 'none';
-            if (this.activeRectEl) this.activeRectEl.appendChild(this.resizeLabelEl);
-        }
+
+        // Remove existing label if it exists
+        this.hideResizeLabel();
+
+        // Create new label positioned relative to canvas, not the rectangle
+        this.resizeLabelEl = document.createElement('div');
+        this.resizeLabelEl.className = 'dimension-text';
+        this.resizeLabelEl.style.position = 'absolute';
+        this.resizeLabelEl.style.zIndex = '1001';
+        this.resizeLabelEl.style.pointerEvents = 'none';
+        this.resizeLabelEl.style.background = 'rgba(59, 130, 246, 0.9)';
+        this.resizeLabelEl.style.color = '#ffffff';
+        this.resizeLabelEl.style.padding = '2px 6px';
+        this.resizeLabelEl.style.borderRadius = '4px';
+        this.resizeLabelEl.style.fontSize = '11px';
+        this.resizeLabelEl.style.fontWeight = '600';
+        this.resizeLabelEl.style.whiteSpace = 'nowrap';
         this.resizeLabelEl.textContent = `${lenM} m × ${widM} m`;
+
+        // Position relative to the rectangle's current position in the canvas
+        if (this.activeRectEl) {
+            const rectX = parseInt(this.activeRectEl.style.left) || 0;
+            const rectY = parseInt(this.activeRectEl.style.top) || 0;
+
+            // Position label above the rectangle in world coordinates
+            this.resizeLabelEl.style.left = `${rectX}px`;
+            this.resizeLabelEl.style.top = `${rectY - 25}px`;
+
+            // Append to the world container, not the rectangle
+            this.world.appendChild(this.resizeLabelEl);
+        }
     }
 
     hideResizeLabel() {
@@ -1423,8 +1440,9 @@ class SpaceEditor {
             this.activeRectEl.style.top = `${snappedPosition.y}px`;
             this.checkCollisions();
         }
-        // Hover: show resize cursor near edges when idle
-        else if (!this.isDrawing && !this.isDragging && !this.isResizing && !this.isPreparingToDrag && !this.isPreparingToResize) {
+
+        // Hover: show resize cursor near edges when idle (separate from else-if chain)
+        if (!this.isDrawing && !this.isDragging && !this.isResizing && !this.isPreparingToDrag && !this.isPreparingToResize) {
             let hovered = null;
             const elements = Array.from(document.querySelectorAll('.location-rect'));
             for (let i = elements.length - 1; i >= 0; i--) {
@@ -1436,7 +1454,7 @@ class SpaceEditor {
                 }
             }
             if (hovered) {
-                const dir = this.getResizeDirection(hovered, e, 6);
+                const dir = this.getResizeDirection(hovered, e, 12);
                 const cursorMap = { n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize', ne: 'nesw-resize', nw: 'nwse-resize', se: 'nwse-resize', sw: 'nesw-resize' };
                 this.canvas.style.cursor = dir ? cursorMap[dir] : 'default';
             } else {

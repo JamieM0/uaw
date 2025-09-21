@@ -156,8 +156,6 @@ class DigitalSpaceEditor {
     }
 
     onCanvasMouseDown(e) {
-        console.log('DIGITAL-SPACE: Mouse down on', e.target, 'classList:', e.target.classList);
-        console.log('DIGITAL-SPACE: isPanning:', this.view.isPanning, 'isDrawing:', this.isDrawing);
 
         if (this.view.isPanning) {
             this.view.lastPan = { x: e.clientX, y: e.clientY };
@@ -168,11 +166,10 @@ class DigitalSpaceEditor {
         // Check if clicking on existing location first
         const clickedEl = e.target.closest('.digital-location-rect');
         if (clickedEl) {
-            console.log('DIGITAL-SPACE: Clicked on location rect');
             const locationId = clickedEl.dataset.locationId;
             this.selectLocation(locationId);
             // If near edge, prepare for resize; otherwise drag
-            const dir = this.getResizeDirection(e, clickedEl, 6);
+            const dir = this.getResizeDirection(e, clickedEl, 12);
             if (dir) {
                 this.prepareForResize(e, clickedEl, dir);
             } else {
@@ -184,20 +181,16 @@ class DigitalSpaceEditor {
         // Allow panning on canvas or world container (background areas)
         const isCanvas = e.target === this.canvas;
         const isWorld = e.target.classList.contains('digital-world');
-        console.log('DIGITAL-SPACE: isCanvas:', isCanvas, 'isWorld:', isWorld);
 
         if (isCanvas || isWorld) {
-            console.log('DIGITAL-SPACE: Valid background click detected');
             // Update rect cache for accuracy during interaction
             this.updateCanvasRect();
             const x = (e.clientX - this.canvasRect.left - this.view.x) / this.view.scale;
             const y = (e.clientY - this.canvasRect.top - this.view.y) / this.view.scale;
 
             if (this.isDrawing) {
-                console.log('DIGITAL-SPACE: Starting drawing');
                 this.startDrawing(x, y);
             } else {
-                console.log('DIGITAL-SPACE: Starting panning');
                 // Start background panning when not in drawing mode
                 this.view.isPanning = true;
                 this.view.lastPan = { x: e.clientX, y: e.clientY };
@@ -207,7 +200,6 @@ class DigitalSpaceEditor {
                 this.deselectAll();
             }
         } else {
-            console.log('DIGITAL-SPACE: Click target not recognized for panning');
         }
     }
 
@@ -231,6 +223,26 @@ class DigitalSpaceEditor {
         this.world.appendChild(this.activeRectEl);
     }
 
+    getTopElementAt(clientX, clientY) {
+        const elements = document.querySelectorAll('.digital-location-rect');
+        let topElement = null;
+        let maxZIndex = -1;
+
+        elements.forEach(el => {
+            const rect = el.getBoundingClientRect();
+            if (clientX >= rect.left && clientX <= rect.right &&
+                clientY >= rect.top && clientY <= rect.bottom) {
+                const zIndex = parseInt(getComputedStyle(el).zIndex) || 0;
+                if (zIndex > maxZIndex) {
+                    maxZIndex = zIndex;
+                    topElement = el;
+                }
+            }
+        });
+
+        return topElement;
+    }
+
     onMouseMove(e) {
         if (this.view.isPanning) {
             const deltaX = e.clientX - this.view.lastPan.x;
@@ -244,10 +256,9 @@ class DigitalSpaceEditor {
 
         // Hover cursor for resize affordance when idle
         if (!this.isDrawing && !this.isDragging && !this.isResizing && !this.isPreparingToDrag && !this.isPreparingToResize) {
-            const topEl = this.getTopElementAt ? this.getTopElementAt(e.clientX, e.clientY) : null;
-            const target = topEl?.rectEl || topEl?.el || null;
-            if (target) {
-                const dir = this.getResizeDirection(e, target, 6);
+            const hoveredEl = this.getTopElementAt(e.clientX, e.clientY);
+            if (hoveredEl) {
+                const dir = this.getResizeDirection(e, hoveredEl, 12);
                 const cursorMap = { n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize', ne: 'nesw-resize', nw: 'nwse-resize', se: 'nwse-resize', sw: 'nesw-resize' };
                 this.canvas.style.cursor = dir ? cursorMap[dir] : 'default';
             } else {
@@ -329,7 +340,7 @@ class DigitalSpaceEditor {
     }
 
     // ----- Resize helpers (no labels/indicators) -----
-    getResizeDirection(e, rectEl, threshold = 6) {
+    getResizeDirection(e, rectEl, threshold = 12) {
         const rect = rectEl.getBoundingClientRect();
         const nearLeft = (e.clientX - rect.left) <= threshold;
         const nearRight = (rect.right - e.clientX) <= threshold;
