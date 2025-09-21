@@ -34,6 +34,9 @@ class SpaceEditor {
             tolerance: 10
         };
 
+        // Animation control state
+        this.animationDisablers = new Set();
+
         this.view = {
             scale: 1,
             x: 0,
@@ -52,6 +55,18 @@ class SpaceEditor {
 
         this.init();
         this.setupEditorListener();
+    }
+
+    disableAnimations(source) {
+        this.animationDisablers.add(source);
+        document.body.classList.add('disable-animations');
+    }
+
+    enableAnimations(source) {
+        this.animationDisablers.delete(source);
+        if (this.animationDisablers.size === 0) {
+            document.body.classList.remove('disable-animations');
+        }
     }
 
     setupEditorListener() {
@@ -98,6 +113,7 @@ class SpaceEditor {
         document.addEventListener('mouseup', this.onMouseUp.bind(this));
         document.addEventListener('keydown', this.onKeyDown.bind(this));
         document.addEventListener('keyup', this.onKeyUp.bind(this));
+        document.addEventListener('contextmenu', this.onContextMenu.bind(this));
 
         // Zoom button controls
         const zoomInBtn = document.getElementById('zoom-in-btn');
@@ -393,6 +409,7 @@ class SpaceEditor {
                     this.spaceKeyState.panActivated = true;
                     this.canvas.style.cursor = 'grab';
                     document.body.classList.add('space-editor-panning');
+                    this.disableAnimations('space-key-pan');
                 }
             }, 150); // 150ms delay to detect quick taps
             return;
@@ -411,23 +428,55 @@ class SpaceEditor {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.contentEditable === 'true') {
             return;
         }
-        
+
         if (e.code === 'Space' && this.spaceKeyState.isDown) {
             const holdDuration = Date.now() - this.spaceKeyState.downTime;
-            
+
             // If it was a quick tap (< 150ms) and panning wasn't activated, trigger zoom-to-fit
             if (holdDuration < 150 && !this.spaceKeyState.panActivated) {
                 this.zoomToFit();
             }
-            
+
             // Clean up panning state regardless
             this.view.isPanning = false;
             this.spaceKeyState.isDown = false;
             this.spaceKeyState.panActivated = false;
             document.body.classList.remove('space-editor-panning');
             this.canvas.style.cursor = this.isDrawing ? 'crosshair' : 'default';
-            document.body.classList.remove('disable-animations');
+            this.enableAnimations('space-key-pan');
         }
+    }
+
+    onContextMenu(e) {
+        this.cleanupDragStates();
+    }
+
+    cleanupDragStates() {
+        // Reset all drag-related states and restore element transitions
+        this.isDragging = false;
+        this.isPreparingToDrag = false;
+        this.isDrawing = false;
+        this.view.isPanning = false;
+
+        // Clean up canvas state
+        this.canvas.classList.remove('is-dragging');
+        this.canvas.style.cursor = 'default';
+        document.body.classList.remove('space-editor-panning');
+
+        // Restore transitions on all elements
+        document.querySelectorAll('.location-rect').forEach(el => {
+            el.classList.add('enable-transitions');
+            el.classList.remove('dragging', 'colliding');
+        });
+
+        // Clear active element reference
+        this.activeRectEl = null;
+
+        // Re-enable animations
+        this.enableAnimations('context-menu-cleanup');
+        this.enableAnimations('dragging');
+        this.enableAnimations('canvas-pan');
+        this.enableAnimations('space-key-pan');
     }
 
     loadLayout(layoutData, forceZoomToFit = false) {
@@ -496,10 +545,10 @@ class SpaceEditor {
 
     createRectElement(loc) {
         const rectEl = document.createElement('div');
-        rectEl.className = 'location-rect';
+        rectEl.className = 'location-rect enable-transitions';
         rectEl.dataset.id = loc.id;
         rectEl.innerHTML = `<span class="location-text">${sanitizeHTML(loc.name || loc.id)}</span>`;
-        rectEl.addEventListener('mousedown', (e) => this.onRectMouseDown(e, loc.id));
+    rectEl.addEventListener('mousedown', (e) => this.onRectMouseDown(e, loc.id));
         
         // Apply 3D transformation
         this.apply3DTransform(rectEl, loc);
@@ -884,13 +933,22 @@ class SpaceEditor {
     }
 
     checkPendingSync() {
-        if (this.pendingSyncNeeded && !this.isDrawing && !this.isDragging && !this.isUpdatingJson) {
+        if (
+            this.pendingSyncNeeded &&
+            !this.isDrawing &&
+            !this.isDragging &&
+            !this.isPreparingToDrag &&
+            !this.view.isPanning &&
+            !this.isUpdatingJson
+        ) {
             this.pendingSyncNeeded = false;
             this.loadFromSimulation();
         }
     }
 
     onCanvasMouseDown(e) {
+        // Prevent text selection and other default behaviors during interactions
+        e.preventDefault();
         if (this.view.isPanning) {
             this.view.lastPan = { x: e.clientX, y: e.clientY };
             this.canvas.style.cursor = 'grabbing';
@@ -919,20 +977,29 @@ class SpaceEditor {
             this.view.lastPan = { x: e.clientX, y: e.clientY };
             this.canvas.style.cursor = 'grabbing';
             document.body.classList.add('space-editor-panning');
-            document.body.classList.add('disable-animations');
+            this.disableAnimations('canvas-pan');
             this.deselectAll();
         }
     }
     
     onRectMouseDown(e, id) {
+        // Prevent text selection and allow smooth drag initiation
+        e.preventDefault();
         e.stopPropagation();
+
 
         // Immediately clear any previous states
         this.isDrawing = false;
+        this.isDragging = false;
+        this.isPreparingToDrag = false;
         this.canvas.classList.remove('is-dragging');
 
-        // Check for pending synchronization
-        setTimeout(() => this.checkPendingSync(), 0);
+        // Clear any previous activeRectEl reference and restore its transitions
+        const rectEl = e.currentTarget; // Always use the rectangle element, not inner spans
+        if (this.activeRectEl && this.activeRectEl !== rectEl) {
+            this.activeRectEl.classList.add('enable-transitions');
+            this.activeRectEl.classList.remove('dragging');
+        }
 
         // Clear any lingering collision states
         document.querySelectorAll('.location-rect.colliding').forEach(el => {
@@ -948,9 +1015,18 @@ class SpaceEditor {
 
     prepareForDrag(e, id) {
         this.isPreparingToDrag = true;
-        this.activeRectEl = e.target;
+        // Ensure we always drag the .location-rect container, not a child element
+        this.activeRectEl = e.currentTarget;
         this.selectedRectId = id;
         this.initialMousePosition = { x: e.clientX, y: e.clientY };
+
+        // Ensure element is ready for smooth dragging
+        if (this.activeRectEl) {
+            // Temporarily disable transitions for preparation phase
+            this.activeRectEl.classList.remove('enable-transitions');
+            // Force reflow to apply class change immediately
+            this.activeRectEl.offsetHeight;
+        }
 
         // Calculate drag offset in world coordinates for proper alignment
         const worldMouseCoords = this.screenToWorldCoordinates(e.clientX, e.clientY);
@@ -970,6 +1046,15 @@ class SpaceEditor {
         this.isDragging = true;
         this.isPreparingToDrag = false;
         this.canvas.classList.add('is-dragging');
+
+        // Disable transitions during dragging for smooth performance
+        if (this.activeRectEl) {
+            this.activeRectEl.classList.remove('enable-transitions');
+            this.activeRectEl.classList.add('dragging');
+            // Force browser to apply the class change before continuing
+            this.activeRectEl.offsetHeight; // trigger reflow
+        }
+        this.disableAnimations('dragging');
     }
 
     onMouseMove(e) {
@@ -1007,6 +1092,17 @@ class SpaceEditor {
             const deltaY = e.clientY - this.initialMousePosition.y;
             const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
+            // Provide visual feedback even during preparation phase
+            const worldCoords = this.screenToWorldCoordinates(e.clientX, e.clientY);
+            const proposedX = worldCoords.x - this.dragOffset.x;
+            const proposedY = worldCoords.y - this.dragOffset.y;
+            const snappedPosition = this.applySnapping(proposedX, proposedY);
+
+            this.currentDragPosition = { x: snappedPosition.x, y: snappedPosition.y };
+            this.activeRectEl.style.left = `${snappedPosition.x}px`;
+            this.activeRectEl.style.top = `${snappedPosition.y}px`;
+            this.checkCollisions();
+
             // Start dragging if mouse has moved more than 5 pixels
             if (distance > 5) {
                 this.startDragging();
@@ -1038,7 +1134,7 @@ class SpaceEditor {
             this.view.isPanning = false;
             this.canvas.style.cursor = 'default';
             document.body.classList.remove('space-editor-panning');
-            document.body.classList.remove('disable-animations');
+            this.enableAnimations('canvas-pan');
             return;
         }
 
@@ -1095,32 +1191,30 @@ class SpaceEditor {
                 loc.shape.x = this.currentDragPosition.x;
                 loc.shape.y = this.currentDragPosition.y;
             }
-            
-            // Clear all dragging states immediately
-            this.isDragging = false;
-            this.isPreparingToDrag = false;
-            this.canvas.classList.remove('is-dragging');
 
-            // Check for pending synchronization after dragging completes
-            setTimeout(() => this.checkPendingSync(), 0);
-            
-            // Remove any collision styling immediately and fix border style without delay
+            // Re-enable transitions after dragging
             if (this.activeRectEl) {
+                this.activeRectEl.classList.add('enable-transitions');
+                this.activeRectEl.classList.remove('dragging');
                 this.activeRectEl.classList.remove('colliding');
                 // Force immediate border style update by re-applying selection class
                 this.activeRectEl.classList.remove('selected');
                 this.activeRectEl.classList.add('selected');
             }
-            
+            this.enableAnimations('dragging');
+
+            // Use comprehensive cleanup to ensure no state corruption
+            this.cleanupDragStates();
+
+            // Check for pending synchronization after dragging completes
+            setTimeout(() => this.checkPendingSync(), 0);
+
             // Update JSON after position is committed
             this.updateJson();
         } else if (this.isPreparingToDrag) {
-            // User clicked but didn't drag - just clean up preparation state
-            this.isPreparingToDrag = false;
+            // User clicked but didn't drag - use comprehensive cleanup
+            this.cleanupDragStates();
         }
-
-        // Clear activeRectEl reference
-        this.activeRectEl = null;
     }
 
     selectRect(id) {

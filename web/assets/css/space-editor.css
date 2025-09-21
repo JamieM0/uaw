@@ -94,7 +94,12 @@
     overflow: hidden;
     padding: 0 5px;
     user-select: none;
-    transition: none; /* Remove any transitions that could cause delays */
+    transition: left 0.05s ease, top 0.05s ease;
+}
+
+/* Ensure child content doesn't intercept mouse events; the rect handles dragging */
+.location-rect * {
+    pointer-events: none;
 }
 
 /* Dynamic font scaling for location labels - uses adjusted zoom scale for slower increase curve */
@@ -852,9 +857,74 @@ input[type="color"]::-webkit-color-swatch {
 
 body.digital-space-panning .digital-world *,
 body.space-panning .space-world *,
-body.display-editor-panning .display-world *,
 body.disable-animations * {
     transition: none !important;
     animation: none !important;
-    transform: none !important;
+}
+
+/* Override disable-animations for elements that should keep their transitions */
+.location-rect.enable-transitions {
+    transition: left 0.05s ease, top 0.05s ease !important;
+}
+
+/* Layout-specific styles for SVG and image content */
+.element-content[data-layout="stretch"] img,
+.element-content[data-layout="stretch"] svg {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: fill;
+}
+
+.element-content[data-layout="contain"] img,
+.element-content[data-layout="contain"] svg {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center;
+}
+
+.element-content[data-layout="cover"] img,
+.element-content[data-layout="cover"] svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.element-content[data-layout="center"] img,
+.element-content[data-layout="center"] svg {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: none;
+    object-position: center;
+}
+
+.element-content[data-layout="none"] img,
+.element-content[data-layout="none"] svg {
+    width: auto !important;
+    height: auto !important;
+    max-width: none;
+    max-height: none;
+    object-fit: none;
+}
+
+/* Enhanced icon styling with layout consideration */
+.element-icon {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* SVG specific adjustments */
+.element-content svg {
+    display: block;
+    transition: all 0.2s ease;
+}
+
+.element-content[data-layout="stretch"] svg {
+    transform-origin: center;
+}
+
+.element-content[data-layout="center"] svg,
+.element-content[data-layout="none"] svg {
+    margin: auto;
 }

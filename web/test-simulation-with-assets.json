@@ -1,0 +1,76 @@
+{
+  "simulation": {
+    "metadata": {
+      "name": "Asset Management Test",
+      "description": "Testing the new asset reference system",
+      "version": "1.0.0"
+    },
+    "timeline": {
+      "duration": 60,
+      "tasks": [
+        {
+          "id": "task1",
+          "name": "Test Task",
+          "start_time": 0,
+          "duration": 30,
+          "object_id": "obj1"
+        }
+      ]
+    },
+    "objects": [
+      {
+        "id": "obj1",
+        "name": "Test Object",
+        "emoji": "🧪",
+        "x": 100,
+        "y": 100
+      }
+    ],
+    "displays": [
+      {
+        "id": "test_display_1",
+        "name": "Test Display",
+        "physical_object_id": null,
+        "digital_object_id": null,
+        "viewport": {
+          "width": 400,
+          "height": 300
+        },
+        "rectangles": [
+          {
+            "id": "element_test1",
+            "type": "panel",
+            "bounds": {
+              "x": 50,
+              "y": 50,
+              "width": 200,
+              "height": 150
+            },
+            "z_index": 1,
+            "parent_id": null,
+            "content": {
+              "type": "image",
+              "value": "asset:example-uuid-1234-5678-90ab",
+              "alignment": "center"
+            },
+            "properties": {
+              "visible": true,
+              "clickable": false,
+              "background": "#f0f0f0",
+              "border": "#cccccc",
+              "text_color": "#333333",
+              "layout": "contain"
+            }
+          }
+        ]
+      }
+    ],
+    "layout": {
+      "width": 800,
+      "height": 600
+    }
+  },
+  "assets": {
+    "example-uuid-1234-5678-90ab": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIzIiBmaWxsPSJyZWQiIC8+CiAgPHRleHQgeD0iNTAiIHk9IjU2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IndoaXRlIj5UZXN0PC90ZXh0Pgo8L3N2Zz4K"
+  }
+}

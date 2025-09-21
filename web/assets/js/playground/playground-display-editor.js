@@ -231,7 +231,8 @@ class DisplayEditor {
                 clickable: elementType === 'button' || elementType === 'textbox',
                 background: elementType === 'button' ? '#007bff' : '#f0f0f0',
                 border: elementType === 'button' ? '#0056b3' : '#cccccc',
-                text_color: elementType === 'button' ? '#ffffff' : '#333333'
+                text_color: elementType === 'button' ? '#ffffff' : '#333333',
+                layout: 'stretch'
             }
         };
 
@@ -325,7 +326,7 @@ class DisplayEditor {
 
     startDrawingDisplay(x, y) {
         this.startCoords = { x, y };
-        
+
         // Create temporary display viewport rectangle
         this.activeRectEl = document.createElement('div');
         this.activeRectEl.className = 'display-viewport-drawing drawing';
@@ -337,12 +338,19 @@ class DisplayEditor {
         this.activeRectEl.style.border = '3px dashed #ff6b35';
         this.activeRectEl.style.backgroundColor = 'rgba(255, 107, 53, 0.1)';
         this.activeRectEl.innerHTML = '<div class="dimension-text" style="position: absolute; top: -25px; left: 0; color: #ff6b35; font-size: 12px; font-weight: bold;">New Display (0 × 0px)</div>';
+
+        // Disable animations during drawing for performance
+        this.activeRectEl.style.transition = 'none';
+        this.activeRectEl.style.transform = 'none';
+        this.activeRectEl.style.boxShadow = 'none';
+        document.body.classList.add('disable-animations');
+
         this.world.appendChild(this.activeRectEl);
     }
 
     startDrawing(x, y) {
         this.startCoords = { x, y };
-        
+
         // Create temporary rectangle
         this.activeRectEl = document.createElement('div');
         this.activeRectEl.className = 'display-element-rect drawing';
@@ -353,6 +361,13 @@ class DisplayEditor {
         this.activeRectEl.style.height = '0px';
         this.activeRectEl.style.border = '2px dashed #007bff';
         this.activeRectEl.style.backgroundColor = 'rgba(0, 123, 255, 0.1)';
+
+        // Disable animations during drawing for performance
+        this.activeRectEl.style.transition = 'none';
+        this.activeRectEl.style.transform = 'none';
+        this.activeRectEl.style.boxShadow = 'none';
+        document.body.classList.add('disable-animations');
+
         this.world.appendChild(this.activeRectEl);
     }
 
@@ -378,17 +393,35 @@ class DisplayEditor {
             const left = Math.min(this.startCoords.x, currentX);
             const top = Math.min(this.startCoords.y, currentY);
             
-            this.activeRectEl.style.left = left + 'px';
-            this.activeRectEl.style.top = top + 'px';
-            this.activeRectEl.style.width = width + 'px';
-            this.activeRectEl.style.height = height + 'px';
-            
-            // Skip text updates during dragging for performance
-            // Text will be updated when drawing is finished
+            // Batch style updates for better performance
+            this.activeRectEl.style.cssText += `left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px;`;
+
+            // Update dimension text for display drawing
+            if (this.isDrawingDisplay) {
+                const dimensionText = this.activeRectEl.querySelector('.dimension-text');
+                if (dimensionText) {
+                    dimensionText.textContent = `New Display (${Math.round(width)} × ${Math.round(height)}px)`;
+                }
+            }
         }
 
+        // Check if we should start resizing based on mouse movement distance
+        if (this.isPreparingToResize && this.activeRectEl) {
+            const deltaX = e.clientX - this.initialMousePosition.x;
+            const deltaY = e.clientY - this.initialMousePosition.y;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+            // Start resizing if mouse has moved more than 5 pixels
+            if (distance > 5) {
+                this.startResizing();
+            }
+        }
+        // Handle Resizing an existing element
+        else if (this.isResizing && this.activeRectEl) {
+            this.performResize(e);
+        }
         // Check if we should start dragging based on mouse movement distance
-        if (this.isPreparingToDrag && this.activeRectEl) {
+        else if (this.isPreparingToDrag && this.activeRectEl) {
             const deltaX = e.clientX - this.initialMousePosition.x;
             const deltaY = e.clientY - this.initialMousePosition.y;
             const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
@@ -427,11 +460,14 @@ class DisplayEditor {
             this.finishDrawing();
         }
 
-        if (this.isDragging) {
+        if (this.isResizing) {
+            this.finishResizing();
+        } else if (this.isDragging) {
             this.finishDragging();
-        } else if (this.isPreparingToDrag) {
-            // User clicked but didn't drag - just clean up preparation state
+        } else if (this.isPreparingToDrag || this.isPreparingToResize) {
+            // User clicked but didn't drag/resize - just clean up preparation state
             this.isPreparingToDrag = false;
+            this.isPreparingToResize = false;
             this.activeRectEl = null;
         }
     }
@@ -439,7 +475,10 @@ class DisplayEditor {
     finishDrawingDisplay() {
         const widthPx = parseFloat(this.activeRectEl.style.width);
         const heightPx = parseFloat(this.activeRectEl.style.height);
-        
+
+        // Re-enable animations after drawing
+        document.body.classList.remove('disable-animations');
+
         if (widthPx < 50 || heightPx < 50) {
             // Too small for a display, cancel
             this.world.removeChild(this.activeRectEl);
@@ -494,7 +533,10 @@ class DisplayEditor {
     finishDrawing() {
         const widthPx = parseFloat(this.activeRectEl.style.width);
         const heightPx = parseFloat(this.activeRectEl.style.height);
-        
+
+        // Re-enable animations after drawing
+        document.body.classList.remove('disable-animations');
+
         if (widthPx < 10 || heightPx < 10) {
             // Too small, cancel
             this.world.removeChild(this.activeRectEl);
@@ -527,7 +569,8 @@ class DisplayEditor {
                 clickable: true,
                 background: '#f0f0f0',
                 border: '#cccccc',
-                text_color: '#333333'
+                text_color: '#333333',
+                layout: 'stretch'
             }
         };
 
@@ -597,14 +640,35 @@ class DisplayEditor {
     renderElementContent(rectEl, element) {
         const typeInfo = this.elementTypes[element.type] || this.elementTypes.button;
         const textColor = element.properties.text_color || '#333333';
-        
+        const layout = element.properties.layout || 'stretch';
+
+        // Determine object-fit style based on layout setting
+        const getObjectFit = (layout) => {
+            switch (layout) {
+                case 'center': return 'none';
+                case 'contain': return 'contain';
+                case 'cover': return 'cover';
+                case 'none': return 'none';
+                case 'stretch':
+                default: return 'fill';
+            }
+        };
+
+        // Get alignment styles for centering when layout is 'center' or 'none'
+        const getCenteringStyle = (layout) => {
+            if (layout === 'center' || layout === 'none') {
+                return 'display: flex; align-items: center; justify-content: center;';
+            }
+            return '';
+        };
+
         if (element.content.type === 'text') {
             rectEl.innerHTML = `
-                <div class="element-content" style="
-                    display: flex; 
-                    align-items: center; 
-                    justify-content: center; 
-                    height: 100%; 
+                <div class="element-content" data-layout="${layout}" style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100%;
                     text-align: ${element.content.alignment || 'center'};
                     font-size: 12px;
                     overflow: hidden;
@@ -615,21 +679,35 @@ class DisplayEditor {
                 </div>
             `;
         } else if (element.content.type === 'image') {
+            const objectFit = getObjectFit(layout);
+            const centeringStyle = getCenteringStyle(layout);
+
+            // Resolve asset reference to actual data URL if needed
+            let imageSource = element.content.value;
+            if (window.AssetManager && window.AssetManager.isAssetReference(element.content.value)) {
+                imageSource = window.AssetManager.resolveAsset(element.content.value);
+            }
+
             rectEl.innerHTML = `
-                <div class="element-content" style="
+                <div class="element-content" data-layout="${layout}" style="
                     width: 100%;
                     height: 100%;
-                    overflow: hidden;
+                    overflow: ${layout === 'none' ? 'visible' : 'hidden'};
+                    ${centeringStyle}
                 ">
-                    <img src="${sanitizeHTML(element.content.value)}" style="width: 100%; height: 100%; object-fit: cover;" draggable="false" />
+                    <img src="${sanitizeHTML(imageSource)}" style="
+                        ${layout === 'center' || layout === 'none' ? 'max-width: 100%; max-height: 100%;' : 'width: 100%; height: 100%;'}
+                        object-fit: ${objectFit};
+                        object-position: center;
+                    " draggable="false" />
                 </div>
             `;
         } else {
             rectEl.innerHTML = `
-                <div class="element-content" style="
-                    display: flex; 
-                    align-items: center; 
-                    justify-content: center; 
+                <div class="element-content" data-layout="${layout}" style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                     height: 100%;
                     color: ${textColor};
                 ">
@@ -685,6 +763,18 @@ class DisplayEditor {
                         </div>
                     `}
                 </div>
+
+                ${window.AssetManager ? `
+                    <div class="prop-section">
+                        <label class="section-label">Asset Management</label>
+                        <button type="button" class="btn-secondary" id="cleanup-assets-btn" style="width: 100%; font-size: 0.8rem;">
+                            🧹 Clean Up Unused Assets
+                        </button>
+                        <div style="font-size: 0.75rem; color: var(--text-light); margin-top: 4px;">
+                            Remove asset files no longer referenced in the simulation
+                        </div>
+                    </div>
+                ` : ''}
                 
                 ${activeDisplay ? `
                     <div class="prop-section">
@@ -709,6 +799,15 @@ class DisplayEditor {
             // Setup display property listeners if display is active
             if (activeDisplay) {
                 this.setupDisplayPropertyListeners();
+            }
+
+            // Setup asset cleanup button listener
+            const cleanupBtn = document.getElementById('cleanup-assets-btn');
+            if (cleanupBtn && window.AssetManager) {
+                cleanupBtn.addEventListener('click', () => {
+                    window.AssetManager.cleanupUnusedAssets();
+                    this.renderPropertiesPanel(); // Refresh to update any UI changes
+                });
             }
             return;
         }
@@ -764,7 +863,12 @@ class DisplayEditor {
                         <label for="content-file">Custom SVG/Image:</label>
                         <input type="file" id="content-file" accept=".svg,.png,.jpg,.jpeg,.gif,.webp" style="margin-bottom: 8px;">
                         <label for="content-value">Or Image URL:</label>
-                        <input type="text" id="content-value" value="${element.content.value || ''}" placeholder="https://example.com/image.png">
+                        <input type="text" id="content-value" value="${window.AssetManager && window.AssetManager.isAssetReference(element.content.value) ? '' : (element.content.value || '')}" placeholder="https://example.com/image.png">
+                        ${window.AssetManager && window.AssetManager.isAssetReference(element.content.value) ? `
+                            <div style="font-size: 0.75rem; color: var(--text-light); margin-top: 4px; padding: 4px 8px; background: var(--bg-light); border-radius: 3px; border: 1px solid var(--border-color);">
+                                📎 Using uploaded file: ${element.content.value}
+                            </div>
+                        ` : ''}
                     ` : `
                         <label for="content-value">Text:</label>
                         <input type="text" id="content-value" value="${element.content.value || ''}" placeholder="Button text">
@@ -823,6 +927,18 @@ class DisplayEditor {
                     <label>
                         <input type="checkbox" id="element-clickable" ${element.properties.clickable ? 'checked' : ''}> Clickable/Interactive
                     </label>
+                </div>
+
+                <div class="prop-field">
+                    <label for="element-layout">SVG/Icon Layout:</label>
+                    <select id="element-layout">
+                        <option value="stretch" ${(element.properties.layout || 'stretch') === 'stretch' ? 'selected' : ''}>🔄 Stretch (Default)</option>
+                        <option value="center" ${element.properties.layout === 'center' ? 'selected' : ''}>🎯 Center</option>
+                        <option value="contain" ${element.properties.layout === 'contain' ? 'selected' : ''}>📐 Contain</option>
+                        <option value="cover" ${element.properties.layout === 'cover' ? 'selected' : ''}>📋 Cover</option>
+                        <option value="none" ${element.properties.layout === 'none' ? 'selected' : ''}>⭐ None (Actual Size)</option>
+                    </select>
+                    <small style="color: var(--text-light); font-size: 0.75rem;">How SVG icons and images fit within the element</small>
                 </div>
             </div>
             
@@ -909,13 +1025,27 @@ class DisplayEditor {
             if (input) {
                 input.addEventListener('input', (e) => {
                     this.isUpdatingProperties = true;
-                    
+
                     const prop = id.split('-')[1];
-                    element.content[prop] = e.target.value;
+
+                    // Special handling for content-value to preserve asset references
+                    if (id === 'content-value' && element.content.type === 'image') {
+                        // If user enters a value, it replaces any existing asset reference
+                        // If user clears the field and there's an asset reference, don't overwrite it
+                        if (e.target.value.trim() !== '') {
+                            element.content[prop] = e.target.value;
+                        } else if (!window.AssetManager || !window.AssetManager.isAssetReference(element.content.value)) {
+                            // Only clear if it's not an asset reference
+                            element.content[prop] = e.target.value;
+                        }
+                    } else {
+                        element.content[prop] = e.target.value;
+                    }
+
                     this.renderElement(element);
                     if (prop === 'type') this.renderPropertiesPanel();
                     this.updateSimulationJson();
-                    
+
                     // Use setTimeout to clear flag after all synchronous operations complete
                     setTimeout(() => {
                         this.isUpdatingProperties = false;
@@ -932,12 +1062,42 @@ class DisplayEditor {
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        element.content.value = event.target.result;
-                        // Clear the URL input to show we're using the file
-                        const urlInput = document.getElementById('content-value');
-                        if (urlInput) urlInput.value = '';
-                        this.renderElement(element);
-                        this.updateSimulationJson();
+                        // Set updating flag to prevent other handlers from interfering
+                        this.isUpdatingProperties = true;
+
+                        try {
+                            // Use AssetManager to store the file and get a reference
+                            if (window.AssetManager) {
+                                const assetReference = window.AssetManager.storeAsset(event.target.result);
+                                if (assetReference) {
+                                    element.content.value = assetReference;
+                                    console.log('Asset stored with reference:', assetReference);
+                                } else {
+                                    // Fallback to direct storage if AssetManager fails
+                                    element.content.value = event.target.result;
+                                    console.warn('AssetManager failed, using direct storage');
+                                }
+                            } else {
+                                // Fallback if AssetManager is not available
+                                element.content.value = event.target.result;
+                                console.warn('AssetManager not available, using direct storage');
+                            }
+
+                            // Clear the URL input to show we're using the file
+                            const urlInput = document.getElementById('content-value');
+                            if (urlInput) urlInput.value = '';
+
+                            this.renderElement(element);
+                            this.updateSimulationJson();
+
+                            // Refresh properties panel to show the asset reference indicator
+                            this.renderPropertiesPanel();
+                        } finally {
+                            // Clear updating flag after all operations complete
+                            setTimeout(() => {
+                                this.isUpdatingProperties = false;
+                            }, 100); // Longer delay to ensure all async operations complete
+                        }
                     };
                     reader.readAsDataURL(file);
                 }
@@ -993,6 +1153,16 @@ class DisplayEditor {
                 });
             }
         });
+
+        // Layout select
+        const layoutSelect = document.getElementById('element-layout');
+        if (layoutSelect) {
+            layoutSelect.addEventListener('change', (e) => {
+                element.properties.layout = e.target.value;
+                this.renderElement(element);
+                this.updateSimulationJson();
+            });
+        }
 
         // Z-index
         const zIndexInput = document.getElementById('element-z-index');
@@ -1090,6 +1260,7 @@ class DisplayEditor {
         // Render display viewport boundary
         this.viewport = document.createElement('div');
         this.viewport.className = 'display-viewport';
+        this.viewport.dataset.displayId = activeDisplay.id;
         this.viewport.style.position = 'absolute';
         this.viewport.style.left = '0px';
         this.viewport.style.top = '0px';
@@ -1168,7 +1339,7 @@ class DisplayEditor {
             } catch (e) {
                 console.error("DISPLAY-EDITOR: Error updating simulation JSON:", e);
             }
-        }, 100); // 100ms debounce
+        }, 50); // 50ms debounce for better responsiveness
     }
 
     // View and zoom methods (same as digital space editor)
@@ -1242,9 +1413,13 @@ class DisplayEditor {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.contentEditable === 'true') {
             return;
         }
-        
+
         // Handle space key for panning or zoom-to-fit
         if (e.code === 'Space' && !this.spaceKeyState.isDown) {
+            // Only start new space key handling if this tab is active
+            if (!this.isTabActive()) {
+                return;
+            }
             e.preventDefault();
             this.spaceKeyState.isDown = true;
             this.spaceKeyState.downTime = Date.now();
@@ -1273,12 +1448,15 @@ class DisplayEditor {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.contentEditable === 'true') {
             return;
         }
-        
+
         if (e.code === 'Space' && this.spaceKeyState.isDown) {
+            // Always clean up space key state, but only trigger zoom-to-fit if tab is active
+            const isTabCurrentlyActive = this.isTabActive();
             const holdDuration = Date.now() - this.spaceKeyState.downTime;
             
             // If it was a quick tap (< 150ms) and panning wasn't activated, trigger zoom-to-fit
-            if (holdDuration < 150 && !this.spaceKeyState.panActivated) {
+            // But only if this tab is currently active
+            if (holdDuration < 150 && !this.spaceKeyState.panActivated && isTabCurrentlyActive) {
                 this.zoomToFit();
             }
             
@@ -1340,6 +1518,7 @@ class DisplayEditor {
             this.activeRectEl.style.boxShadow = 'none';
             this.activeRectEl.classList.add('dragging');
         }
+        document.body.classList.add('disable-animations');
 
         this.canvas.style.cursor = 'move';
     }
@@ -1354,6 +1533,7 @@ class DisplayEditor {
             this.activeRectEl.style.boxShadow = '';
             this.activeRectEl.classList.remove('dragging');
         }
+        document.body.classList.remove('disable-animations');
 
         const activeDisplay = this.getActiveDisplay();
         const element = activeDisplay?.rectangles.find(r => r.id === this.selectedRectId);
@@ -1471,6 +1651,12 @@ class DisplayEditor {
             this.world.remove();
             this.world = null;
         }
+    }
+
+    isTabActive() {
+        // Check if the display-editor tab is currently active
+        const displayEditorTab = document.querySelector('[data-tab="display-editor"]');
+        return displayEditorTab && displayEditorTab.classList.contains('active');
     }
 }
 

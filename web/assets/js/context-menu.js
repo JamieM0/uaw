@@ -366,22 +366,22 @@ class ContextMenuManager {
                         
                         // Update the JSON in Monaco editor
                         const currentJson = JSON.parse(editor.getValue());
-                        
-                        if (currentJson.simulation && currentJson.simulation.displays) {
-                            const displayIndex = currentJson.simulation.displays.findIndex(disp => disp.id === activeDisplay.id);
-                            
-                            if (displayIndex !== -1 && currentJson.simulation.displays[displayIndex].rectangles) {
-                                const jsonElementIndex = currentJson.simulation.displays[displayIndex].rectangles.findIndex(element => element.id === elementId);
-                                
+
+                        if (currentJson.displays) {
+                            const displayIndex = currentJson.displays.findIndex(disp => disp.id === activeDisplay.id);
+
+                            if (displayIndex !== -1 && currentJson.displays[displayIndex].rectangles) {
+                                const jsonElementIndex = currentJson.displays[displayIndex].rectangles.findIndex(element => element.id === elementId);
+
                                 if (jsonElementIndex !== -1) {
-                                    currentJson.simulation.displays[displayIndex].rectangles.splice(jsonElementIndex, 1);
+                                    currentJson.displays[displayIndex].rectangles.splice(jsonElementIndex, 1);
                                     editor.setValue(JSON.stringify(currentJson, null, 2));
                                 }
                             }
                         }
                         
                         // Update display editor UI
-                        displayEditor.renderProperties();
+                        displayEditor.renderPropertiesPanel();
                         displayEditor.deselectAll();
                         
                         // Trigger validation

@@ -152,45 +152,58 @@ class DigitalSpaceEditor {
     }
 
     onCanvasMouseDown(e) {
+        console.log('DIGITAL-SPACE: Mouse down on', e.target, 'classList:', e.target.classList);
+        console.log('DIGITAL-SPACE: isPanning:', this.view.isPanning, 'isDrawing:', this.isDrawing);
+
         if (this.view.isPanning) {
             this.view.lastPan = { x: e.clientX, y: e.clientY };
             this.canvas.style.cursor = 'grabbing';
             return;
         }
 
-        // Only allow drawing/panning on the canvas itself or the world container
-        if (e.target !== this.canvas && !e.target.classList.contains('digital-world')) {
-            // Check if clicking on existing location
-            const clickedEl = e.target.closest('.digital-location-rect');
-            if (clickedEl) {
-                const locationId = clickedEl.dataset.locationId;
-                this.selectLocation(locationId);
-                this.prepareForDrag(e, clickedEl);
-                return;
-            }
+        // Check if clicking on existing location first
+        const clickedEl = e.target.closest('.digital-location-rect');
+        if (clickedEl) {
+            console.log('DIGITAL-SPACE: Clicked on location rect');
+            const locationId = clickedEl.dataset.locationId;
+            this.selectLocation(locationId);
+            this.prepareForDrag(e, clickedEl);
+            return;
         }
 
-        // Update rect cache for accuracy during interaction
-        this.updateCanvasRect();
-        const x = (e.clientX - this.canvasRect.left - this.view.x) / this.view.scale;
-        const y = (e.clientY - this.canvasRect.top - this.view.y) / this.view.scale;
+        // Allow panning on canvas or world container (background areas)
+        const isCanvas = e.target === this.canvas;
+        const isWorld = e.target.classList.contains('digital-world');
+        console.log('DIGITAL-SPACE: isCanvas:', isCanvas, 'isWorld:', isWorld);
 
-        if (this.isDrawing) {
-            this.startDrawing(x, y);
+        if (isCanvas || isWorld) {
+            console.log('DIGITAL-SPACE: Valid background click detected');
+            // Update rect cache for accuracy during interaction
+            this.updateCanvasRect();
+            const x = (e.clientX - this.canvasRect.left - this.view.x) / this.view.scale;
+            const y = (e.clientY - this.canvasRect.top - this.view.y) / this.view.scale;
+
+            if (this.isDrawing) {
+                console.log('DIGITAL-SPACE: Starting drawing');
+                this.startDrawing(x, y);
+            } else {
+                console.log('DIGITAL-SPACE: Starting panning');
+                // Start background panning when not in drawing mode
+                this.view.isPanning = true;
+                this.view.lastPan = { x: e.clientX, y: e.clientY };
+                this.canvas.style.cursor = 'grabbing';
+                document.body.classList.add('digital-space-panning');
+                document.body.classList.add('disable-animations');
+                this.deselectAll();
+            }
         } else {
-            // Start background panning when not in drawing mode
-            this.view.isPanning = true;
-            this.view.lastPan = { x: e.clientX, y: e.clientY };
-            this.canvas.style.cursor = 'grabbing';
-            document.body.classList.add('digital-space-panning');
-            document.body.classList.add('disable-animations');
-            this.deselectAll();
+            console.log('DIGITAL-SPACE: Click target not recognized for panning');
         }
     }
 
     startDrawing(x, y) {
         this.startCoords = { x, y };
-        
+
         // Create temporary rectangle
         this.activeRectEl = document.createElement('div');
         this.activeRectEl.className = 'digital-location-rect drawing';
@@ -198,6 +211,13 @@ class DigitalSpaceEditor {
         this.activeRectEl.style.top = y + 'px';
         this.activeRectEl.style.width = '0px';
         this.activeRectEl.style.height = '0px';
+
+        // Disable animations during drawing for performance
+        this.activeRectEl.style.transition = 'none';
+        this.activeRectEl.style.transform = 'none';
+        this.activeRectEl.style.boxShadow = 'none';
+        document.body.classList.add('disable-animations');
+
         this.world.appendChild(this.activeRectEl);
     }
 
@@ -223,10 +243,8 @@ class DigitalSpaceEditor {
             const left = Math.min(this.startCoords.x, currentX);
             const top = Math.min(this.startCoords.y, currentY);
 
-            this.activeRectEl.style.left = left + 'px';
-            this.activeRectEl.style.top = top + 'px';
-            this.activeRectEl.style.width = width + 'px';
-            this.activeRectEl.style.height = height + 'px';
+            // Batch style updates for better performance
+            this.activeRectEl.style.cssText += `left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px;`;
         }
 
         // Check if we should start dragging based on mouse movement distance
@@ -278,11 +296,14 @@ class DigitalSpaceEditor {
     finishDrawing() {
         const bounds = this.activeRectEl.getBoundingClientRect();
         const canvasRect = this.canvas.getBoundingClientRect();
-        
+
         // Calculate size in meters
         const widthPx = parseFloat(this.activeRectEl.style.width);
         const heightPx = parseFloat(this.activeRectEl.style.height);
-        
+
+        // Re-enable animations after drawing
+        document.body.classList.remove('disable-animations');
+
         if (widthPx < 20 || heightPx < 20) {
             // Too small, cancel
             this.world.removeChild(this.activeRectEl);
@@ -651,7 +672,7 @@ class DigitalSpaceEditor {
             } catch (e) {
                 console.error("DIGITAL-SPACE: Error updating simulation JSON:", e);
             }
-        }, 100); // 100ms debounce
+        }, 50); // 50ms debounce for better responsiveness
     }
 
     // Zoom and view methods (adapted from space editor)
@@ -812,9 +833,13 @@ class DigitalSpaceEditor {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.contentEditable === 'true') {
             return;
         }
-        
+
         // Handle space key for panning or zoom-to-fit
         if (e.code === 'Space' && !this.spaceKeyState.isDown) {
+            // Only start new space key handling if this tab is active
+            if (!this.isTabActive()) {
+                return;
+            }
             e.preventDefault();
             this.spaceKeyState.isDown = true;
             this.spaceKeyState.downTime = Date.now();
@@ -843,12 +868,15 @@ class DigitalSpaceEditor {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.contentEditable === 'true') {
             return;
         }
-        
+
         if (e.code === 'Space' && this.spaceKeyState.isDown) {
+            // Always clean up space key state, but only trigger zoom-to-fit if tab is active
+            const isTabCurrentlyActive = this.isTabActive();
             const holdDuration = Date.now() - this.spaceKeyState.downTime;
             
             // If it was a quick tap (< 150ms) and panning wasn't activated, trigger zoom-to-fit
-            if (holdDuration < 150 && !this.spaceKeyState.panActivated) {
+            // But only if this tab is currently active
+            if (holdDuration < 150 && !this.spaceKeyState.panActivated && isTabCurrentlyActive) {
                 this.zoomToFit();
             }
             
@@ -888,13 +916,14 @@ class DigitalSpaceEditor {
         rectEl.style.transform = 'none';
         rectEl.style.boxShadow = 'none';
         rectEl.classList.add('dragging');
+        document.body.classList.add('disable-animations');
 
         this.canvas.style.cursor = 'move';
     }
 
     finishDragging() {
         if (!this.isDragging || !this.selectedRectId) return;
-        
+
         // Re-enable CSS styling after dragging
         if (this.activeRectEl) {
             this.activeRectEl.style.transition = '';
@@ -902,6 +931,7 @@ class DigitalSpaceEditor {
             this.activeRectEl.style.boxShadow = '';
             this.activeRectEl.classList.remove('dragging');
         }
+        document.body.classList.remove('disable-animations');
         
         const location = this.digitalLocations.find(l => l.id === this.selectedRectId);
         if (location) {
@@ -1019,6 +1049,12 @@ class DigitalSpaceEditor {
             this.world.remove();
             this.world = null;
         }
+    }
+
+    isTabActive() {
+        // Check if the digital-space tab is currently active
+        const digitalSpaceTab = document.querySelector('[data-tab="digital-space"]');
+        return digitalSpaceTab && digitalSpaceTab.classList.contains('active');
     }
 }
 

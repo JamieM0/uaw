@@ -13,6 +13,115 @@ let tutorialData = null;
 let isPlaygroundInitialized = false; // Flag to prevent double-initialization
 let autoRender = true;
 
+// Asset Management System
+const AssetManager = {
+  // Generate a UUID v4 for asset references
+  generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  },
+
+  // Store an asset and return the reference
+  storeAsset(dataUrl) {
+    if (!editor) return null;
+
+    try {
+      const simulationData = JSON.parse(editor.getValue());
+
+      // Initialize assets object if it doesn't exist
+      if (!simulationData.assets) {
+        simulationData.assets = {};
+      }
+
+      // Generate unique ID
+      const assetId = this.generateUUID();
+      const assetReference = `asset:${assetId}`;
+
+      // Store the asset data
+      simulationData.assets[assetId] = dataUrl;
+
+      // Update the editor with the new simulation data
+      editor.setValue(JSON.stringify(simulationData, null, 2));
+
+      return assetReference;
+    } catch (e) {
+      console.error('Failed to store asset:', e);
+      return null;
+    }
+  },
+
+  // Retrieve an asset by reference
+  getAsset(assetReference) {
+    if (!editor || !assetReference || !assetReference.startsWith('asset:')) {
+      return null;
+    }
+
+    try {
+      const simulationData = JSON.parse(editor.getValue());
+      const assetId = assetReference.replace('asset:', '');
+      return simulationData.assets?.[assetId] || null;
+    } catch (e) {
+      console.error('Failed to retrieve asset:', e);
+      return null;
+    }
+  },
+
+  // Check if a value is an asset reference
+  isAssetReference(value) {
+    return typeof value === 'string' && value.startsWith('asset:');
+  },
+
+  // Resolve asset reference to actual data URL
+  resolveAsset(value) {
+    if (this.isAssetReference(value)) {
+      return this.getAsset(value) || value;
+    }
+    return value;
+  },
+
+  // Remove unused assets (cleanup)
+  cleanupUnusedAssets() {
+    if (!editor) return;
+
+    try {
+      const simulationData = JSON.parse(editor.getValue());
+      if (!simulationData.assets) return;
+
+      const usedAssets = new Set();
+
+      // Scan simulation for asset references
+      const scanForAssets = (obj) => {
+        if (typeof obj === 'string' && this.isAssetReference(obj)) {
+          const assetId = obj.replace('asset:', '');
+          usedAssets.add(assetId);
+        } else if (typeof obj === 'object' && obj !== null) {
+          Object.values(obj).forEach(scanForAssets);
+        }
+      };
+
+      scanForAssets(simulationData.simulation);
+
+      // Remove unused assets
+      const allAssets = Object.keys(simulationData.assets);
+      const unusedAssets = allAssets.filter(id => !usedAssets.has(id));
+
+      unusedAssets.forEach(id => {
+        delete simulationData.assets[id];
+      });
+
+      if (unusedAssets.length > 0) {
+        editor.setValue(JSON.stringify(simulationData, null, 2));
+        console.log(`Cleaned up ${unusedAssets.length} unused assets`);
+      }
+    } catch (e) {
+      console.error('Failed to cleanup assets:', e);
+    }
+  }
+};
+
 // Initialization state tracking
 const initState = {
   dataLoaded: false,
@@ -758,3 +867,6 @@ function setupUndoButton() {
     }
   });
 }
+
+// Export AssetManager to global scope for use by other modules
+window.AssetManager = AssetManager;

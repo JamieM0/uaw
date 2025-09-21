@@ -495,9 +495,54 @@ require(["vs/editor/editor.main"], function () {
             folding: true,
             bracketMatching: "always",
             formatOnPaste: true,
-            formatOnType: true
+            formatOnType: true,
+            wordWrap: "off",
+            wordWrapColumn: 80,
+            wordWrapMinified: false
         }
     );
+
+    // Add word wrap toggle to context menu
+    editor.addAction({
+        id: 'toggle-word-wrap',
+        label: 'Toggle Word Wrap',
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.5,
+        run: function() {
+            // Get current word wrap setting using the correct API
+            const model = editor.getModel();
+            const currentOptions = editor.getOptions();
+            const currentWrap = currentOptions.get(monaco.editor.EditorOption.wordWrap);
+            const newWrap = (currentWrap === 'off') ? 'bounded' : 'off';
+
+            // Update the editor options with multiple methods to ensure it takes effect
+            editor.updateOptions({
+                wordWrap: newWrap
+            });
+
+            // Try multiple approaches to force the change
+            setTimeout(() => {
+                editor.layout();
+
+                const model = editor.getModel();
+                if (model) {
+                    const currentValue = model.getValue();
+                    model.setValue(currentValue);
+                }
+
+                editor.layout();
+            }, 10);
+
+            // Verify the change took effect
+            setTimeout(() => {
+                const updatedWrap = editor.getOptions().get(monaco.editor.EditorOption.wordWrap);
+                const editorDom = editor.getDomNode();
+                const viewLines = editorDom.querySelectorAll('.view-line');
+            }, 100);
+        }
+    });
+
+    window.monacoEditor = editor;
 
     // Editor event handlers
     editor.onDidChangeModelContent(() => {
