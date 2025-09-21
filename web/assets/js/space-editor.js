@@ -1681,8 +1681,9 @@ class SpaceEditor {
                 </select>
             </div>
             <div class="prop-field">
-                <label for="prop-transition">Transition Zone</label>
-                <input type="checkbox" id="prop-transition" ${loc.isTransition ? 'checked' : ''}>
+                <label class="checkbox-label" for="prop-transition">
+                    <input type="checkbox" id="prop-transition" ${loc.isTransition ? 'checked' : ''}> Transition Zone
+                </label>
                 <small>Allows occupancy of multiple locations simultaneously</small>
             </div>
             <div class="prop-field" style="display: ${loc.isTransition ? 'block' : 'none'};" id="transition-layers-field">

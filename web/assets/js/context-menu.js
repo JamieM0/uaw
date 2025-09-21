@@ -298,41 +298,13 @@ class ContextMenuManager {
         }
 
         try {
-            // Use the digital space editor's method to delete the location
-            if (typeof digitalSpaceEditor !== 'undefined' && digitalSpaceEditor) {
-                // Find the location in the digital space editor's digitalLocations array
-                const locationIndex = digitalSpaceEditor.digitalLocations.findIndex(loc => loc.id === locationId);
-                
-                if (locationIndex !== -1) {
-                    // Remove from digitalLocations array
-                    digitalSpaceEditor.digitalLocations.splice(locationIndex, 1);
-                    
-                    // Remove the visual element
-                    rectElement.remove();
-                    
-                    // Update the JSON in Monaco editor
-                    const currentJson = JSON.parse(editor.getValue());
-                    
-                    if (currentJson.simulation && currentJson.simulation.digital_space && currentJson.simulation.digital_space.digital_locations) {
-                        const digitalLocationIndex = currentJson.simulation.digital_space.digital_locations.findIndex(loc => loc.id === locationId);
-                        
-                        if (digitalLocationIndex !== -1) {
-                            currentJson.simulation.digital_space.digital_locations.splice(digitalLocationIndex, 1);
-                            editor.setValue(JSON.stringify(currentJson, null, 2));
-                        }
-                    }
-                    
-                    // Update digital space editor UI
-                    digitalSpaceEditor.renderProperties();
-                    digitalSpaceEditor.deselectAll();
-                    
-                    // Trigger validation
-                    validateJSON();
-                } else {
-                    console.error(`ERROR: Digital location ${locationId} not found in digital space editor`);
-                }
+            // Use the digital space editor's delete method to properly handle deletion
+            if (typeof digitalSpaceEditor !== 'undefined' && digitalSpaceEditor && typeof digitalSpaceEditor.deleteLocation === 'function') {
+                digitalSpaceEditor.deleteLocation(locationId);
+                // Trigger validation after deletion
+                validateJSON();
             } else {
-                console.error('ERROR: digitalSpaceEditor is not available or not initialized yet');
+                console.error('ERROR: digitalSpaceEditor is not available or deleteLocation method not found');
             }
         } catch (error) {
             console.error('ERROR deleting digital location:', error);

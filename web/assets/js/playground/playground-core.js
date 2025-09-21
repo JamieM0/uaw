@@ -48,7 +48,7 @@ const AssetManager = {
       // Auto-collapse assets object
       setTimeout(async () => {
         if (typeof autoCollapseAssetsObject === 'function') {
-          await autoCollapseAssetsObject();
+          await autoCollapseAssetsObject(false); // Preserve cursor position during asset storage
         }
       }, 100);
 
@@ -123,7 +123,7 @@ const AssetManager = {
         // Auto-collapse assets object
         setTimeout(() => {
           if (typeof autoCollapseAssetsObject === 'function') {
-            autoCollapseAssetsObject();
+            autoCollapseAssetsObject(false); // Preserve cursor position during cleanup
           }
         }, 100);
         console.log(`Cleaned up ${unusedAssets.length} unused assets`);
@@ -401,7 +401,7 @@ function loadSimulationFromLibrary(simulationId) {
   // Auto-collapse assets object
   setTimeout(async () => {
     if (typeof autoCollapseAssetsObject === 'function') {
-      await autoCollapseAssetsObject();
+      await autoCollapseAssetsObject(true); // Move cursor to top when loading simulation
     }
   }, 100);
 
@@ -536,7 +536,7 @@ function initializeMinimalEditor() {
     // Auto-collapse assets object
     setTimeout(() => {
       if (typeof autoCollapseAssetsObject === 'function') {
-        autoCollapseAssetsObject();
+        autoCollapseAssetsObject(true); // Move cursor to top when loading sample
       }
     }, 100);
   }

@@ -140,7 +140,7 @@ function loadSimulationFromFileInput() {
                 // Auto-collapse assets object
                 setTimeout(async () => {
                     if (typeof autoCollapseAssetsObject === 'function') {
-                        await autoCollapseAssetsObject();
+                        await autoCollapseAssetsObject(true); // Move cursor to top when loading data
                     }
                 }, 100);
                 clearSaveState();
@@ -450,7 +450,7 @@ function openLoadDialog() {
                 // Auto-collapse assets object
                 setTimeout(async () => {
                     if (typeof autoCollapseAssetsObject === 'function') {
-                        await autoCollapseAssetsObject();
+                        await autoCollapseAssetsObject(true); // Move cursor to top when loading data
                     }
                 }, 100);
                 if (autoRender) {

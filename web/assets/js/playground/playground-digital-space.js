@@ -83,7 +83,7 @@ class DigitalSpaceEditor {
                         this.loadFromSimulation();
                         // Re-render properties panel to update digital objects list
                         this.renderPropertiesPanel();
-                    }, 50); // Small delay to ensure JSON has been processed
+                    }, 100); // Increased delay to ensure JSON updates complete first
                 }
             });
         }
@@ -696,15 +696,16 @@ class DigitalSpaceEditor {
                 
                 <div class="prop-field">
                     <label for="digital-storage-type">Storage Type:</label>
-                    <select id="digital-storage-type">
-                        <option value="file_system" ${location.storage_type === 'file_system' ? 'selected' : ''}>💾 File System</option>
-                        <option value="database" ${location.storage_type === 'database' ? 'selected' : ''}>🗄️ Database</option>
-                        <option value="cloud" ${location.storage_type === 'cloud' ? 'selected' : ''}>☁️ Cloud Storage</option>
-                        <option value="cache" ${location.storage_type === 'cache' ? 'selected' : ''}>⚡ Cache</option>
-                        <option value="backup" ${location.storage_type === 'backup' ? 'selected' : ''}>💿 Backup Storage</option>
-                        <option value="network" ${location.storage_type === 'network' ? 'selected' : ''}>🌐 Network Storage</option>
-                        <option value="server" ${location.storage_type === 'server' ? 'selected' : ''}>🖥️ Server</option>
-                    </select>
+                    <input type="text" id="digital-storage-type" list="storage-type-options" value="${location.storage_type}" placeholder="Select or type custom storage type...">
+                    <datalist id="storage-type-options">
+                        <option value="file_system">💾 File System</option>
+                        <option value="database">🗄️ Database</option>
+                        <option value="cloud">☁️ Cloud Storage</option>
+                        <option value="cache">⚡ Cache</option>
+                        <option value="backup">💿 Backup Storage</option>
+                        <option value="network">🌐 Network Storage</option>
+                        <option value="server">🖥️ Server</option>
+                    </datalist>
                 </div>
                 
                 <div class="prop-field">
@@ -728,7 +729,7 @@ class DigitalSpaceEditor {
                     <small style="color: var(--text-light); font-size: 0.75rem;">Links this digital location to a physical object</small>
                 </div>
                 
-                <div class="inline-inputs" style="margin-top: 1rem;">
+                <div class="inline-inputs cols-2" style="margin-top: 1rem;">
                     <div class="inline-input-group">
                         <label for="digital-width">Width</label>
                         <input type="number" id="digital-width" value="${location.width.toFixed(2)}" step="0.1" min="0.1">
@@ -738,13 +739,13 @@ class DigitalSpaceEditor {
                         <input type="number" id="digital-height" value="${location.height.toFixed(2)}" step="0.1" min="0.1">
                     </div>
                 </div>
-                <div class="inline-inputs">
+                <div class="inline-inputs cols-2">
                     <div class="inline-input-group">
-                        <label for="digital-x">X (m)</label>
+                        <label for="digital-x">X</label>
                         <input type="number" id="digital-x" value="${location.x.toFixed(2)}" step="0.1">
                     </div>
                     <div class="inline-input-group">
-                        <label for="digital-y">Y (m)</label>
+                        <label for="digital-y">Y</label>
                         <input type="number" id="digital-y" value="${location.y.toFixed(2)}" step="0.1">
                     </div>
                 </div>
@@ -773,12 +774,32 @@ class DigitalSpaceEditor {
         }
 
         // Storage type
-        const typeSelect = document.getElementById('digital-storage-type');
-        if (typeSelect) {
-            typeSelect.addEventListener('change', (e) => {
+        const typeInput = document.getElementById('digital-storage-type');
+        if (typeInput) {
+            typeInput.addEventListener('input', (e) => {
                 location.storage_type = e.target.value;
                 this.renderLocation(location);
                 this.updateSimulationJson();
+            });
+
+            // Store original value and manage dropdown visibility
+            let originalValue = '';
+
+            typeInput.addEventListener('focus', (e) => {
+                // Store the current value and clear field to show all options
+                originalValue = e.target.value;
+                e.target.value = '';
+                // Mark that we're in "show all options" mode
+                e.target.dataset.showingAll = 'true';
+            });
+
+            typeInput.addEventListener('blur', (e) => {
+                // If user didn't type anything, restore original value
+                if (e.target.value === '' && e.target.dataset.showingAll === 'true') {
+                    e.target.value = originalValue;
+                }
+                // Clean up the flag
+                delete e.target.dataset.showingAll;
             });
         }
 
@@ -1188,26 +1209,26 @@ class DigitalSpaceEditor {
 
     updateSimulationJson() {
         if (this.isUpdatingJson || !this.monacoEditor) return;
-        
+
         // Debounce to prevent excessive updates and infinite loops
         if (this.updateSimulationJsonTimeout) {
             clearTimeout(this.updateSimulationJsonTimeout);
         }
-        
+
         this.updateSimulationJsonTimeout = setTimeout(() => {
             try {
                 const jsonText = this.monacoEditor.getValue();
                 const simulation = JSON.parse(jsonText);
-                
+
                 // Ensure digital_space structure exists
                 if (!simulation.digital_space) {
                     simulation.digital_space = {};
                 }
-                
+
                 // Update digital locations
                 simulation.digital_space.digital_locations = this.digitalLocations;
                 simulation.digital_space.digital_objects = this.digitalObjects;
-                
+
                 this.isUpdatingJson = true;
                 this.monacoEditor.setValue(JSON.stringify(simulation, null, 2));
                 this.isUpdatingJson = false;

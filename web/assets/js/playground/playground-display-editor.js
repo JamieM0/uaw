@@ -1197,13 +1197,13 @@ class DisplayEditor {
                 </div>
                 
                 <div class="prop-field">
-                    <label>
+                    <label class="checkbox-label">
                         <input type="checkbox" id="element-visible" ${element.properties.visible ? 'checked' : ''}> Visible
                     </label>
                 </div>
-                
+
                 <div class="prop-field">
-                    <label>
+                    <label class="checkbox-label">
                         <input type="checkbox" id="element-clickable" ${element.properties.clickable ? 'checked' : ''}> Clickable/Interactive
                     </label>
                 </div>

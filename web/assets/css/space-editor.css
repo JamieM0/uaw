@@ -1060,6 +1060,11 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     font-size: 13px;
 }
 
+.checkbox-label input[type="checkbox"] {
+    width: auto !important;
+    flex-shrink: 0;
+}
+
 .required {
     color: var(--error-color);
 }

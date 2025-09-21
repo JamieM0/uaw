@@ -550,7 +550,7 @@ require(["vs/editor/editor.main"], function () {
 
     // Auto-collapse 'assets' object if it exists
     setTimeout(async () => {
-        await autoCollapseAssetsObject();
+        await autoCollapseAssetsObject(true); // Move cursor to top on page load
     }, 100); // Small delay to ensure editor is fully initialized
 
     // Debounced auto-collapse for assets object
@@ -563,7 +563,7 @@ require(["vs/editor/editor.main"], function () {
                 const content = editor.getValue();
                 // Only auto-collapse if content contains assets object
                 if (content.includes('"assets"')) {
-                    await autoCollapseAssetsObject();
+                    await autoCollapseAssetsObject(false); // Preserve cursor position on programmatic updates
                 }
             } catch (e) {
                 // Ignore errors during typing
@@ -633,12 +633,17 @@ require(["vs/editor/editor.main"], function () {
 let isProgrammaticChange = false;
 
 // Function to automatically collapse the 'assets' object
-async function autoCollapseAssetsObject() {
+async function autoCollapseAssetsObject(moveToTop = false) {
     if (!editor || !monaco) return;
 
     try {
         const model = editor.getModel();
         if (!model) return;
+
+        // Save current state if we don't want to move to top
+        const currentPosition = moveToTop ? null : editor.getPosition();
+        const currentScrollTop = moveToTop ? null : editor.getScrollTop();
+        const currentScrollLeft = moveToTop ? null : editor.getScrollLeft();
 
         // Use Monaco's findNextMatch to locate the "assets" property
         const assetsMatch = model.findNextMatch('"assets"\\s*:', { lineNumber: 1, column: 1 }, true, false, null, false);
@@ -705,11 +710,21 @@ async function autoCollapseAssetsObject() {
                 console.warn('createFoldingRangeFromSelection action not available');
             }
 
-            // Clear selection and move cursor to top of file
+            // Clear selection and restore state
             setTimeout(() => {
+                // Always clear selection first
                 editor.setSelection(new monaco.Selection(1, 1, 1, 1));
-                editor.setPosition({ lineNumber: 1, column: 1 });
-                editor.revealLine(1);
+
+                if (moveToTop) {
+                    // Move cursor to top of file (page load behavior)
+                    editor.setPosition({ lineNumber: 1, column: 1 });
+                    editor.revealLine(1);
+                } else if (currentPosition) {
+                    // Restore complete previous state (programmatic update behavior)
+                    editor.setPosition(currentPosition);
+                    editor.setScrollTop(currentScrollTop);
+                    editor.setScrollLeft(currentScrollLeft);
+                }
             }, 50);
         }
     } catch (e) {
