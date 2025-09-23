@@ -163,8 +163,8 @@ class DigitalSpaceEditor {
             return;
         }
 
-        // Check if clicking on existing location first
-        const clickedEl = e.target.closest('.digital-location-rect');
+        // Check if clicking on existing location first - use same method as hover detection
+        const clickedEl = this.getTopElementAt(e.clientX, e.clientY);
         if (clickedEl) {
             const locationId = clickedEl.dataset.locationId;
             this.selectLocation(locationId);

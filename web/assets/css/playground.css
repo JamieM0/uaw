@@ -926,7 +926,6 @@ body {
     font-size: 0.9em;
 }
 
-
 .simulation-container {
     width: 100%;
     max-width: 100%;
@@ -1083,11 +1082,23 @@ body {
     background: white;
     border-radius: var(--border-radius-md);
     padding: 2rem;
-    max-width: 500px;
-    width: 90%;
+    max-width: none;
+    width: 100%;
     max-height: 80vh;
     overflow-y: auto;
     box-shadow: var(--shadow-lg);
+}
+
+#add-object-modal .dialog,
+#add-task-modal .dialog {
+    width: 100%;
+    max-width: 720px;
+}
+
+#add-task-modal .modal-content,
+#add-object-modal .modal-content {
+    width: 100%;
+    max-width: none;
 }
 
 .dialog h3 {
@@ -1213,7 +1224,7 @@ body {
 
 .save-code-display input {
     flex: 1;
-    font-family: 'Courier New', monospace;
+    font-family: "Courier New", monospace;
     font-weight: bold;
     letter-spacing: 1px;
     text-align: center;
@@ -1236,7 +1247,7 @@ body {
 
 .load-input-container input {
     width: 100%;
-    font-family: 'Courier New', monospace;
+    font-family: "Courier New", monospace;
     font-weight: bold;
     letter-spacing: 2px;
     text-align: center;
@@ -1260,8 +1271,12 @@ body {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .fullscreen-btn {
@@ -1559,7 +1574,7 @@ body {
     flex-shrink: 0; /* Prevent the panel from shrinking */
     background: #fff;
     z-index: 1500;
-    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
     flex-direction: column;
     border-right: 1px solid var(--border-color);
 }
@@ -1568,74 +1583,74 @@ body {
     display: flex; /* Show the panel and let it take up space */
 }
 
-.tutorial-header { 
-    padding: 1rem; 
-    border-bottom: 1px solid var(--border-color); 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
+.tutorial-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.tutorial-header h3 { 
-    margin: 0; 
+.tutorial-header h3 {
+    margin: 0;
 }
 
-.tutorial-exit-btn { 
-    background: none; 
-    border: none; 
-    font-size: 1.5rem; 
-    cursor: pointer; 
-    color: var(--text-light); 
+.tutorial-exit-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-light);
 }
 
-.tutorial-exit-btn:hover { 
-    color: var(--text-color); 
+.tutorial-exit-btn:hover {
+    color: var(--text-color);
 }
 
-.tutorial-content { 
-    flex: 1; 
-    padding: 1rem; 
-    overflow-y: auto; 
-    line-height: 1.6; 
+.tutorial-content {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    line-height: 1.6;
 }
 
-.tutorial-content code { 
-    background: var(--bg-light); 
-    padding: 2px 5px; 
-    border-radius: 4px; 
-    font-family: monospace; 
+.tutorial-content code {
+    background: var(--bg-light);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: monospace;
 }
 
-.tutorial-footer { 
-    padding: 1rem; 
-    border-top: 1px solid var(--border-color); 
-    display: flex; 
-    justify-content: space-between; 
+.tutorial-footer {
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
 }
 
-.tutorial-footer button { 
-    padding: 0.5rem 1rem; 
-    border: 1px solid var(--border-color); 
-    background: var(--bg-light); 
-    cursor: pointer; 
-    border-radius: var(--border-radius-sm); 
+.tutorial-footer button {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    background: var(--bg-light);
+    cursor: pointer;
+    border-radius: var(--border-radius-sm);
 }
 
-.tutorial-footer button:disabled { 
-    background: var(--border-color); 
-    color: var(--text-light); 
-    cursor: not-allowed; 
+.tutorial-footer button:disabled {
+    background: var(--border-color);
+    color: var(--text-light);
+    cursor: not-allowed;
 }
 
-.tutorial-footer button#tutorial-next-btn { 
-    background: var(--primary-color); 
-    color: white; 
-    border-color: var(--primary-color); 
+.tutorial-footer button#tutorial-next-btn {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
 }
 
-.tutorial-footer button#tutorial-next-btn:disabled { 
-    background: var(--primary-light); 
-    border-color: var(--primary-light); 
+.tutorial-footer button#tutorial-next-btn:disabled {
+    background: var(--primary-light);
+    border-color: var(--primary-light);
 }
 
 /* Hide buttons when tutorial is active */
@@ -1647,28 +1662,28 @@ body.tutorial-active #auto-render-toggle {
 }
 
 /* Help Dropdown Styles */
-.dropdown { 
-    position: relative; 
-    display: inline-block; 
+.dropdown {
+    position: relative;
+    display: inline-block;
 }
 
-.dropdown-content { 
-    display: none; 
-    position: absolute; 
-    background-color: #f9f9f9; 
-    min-width: 200px; 
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); 
-    z-index: 1; 
-    border-radius: var(--border-radius-sm); 
-    overflow: hidden; 
-    right: 0; 
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    right: 0;
 }
 
-.dropdown-content a { 
-    color: black; 
-    padding: 12px 16px; 
-    text-decoration: none; 
-    display: block; 
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
     border-bottom: 1px solid #eee;
 }
 
@@ -1676,12 +1691,12 @@ body.tutorial-active #auto-render-toggle {
     border-bottom: none;
 }
 
-.dropdown-content a:hover { 
-    background-color: #f1f1f1; 
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
 }
 
-.dropdown:hover .dropdown-content { 
-    display: block; 
+.dropdown:hover .dropdown-content {
+    display: block;
 }
 
 /* Simulation Library specific styles */
@@ -1709,72 +1724,70 @@ body.tutorial-active #auto-render-toggle {
     border-left: 1px solid var(--border-color);
 }
 
-    /* --- Dark-mode overrides for simulation render area --- */
-    /* Force simulation containers and common child elements to use dark backgrounds
+/* --- Dark-mode overrides for simulation render area --- */
+/* Force simulation containers and common child elements to use dark backgrounds
        so they don't show up as white when the page is in dark mode. These use
        !important to beat any inline or component-specific white backgrounds. */
-    [data-theme="dark"] .simulation-panel,
-    [data-theme="dark"] .simulation-content,
-    [data-theme="dark"] .simulation-timeline,
-    [data-theme="dark"] .simulation-container,
-    [data-theme="dark"] .task-track,
-    [data-theme="dark"] .actor-lanes,
-    [data-theme="dark"] .actor-lane,
-    [data-theme="dark"] #digital-space-canvas,
-    [data-theme="dark"] #display-canvas,
-    [data-theme="dark"] .player-controls {
-        background: var(--bg-color, #0f1113) !important;
-        color: var(--text-color, #e6eef3) !important;
-    }
+[data-theme="dark"] .simulation-panel,
+[data-theme="dark"] .simulation-content,
+[data-theme="dark"] .simulation-timeline,
+[data-theme="dark"] .simulation-container,
+[data-theme="dark"] .task-track,
+[data-theme="dark"] .actor-lanes,
+[data-theme="dark"] .actor-lane,
+[data-theme="dark"] #digital-space-canvas,
+[data-theme="dark"] #display-canvas,
+[data-theme="dark"] .player-controls {
+    background: var(--bg-color, #0f1113) !important;
+    color: var(--text-color, #e6eef3) !important;
+}
 
-    /* Child elements that may have hard-coded white backgrounds */
-    [data-theme="dark"] .task-block,
+/* Child elements that may have hard-coded white backgrounds */
+[data-theme="dark"] .task-block,
     [data-theme="dark"] .resource-item,
     [data-theme="dark"] .time-marker,
     /* Keep playhead red in dark mode (avoid global background overrides turning it dark) */
     [data-theme="dark"] .simulation-playhead,
     [data-theme="dark"] .task-block::before,
     [data-theme="dark"] .task-block::after {
-        background: var(--bg-surface, #16171a) !important;
-        color: var(--text-color, #e6eef3) !important;
-        border-color: var(--border-color, #2a2d31) !important;
-    }
+    background: var(--bg-surface, #16171a) !important;
+    color: var(--text-color, #e6eef3) !important;
+    border-color: var(--border-color, #2a2d31) !important;
+}
 
-    /* Ensure any canvas elements get a dark backing as well */
-    [data-theme="dark"] canvas {
-        background-color: transparent !important;
-    }
+/* Ensure any canvas elements get a dark backing as well */
+[data-theme="dark"] canvas {
+    background-color: transparent !important;
+}
 
-    /* If there are inline styles setting white backgrounds, prefer these darker values */
-    [data-theme="dark"] [style*="background" i] {
-        background: var(--bg-surface, #16171a) !important;
-    }
+/* If there are inline styles setting white backgrounds, prefer these darker values */
+[data-theme="dark"] [style*="background" i] {
+    background: var(--bg-surface, #16171a) !important;
+}
 
-    /* Fix for simulation header and its border in dark mode */
-    [data-theme="dark"] .simulation-header {
-        background: var(--bg-surface, #16171a) !important;
-        color: var(--text-color, #e6eef3) !important;
-        border-color: var(--border-color, #2a2d31) !important;
-    }
+/* Fix for simulation header and its border in dark mode */
+[data-theme="dark"] .simulation-header {
+    background: var(--bg-surface, #16171a) !important;
+    color: var(--text-color, #e6eef3) !important;
+    border-color: var(--border-color, #2a2d31) !important;
+}
 
-    [data-theme="dark"] .simulation-header,
-    [data-theme="dark"] .simulation-header * {
-        background: transparent !important;
-        color: var(--text-color, #e6eef3) !important;
-    }
+[data-theme="dark"] .simulation-header,
+[data-theme="dark"] .simulation-header * {
+    background: transparent !important;
+    color: var(--text-color, #e6eef3) !important;
+}
 
-    /* Fix simulation-container border/shadow in dark mode */
-    [data-theme="dark"] .simulation-container {
-        background: var(--bg-color, #0f1113) !important;
-        border: 1px solid var(--border-color, #2a2d31) !important;
-        box-shadow: none !important;
-    }
+/* Fix simulation-container border/shadow in dark mode */
+[data-theme="dark"] .simulation-container {
+    background: var(--bg-color, #0f1113) !important;
+    border: 1px solid var(--border-color, #2a2d31) !important;
+    box-shadow: none !important;
+}
 
-    [data-theme="dark"] .simulation-container * {
-        box-shadow: none !important;
-    }
-
-
+[data-theme="dark"] .simulation-container * {
+    box-shadow: none !important;
+}
 
 #player-play-pause-btn {
     font-size: 1.25rem;
@@ -1826,7 +1839,7 @@ body.tutorial-active #auto-render-toggle {
 }
 
 .scrub-handle::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 5px;
     left: 8px;
@@ -1839,7 +1852,7 @@ body.tutorial-active #auto-render-toggle {
 /* Dark-mode exception: keep playhead and scrub handle visually red */
 [data-theme="dark"] .timeline-playhead {
     background-color: rgba(220, 53, 69, 0.95) !important; /* brighter red */
-    box-shadow: 0 0 6px rgba(220,53,69,0.6) !important;
+    box-shadow: 0 0 6px rgba(220, 53, 69, 0.6) !important;
 }
 
 [data-theme="dark"] .scrub-handle::after {
@@ -1853,7 +1866,6 @@ body.tutorial-active #auto-render-toggle {
     gap: 1rem;
     padding: 0 0.75rem; /* Match simulation-content padding */
 }
-
 
 .live-time {
     font-weight: normal;
@@ -1977,7 +1989,7 @@ input[style*="background-color: #e8f4f8"] {
 }
 
 .resource-item.created-object::after {
-    content: '✨';
+    content: "✨";
     position: absolute;
     top: 2px;
     right: 4px;
@@ -2142,11 +2154,10 @@ optgroup[label*="Products"] {
 }
 
 .special-subtitle {
-    font-family: 'IBM Plex Sans', sans-serif;
+    font-family: "IBM Plex Sans", sans-serif;
     font-weight: 400;
     color: rgb(18, 108, 168); /* --primary-color-rgb */
 }
-
 
 /* === INTERACTIONS MODAL STYLES === */
 
@@ -2207,7 +2218,6 @@ optgroup[label*="Products"] {
     margin: 0;
 }
 
-
 /* === FEEDBACK MODAL STYLES === */
 .feedback-form {
     display: flex;
@@ -2236,7 +2246,9 @@ optgroup[label*="Products"] {
     font-size: 0.9rem;
     background: #fff;
     color: var(--text-color);
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
 }
 
 .feedback-form-field input:focus,
@@ -2547,34 +2559,34 @@ optgroup[label*="Products"] {
 
 /* Disable animations during resize */
 body.resizing-active * {
-  transition: none !important;
-  animation: none !important;
+    transition: none !important;
+    animation: none !important;
 }
 
 body.dragging-active * {
-  transition: none !important;
-  animation: none !important;
+    transition: none !important;
+    animation: none !important;
 }
 
 /* Disable transitions during theme switching */
 body.theme-switching * {
-  transition: none !important;
-  animation: none !important;
+    transition: none !important;
+    animation: none !important;
 }
 
 /* Monaco editor line highlighting for click-to-JSON feature */
 .highlighted-line {
-  background-color: rgba(255, 223, 0, 0.3) !important;
-  animation: highlightFade 2s ease-out;
+    background-color: rgba(255, 223, 0, 0.3) !important;
+    animation: highlightFade 2s ease-out;
 }
 
 @keyframes highlightFade {
-  0% {
-    background-color: rgba(255, 223, 0, 0.8) !important;
-  }
-  100% {
-    background-color: rgba(255, 223, 0, 0.1) !important;
-  }
+    0% {
+        background-color: rgba(255, 223, 0, 0.8) !important;
+    }
+    100% {
+        background-color: rgba(255, 223, 0, 0.1) !important;
+    }
 }
 
 /* Dark Mode Specific Styles */
@@ -2731,17 +2743,23 @@ body.theme-switching * {
 /* Space Editor Dark Mode Styles */
 [data-theme="dark"] .space-canvas {
     background-color: var(--bg-color) !important;
-    background-image: linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px) !important;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px) !important;
 }
 
 [data-theme="dark"] #digital-space-canvas {
     background-color: var(--bg-color) !important;
-    background-image: linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px) !important;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px) !important;
 }
 
 [data-theme="dark"] #display-canvas {
     background-color: var(--bg-color) !important;
-    background-image: linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px) !important;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px) !important;
 }
 
 [data-theme="dark"] .space-editor-container {
@@ -2816,7 +2834,7 @@ body.theme-switching * {
 [data-theme="dark"] .dropdown-content {
     background: var(--bg-light);
     border-color: var(--border-color);
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.5);
 }
 
 [data-theme="dark"] .dropdown-content a {
@@ -2931,4 +2949,283 @@ body.theme-switching * {
 
 [data-theme="dark"] .expanded-timeline-header h5 {
     color: var(--text-color) !important;
+}
+
+/* Modal-specific Dark Mode Styles */
+[data-theme="dark"] #add-object-modal .dialog,
+[data-theme="dark"] #add-task-modal .dialog,
+[data-theme="dark"] #feedback-modal .dialog {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] #add-object-modal .modal-content,
+[data-theme="dark"] #add-task-modal .modal-content,
+[data-theme="dark"] #feedback-modal .feedback-form {
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #add-object-modal .form-group,
+[data-theme="dark"] #add-task-modal .form-group {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #add-object-modal .form-group label,
+[data-theme="dark"] #add-task-modal .form-group label,
+[data-theme="dark"] #feedback-modal .feedback-form-field label {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #add-object-modal .form-group input,
+[data-theme="dark"] #add-object-modal .form-group select,
+[data-theme="dark"] #add-task-modal .form-group input,
+[data-theme="dark"] #add-task-modal .form-group select,
+[data-theme="dark"] #feedback-modal .feedback-form-field input,
+[data-theme="dark"] #feedback-modal .feedback-form-field textarea {
+    background: var(--bg-light);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] #add-object-modal .form-group input:focus,
+[data-theme="dark"] #add-object-modal .form-group select:focus,
+[data-theme="dark"] #add-task-modal .form-group input:focus,
+[data-theme="dark"] #add-task-modal .form-group select:focus,
+[data-theme="dark"] #feedback-modal .feedback-form-field input:focus,
+[data-theme="dark"] #feedback-modal .feedback-form-field textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 159, 219, 0.2);
+}
+
+[data-theme="dark"] #add-object-modal .form-group small,
+[data-theme="dark"] #add-task-modal .form-group small {
+    color: var(--text-light);
+}
+
+/* Interactions section in task modal */
+[data-theme="dark"] #add-task-modal .interactions-section {
+    background: var(--bg-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] #add-task-modal .section-header h4 {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #add-task-modal .interaction-item {
+    background: var(--bg-light);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] #add-task-modal .interaction-header h5 {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #add-task-modal .time-input-toggle label {
+    color: var(--text-color);
+}
+
+/* Add Interaction Modal/Group Dark Mode Styles */
+[data-theme="dark"] #add-task-modal .interaction-group {
+    background: var(--bg-light);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #add-task-modal .interaction-header {
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] #add-task-modal .interaction-header h5 {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #add-task-modal .btn-remove {
+    background: var(--bg-color);
+    border-color: var(--border-color);
+    color: var(--text-light);
+}
+
+[data-theme="dark"] #add-task-modal .btn-remove:hover {
+    background: var(--error-color);
+    border-color: var(--error-color);
+    color: white;
+}
+
+[data-theme="dark"] #add-task-modal .interaction-fields {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #add-task-modal .interaction-fields .form-group label {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #add-task-modal .interaction-fields .form-group input,
+[data-theme="dark"] #add-task-modal .interaction-fields .form-group select {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] #add-task-modal .interaction-fields .form-group input:focus,
+[data-theme="dark"]
+    #add-task-modal
+    .interaction-fields
+    .form-group
+    select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 159, 219, 0.2);
+}
+
+[data-theme="dark"] #add-task-modal .inline-checkbox {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #add-task-modal .inline-checkbox input {
+    background: var(--bg-color);
+    border-color: var(--border-color);
+}
+
+/* Property changes within interactions */
+[data-theme="dark"] #add-task-modal .property-changes-header {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #add-task-modal .property-changes-header h6 {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #add-task-modal .property-change-group {
+    background: var(--bg-color);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #add-task-modal .property-change-group .form-group label {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #add-task-modal .property-change-group .form-group input,
+[data-theme="dark"] #add-task-modal .property-change-group .form-group select {
+    background: var(--bg-light);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"]
+    #add-task-modal
+    .property-change-group
+    .form-group
+    input:focus,
+[data-theme="dark"]
+    #add-task-modal
+    .property-change-group
+    .form-group
+    select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 159, 219, 0.2);
+}
+
+/* Display Options Panel Dark Mode Styles */
+[data-theme="dark"] #display-options-panel-content {
+    background: var(--bg-light);
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #display-options-panel-content .option-field {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #display-options-panel-content .option-field label {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #display-options-panel-content .option-field input,
+[data-theme="dark"] #display-options-panel-content .option-field select {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] #display-options-panel-content .option-field input:focus,
+[data-theme="dark"] #display-options-panel-content .option-field select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 159, 219, 0.2);
+}
+
+[data-theme="dark"] #display-options-panel-content .btn,
+[data-theme="dark"] #display-options-panel-content .btn-secondary {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] #display-options-panel-content .btn:hover,
+[data-theme="dark"] #display-options-panel-content .btn-secondary:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary-color);
+}
+
+[data-theme="dark"] #display-options-panel-content .element-quick-btn {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] #display-options-panel-content .element-quick-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* Dialog buttons dark mode for modals */
+[data-theme="dark"] #add-object-modal .dialog-buttons .btn-secondary,
+[data-theme="dark"] #add-task-modal .dialog-buttons .btn-secondary,
+[data-theme="dark"] #feedback-modal .feedback-actions .btn-secondary {
+    background: var(--bg-light);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] #add-object-modal .dialog-buttons .btn-secondary:hover,
+[data-theme="dark"] #add-task-modal .dialog-buttons .btn-secondary:hover,
+[data-theme="dark"] #feedback-modal .feedback-actions .btn-secondary:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary-color);
+}
+
+[data-theme="dark"] #add-object-modal .dialog-buttons .btn-primary,
+[data-theme="dark"] #add-task-modal .dialog-buttons .btn-primary,
+[data-theme="dark"] #feedback-modal .feedback-actions .btn-primary {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+[data-theme="dark"] #add-object-modal .dialog-buttons .btn-primary:hover,
+[data-theme="dark"] #add-task-modal .dialog-buttons .btn-primary:hover,
+[data-theme="dark"] #feedback-modal .feedback-actions .btn-primary:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+/* Feedback modal specific elements */
+[data-theme="dark"] #feedback-modal .feedback-message {
+    background: var(--bg-light);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] #feedback-modal .feedback-success {
+    background: rgba(74, 222, 128, 0.1);
+    color: var(--success-color);
+    border-color: var(--success-color);
+}
+
+[data-theme="dark"] #feedback-modal .feedback-error {
+    background: rgba(248, 113, 113, 0.1);
+    color: var(--error-color);
+    border-color: var(--error-color);
 }

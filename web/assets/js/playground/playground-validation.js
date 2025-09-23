@@ -4,6 +4,14 @@
 // Display validation results
 function displayValidationResults(results) {
     // Use the new grouped validation display
+    try {
+        window.__uawValidationResultsCache = {
+            timestamp: Date.now(),
+            results: Array.isArray(results) ? [...results] : [],
+        };
+    } catch (error) {
+        console.warn('SmartActions: failed to cache validation results.', error);
+    }
     displayGroupedValidationResults(results);
 }
 
@@ -19,6 +27,14 @@ function displayGroupedValidationResults(results) {
         suggestions: results.filter(r => r.status === 'suggestion').length,
         success: results.filter(r => r.status === 'success').length
     };
+
+    try {
+        if (window.__uawValidationResultsCache) {
+            window.__uawValidationResultsCache.stats = stats;
+        }
+    } catch (error) {
+        // Ignore cache failures silently
+    }
 
     // Update stat counters
     updateValidationStats(stats);

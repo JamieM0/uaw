@@ -599,6 +599,23 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     grid-template-columns: repeat(4, 1fr);
 }
 
+/* Position & Size specific layouts */
+.inline-inputs.position-size {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+/* Appearance specific layout - all three fields evenly spaced in one row */
+.inline-inputs.appearance {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
 .inline-input-group { 
     display: flex;
     flex-direction: column;

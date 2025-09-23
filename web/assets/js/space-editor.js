@@ -1359,6 +1359,20 @@ class SpaceEditor {
         this.disableAnimations('dragging');
     }
 
+    // Helper function for consistent element detection across hover and click
+    getElementAtPosition(clientX, clientY) {
+        // Find the topmost rectangle by reverse iteration (highest z-index first)
+        const elements = Array.from(document.querySelectorAll('.location-rect'));
+        for (let i = elements.length - 1; i >= 0; i--) {
+            const el = elements[i];
+            const rect = el.getBoundingClientRect();
+            if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+                return el;
+            }
+        }
+        return null;
+    }
+
     onMouseMove(e) {
         // Handle Panning
         if (this.view.isPanning) {
@@ -1441,18 +1455,9 @@ class SpaceEditor {
             this.checkCollisions();
         }
 
-        // Hover: show resize cursor near edges when idle (separate from else-if chain)
+        // Hover: show resize cursor near edges when idle - use consistent element detection
         if (!this.isDrawing && !this.isDragging && !this.isResizing && !this.isPreparingToDrag && !this.isPreparingToResize) {
-            let hovered = null;
-            const elements = Array.from(document.querySelectorAll('.location-rect'));
-            for (let i = elements.length - 1; i >= 0; i--) {
-                const el = elements[i];
-                const rect = el.getBoundingClientRect();
-                if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
-                    hovered = el;
-                    break;
-                }
-            }
+            const hovered = this.getElementAtPosition(e.clientX, e.clientY);
             if (hovered) {
                 const dir = this.getResizeDirection(hovered, e, 12);
                 const cursorMap = { n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize', ne: 'nesw-resize', nw: 'nwse-resize', se: 'nwse-resize', sw: 'nesw-resize' };

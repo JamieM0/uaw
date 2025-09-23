@@ -303,6 +303,9 @@ function initializePlayground() {
   initializeTutorial();
   initializeEmojiPicker();
   initializeExperimentalLLM();
+  if (typeof initializeSmartActions === "function") {
+    initializeSmartActions();
+  }
 
   renderSimulation();
   validateJSON();
@@ -502,6 +505,9 @@ function initializeFallbackEditor() {
   setupUndoButton();
   renderSimulation();
   validateJSON();
+  if (typeof initializeSmartActions === "function") {
+    initializeSmartActions();
+  }
 
   showInitializationError(
     "Monaco editor failed to load. Using basic text editor.",
@@ -548,6 +554,9 @@ function initializeMinimalEditor() {
   setupRenderButton();
   setupUndoButton();
   renderSimulation();
+  if (typeof initializeSmartActions === "function") {
+    initializeSmartActions();
+  }
 
   showInitializationError(
     "Data files failed to load. Some features may be limited.",

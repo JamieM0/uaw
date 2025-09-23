@@ -15,6 +15,7 @@
         <link rel="stylesheet" href="/assets/css/playground.css" />
         <link rel="stylesheet" href="/assets/css/drag-overlay.css" />
         <link rel="stylesheet" href="/assets/css/emoji-picker.css" />
+        <link rel="stylesheet" href="/assets/css/smart-actions.css" />
 
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
@@ -348,6 +349,14 @@
                                 <a href="#" id="start-tutorial-btn">Start Tutorial</a>
                                 <a href="#" id="start-llm-btn">Experimental LLM</a>
                                 <a href="#" id="toggle-auto-validate-btn">Disable Auto-Validate</a>
+                            </div>
+                        </div>
+
+                        <div class="dropdown" id="smart-actions-dropdown">
+                            <button class="action-btn" id="smart-actions-menu-btn">Smart Actions</button>
+                            <div class="dropdown-content smart-actions-menu" aria-labelledby="smart-actions-menu-btn">
+                                <a href="#" id="smart-action-analysis" data-smart-action="analysis">Analysis</a>
+                                <a href="#" id="smart-action-setup" data-smart-action="setup">Setup</a>
                             </div>
                         </div>
 
@@ -849,7 +858,7 @@
 
         <!-- Add Task Modal -->
         <div id="add-task-modal" class="dialog-overlay" style="display: none;">
-            <div class="dialog" style="max-width: 700px;">
+            <div class="dialog">
                 <h3>Add Task</h3>
                 <div class="modal-content">
                     <div class="form-row">
@@ -934,7 +943,7 @@
 
         <!-- Add Object Modal -->
         <div id="add-object-modal" class="dialog-overlay" style="display: none;">
-            <div class="dialog" style="max-width: 500px;">
+            <div class="dialog">
                 <h3>Add Object</h3>
                 <div class="modal-content">
                     <div class="form-group">
@@ -1024,6 +1033,143 @@
         </div>
 
         <!-- Overlay 1: Information and Prerequisite Check (Updated) -->
+        <div id="smart-actions-setup-overlay" class="dialog-overlay smart-actions-overlay" style="display: none;">
+            <div class="smart-actions-dialog" role="dialog" aria-modal="true" aria-labelledby="smart-actions-setup-title">
+                <div class="smart-actions-header">
+                    <h3 id="smart-actions-setup-title">Configure Smart Actions</h3>
+                    <button type="button" class="smart-actions-close-btn" data-smart-close="setup" aria-label="Close setup dialog">×</button>
+                </div>
+                <div class="smart-actions-body">
+                    <div id="smart-setup-lock-view" class="smart-actions-card" hidden>
+                        <h4>Unlock Configuration</h4>
+                        <p>Enter the encryption password to edit your Smart Actions setup.</p>
+                        <label for="smart-setup-password" class="smart-actions-label">Encryption Password</label>
+                        <input type="password" id="smart-setup-password" class="smart-actions-input" autocomplete="current-password" />
+                        <div class="smart-actions-actions">
+                            <button type="button" class="btn-primary" id="smart-setup-unlock-btn">Unlock</button>
+                            <button type="button" class="btn-secondary" id="smart-setup-reset-btn">Reset Configuration</button>
+                        </div>
+                        <p class="smart-actions-hint">Forgot your password? Reset to start over. Stored keys will be removed.</p>
+                        <div class="smart-actions-alert" id="smart-setup-unlock-error" role="alert" hidden></div>
+                    </div>
+
+                    <form id="smart-setup-form" class="smart-actions-form" novalidate>
+                        <section class="smart-actions-card" data-smart-password-section>
+                            <h4>Encryption</h4>
+                            <div class="smart-actions-grid" data-smart-password-fields>
+                                <div>
+                                    <label for="smart-setup-password-new" class="smart-actions-label">Encryption Password</label>
+                                    <input type="password" id="smart-setup-password-new" class="smart-actions-input" autocomplete="new-password" required />
+                                </div>
+                                <div>
+                                    <label for="smart-setup-password-confirm" class="smart-actions-label">Confirm Password</label>
+                                    <input type="password" id="smart-setup-password-confirm" class="smart-actions-input" autocomplete="new-password" required />
+                                </div>
+                            </div>
+                            <p class="smart-actions-hint" data-smart-password-hint>This password encrypts your API keys. If forgotten, reset the setup to configure again.</p>
+                            <p class="smart-actions-hint" data-smart-password-locked hidden>Your encryption password is already set. Use Reset Configuration to create a new one.</p>
+                        </section>
+
+                        <section class="smart-actions-card">
+                            <h4>Provider</h4>
+                            <label for="smart-setup-provider" class="smart-actions-label">Preferred API</label>
+                            <select id="smart-setup-provider" class="smart-actions-input" required>
+                                <option value="">Select a provider</option>
+                                <option value="openai">OpenAI</option>
+                                <option value="openrouter">OpenRouter</option>
+                                <option value="claude">Claude</option>
+                                <option value="gemini">Gemini</option>
+                                <option value="ollama">Ollama (local)</option>
+                            </select>
+
+                            <div class="smart-actions-grid smart-actions-provider-fields">
+                                <div>
+                                    <label for="smart-setup-model" class="smart-actions-label">Model</label>
+                                    <input type="text" id="smart-setup-model" class="smart-actions-input" placeholder="e.g., gpt-4.1" required />
+                                </div>
+                                <div>
+                                    <label for="smart-setup-base-url" class="smart-actions-label">Custom API URL (optional)</label>
+                                    <input type="url" id="smart-setup-base-url" class="smart-actions-input" placeholder="Overrides default endpoint" />
+                                </div>
+                            </div>
+
+                            <div data-smart-secure-section>
+                                <label for="smart-setup-api-key" class="smart-actions-label" data-provider-key-label>API Key</label>
+                                <input type="password" id="smart-setup-api-key" class="smart-actions-input" autocomplete="off" placeholder="Paste your API key" />
+                            </div>
+
+                            <div class="smart-actions-grid">
+                                <div>
+                                    <label for="smart-setup-temperature" class="smart-actions-label">Creativity (temperature)</label>
+                                    <input type="number" step="0.1" min="0" max="2" id="smart-setup-temperature" class="smart-actions-input" value="0.2" />
+                                    <p class="smart-actions-inline-hint" id="smart-setup-temperature-hint" hidden></p>
+                                </div>
+                                <div>
+                                    <label for="smart-setup-max-tokens" class="smart-actions-label">Max Tokens</label>
+                                    <input type="number" id="smart-setup-max-tokens" class="smart-actions-input" value="20000" min="256" />
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="smart-actions-card">
+                            <h4>Metadata</h4>
+                            <div class="smart-actions-grid">
+                                <div>
+                                    <label for="smart-setup-organization" class="smart-actions-label">Organization (optional)</label>
+                                    <input type="text" id="smart-setup-organization" class="smart-actions-input" placeholder="Header value if required" />
+                                </div>
+                                <div>
+                                    <label for="smart-setup-label" class="smart-actions-label">Session Label</label>
+                                    <input type="text" id="smart-setup-label" class="smart-actions-input" placeholder="Shown in chat" />
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="smart-actions-alert" id="smart-setup-error" role="alert" hidden></div>
+                        <div class="smart-actions-alert smart-actions-alert-success" id="smart-setup-success" role="status" hidden></div>
+
+                        <div class="smart-actions-actions">
+                            <button type="submit" class="btn-primary" id="smart-setup-save-btn">Save Configuration</button>
+                            <button type="button" class="btn-secondary" data-smart-close="setup">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="smart-actions-analysis-overlay" class="dialog-overlay smart-actions-overlay" style="display: none;">
+            <div class="smart-actions-dialog smart-actions-dialog-large" role="dialog" aria-modal="true" aria-labelledby="smart-actions-analysis-title">
+                <div class="smart-actions-header">
+                    <div>
+                        <h3 id="smart-actions-analysis-title">Smart Analysis</h3>
+                        <p class="smart-actions-subtitle" id="smart-actions-session-label"></p>
+                    </div>
+                    <button type="button" class="smart-actions-close-btn" data-smart-close="analysis" aria-label="Close analysis dialog">×</button>
+                </div>
+                <div class="smart-actions-body smart-actions-body-flex">
+                    <section class="smart-actions-chat" aria-live="polite">
+                        <div class="smart-actions-chat-toolbar">
+                            <button type="button" class="btn-secondary" id="smart-actions-refresh-context">Refresh Context</button>
+                        </div>
+                        <div class="smart-actions-chat-log" id="smart-actions-chat-log"></div>
+                        <div class="smart-actions-alert" id="smart-actions-analysis-error" role="alert" hidden></div>
+                        <form id="smart-actions-chat-form" class="smart-actions-chat-form">
+                            <label for="smart-actions-chat-input" class="smart-actions-label">Ask a follow-up</label>
+                            <textarea id="smart-actions-chat-input" class="smart-actions-input smart-actions-textarea" placeholder="Ask for deeper analysis, next steps, or clarification" rows="3"></textarea>
+                            <div class="smart-actions-actions">
+                                <button type="submit" class="btn-primary" id="smart-actions-send-btn">Send</button>
+                                <button type="button" class="btn-secondary" id="smart-actions-restart-btn">New Analysis</button>
+                            </div>
+                        </form>
+                    </section>
+                    <aside class="smart-actions-sidebar" id="smart-actions-sidebar" aria-label="Simulation Snapshot">
+                        <h4>Snapshot</h4>
+                        <div id="smart-actions-snapshot" class="smart-actions-sidebar-content"></div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+
         <div id="llm-info-overlay" class="dialog-overlay" style="display: none;">
             <div class="dialog">
                 <h3>🚀 Experimental AI Feature (Canary)</h3>
@@ -1211,6 +1357,15 @@
 
         <script src="/assets/js/context-menu.js"></script>
         <script src="/assets/js/html-sanitizer.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="/assets/js/playground/smart-actions-system-messages.js"></script>
+        <script src="/assets/js/playground/smart-actions-crypto.js"></script>
+        <script src="/assets/js/playground/smart-actions-storage.js"></script>
+        <script src="/assets/js/playground/smart-actions-markdown.js"></script>
+        <script src="/assets/js/playground/smart-actions-context.js"></script>
+        <script src="/assets/js/playground/smart-actions-client.js"></script>
+        <script src="/assets/js/playground/smart-actions-analysis.js"></script>
+        <script src="/assets/js/playground/smart-actions-ui.js"></script>
 
         <!-- Playground modules in dependency order -->
         <script src="/assets/js/playground/playground-utils.js"></script>
@@ -1249,4 +1404,3 @@
         </script>
     </body>
 </html>
-

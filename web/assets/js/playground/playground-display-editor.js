@@ -405,13 +405,26 @@ class DisplayEditor {
 
         // Update hover cursor for resize affordance when idle
         if (!this.isDrawing && !this.isDrawingDisplay && !this.isDragging && !this.isResizing && !this.isPreparingToDrag && !this.isPreparingToResize) {
-            const hoveredEl = this.getTopElementAt(e.clientX, e.clientY) || this.viewport;
+            // First check for display elements
+            const hoveredEl = this.getTopElementAt(e.clientX, e.clientY);
             if (hoveredEl) {
                 const dir = this.getResizeDirection(e, hoveredEl, 12);
                 const cursorMap = { n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize', ne: 'nesw-resize', nw: 'nwse-resize', se: 'nwse-resize', sw: 'nesw-resize' };
                 this.canvas.style.cursor = dir ? cursorMap[dir] : 'default';
             } else {
-                this.canvas.style.cursor = 'default';
+                // Check for viewport resize if no display element is hovered
+                const activeDisplay = this.getActiveDisplay();
+                if (activeDisplay && this.viewport) {
+                    const dir = this.getResizeDirection(e, this.viewport, 12);
+                    if (dir) {
+                        const cursorMap = { n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize', ne: 'nesw-resize', nw: 'nwse-resize', se: 'nwse-resize', sw: 'nesw-resize' };
+                        this.canvas.style.cursor = cursorMap[dir];
+                    } else {
+                        this.canvas.style.cursor = 'default';
+                    }
+                } else {
+                    this.canvas.style.cursor = 'default';
+                }
             }
         }
 
@@ -1158,7 +1171,7 @@ class DisplayEditor {
             <div class="prop-section">
                 <label class="section-label">Position & Size</label>
                 
-                <div class="inline-inputs">
+                <div class="inline-inputs position-size">
                     <div class="inline-input-group">
                         <label for="element-x">X (px)</label>
                         <input type="number" id="element-x" value="${element.bounds.x}" step="1">
@@ -1181,7 +1194,7 @@ class DisplayEditor {
             <div class="prop-section">
                 <label class="section-label">Appearance</label>
                 
-                <div class="inline-inputs" style="margin-bottom: 0.5rem;">
+                <div class="inline-inputs appearance">
                     <div class="inline-input-group">
                         <label for="element-background">Background</label>
                         <input type="color" id="element-background" value="${element.properties.background || '#f0f0f0'}">
