@@ -116,6 +116,23 @@ function getObjectTypeFieldsHTML(type, context, counter) {
                 </div>
             `;
             break;
+        case 'custom':
+            fieldsHTML = `
+                <div class="form-group">
+                    <label>Custom Type Name</label>
+                    <input type="text" name="new_object_custom_type_${counter}" placeholder="e.g., vehicle, document, sensor" required>
+                </div>
+                <div class="custom-properties-section">
+                    <div class="section-header">
+                        <label>Custom Properties</label>
+                        <button type="button" class="btn-secondary btn-small" onclick="addCustomProperty('${counter}')">+ Add Property</button>
+                    </div>
+                    <div id="custom-properties-${counter}" class="custom-properties-container">
+                        <!-- Custom properties will be added here -->
+                    </div>
+                </div>
+            `;
+            break;
     }
     
     fieldsHTML += `
@@ -135,6 +152,49 @@ function getObjectTypeFieldsHTML(type, context, counter) {
 function updateObjectTypeFields(type, container) {
     const context = getCurrentTimelineContext();
     container.innerHTML = getObjectTypeFieldsHTML(type, context, 'modal');
+}
+
+// Add custom property to custom object type
+function addCustomProperty(counter) {
+    const container = document.getElementById(`custom-properties-${counter}`);
+    if (!container) return;
+
+    const propertyCount = container.children.length;
+    const propertyHTML = `
+        <div class="custom-property-group">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Property Name</label>
+                    <input type="text" name="custom_property_name_${counter}_${propertyCount}" placeholder="e.g., status, capacity">
+                </div>
+                <div class="form-group">
+                    <label>Property Type</label>
+                    <select name="custom_property_type_${counter}_${propertyCount}">
+                        <option value="text">Text</option>
+                        <option value="number">Number</option>
+                        <option value="boolean">True/False</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Initial Value</label>
+                    <input type="text" name="custom_property_value_${counter}_${propertyCount}" placeholder="Initial value">
+                </div>
+                <div class="form-group-actions">
+                    <button type="button" class="btn-remove" onclick="removeCustomProperty(this)">Remove</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    container.insertAdjacentHTML('beforeend', propertyHTML);
+}
+
+// Remove custom property
+function removeCustomProperty(button) {
+    const propertyGroup = button.closest('.custom-property-group');
+    if (propertyGroup) {
+        propertyGroup.remove();
+    }
 }
 
 // Open add task modal  
@@ -198,7 +258,10 @@ function openAddTaskModal() {
     
     // Setup time input toggle
     setupTimeInputToggle();
-    
+
+    // Setup task time change listener for interaction 'from' values
+    setupTaskTimeChangeListener();
+
     modal.style.display = 'flex';
     
     // Setup close button and form submission for task modal
@@ -346,13 +409,24 @@ function openEditTaskModal(task) {
                         // From/To interaction
                         const changeTypeSelect = lastInteractionGroup.querySelector(`select[name="interaction_change_type_${counter}"]`);
                         const objectSelect = lastInteractionGroup.querySelector(`select[name="interaction_object_${counter}"]`);
-                        const propertyInput = lastInteractionGroup.querySelector(`input[name="interaction_property_${counter}"]`);
+                        const propertySelect = lastInteractionGroup.querySelector(`select[name="interaction_property_${counter}"]`);
                         const fromInput = lastInteractionGroup.querySelector(`input[name="interaction_from_${counter}"]`);
                         const toInput = lastInteractionGroup.querySelector(`input[name="interaction_to_${counter}"]`);
 
                         if (changeTypeSelect) changeTypeSelect.value = 'from_to';
-                        if (objectSelect) objectSelect.value = interaction.object_id || '';
-                        if (propertyInput) propertyInput.value = propertyName;
+                        if (objectSelect) {
+                            objectSelect.value = interaction.object_id || '';
+                            // Trigger property dropdown update
+                            updateInteractionPropertyOptions(objectSelect);
+                        }
+                        if (propertySelect) {
+                            // Wait for property options to be populated, then set value
+                            setTimeout(() => {
+                                propertySelect.value = propertyName;
+                                // Trigger from value update
+                                updatePropertyFromValue(propertySelect);
+                            }, 50);
+                        }
                         if (fromInput) fromInput.value = changeData.from || '';
                         if (toInput) toInput.value = changeData.to || '';
 
@@ -426,6 +500,9 @@ function openEditTaskModal(task) {
 
     // Setup time input toggle
     setupTimeInputToggle();
+
+    // Setup task time change listener for interaction 'from' values
+    setupTaskTimeChangeListener();
 
     // Set the modal to edit mode
     modal.dataset.mode = 'edit';
@@ -535,7 +612,7 @@ function addInteraction() {
                 </div>
                 <div class="form-group object-selection-group">
                     <label>Object</label>
-                    <select name="interaction_object_${interactionCounter}" required>
+                    <select name="interaction_object_${interactionCounter}" onchange="updateInteractionPropertyOptions(this)" required>
                         <option value="">Select object...</option>
                         ${objectOptions.join('')}
                     </select>
@@ -546,11 +623,13 @@ function addInteraction() {
                 <div class="form-row from-to-fields">
                     <div class="form-group">
                         <label>Property</label>
-                        <input type="text" name="interaction_property_${interactionCounter}" placeholder="e.g., state, quantity">
+                        <select name="interaction_property_${interactionCounter}" onchange="updatePropertyFromValue(this)" required>
+                            <option value="">Select property...</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>From</label>
-                        <input type="text" name="interaction_from_${interactionCounter}" placeholder="current value">
+                        <input type="text" name="interaction_from_${interactionCounter}" placeholder="current value" readonly>
                     </div>
                     <div class="form-group">
                         <label>To</label>
@@ -613,6 +692,7 @@ function addInteraction() {
                                 <option value="equipment">Equipment</option>
                                 <option value="resource">Resource</option>
                                 <option value="product">Product</option>
+                                <option value="custom">Custom</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -747,6 +827,224 @@ function removeInteraction(button) {
     }
 }
 
+// Update property options when object selection changes
+function updateInteractionPropertyOptions(objectSelectElement) {
+    const group = objectSelectElement.closest('.interaction-group');
+    const propertySelect = group.querySelector('.from-to-fields select[name^="interaction_property_"]');
+    const fromInput = group.querySelector('.from-to-fields input[name^="interaction_from_"]');
+
+    if (!propertySelect || !fromInput) return;
+
+    const objectId = objectSelectElement.value;
+    propertySelect.innerHTML = '<option value="">Select property...</option>';
+    fromInput.value = '';
+
+    if (!objectId) return;
+
+    try {
+        const context = getCurrentTimelineContext();
+
+        // Find the selected object across all object types
+        let selectedObject = null;
+        Object.values(context.objectsByType).forEach(objects => {
+            const found = objects.find(obj => obj.id === objectId);
+            if (found) selectedObject = found;
+        });
+
+        // Also check other object types (locations, digital objects, etc.)
+        if (!selectedObject) {
+            // Check locations
+            const allLocations = [...(context.locations || []), ...(context.digitalLocations || [])];
+            selectedObject = allLocations.find(obj => obj.id === objectId);
+
+            // Check digital objects
+            if (!selectedObject) {
+                selectedObject = (context.digitalObjects || []).find(obj => obj.id === objectId);
+            }
+
+            // Check displays
+            if (!selectedObject) {
+                selectedObject = (context.displays || []).find(obj => obj.id === objectId);
+            }
+
+            // Check display elements
+            if (!selectedObject) {
+                selectedObject = (context.displayElements || []).find(obj => obj.id === objectId);
+            }
+        }
+
+        if (selectedObject && selectedObject.properties) {
+            // Populate property dropdown with object's properties
+            Object.keys(selectedObject.properties).forEach(propertyName => {
+                const option = document.createElement('option');
+                option.value = propertyName;
+                option.textContent = propertyName;
+                propertySelect.appendChild(option);
+            });
+        }
+
+    } catch (error) {
+        console.error('Error updating property options:', error);
+    }
+}
+
+// Update 'from' value when property selection changes
+function updatePropertyFromValue(propertySelectElement) {
+    const group = propertySelectElement.closest('.interaction-group');
+    const objectSelect = group.querySelector('select[name^="interaction_object_"]');
+    const fromInput = group.querySelector('input[name^="interaction_from_"]');
+
+    if (!objectSelect || !fromInput) return;
+
+    const objectId = objectSelect.value;
+    const propertyName = propertySelectElement.value;
+
+    fromInput.value = '';
+
+    if (!objectId || !propertyName) return;
+
+    try {
+        // Get the current property value at the task's start time
+        const currentValue = getPropertyValueAtTaskTime(objectId, propertyName);
+        fromInput.value = currentValue !== null ? currentValue : '';
+
+    } catch (error) {
+        console.error('Error updating property from value:', error);
+    }
+}
+
+// Get property value for an object at the current task's start time
+function getPropertyValueAtTaskTime(objectId, propertyName) {
+    try {
+        const context = getCurrentTimelineContext();
+
+        // Get the task start time from the modal
+        const startTimeInput = document.getElementById('task-start-input');
+        const taskStartTime = startTimeInput ? startTimeInput.value : context.startTime;
+
+        // Find the object
+        let targetObject = null;
+        Object.values(context.objectsByType).forEach(objects => {
+            const found = objects.find(obj => obj.id === objectId);
+            if (found) targetObject = found;
+        });
+
+        // Also check other object types
+        if (!targetObject) {
+            const allLocations = [...(context.locations || []), ...(context.digitalLocations || [])];
+            targetObject = allLocations.find(obj => obj.id === objectId);
+
+            if (!targetObject) {
+                targetObject = (context.digitalObjects || []).find(obj => obj.id === objectId);
+            }
+
+            if (!targetObject) {
+                targetObject = (context.displays || []).find(obj => obj.id === objectId);
+            }
+
+            if (!targetObject) {
+                targetObject = (context.displayElements || []).find(obj => obj.id === objectId);
+            }
+        }
+
+        if (!targetObject || !targetObject.properties) {
+            return null;
+        }
+
+        // Get the initial property value
+        let currentValue = targetObject.properties[propertyName];
+
+        // Check if any tasks that start before this task time modify this property
+        const simulation = getCurrentSimulationData();
+        if (simulation && simulation.simulation && simulation.simulation.tasks) {
+            const taskStartMinutes = parseTimeToMinutes(taskStartTime);
+
+            // Get tasks that complete before our task starts, sorted by time
+            const earlierTasks = simulation.simulation.tasks
+                .filter(task => {
+                    const taskStart = parseTimeToMinutes(task.start);
+                    const taskEnd = taskStart + (task.duration || 0);
+                    return taskEnd <= taskStartMinutes;
+                })
+                .sort((a, b) => parseTimeToMinutes(a.start) - parseTimeToMinutes(b.start));
+
+            // Apply property changes from earlier tasks
+            for (const task of earlierTasks) {
+                if (task.interactions) {
+                    for (const interaction of task.interactions) {
+                        if (interaction.object_id === objectId &&
+                            interaction.property_changes &&
+                            interaction.property_changes[propertyName]) {
+
+                            const change = interaction.property_changes[propertyName];
+
+                            if (change.hasOwnProperty('to')) {
+                                // From/To change
+                                currentValue = change.to;
+                            } else if (change.hasOwnProperty('delta')) {
+                                // Delta change
+                                if (typeof currentValue === 'number') {
+                                    currentValue += change.delta;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return currentValue;
+
+    } catch (error) {
+        console.error('Error getting property value at task time:', error);
+        return null;
+    }
+}
+
+// Setup listener for task time changes to update interaction 'from' values
+function setupTaskTimeChangeListener() {
+    const startTimeInput = document.getElementById('task-start-input');
+    const durationInput = document.getElementById('task-duration-input');
+    const endTimeInput = document.getElementById('task-end-time-input');
+
+    if (startTimeInput) {
+        startTimeInput.addEventListener('change', updateAllInteractionFromValues);
+        startTimeInput.addEventListener('input', debounce(updateAllInteractionFromValues, 300));
+    }
+
+    if (durationInput) {
+        durationInput.addEventListener('change', updateAllInteractionFromValues);
+        durationInput.addEventListener('input', debounce(updateAllInteractionFromValues, 300));
+    }
+
+    if (endTimeInput) {
+        endTimeInput.addEventListener('change', updateAllInteractionFromValues);
+        endTimeInput.addEventListener('input', debounce(updateAllInteractionFromValues, 300));
+    }
+}
+
+// Update all interaction 'from' values when task time changes
+function updateAllInteractionFromValues() {
+    const interactionGroups = document.querySelectorAll('.interaction-group');
+
+    interactionGroups.forEach(group => {
+        const objectSelect = group.querySelector('select[name^="interaction_object_"]');
+        const propertySelect = group.querySelector('.from-to-fields select[name^="interaction_property_"]');
+        const fromInput = group.querySelector('.from-to-fields input[name^="interaction_from_"]');
+
+        if (objectSelect && propertySelect && fromInput &&
+            objectSelect.value && propertySelect.value) {
+
+            try {
+                const currentValue = getPropertyValueAtTaskTime(objectSelect.value, propertySelect.value);
+                fromInput.value = currentValue !== null ? currentValue : '';
+            } catch (error) {
+                console.error('Error updating interaction from value:', error);
+            }
+        }
+    });
+}
+
 // Add object to simulation
 function addObjectToSimulation() {
     try {
@@ -765,22 +1063,62 @@ function addObjectToSimulation() {
         const finalObjectId = objectId || getNextAvailableId(objectType, currentJson.simulation.objects || []);
         
         const properties = {};
-        const fieldsContainer = document.getElementById('object-type-specific-fields');
-        const inputs = fieldsContainer.querySelectorAll('input, select, textarea');
-        inputs.forEach(input => {
-            const name = input.name.replace('_modal', '');
-            if (input.value && name) {
-                if (input.type === 'number') {
-                    properties[name] = parseFloat(input.value) || parseInt(input.value);
-                } else {
-                    properties[name] = input.value;
-                }
+        let finalObjectType = objectType;
+
+        if (objectType === 'custom') {
+            // Handle custom object type
+            const customTypeInput = document.querySelector('input[name^="new_object_custom_type_"]');
+            if (customTypeInput && customTypeInput.value) {
+                finalObjectType = customTypeInput.value;
+            } else {
+                alert('Please specify a custom type name');
+                return;
             }
-        });
-        
+
+            // Process custom properties
+            const customPropertiesContainer = document.querySelector('.custom-properties-container');
+            if (customPropertiesContainer) {
+                const propertyGroups = customPropertiesContainer.querySelectorAll('.custom-property-group');
+                propertyGroups.forEach(group => {
+                    const nameInput = group.querySelector('input[name^="custom_property_name_"]');
+                    const typeSelect = group.querySelector('select[name^="custom_property_type_"]');
+                    const valueInput = group.querySelector('input[name^="custom_property_value_"]');
+
+                    if (nameInput && nameInput.value && valueInput && valueInput.value) {
+                        const propertyName = nameInput.value;
+                        const propertyType = typeSelect ? typeSelect.value : 'text';
+                        let propertyValue = valueInput.value;
+
+                        // Convert value based on type
+                        if (propertyType === 'number' && propertyValue) {
+                            propertyValue = parseFloat(propertyValue) || parseInt(propertyValue) || 0;
+                        } else if (propertyType === 'boolean' && propertyValue) {
+                            propertyValue = propertyValue.toLowerCase() === 'true' || propertyValue === '1';
+                        }
+
+                        properties[propertyName] = propertyValue;
+                    }
+                });
+            }
+        } else {
+            // Handle standard object types
+            const fieldsContainer = document.getElementById('object-type-specific-fields');
+            const inputs = fieldsContainer.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                const name = input.name.replace('_modal', '');
+                if (input.value && name) {
+                    if (input.type === 'number') {
+                        properties[name] = parseFloat(input.value) || parseInt(input.value);
+                    } else {
+                        properties[name] = input.value;
+                    }
+                }
+            });
+        }
+
         const newObject = {
             id: finalObjectId,
-            type: objectType,
+            type: finalObjectType,
             name: objectName,
             properties: properties
         };
@@ -876,7 +1214,7 @@ function addTaskToSimulation() {
             }
 
             if (changeType === 'from_to') {
-                const property = group.querySelector(`input[name="interaction_property_${counter}"]`).value;
+                const property = group.querySelector(`select[name="interaction_property_${counter}"]`).value;
                 const from = group.querySelector(`input[name="interaction_from_${counter}"]`).value;
                 const to = group.querySelector(`input[name="interaction_to_${counter}"]`).value;
                 if (property && to) {
@@ -1029,7 +1367,7 @@ function saveTaskToSimulation() {
             }
 
             if (changeType === 'from_to') {
-                const property = group.querySelector(`input[name="interaction_property_${counter}"]`).value;
+                const property = group.querySelector(`select[name="interaction_property_${counter}"]`).value;
                 const from = group.querySelector(`input[name="interaction_from_${counter}"]`).value;
                 const to = group.querySelector(`input[name="interaction_to_${counter}"]`).value;
                 if (property && to) {
@@ -1050,21 +1388,60 @@ function saveTaskToSimulation() {
                 const newObjectEmoji = group.querySelector(`input[name="new_object_emoji_${counter}"]`).value;
 
                 if (newObjectType && newObjectId && newObjectName) {
+                    let finalInteractionObjectType = newObjectType;
+                    const newObjectProperties = {};
+
+                    if (newObjectEmoji) newObjectProperties.emoji = newObjectEmoji;
+
+                    if (newObjectType === 'custom') {
+                        // Handle custom object type in interactions
+                        const customTypeInput = group.querySelector(`input[name="new_object_custom_type_${counter}"]`);
+                        if (customTypeInput && customTypeInput.value) {
+                            finalInteractionObjectType = customTypeInput.value;
+                        }
+
+                        // Process custom properties for interactions
+                        const customPropertiesContainer = group.querySelector(`#custom-properties-${counter}`);
+                        if (customPropertiesContainer) {
+                            const propertyGroups = customPropertiesContainer.querySelectorAll('.custom-property-group');
+                            propertyGroups.forEach(propGroup => {
+                                const nameInput = propGroup.querySelector('input[name^="custom_property_name_"]');
+                                const typeSelect = propGroup.querySelector('select[name^="custom_property_type_"]');
+                                const valueInput = propGroup.querySelector('input[name^="custom_property_value_"]');
+
+                                if (nameInput && nameInput.value && valueInput && valueInput.value) {
+                                    const propertyName = nameInput.value;
+                                    const propertyType = typeSelect ? typeSelect.value : 'text';
+                                    let propertyValue = valueInput.value;
+
+                                    // Convert value based on type
+                                    if (propertyType === 'number' && propertyValue) {
+                                        propertyValue = parseFloat(propertyValue) || parseInt(propertyValue) || 0;
+                                    } else if (propertyType === 'boolean' && propertyValue) {
+                                        propertyValue = propertyValue.toLowerCase() === 'true' || propertyValue === '1';
+                                    }
+
+                                    newObjectProperties[propertyName] = propertyValue;
+                                }
+                            });
+                        }
+                    } else {
+                        // Handle standard object types in interactions
+                        const propInputs = group.querySelectorAll('.type-specific-fields-container input, .type-specific-fields-container select');
+                        propInputs.forEach(input => {
+                            if (input.value && input.name) {
+                                const propName = input.name.replace(`new_object_`, '').replace(`_${counter}`, '');
+                                newObjectProperties[propName] = input.value;
+                            }
+                        });
+                    }
+
                     const newObject = {
                         id: newObjectId,
-                        type: newObjectType,
+                        type: finalInteractionObjectType,
                         name: newObjectName,
-                        properties: {}
+                        properties: newObjectProperties
                     };
-                    if (newObjectEmoji) newObject.properties.emoji = newObjectEmoji;
-
-                    const propInputs = group.querySelectorAll('.type-specific-fields-container input, .type-specific-fields-container select');
-                    propInputs.forEach(input => {
-                        if (input.value && input.name) {
-                            const propName = input.name.replace(`new_object_`, '').replace(`_${counter}`, '');
-                            newObject.properties[propName] = input.value;
-                        }
-                    });
 
                     interaction.add_objects = [newObject];
                     newTask.interactions.push(interaction);

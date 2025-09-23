@@ -1093,12 +1093,19 @@ body {
 #add-task-modal .dialog {
     width: 100%;
     max-width: 720px;
+    box-shadow: none !important;
+}
+
+#welcome-overlay .dialog {
+    max-width: 600px;
+    width: 90%;
 }
 
 #add-task-modal .modal-content,
 #add-object-modal .modal-content {
     width: 100%;
     max-width: none;
+    box-shadow: none !important;
 }
 
 .dialog h3 {
@@ -1979,6 +1986,71 @@ input[style*="background-color: #e8f4f8"] {
     outline: none;
     border-color: var(--error-color);
     box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+}
+
+/* Custom properties styling */
+.custom-properties-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.custom-properties-section .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.custom-properties-section .section-header label {
+    font-weight: 600;
+    margin: 0;
+}
+
+.btn-small {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    height: auto;
+    line-height: 1.2;
+}
+
+.custom-properties-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.custom-property-group {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 0.75rem;
+    border: 1px solid #e9ecef;
+}
+
+.custom-property-group .form-row {
+    gap: 0.75rem;
+}
+
+.form-group-actions {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-width: 80px;
+}
+
+.btn-remove {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-remove:hover {
+    background: #c82333;
 }
 
 /* Created object styling in simulation player */
