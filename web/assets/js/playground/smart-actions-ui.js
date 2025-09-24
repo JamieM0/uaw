@@ -875,6 +875,16 @@
         if (state.initialized) {
             return;
         }
+
+        // Hide smart actions dropdown on production domain
+        if (window.location.hostname === 'universalautomation.wiki') {
+            const smartActionsDropdown = document.getElementById('smart-actions-dropdown');
+            if (smartActionsDropdown) {
+                smartActionsDropdown.style.display = 'none';
+            }
+            return; // Skip initialization entirely on production
+        }
+
         cacheElements();
         if (!elements.dropdown || !elements.setupOverlay || !elements.analysisOverlay) {
             console.warn('SmartActions: Required UI elements are missing. Smart Actions will not initialize.');

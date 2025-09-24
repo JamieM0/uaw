@@ -86,6 +86,37 @@ body {
     flex-shrink: 0;
 }
 
+/* New grouped button styles */
+.file-operations-group,
+.edit-operations-group,
+.view-options-group,
+.playback-controls-group,
+.advanced-tools-group {
+    display: flex;
+    gap: 0.25rem;
+    padding-right: 0.75rem;
+    border-right: 1px solid var(--border-color);
+    align-items: center;
+}
+
+/* Remove border from last group */
+.advanced-tools-group {
+    border-right: none;
+    padding-right: 0;
+}
+
+/* Special styling for playback controls */
+.playback-controls-group {
+    gap: 0.5rem;
+}
+
+/* Hide buttons that should be hidden */
+.view-options-group button.hidden,
+.control-buttons button.hidden {
+    display: none;
+}
+
+/* Legacy classes for compatibility - map to new groups */
 .json-editor-buttons {
     display: flex;
     gap: 0.25rem;
@@ -3300,4 +3331,11 @@ body.theme-switching * {
     background: rgba(248, 113, 113, 0.1);
     color: var(--error-color);
     border-color: var(--error-color);
+}
+
+/* Hide Smart Actions dropdown on production domain */
+@media screen {
+    body[data-domain="universalautomation.wiki"] #smart-actions-dropdown {
+        display: none !important;
+    }
 }

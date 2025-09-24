@@ -30,18 +30,18 @@
             /* Show only specific header elements in iframe */
             .iframe-embedded .playground-header .logo,
             .iframe-embedded .playground-header h1,
-            .iframe-embedded .playground-header .json-editor-buttons > *:not(#simulation-library-btn):not(.dropdown),
-            .iframe-embedded .playground-header .control-buttons > *:not(#dark-mode-toggle):not(#undo-btn),
-            .iframe-embedded .playground-header .action-buttons {
+            .iframe-embedded .playground-header .file-operations-group > *:not(#simulation-library-btn):not(.dropdown),
+            .iframe-embedded .playground-header .view-options-group > *:not(#dark-mode-toggle):not(#undo-btn),
+            .iframe-embedded .playground-header .advanced-tools-group {
                 display: none !important;
             }
 
-            /* Keep visible: Simulation Library, + Object, + Task, Dark Mode, Undo, Player Controls */
+            /* Keep visible: Simulation Library, Edit Operations, Dark Mode, Undo, Player Controls */
             .iframe-embedded .playground-header .dropdown:has(#simulation-library-btn),
-            .iframe-embedded .playground-header .simulation-buttons,
+            .iframe-embedded .playground-header .edit-operations-group,
             .iframe-embedded .playground-header #dark-mode-toggle,
             .iframe-embedded .playground-header #undo-btn,
-            .iframe-embedded .playground-header .player-controls {
+            .iframe-embedded .playground-header .playback-controls-group {
                 display: flex !important;
             }
 
@@ -227,6 +227,11 @@
                         }
                     });
                 }
+
+                // Add domain data attribute for CSS targeting
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.body.setAttribute('data-domain', window.location.hostname);
+                });
             })();
         </script>
 
@@ -273,40 +278,46 @@
                 </div>
                 <h1 class="special-title">Playground</h1>
                 <div class="header-actions">
-                    <div class="json-editor-buttons">
+                    <!-- File Operations Group -->
+                    <div class="file-operations-group">
                         <div class="dropdown">
                             <button id="simulation-library-btn" class="dropdown-toggle">Simulation Library ▼</button>
                             <div id="simulation-library-dropdown" class="dropdown-content">
                                 <!-- Simulation options will be populated here -->
                             </div>
                         </div>
-                        <button id="format-json-btn">Format JSON</button>
-                        <button id="clear-editor-btn">Clear</button>
+                        <button id="load-simulation-btn" class="action-btn" title="Load simulation from save code">Load</button>
+                        <button id="save-simulation-btn" class="action-btn" title="Save simulation and get save code">Save</button>
                     </div>
 
-                    <div class="simulation-buttons">
-                        <button class="action-btn" id="add-object-btn">
-                            + Object
-                        </button>
-                        <button class="action-btn" id="add-task-btn">
-                            + Task
-                        </button>
+                    <!-- Edit Operations Group -->
+                    <div class="edit-operations-group">
+                        <button class="action-btn" id="add-object-btn">+ Object</button>
+                        <button class="action-btn" id="add-task-btn">+ Task</button>
                     </div>
 
-                    <div class="control-buttons">
+                    <!-- View Options Group -->
+                    <div class="view-options-group">
+                        <div class="dropdown">
+                            <button class="action-btn">Tools ▼</button>
+                            <div class="dropdown-content">
+                                <a href="#" id="format-json-btn">Format JSON</a>
+                                <a href="#" id="clear-editor-btn">Clear</a>
+                                <a href="#" id="undo-btn" class="undo-button" disabled title="Undo last change (Ctrl+Z)">↶ Undo</a>
+                                <a href="#" id="render-simulation-btn" class="hidden">Render Simulation</a>
+                                <a href="#" id="auto-render-toggle" class="hidden">Toggle Auto-render</a>
+                                <a href="#" id="toggle-auto-validate-btn">Disable Auto-Validate</a>
+                            </div>
+                        </div>
                         <button id="dark-mode-toggle" class="mode-toggle-btn" title="Toggle Dark Mode">
                             ☾ Dark
                         </button>
                         <button id="metrics-mode-toggle" class="mode-toggle-btn" title="Toggle Metrics Editor Mode">
-                            Open Metrics Editor
+                            Metrics Editor
                         </button>
                         <button id="add-metric-btn" class="btn btn-secondary" style="display: none;" title="Add Custom Metric">
                             + Add Metric
                         </button>
-                        <button id="render-simulation-btn" class="hidden">
-                            Render
-                        </button>
-                        <button id="auto-render-toggle" class="hidden">Auto-render: ON</button>
                         <button
                             id="fullscreen-btn"
                             class="fullscreen-btn primary hidden"
@@ -314,17 +325,10 @@
                         >
                             ⛶
                         </button>
-                        <button
-                            id="undo-btn"
-                            class="undo-button"
-                            disabled
-                            title="Undo last change (Ctrl+Z)"
-                        >
-                            ↶ Undo
-                        </button>
                     </div>
 
-                    <div class="player-controls">
+                    <!-- Playback Controls Group -->
+                    <div class="playback-controls-group">
                         <button id="player-play-pause-btn" title="Play/Pause Simulation">▶️</button>
                         <div class="player-time-display">
                             <span id="player-current-time">00:00</span>
@@ -341,27 +345,22 @@
                         </div>
                     </div>
 
-                    <div class="action-buttons">
-                        <!-- New Help Dropdown Menu -->
-                        <div class="dropdown">
-                            <button class="action-btn">Help</button>
-                            <div class="dropdown-content">
-                                <a href="#" id="start-tutorial-btn">Start Tutorial</a>
-                                <a href="#" id="start-llm-btn">Experimental LLM</a>
-                                <a href="#" id="toggle-auto-validate-btn">Disable Auto-Validate</a>
-                            </div>
-                        </div>
-
+                    <!-- Advanced Tools Group -->
+                    <div class="advanced-tools-group">
                         <div class="dropdown" id="smart-actions-dropdown">
-                            <button class="action-btn" id="smart-actions-menu-btn">Smart Actions</button>
+                            <button class="action-btn" id="smart-actions-menu-btn">Smart Actions ▼</button>
                             <div class="dropdown-content smart-actions-menu" aria-labelledby="smart-actions-menu-btn">
                                 <a href="#" id="smart-action-analysis" data-smart-action="analysis">Analysis</a>
                                 <a href="#" id="smart-action-setup" data-smart-action="setup">Setup</a>
                             </div>
                         </div>
-
-                        <button id="load-simulation-btn" class="action-btn" title="Load simulation from save code">Load Simulation</button>
-                        <button id="save-simulation-btn" class="action-btn" title="Save simulation and get save code">Save Simulation</button>
+                        <div class="dropdown">
+                            <button class="action-btn">Help ▼</button>
+                            <div class="dropdown-content">
+                                <a href="#" id="start-tutorial-btn">Start Tutorial</a>
+                                <a href="#" id="start-llm-btn">Experimental LLM</a>
+                            </div>
+                        </div>
                         <button id="submit-btn" class="action-btn" title="Submit simulation to page" style="display: none;">Submit</button>
                         <button id="feedback-btn" class="action-btn" title="Send feedback about the playground">Feedback</button>
                     </div>
