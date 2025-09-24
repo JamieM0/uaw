@@ -1,903 +1,865 @@
-// Smart Actions UI - Event wiring, modal management, and chat rendering
+// TODO(human): Decide on user interaction flow approach
+// Smart Actions UI - Main interface orchestrator
 // Universal Automation Wiki - Smart Actions Suite
 
 (function() {
     'use strict';
 
-    if (typeof SmartActionsCrypto === 'undefined' ||
-        typeof SmartActionsStorage === 'undefined' ||
-        typeof SmartActionsAnalysis === 'undefined' ||
-        typeof SmartActionsMarkdown === 'undefined') {
-        throw new Error('Smart Actions modules are missing required dependencies.');
-    }
+    /**
+     * Main UI orchestrator for Smart Actions
+     * Manages panel state, user interactions, and coordinates all components
+     */
+    class SmartActionsUI {
+        constructor() {
+            this.isInitialized = false;
+            this.panelVisible = false;
+            this.isResizing = false;
+            this.panelWidth = 400;
+            this.minPanelWidth = 300;
+            this.maxPanelWidth = window.innerWidth * 0.5;
 
-    const state = {
-        initialized: false,
-        hasEncryptedConfig: false,
-        setupMode: 'new',
-        analysis: {
-            context: null,
-            messages: [],
-            isLoading: false,
-            abortController: null,
-            config: null
+            // Component instances
+            this.client = null;
+            this.context = null;
+            this.markdown = null;
+            this.setup = null;
+
+            // UI elements
+            this.elements = {};
+            this.config = null;
+
+            // Chat state
+            this.messages = [];
+            this.isLoading = false;
+            this.currentConversationId = null;
+            this.conversations = new Map(); // Store conversations by ID
+            this.maxConversations = 10;
         }
-    };
 
-    const elements = {};
-    const FIXED_TEMPERATURE_HINT = 'This model uses a fixed temperature of 1.';
-    const SetupModes = {
-        NEW: 'new',
-        LOCKED: 'locked',
-        UNLOCKED: 'unlocked'
-    };
+        /**
+         * Initialize Smart Actions UI
+         */
+        async init() {
+            if (this.isInitialized) return;
 
-    function providerSupportsCustomTemperature(provider, model) {
-        if (!provider) {
-            return true;
+            try {
+                // Initialize component instances
+                this.client = new SmartActionsClient();
+                this.context = new SmartActionsContext();
+                this.markdown = new SmartActionsMarkdown();
+                this.setup = new SmartActionsSetup();
+
+                // Load configuration
+                await this.loadConfig();
+
+                // Initialize setup modal
+                this.setup.init(this.client);
+
+                // Create UI elements
+                this.createUI();
+                this.bindEvents();
+
+                // Load conversations (after UI is created)
+                this.loadConversations();
+
+                // Update menu button state
+                this.updateMenuButtonState();
+
+                this.isInitialized = true;
+                console.log('SmartActionsUI: Initialized successfully');
+            } catch (error) {
+                console.error('SmartActionsUI: Failed to initialize:', error);
+            }
         }
-        const normalizedProvider = String(provider).toLowerCase();
-        const normalizedModel = String(model || '').toLowerCase();
-        if (normalizedProvider === 'openai') {
-            return !/^gpt-5/.test(normalizedModel);
-        }
-        return true;
-    }
 
-    function cacheElements() {
-        elements.dropdown = document.getElementById('smart-actions-dropdown');
-        elements.analysisTrigger = document.getElementById('smart-action-analysis');
-        elements.setupTrigger = document.getElementById('smart-action-setup');
-        elements.setupOverlay = document.getElementById('smart-actions-setup-overlay');
-        elements.analysisOverlay = document.getElementById('smart-actions-analysis-overlay');
-        elements.setupForm = document.getElementById('smart-setup-form');
-        elements.setupPassword = document.getElementById('smart-setup-password-new');
-        elements.setupPasswordConfirm = document.getElementById('smart-setup-password-confirm');
-        elements.setupProvider = document.getElementById('smart-setup-provider');
-        elements.setupModel = document.getElementById('smart-setup-model');
-        elements.setupBaseUrl = document.getElementById('smart-setup-base-url');
-        elements.setupApiKey = document.getElementById('smart-setup-api-key');
-        elements.setupTemperature = document.getElementById('smart-setup-temperature');
-        elements.setupTemperatureHint = document.getElementById('smart-setup-temperature-hint');
-        elements.setupMaxTokens = document.getElementById('smart-setup-max-tokens');
-        elements.setupOrganization = document.getElementById('smart-setup-organization');
-        elements.setupLabel = document.getElementById('smart-setup-label');
-        elements.setupError = document.getElementById('smart-setup-error');
-        elements.setupSuccess = document.getElementById('smart-setup-success');
-        elements.setupSaveButton = document.getElementById('smart-setup-save-btn');
-        elements.setupCloseButtons = elements.setupOverlay?.querySelectorAll('[data-smart-close="setup"]') || [];
-        elements.setupLockView = document.getElementById('smart-setup-lock-view');
-        elements.setupUnlockPassword = document.getElementById('smart-setup-password');
-        elements.setupUnlockButton = document.getElementById('smart-setup-unlock-btn');
-        elements.setupUnlockError = document.getElementById('smart-setup-unlock-error');
-        elements.setupResetButton = document.getElementById('smart-setup-reset-btn');
-        elements.providerKeyLabel = document.querySelector('[data-provider-key-label]');
-        elements.setupPasswordFields = document.querySelector('[data-smart-password-fields]');
-        elements.passwordSection = document.querySelector('[data-smart-password-section]');
-        elements.secureSection = document.querySelector('[data-smart-secure-section]');
-        elements.setupPasswordHint = document.querySelector('[data-smart-password-hint]');
-        elements.setupPasswordLockedMessage = document.querySelector('[data-smart-password-locked]');
-
-        elements.analysisCloseButtons = elements.analysisOverlay?.querySelectorAll('[data-smart-close="analysis"]') || [];
-        elements.chatLog = document.getElementById('smart-actions-chat-log');
-        elements.chatForm = document.getElementById('smart-actions-chat-form');
-        elements.chatInput = document.getElementById('smart-actions-chat-input');
-        elements.chatSendButton = document.getElementById('smart-actions-send-btn');
-        elements.chatRestartButton = document.getElementById('smart-actions-restart-btn');
-        elements.analysisError = document.getElementById('smart-actions-analysis-error');
-        elements.sessionLabel = document.getElementById('smart-actions-session-label');
-        elements.sidebar = document.getElementById('smart-actions-sidebar');
-        elements.snapshot = document.getElementById('smart-actions-snapshot');
-        elements.refreshContextButton = document.getElementById('smart-actions-refresh-context');
-    }
-
-    function bindEvents() {
-        if (elements.analysisTrigger) {
-            elements.analysisTrigger.addEventListener('click', handleAnalysisClick);
+        /**
+         * Load Smart Actions configuration from localStorage
+         */
+        async loadConfig() {
+            try {
+                const configData = localStorage.getItem('smart-actions-config');
+                if (configData) {
+                    this.config = JSON.parse(configData);
+                }
+            } catch (error) {
+                console.warn('SmartActionsUI: Could not load config:', error);
+                this.config = null;
+            }
         }
-        if (elements.setupTrigger) {
-            elements.setupTrigger.addEventListener('click', handleSetupClick);
+
+        /**
+         * Save configuration to localStorage
+         */
+        saveConfig(config) {
+            try {
+                localStorage.setItem('smart-actions-config', JSON.stringify(config));
+                this.config = config;
+            } catch (error) {
+                console.error('SmartActionsUI: Could not save config:', error);
+            }
         }
-        elements.setupCloseButtons.forEach(button => {
-            button.addEventListener('click', () => closeOverlay(elements.setupOverlay));
-        });
-        elements.analysisCloseButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                abortInFlightRequest();
-                closeOverlay(elements.analysisOverlay);
+
+        /**
+         * Create Smart Actions UI elements
+         */
+        createUI() {
+            // Add menu button to Advanced Tools Group
+            this.createMenuButton();
+
+            // Create resizable panel
+            this.createPanel();
+        }
+
+        /**
+         * Cache Smart Actions menu button elements (already exists in HTML)
+         */
+        createMenuButton() {
+            // Cache existing elements from HTML
+            this.elements.menuButton = document.getElementById('smart-actions-menu-btn');
+            this.elements.chatBtn = document.getElementById('smart-action-chat');
+            this.elements.setupBtn = document.getElementById('smart-action-setup');
+        }
+
+        /**
+         * Create Smart Actions panel
+         */
+        createPanel() {
+            const playgroundTop = document.querySelector('.playground-top');
+            if (!playgroundTop) return;
+
+            // Wrap existing content in main container
+            const main = document.createElement('div');
+            main.className = 'playground-main';
+            while (playgroundTop.firstChild) {
+                main.appendChild(playgroundTop.firstChild);
+            }
+            playgroundTop.appendChild(main);
+
+            // Create Smart Actions panel
+            const panel = document.createElement('div');
+            panel.className = 'smart-actions-panel';
+            panel.id = 'smart-actions-panel';
+            panel.innerHTML = `
+                <div class="smart-actions-resize-handle"></div>
+                <div class="smart-actions-header">
+                    <div class="smart-actions-title-area">
+                        <h3 class="smart-actions-title">Smart Chat</h3>
+                        <select class="smart-actions-conversation-switcher" id="smart-actions-conversations">
+                            <option value="new">+ New Conversation</option>
+                        </select>
+                    </div>
+                    <button class="smart-actions-close" type="button">×</button>
+                </div>
+                <div class="smart-actions-content">
+                    <div class="smart-actions-chat">
+                        <div class="smart-actions-empty-state" id="smart-actions-empty-state">
+                            <div class="smart-actions-empty-content">
+                                <h4>Ready to analyze your simulation</h4>
+                                <p>Click the button below to get insights, improvements, and analysis of your current simulation.</p>
+                                <button class="smart-actions-analyze-btn" id="smart-actions-analyze">
+                                    Analyse
+                                </button>
+                            </div>
+                        </div>
+                        <div class="smart-actions-messages" id="smart-actions-messages"></div>
+                        <div class="smart-actions-input-area">
+                            <form class="smart-actions-form" id="smart-actions-form">
+                                <textarea
+                                    class="smart-actions-textarea"
+                                    id="smart-actions-input"
+                                    placeholder="Ask for analysis, improvements, or specific insights about your simulation..."
+                                    rows="3"
+                                ></textarea>
+                                <div class="smart-actions-controls">
+                                    <span class="smart-actions-shortcut-hint">Shift+Enter to send</span>
+                                    <button type="submit" class="smart-actions-send-btn" id="smart-actions-send">
+                                        Send
+                                    </button>
+                                    <button type="button" class="smart-actions-config-btn" id="smart-actions-config">
+                                        ⚙️
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            playgroundTop.appendChild(panel);
+
+            // Cache elements
+            this.elements.panel = panel;
+            this.elements.resizeHandle = panel.querySelector('.smart-actions-resize-handle');
+            this.elements.closeBtn = panel.querySelector('.smart-actions-close');
+            this.elements.emptyState = document.getElementById('smart-actions-empty-state');
+            this.elements.analyzeBtn = document.getElementById('smart-actions-analyze');
+            this.elements.messages = document.getElementById('smart-actions-messages');
+            this.elements.form = document.getElementById('smart-actions-form');
+            this.elements.input = document.getElementById('smart-actions-input');
+            this.elements.sendBtn = document.getElementById('smart-actions-send');
+            this.elements.configBtn = document.getElementById('smart-actions-config');
+            this.elements.conversationSwitcher = document.getElementById('smart-actions-conversations');
+        }
+
+        /**
+         * Bind event listeners
+         */
+        bindEvents() {
+            // Menu interactions
+            if (this.elements.chatBtn) {
+                this.elements.chatBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.handleChat();
+                });
+            }
+
+            if (this.elements.setupBtn) {
+                this.elements.setupBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.handleSetup();
+                });
+            }
+
+            // Panel interactions
+            if (this.elements.closeBtn) {
+                this.elements.closeBtn.addEventListener('click', () => this.hidePanel());
+            }
+
+            if (this.elements.form) {
+                this.elements.form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleSendMessage();
+                });
+            }
+
+            // Handle keyboard shortcuts for textarea
+            if (this.elements.input) {
+                this.elements.input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        if (e.shiftKey) {
+                            // Shift+Enter = send message
+                            e.preventDefault();
+                            this.handleSendMessage();
+                        }
+                        // Regular Enter = new line (default behavior)
+                    }
+                });
+            }
+
+            if (this.elements.configBtn) {
+                this.elements.configBtn.addEventListener('click', () => this.handleSetup());
+            }
+
+            if (this.elements.analyzeBtn) {
+                this.elements.analyzeBtn.addEventListener('click', () => this.handleAnalyze());
+            }
+
+            // Conversation switcher
+            if (this.elements.conversationSwitcher) {
+                this.elements.conversationSwitcher.addEventListener('change', (e) => {
+                    this.handleConversationSwitch(e.target.value);
+                });
+            }
+
+            // Resize handling
+            if (this.elements.resizeHandle) {
+                this.elements.resizeHandle.addEventListener('mousedown', (e) => this.startResize(e));
+            }
+
+            // Global events
+            document.addEventListener('mousemove', (e) => this.handleResize(e));
+            document.addEventListener('mouseup', () => this.stopResize());
+            window.addEventListener('resize', () => this.updateMaxWidth());
+
+            // Smart Actions configuration events
+            document.addEventListener('smart-actions-configured', (e) => {
+                this.config = e.detail.config;
+                this.updateMenuButtonState();
             });
-        });
-        if (elements.setupProvider) {
-            elements.setupProvider.addEventListener('change', handleProviderChange);
         }
-        if (elements.setupModel) {
-            const handleModelInputChange = () => {
-                updateTemperatureControls();
-                try {
-                    SmartActionsStorage.savePlainPreferences?.({
-                        provider: elements.setupProvider?.value || '',
-                        model: elements.setupModel?.value?.trim() || ''
-                    });
-                } catch (e) { /* ignore */ }
+
+        /**
+         * Handle Chat menu click - SETUP-FIRST APPROACH
+         */
+        async handleChat() {
+            // Setup-first approach: Always check configuration first
+            if (!this.config) {
+                this.setup.show();
+                return;
+            }
+
+            // Configuration exists, show chat panel (no automatic analysis)
+            this.showPanel();
+        }
+
+        /**
+         * Handle Setup menu click
+         */
+        handleSetup() {
+            this.setup.show();
+        }
+
+        /**
+         * Handle analyze button click
+         */
+        async handleAnalyze() {
+            if (!this.config) return;
+
+            // Create new conversation for analysis if needed
+            if (!this.currentConversationId) {
+                this.createNewConversation();
+            }
+
+            // Hide analyze button and prompt to prevent confusion
+            this.elements.emptyState.style.display = 'none';
+
+            await this.startAnalysis();
+        }
+
+        /**
+         * Update menu button state based on configuration
+         */
+        updateMenuButtonState() {
+            if (!this.elements.menuButton) return;
+
+            if (this.config) {
+                this.elements.menuButton.disabled = false;
+                this.elements.menuButton.title = 'Smart Actions (Configured)';
+            } else {
+                this.elements.menuButton.disabled = false; // Keep enabled for setup
+                this.elements.menuButton.title = 'Smart Actions (Setup Required)';
+            }
+        }
+
+        /**
+         * Start analysis of current simulation
+         */
+        async startAnalysis() {
+            if (!this.config) return;
+
+            try {
+                this.setLoading(true);
+
+                // Get current context
+                const context = await this.context.getContext();
+
+                // Load base system message and analysis agent prompt
+                const [baseMessage, analysisMessage] = await Promise.all([
+                    this.loadPrompt('base-system-message'),
+                    this.loadPrompt('analysis-agent')
+                ]);
+
+                // Build complete system message with context
+                const systemMessage = this.buildSystemMessage(baseMessage, analysisMessage, context);
+
+                // Create initial analysis request
+                const messages = [
+                    { role: 'system', content: systemMessage },
+                    { role: 'user', content: 'Please provide a comprehensive analysis of the current simulation.' }
+                ];
+
+                // Send to AI
+                const response = await this.client.sendMessage(this.config, messages);
+
+                this.addMessage('assistant', response);
+                this.messages = messages.concat([{ role: 'assistant', content: response }]);
+
+            } catch (error) {
+                this.addMessage('system', `Error: ${error.message}`);
+            } finally {
+                this.setLoading(false);
+            }
+        }
+
+        /**
+         * Handle sending user message
+         */
+        async handleSendMessage() {
+            const input = this.elements.input.value.trim();
+            if (!input || this.isLoading || !this.config) return;
+
+            try {
+                // Add user message to chat first
+                this.addMessage('user', input);
+                this.elements.input.value = '';
+
+                // Add to messages array
+                this.messages.push({ role: 'user', content: input });
+
+                // Now set loading state (this will appear after user message)
+                this.setLoading(true);
+
+                // Use cached conversation - only send recent context for continuing conversations
+                const conversationMessages = this.prepareCachedConversation();
+
+                // Get response from AI
+                const response = await this.client.sendMessage(this.config, conversationMessages);
+
+                this.addMessage('assistant', response);
+                this.messages.push({ role: 'assistant', content: response });
+
+            } catch (error) {
+                this.addMessage('system', `Error: ${error.message}`);
+            } finally {
+                this.setLoading(false);
+            }
+        }
+
+        /**
+         * Prepare conversation messages for cached mode (reduces token usage)
+         * For continuing conversations, only send lightweight context
+         */
+        prepareCachedConversation() {
+            const maxRecentMessages = 10; // Only keep recent conversation history
+
+            // If this is the first message in a conversation, send full system context
+            if (this.messages.length <= 2) { // system + first user message
+                return this.messages;
+            }
+
+            // For continuing conversations, create lightweight system message
+            const lightweightSystemMessage = {
+                role: 'system',
+                content: `You are an AI assistant helping with simulation analysis in the Universal Automation Wiki playground. Continue the conversation naturally while maintaining context of the ongoing discussion.`
             };
-            elements.setupModel.addEventListener('input', handleModelInputChange);
-            elements.setupModel.addEventListener('blur', handleModelInputChange);
-        }
-        if (elements.setupForm) {
-            elements.setupForm.addEventListener('submit', handleSetupSubmit);
-        }
-        if (elements.setupUnlockButton) {
-            elements.setupUnlockButton.addEventListener('click', handleUnlockSubmit);
-        }
-        if (elements.setupResetButton) {
-            elements.setupResetButton.addEventListener('click', handleSetupReset);
-        }
-        if (elements.chatForm) {
-            elements.chatForm.addEventListener('submit', handleChatSubmit);
-        }
-        if (elements.chatRestartButton) {
-            elements.chatRestartButton.addEventListener('click', () => startAnalysisSession(true));
-        }
-        if (elements.refreshContextButton) {
-            elements.refreshContextButton.addEventListener('click', refreshSnapshot);
-        }
-        document.addEventListener('keydown', handleGlobalKeydown);
-    }
 
-    function getSetupSnapshot() {
-        const encrypted = SmartActionsStorage.loadEncryptedConfig();
-        const unlocked = SmartActionsStorage.getUnlockedConfiguration();
-        const password = SmartActionsStorage.getUnlockedPassword();
-        const hasEncrypted = Boolean(encrypted);
-        const hasUnlocked = Boolean(unlocked && password);
-        const mode = !hasEncrypted ? SetupModes.NEW : (hasUnlocked ? SetupModes.UNLOCKED : SetupModes.LOCKED);
-        return {
-            encrypted,
-            unlocked,
-            password,
-            hasEncrypted,
-            hasUnlocked,
-            mode
-        };
-    }
+            // Get recent user-assistant messages only
+            const recentMessages = this.messages
+                .filter(msg => msg.role !== 'system') // Remove full system context
+                .slice(-maxRecentMessages); // Keep only recent exchanges
 
-    function applySetupSnapshot(snapshot) {
-        if (!snapshot) {
-            return;
+            return [lightweightSystemMessage, ...recentMessages];
         }
-        state.hasEncryptedConfig = snapshot.hasEncrypted;
-        state.setupMode = snapshot.mode;
-        switch (snapshot.mode) {
-            case SetupModes.LOCKED:
-                showLockView();
-                // Prefill provider/model from plaintext prefs while locked
-                populateSetupForm(null, false);
-                break;
-            case SetupModes.UNLOCKED:
-                hideLockView();
-                populateSetupForm(snapshot.unlocked || null, true);
-                break;
-            default:
-                hideLockView();
-                populateSetupForm(null, false);
-        }
-    }
 
-    function handleGlobalKeydown(event) {
-        if (event.key === 'Escape') {
-            if (elements.analysisOverlay && elements.analysisOverlay.style.display === 'flex') {
-                abortInFlightRequest();
-                closeOverlay(elements.analysisOverlay);
-            } else if (elements.setupOverlay && elements.setupOverlay.style.display === 'flex') {
-                closeOverlay(elements.setupOverlay);
+        /**
+         * Load prompt from markdown file
+         */
+        async loadPrompt(name) {
+            try {
+                const response = await fetch(`/assets/prompts/${name}.md`);
+                if (!response.ok) {
+                    throw new Error(`Failed to load ${name}.md`);
+                }
+                return await response.text();
+            } catch (error) {
+                console.error(`Failed to load prompt ${name}:`, error);
+                return `# Error loading ${name}`;
             }
         }
-    }
 
-    function openOverlay(overlay) {
-        if (!overlay) {
-            return;
-        }
-        overlay.style.display = 'flex';
-        document.body.classList.add('smart-actions-modal-open');
-    }
+        /**
+         * Build complete system message with context substitution
+         */
+        buildSystemMessage(baseMessage, agentMessage, context) {
+            let fullMessage = baseMessage + '\n\n' + agentMessage;
 
-    function closeOverlay(overlay) {
-        if (!overlay) {
-            return;
-        }
-        overlay.style.display = 'none';
-        if (!isAnyOverlayOpen()) {
-            document.body.classList.remove('smart-actions-modal-open');
-        }
-    }
+            // Substitute context variables
+            const simulation = context.simulation;
+            if (simulation && !simulation.error) {
+                // Create lightweight simulation summary instead of full JSON
+                const simulationSummary = {
+                    title: simulation.title,
+                    description: simulation.description,
+                    industry: simulation.industry,
+                    complexity: simulation.complexityLevel,
+                    objectCount: simulation.objectCount,
+                    taskCount: simulation.taskCount,
+                    objectTypes: simulation.objectTypes,
+                    taskTypes: simulation.taskTypes,
+                    currency: simulation.currency,
+                    timeUnit: simulation.timeUnit,
+                    totalSize: simulation.jsonSummary?.totalCharacters || 0,
+                    hasAssets: simulation.jsonSummary?.hasAssets || false,
+                    assetCount: simulation.jsonSummary?.assetCount || 0
+                };
 
-    function isAnyOverlayOpen() {
-        return [elements.analysisOverlay, elements.setupOverlay].some(el => el && el.style.display === 'flex');
-    }
-
-    function sanitize(text) {
-        return typeof sanitizeHTML === 'function' ? sanitizeHTML(text) : String(text || '');
-    }
-
-    function setTemperatureHint(message) {
-        if (!elements.setupTemperatureHint) {
-            return;
-        }
-        if (!message) {
-            elements.setupTemperatureHint.hidden = true;
-            elements.setupTemperatureHint.textContent = '';
-        } else {
-            elements.setupTemperatureHint.hidden = false;
-            elements.setupTemperatureHint.textContent = message;
-        }
-    }
-
-    function updateTemperatureControls() {
-        if (!elements.setupTemperature) {
-            return;
-        }
-        const provider = elements.setupProvider ? elements.setupProvider.value : '';
-        const model = elements.setupModel ? elements.setupModel.value : '';
-        const supportsCustom = providerSupportsCustomTemperature(provider, model);
-        if (supportsCustom) {
-            elements.setupTemperature.disabled = false;
-            setTemperatureHint('');
-        } else {
-            elements.setupTemperature.disabled = true;
-            elements.setupTemperature.value = '1';
-            setTemperatureHint(FIXED_TEMPERATURE_HINT);
-        }
-    }
-
-    function clearSetupMessages() {
-        if (elements.setupError) {
-            elements.setupError.hidden = true;
-            elements.setupError.textContent = '';
-        }
-        if (elements.setupSuccess) {
-            elements.setupSuccess.hidden = true;
-            elements.setupSuccess.textContent = '';
-        }
-    }
-
-    function showSetupError(message) {
-        if (!elements.setupError) {
-            return;
-        }
-        elements.setupError.hidden = false;
-        elements.setupError.textContent = message;
-    }
-
-    function showSetupSuccess(message) {
-        if (!elements.setupSuccess) {
-            return;
-        }
-        elements.setupSuccess.hidden = false;
-        elements.setupSuccess.textContent = message;
-    }
-
-    function handleSetupClick(event) {
-        event.preventDefault();
-        openSetupModal();
-    }
-
-    function handleAnalysisClick(event) {
-        event.preventDefault();
-        openAnalysisModal();
-    }
-
-    function openSetupModal() {
-        clearSetupMessages();
-        if (!SmartActionsCrypto.isCryptoSupported()) {
-            showSetupError('Your browser does not support the Web Crypto API required for encryption.');
-            openOverlay(elements.setupOverlay);
-            return;
-        }
-        applySetupSnapshot(getSetupSnapshot());
-        openOverlay(elements.setupOverlay);
-    }
-
-    function showLockView() {
-        if (elements.setupLockView) {
-            elements.setupLockView.hidden = false;
-        }
-        // Keep form visible so provider/model can be changed while locked
-        if (elements.setupForm) {
-            elements.setupForm.hidden = false;
-        }
-        if (elements.passwordSection) {
-            elements.passwordSection.hidden = true;
-        }
-        if (elements.secureSection) {
-            elements.secureSection.hidden = true;
-        }
-        if (elements.setupUnlockPassword) {
-            elements.setupUnlockPassword.value = '';
-            setTimeout(() => elements.setupUnlockPassword?.focus(), 50);
-        }
-        if (elements.setupSaveButton) {
-            elements.setupSaveButton.disabled = true;
-            elements.setupSaveButton.title = 'Unlock to save secure settings';
-        }
-        setTemperatureHint('');
-    }
-
-    function hideLockView() {
-        if (elements.setupLockView) {
-            elements.setupLockView.hidden = true;
-        }
-        if (elements.setupForm) {
-            elements.setupForm.hidden = false;
-        }
-        if (elements.passwordSection) {
-            elements.passwordSection.hidden = false;
-        }
-        if (elements.secureSection) {
-            elements.secureSection.hidden = false;
-        }
-        if (elements.setupUnlockError) {
-            elements.setupUnlockError.hidden = true;
-            elements.setupUnlockError.textContent = '';
-        }
-        if (elements.setupSaveButton) {
-            elements.setupSaveButton.disabled = false;
-            elements.setupSaveButton.title = '';
-        }
-    }
-
-    async function handleUnlockSubmit() {
-        if (!elements.setupUnlockPassword) {
-            return;
-        }
-        const password = elements.setupUnlockPassword.value.trim();
-        if (!password) {
-            if (elements.setupUnlockError) {
-                elements.setupUnlockError.hidden = false;
-                elements.setupUnlockError.textContent = 'Please enter the encryption password to continue.';
+                fullMessage = fullMessage
+                    .replace('{{SIMULATION_TITLE}}', simulation.title)
+                    .replace('{{OBJECT_COUNT}}', simulation.objectCount.toString())
+                    .replace('{{TASK_COUNT}}', simulation.taskCount.toString())
+                    .replace('{{INDUSTRY}}', simulation.industry)
+                    .replace('{{COMPLEXITY_LEVEL}}', simulation.complexityLevel)
+                    .replace('{{CURRENT_SIMULATION_JSON}}', JSON.stringify(simulationSummary, null, 2));
+            } else {
+                fullMessage = fullMessage
+                    .replace('{{SIMULATION_TITLE}}', 'No simulation loaded')
+                    .replace('{{OBJECT_COUNT}}', '0')
+                    .replace('{{TASK_COUNT}}', '0')
+                    .replace('{{INDUSTRY}}', 'unknown')
+                    .replace('{{COMPLEXITY_LEVEL}}', 'unknown')
+                    .replace('{{CURRENT_SIMULATION_JSON}}', 'null');
             }
-            return;
+
+            // Substitute validation context
+            const validation = context.validation;
+            if (validation.available) {
+                fullMessage = fullMessage
+                    .replace('{{ERROR_COUNT}}', validation.stats.errors.toString())
+                    .replace('{{WARNING_COUNT}}', validation.stats.warnings.toString())
+                    .replace('{{INFO_COUNT}}', validation.stats.info.toString())
+                    .replace('{{SUCCESS_COUNT}}', validation.stats.success.toString())
+                    .replace('{{RECENT_ERRORS}}',
+                        validation.recentErrors.map(e => `- ${e.message}`).join('\n') || 'None');
+            } else {
+                fullMessage = fullMessage
+                    .replace('{{ERROR_COUNT}}', '0')
+                    .replace('{{WARNING_COUNT}}', '0')
+                    .replace('{{INFO_COUNT}}', '0')
+                    .replace('{{SUCCESS_COUNT}}', '0')
+                    .replace('{{RECENT_ERRORS}}', 'Validation not available');
+            }
+
+            // Substitute metrics context
+            const metrics = context.metrics;
+            fullMessage = fullMessage
+                .replace('{{BUILTIN_METRICS_COUNT}}', metrics.builtInCount.toString())
+                .replace('{{CUSTOM_METRICS_COUNT}}', metrics.customCount.toString())
+                .replace('{{DISABLED_METRICS}}', metrics.disabledMetrics.join(', ') || 'None')
+                .replace('{{VALIDATION_FUNCTIONS}}', metrics.validationFunctions.join(', ') || 'Standard functions');
+
+            return fullMessage;
         }
-        const snapshot = getSetupSnapshot();
-        if (!snapshot.hasEncrypted || !snapshot.encrypted) {
-            applySetupSnapshot(snapshot);
-            return;
+
+        /**
+         * Add message to chat and save to conversation
+         */
+        addMessage(role, content) {
+            // Ensure we have a conversation
+            if (!this.currentConversationId) {
+                this.createNewConversation();
+            }
+
+            // Add to UI
+            this.addMessageToUI(role, content);
+
+            // Update conversation in memory
+            if (this.currentConversationId && this.conversations.has(this.currentConversationId)) {
+                const conversation = this.conversations.get(this.currentConversationId);
+                conversation.messages = [...this.messages]; // Keep in sync
+                conversation.lastActivity = new Date().toISOString();
+
+                // Update title if this is the first user message
+                if (role === 'user' && conversation.title === 'New Conversation') {
+                    conversation.title = content.substring(0, 30) + (content.length > 30 ? '...' : '');
+                    this.updateConversationSwitcher();
+                }
+
+                this.saveConversations();
+            }
+
+            this.updateEmptyState();
         }
-        try {
-            const decrypted = await SmartActionsCrypto.decryptConfig(password, snapshot.encrypted);
-            SmartActionsStorage.setUnlockedConfiguration(decrypted, password);
-            applySetupSnapshot({
-                encrypted: snapshot.encrypted,
-                unlocked: SmartActionsStorage.getUnlockedConfiguration(),
-                password,
-                hasEncrypted: true,
-                hasUnlocked: true,
-                mode: SetupModes.UNLOCKED
+
+        /**
+         * Update empty state visibility based on message count
+         */
+        updateEmptyState() {
+            if (this.elements.emptyState && this.elements.messages) {
+                const hasMessages = this.messages.length > 0 || this.elements.messages.children.length > 0;
+                // Only show empty state if no messages AND not currently loading
+                this.elements.emptyState.style.display = (hasMessages || this.isLoading) ? 'none' : 'flex';
+            }
+        }
+
+        /**
+         * Set loading state
+         */
+        setLoading(loading) {
+            this.isLoading = loading;
+
+            if (loading) {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'smart-actions-loading';
+                loadingDiv.id = 'smart-loading-indicator';
+                loadingDiv.innerHTML = '<div class="smart-actions-spinner"></div> Analyzing...';
+                this.elements.messages.appendChild(loadingDiv);
+                this.elements.messages.scrollTop = this.elements.messages.scrollHeight;
+            } else {
+                const loadingDiv = document.getElementById('smart-loading-indicator');
+                if (loadingDiv) {
+                    loadingDiv.remove();
+                }
+            }
+
+            this.elements.sendBtn.disabled = loading;
+            this.elements.input.disabled = loading;
+        }
+
+        /**
+         * Show Smart Actions panel
+         */
+        showPanel() {
+            this.elements.panel.classList.add('active');
+            this.panelVisible = true;
+            this.updateLayout();
+            this.updateEmptyState();
+        }
+
+        /**
+         * Hide Smart Actions panel
+         */
+        hidePanel() {
+            this.elements.panel.classList.remove('active');
+            this.panelVisible = false;
+            this.updateLayout();
+        }
+
+        /**
+         * Start panel resize
+         */
+        startResize(e) {
+            this.isResizing = true;
+            this.elements.resizeHandle.classList.add('resizing');
+            e.preventDefault();
+        }
+
+        /**
+         * Handle panel resize
+         */
+        handleResize(e) {
+            if (!this.isResizing) return;
+
+            const rect = this.elements.panel.getBoundingClientRect();
+            const newWidth = window.innerWidth - e.clientX;
+            const clampedWidth = Math.max(this.minPanelWidth,
+                                Math.min(this.maxPanelWidth, newWidth));
+
+            this.panelWidth = clampedWidth;
+            this.elements.panel.style.width = `${clampedWidth}px`;
+        }
+
+        /**
+         * Stop panel resize
+         */
+        stopResize() {
+            if (this.isResizing) {
+                this.isResizing = false;
+                this.elements.resizeHandle.classList.remove('resizing');
+            }
+        }
+
+        /**
+         * Update maximum panel width
+         */
+        updateMaxWidth() {
+            this.maxPanelWidth = window.innerWidth * 0.5;
+            if (this.panelWidth > this.maxPanelWidth) {
+                this.panelWidth = this.maxPanelWidth;
+                this.elements.panel.style.width = `${this.panelWidth}px`;
+            }
+        }
+
+        /**
+         * Update layout after panel state changes
+         */
+        updateLayout() {
+            // This could trigger layout adjustments for other playground components
+            const event = new CustomEvent('smart-actions-panel-changed', {
+                detail: { visible: this.panelVisible, width: this.panelWidth }
             });
-            if (elements.setupUnlockPassword) {
-                elements.setupUnlockPassword.value = '';
+            document.dispatchEvent(event);
+        }
+
+        /**
+         * Load conversations from localStorage
+         */
+        loadConversations() {
+            try {
+                const conversationsData = localStorage.getItem('smart-actions-conversations');
+                if (conversationsData) {
+                    const data = JSON.parse(conversationsData);
+                    this.conversations = new Map(Object.entries(data.conversations || {}));
+                    this.currentConversationId = data.currentConversationId || null;
+                }
+            } catch (error) {
+                console.warn('SmartActionsUI: Could not load conversations:', error);
+                this.conversations = new Map();
             }
-            showSetupSuccess('Configuration unlocked. Update settings and save to apply changes.');
-        } catch (error) {
-            if (elements.setupUnlockError) {
-                elements.setupUnlockError.hidden = false;
-                elements.setupUnlockError.textContent = error.message;
-            }
-        }
-    }
 
-    function handleSetupReset() {
-        if (typeof window.confirm === 'function') {
-            const confirmed = window.confirm('Reset Smart Actions configuration? Stored API keys will be removed.');
-            if (!confirmed) {
-                return;
-            }
-        }
-        SmartActionsStorage.clearConfiguration();
-        applySetupSnapshot(getSetupSnapshot());
-        showSetupSuccess('Configuration reset. Enter new credentials to continue.');
-    }
+            this.updateConversationSwitcher();
 
-    function populateSetupForm(config, isExisting) {
-        clearSetupMessages();
-        if (!elements.setupProvider) {
-            return;
-        }
-        if (elements.setupForm) {
-            elements.setupForm.reset();
-        }
-        if (!config) {
-            // Prefill provider/model from plaintext prefs if available
-            const prefs = SmartActionsStorage.loadPlainPreferences?.() || null;
-            elements.setupProvider.value = (prefs && prefs.provider) || '';
-            elements.setupModel.value = (prefs && prefs.model) || '';
-            elements.setupTemperature.value = 0.2;
-            elements.setupMaxTokens.value = 20000;
-            togglePasswordRequirements(true);
-            updateProviderKeyLabel(elements.setupProvider.value);
-            updateTemperatureControls();
-            return;
-        }
-        elements.setupProvider.value = config.provider || '';
-        elements.setupModel.value = config.model || '';
-        elements.setupBaseUrl.value = config.baseUrl || '';
-        elements.setupApiKey.value = config.apiKey || '';
-        elements.setupTemperature.value = config.temperature !== undefined ? config.temperature : 0.2;
-        elements.setupMaxTokens.value = config.maxTokens || 20000;
-        elements.setupOrganization.value = config.organization || '';
-        elements.setupLabel.value = config.label || '';
-        togglePasswordRequirements(!isExisting);
-        updateProviderKeyLabel(config.provider);
-        updateTemperatureControls();
-        setTimeout(() => elements.setupProvider?.dispatchEvent(new Event('change')), 0);
-    }
+            // Load current conversation messages if one exists
+            if (this.currentConversationId && this.conversations.has(this.currentConversationId)) {
+                const conversation = this.conversations.get(this.currentConversationId);
+                this.messages = [...conversation.messages];
 
-    function togglePasswordRequirements(required) {
-        if (!elements.setupPassword || !elements.setupPasswordConfirm) {
-            return;
-        }
-        elements.setupPassword.required = required;
-        elements.setupPasswordConfirm.required = required;
-        elements.setupPassword.disabled = !required;
-        elements.setupPasswordConfirm.disabled = !required;
-        elements.setupPassword.value = '';
-        elements.setupPasswordConfirm.value = '';
-        if (required) {
-            elements.setupPassword.placeholder = 'Create encryption password';
-            elements.setupPasswordConfirm.placeholder = 'Re-enter password';
-        } else {
-            elements.setupPassword.placeholder = 'Leave blank to keep existing password';
-            elements.setupPasswordConfirm.placeholder = 'Re-enter to change password';
-        }
-        if (elements.setupPasswordFields) {
-            elements.setupPasswordFields.hidden = !required;
-        }
-        if (elements.setupPasswordHint) {
-            elements.setupPasswordHint.hidden = !required;
-        }
-        if (elements.setupPasswordLockedMessage) {
-            elements.setupPasswordLockedMessage.hidden = required;
-        }
-    }
-
-    function handleProviderChange() {
-        const provider = elements.setupProvider.value;
-        updateProviderKeyLabel(provider);
-        if (!elements.setupApiKey) {
-            return;
-        }
-        if (provider === 'ollama') {
-            elements.setupApiKey.value = '';
-            elements.setupApiKey.disabled = true;
-            elements.setupApiKey.placeholder = 'Not required for local Ollama';
-        } else {
-            elements.setupApiKey.disabled = false;
-            elements.setupApiKey.placeholder = 'Paste your API key';
-        }
-        updateTemperatureControls();
-        // Persist plaintext prefs as user selects
-        try {
-            SmartActionsStorage.savePlainPreferences?.({
-                provider,
-                model: elements.setupModel?.value?.trim() || ''
-            });
-        } catch (e) {
-            // non-fatal
-        }
-    }
-
-    function updateProviderKeyLabel(provider) {
-        if (!elements.providerKeyLabel) {
-            return;
-        }
-        const labelMap = {
-            openai: 'API Key (sk-...)',
-            openrouter: 'API Key (OpenRouter)',
-            claude: 'API Key (Claude / Anthropic)',
-            gemini: 'API Key (Gemini)',
-            ollama: 'API Key (not required for local Ollama)'
-        };
-        elements.providerKeyLabel.textContent = labelMap[provider] || 'API Key';
-    }
-
-    async function handleSetupSubmit(event) {
-        event.preventDefault();
-        clearSetupMessages();
-        if (!SmartActionsCrypto.isCryptoSupported()) {
-            showSetupError('Encryption is not supported in this browser.');
-            return;
-        }
-        const provider = elements.setupProvider.value;
-        const model = elements.setupModel.value.trim();
-        const baseUrl = elements.setupBaseUrl.value.trim();
-        const apiKey = elements.setupApiKey.value.trim();
-        const supportsCustomTemperature = providerSupportsCustomTemperature(provider, model);
-        const temperatureRaw = Number(elements.setupTemperature.value);
-        const normalizedTemperature = supportsCustomTemperature ? temperatureRaw : 1;
-        const maxTokens = Number(elements.setupMaxTokens.value);
-        const organization = elements.setupOrganization.value.trim();
-        const label = elements.setupLabel.value.trim();
-        const password = elements.setupPassword.value.trim();
-        const passwordConfirm = elements.setupPasswordConfirm.value.trim();
-
-        if (!provider) {
-            showSetupError('Select an API provider to continue.');
-            return;
-        }
-        if (!model) {
-            showSetupError('Specify a model to use for Smart Analysis.');
-            return;
-        }
-        if (provider !== 'ollama' && !apiKey) {
-            showSetupError('Provide an API key for the selected provider.');
-            return;
-        }
-        if (supportsCustomTemperature) {
-            if (Number.isNaN(temperatureRaw) || temperatureRaw < 0 || temperatureRaw > 2) {
-                showSetupError('Temperature must be between 0 and 2.');
-                return;
-            }
-        }
-        if (Number.isNaN(maxTokens) || maxTokens < 256) {
-            showSetupError('Max tokens must be at least 256.');
-            return;
-        }
-
-        const existingConfig = SmartActionsStorage.getUnlockedConfiguration();
-        const existingPassword = SmartActionsStorage.getUnlockedPassword();
-        let encryptionPassword = password;
-
-        if (!existingConfig && !encryptionPassword) {
-            showSetupError('Set an encryption password to protect your API key.');
-            return;
-        }
-        if (encryptionPassword && encryptionPassword !== passwordConfirm) {
-            showSetupError('Passwords do not match.');
-            return;
-        }
-        if (!encryptionPassword) {
-            if (!existingPassword) {
-                showSetupError('Unlock the existing configuration before saving changes.');
-                return;
-            }
-            encryptionPassword = existingPassword;
-        }
-
-        const config = {
-            provider,
-            model,
-            baseUrl,
-            apiKey,
-            temperature: normalizedTemperature,
-            maxTokens,
-            organization,
-            label
-        };
-
-        try {
-            if (!supportsCustomTemperature && elements.setupTemperature) {
-                elements.setupTemperature.value = '1';
-            }
-            const encrypted = await SmartActionsCrypto.encryptConfig(encryptionPassword, config);
-            SmartActionsStorage.saveEncryptedConfig(encrypted);
-            SmartActionsStorage.setUnlockedConfiguration(config, encryptionPassword);
-            // Save plaintext preferences (provider/model)
-            SmartActionsStorage.savePlainPreferences?.({ provider, model });
-            applySetupSnapshot(getSetupSnapshot());
-            showSetupSuccess('Smart Actions configuration saved successfully.');
-        } catch (error) {
-            showSetupError(error.message);
-        }
-    }
-
-    function openAnalysisModal() {
-        const unlocked = SmartActionsStorage.getUnlockedConfiguration();
-        const encrypted = SmartActionsStorage.loadEncryptedConfig();
-        if (!unlocked) {
-            if (encrypted) {
-                openSetupModal();
-                showSetupError('Enter your encryption password to unlock Smart Actions.');
-                return;
-            }
-            openSetupModal();
-            showSetupError('Configure Smart Actions before running analysis.');
-            return;
-        }
-        state.analysis.config = unlocked;
-        renderSessionLabel(unlocked.label);
-        renderEmptyChatState();
-        elements.analysisError.hidden = true;
-        openOverlay(elements.analysisOverlay);
-        setTimeout(() => elements.chatInput?.focus(), 150);
-        startAnalysisSession(true);
-    }
-
-    function renderSessionLabel(label) {
-        if (!elements.sessionLabel) {
-            return;
-        }
-        if (!label) {
-            elements.sessionLabel.textContent = 'Using configured Smart Actions model.';
-            return;
-        }
-        elements.sessionLabel.textContent = sanitize(label);
-    }
-
-    function renderEmptyChatState() {
-        if (!elements.chatLog) {
-            return;
-        }
-        elements.chatLog.innerHTML = '';
-        const empty = document.createElement('div');
-        empty.className = 'smart-actions-empty-state';
-        empty.innerHTML = '<strong>Smart Analysis is ready.</strong><span>We will start by examining your current simulation context.</span>';
-        elements.chatLog.appendChild(empty);
-    }
-
-    function appendMessage(role, content) {
-        if (!elements.chatLog) {
-            return null;
-        }
-        const message = document.createElement('article');
-        message.className = `smart-actions-message smart-actions-message-${role}`;
-
-        const header = document.createElement('div');
-        header.className = 'smart-actions-message-header';
-
-        const title = document.createElement('strong');
-        title.textContent = role === 'assistant' ? 'Smart Analysis' : role === 'user' ? 'You' : 'System';
-
-        const timestamp = document.createElement('span');
-        timestamp.className = 'smart-actions-message-timestamp';
-        timestamp.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        header.appendChild(title);
-        header.appendChild(timestamp);
-
-        const body = document.createElement('div');
-        body.className = 'smart-actions-message-content';
-
-        const updateContent = (nextContent) => {
-            body.innerHTML = SmartActionsMarkdown.renderMarkdown(nextContent || '');
-            elements.chatLog.scrollTop = elements.chatLog.scrollHeight;
-        };
-
-        updateContent(content);
-
-        message.appendChild(header);
-        message.appendChild(body);
-        elements.chatLog.appendChild(message);
-        elements.chatLog.scrollTop = elements.chatLog.scrollHeight;
-        return {
-            element: message,
-            updateContent
-        };
-    }
-
-    function setLoading(isLoading, placeholderText, options = {}) {
-        const showMessage = options.showMessage !== false;
-        state.analysis.isLoading = isLoading;
-        if (elements.chatSendButton) {
-            elements.chatSendButton.disabled = isLoading;
-        }
-        if (elements.chatInput) {
-            elements.chatInput.disabled = isLoading;
-        }
-        if (isLoading && showMessage) {
-            appendMessage('system', placeholderText || 'Analyzing your simulation...');
-        }
-    }
-
-    function abortInFlightRequest() {
-        if (state.analysis.abortController) {
-            state.analysis.abortController.abort();
-            state.analysis.abortController = null;
-        }
-        state.analysis.isLoading = false;
-    }
-
-    async function startAnalysisSession(forceRefresh) {
-        if (!state.analysis.config) {
-            return;
-        }
-        abortInFlightRequest();
-        state.analysis.messages = [];
-        elements.analysisError.hidden = true;
-        if (elements.chatLog) {
-            elements.chatLog.innerHTML = '';
-        }
-        setLoading(true, 'Gathering context and generating initial analysis...');
-        let assistantHandle = null;
-        let streamedContent = '';
-        try {
-            const { context, messages } = await SmartActionsAnalysis.buildInitialMessages(forceRefresh);
-            state.analysis.context = context;
-            state.analysis.messages = messages.slice();
-            renderSnapshot(context);
-            // The last appended message is the loading system note; remove it before continuing.
-            if (elements.chatLog) {
-                elements.chatLog.innerHTML = '';
-            }
-            appendMessage('user', messages[messages.length - 1].content);
-            const controller = new AbortController();
-            state.analysis.abortController = controller;
-            assistantHandle = appendMessage('assistant', '');
-            const response = await SmartActionsAnalysis.sendAnalysisRequest(state.analysis.config, messages, {
-                signal: controller.signal,
-                stream: true,
-                onChunk(chunk) {
-                    if (!chunk) {
-                        return;
+                // Rebuild chat UI for current conversation
+                this.clearMessages();
+                this.messages.forEach(msg => {
+                    if (msg.role !== 'system') { // Don't show system messages in UI
+                        this.addMessageToUI(msg.role, msg.content);
                     }
-                    streamedContent += chunk;
-                    if (assistantHandle) {
-                        assistantHandle.updateContent(streamedContent);
-                    }
+                });
+            }
+
+            this.updateEmptyState();
+        }
+
+        /**
+         * Save conversations to localStorage
+         */
+        saveConversations() {
+            try {
+                const data = {
+                    conversations: Object.fromEntries(this.conversations),
+                    currentConversationId: this.currentConversationId
+                };
+                localStorage.setItem('smart-actions-conversations', JSON.stringify(data));
+            } catch (error) {
+                console.error('SmartActionsUI: Could not save conversations:', error);
+            }
+        }
+
+        /**
+         * Create a new conversation
+         */
+        createNewConversation() {
+            const id = 'conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            const conversation = {
+                id,
+                title: 'New Conversation',
+                messages: [],
+                createdAt: new Date().toISOString(),
+                lastActivity: new Date().toISOString()
+            };
+
+            // Remove oldest conversation if we exceed the limit
+            if (this.conversations.size >= this.maxConversations) {
+                const oldestId = Array.from(this.conversations.keys())[0];
+                this.conversations.delete(oldestId);
+            }
+
+            this.conversations.set(id, conversation);
+            this.currentConversationId = id;
+            this.messages = [];
+
+            this.clearMessages();
+            this.updateConversationSwitcher();
+            this.saveConversations();
+
+            return conversation;
+        }
+
+        /**
+         * Switch to a conversation
+         */
+        handleConversationSwitch(conversationId) {
+            if (conversationId === 'new') {
+                this.createNewConversation();
+                return;
+            }
+
+            const conversation = this.conversations.get(conversationId);
+            if (!conversation) return;
+
+            // Save current conversation if it exists
+            if (this.currentConversationId && this.conversations.has(this.currentConversationId)) {
+                const current = this.conversations.get(this.currentConversationId);
+                current.messages = [...this.messages];
+                current.lastActivity = new Date().toISOString();
+            }
+
+            // Load selected conversation
+            this.currentConversationId = conversationId;
+            this.messages = [...conversation.messages];
+
+            // Rebuild chat UI
+            this.clearMessages();
+            this.messages.forEach(msg => {
+                if (msg.role !== 'system') { // Don't show system messages in UI
+                    this.addMessageToUI(msg.role, msg.content);
                 }
             });
-            const assistantContent = response && typeof response.message === 'string' ? response.message : streamedContent;
-            const finalContent = assistantContent || 'Smart Actions did not return any content.';
-            if (assistantHandle) {
-                assistantHandle.updateContent(finalContent);
-            } else {
-                appendMessage('assistant', finalContent);
-            }
-            state.analysis.messages.push({ role: 'assistant', content: finalContent });
-        } catch (error) {
-            if (assistantHandle && streamedContent === '' && assistantHandle.element?.parentNode) {
-                assistantHandle.element.parentNode.removeChild(assistantHandle.element);
-            }
-            handleAnalysisError(error);
-        } finally {
-            state.analysis.abortController = null;
-            setLoading(false);
-        }
-    }
 
-    function handleAnalysisError(error) {
-        if (!elements.analysisError) {
-            return;
+            this.updateEmptyState();
+            this.saveConversations();
         }
-        const isAbort = error && error.name === 'AbortError';
-        if (isAbort) {
-            return;
-        }
-        elements.analysisError.hidden = false;
-        elements.analysisError.textContent = error.message || 'An unexpected error occurred while contacting the AI service.';
-        appendMessage('system', 'Analysis failed. Adjust your configuration or try again later.');
-    }
 
-    async function handleChatSubmit(event) {
-        event.preventDefault();
-        if (!state.analysis.config || state.analysis.isLoading) {
-            return;
-        }
-        const message = elements.chatInput.value.trim();
-        if (!message) {
-            return;
-        }
-        elements.chatInput.value = '';
-        elements.analysisError.hidden = true;
-        const userMessage = { role: 'user', content: message };
-        state.analysis.messages.push(userMessage);
-        appendMessage('user', message);
-        setLoading(true, 'Smart Analysis is thinking...', { showMessage: false });
-        let assistantHandle = null;
-        let streamedContent = '';
-        try {
-            const controller = new AbortController();
-            state.analysis.abortController = controller;
-            assistantHandle = appendMessage('assistant', '');
-            const response = await SmartActionsAnalysis.sendAnalysisRequest(state.analysis.config, state.analysis.messages, {
-                signal: controller.signal,
-                stream: true,
-                onChunk(chunk) {
-                    if (!chunk) {
-                        return;
-                    }
-                    streamedContent += chunk;
-                    if (assistantHandle) {
-                        assistantHandle.updateContent(streamedContent);
-                    }
+        /**
+         * Update conversation switcher dropdown
+         */
+        updateConversationSwitcher() {
+            if (!this.elements.conversationSwitcher) return;
+
+            const switcher = this.elements.conversationSwitcher;
+            switcher.innerHTML = '<option value="new">+ New Conversation</option>';
+
+            // Sort conversations by last activity (newest first)
+            const sorted = Array.from(this.conversations.entries())
+                .sort((a, b) => new Date(b[1].lastActivity) - new Date(a[1].lastActivity));
+
+            sorted.forEach(([id, conv]) => {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = this.getConversationDisplayTitle(conv);
+                if (id === this.currentConversationId) {
+                    option.selected = true;
                 }
+                switcher.appendChild(option);
             });
-            const assistantContent = response && typeof response.message === 'string' ? response.message : streamedContent;
-            const assistantMessage = { role: 'assistant', content: assistantContent || 'Smart Actions did not return any content.' };
-            state.analysis.messages.push(assistantMessage);
-            if (assistantHandle) {
-                assistantHandle.updateContent(assistantMessage.content);
-            } else {
-                appendMessage('assistant', assistantMessage.content);
+        }
+
+        /**
+         * Get display title for conversation
+         */
+        getConversationDisplayTitle(conversation) {
+            if (conversation.title && conversation.title !== 'New Conversation') {
+                return conversation.title;
             }
-        } catch (error) {
-            if (assistantHandle && streamedContent === '' && assistantHandle.element?.parentNode) {
-                assistantHandle.element.parentNode.removeChild(assistantHandle.element);
+
+            // Generate title from first user message if available
+            const firstUserMsg = conversation.messages.find(m => m.role === 'user');
+            if (firstUserMsg) {
+                const preview = firstUserMsg.content.substring(0, 30);
+                return preview.length < firstUserMsg.content.length ? preview + '...' : preview;
             }
-            handleAnalysisError(error);
-        } finally {
-            state.analysis.abortController = null;
-            setLoading(false);
-        }
-    }
 
-    async function refreshSnapshot() {
-        try {
-            const context = await SmartActionsAnalysis.fetchContext(true);
-            state.analysis.context = context;
-            renderSnapshot(context);
-            appendMessage('system', 'Context refreshed. Use the latest data for your next request.');
-        } catch (error) {
-            appendMessage('system', `Unable to refresh context: ${error.message}`);
-        }
-    }
-
-    function renderSnapshot(context) {
-        if (!elements.snapshot) {
-            return;
-        }
-        const container = elements.snapshot;
-        container.innerHTML = '';
-        if (!context || !context.currentSimulation || !context.currentSimulation.simulation) {
-            container.innerHTML = '<p>No simulation is currently loaded.</p>';
-            return;
-        }
-        const simulation = context.currentSimulation.simulation;
-        const meta = simulation.meta || {};
-        const stats = document.createElement('dl');
-        stats.className = 'smart-actions-sidebar-content';
-
-        function addStat(label, value) {
-            const dt = document.createElement('dt');
-            dt.textContent = label;
-            const dd = document.createElement('dd');
-            dd.textContent = value;
-            stats.appendChild(dt);
-            stats.appendChild(dd);
+            // Fallback to timestamp
+            const date = new Date(conversation.createdAt);
+            return `Chat ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
         }
 
-        addStat('Title', sanitize(meta.title || 'Untitled'));
-        addStat('Industry', sanitize(meta.industry || 'Unspecified'));
-        addStat('Complexity', sanitize(meta.complexity_level || 'Unspecified'));
-        addStat('Objects', Array.isArray(simulation.objects) ? simulation.objects.length : 0);
-        addStat('Tasks', Array.isArray(simulation.tasks) ? simulation.tasks.length : 0);
-
-        if (context.validationResults) {
-            const validation = context.validationResults;
-            addStat('Errors', validation.errorCount || 0);
-            addStat('Warnings', validation.warningCount || 0);
-            addStat('Suggestions', validation.suggestionCount || 0);
-        }
-
-        container.appendChild(stats);
-    }
-
-    function initializeSmartActions() {
-        if (state.initialized) {
-            return;
-        }
-
-        // Hide smart actions dropdown on production domain
-        if (window.location.hostname === 'universalautomation.wiki') {
-            const smartActionsDropdown = document.getElementById('smart-actions-dropdown');
-            if (smartActionsDropdown) {
-                smartActionsDropdown.style.display = 'none';
+        /**
+         * Clear messages from UI only
+         */
+        clearMessages() {
+            if (this.elements.messages) {
+                this.elements.messages.innerHTML = '';
             }
-            return; // Skip initialization entirely on production
         }
 
-        cacheElements();
-        if (!elements.dropdown || !elements.setupOverlay || !elements.analysisOverlay) {
-            console.warn('SmartActions: Required UI elements are missing. Smart Actions will not initialize.');
-            return;
+        /**
+         * Add message to UI only (separate from addMessage for conversation loading)
+         */
+        addMessageToUI(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'smart-message';
+
+            const time = new Date().toLocaleTimeString();
+            const renderedContent = this.markdown.parse(content);
+
+            messageDiv.innerHTML = `
+                <div class="smart-message-header">
+                    <span class="smart-message-role ${role}">${role}</span>
+                    <span class="smart-message-time">${time}</span>
+                </div>
+                <div class="smart-message-content">${renderedContent}</div>
+            `;
+
+            this.elements.messages.appendChild(messageDiv);
+            this.elements.messages.scrollTop = this.elements.messages.scrollHeight;
         }
-        bindEvents();
-        updateProviderKeyLabel('');
-        updateTemperatureControls();
-        const snapshot = getSetupSnapshot();
-        state.hasEncryptedConfig = snapshot.hasEncrypted;
-        state.setupMode = snapshot.mode;
-        state.initialized = true;
     }
 
-    window.initializeSmartActions = initializeSmartActions;
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            window.smartActionsUI = new SmartActionsUI();
+            window.smartActionsUI.init();
+        });
+    } else {
+        window.smartActionsUI = new SmartActionsUI();
+        window.smartActionsUI.init();
+    }
+
 })();

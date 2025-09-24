@@ -77,8 +77,8 @@
       --radius-lg: 18px;
 
       /* Layout */
-      --max-w: 1200px;
-      --gutter: 20px;
+      --max-w: 1400px;
+      --gutter: 16px;
     }
 
     /* Base */
@@ -127,6 +127,11 @@
       margin-inline: auto;
       position: relative;
       container-type: inline-size; /* enables container queries */
+    }
+    @media (max-width: 768px) {
+      :root {
+        --gutter: 20px;
+      }
     }
 
     /* Light mode glass adjustments */
@@ -272,6 +277,8 @@
         background: none;
         border: none;
         justify-self: end;
+        z-index: 50;
+        position: relative;
     }
 
     .hamburger span {
@@ -431,12 +438,13 @@
       backdrop-filter: saturate(180%) blur(var(--blur-standard));
       border: 1px solid var(--glass-border);
       box-shadow: var(--shadow-lg), 0 0 0 1px rgba(108, 198, 255, 0.1);
-      padding: 24px;
+      padding: 20px;
       transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
       will-change: transform;
       cursor: pointer;
       display: flex;
       flex-direction: column;
+      min-height: 140px;
       overflow: hidden;
     }
     .feature-card::before {
@@ -463,6 +471,7 @@
       align-items: center;
       gap: 16px;
       margin-bottom: 16px;
+      position: relative;
     }
     .feature-card .feature-icon {
       width: 56px;
@@ -495,6 +504,7 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
       flex: 1;
+      padding-right: 50px;
     }
     .feature-card p.summary {
       margin: 0;
@@ -504,14 +514,15 @@
       flex-grow: 1;
     }
     .arrow-cta {
-      margin-top: 20px;
+      position: absolute;
+      top: 20px;
+      right: 20px;
       color: var(--accent);
-      align-self: flex-end;
       transition: all 300ms ease;
       opacity: 0.8;
     }
     .feature-card:hover .arrow-cta {
-      transform: translateX(-6px);
+      transform: translateX(4px);
       opacity: 1;
       color: var(--accent-2);
     }
@@ -1953,7 +1964,7 @@
     })();
 
     // Hamburger Menu Functionality
-    (function() {
+    document.addEventListener('DOMContentLoaded', function() {
       const hamburger = document.querySelector('.hamburger');
       const mainNav = document.querySelector('.main-nav');
 
@@ -1989,7 +2000,7 @@
           }
         });
       }
-    })();
+    });
   </script>
 
   <!-- Load components.js first to ensure header/footer are loaded before other scripts -->

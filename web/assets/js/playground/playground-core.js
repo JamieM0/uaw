@@ -263,6 +263,7 @@ function initializePlayground() {
   setupRenderButton();
   setupFullscreenButton();
   setupUndoButton();
+  setupResetPanelSizes();
 
   const canvas = document.getElementById("space-canvas");
   const propsPanel = document.getElementById("properties-panel-content");

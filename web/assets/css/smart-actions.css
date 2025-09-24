@@ -1,586 +1,829 @@
-/* Smart Actions UI - Styling for setup and analysis dialogs */
-.smart-actions-overlay {
-    backdrop-filter: blur(6px);
-    background: rgba(12, 18, 28, 0.55);
-    z-index: 1100;
+/* Smart Actions - Modern resizable chat panel */
+
+/* Permission Modal Styling for Large Requests */
+.permission-warning.large-request {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-left: 4px solid #e67e22;
+    padding: 1rem;
+    border-radius: var(--border-radius);
 }
 
-.smart-actions-dialog {
-    width: min(680px, 92%);
-    max-height: 92vh;
-    height: auto;
-    background: linear-gradient(135deg, rgba(var(--primary-color-rgb), 0.08), rgba(255, 255, 255, 0.92));
-    border-radius: var(--border-radius-lg);
-    box-shadow: 0 18px 48px rgba(17, 24, 39, 0.25);
-    border: 1px solid rgba(var(--primary-color-rgb), 0.2);
-    padding: var(--spacing-lg);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
-    position: relative;
-    color: var(--text-color);
+.permission-warning.large-request p {
+    margin: 0.5rem 0;
+    color: #d68910;
+    font-weight: 500;
 }
 
-[data-theme="dark"] .smart-actions-dialog {
-    background: linear-gradient(135deg, rgba(32, 45, 66, 0.85), rgba(14, 22, 36, 0.88));
-    border: 1px solid rgba(74, 159, 219, 0.35);
-    box-shadow: 0 20px 48px rgba(10, 14, 22, 0.6);
+.permission-warning.large-request p:first-child {
+    margin-top: 0;
 }
 
-#smart-actions-analysis-overlay {
-    position: fixed;
-    inset: 0;
-    justify-content: flex-end;
-    align-items: stretch;
-    padding: 0;
-    background: transparent;
-    backdrop-filter: none;
-    pointer-events: none;
+.permission-warning.large-request p:last-child {
+    margin-bottom: 0;
 }
 
-#smart-actions-analysis-overlay .smart-actions-dialog {
-    width: min(480px, 100%);
-    max-width: 480px;
-    height: 100vh;
-    max-height: 100vh;
-    border-radius: 0;
-    border-left: 1px solid rgba(15, 23, 42, 0.12);
-    box-shadow: -12px 0 32px rgba(15, 23, 42, 0.2);
-    margin: 0;
-    pointer-events: auto;
-}
-
-[data-theme="dark"] #smart-actions-analysis-overlay .smart-actions-dialog {
-    border-left: 1px solid rgba(74, 159, 219, 0.35);
-    box-shadow: -12px 0 32px rgba(0, 0, 0, 0.55);
-}
-
-#smart-actions-analysis-overlay .smart-actions-dialog.smart-actions-dialog-large {
-    width: min(520px, 100%);
-}
-
-#smart-actions-analysis-overlay .smart-actions-body {
-    overflow: hidden;
-}
-
-#smart-actions-analysis-overlay .smart-actions-body-flex {
-    gap: var(--spacing-md);
-    flex-direction: row;
-    align-items: stretch;
-}
-
-#smart-actions-analysis-overlay .smart-actions-chat {
-    background: transparent;
-    box-shadow: none;
-    padding: 0;
-}
-
-#smart-actions-analysis-overlay .smart-actions-chat-log {
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
-}
-
-[data-theme="dark"] #smart-actions-analysis-overlay .smart-actions-chat-log {
-    background: rgba(12, 18, 28, 0.9);
-    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.25);
-}
-
-#smart-actions-analysis-overlay .smart-actions-chat-form {
-    background: rgba(255, 255, 255, 0.9);
-}
-
-[data-theme="dark"] #smart-actions-analysis-overlay .smart-actions-chat-form {
-    background: rgba(17, 26, 39, 0.88);
-}
-
-#smart-actions-analysis-overlay .smart-actions-header {
-    margin-bottom: var(--spacing-sm);
-}
-
-.smart-actions-dialog-large {
-    width: min(1100px, 96%);
-    max-height: 92vh;
-    height: min(92vh, 820px);
-}
-
-.smart-actions-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--spacing-md);
-}
-
-.smart-actions-header h3 {
-    margin-bottom: var(--spacing-xs);
-}
-
-.smart-actions-subtitle {
-    color: var(--text-light);
-    font-size: var(--font-size-sm);
-    margin: 0;
-}
-
-.smart-actions-close-btn {
-    border: none;
-    background: transparent;
-    color: var(--text-light);
-    font-size: 1.5rem;
-    cursor: pointer;
-    line-height: 1;
-    padding: var(--spacing-xs);
-    transition: color var(--transition-normal);
-}
-
-.smart-actions-close-btn:hover {
-    color: var(--primary-color);
-}
-
-.smart-actions-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
-    overflow-x: hidden;
-    overflow-y: auto;
-    padding-right: var(--spacing-xs);
-}
-
-.smart-actions-body-flex {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
-    min-height: 0;
-    overflow: hidden;
-}
-
-.smart-actions-card {
-    background: rgba(255, 255, 255, 0.88);
-    border-radius: var(--border-radius-lg);
-    padding: var(--spacing-lg);
-    box-shadow: var(--shadow-sm);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-}
-
-[data-theme="dark"] .smart-actions-card {
-    background: rgba(25, 33, 45, 0.85);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-}
-
-.smart-actions-card h4 {
-    margin: 0;
-    font-size: var(--font-size-lg);
-}
-
-.smart-actions-grid {
-    display: grid;
-    gap: var(--spacing-md);
-}
-
-.smart-actions-grid > div {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-}
-
-.smart-actions-label {
-    font-size: var(--font-size-sm);
+.permission-value.highlight-large {
+    color: #e67e22;
     font-weight: 600;
-    color: var(--text-secondary);
+    background: #fff3cd;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
 }
 
-.smart-actions-input {
+/* Markdown Styling for Smart Actions Chat */
+.smart-message-content .markdown-heading {
+    font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 1.5rem 0 0.75rem 0;
+    color: var(--text-color);
+}
+
+.smart-message-content .markdown-heading:first-child {
+    margin-top: 0;
+}
+
+.smart-message-content h1.markdown-heading {
+    font-size: 1.8rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.smart-message-content h2.markdown-heading {
+    font-size: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.3rem;
+}
+
+.smart-message-content h3.markdown-heading {
+    font-size: 1.3rem;
+}
+
+.smart-message-content h4.markdown-heading,
+.smart-message-content h5.markdown-heading,
+.smart-message-content h6.markdown-heading {
+    font-size: 1.1rem;
+}
+
+.smart-message-content .markdown-table {
+    border-collapse: collapse;
     width: 100%;
-    padding: 12px 14px;
-    border-radius: var(--border-radius-md);
-    border: 1px solid rgba(15, 23, 42, 0.1);
-    font-family: var(--font-family-body);
-    font-size: var(--font-size-md);
-    background: rgba(255, 255, 255, 0.92);
-    color: var(--text-color);
-    transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+    margin: 1rem 0;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.smart-actions-input:focus {
-    outline: none;
-    border-color: rgba(var(--primary-color-rgb), 0.6);
-    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.2);
+.smart-message-content .markdown-table th,
+.smart-message-content .markdown-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
 }
 
-[data-theme="dark"] .smart-actions-input {
-    background: rgba(17, 24, 39, 0.85);
-    border-color: rgba(148, 163, 184, 0.3);
-    color: var(--text-color);
+.smart-message-content .markdown-table th {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
 }
 
-.smart-actions-textarea {
-    resize: vertical;
-    min-height: 96px;
-    max-height: 240px;
+.smart-message-content .markdown-table tbody tr:hover {
+    background: var(--surface-hover-color);
+}
+
+.smart-message-content .markdown-code-block {
+    background: #f8f9fa;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin: 1rem 0;
+    overflow-x: auto;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.smart-message-content .markdown-code-block code {
+    background: none;
+    padding: 0;
+    border: none;
+}
+
+.smart-message-content code:not(.markdown-code-block code) {
+    background: rgba(27, 31, 35, 0.05);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+}
+
+.smart-message-content ul,
+.smart-message-content ol {
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+}
+
+.smart-message-content li {
+    margin: 0.3rem 0;
     line-height: 1.5;
 }
 
-.smart-actions-actions {
-    display: flex;
-    gap: var(--spacing-sm);
-    flex-wrap: wrap;
-    align-items: center;
+.smart-message-content p {
+    margin: 0.75rem 0;
+    line-height: 1.6;
 }
 
-.smart-actions-hint {
-    font-size: var(--font-size-sm);
-    color: var(--text-light);
-    margin: 0;
+.smart-message-content blockquote {
+    border-left: 4px solid var(--primary-color);
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    background: rgba(var(--primary-color-rgb), 0.05);
+    font-style: italic;
 }
 
-.smart-actions-inline-hint {
-    font-size: var(--font-size-xs);
-    color: var(--text-light);
-    margin: 4px 0 0 0;
+/* Smart Actions Menu Dropdown */
+.smart-actions-menu-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.smart-actions-input[disabled] {
+.smart-actions-menu-btn:hover {
+    background: var(--primary-color-hover);
+    transform: translateY(-1px);
+}
+
+.smart-actions-menu-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    transform: none;
 }
 
-[data-theme="dark"] .smart-actions-input[disabled] {
-    background: rgba(17, 24, 39, 0.6);
-    border-color: rgba(148, 163, 184, 0.2);
-    color: var(--text-light);
+/* Resizable Panel Layout - preserve existing layout while adding Smart Actions */
+.playground-top {
+    display: flex;
+    flex-direction: row;
+    /* Keep original height to preserve validation panel visibility */
 }
 
-.smart-actions-alert {
-    padding: 12px 16px;
-    border-radius: var(--border-radius-md);
-    background: rgba(220, 53, 69, 0.1);
-    color: var(--error-color);
-    font-size: var(--font-size-sm);
+.playground-main {
+    display: flex;
+    flex: 1;
+    min-width: 0;
 }
 
-.smart-actions-alert-success {
-    background: rgba(40, 167, 69, 0.15);
-    color: var(--success-color);
+.smart-actions-panel {
+    width: 400px;
+    min-width: 300px;
+    max-width: 50vw;
+    background: var(--surface-color);
+    border-left: 1px solid var(--border-color);
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    /* Ensure panel doesn't hide validation section */
+    height: 100%;
+    overflow: hidden;
 }
 
-.smart-actions-sidebar {
-    flex: 0 0 260px;
+.smart-actions-panel.active {
+    display: flex;
+}
+
+/* Panel Header */
+.smart-actions-header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background: linear-gradient(135deg, var(--primary-color-light), var(--surface-color));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.smart-actions-title-area {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
-    background: rgba(255, 255, 255, 0.75);
-    border-radius: var(--border-radius-lg);
-    padding: var(--spacing-md);
-    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.05);
-    max-height: 100%;
-    overflow-y: auto;
+    gap: 0.5rem;
+    flex: 1;
 }
 
-[data-theme="dark"] .smart-actions-sidebar {
-    background: rgba(17, 24, 39, 0.7);
-    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.15);
-}
-
-.smart-actions-sidebar h4 {
-    margin: 0;
-    font-size: var(--font-size-lg);
-}
-
-.smart-actions-sidebar-content {
-    font-size: var(--font-size-sm);
-    color: var(--text-light);
-    line-height: 1.5;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-}
-
-.smart-actions-sidebar-content dt {
+.smart-actions-title {
+    font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: var(--text-color);
+    margin: 0;
 }
 
-.smart-actions-sidebar-content dd {
-    margin: 0 0 var(--spacing-sm) 0;
-    color: var(--text-light);
+.smart-actions-conversation-switcher {
+    background: var(--background-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    min-width: 0;
+    max-width: 200px;
 }
 
+.smart-actions-conversation-switcher:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px rgba(var(--primary-color-rgb), 0.3);
+}
+
+.smart-actions-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius);
+    transition: all 0.2s ease;
+}
+
+.smart-actions-close:hover {
+    background: var(--error-color);
+    color: white;
+}
+
+/* Panel Content */
+.smart-actions-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Chat Interface */
 .smart-actions-chat {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
-    min-width: 0;
-    min-height: 0;
-    background: rgba(255, 255, 255, 0.68);
-    border-radius: var(--border-radius-lg);
-    padding: var(--spacing-md);
-    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.07);
+    padding: 1rem;
+    gap: 1rem;
+    overflow: hidden;
+    position: relative;
 }
 
-[data-theme="dark"] .smart-actions-chat {
-    background: rgba(17, 24, 39, 0.72);
-    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.12);
+/* Empty State */
+.smart-actions-empty-state {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
 }
 
-.smart-actions-chat-log {
+.smart-actions-empty-content {
+    text-align: center;
+    max-width: 300px;
+}
+
+.smart-actions-empty-content h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0 0 1rem 0;
+}
+
+.smart-actions-empty-content p {
+    color: var(--text-color-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0 0 1.5rem 0;
+}
+
+.smart-actions-analyze-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.smart-actions-analyze-btn:hover {
+    background: var(--primary-color-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.smart-actions-analyze-btn:active {
+    transform: translateY(0);
+}
+
+.smart-actions-messages {
     flex: 1;
     overflow-y: auto;
-    background: rgba(255, 255, 255, 0.78);
-    border-radius: var(--border-radius-lg);
-    padding: var(--spacing-md);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.05);
-    min-height: 0;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    background: var(--background-color);
+    scroll-behavior: smooth;
+    resize: vertical;
+    min-height: 200px;
+    max-height: 60vh;
 }
 
-[data-theme="dark"] .smart-actions-chat-log {
-    background: rgba(12, 18, 28, 0.75);
-    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.2);
+/* Message Styling */
+.smart-message {
+    margin-bottom: 1.5rem;
+    animation: fadeIn 0.3s ease-in;
 }
 
-.smart-actions-message {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-md);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-sm);
-    max-width: 100%;
+.smart-message:last-child {
+    margin-bottom: 0;
 }
 
-.smart-actions-message-header {
+.smart-message-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
-.smart-actions-message strong {
-    font-family: var(--font-family-headings);
-    font-size: var(--font-size-sm);
+.smart-message-role {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.smart-actions-message-user {
+.smart-message-role.user {
+    color: var(--primary-color);
+}
+
+.smart-message-role.assistant {
+    color: var(--success-color);
+}
+
+.smart-message-time {
+    font-size: 0.7rem;
+    color: var(--text-color-secondary);
     margin-left: auto;
-    background: linear-gradient(135deg, rgba(var(--primary-color-rgb), 0.15), rgba(var(--primary-color-rgb), 0.4));
-    color: #ffffff;
 }
 
-.smart-actions-message-assistant {
-    background: rgba(255, 255, 255, 0.95);
-}
-
-.smart-actions-message-system {
-    background: rgba(15, 23, 42, 0.06);
-    color: var(--text-secondary);
-}
-
-[data-theme="dark"] .smart-actions-message-assistant {
-    background: rgba(18, 26, 38, 0.95);
+.smart-message-content {
+    line-height: 1.6;
     color: var(--text-color);
 }
 
-.smart-actions-message-content {
-    font-size: var(--font-size-sm);
-    line-height: 1.65;
+/* Markdown Content Styling */
+.smart-message-content h1,
+.smart-message-content h2,
+.smart-message-content h3,
+.smart-message-content h4,
+.smart-message-content h5,
+.smart-message-content h6 {
+    font-family: var(--font-heading);
+    margin: 1rem 0 0.5rem 0;
+    color: var(--text-color);
 }
 
-.smart-actions-message-content pre,
-.smart-actions-message-content code {
+.smart-message-content h1 { font-size: 1.2rem; font-weight: 700; }
+.smart-message-content h2 { font-size: 1.15rem; font-weight: 600; }
+.smart-message-content h3 { font-size: 1.1rem; font-weight: 600; }
+.smart-message-content h4 { font-size: 1.05rem; font-weight: 600; }
+.smart-message-content h5 { font-size: 1rem; font-weight: 500; }
+.smart-message-content h6 { font-size: 0.95rem; font-weight: 500; }
+
+.smart-message-content p {
+    margin: 0.5rem 0;
+}
+
+.smart-message-content ul,
+.smart-message-content ol {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.smart-message-content code {
+    background: var(--code-background);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
     font-family: var(--font-mono);
-    background: rgba(15, 23, 42, 0.08);
-    padding: 2px 4px;
-    border-radius: var(--border-radius-sm);
+    font-size: 0.9em;
 }
 
-.smart-actions-message-content pre {
+.smart-message-content pre {
+    background: var(--code-background);
+    padding: 1rem;
+    border-radius: var(--border-radius);
     overflow-x: auto;
-    padding: var(--spacing-sm);
+    margin: 0.5rem 0;
+    border-left: 3px solid var(--primary-color);
 }
 
-.smart-actions-message-content ul {
-    padding-left: 1.25rem;
+.smart-message-content pre code {
+    background: none;
+    padding: 0;
 }
 
-.smart-actions-message-content li {
-    margin-bottom: 0.35rem;
+.smart-message-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
 }
 
-.smart-actions-message-timestamp {
-    font-size: 0.75rem;
-    color: var(--text-light);
+.smart-message-content th,
+.smart-message-content td {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    text-align: left;
 }
 
-.smart-actions-chat-form {
+.smart-message-content th {
+    background: var(--surface-color);
+    font-weight: 600;
+}
+
+/* Input Area */
+.smart-actions-input-area {
+    border-top: 1px solid var(--border-color);
+    padding: 1rem;
+    background: var(--surface-color);
+}
+
+.smart-actions-form {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-sm);
-    background: rgba(255, 255, 255, 0.78);
-    border-radius: var(--border-radius-lg);
-    padding: var(--spacing-md);
-    box-shadow: var(--shadow-sm);
-    flex-shrink: 0;
+    gap: 0.75rem;
 }
 
-[data-theme="dark"] .smart-actions-chat-form {
-    background: rgba(17, 26, 39, 0.8);
+.smart-actions-textarea {
+    width: 100%;
+    min-height: 80px;
+    max-height: 200px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 0.75rem;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    background: var(--background-color);
+    color: var(--text-color);
+    resize: vertical;
+    transition: border-color 0.2s ease;
 }
 
-.smart-actions-chat-toolbar {
+.smart-actions-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.smart-actions-controls {
     display: flex;
-    justify-content: flex-end;
-    gap: var(--spacing-sm);
+    gap: 0.5rem;
     align-items: center;
-    margin-bottom: var(--spacing-sm);
+    justify-content: space-between;
 }
 
-.smart-actions-menu a {
-    display: block;
+.smart-actions-shortcut-hint {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    font-style: italic;
+    margin-right: auto;
+}
+
+.smart-actions-send-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.smart-actions-send-btn:hover {
+    background: var(--primary-color-hover);
+}
+
+.smart-actions-send-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.smart-actions-config-btn {
+    background: var(--surface-color);
+    color: var(--text-color-secondary);
+    border: 1px solid var(--border-color);
+    padding: 0.6rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.smart-actions-config-btn:hover {
+    background: var(--background-color);
+    color: var(--text-color);
+}
+
+/* Loading States */
+.smart-actions-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-color-secondary);
+    font-style: italic;
+    margin: 1rem 0;
 }
 
 .smart-actions-spinner {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border-color);
+    border-top: 2px solid var(--primary-color);
     border-radius: 50%;
-    border: 2px solid rgba(var(--primary-color-rgb), 0.25);
-    border-top-color: var(--primary-color);
-    animation: smartActionsSpin 0.8s linear infinite;
+    animation: spin 1s linear infinite;
 }
 
-@keyframes smartActionsSpin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.smart-actions-status {
-    display: inline-flex;
+/* Setup Modal */
+.smart-actions-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
-    font-size: var(--font-size-sm);
-    color: var(--text-light);
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
 }
 
-.smart-actions-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 4px 8px;
-    border-radius: 999px;
-    background: rgba(var(--primary-color-rgb), 0.12);
-    color: var(--primary-color);
-    font-size: var(--font-size-xs);
+.smart-actions-modal-content {
+    background: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .smart-actions-modal-content {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .smart-actions-modal {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.smart-actions-modal-header {
+    margin-bottom: 1.5rem;
+}
+
+.smart-actions-modal-title {
+    font-size: 1.3rem;
     font-weight: 600;
-    letter-spacing: 0.02em;
+    margin: 0;
+    color: var(--text-color);
 }
 
-[data-theme="dark"] .smart-actions-badge {
-    background: rgba(74, 159, 219, 0.25);
-    color: #dbeafe;
+.smart-actions-form-group {
+    margin-bottom: 1.5rem;
 }
 
-.smart-actions-message-content h1,
-.smart-actions-message-content h2,
-.smart-actions-message-content h3,
-.smart-actions-message-content h4 {
-    font-family: var(--font-family-headings);
-    margin: 0 0 0.5rem 0;
-}
-
-.smart-actions-message-content h1 {
-    font-size: 1.5rem;
-}
-
-.smart-actions-message-content h2 {
-    font-size: 1.25rem;
-}
-
-.smart-actions-message-content h3 {
-    font-size: 1.1rem;
-}
-
-.smart-actions-message-content blockquote {
-    border-left: 3px solid rgba(var(--primary-color-rgb), 0.3);
-    margin: 0.5rem 0;
-    padding-left: 0.75rem;
-    color: var(--text-secondary);
-    font-style: italic;
-}
-
-.smart-actions-empty-state {
-    text-align: center;
-    color: var(--text-light);
-    padding: var(--spacing-md);
-}
-
-.smart-actions-empty-state strong {
+.smart-actions-label {
     display: block;
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-color);
 }
 
-.smart-actions-chat-log::-webkit-scrollbar,
-.smart-actions-body::-webkit-scrollbar {
-    width: 8px;
+.smart-actions-input,
+.smart-actions-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    background: var(--background-color);
+    color: var(--text-color);
+    transition: border-color 0.2s ease;
 }
 
-.smart-actions-chat-log::-webkit-scrollbar-thumb,
-.smart-actions-body::-webkit-scrollbar-thumb {
-    background: rgba(15, 23, 42, 0.2);
-    border-radius: var(--border-radius-md);
+.smart-actions-input:focus,
+.smart-actions-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
 }
 
-@media (max-width: 960px) {
-    .smart-actions-body-flex {
-        gap: var(--spacing-md);
-    }
+.smart-actions-form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
 }
 
-@media (max-width: 880px) {
-    #smart-actions-analysis-overlay .smart-actions-dialog {
+.smart-actions-btn-primary {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.smart-actions-btn-primary:hover {
+    background: var(--primary-color-hover);
+}
+
+.smart-actions-btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.smart-actions-btn-secondary {
+    background: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.smart-actions-btn-secondary:hover {
+    background: var(--background-color);
+}
+
+.smart-actions-btn-secondary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Setup Form Messages */
+.setup-error {
+    background: rgba(var(--error-color-rgb), 0.1);
+    color: var(--error-color);
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    border-left: 3px solid var(--error-color);
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.setup-success {
+    background: rgba(var(--success-color-rgb), 0.1);
+    color: var(--success-color);
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    border-left: 3px solid var(--success-color);
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+/* Setup Form Specific Styles */
+.smart-actions-setup-form .smart-actions-input[type="password"] {
+    font-family: monospace;
+}
+
+.smart-actions-setup-form .smart-actions-input[type="number"] {
+    text-align: right;
+}
+
+/* Provider-specific hints */
+.provider-hint {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    margin-top: 0.25rem;
+    line-height: 1.4;
+}
+
+/* Resize Handle */
+.smart-actions-resize-handle {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    cursor: ew-resize;
+    background: transparent;
+    transition: background 0.2s ease;
+}
+
+.smart-actions-resize-handle:hover,
+.smart-actions-resize-handle.resizing {
+    background: var(--primary-color);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .smart-actions-panel {
         width: 100%;
-        max-width: 100%;
-        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.25);
+        max-width: none;
         border-left: none;
+        border-top: 1px solid var(--border-color);
     }
 
-    [data-theme="dark"] #smart-actions-analysis-overlay .smart-actions-dialog {
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+    .playground-top {
+        flex-direction: column;
     }
 }
 
-@media (max-width: 640px) {
-    .smart-actions-dialog {
-        padding: var(--spacing-md);
-    }
+/* Dark Mode Support */
+[data-theme="dark"] .smart-actions-panel {
+    border-left-color: rgba(255, 255, 255, 0.1);
+}
 
-    .smart-actions-dialog-large {
-        height: auto;
-    }
+[data-theme="dark"] .smart-actions-header {
+    background: linear-gradient(135deg, rgba(var(--primary-color-rgb), 0.15), var(--surface-color));
+}
 
-    .smart-actions-card {
-        padding: var(--spacing-md);
-    }
+[data-theme="dark"] .smart-message-content pre {
+    background: rgba(255, 255, 255, 0.05);
+}
 
-    .smart-actions-grid {
-        grid-template-columns: 1fr;
-    }
+/* Permission Modal Specific Styles */
+.permission-warning {
+    background: rgba(var(--warning-color-rgb, 255, 193, 7), 0.1);
+    border: 1px solid var(--warning-color, #ffc107);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
 
-    .smart-actions-header {
-        flex-direction: column;
-        align-items: stretch;
-    }
+.permission-warning p {
+    margin: 0;
+    color: var(--text-color);
+}
 
-    .smart-actions-message {
-        border-radius: var(--border-radius-md);
-    }
+.permission-details {
+    margin-bottom: 1.5rem;
+}
 
-    .smart-actions-chat-log {
-        padding: var(--spacing-sm);
-    }
+.permission-details h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0 0 1rem 0;
+}
+
+.permission-info-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 1fr;
+}
+
+.permission-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: var(--surface-color);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.permission-label {
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    font-size: 0.9rem;
+}
+
+.permission-value {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.85rem;
+    color: var(--text-color);
+    text-align: right;
+    word-break: break-all;
+    max-width: 60%;
+}
+
+/* Dark mode adjustments for permission modal */
+[data-theme="dark"] .permission-info-item {
+    background: rgba(255, 255, 255, 0.05);
 }

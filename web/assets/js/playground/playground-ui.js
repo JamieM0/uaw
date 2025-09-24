@@ -639,3 +639,68 @@ function addNotificationStyles() {
 
 // Initialize notification styles when module loads
 addNotificationStyles();
+
+// Reset panel sizes functionality
+function resetPanelSizes() {
+    // Get the main panel elements
+    const playgroundTop = document.querySelector('.playground-top');
+    const playgroundBottom = document.querySelector('.playground-bottom');
+    const jsonEditorPanel = document.querySelector('.json-editor-panel');
+    const simulationPanel = document.querySelector('.simulation-panel');
+
+    // Check if we're in metrics mode
+    const isMetricsMode = playgroundTop && playgroundTop.classList.contains('metrics-mode');
+
+    if (isMetricsMode) {
+        // Metrics mode: Reset left panel (40%) and metrics panel (60%)
+        const playgroundLeft = document.querySelector('.playground-left');
+        const metricsPanel = document.querySelector('.metrics-editor-panel');
+
+        if (playgroundLeft && metricsPanel) {
+            // Remove inline styles to restore CSS defaults
+            playgroundLeft.style.removeProperty('width');
+            metricsPanel.style.removeProperty('width');
+        }
+    } else {
+        // Standard mode: Reset JSON editor (40%) and simulation panel (60%)
+        if (jsonEditorPanel && simulationPanel) {
+            // Remove inline styles to restore CSS defaults
+            jsonEditorPanel.style.removeProperty('width');
+            simulationPanel.style.removeProperty('width');
+        }
+    }
+
+    // Reset vertical panels: playground-top (70%) and playground-bottom (30%)
+    if (playgroundTop && playgroundBottom) {
+        // Remove inline styles to restore CSS defaults
+        playgroundTop.style.removeProperty('height');
+        playgroundBottom.style.removeProperty('height');
+    }
+
+    // Force Monaco editors to recalculate their layout after panel resize
+    if (editor && editor.layout) {
+        setTimeout(() => {
+            editor.layout();
+        }, 100);
+    }
+
+    if (window.metricsJsonEditor && window.metricsJsonEditor.layout) {
+        setTimeout(() => {
+            window.metricsJsonEditor.layout();
+        }, 100);
+    }
+
+    console.log('Reset panel sizes function called');
+    showNotification('Panel sizes have been reset to defaults');
+}
+
+// Setup reset panel sizes button
+function setupResetPanelSizes() {
+    const resetBtn = document.getElementById('reset-panel-sizes-btn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            resetPanelSizes();
+        });
+    }
+}
