@@ -3333,9 +3333,3 @@ body.theme-switching * {
     border-color: var(--error-color);
 }
 
-/* Hide Smart Actions dropdown on production domain */
-@media screen {
-    body[data-domain="universalautomation.wiki"] #smart-actions-dropdown {
-        display: none !important;
-    }
-}
