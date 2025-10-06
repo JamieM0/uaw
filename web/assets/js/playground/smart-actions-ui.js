@@ -34,6 +34,9 @@
             this.currentConversationId = null;
             this.conversations = new Map(); // Store conversations by ID
             this.maxConversations = 10;
+
+            // Scroll tracking for auto-scroll behavior
+            this.userHasScrolled = false;
         }
 
         /**
@@ -73,13 +76,17 @@
         }
 
         /**
-         * Load Smart Actions configuration from localStorage
+         * Load Smart Actions configuration from cookies (matches setup.js storage)
          */
         async loadConfig() {
             try {
-                const configData = localStorage.getItem('smart-actions-config');
+                const configData = this.getCookie('smart-actions-config');
                 if (configData) {
                     this.config = JSON.parse(configData);
+                    console.log('SmartActionsUI: Config loaded from cookies:', {
+                        provider: this.config.provider,
+                        model: this.config.model
+                    });
                 }
             } catch (error) {
                 console.warn('SmartActionsUI: Could not load config:', error);
@@ -88,15 +95,36 @@
         }
 
         /**
-         * Save configuration to localStorage
+         * Save configuration to cookies (matches setup.js storage)
          */
         saveConfig(config) {
             try {
-                localStorage.setItem('smart-actions-config', JSON.stringify(config));
+                this.setCookie('smart-actions-config', JSON.stringify(config), 365);
                 this.config = config;
             } catch (error) {
                 console.error('SmartActionsUI: Could not save config:', error);
             }
+        }
+
+        /**
+         * Get cookie value by name
+         */
+        getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) {
+                return decodeURIComponent(parts.pop().split(';').shift());
+            }
+            return null;
+        }
+
+        /**
+         * Set cookie with expiration
+         */
+        setCookie(name, value, days) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+            document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires.toUTCString()}; path=/; SameSite=Strict`;
         }
 
         /**
@@ -266,6 +294,11 @@
                 this.elements.resizeHandle.addEventListener('mousedown', (e) => this.startResize(e));
             }
 
+            // Scroll tracking for messages container
+            if (this.elements.messages) {
+                this.elements.messages.addEventListener('scroll', () => this.handleMessagesScroll());
+            }
+
             // Global events
             document.addEventListener('mousemove', (e) => this.handleResize(e));
             document.addEventListener('mouseup', () => this.stopResize());
@@ -274,6 +307,10 @@
             // Smart Actions configuration events
             document.addEventListener('smart-actions-configured', (e) => {
                 this.config = e.detail.config;
+                console.log('SmartActionsUI: Configuration updated via event:', {
+                    provider: this.config.provider,
+                    model: this.config.model
+                });
                 this.updateMenuButtonState();
             });
         }
@@ -282,14 +319,33 @@
          * Handle Chat menu click - SETUP-FIRST APPROACH
          */
         async handleChat() {
-            // Setup-first approach: Always check configuration first
-            if (!this.config) {
+            // Setup-first approach: Only show setup if user has NEVER configured any provider
+            // Check if user has any saved API keys or model names (indicates they've set up before)
+            const hasConfiguredBefore = this.hasEverConfigured();
+
+            if (!this.config && !hasConfiguredBefore) {
+                // First-time user - show setup modal
                 this.setup.show();
                 return;
             }
 
-            // Configuration exists, show chat panel (no automatic analysis)
+            // User has configured before (or has active config) - show chat panel
+            // If config is missing but they've configured before, they can reconfigure via the setup button
             this.showPanel();
+        }
+
+        /**
+         * Check if user has ever configured any provider
+         * @returns {boolean} True if user has saved any provider configurations
+         */
+        hasEverConfigured() {
+            if (!this.setup) return false;
+
+            // Check if there are any saved API keys or model names
+            const hasApiKeys = this.setup.savedApiKeys && Object.keys(this.setup.savedApiKeys).length > 0;
+            const hasModelNames = this.setup.savedModelNames && Object.keys(this.setup.savedModelNames).length > 0;
+
+            return hasApiKeys || hasModelNames;
         }
 
         /**
@@ -303,12 +359,19 @@
          * Handle analyze button click
          */
         async handleAnalyze() {
-            if (!this.config) return;
+            // Check configuration first - show setup if needed
+            if (!this.config) {
+                this.setup.show();
+                return;
+            }
 
             // Create new conversation for analysis if needed
             if (!this.currentConversationId) {
                 this.createNewConversation();
             }
+
+            // Reset scroll tracking for new message
+            this.userHasScrolled = false;
 
             // Hide analyze button and prompt to prevent confusion
             this.elements.emptyState.style.display = 'none';
@@ -338,7 +401,7 @@
             if (!this.config) return;
 
             try {
-                this.setLoading(true);
+                this.setLoading(true, 'analyzing'); // Use "analyzing" status for user-triggered analysis
 
                 // Get current context
                 const context = await this.context.getContext();
@@ -358,11 +421,49 @@
                     { role: 'user', content: 'Please provide a comprehensive analysis of the current simulation.' }
                 ];
 
-                // Send to AI
-                const response = await this.client.sendMessage(this.config, messages);
+                // Create placeholder for streaming response
+                let assistantMessageDiv = null;
+                let currentContent = '';
 
-                this.addMessage('assistant', response);
+                // Send to AI with streaming enabled
+                const response = await this.client.sendMessage(this.config, messages, {
+                    streaming: true,
+                    onChunk: (chunk, fullText) => {
+                        currentContent = fullText;
+
+                        // Update or create assistant message div
+                        if (!assistantMessageDiv) {
+                            // Remove loading indicator first
+                            const loadingDiv = document.getElementById('smart-loading-indicator');
+                            if (loadingDiv) loadingDiv.remove();
+
+                            // Create the message div
+                            assistantMessageDiv = this.createStreamingMessageDiv('assistant');
+                        }
+
+                        // Update content with markdown rendering
+                        this.updateStreamingMessage(assistantMessageDiv, currentContent);
+                    }
+                });
+
+                // Final update with complete response
+                if (assistantMessageDiv) {
+                    this.updateStreamingMessage(assistantMessageDiv, response);
+                    // Remove streaming class to stop cursor animation
+                    assistantMessageDiv.classList.remove('smart-message-streaming');
+                } else {
+                    // Fallback if streaming didn't work
+                    this.addMessage('assistant', response);
+                }
+
                 this.messages = messages.concat([{ role: 'assistant', content: response }]);
+
+                // Check for tool calls in the response
+                const hasToolCall = await this.checkAndExecuteToolCalls(response);
+                if (hasToolCall) {
+                    // Tool call will handle continuation
+                    return;
+                }
 
             } catch (error) {
                 this.addMessage('system', `Error: ${error.message}`);
@@ -376,9 +477,18 @@
          */
         async handleSendMessage() {
             const input = this.elements.input.value.trim();
-            if (!input || this.isLoading || !this.config) return;
+            if (!input || this.isLoading) return;
+
+            // Check configuration - show setup if needed
+            if (!this.config) {
+                this.setup.show();
+                return;
+            }
 
             try {
+                // Reset scroll tracking for new message
+                this.userHasScrolled = false;
+
                 // Add user message to chat first
                 this.addMessage('user', input);
                 this.elements.input.value = '';
@@ -386,22 +496,89 @@
                 // Add to messages array
                 this.messages.push({ role: 'user', content: input });
 
-                // Now set loading state (this will appear after user message)
-                this.setLoading(true);
+                // Now set loading state (this will appear after user message) - use "loading" status
+                this.setLoading(true, 'loading');
+
+                // Initialize conversation with full system message if this is the first user message
+                await this.ensureSystemMessage();
 
                 // Use cached conversation - only send recent context for continuing conversations
                 const conversationMessages = this.prepareCachedConversation();
 
-                // Get response from AI
-                const response = await this.client.sendMessage(this.config, conversationMessages);
+                // Create placeholder for streaming response
+                let assistantMessageDiv = null;
+                let currentContent = '';
 
-                this.addMessage('assistant', response);
+                // Get response from AI with streaming
+                const response = await this.client.sendMessage(this.config, conversationMessages, {
+                    streaming: true,
+                    onChunk: (chunk, fullText) => {
+                        currentContent = fullText;
+
+                        // Update or create assistant message div
+                        if (!assistantMessageDiv) {
+                            // Remove loading indicator first
+                            const loadingDiv = document.getElementById('smart-loading-indicator');
+                            if (loadingDiv) loadingDiv.remove();
+
+                            // Create the message div
+                            assistantMessageDiv = this.createStreamingMessageDiv('assistant');
+                        }
+
+                        // Update content with markdown rendering
+                        this.updateStreamingMessage(assistantMessageDiv, currentContent);
+                    }
+                });
+
+                // Final update with complete response
+                if (assistantMessageDiv) {
+                    this.updateStreamingMessage(assistantMessageDiv, response);
+                    // Remove streaming class to stop cursor animation
+                    assistantMessageDiv.classList.remove('smart-message-streaming');
+                } else {
+                    // Fallback if streaming didn't work
+                    this.addMessage('assistant', response);
+                }
+
                 this.messages.push({ role: 'assistant', content: response });
+
+                // Check for tool calls in the response
+                const hasToolCall = await this.checkAndExecuteToolCalls(response);
+                if (hasToolCall) {
+                    // Tool call will handle continuation
+                    return;
+                }
 
             } catch (error) {
                 this.addMessage('system', `Error: ${error.message}`);
             } finally {
                 this.setLoading(false);
+            }
+        }
+
+        /**
+         * Ensure conversation has a full system message
+         * Called before first user message to initialize context
+         */
+        async ensureSystemMessage() {
+            // Check if we already have a system message
+            const hasSystemMessage = this.messages.some(msg => msg.role === 'system');
+
+            if (!hasSystemMessage) {
+                // Load and build full system message
+                const context = await this.context.getContext();
+                const [baseMessage, analysisMessage] = await Promise.all([
+                    this.loadPrompt('base-system-message'),
+                    this.loadPrompt('analysis-agent')
+                ]);
+
+                const systemMessage = this.buildSystemMessage(baseMessage, analysisMessage, context);
+
+                // Insert at beginning of conversation
+                this.messages.unshift({
+                    role: 'system',
+                    content: systemMessage
+                });
             }
         }
 
@@ -420,7 +597,14 @@
             // For continuing conversations, create lightweight system message
             const lightweightSystemMessage = {
                 role: 'system',
-                content: `You are an AI assistant helping with simulation analysis in the Universal Automation Wiki playground. Continue the conversation naturally while maintaining context of the ongoing discussion.`
+                content: `You are an AI assistant helping with simulation analysis in the Universal Automation Wiki playground. Continue the conversation naturally while maintaining context of the ongoing discussion.
+
+## Tool Calling
+
+You have access to tools:
+- \`/tool view-simulation\` - Access the complete simulation JSON when you need detailed analysis
+
+**Important**: Always provide a brief intro message before calling a tool (e.g., "Let me check your simulation:"). Use tools judiciously when you need the full data.`
             };
 
             // Get recent user-assistant messages only
@@ -555,23 +739,31 @@
          */
         updateEmptyState() {
             if (this.elements.emptyState && this.elements.messages) {
-                const hasMessages = this.messages.length > 0 || this.elements.messages.children.length > 0;
-                // Only show empty state if no messages AND not currently loading
-                this.elements.emptyState.style.display = (hasMessages || this.isLoading) ? 'none' : 'flex';
+                // Check for user-visible messages (exclude system messages)
+                const visibleMessages = this.messages.filter(m => m.role !== 'system');
+                const hasVisibleMessages = visibleMessages.length > 0 || this.elements.messages.children.length > 0;
+
+                // Only show empty state if no visible messages AND not currently loading
+                this.elements.emptyState.style.display = (hasVisibleMessages || this.isLoading) ? 'none' : 'flex';
             }
         }
 
         /**
          * Set loading state
+         * @param {boolean} loading - Whether loading is active
+         * @param {string} status - Loading status message ('analyzing' or 'loading')
          */
-        setLoading(loading) {
+        setLoading(loading, status = 'loading') {
             this.isLoading = loading;
 
             if (loading) {
                 const loadingDiv = document.createElement('div');
                 loadingDiv.className = 'smart-actions-loading';
                 loadingDiv.id = 'smart-loading-indicator';
-                loadingDiv.innerHTML = '<div class="smart-actions-spinner"></div> Analyzing...';
+
+                const statusText = status === 'analyzing' ? 'Analysing...' : 'Loading...';
+                loadingDiv.innerHTML = `<div class="smart-actions-spinner"></div> ${statusText}`;
+
                 this.elements.messages.appendChild(loadingDiv);
                 this.elements.messages.scrollTop = this.elements.messages.scrollHeight;
             } else {
@@ -586,6 +778,33 @@
         }
 
         /**
+         * Enable input controls
+         * Used when creating/switching conversations to ensure input is ready
+         */
+        enableInput() {
+            if (!this.elements.input || !this.elements.sendBtn) {
+                console.warn('SmartActionsUI: Input elements not found', {
+                    input: !!this.elements.input,
+                    sendBtn: !!this.elements.sendBtn
+                });
+                return;
+            }
+
+            // Only enable if not currently loading
+            if (!this.isLoading) {
+                this.elements.input.disabled = false;
+                this.elements.sendBtn.disabled = false;
+
+                // Remove any readonly attributes that might have been set
+                this.elements.input.removeAttribute('readonly');
+
+                console.log('SmartActionsUI: Input controls enabled');
+            } else {
+                console.log('SmartActionsUI: Cannot enable input - currently loading');
+            }
+        }
+
+        /**
          * Show Smart Actions panel
          */
         showPanel() {
@@ -593,6 +812,12 @@
             this.panelVisible = true;
             this.updateLayout();
             this.updateEmptyState();
+
+            // Ensure input is enabled when showing panel
+            // Only enable if not currently loading
+            if (!this.isLoading) {
+                this.enableInput();
+            }
         }
 
         /**
@@ -693,6 +918,10 @@
             }
 
             this.updateEmptyState();
+
+            // Ensure inputs are enabled after loading conversations
+            // This handles the case where user opens chat for the first time
+            this.enableInput();
         }
 
         /**
@@ -737,6 +966,9 @@
             this.updateConversationSwitcher();
             this.saveConversations();
 
+            // Enable input for new conversation
+            this.enableInput();
+
             return conversation;
         }
 
@@ -773,6 +1005,9 @@
 
             this.updateEmptyState();
             this.saveConversations();
+
+            // Enable input when switching conversations
+            this.enableInput();
         }
 
         /**
@@ -847,6 +1082,245 @@
             `;
 
             this.elements.messages.appendChild(messageDiv);
+            this.elements.messages.scrollTop = this.elements.messages.scrollHeight;
+        }
+
+        /**
+         * Create a message div for streaming updates
+         * @param {string} role - Message role (user, assistant, system)
+         * @returns {HTMLElement} The created message div
+         */
+        createStreamingMessageDiv(role) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'smart-message smart-message-streaming';
+
+            const time = new Date().toLocaleTimeString();
+
+            messageDiv.innerHTML = `
+                <div class="smart-message-header">
+                    <span class="smart-message-role ${role}">${role}</span>
+                    <span class="smart-message-time">${time}</span>
+                </div>
+                <div class="smart-message-content"></div>
+            `;
+
+            this.elements.messages.appendChild(messageDiv);
+            this.elements.messages.scrollTop = this.elements.messages.scrollHeight;
+
+            return messageDiv;
+        }
+
+        /**
+         * Update a streaming message with new content
+         * @param {HTMLElement} messageDiv - The message div to update
+         * @param {string} content - New content to render
+         */
+        updateStreamingMessage(messageDiv, content) {
+            const contentDiv = messageDiv.querySelector('.smart-message-content');
+            if (contentDiv) {
+                // Check for tool calls before rendering
+                const processedContent = this.processToolCalls(content);
+                const renderedContent = this.markdown.parse(processedContent.displayContent);
+                contentDiv.innerHTML = renderedContent;
+
+                // Auto-scroll to bottom only if user hasn't manually scrolled up
+                this.autoScrollIfNeeded();
+            }
+        }
+
+        /**
+         * Process tool calls in LLM response
+         * @param {string} content - Raw content from LLM
+         * @returns {Object} - Processed content and tool call info
+         */
+        processToolCalls(content) {
+            const toolCallRegex = /\/tool\s+view-simulation/gm;
+            const hasToolCall = toolCallRegex.test(content);
+
+            if (hasToolCall) {
+                // Remove tool call from display content
+                const displayContent = content.replace(/\/tool\s+view-simulation/gm, '').trim();
+
+                return {
+                    displayContent,
+                    hasToolCall: true
+                };
+            }
+
+            return {
+                displayContent: content,
+                hasToolCall: false
+            };
+        }
+
+        /**
+         * Check if streaming response contains tool call and handle it
+         * This is called after streaming completes
+         * @param {string} fullResponse - Complete response from LLM
+         * @returns {boolean} True if tool call was found and executed
+         */
+        async checkAndExecuteToolCalls(fullResponse) {
+            const toolCallRegex = /\/tool\s+view-simulation/;
+
+            if (toolCallRegex.test(fullResponse)) {
+                // Tool call detected - execute it
+                await this.executeToolCall('view-simulation', fullResponse);
+                return true;
+            }
+
+            return false;
+        }
+
+        /**
+         * Execute a tool call and continue conversation
+         * @param {string} toolName - Name of the tool to execute
+         * @param {string} partialResponse - Response before tool call
+         */
+        async executeToolCall(toolName, partialResponse) {
+            if (toolName === 'view-simulation') {
+                try {
+                    // Show tool indicator (will remain visible permanently)
+                    this.showToolIndicator('Accessing Simulation...');
+
+                    // Get full simulation JSON
+                    const simulationJson = this.context.getFullSimulationJson();
+
+                    // Wait briefly for visual feedback
+                    await new Promise(resolve => setTimeout(resolve, 800));
+
+                    // Don't hide tool indicator - keep it visible
+
+                    // Add tool result to conversation
+                    const toolResultMessage = {
+                        role: 'user',
+                        content: `[TOOL RESULT: view-simulation]\n\`\`\`json\n${JSON.stringify(simulationJson, null, 2)}\n\`\`\``
+                    };
+                    this.messages.push(toolResultMessage);
+
+                    // Now make a follow-up API call to let LLM continue with the data
+                    await this.continueWithToolResult();
+
+                } catch (error) {
+                    console.error('Tool call failed:', error);
+                    // Replace indicator with error message
+                    const indicator = document.getElementById('smart-tool-indicator');
+                    if (indicator) {
+                        indicator.querySelector('.smart-actions-tool-message').textContent = 'Tool call failed';
+                        indicator.style.borderColor = 'var(--error-color)';
+                    }
+                    this.addMessage('system', `Tool call failed: ${error.message}`);
+                }
+            }
+        }
+
+        /**
+         * Continue conversation after tool execution
+         */
+        async continueWithToolResult() {
+            try {
+                // Set loading state for continuation
+                this.setLoading(true, 'loading');
+
+                // Prepare messages for continuation
+                const conversationMessages = this.prepareCachedConversation();
+
+                // Create placeholder for streaming response
+                let assistantMessageDiv = null;
+                let currentContent = '';
+
+                // Get continuation from AI with streaming
+                const response = await this.client.sendMessage(this.config, conversationMessages, {
+                    streaming: true,
+                    onChunk: (chunk, fullText) => {
+                        currentContent = fullText;
+
+                        // Update or create assistant message div
+                        if (!assistantMessageDiv) {
+                            // Remove loading indicator first
+                            const loadingDiv = document.getElementById('smart-loading-indicator');
+                            if (loadingDiv) loadingDiv.remove();
+
+                            // Create the message div
+                            assistantMessageDiv = this.createStreamingMessageDiv('assistant');
+                        }
+
+                        // Update content with markdown rendering
+                        this.updateStreamingMessage(assistantMessageDiv, currentContent);
+                    }
+                });
+
+                // Final update with complete response
+                if (assistantMessageDiv) {
+                    this.updateStreamingMessage(assistantMessageDiv, response);
+                    assistantMessageDiv.classList.remove('smart-message-streaming');
+                } else {
+                    this.addMessage('assistant', response);
+                }
+
+                this.messages.push({ role: 'assistant', content: response });
+
+            } catch (error) {
+                this.addMessage('system', `Error continuing after tool call: ${error.message}`);
+            } finally {
+                this.setLoading(false);
+            }
+        }
+
+        /**
+         * Show tool execution indicator
+         * @param {string} message - Message to display
+         */
+        showToolIndicator(message) {
+            // Remove existing indicator if present
+            this.hideToolIndicator();
+
+            const indicator = document.createElement('div');
+            indicator.className = 'smart-actions-tool-indicator';
+            indicator.id = 'smart-tool-indicator';
+            indicator.innerHTML = `
+                <div class="smart-actions-tool-icon">🔧</div>
+                <div class="smart-actions-tool-message">${message}</div>
+            `;
+
+            this.elements.messages.appendChild(indicator);
+            this.autoScrollIfNeeded();
+        }
+
+        /**
+         * Hide tool execution indicator
+         */
+        hideToolIndicator() {
+            const indicator = document.getElementById('smart-tool-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        /**
+         * Handle scroll events on messages container
+         * Detect if user has manually scrolled up from the bottom
+         */
+        handleMessagesScroll() {
+            if (!this.elements.messages) return;
+
+            const container = this.elements.messages;
+            const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+
+            // If user scrolls back to bottom, reset the flag
+            if (isAtBottom) {
+                this.userHasScrolled = false;
+            } else {
+                // User has scrolled up from the bottom
+                this.userHasScrolled = true;
+            }
+        }
+
+        /**
+         * Auto-scroll to bottom only if user hasn't manually scrolled up
+         */
+        autoScrollIfNeeded() {
+            if (!this.elements.messages || this.userHasScrolled) return;
+
             this.elements.messages.scrollTop = this.elements.messages.scrollHeight;
         }
     }

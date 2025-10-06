@@ -15,6 +15,7 @@
             this.currentConfig = null;
             this.client = null;
             this.savedApiKeys = {};
+            this.savedModelNames = {};
         }
 
         /**
@@ -73,8 +74,9 @@
                             <label class="smart-actions-label" for="setup-provider">AI Provider *</label>
                             <select class="smart-actions-select" id="setup-provider" required>
                                 <option value="">Select your AI service</option>
-                                <option value="openai">OpenAI (GPT-4, GPT-3.5)</option>
-                                <option value="openrouter">OpenRouter (Multiple models)</option>
+                                <option value="openai">OpenAI</option>
+                                <option value="github">GitHub Models</option>
+                                <option value="openrouter">OpenRouter</option>
                                 <option value="claude">Anthropic Claude</option>
                                 <option value="gemini">Google Gemini</option>
                                 <option value="ollama">Ollama (Local)</option>
@@ -236,16 +238,24 @@
                 this.elements.baseUrl.required = false;
             }
 
-            // Set default model for OpenAI
-            if (provider === 'openai' && !this.elements.model.value) {
-                this.elements.model.value = 'gpt-5-mini';
-            }
-
             // Load saved API key for this provider
             if (provider && this.savedApiKeys && this.savedApiKeys[provider]) {
                 this.elements.apiKey.value = this.savedApiKeys[provider];
             } else {
                 this.elements.apiKey.value = '';
+            }
+
+            // Load saved model name for this provider
+            if (provider && this.savedModelNames && this.savedModelNames[provider]) {
+                this.elements.model.value = this.savedModelNames[provider];
+            } else {
+                // Set default models for providers if no saved model exists
+                if (provider === 'openai') {
+                    this.elements.model.value = 'gpt-5-mini';
+                }
+                else {
+                    this.elements.model.value = '';
+                }
             }
         }
 
@@ -272,10 +282,17 @@
                 if (result.success) {
                     this.showSuccess('✅ Connection successful! Ready to save configuration.');
                 } else {
+                    // Log detailed error for debugging
+                    console.error('SmartActionsSetup: Connection test failed:', {
+                        error: result.error,
+                        provider: result.provider,
+                        config: { ...config, apiKey: '***' } // Don't log API key
+                    });
                     this.showError(`Connection failed: ${result.error}`);
                 }
 
             } catch (error) {
+                console.error('SmartActionsSetup: Test exception:', error);
                 this.showError(`Test failed: ${error.message}`);
             } finally {
                 this.setButtonState('normal');
@@ -344,18 +361,19 @@
         }
 
         /**
-         * Load configuration from localStorage
+         * Load configuration from cookies
          */
         loadConfig() {
             try {
                 // Load current active config
-                const configData = localStorage.getItem('smart-actions-config');
+                const configData = this.getCookie('smart-actions-config');
                 if (configData) {
                     this.currentConfig = JSON.parse(configData);
                 }
 
-                // Load saved API keys for all providers
+                // Load saved API keys and model names for all providers
                 this.savedApiKeys = this.loadSavedApiKeys();
+                this.savedModelNames = this.loadSavedModelNames();
             } catch (error) {
                 console.warn('SmartActionsSetup: Could not load config:', error);
             }
@@ -366,7 +384,7 @@
          */
         loadSavedApiKeys() {
             try {
-                const keysData = localStorage.getItem('smart-actions-api-keys');
+                const keysData = this.getCookie('smart-actions-api-keys');
                 return keysData ? JSON.parse(keysData) : {};
             } catch (error) {
                 console.warn('SmartActionsSetup: Could not load API keys:', error);
@@ -375,32 +393,93 @@
         }
 
         /**
-         * Save configuration to localStorage
+         * Load saved model names for all providers
+         */
+        loadSavedModelNames() {
+            try {
+                const modelsData = this.getCookie('smart-actions-model-names');
+                return modelsData ? JSON.parse(modelsData) : {};
+            } catch (error) {
+                console.warn('SmartActionsSetup: Could not load model names:', error);
+                return {};
+            }
+        }
+
+        /**
+         * Save configuration to secure cookies
          */
         saveConfig(config) {
             try {
                 // Save the main config
-                localStorage.setItem('smart-actions-config', JSON.stringify(config));
+                this.setCookie('smart-actions-config', JSON.stringify(config), 365);
 
                 // Save API key for this provider (if provided)
                 if (config.apiKey && config.provider) {
                     this.saveApiKey(config.provider, config.apiKey);
                 }
+
+                // Save model name for this provider (if provided)
+                if (config.model && config.provider) {
+                    this.saveModelName(config.provider, config.model);
+                }
             } catch (error) {
-                throw new Error('Could not save configuration to localStorage');
+                throw new Error('Could not save configuration to cookies');
             }
         }
 
         /**
          * Save API key for specific provider
+         * Each provider's API key is stored independently to allow switching between providers
+         * without losing saved credentials
          */
         saveApiKey(provider, apiKey) {
             try {
                 this.savedApiKeys = this.savedApiKeys || {};
+                // Store each provider's key separately by provider name
                 this.savedApiKeys[provider] = apiKey;
-                localStorage.setItem('smart-actions-api-keys', JSON.stringify(this.savedApiKeys));
+
+                const serialized = JSON.stringify(this.savedApiKeys);
+
+                // Check cookie size limit (4KB)
+                if (serialized.length > 4000) {
+                    console.warn('SmartActionsSetup: API keys data exceeds recommended cookie size, storing only current provider');
+                    // If too large, only store current provider's key
+                    this.savedApiKeys = { [provider]: apiKey };
+                }
+
+                // Save all provider keys in a single cookie
+                this.setCookie('smart-actions-api-keys', JSON.stringify(this.savedApiKeys), 365);
             } catch (error) {
-                console.warn('SmartActionsSetup: Could not save API key:', error);
+                console.error('SmartActionsSetup: Could not save API key:', error);
+                throw error; // Propagate error so caller knows save failed
+            }
+        }
+
+        /**
+         * Save model name for specific provider
+         * Each provider's model name is stored independently to allow switching between providers
+         * without losing saved model preferences
+         */
+        saveModelName(provider, modelName) {
+            try {
+                this.savedModelNames = this.savedModelNames || {};
+                // Store each provider's model name separately by provider name
+                this.savedModelNames[provider] = modelName;
+
+                const serialized = JSON.stringify(this.savedModelNames);
+
+                // Check cookie size limit (4KB)
+                if (serialized.length > 4000) {
+                    console.warn('SmartActionsSetup: Model names data exceeds recommended cookie size, storing only current provider');
+                    // If too large, only store current provider's model name
+                    this.savedModelNames = { [provider]: modelName };
+                }
+
+                // Save all provider model names in a single cookie
+                this.setCookie('smart-actions-model-names', JSON.stringify(this.savedModelNames), 365);
+            } catch (error) {
+                console.error('SmartActionsSetup: Could not save model name:', error);
+                throw error; // Propagate error so caller knows save failed
             }
         }
 
@@ -498,6 +577,52 @@
          */
         getConfig() {
             return this.currentConfig;
+        }
+
+        /**
+         * Set a secure cookie
+         * @param {string} name - Cookie name
+         * @param {string} value - Cookie value
+         * @param {number} days - Expiration in days (default 365)
+         */
+        setCookie(name, value, days = 365) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = `expires=${date.toUTCString()}`;
+
+            // Set secure cookie with SameSite=Strict for security
+            // Note: Secure flag requires HTTPS, omit for localhost development
+            const isSecure = window.location.protocol === 'https:';
+            const secureFlag = isSecure ? '; Secure' : '';
+
+            document.cookie = `${name}=${encodeURIComponent(value)}; ${expires}; path=/; SameSite=Strict${secureFlag}`;
+        }
+
+        /**
+         * Get cookie value by name
+         * @param {string} name - Cookie name
+         * @returns {string|null} Cookie value or null if not found
+         */
+        getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) {
+                    return decodeURIComponent(c.substring(nameEQ.length, c.length));
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Delete a cookie
+         * @param {string} name - Cookie name
+         */
+        deleteCookie(name) {
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict`;
         }
     }
 

@@ -47,6 +47,30 @@
         }
 
         /**
+         * Get full simulation JSON (for tool calls)
+         * @returns {Object} Complete simulation JSON object
+         */
+        getFullSimulationJson() {
+            try {
+                if (typeof editor === 'undefined' || !editor || typeof editor.getValue !== 'function') {
+                    return { error: 'Editor not available' };
+                }
+
+                const rawJson = editor.getValue();
+                if (!rawJson || !rawJson.trim()) {
+                    return { error: 'No simulation loaded' };
+                }
+
+                return JSON.parse(rawJson);
+            } catch (error) {
+                return {
+                    error: 'Failed to parse simulation',
+                    message: error.message
+                };
+            }
+        }
+
+        /**
          * Get current simulation from Monaco editor
          */
         getCurrentSimulation() {

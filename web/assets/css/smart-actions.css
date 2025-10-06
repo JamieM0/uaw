@@ -92,21 +92,71 @@
 }
 
 .smart-message-content .markdown-code-block {
-    background: #f8f9fa;
+    background: #f5f7fa;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 1rem;
     margin: 1rem 0;
     overflow-x: auto;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: 0.85rem;
-    line-height: 1.4;
+    font-family: 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    tab-size: 4;
+    -moz-tab-size: 4;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    position: relative;
 }
 
 .smart-message-content .markdown-code-block code {
     background: none;
     padding: 0;
     border: none;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    color: #24292e;
+    display: block;
+    white-space: pre;
+    word-wrap: normal;
+}
+
+/* Prism.js enhancements for better readability */
+.smart-message-content .markdown-code-block .token.comment,
+.smart-message-content .markdown-code-block .token.prolog,
+.smart-message-content .markdown-code-block .token.doctype,
+.smart-message-content .markdown-code-block .token.cdata {
+    color: #6a737d;
+    font-style: italic;
+}
+
+.smart-message-content .markdown-code-block .token.property,
+.smart-message-content .markdown-code-block .token.tag,
+.smart-message-content .markdown-code-block .token.boolean,
+.smart-message-content .markdown-code-block .token.number,
+.smart-message-content .markdown-code-block .token.constant,
+.smart-message-content .markdown-code-block .token.symbol {
+    color: #005cc5;
+}
+
+.smart-message-content .markdown-code-block .token.string,
+.smart-message-content .markdown-code-block .token.char,
+.smart-message-content .markdown-code-block .token.attr-value {
+    color: #032f62;
+}
+
+.smart-message-content .markdown-code-block .token.keyword,
+.smart-message-content .markdown-code-block .token.operator {
+    color: #d73a49;
+    font-weight: 600;
+}
+
+.smart-message-content .markdown-code-block .token.function,
+.smart-message-content .markdown-code-block .token.class-name {
+    color: #6f42c1;
+}
+
+.smart-message-content .markdown-code-block .token.punctuation {
+    color: #24292e;
 }
 
 .smart-message-content code:not(.markdown-code-block code) {
@@ -139,6 +189,12 @@
     padding: 0.5rem 1rem;
     background: rgba(var(--primary-color-rgb), 0.05);
     font-style: italic;
+}
+
+.smart-message-content hr {
+    border: none;
+    border-top: 2px solid var(--border-color);
+    margin: 1.5rem 0;
 }
 
 /* Smart Actions Menu Dropdown */
@@ -178,6 +234,7 @@
 }
 
 .smart-actions-panel {
+    position: relative; /* Required for absolute positioning of resize handle */
     width: 400px;
     min-width: 300px;
     max-width: 50vw;
@@ -194,14 +251,16 @@
     display: flex;
 }
 
-/* Panel Header */
+/* Panel Header - matches tab-bar height for consistent UI */
 .smart-actions-header {
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 2px solid var(--border-color);
     background: linear-gradient(135deg, var(--primary-color-light), var(--surface-color));
     display: flex;
     align-items: center;
     justify-content: space-between;
+    min-height: calc(0.875rem * 1.5 + 1.5rem + 2px); /* font-size * line-height + vertical padding + border */
+    box-sizing: border-box;
 }
 
 .smart-actions-title-area {
@@ -264,23 +323,25 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 1rem;
-    gap: 1rem;
+    gap: 0;
     overflow: hidden;
     position: relative;
+    border: none;
 }
 
-/* Empty State */
+/* Empty State - positioned only over messages area, not input */
 .smart-actions-empty-state {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    bottom: 0;
+    /* Don't set bottom - let input area be below */
+    height: calc(100% - 150px); /* Exclude input area height */
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 2rem;
+    z-index: 1; /* Above messages, but input will be outside this area */
 }
 
 .smart-actions-empty-content {
@@ -348,6 +409,13 @@
     margin-bottom: 0;
 }
 
+.smart-message-streaming .smart-message-content::after {
+    content: '▊';
+    animation: blink 1s step-start infinite;
+    margin-left: 2px;
+    color: var(--primary-color);
+}
+
 .smart-message-header {
     display: flex;
     align-items: center;
@@ -363,11 +431,11 @@
 }
 
 .smart-message-role.user {
-    color: var(--primary-color);
+    color: var(--success-color);
 }
 
 .smart-message-role.assistant {
-    color: var(--success-color);
+    color: var(--primary-color);
 }
 
 .smart-message-time {
@@ -456,6 +524,8 @@
     border-top: 1px solid var(--border-color);
     padding: 1rem;
     background: var(--surface-color);
+    position: relative;
+    z-index: 10; /* Ensure input is always above empty state */
 }
 
 .smart-actions-form {
@@ -551,6 +621,35 @@
     border-top: 2px solid var(--primary-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
+}
+
+/* Tool Call Indicator */
+.smart-actions-tool-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 1rem;
+    margin: 0.75rem 0;
+    background: linear-gradient(135deg, rgba(var(--primary-color-rgb), 0.1), rgba(var(--primary-color-rgb), 0.05));
+    border: 1px solid rgba(var(--primary-color-rgb), 0.3);
+    border-radius: var(--border-radius);
+    animation: fadeIn 0.3s ease-in, pulse 2s ease-in-out infinite;
+}
+
+.smart-actions-tool-icon {
+    font-size: 1.2rem;
+}
+
+.smart-actions-tool-message {
+    color: var(--text-color);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* Dark mode tool indicator */
+[data-theme="dark"] .smart-actions-tool-indicator {
+    background: linear-gradient(135deg, rgba(var(--primary-color-rgb), 0.2), rgba(var(--primary-color-rgb), 0.1));
+    border-color: rgba(var(--primary-color-rgb), 0.4);
 }
 
 /* Setup Modal */
@@ -740,6 +839,21 @@
     to { transform: rotate(360deg); }
 }
 
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .smart-actions-panel {
@@ -765,6 +879,54 @@
 
 [data-theme="dark"] .smart-message-content pre {
     background: rgba(255, 255, 255, 0.05);
+}
+
+/* Dark mode code block styling */
+[data-theme="dark"] .smart-message-content .markdown-code-block {
+    background: #1e1e1e;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .smart-message-content .markdown-code-block code {
+    color: #d4d4d4;
+}
+
+/* Dark mode Prism token colors */
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.comment,
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.prolog,
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.doctype,
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.cdata {
+    color: #6a9955;
+}
+
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.property,
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.tag,
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.boolean,
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.number,
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.constant,
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.symbol {
+    color: #4fc1ff;
+}
+
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.string,
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.char,
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.attr-value {
+    color: #ce9178;
+}
+
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.keyword,
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.operator {
+    color: #c586c0;
+}
+
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.function,
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.class-name {
+    color: #dcdcaa;
+}
+
+[data-theme="dark"] .smart-message-content .markdown-code-block .token.punctuation {
+    color: #d4d4d4;
 }
 
 /* Permission Modal Specific Styles */

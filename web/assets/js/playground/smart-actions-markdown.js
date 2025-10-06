@@ -19,9 +19,14 @@
          */
         async initializeMarked() {
             try {
-                // Load marked.js from CDN if not already loaded
+                // Load marked.js and Prism.js from CDN if not already loaded
                 if (typeof marked === 'undefined') {
                     await this.loadMarkedLibrary();
+                }
+
+                // Load Prism.js for syntax highlighting
+                if (typeof Prism === 'undefined') {
+                    await this.loadPrismLibrary();
                 }
 
                 // Configure marked with custom settings
@@ -35,11 +40,17 @@
                         tables: true, // Enable table parsing
                         sanitize: false, // We'll sanitize separately for security
                         highlight: function(code, lang) {
-                            // Basic syntax highlighting placeholder
-                            if (lang) {
-                                return `<code class="language-${lang}">${this.escapeHtml(code)}</code>`;
+                            // Use Prism.js for syntax highlighting if available
+                            if (typeof Prism !== 'undefined' && lang && Prism.languages[lang]) {
+                                try {
+                                    const highlighted = Prism.highlight(code, Prism.languages[lang], lang);
+                                    return highlighted;
+                                } catch (e) {
+                                    console.warn('Prism highlighting failed:', e);
+                                    return this.escapeHtml(code);
+                                }
                             }
-                            return `<code>${this.escapeHtml(code)}</code>`;
+                            return this.escapeHtml(code);
                         }.bind(this)
                     });
 
@@ -61,8 +72,22 @@
 
                     renderer.code = function(code, language, escaped) {
                         const lang = language || '';
-                        const langClass = lang ? ` class="language-${lang}"` : '';
-                        return `<pre class="markdown-code-block"><code${langClass}>${escaped ? code : this.escapeHtml(code)}</code></pre>`;
+                        const langClass = lang ? ` language-${lang}` : '';
+
+                        // Use Prism.js for syntax highlighting if available
+                        let highlightedCode = code;
+                        if (typeof Prism !== 'undefined' && lang && Prism.languages[lang]) {
+                            try {
+                                highlightedCode = Prism.highlight(code, Prism.languages[lang], lang);
+                            } catch (e) {
+                                console.warn('Prism code block highlighting failed:', e);
+                                highlightedCode = this.escapeHtml(code);
+                            }
+                        } else {
+                            highlightedCode = this.escapeHtml(code);
+                        }
+
+                        return `<pre class="markdown-code-block"><code class="${langClass.trim()}">${highlightedCode}</code></pre>`;
                     }.bind(this);
 
                     marked.use({ renderer });
@@ -89,6 +114,61 @@
                 script.onerror = reject;
                 document.head.appendChild(script);
             });
+        }
+
+        /**
+         * Load Prism.js library from CDN for syntax highlighting
+         */
+        async loadPrismLibrary() {
+            return new Promise((resolve, reject) => {
+                if (typeof Prism !== 'undefined') {
+                    resolve();
+                    return;
+                }
+
+                // Load Prism CSS for syntax highlighting themes
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css';
+                document.head.appendChild(link);
+
+                // Load Prism core library
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js';
+                script.setAttribute('data-manual', 'true'); // Prevent auto-highlighting
+
+                script.onload = async () => {
+                    // Load common language components
+                    await this.loadPrismLanguages(['javascript', 'python', 'json', 'bash', 'css', 'markup']);
+                    resolve();
+                };
+
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        /**
+         * Load specific Prism language components
+         */
+        async loadPrismLanguages(languages) {
+            const promises = languages.map(lang => {
+                return new Promise((resolve) => {
+                    // Skip if already loaded
+                    if (typeof Prism !== 'undefined' && Prism.languages[lang]) {
+                        resolve();
+                        return;
+                    }
+
+                    const script = document.createElement('script');
+                    script.src = `https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-${lang}.min.js`;
+                    script.onload = resolve;
+                    script.onerror = resolve; // Don't fail if a language fails to load
+                    document.head.appendChild(script);
+                });
+            });
+
+            return Promise.all(promises);
         }
 
         /**
@@ -124,8 +204,10 @@
             const result = [];
             let inCodeBlock = false;
             let inTable = false;
+            let inBlockquote = false;
             let tableRows = [];
             let codeBlockLines = [];
+            let blockquoteLines = [];
             let codeBlockLang = '';
 
             for (let i = 0; i < lines.length; i++) {
@@ -142,8 +224,20 @@
                     } else {
                         // Ending code block
                         inCodeBlock = false;
+                        const code = codeBlockLines.join('\n');
+
+                        // Apply syntax highlighting if Prism is available
+                        let highlightedCode = this.escapeHtml(code);
+                        if (typeof Prism !== 'undefined' && codeBlockLang && Prism.languages[codeBlockLang]) {
+                            try {
+                                highlightedCode = Prism.highlight(code, Prism.languages[codeBlockLang], codeBlockLang);
+                            } catch (e) {
+                                console.warn('Prism fallback highlighting failed:', e);
+                            }
+                        }
+
                         const langClass = codeBlockLang ? ` class="language-${this.escapeHtml(codeBlockLang)}"` : '';
-                        result.push(`<pre class="markdown-code-block"><code${langClass}>${this.escapeHtml(codeBlockLines.join('\n'))}</code></pre>`);
+                        result.push(`<pre class="markdown-code-block"><code${langClass}>${highlightedCode}</code></pre>`);
                         codeBlockLang = '';
                     }
                     continue;
@@ -152,6 +246,30 @@
                 if (inCodeBlock) {
                     codeBlockLines.push(line);
                     continue;
+                }
+
+                // Handle horizontal rules (---, ___, ***)
+                if (trimmed.match(/^([-_*])\1{2,}$/)) {
+                    result.push('<hr>');
+                    continue;
+                }
+
+                // Handle blockquotes
+                if (trimmed.startsWith('>')) {
+                    const quoteLine = trimmed.substring(1).trim();
+                    if (!inBlockquote) {
+                        inBlockquote = true;
+                        blockquoteLines = [];
+                    }
+                    blockquoteLines.push(quoteLine);
+                    continue;
+                } else if (inBlockquote) {
+                    // End of blockquote
+                    inBlockquote = false;
+                    const quoteContent = blockquoteLines.map(l => this.processInlineFormatting(l)).join('<br>');
+                    result.push(`<blockquote>${quoteContent}</blockquote>`);
+                    blockquoteLines = [];
+                    // Process current line normally
                 }
 
                 // Handle table detection and parsing
@@ -205,6 +323,12 @@
                 }
 
                 result.push(processedLine);
+            }
+
+            // Handle any remaining blockquote
+            if (inBlockquote && blockquoteLines.length > 0) {
+                const quoteContent = blockquoteLines.map(l => this.processInlineFormatting(l)).join('<br>');
+                result.push(`<blockquote>${quoteContent}</blockquote>`);
             }
 
             // Handle any remaining table
@@ -295,7 +419,8 @@
         sanitize(html) {
             // Allow only safe tags
             const allowedTags = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 'code', 'pre',
-                               'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'a', 'br'];
+                               'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'a', 'br',
+                               'blockquote', 'hr'];
 
             // Simple sanitization - in production, use DOMPurify
             let sanitized = html;

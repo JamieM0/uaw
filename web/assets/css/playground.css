@@ -1582,27 +1582,9 @@ body {
     color: #856404;
 }
 
-.undo-button {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-    border: 1px solid var(--border-color);
-    background: white;
-    color: var(--text-color);
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.undo-button:hover {
-    background: var(--bg-light);
-    border-color: var(--primary-color);
-}
-
 .undo-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    background: white;
-    border-color: var(--border-color);
 }
 
 /* Tutorial & Gamification Styles */

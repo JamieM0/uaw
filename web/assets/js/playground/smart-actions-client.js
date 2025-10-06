@@ -6,7 +6,7 @@
 
     /**
      * API client for communicating with various LLM providers
-     * Supports: OpenAI, OpenRouter, Claude, Gemini, Ollama, and custom endpoints
+     * Supports: OpenAI, GitHub Models, OpenRouter, Claude, Gemini, Ollama, and custom endpoints
      */
     class SmartActionsClient {
         constructor() {
@@ -18,6 +18,15 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${config.apiKey}`,
                         ...(config.organization ? { 'OpenAI-Organization': config.organization } : {})
+                    }),
+                    formatRequest: this.formatOpenAIRequest.bind(this)
+                },
+                github: {
+                    name: 'GitHub Models',
+                    endpoint: 'https://models.github.ai/inference/chat/completions',
+                    headers: (config) => ({
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${config.apiKey}`
                     }),
                     formatRequest: this.formatOpenAIRequest.bind(this)
                 },
@@ -75,8 +84,8 @@
          * Send message to configured LLM provider
          * @param {Object} config - API configuration
          * @param {Array} messages - Chat messages
-         * @param {Object} options - Additional options
-         * @returns {Promise} API response
+         * @param {Object} options - Additional options (streaming, onChunk)
+         * @returns {Promise} API response (full text or final text if streaming)
          */
         async sendMessage(config, messages, options = {}) {
             try {
@@ -127,16 +136,126 @@
                 });
 
                 if (!response.ok) {
-                    const errorText = await response.text();
+                    let errorText = await response.text();
+
+                    // Try to parse error as JSON for better error messages
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        if (errorJson.error) {
+                            errorText = errorJson.error.message || errorJson.error;
+                        }
+                    } catch (e) {
+                        // Keep original error text if not JSON
+                    }
+
+                    console.error('SmartActionsClient: API error response:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        errorText,
+                        provider: provider.name
+                    });
+
                     throw new Error(`${provider.name} API error (${response.status}): ${errorText}`);
                 }
 
+                // Handle streaming if enabled
+                if (options.streaming && response.body) {
+                    return await this.handleStreamingResponse(config.provider, response, options.onChunk);
+                }
+
+                // Handle non-streaming response
                 const data = await response.json();
                 return this.extractMessage(config.provider, data);
 
             } catch (error) {
                 console.error('SmartActionsClient: API request failed:', error);
                 throw new Error(`Failed to communicate with ${config.provider}: ${error.message}`);
+            }
+        }
+
+        /**
+         * Handle streaming response from API
+         * @param {string} provider - Provider name
+         * @param {Response} response - Fetch response object
+         * @param {Function} onChunk - Callback for each chunk
+         * @returns {Promise<string>} Complete response text
+         */
+        async handleStreamingResponse(provider, response, onChunk) {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullText = '';
+            let buffer = '';
+
+            try {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+                    for (const line of lines) {
+                        const trimmed = line.trim();
+                        if (!trimmed || trimmed === 'data: [DONE]') continue;
+
+                        // Remove 'data: ' prefix for SSE format
+                        const jsonStr = trimmed.startsWith('data: ') ? trimmed.slice(6) : trimmed;
+                        if (!jsonStr) continue;
+
+                        try {
+                            const parsed = JSON.parse(jsonStr);
+                            const chunk = this.extractStreamChunk(provider, parsed);
+
+                            if (chunk) {
+                                fullText += chunk;
+                                if (onChunk) {
+                                    onChunk(chunk, fullText);
+                                }
+                            }
+                        } catch (e) {
+                            // Skip malformed JSON chunks
+                            console.warn('SmartActionsClient: Failed to parse chunk:', jsonStr, e);
+                        }
+                    }
+                }
+
+                return fullText || 'No response received';
+            } catch (error) {
+                console.error('SmartActionsClient: Streaming error:', error);
+                throw new Error(`Streaming failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Extract text chunk from streaming response
+         * @param {string} provider - Provider name
+         * @param {Object} data - Parsed chunk data
+         * @returns {string|null} Text chunk or null
+         */
+        extractStreamChunk(provider, data) {
+            switch (provider) {
+                case 'openai':
+                case 'github':
+                case 'openrouter':
+                case 'custom':
+                    return data.choices?.[0]?.delta?.content || null;
+
+                case 'claude':
+                    // Claude uses different streaming format
+                    if (data.type === 'content_block_delta') {
+                        return data.delta?.text || null;
+                    }
+                    return null;
+
+                case 'gemini':
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+
+                case 'ollama':
+                    return data.message?.content || null;
+
+                default:
+                    return null;
             }
         }
 
@@ -151,7 +270,7 @@
                     content: msg.content
                 })),
                 temperature: config.temperature || 0.7,
-                stream: false
+                stream: options.streaming === true // Only stream if explicitly enabled
             };
         }
 
@@ -170,7 +289,9 @@
                 messages: chatMessages.map(msg => ({
                     role: msg.role === 'assistant' ? 'assistant' : 'user',
                     content: msg.content
-                }))
+                })),
+                stream: options.streaming === true, // Only stream if explicitly enabled
+                max_tokens: 4096
             };
         }
 
@@ -219,7 +340,7 @@
                 options: {
                     temperature: config.temperature || 0.7
                 },
-                stream: false
+                stream: options.streaming === true // Only stream if explicitly enabled
             };
         }
 
@@ -229,6 +350,7 @@
         extractMessage(provider, response) {
             switch (provider) {
                 case 'openai':
+                case 'github':
                 case 'openrouter':
                 case 'custom':
                     return response.choices?.[0]?.message?.content || 'No response received';
@@ -257,13 +379,23 @@
                     { role: 'user', content: 'Say "Connection successful" if you can read this.' }
                 ];
 
-                const response = await this.sendMessage(config, testMessages);
+                console.log('SmartActionsClient: Testing connection with config:', {
+                    provider: config.provider,
+                    model: config.model,
+                    hasApiKey: !!config.apiKey
+                });
+
+                const response = await this.sendMessage(config, testMessages, { streaming: false });
+
+                console.log('SmartActionsClient: Test connection successful, response:', response.substring(0, 100));
+
                 return {
                     success: true,
                     message: response,
                     provider: config.provider
                 };
             } catch (error) {
+                console.error('SmartActionsClient: Test connection failed:', error);
                 return {
                     success: false,
                     error: error.message,
