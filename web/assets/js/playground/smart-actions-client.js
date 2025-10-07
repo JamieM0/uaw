@@ -10,6 +10,43 @@
      */
     class SmartActionsClient {
         constructor() {
+            // Tool definitions for native tool calling (OpenAI-compatible format)
+            this.toolDefinitions = {
+                'view-simulation': {
+                    type: 'function',
+                    function: {
+                        name: 'view_simulation',
+                        description: 'Access the complete simulation JSON structure. Use this when you need to see the full simulation details, inspect specific objects/tasks, or perform detailed analysis.',
+                        parameters: {
+                            type: 'object',
+                            properties: {},
+                            required: []
+                        }
+                    }
+                },
+                'find-and-replace': {
+                    type: 'function',
+                    function: {
+                        name: 'find_and_replace',
+                        description: 'Edit the simulation JSON by finding and replacing a specific string. The system will show a diff view for user approval before applying changes.',
+                        parameters: {
+                            type: 'object',
+                            properties: {
+                                old_string: {
+                                    type: 'string',
+                                    description: 'The exact text to find in the simulation JSON (must match exactly, including whitespace and formatting)'
+                                },
+                                new_string: {
+                                    type: 'string',
+                                    description: 'The text to replace it with (must be valid JSON when replacing structured content)'
+                                }
+                            },
+                            required: ['old_string', 'new_string']
+                        }
+                    }
+                }
+            };
+
             this.providers = {
                 openai: {
                     name: 'OpenAI',
@@ -165,7 +202,15 @@
 
                 // Handle non-streaming response
                 const data = await response.json();
-                return this.extractMessage(config.provider, data);
+                const message = this.extractMessage(config.provider, data);
+                const toolCalls = this.extractToolCalls(config.provider, data);
+
+                // Return both message and tool calls for UI to handle
+                return {
+                    content: message,
+                    toolCalls: toolCalls,
+                    rawResponse: data // Include for debugging
+                };
 
             } catch (error) {
                 console.error('SmartActionsClient: API request failed:', error);
@@ -178,13 +223,14 @@
          * @param {string} provider - Provider name
          * @param {Response} response - Fetch response object
          * @param {Function} onChunk - Callback for each chunk
-         * @returns {Promise<string>} Complete response text
+         * @returns {Promise<Object>} Object with content and toolCalls
          */
         async handleStreamingResponse(provider, response, onChunk) {
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let fullText = '';
             let buffer = '';
+            const toolCallsMap = {}; // Accumulate tool calls by index
 
             try {
                 while (true) {
@@ -199,28 +245,73 @@
                         const trimmed = line.trim();
                         if (!trimmed || trimmed === 'data: [DONE]') continue;
 
+                        // Skip SSE comments (lines starting with ':' like ": OPENROUTER PROCESSING")
+                        if (trimmed.startsWith(':')) continue;
+
                         // Remove 'data: ' prefix for SSE format
                         const jsonStr = trimmed.startsWith('data: ') ? trimmed.slice(6) : trimmed;
                         if (!jsonStr) continue;
 
                         try {
                             const parsed = JSON.parse(jsonStr);
-                            const chunk = this.extractStreamChunk(provider, parsed);
 
+                            // Extract text content chunk
+                            const chunk = this.extractStreamChunk(provider, parsed);
                             if (chunk) {
                                 fullText += chunk;
                                 if (onChunk) {
                                     onChunk(chunk, fullText);
                                 }
                             }
+
+                            // Extract tool call deltas (OpenAI format)
+                            if (provider === 'openai' || provider === 'github' || provider === 'openrouter' || provider === 'custom') {
+                                const delta = parsed.choices?.[0]?.delta;
+                                if (delta?.tool_calls) {
+                                    for (const toolCallDelta of delta.tool_calls) {
+                                        const index = toolCallDelta.index;
+
+                                        // Initialize tool call if first time seeing this index
+                                        if (!toolCallsMap[index]) {
+                                            toolCallsMap[index] = {
+                                                id: toolCallDelta.id || `call_${index}`,
+                                                type: 'function',
+                                                function: {
+                                                    name: toolCallDelta.function?.name || '',
+                                                    arguments: ''
+                                                }
+                                            };
+                                        }
+
+                                        // Accumulate function name if provided
+                                        if (toolCallDelta.function?.name) {
+                                            toolCallsMap[index].function.name = toolCallDelta.function.name;
+                                        }
+
+                                        // Accumulate function arguments
+                                        if (toolCallDelta.function?.arguments) {
+                                            toolCallsMap[index].function.arguments += toolCallDelta.function.arguments;
+                                        }
+                                    }
+                                }
+                            }
                         } catch (e) {
-                            // Skip malformed JSON chunks
+                            // Skip malformed JSON chunks (shouldn't happen after comment filtering)
                             console.warn('SmartActionsClient: Failed to parse chunk:', jsonStr, e);
                         }
                     }
                 }
 
-                return fullText || 'No response received';
+                // Convert toolCallsMap to array
+                const toolCalls = Object.keys(toolCallsMap).length > 0
+                    ? Object.values(toolCallsMap)
+                    : null;
+
+                // Return both content and tool calls
+                return {
+                    content: fullText || 'No response received',
+                    toolCalls: toolCalls
+                };
             } catch (error) {
                 console.error('SmartActionsClient: Streaming error:', error);
                 throw new Error(`Streaming failed: ${error.message}`);
@@ -263,7 +354,7 @@
          * Format request for OpenAI-compatible APIs
          */
         formatOpenAIRequest(config, messages, options) {
-            return {
+            const request = {
                 model: config.model,
                 messages: messages.map(msg => ({
                     role: msg.role,
@@ -272,6 +363,14 @@
                 temperature: config.temperature || 0.7,
                 stream: options.streaming === true // Only stream if explicitly enabled
             };
+
+            // Add tools if native tool calling is enabled and supported
+            if (options.enableTools !== false) {
+                request.tools = Object.values(this.toolDefinitions);
+                request.tool_choice = 'auto'; // Let model decide when to use tools
+            }
+
+            return request;
         }
 
         /**
@@ -282,7 +381,7 @@
             const systemMessage = messages.find(m => m.role === 'system');
             const chatMessages = messages.filter(m => m.role !== 'system');
 
-            return {
+            const request = {
                 model: config.model,
                 temperature: config.temperature || 0.7,
                 system: systemMessage ? systemMessage.content : undefined,
@@ -293,6 +392,15 @@
                 stream: options.streaming === true, // Only stream if explicitly enabled
                 max_tokens: 4096
             };
+
+            // Add tools if native tool calling is enabled and supported
+            // Claude uses the same tool format as OpenAI since their Messages API update
+            if (options.enableTools !== false) {
+                request.tools = Object.values(this.toolDefinitions);
+                request.tool_choice = { type: 'auto' }; // Claude requires object format
+            }
+
+            return request;
         }
 
         /**
@@ -370,6 +478,56 @@
         }
 
         /**
+         * Check if response contains native tool calls
+         * @param {string} provider - Provider name
+         * @param {Object} response - API response
+         * @returns {Array|null} Array of tool calls or null
+         */
+        extractToolCalls(provider, response) {
+            switch (provider) {
+                case 'openai':
+                case 'github':
+                case 'openrouter':
+                case 'custom':
+                    return response.choices?.[0]?.message?.tool_calls || null;
+
+                case 'claude':
+                    // Claude returns tool_use content blocks
+                    const toolUseBlocks = response.content?.filter(block => block.type === 'tool_use');
+                    if (toolUseBlocks && toolUseBlocks.length > 0) {
+                        // Convert Claude format to OpenAI-compatible format
+                        return toolUseBlocks.map(block => ({
+                            id: block.id,
+                            type: 'function',
+                            function: {
+                                name: block.name,
+                                arguments: JSON.stringify(block.input)
+                            }
+                        }));
+                    }
+                    return null;
+
+                default:
+                    // Other providers don't support native tool calling yet
+                    return null;
+            }
+        }
+
+        /**
+         * Parse tool call arguments safely
+         * @param {string} argsString - JSON string of arguments
+         * @returns {Object} Parsed arguments
+         */
+        parseToolArguments(argsString) {
+            try {
+                return JSON.parse(argsString);
+            } catch (error) {
+                console.warn('SmartActionsClient: Failed to parse tool arguments:', argsString, error);
+                return {};
+            }
+        }
+
+        /**
          * Test API configuration
          */
         async testConnection(config) {
@@ -385,13 +543,20 @@
                     hasApiKey: !!config.apiKey
                 });
 
-                const response = await this.sendMessage(config, testMessages, { streaming: false });
+                // Disable tools for connection test
+                const response = await this.sendMessage(config, testMessages, {
+                    streaming: false,
+                    enableTools: false
+                });
 
-                console.log('SmartActionsClient: Test connection successful, response:', response.substring(0, 100));
+                // Handle both string (legacy) and object (new) response formats
+                const messageContent = typeof response === 'string' ? response : response.content;
+
+                console.log('SmartActionsClient: Test connection successful, response:', messageContent.substring(0, 100));
 
                 return {
                     success: true,
-                    message: response,
+                    message: messageContent,
                     provider: config.provider
                 };
             } catch (error) {

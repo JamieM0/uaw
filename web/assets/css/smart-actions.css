@@ -210,7 +210,7 @@
 }
 
 .smart-actions-menu-btn:hover {
-    background: var(--primary-color-hover);
+    background: var(--primary-hover);
     transform: translateY(-1px);
 }
 
@@ -377,7 +377,7 @@
 }
 
 .smart-actions-analyze-btn:hover {
-    background: var(--primary-color-hover);
+    background: var(--primary-hover);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
@@ -581,7 +581,7 @@
 }
 
 .smart-actions-send-btn:hover {
-    background: var(--primary-color-hover);
+    background: var(--primary-hover);
 }
 
 .smart-actions-send-btn:disabled {
@@ -745,7 +745,7 @@
 }
 
 .smart-actions-btn-primary:hover {
-    background: var(--primary-color-hover);
+    background: var(--primary-hover);
 }
 
 .smart-actions-btn-primary:disabled {
@@ -988,4 +988,104 @@
 /* Dark mode adjustments for permission modal */
 [data-theme="dark"] .permission-info-item {
     background: rgba(255, 255, 255, 0.05);
+}
+
+/* ========================================
+   Smart Actions Diff Editor Action Bar
+   ======================================== */
+
+/* Action bar overlays above the editor when diff view is active */
+.smart-diff-action-bar {
+    background: var(--surface-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    z-index: 100;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.smart-diff-action-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.smart-diff-action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.smart-diff-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    white-space: nowrap;
+    background: var(--background-color);
+    color: var(--text-color);
+}
+
+.smart-diff-btn:hover {
+    background: var(--surface-hover-color);
+}
+
+.smart-diff-btn-reject {
+    border-color: var(--error-color);
+    color: var(--error-color);
+}
+
+.smart-diff-btn-reject:hover {
+    background: rgba(var(--error-color-rgb), 0.1);
+}
+
+.smart-diff-btn-approve {
+    border-color: var(--success-color);
+    color: var(--success-color);
+}
+
+.smart-diff-btn-approve:hover {
+    background: rgba(var(--success-color-rgb), 0.1);
+}
+
+.smart-diff-btn:active {
+    transform: scale(0.98);
+}
+
+/* Dark mode support */
+[data-theme="dark"] .smart-diff-action-bar {
+    background: var(--surface-color);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .smart-diff-action-bar {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .smart-diff-action-content {
+        gap: 0.5rem;
+    }
+
+    .smart-diff-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
 }

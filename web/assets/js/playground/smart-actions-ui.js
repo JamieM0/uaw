@@ -23,6 +23,7 @@
             this.context = null;
             this.markdown = null;
             this.setup = null;
+            this.diffEditor = null;
 
             // UI elements
             this.elements = {};
@@ -51,6 +52,7 @@
                 this.context = new SmartActionsContext();
                 this.markdown = new SmartActionsMarkdown();
                 this.setup = new SmartActionsSetup();
+                this.diffEditor = new SmartActionsDiff();
 
                 // Load configuration
                 await this.loadConfig();
@@ -425,9 +427,10 @@
                 let assistantMessageDiv = null;
                 let currentContent = '';
 
-                // Send to AI with streaming enabled
+                // Send to AI with streaming AND tool calling enabled
                 const response = await this.client.sendMessage(this.config, messages, {
                     streaming: true,
+                    enableTools: true, // Enable native tool calling
                     onChunk: (chunk, fullText) => {
                         currentContent = fullText;
 
@@ -446,20 +449,30 @@
                     }
                 });
 
+                // Handle response - streaming now returns {content, toolCalls}
+                const responseContent = response.content;
+                const nativeToolCalls = response.toolCalls;
+
                 // Final update with complete response
                 if (assistantMessageDiv) {
-                    this.updateStreamingMessage(assistantMessageDiv, response);
+                    this.updateStreamingMessage(assistantMessageDiv, responseContent);
                     // Remove streaming class to stop cursor animation
                     assistantMessageDiv.classList.remove('smart-message-streaming');
                 } else {
                     // Fallback if streaming didn't work
-                    this.addMessage('assistant', response);
+                    this.addMessage('assistant', responseContent);
                 }
 
-                this.messages = messages.concat([{ role: 'assistant', content: response }]);
+                this.messages = messages.concat([{ role: 'assistant', content: responseContent }]);
 
-                // Check for tool calls in the response
-                const hasToolCall = await this.checkAndExecuteToolCalls(response);
+                // Check for native tool calls first, then fall back to text-based detection
+                let hasToolCall = false;
+                if (nativeToolCalls && nativeToolCalls.length > 0) {
+                    hasToolCall = await this.handleNativeToolCalls(nativeToolCalls);
+                } else {
+                    hasToolCall = await this.checkAndExecuteToolCalls(responseContent);
+                }
+
                 if (hasToolCall) {
                     // Tool call will handle continuation
                     return;
@@ -503,15 +516,16 @@
                 await this.ensureSystemMessage();
 
                 // Use cached conversation - only send recent context for continuing conversations
-                const conversationMessages = this.prepareCachedConversation();
+                const conversationMessages = await this.prepareCachedConversation();
 
                 // Create placeholder for streaming response
                 let assistantMessageDiv = null;
                 let currentContent = '';
 
-                // Get response from AI with streaming
+                // Get response from AI with streaming AND tool calling enabled
                 const response = await this.client.sendMessage(this.config, conversationMessages, {
                     streaming: true,
+                    enableTools: true, // Enable native tool calling
                     onChunk: (chunk, fullText) => {
                         currentContent = fullText;
 
@@ -530,20 +544,30 @@
                     }
                 });
 
+                // Handle response - streaming now returns {content, toolCalls}
+                const responseContent = response.content;
+                const nativeToolCalls = response.toolCalls;
+
                 // Final update with complete response
                 if (assistantMessageDiv) {
-                    this.updateStreamingMessage(assistantMessageDiv, response);
+                    this.updateStreamingMessage(assistantMessageDiv, responseContent);
                     // Remove streaming class to stop cursor animation
                     assistantMessageDiv.classList.remove('smart-message-streaming');
                 } else {
                     // Fallback if streaming didn't work
-                    this.addMessage('assistant', response);
+                    this.addMessage('assistant', responseContent);
                 }
 
-                this.messages.push({ role: 'assistant', content: response });
+                this.messages.push({ role: 'assistant', content: responseContent });
 
-                // Check for tool calls in the response
-                const hasToolCall = await this.checkAndExecuteToolCalls(response);
+                // Check for native tool calls first, then fall back to text-based detection
+                let hasToolCall = false;
+                if (nativeToolCalls && nativeToolCalls.length > 0) {
+                    hasToolCall = await this.handleNativeToolCalls(nativeToolCalls);
+                } else {
+                    hasToolCall = await this.checkAndExecuteToolCalls(responseContent);
+                }
+
                 if (hasToolCall) {
                     // Tool call will handle continuation
                     return;
@@ -586,33 +610,55 @@
          * Prepare conversation messages for cached mode (reduces token usage)
          * For continuing conversations, only send lightweight context
          */
-        prepareCachedConversation() {
+        async prepareCachedConversation() {
             const maxRecentMessages = 10; // Only keep recent conversation history
 
-            // If this is the first message in a conversation, send full system context
-            if (this.messages.length <= 2) { // system + first user message
+            // Count user-assistant exchanges (exclude system messages)
+            const userAssistantMessages = this.messages.filter(msg => msg.role !== 'system');
+
+            // If this is the first or second exchange, send full system context
+            // First exchange = 1 user message, Second exchange = 1 user + 1 assistant + 1 user
+            if (userAssistantMessages.length <= 3) {
                 return this.messages;
             }
 
-            // For continuing conversations, create lightweight system message
+            // For continuing conversations (3+ exchanges), create lightweight system message
+            // Load base message to extract tool calling section
+            const baseMessage = await this.loadPrompt('base-system-message');
+            const toolCallingSection = this.extractSection(baseMessage, '## Tool Calling');
+            const responseGuidelines = this.extractSection(baseMessage, "## Response Guidelines");
+
             const lightweightSystemMessage = {
                 role: 'system',
                 content: `You are an AI assistant helping with simulation analysis in the Universal Automation Wiki playground. Continue the conversation naturally while maintaining context of the ongoing discussion.
 
-## Tool Calling
+${toolCallingSection}
 
-You have access to tools:
-- \`/tool view-simulation\` - Access the complete simulation JSON when you need detailed analysis
-
-**Important**: Always provide a brief intro message before calling a tool (e.g., "Let me check your simulation:"). Use tools judiciously when you need the full data.`
+${responseGuidelines}`
             };
 
             // Get recent user-assistant messages only
-            const recentMessages = this.messages
-                .filter(msg => msg.role !== 'system') // Remove full system context
-                .slice(-maxRecentMessages); // Keep only recent exchanges
+            const recentMessages = userAssistantMessages.slice(-maxRecentMessages);
 
             return [lightweightSystemMessage, ...recentMessages];
+        }
+
+        /**
+         * Extract a section from markdown content by heading
+         * @param {string} markdown - Full markdown content
+         * @param {string} heading - Heading to find (e.g., "## Tool Calling")
+         * @returns {string} The section content including heading
+         */
+        extractSection(markdown, heading) {
+            // Match the heading and capture everything until the next heading of same or higher level
+            const headingLevel = heading.match(/^#+/)[0].length;
+            const pattern = new RegExp(
+                `(${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*?)(?=\n#{1,${headingLevel}}\\s|$)`,
+                's'
+            );
+
+            const match = markdown.match(pattern);
+            return match ? match[1].trim() : '';
         }
 
         /**
@@ -1134,12 +1180,18 @@ You have access to tools:
          * @returns {Object} - Processed content and tool call info
          */
         processToolCalls(content) {
-            const toolCallRegex = /\/tool\s+view-simulation/gm;
-            const hasToolCall = toolCallRegex.test(content);
+            const viewSimRegex = /\/tool\s+view-simulation/gm;
+            const findReplaceRegex = /\/tool\s+find-and-replace\s+(.+?)(?:\n\n|\n(?=[A-Z])|$)/gms;
 
-            if (hasToolCall) {
-                // Remove tool call from display content
-                const displayContent = content.replace(/\/tool\s+view-simulation/gm, '').trim();
+            const hasViewSim = viewSimRegex.test(content);
+            const hasFindReplace = findReplaceRegex.test(content);
+
+            if (hasViewSim || hasFindReplace) {
+                // Remove tool calls from display content
+                let displayContent = content
+                    .replace(/\/tool\s+view-simulation/gm, '')
+                    .replace(/\/tool\s+find-and-replace\s+(.+?)(?:\n\n|\n(?=[A-Z])|$)/gms, '')
+                    .trim();
 
                 return {
                     displayContent,
@@ -1154,17 +1206,58 @@ You have access to tools:
         }
 
         /**
+         * Handle native tool calls from API response
+         * @param {Array} toolCalls - Array of tool call objects from API
+         * @returns {boolean} True if tool calls were handled
+         */
+        async handleNativeToolCalls(toolCalls) {
+            if (!toolCalls || toolCalls.length === 0) return false;
+
+            console.log('SmartActionsUI: Handling native tool calls:', toolCalls);
+
+            // Process each tool call
+            for (const toolCall of toolCalls) {
+                const functionName = toolCall.function.name;
+                const args = this.client.parseToolArguments(toolCall.function.arguments);
+
+                // Map function names to internal tool names
+                if (functionName === 'view_simulation') {
+                    await this.executeToolCall('view-simulation', '');
+                } else if (functionName === 'find_and_replace') {
+                    // Convert args to the parameter format expected by executeToolCall
+                    const parameters = `${args.old_string}|||REPLACE|||${args.new_string}`;
+                    await this.executeToolCall('find-and-replace', '', parameters);
+                } else {
+                    console.warn('SmartActionsUI: Unknown tool call:', functionName);
+                }
+            }
+
+            return true; // Tool calls were handled
+        }
+
+        /**
          * Check if streaming response contains tool call and handle it
          * This is called after streaming completes
          * @param {string} fullResponse - Complete response from LLM
          * @returns {boolean} True if tool call was found and executed
          */
         async checkAndExecuteToolCalls(fullResponse) {
-            const toolCallRegex = /\/tool\s+view-simulation/;
+            const viewSimRegex = /\/tool\s+view-simulation/;
+            // Match find-and-replace with parameters until end of line or next paragraph
+            const findReplaceRegex = /\/tool\s+find-and-replace\s+(.+?)(?:\n\n|\n(?=[A-Z])|$)/s;
 
-            if (toolCallRegex.test(fullResponse)) {
-                // Tool call detected - execute it
+            // Check for view-simulation tool call
+            if (viewSimRegex.test(fullResponse)) {
                 await this.executeToolCall('view-simulation', fullResponse);
+                return true;
+            }
+
+            // Check for find-and-replace tool call
+            const findReplaceMatch = fullResponse.match(findReplaceRegex);
+            if (findReplaceMatch) {
+                const parameters = findReplaceMatch[1].trim();
+                console.log('SmartActionsUI: Found find-and-replace tool call with params:', parameters.substring(0, 100));
+                await this.executeToolCall('find-and-replace', fullResponse, parameters);
                 return true;
             }
 
@@ -1175,8 +1268,9 @@ You have access to tools:
          * Execute a tool call and continue conversation
          * @param {string} toolName - Name of the tool to execute
          * @param {string} partialResponse - Response before tool call
+         * @param {string} parameters - Tool parameters (for find-and-replace)
          */
-        async executeToolCall(toolName, partialResponse) {
+        async executeToolCall(toolName, partialResponse, parameters = null) {
             if (toolName === 'view-simulation') {
                 try {
                     // Show tool indicator (will remain visible permanently)
@@ -1210,7 +1304,93 @@ You have access to tools:
                     }
                     this.addMessage('system', `Tool call failed: ${error.message}`);
                 }
+            } else if (toolName === 'find-and-replace') {
+                try {
+                    // Show tool indicator FIRST (this will remain visible in the chat)
+                    this.showToolIndicator('Editing Simulation...');
+
+                    // Parse parameters - format: old-string|||REPLACE|||new-string
+                    const delimiter = '|||REPLACE|||';
+                    if (!parameters || !parameters.includes(delimiter)) {
+                        throw new Error('Invalid find-and-replace format. Expected: old-string|||REPLACE|||new-string');
+                    }
+
+                    const [oldString, newString] = parameters.split(delimiter).map(s => s.trim());
+
+                    if (!oldString || !newString) {
+                        throw new Error('Both old-string and new-string must be provided');
+                    }
+
+                    // Get current simulation JSON from editor
+                    if (!window.editor) {
+                        throw new Error('Monaco editor not available');
+                    }
+
+                    const currentJson = window.editor.getValue();
+
+                    // Check if old string exists in the current JSON
+                    if (!currentJson.includes(oldString)) {
+                        throw new Error(`String not found in simulation: "${oldString.substring(0, 50)}..."`);
+                    }
+
+                    // Create modified JSON with replacement
+                    const modifiedJson = currentJson.replace(oldString, newString);
+
+                    // Validate that the modified JSON is valid
+                    try {
+                        JSON.parse(modifiedJson);
+                    } catch (e) {
+                        throw new Error(`Replacement would create invalid JSON: ${e.message}`);
+                    }
+
+                    // DON'T hide the tool indicator - keep it visible in chat history
+
+                    // Show diff editor for user approval
+                    await this.showDiffForApproval(currentJson, modifiedJson, oldString, newString);
+
+                } catch (error) {
+                    console.error('Find-and-replace failed:', error);
+                    // Don't hide the indicator on error either
+                    this.addMessage('system', `Find-and-replace failed: ${error.message}`);
+                }
             }
+        }
+
+        /**
+         * Show diff editor for user to approve or reject changes
+         * @param {string} originalJson - Original simulation JSON
+         * @param {string} modifiedJson - Modified simulation JSON
+         * @param {string} oldString - String that was replaced
+         * @param {string} newString - String that replaced it
+         */
+        async showDiffForApproval(originalJson, modifiedJson, oldString, newString) {
+            return new Promise((resolve) => {
+                // Callback when user approves changes
+                const onApprove = (newContent) => {
+                    // Update the Monaco editor with new content
+                    if (window.editor) {
+                        window.editor.setValue(newContent);
+                    }
+
+                    // Add success message to chat
+                    this.addMessage('system', '✓ Changes applied successfully');
+
+                    // DO NOT continue with LLM - just resolve
+                    resolve(true);
+                };
+
+                // Callback when user rejects changes
+                const onReject = () => {
+                    // Add rejection message to chat
+                    this.addMessage('system', '✕ Changes declined');
+
+                    // DO NOT continue with LLM - just resolve
+                    resolve(false);
+                };
+
+                // Show the diff editor modal
+                this.diffEditor.show(originalJson, modifiedJson, onApprove, onReject);
+            });
         }
 
         /**
@@ -1222,15 +1402,16 @@ You have access to tools:
                 this.setLoading(true, 'loading');
 
                 // Prepare messages for continuation
-                const conversationMessages = this.prepareCachedConversation();
+                const conversationMessages = await this.prepareCachedConversation();
 
                 // Create placeholder for streaming response
                 let assistantMessageDiv = null;
                 let currentContent = '';
 
-                // Get continuation from AI with streaming
+                // Get continuation from AI with streaming AND tool calling enabled
                 const response = await this.client.sendMessage(this.config, conversationMessages, {
                     streaming: true,
+                    enableTools: true, // Enable native tool calling
                     onChunk: (chunk, fullText) => {
                         currentContent = fullText;
 
@@ -1249,15 +1430,24 @@ You have access to tools:
                     }
                 });
 
+                // Handle response - streaming now returns {content, toolCalls}
+                const responseContent = response.content;
+                const nativeToolCalls = response.toolCalls;
+
                 // Final update with complete response
                 if (assistantMessageDiv) {
-                    this.updateStreamingMessage(assistantMessageDiv, response);
+                    this.updateStreamingMessage(assistantMessageDiv, responseContent);
                     assistantMessageDiv.classList.remove('smart-message-streaming');
                 } else {
-                    this.addMessage('assistant', response);
+                    this.addMessage('assistant', responseContent);
                 }
 
-                this.messages.push({ role: 'assistant', content: response });
+                this.messages.push({ role: 'assistant', content: responseContent });
+
+                // Check for native tool calls first (in case model chains tool calls)
+                if (nativeToolCalls && nativeToolCalls.length > 0) {
+                    await this.handleNativeToolCalls(nativeToolCalls);
+                }
 
             } catch (error) {
                 this.addMessage('system', `Error continuing after tool call: ${error.message}`);
