@@ -5,6 +5,9 @@
 let renderTimeout;
 let currentSimulationData = null;
 
+// Multi-period view controller
+let multiPeriodViewController = null;
+
 // Drag and drop variables
 let isDragging = false;
 let draggedTask = null;
@@ -203,10 +206,20 @@ function renderSimulation(skipJsonValidation = false) {
     try {
         loadingOverlay.style.display = "flex";
 
+        // Use window.editor if available (for custom editor wrappers), otherwise fall back to global editor
+        const editorToUse = window.editor || editor;
+
         // Basic JSON syntax validation (skip if already validated)
+        let jsonText = editorToUse.getValue();
+
+        // Pre-process date expressions (convert unquoted date.today/date.start to quoted strings)
+        if (typeof window.preprocessDateExpressions === 'function') {
+            jsonText = window.preprocessDateExpressions(jsonText);
+        }
+
         if (!skipJsonValidation) {
             try {
-                JSON.parse(editor.getValue());
+                JSON.parse(jsonText);
             } catch (e) {
                 simulationContent.innerHTML =
                     '<p style="color: var(--error-color); text-align: center; margin-top: 2rem;">Cannot render: Invalid JSON syntax</p>';
@@ -215,15 +228,14 @@ function renderSimulation(skipJsonValidation = false) {
                 return;
             }
         }
-        const jsonText = editor.getValue();
         const simulationData = JSON.parse(jsonText);
-        
+
         let dataToProcess = simulationData;
-        
+
         if (simulationData.simulation) {
         } else {
             console.warn('TIMELINE: No simulation key found. Trying to adapt structure...');
-            
+
             // If the JSON doesn't have a 'simulation' wrapper, try to adapt it
             if (simulationData.config || simulationData.tasks || simulationData.objects) {
                 // The JSON is already in the 'simulation' format, wrap it
@@ -237,7 +249,36 @@ function renderSimulation(skipJsonValidation = false) {
                 return;
             }
         }
-        
+
+        // Check if this is a multi-period simulation (but not if we're rendering a single day from within multi-period view)
+        const isMultiPeriod = dataToProcess.simulation?.day_types && dataToProcess.simulation?.calendar;
+
+        if (isMultiPeriod && !window.renderingSingleDayFromMultiPeriod) {
+            // Initialize or update view controller for multi-period simulation
+            if (!multiPeriodViewController) {
+                multiPeriodViewController = new MultiPeriodViewController();
+                window.multiPeriodViewController = multiPeriodViewController; // Make globally accessible
+            }
+
+            multiPeriodViewController.initialize(dataToProcess);
+
+            // Add UI elements for multi-period views
+            ensureMultiPeriodUI();
+
+            // Delegate rendering to view controller
+            multiPeriodViewController.render();
+
+            loadingOverlay.style.display = "none";
+            window.renderingInProgress = false;
+            return;
+        }
+
+        // Single-day simulation - continue with existing logic
+        // Hide multi-period UI elements ONLY if we're not rendering a day view from multi-period
+        if (!window.renderingSingleDayFromMultiPeriod) {
+            hideMultiPeriodUI();
+        }
+
         currentSimulationData = processSimulationData(dataToProcess);
 
         if (spaceEditor && dataToProcess.simulation && dataToProcess.simulation.layout) {
@@ -508,6 +549,11 @@ function renderSimulation(skipJsonValidation = false) {
     } finally {
         loadingOverlay.style.display = "none";
         window.renderingInProgress = false;
+
+        // If we're in day view within multi-period, re-render breadcrumbs
+        if (window.renderingSingleDayFromMultiPeriod && window.multiPeriodViewController) {
+            window.multiPeriodViewController.renderBreadcrumbs();
+        }
     }
 }
 
@@ -929,19 +975,25 @@ function calculateNewTimeFromPosition(clientX, trackElement) {
 
 function updateTaskInJSON(taskId, newActorId, newTimeMinutes) {
     try {
-        const currentJson = JSON.parse(editor.getValue());
-        const task = currentJson.simulation.tasks.find(t => t.id === taskId);
-        
+        // Use window.editor if available (for custom editor wrappers), otherwise fall back to global editor
+        const editorToUse = window.editor || editor;
+
+        const currentJson = JSON.parse(editorToUse.getValue());
+
+        // Handle both formats: day type wrapper and full multi-period JSON
+        const tasks = currentJson.simulation?.tasks || [];
+        const task = tasks.find(t => t.id === taskId);
+
         if (task) {
             // Update actor
             task.actor_id = newActorId;
-            
+
             // Update time
             const hours = Math.floor(newTimeMinutes / 60);
             const mins = newTimeMinutes % 60;
             task.start = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-            
-            editor.setValue(JSON.stringify(currentJson, null, 2));
+
+            editorToUse.setValue(JSON.stringify(currentJson, null, 2));
         }
     } catch (e) {
         console.error('Error updating task in JSON:', e);
@@ -950,16 +1002,19 @@ function updateTaskInJSON(taskId, newActorId, newTimeMinutes) {
 
 function updateTaskDurationInJSON(taskId, newDuration, newStartTime) {
     try {
-        const currentJson = JSON.parse(editor.getValue());
+        // Use window.editor if available (for custom editor wrappers), otherwise fall back to global editor
+        const editorToUse = window.editor || editor;
+
+        const currentJson = JSON.parse(editorToUse.getValue());
         const task = currentJson.simulation.tasks.find(t => t.id === taskId);
-        
+
         if (task) {
             task.duration = newDuration;
             if (newStartTime !== task.start) {
                 task.start = newStartTime;
             }
-            
-            editor.setValue(JSON.stringify(currentJson, null, 2));
+
+            editorToUse.setValue(JSON.stringify(currentJson, null, 2));
         }
     } catch (e) {
         console.error('Error updating task duration in JSON:', e);
@@ -1024,4 +1079,35 @@ function updateDynamicPanels() {
     } catch (e) {
         // JSON might be invalid during typing, ignore errors
     }
+}
+
+// Multi-period UI management functions
+function ensureMultiPeriodUI() {
+    const simulationContent = document.getElementById('simulation-content');
+    if (!simulationContent) return;
+
+    // Add breadcrumb container if it doesn't exist
+    let breadcrumbsContainer = document.getElementById('multi-period-breadcrumbs');
+    if (!breadcrumbsContainer) {
+        breadcrumbsContainer = document.createElement('div');
+        breadcrumbsContainer.id = 'multi-period-breadcrumbs';
+        breadcrumbsContainer.className = 'multi-period-breadcrumbs';
+        simulationContent.parentElement.insertBefore(breadcrumbsContainer, simulationContent);
+    }
+
+    breadcrumbsContainer.style.display = 'flex';
+}
+
+function hideMultiPeriodUI() {
+    const breadcrumbsContainer = document.getElementById('multi-period-breadcrumbs');
+    if (breadcrumbsContainer) {
+        breadcrumbsContainer.style.display = 'none';
+    }
+}
+
+// Helper function for parseTimeToMinutes (if not already defined)
+function parseTimeToMinutes(timeStr) {
+    if (typeof timeStr !== 'string' || !timeStr.match(/^\d{1,2}:\d{2}$/)) return null;
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
 }

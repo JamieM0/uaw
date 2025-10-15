@@ -1053,15 +1053,20 @@ function addObjectToSimulation() {
         const objectName = document.getElementById('object-name-input').value;
         const objectId = document.getElementById('object-id-input').value;
         const emoji = document.getElementById('object-emoji-input').value;
-        
+
         if (!objectType || !objectName) {
             alert('Please fill in object type and name');
             return;
         }
-        
-        const currentJson = JSON.parse(editor.getValue());
+
+        // Check if we're in day type editing mode
+        const dayTypeEditor = window.activeDayTypeEditor;
+        const effectiveEditor = dayTypeEditor || editor;
+
+        const currentJson = JSON.parse(effectiveEditor.getValue());
+
         const finalObjectId = objectId || getNextAvailableId(objectType, currentJson.simulation.objects || []);
-        
+
         const properties = {};
         let finalObjectType = objectType;
 
@@ -1122,32 +1127,51 @@ function addObjectToSimulation() {
             name: objectName,
             properties: properties
         };
-        
+
         if (emoji) {
             newObject.properties.emoji = emoji;
         }
-        
+
         // Add default indicator_property for common types
         if (objectType === 'resource') {
             newObject.indicator_property = ['quantity'];
         } else if (objectType === 'equipment') {
             newObject.indicator_property = ['state'];
         }
-        
+
         if (!currentJson.simulation.objects) {
             currentJson.simulation.objects = [];
         }
         currentJson.simulation.objects.push(newObject);
-        
-        editor.setValue(JSON.stringify(currentJson, null, 2));
+
+        // Use the effective editor (wrapper if in day type mode, otherwise Monaco)
+        effectiveEditor.setValue(JSON.stringify(currentJson, null, 2));
         modal.style.display = 'none';
-        
+
+        // Re-render the simulation to show the new object
+        // When in day type mode, we need to manually trigger a re-render
+        // because the editor change event might not fire properly
         if (autoRender) {
-            renderSimulation();
+            if (dayTypeEditor) {
+                // Force a re-render in day type mode
+                setTimeout(() => {
+                    // Set flag to prevent hiding multi-period UI during render
+                    window.renderingSingleDayFromMultiPeriod = true;
+                    if (typeof window.renderSimulation === 'function') {
+                        window.renderSimulation(true);
+                    }
+                    // Restore breadcrumbs after rendering in multi-day mode
+                    if (window.multiPeriodViewController) {
+                        window.multiPeriodViewController.renderBreadcrumbs();
+                    }
+                }, 100);
+            } else {
+                renderSimulation();
+            }
         }
-        
+
         showNotification(`Added ${objectType}: ${objectName}`);
-        
+
     } catch (error) {
         console.error('Error adding object:', error);
         alert(`Error adding object: ${error.message}`);
@@ -1162,8 +1186,8 @@ function addTaskToSimulation() {
         const actorId = document.getElementById('task-actor-select').value;
         const location = document.getElementById('task-location-select').value;
         const startTime = document.getElementById('task-start-input').value;
-        
-        if (!taskId || !emoji || !actorId || !location || !startTime) {
+
+        if (!taskId || !emoji || !actorId || !startTime) {
             alert('Please fill in all required fields');
             return;
         }
@@ -1315,12 +1339,16 @@ function saveTaskToSimulation() {
         const location = document.getElementById('task-location-select').value;
         const startTime = document.getElementById('task-start-input').value;
 
-        if (!taskId || !emoji || !actorId || !location || !startTime) {
+        if (!taskId || !emoji || !actorId || !startTime) {
             alert('Please fill in all required fields');
             return;
         }
 
-        const currentJson = JSON.parse(editor.getValue());
+        // Check if we're in day type editing mode
+        const dayTypeEditor = window.activeDayTypeEditor;
+        const effectiveEditor = dayTypeEditor || editor;
+
+        const currentJson = JSON.parse(effectiveEditor.getValue());
 
         let duration;
         const timeInputMode = document.querySelector('input[name="time-input-mode"]:checked').value;
@@ -1495,15 +1523,32 @@ function saveTaskToSimulation() {
             showNotification(`Added task: ${taskId}`);
         }
 
-        editor.setValue(JSON.stringify(currentJson, null, 2));
+        // Use the effective editor (wrapper if in day type mode, otherwise Monaco)
+        effectiveEditor.setValue(JSON.stringify(currentJson, null, 2));
         modal.style.display = 'none';
 
         // Clear mode data
         modal.dataset.mode = '';
         modal.dataset.taskId = '';
 
+        // Re-render the simulation to show the new/updated task
         if (autoRender) {
-            renderSimulation();
+            if (dayTypeEditor) {
+                // Force a re-render in day type mode
+                setTimeout(() => {
+                    // Set flag to prevent hiding multi-period UI during render
+                    window.renderingSingleDayFromMultiPeriod = true;
+                    if (typeof window.renderSimulation === 'function') {
+                        window.renderSimulation(true);
+                    }
+                    // Restore breadcrumbs after rendering in multi-day mode
+                    if (window.multiPeriodViewController) {
+                        window.multiPeriodViewController.renderBreadcrumbs();
+                    }
+                }, 100);
+            } else {
+                renderSimulation();
+            }
         }
 
     } catch (error) {

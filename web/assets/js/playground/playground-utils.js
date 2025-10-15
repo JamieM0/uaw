@@ -207,16 +207,21 @@ function smoothScrollToElement(element, offset = 0) {
 // Get current timeline context for adding objects/tasks
 function getCurrentTimelineContext() {
     try {
-        const simulation = JSON.parse(editor.getValue());
+        // Use the effective editor (day type wrapper if active, otherwise Monaco editor)
+        const effectiveEditor = window.activeDayTypeEditor || editor;
+
+        // When in multi-period day view, editor.getValue() returns just the day type definition
+        // wrapped in { simulation: {...} }. Otherwise it returns the full simulation.
+        const simulation = JSON.parse(effectiveEditor.getValue());
         const sim = simulation.simulation;
-        
-        // Extract locations for dropdown
+
+        // Extract locations for dropdown (from current context only)
         const locations = (sim.layout?.locations || []).map(loc => ({
             id: loc.id,
             name: loc.name || loc.id
         }));
-        
-        // Extract existing objects by type for reference
+
+        // Extract existing objects by type for reference (from current context only)
         const objects = sim.objects || [];
         const objectsByType = {};
         objects.forEach(obj => {
@@ -225,17 +230,17 @@ function getCurrentTimelineContext() {
             }
             objectsByType[obj.type].push(obj);
         });
-        
-        // Get digital locations
+
+        // Get digital locations (from current context only)
         const digitalLocations = simulation.digital_space?.digital_locations || [];
-        
-        // Get digital objects
+
+        // Get digital objects (from current context only)
         const digitalObjects = simulation.digital_space?.digital_objects || [];
-        
-        // Get displays
+
+        // Get displays (from current context only)
         const displays = simulation.displays || [];
-        
-        // Get display elements from all displays
+
+        // Get display elements from all displays (from current context only)
         const displayElements = [];
         displays.forEach(display => {
             if (display.rectangles) {
@@ -248,12 +253,12 @@ function getCurrentTimelineContext() {
                 });
             }
         });
-        
+
         // Get time range info
         const config = sim.config || {};
         const startTime = config.start_time || "06:00";
         const endTime = config.end_time || "18:00";
-        
+
         return {
             locations,
             objectsByType,

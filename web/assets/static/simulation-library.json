@@ -2248,6 +2248,623 @@
           }
         ]
       }
+    },
+    {
+      "id": "coffee-shop-multiperiod",
+      "name": "Coffee Shop (Multi-Period)",
+      "description": "A 14-day coffee shop simulation demonstrating multi-period operations with weekdays, weekends, maintenance, and delivery days",
+      "complexity": "Advanced",
+      "domain": "Food Service",
+      "simulation": {
+        "name": "Coffee Shop Operations - Multi-Period",
+        "description": "A coffee shop simulation with different operational patterns for weekdays, weekends, maintenance days, and closed days",
+        "simulation_config": {
+          "start_date": "date.today"
+        },
+        "calendar": {
+          "cycle_length": 7,
+          "pattern": [
+            { "day": 1, "type": "weekday" },
+            { "day": 2, "type": "weekday" },
+            { "day": 3, "type": "weekday" },
+            { "day": 4, "type": "weekday" },
+            { "day": 5, "type": "weekday" },
+            { "day": 6, "type": "weekend" },
+            { "day": 7, "type": "closed" }
+          ],
+          "overrides": [
+            { "date": "date.start + 7", "type": "maintenance" },
+            { "date": "date.start + 10", "type": "delivery" }
+          ]
+        },
+        "day_types": {
+          "weekday": {
+            "name": "Weekday Operations",
+            "config": {
+              "start_time": "06:00",
+              "end_time": "18:00"
+            },
+            "locations": [
+              {
+                "id": "counter",
+                "name": "Service Counter",
+                "emoji": "🪟",
+                "position": { "x": 100, "y": 50, "z": 0 }
+              },
+              {
+                "id": "prep_area",
+                "name": "Preparation Area",
+                "emoji": "🔧",
+                "position": { "x": 200, "y": 50, "z": 0 }
+              },
+              {
+                "id": "storage",
+                "name": "Storage Room",
+                "emoji": "📦",
+                "position": { "x": 300, "y": 50, "z": 0 }
+              }
+            ],
+            "objects": [
+              {
+                "id": "barista_alice",
+                "type": "actor",
+                "name": "Alice",
+                "emoji": "👩‍🍳",
+                "properties": {
+                  "role": "Lead Barista",
+                  "hourly_rate": 25.00
+                }
+              },
+              {
+                "id": "barista_bob",
+                "type": "actor",
+                "name": "Bob",
+                "emoji": "👨‍🍳",
+                "properties": {
+                  "role": "Barista",
+                  "hourly_rate": 20.00
+                }
+              },
+              {
+                "id": "espresso_machine",
+                "type": "equipment",
+                "name": "Espresso Machine",
+                "emoji": "☕",
+                "properties": {
+                  "model": "Professional X3000",
+                  "purchase_cost": 5000.00,
+                  "daily_operating_cost": 15.00
+                }
+              },
+              {
+                "id": "coffee_beans",
+                "type": "resource",
+                "name": "Coffee Beans",
+                "emoji": "🫘",
+                "properties": {
+                  "unit_cost": 0.50,
+                  "quantity": 100
+                }
+              },
+              {
+                "id": "milk",
+                "type": "resource",
+                "name": "Milk",
+                "emoji": "🥛",
+                "properties": {
+                  "unit_cost": 0.30,
+                  "quantity": 50
+                }
+              },
+              {
+                "id": "latte",
+                "type": "product",
+                "name": "Latte",
+                "emoji": "☕",
+                "properties": {
+                  "sale_price": 5.50,
+                  "quantity": 0
+                }
+              },
+              {
+                "id": "cappuccino",
+                "type": "product",
+                "name": "Cappuccino",
+                "emoji": "☕",
+                "properties": {
+                  "sale_price": 5.00,
+                  "quantity": 0
+                }
+              }
+            ],
+            "tasks": [
+              {
+                "id": "open_shop",
+                "emoji": "🔓",
+                "actor_id": "barista_alice",
+                "location_id": "counter",
+                "start": "06:00",
+                "duration": 30
+              },
+              {
+                "id": "prep_station",
+                "emoji": "🧹",
+                "actor_id": "barista_alice",
+                "location_id": "prep_area",
+                "start": "06:30",
+                "duration": 30,
+                "depends_on": ["open_shop"]
+              },
+              {
+                "id": "bob_arrives",
+                "emoji": "👋",
+                "actor_id": "barista_bob",
+                "location_id": "counter",
+                "start": "07:00",
+                "duration": 5
+              },
+              {
+                "id": "morning_rush_1",
+                "emoji": "☕",
+                "actor_id": "barista_alice",
+                "location_id": "counter",
+                "start": "07:30",
+                "duration": 120,
+                "depends_on": ["prep_station"],
+                "interactions": [
+                  {
+                    "object_id": "espresso_machine",
+                    "interaction_type": "use",
+                    "duration": 120
+                  },
+                  {
+                    "object_id": "coffee_beans",
+                    "interaction_type": "consume",
+                    "quantity": 20
+                  },
+                  {
+                    "object_id": "milk",
+                    "interaction_type": "consume",
+                    "quantity": 10
+                  },
+                  {
+                    "object_id": "latte",
+                    "interaction_type": "create",
+                    "quantity": 15
+                  }
+                ]
+              },
+              {
+                "id": "morning_rush_2",
+                "emoji": "☕",
+                "actor_id": "barista_bob",
+                "location_id": "counter",
+                "start": "07:30",
+                "duration": 120,
+                "depends_on": ["bob_arrives"],
+                "interactions": [
+                  {
+                    "object_id": "espresso_machine",
+                    "interaction_type": "use",
+                    "duration": 120
+                  },
+                  {
+                    "object_id": "coffee_beans",
+                    "interaction_type": "consume",
+                    "quantity": 15
+                  },
+                  {
+                    "object_id": "milk",
+                    "interaction_type": "consume",
+                    "quantity": 8
+                  },
+                  {
+                    "object_id": "cappuccino",
+                    "interaction_type": "create",
+                    "quantity": 12
+                  }
+                ]
+              },
+              {
+                "id": "midday_service",
+                "emoji": "☕",
+                "actor_id": "barista_alice",
+                "location_id": "counter",
+                "start": "10:00",
+                "duration": 180,
+                "depends_on": ["morning_rush_1"],
+                "interactions": [
+                  {
+                    "object_id": "espresso_machine",
+                    "interaction_type": "use",
+                    "duration": 180
+                  },
+                  {
+                    "object_id": "coffee_beans",
+                    "interaction_type": "consume",
+                    "quantity": 25
+                  },
+                  {
+                    "object_id": "milk",
+                    "interaction_type": "consume",
+                    "quantity": 12
+                  },
+                  {
+                    "object_id": "latte",
+                    "interaction_type": "create",
+                    "quantity": 18
+                  },
+                  {
+                    "object_id": "cappuccino",
+                    "interaction_type": "create",
+                    "quantity": 10
+                  }
+                ]
+              },
+              {
+                "id": "bob_afternoon",
+                "emoji": "☕",
+                "actor_id": "barista_bob",
+                "location_id": "counter",
+                "start": "10:00",
+                "duration": 120,
+                "depends_on": ["morning_rush_2"],
+                "interactions": [
+                  {
+                    "object_id": "espresso_machine",
+                    "interaction_type": "use",
+                    "duration": 120
+                  },
+                  {
+                    "object_id": "coffee_beans",
+                    "interaction_type": "consume",
+                    "quantity": 15
+                  },
+                  {
+                    "object_id": "milk",
+                    "interaction_type": "consume",
+                    "quantity": 7
+                  },
+                  {
+                    "object_id": "latte",
+                    "interaction_type": "create",
+                    "quantity": 10
+                  }
+                ]
+              },
+              {
+                "id": "afternoon_cleanup",
+                "emoji": "🧹",
+                "actor_id": "barista_bob",
+                "location_id": "prep_area",
+                "start": "14:00",
+                "duration": 60,
+                "depends_on": ["bob_afternoon"]
+              },
+              {
+                "id": "close_shop",
+                "emoji": "🔒",
+                "actor_id": "barista_alice",
+                "location_id": "counter",
+                "start": "17:30",
+                "duration": 30,
+                "depends_on": ["midday_service", "afternoon_cleanup"]
+              }
+            ]
+          },
+          "weekend": {
+            "name": "Weekend Operations",
+            "config": {
+              "start_time": "08:00",
+              "end_time": "16:00"
+            },
+            "locations": [
+              {
+                "id": "counter",
+                "name": "Service Counter",
+                "emoji": "🪟",
+                "position": { "x": 100, "y": 50, "z": 0 }
+              },
+              {
+                "id": "prep_area",
+                "name": "Preparation Area",
+                "emoji": "🔧",
+                "position": { "x": 200, "y": 50, "z": 0 }
+              }
+            ],
+            "objects": [
+              {
+                "id": "barista_alice",
+                "type": "actor",
+                "name": "Alice",
+                "emoji": "👩‍🍳",
+                "properties": {
+                  "role": "Lead Barista",
+                  "hourly_rate": 30.00
+                }
+              },
+              {
+                "id": "espresso_machine",
+                "type": "equipment",
+                "name": "Espresso Machine",
+                "emoji": "☕",
+                "properties": {
+                  "model": "Professional X3000",
+                  "daily_operating_cost": 10.00
+                }
+              },
+              {
+                "id": "coffee_beans",
+                "type": "resource",
+                "name": "Coffee Beans",
+                "emoji": "🫘",
+                "properties": {
+                  "unit_cost": 0.50,
+                  "quantity": 50
+                }
+              },
+              {
+                "id": "milk",
+                "type": "resource",
+                "name": "Milk",
+                "emoji": "🥛",
+                "properties": {
+                  "unit_cost": 0.30,
+                  "quantity": 30
+                }
+              },
+              {
+                "id": "latte",
+                "type": "product",
+                "name": "Latte",
+                "emoji": "☕",
+                "properties": {
+                  "sale_price": 6.00,
+                  "quantity": 0
+                }
+              }
+            ],
+            "tasks": [
+              {
+                "id": "open_shop",
+                "emoji": "🔓",
+                "actor_id": "barista_alice",
+                "location_id": "counter",
+                "start": "08:00",
+                "duration": 30
+              },
+              {
+                "id": "weekend_service",
+                "emoji": "☕",
+                "actor_id": "barista_alice",
+                "location_id": "counter",
+                "start": "08:30",
+                "duration": 360,
+                "depends_on": ["open_shop"],
+                "interactions": [
+                  {
+                    "object_id": "espresso_machine",
+                    "interaction_type": "use",
+                    "duration": 360
+                  },
+                  {
+                    "object_id": "coffee_beans",
+                    "interaction_type": "consume",
+                    "quantity": 40
+                  },
+                  {
+                    "object_id": "milk",
+                    "interaction_type": "consume",
+                    "quantity": 25
+                  },
+                  {
+                    "object_id": "latte",
+                    "interaction_type": "create",
+                    "quantity": 35
+                  }
+                ]
+              },
+              {
+                "id": "close_shop",
+                "emoji": "🔒",
+                "actor_id": "barista_alice",
+                "location_id": "counter",
+                "start": "15:30",
+                "duration": 30,
+                "depends_on": ["weekend_service"]
+              }
+            ]
+          },
+          "maintenance": {
+            "name": "Maintenance Day",
+            "config": {
+              "start_time": "09:00",
+              "end_time": "15:00"
+            },
+            "locations": [
+              {
+                "id": "prep_area",
+                "name": "Preparation Area",
+                "emoji": "🔧",
+                "position": { "x": 200, "y": 50, "z": 0 }
+              },
+              {
+                "id": "storage",
+                "name": "Storage Room",
+                "emoji": "📦",
+                "position": { "x": 300, "y": 50, "z": 0 }
+              }
+            ],
+            "objects": [
+              {
+                "id": "technician",
+                "type": "actor",
+                "name": "Technician",
+                "emoji": "🔧",
+                "properties": {
+                  "role": "Equipment Technician",
+                  "service_cost": 150.00
+                }
+              },
+              {
+                "id": "espresso_machine",
+                "type": "equipment",
+                "name": "Espresso Machine",
+                "emoji": "☕",
+                "properties": {
+                  "model": "Professional X3000",
+                  "maintenance_cost": 75.00
+                }
+              }
+            ],
+            "tasks": [
+              {
+                "id": "deep_clean",
+                "emoji": "🧽",
+                "actor_id": "technician",
+                "location_id": "prep_area",
+                "start": "09:00",
+                "duration": 120,
+                "interactions": [
+                  {
+                    "object_id": "espresso_machine",
+                    "interaction_type": "maintain",
+                    "duration": 120
+                  }
+                ]
+              },
+              {
+                "id": "equipment_service",
+                "emoji": "🔧",
+                "actor_id": "technician",
+                "location_id": "prep_area",
+                "start": "11:00",
+                "duration": 180,
+                "depends_on": ["deep_clean"],
+                "interactions": [
+                  {
+                    "object_id": "espresso_machine",
+                    "interaction_type": "repair",
+                    "duration": 180
+                  }
+                ]
+              },
+              {
+                "id": "inventory_check",
+                "emoji": "📋",
+                "actor_id": "technician",
+                "location_id": "storage",
+                "start": "14:00",
+                "duration": 60,
+                "depends_on": ["equipment_service"]
+              }
+            ]
+          },
+          "delivery": {
+            "name": "Delivery Day",
+            "config": {
+              "start_time": "07:00",
+              "end_time": "10:00"
+            },
+            "locations": [
+              {
+                "id": "loading_dock",
+                "name": "Loading Dock",
+                "emoji": "🚚",
+                "position": { "x": 50, "y": 50, "z": 0 }
+              },
+              {
+                "id": "storage",
+                "name": "Storage Room",
+                "emoji": "📦",
+                "position": { "x": 300, "y": 50, "z": 0 }
+              }
+            ],
+            "objects": [
+              {
+                "id": "manager",
+                "type": "actor",
+                "name": "Manager",
+                "emoji": "👔",
+                "properties": {
+                  "role": "Shop Manager",
+                  "hourly_rate": 35.00
+                }
+              },
+              {
+                "id": "coffee_beans",
+                "type": "resource",
+                "name": "Coffee Beans",
+                "emoji": "🫘",
+                "properties": {
+                  "unit_cost": 0.45,
+                  "quantity": 0
+                }
+              },
+              {
+                "id": "milk",
+                "type": "resource",
+                "name": "Milk",
+                "emoji": "🥛",
+                "properties": {
+                  "unit_cost": 0.28,
+                  "quantity": 0
+                }
+              }
+            ],
+            "tasks": [
+              {
+                "id": "receive_delivery",
+                "emoji": "📦",
+                "actor_id": "manager",
+                "location_id": "loading_dock",
+                "start": "07:00",
+                "duration": 60,
+                "interactions": [
+                  {
+                    "object_id": "coffee_beans",
+                    "interaction_type": "receive",
+                    "quantity": 200
+                  },
+                  {
+                    "object_id": "milk",
+                    "interaction_type": "receive",
+                    "quantity": 100
+                  }
+                ]
+              },
+              {
+                "id": "stock_storage",
+                "emoji": "📥",
+                "actor_id": "manager",
+                "location_id": "storage",
+                "start": "08:00",
+                "duration": 90,
+                "depends_on": ["receive_delivery"]
+              },
+              {
+                "id": "quality_check",
+                "emoji": "✅",
+                "actor_id": "manager",
+                "location_id": "storage",
+                "start": "09:30",
+                "duration": 30,
+                "depends_on": ["stock_storage"]
+              }
+            ]
+          },
+          "closed": {
+            "name": "Closed",
+            "config": {
+              "start_time": "00:00",
+              "end_time": "00:00"
+            },
+            "locations": [],
+            "objects": [],
+            "tasks": []
+          }
+        }
+      }
     }
   ]
 }

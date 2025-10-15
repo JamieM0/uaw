@@ -548,6 +548,13 @@ require(["vs/editor/editor.main"], function () {
 
     window.monacoEditor = editor;
 
+    // Restore day type wrapper if it's active, otherwise use Monaco editor
+    if (window.activeDayTypeEditor) {
+        window.editor = window.activeDayTypeEditor;
+    } else {
+        window.editor = editor;
+    }
+
     // Auto-collapse 'assets' object if it exists
     setTimeout(async () => {
         await autoCollapseAssetsObject(true); // Move cursor to top on page load
