@@ -19,6 +19,8 @@ The Universal Automation Wiki includes a powerful, interactive Simulation Playgr
 
 - **[Playground Guide](./playground/playground-guide.md)**: A comprehensive overview of the playground's features and a deep dive into the `simulation.json` schema.
 - **[Space Editor Guide](./playground/space-editor-guide.md)**: A guide to the visual tool for defining the physical layout of your simulation.
+- **[Multi-Day Simulations](./playground/multi-day-simulations.md)**: Guide to creating simulations spanning multiple days with varying operational patterns, day types, and calendar systems.
+- **[Smart Actions](./playground/smart-actions.md)**: AI-powered assistant for analyzing, optimizing, and editing simulations using natural language.
 - **[Saving and Loading Simulations](./playground/save-load.md)**: Instructions on how to save your simulations locally or to the cloud.
 - **[The Metrics Editor](./simulations/metrics-editor.md)**: A detailed guide on how to create your own custom validation logic.
 

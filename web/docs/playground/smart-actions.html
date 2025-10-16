@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Actions - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/playground/">Playground</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">Smart Actions</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">Smart Actions</h1>
+                            
+                            <p class="docs-page-subtitle">Smart Actions is an AI-powered assistant integrated into the Universal Automation Wiki playground. It provides intelligent analysis, suggestions, and automated editing capabilities for your simulations using Large Language Models (LLMs).</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>Smart Actions is an AI-powered assistant integrated into the Universal Automation Wiki playground. It provides intelligent analysis, suggestions, and automated editing capabilities for your simulations using Large Language Models (LLMs).</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>Smart Actions helps you:</p>
+<ul class="docs-list">
+<li><strong>Analyze simulations</strong>: Get comprehensive insights into your simulation's structure, efficiency, and potential improvements</li>
+<li><strong>Fix validation errors</strong>: Automatically identify and resolve issues flagged by the validation engine</li>
+<li><strong>Optimize processes</strong>: Receive suggestions for improving task sequencing, resource usage, and cost efficiency</li>
+<li><strong>Edit simulations</strong>: Use natural language to request changes, which are applied via a visual diff interface</li>
+<li><strong>Learn best practices</strong>: Get guidance on Universal Object Model (UOM) standards and simulation design</li>
+</ul>
+<h2 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h2>
+<h3 id="initial-setup">Initial Setup<a class="headerlink" href="#initial-setup" title="Permanent link">&para;</a></h3>
+<ol class="docs-list docs-list-ordered">
+<li>Open the playground and locate the <strong>Smart Actions</strong> button in the toolbar</li>
+<li>Click the dropdown and select <strong>Setup</strong></li>
+<li>Choose your AI provider and configure:</li>
+</ol>
+<h4 id="supported-providers">Supported Providers<a class="headerlink" href="#supported-providers" title="Permanent link">&para;</a></h4>
+<p><strong>OpenAI</strong>
+- Models Examples: GPT-5, GPT-5 Mini
+- Requires: OpenAI API key
+- Best for: Comprehensive analysis and complex editing tasks</p>
+<p><strong>Anthropic</strong>
+- Models: Claude 4.5 Sonnet, Claude 4.1 Opus, Claude 4.5 Haiku
+- Requires: Anthropic API key
+- Best for: Detailed reasoning, long-context analysis, and complex editing tasks</p>
+<p><strong>OpenRouter</strong>
+- Models: Any model from external providers, DeepSeek, Qwen, etc.
+- Requires: OpenRouter API key
+- Best for: Experimentation, cost-effectiveness</p>
+<p><strong>GitHub Models</strong>
+- Models: Various open and proprietary models
+- Requires: GitHub Personal Access Token (with appropriate permissions)
+- Best for: Experimentation</p>
+<p><strong>Ollama (Local)</strong>
+- Models: Any model installed locally via Ollama
+- Requires: Ollama running locally at http://localhost:11434
+- Best for: Privacy-conscious users and offline work</p>
+<ol class="docs-list docs-list-ordered">
+<li>Enter your API key or configure your model</li>
+<li>Test the connection</li>
+<li>Click <strong>Save Configuration</strong></li>
+</ol>
+<h3 id="first-analysis">First Analysis<a class="headerlink" href="#first-analysis" title="Permanent link">&para;</a></h3>
+<p>After setup:</p>
+<ol class="docs-list docs-list-ordered">
+<li>Load or create a simulation</li>
+<li>Click <strong>Smart Actions</strong> → <strong>Chat</strong></li>
+<li>Click the <strong>Analyse</strong> button</li>
+<li>Review the AI's comprehensive analysis</li>
+</ol>
+<p>The analysis will cover:
+- Simulation structure and completeness
+- Validation issues and how to fix them
+- Resource flow efficiency
+- Cost optimization opportunities
+- Best practice compliance</p>
+<h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
+<h3 id="conversational-interface">Conversational Interface<a class="headerlink" href="#conversational-interface" title="Permanent link">&para;</a></h3>
+<p>Smart Actions uses a chat-based interface for natural interaction:</p>
+<ul class="docs-list">
+<li><strong>Multiple conversations</strong>: Switch between different analysis sessions</li>
+<li><strong>Conversation history</strong>: All conversations are saved locally</li>
+<li><strong>Context aware</strong>: The AI understands your full simulation and validation state</li>
+<li><strong>Streaming responses</strong>: See responses as they're generated</li>
+</ul>
+<h3 id="tool-calling">Tool Calling<a class="headerlink" href="#tool-calling" title="Permanent link">&para;</a></h3>
+<p>Smart Actions has access to powerful tools for interacting with your simulation:</p>
+<h4 id="view-simulation">View Simulation<a class="headerlink" href="#view-simulation" title="Permanent link">&para;</a></h4>
+<p>The AI can request full simulation data when needed:</p>
+<div class="codehilite"><pre><span></span><code class="docs-inline-code">User: &quot;What&#39;s the total cost of all tasks?&quot;
+AI: Let me view the simulation to calculate the total task costs.
+[Accessing Simulation...]
+AI: The total cost across all tasks is $247.50, broken down as follows...
+</code></pre></div>
+
+<h4 id="find-and-replace">Find and Replace<a class="headerlink" href="#find-and-replace" title="Permanent link">&para;</a></h4>
+<p>The AI can suggest and apply edits directly:</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">User</span>:<span class="w"> </span><span class="s2">&quot;Change the end time to 4PM&quot;</span>
+<span class="nv">AI</span>:<span class="w"> </span><span class="nv">I</span><span class="err">&#39;ll update the end time to 16:00 (4PM).</span>
+<span class="err">[Editing Simulation...]</span>
+<span class="err">[Diff view appears showing the change]</span>
+</code></pre></div>
+
+<p>The diff view allows you to:
+- Review the exact changes
+- See before/after comparison
+- Approve or reject changes
+- Ensure JSON validity</p>
+<h3 id="markdown-support">Markdown Support<a class="headerlink" href="#markdown-support" title="Permanent link">&para;</a></h3>
+<p>Responses support rich markdown formatting:</p>
+<ul class="docs-list">
+<li><strong>Code blocks</strong> with syntax highlighting</li>
+<li><strong>Tables</strong> for comparison data</li>
+<li><strong>Lists</strong> for organized information</li>
+<li><strong>Headings</strong> for structured content</li>
+<li><strong>Emphasis</strong> for important points</li>
+</ul>
+<h3 id="streaming-responses">Streaming Responses<a class="headerlink" href="#streaming-responses" title="Permanent link">&para;</a></h3>
+<p>Smart Actions streams responses in real-time:</p>
+<ul class="docs-list">
+<li>See responses as they're generated</li>
+<li>Faster perceived performance</li>
+<li>Ability to read while the AI is still thinking</li>
+<li>Auto-scrolling (with manual scroll detection)</li>
+</ul>
+<h2 id="usage-patterns">Usage Patterns<a class="headerlink" href="#usage-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="quick-analysis">Quick Analysis<a class="headerlink" href="#quick-analysis" title="Permanent link">&para;</a></h3>
+<p>Get a rapid overview of your simulation:</p>
+<div class="codehilite"><pre><span></span><code class="docs-inline-code">&quot;Analyze this simulation&quot;
+&quot;What are the main issues?&quot;
+&quot;Give me a quick summary&quot;
+</code></pre></div>
+
+<h3 id="targeted-questions">Targeted Questions<a class="headerlink" href="#targeted-questions" title="Permanent link">&para;</a></h3>
+<p>Ask specific questions about your simulation:</p>
+<div class="codehilite"><pre><span></span><code class="docs-inline-code">&quot;What&#39;s the critical path of tasks?&quot;
+&quot;Which resources are being over-utilized?&quot;
+&quot;How much does this process cost per hour?&quot;
+&quot;Are there any task scheduling conflicts?&quot;
+</code></pre></div>
+
+<h3 id="validation-help">Validation Help<a class="headerlink" href="#validation-help" title="Permanent link">&para;</a></h3>
+<p>Get assistance with validation errors:</p>
+<div class="codehilite"><pre><span></span><code><span class="s2">&quot;Why am I getting validation errors?&quot;</span>
+<span class="s2">&quot;How do I fix the actor reference errors?&quot;</span>
+<span class="s2">&quot;Explain the dependency cycle warning&quot;</span>
+</code></pre></div>
+
+<h3 id="optimization-requests">Optimization Requests<a class="headerlink" href="#optimization-requests" title="Permanent link">&para;</a></h3>
+<p>Request improvements to your simulation:</p>
+<div class="codehilite"><pre><span></span><code class="docs-inline-code">&quot;How can I reduce the total cost?&quot;
+&quot;Suggest ways to speed up this process&quot;
+&quot;What resources am I wasting?&quot;
+&quot;How can I improve task parallelization?&quot;
+</code></pre></div>
+
+<h3 id="direct-editing">Direct Editing<a class="headerlink" href="#direct-editing" title="Permanent link">&para;</a></h3>
+<p>Request changes using natural language:</p>
+<div class="codehilite"><pre><span></span><code><span class="s2">&quot;Change the baker&#39;s hourly rate to $30&quot;</span>
+<span class="s2">&quot;Add a 15-minute break task at 12:00&quot;</span>
+<span class="s2">&quot;Rename the &#39;workspace&#39; location to &#39;prep_counter&#39;&quot;</span>
+<span class="s2">&quot;Set all resource quantities to 100&quot;</span>
+</code></pre></div>
+
+<h2 id="system-prompts">System Prompts<a class="headerlink" href="#system-prompts" title="Permanent link">&para;</a></h2>
+<p>Smart Actions uses carefully crafted system prompts to provide accurate, helpful assistance:</p>
+<h3 id="base-system-message">Base System Message<a class="headerlink" href="#base-system-message" title="Permanent link">&para;</a></h3>
+<p>Provides:
+- Universal Object Model (UOM) specification
+- Current simulation context
+- Validation system status
+- Quality standards and constraints
+- Tool calling capabilities
+- Response formatting guidelines</p>
+<h3 id="analysis-agent">Analysis Agent<a class="headerlink" href="#analysis-agent" title="Permanent link">&para;</a></h3>
+<p>Specialized for:
+- Comprehensive simulation analysis
+- Issue identification and prioritization
+- Optimization recommendations
+- Best practice validation</p>
+<h2 id="advanced-features">Advanced Features<a class="headerlink" href="#advanced-features" title="Permanent link">&para;</a></h2>
+<h3 id="cached-conversations">Cached Conversations<a class="headerlink" href="#cached-conversations" title="Permanent link">&para;</a></h3>
+<p>Smart Actions optimizes token usage by:</p>
+<ul class="docs-list">
+<li>Caching full system context for first 2-3 exchanges</li>
+<li>Switching to lightweight context for continuing conversations</li>
+<li>Maintaining conversation history for coherence</li>
+</ul>
+<h3 id="multi-turn-tool-calling">Multi-Turn Tool Calling<a class="headerlink" href="#multi-turn-tool-calling" title="Permanent link">&para;</a></h3>
+<p>The AI can chain multiple tool calls:</p>
+<ol class="docs-list docs-list-ordered">
+<li>View simulation to understand structure</li>
+<li>Analyze and identify issues</li>
+<li>Suggest specific changes</li>
+<li>Apply changes via find-and-replace</li>
+<li>Verify changes were applied correctly</li>
+</ol>
+<h3 id="context-management">Context Management<a class="headerlink" href="#context-management" title="Permanent link">&para;</a></h3>
+<p>Smart Actions automatically gathers and provides:</p>
+<ul class="docs-list">
+<li><strong>Simulation data</strong>: Structure, objects, tasks, configuration</li>
+<li><strong>Validation results</strong>: Errors, warnings, info messages</li>
+<li><strong>Metrics configuration</strong>: Active and disabled validation rules</li>
+<li><strong>Session state</strong>: Current view, selected objects, history</li>
+</ul>
+<h3 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h3>
+<p>Smart Actions gracefully handles:</p>
+<ul class="docs-list">
+<li>API failures with clear error messages</li>
+<li>Invalid JSON edits with explanations</li>
+<li>Tool call failures with fallback options</li>
+<li>Network issues with retry logic</li>
+</ul>
+<h2 id="configuration-management">Configuration Management<a class="headerlink" href="#configuration-management" title="Permanent link">&para;</a></h2>
+<h3 id="saved-configurations">Saved Configurations<a class="headerlink" href="#saved-configurations" title="Permanent link">&para;</a></h3>
+<p>Smart Actions saves:
+- API keys
+- Model selections per provider
+- Last-used configuration
+- Conversation history (local storage)</p>
+<h3 id="privacy-and-security">Privacy and Security<a class="headerlink" href="#privacy-and-security" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
+<li>API keys never leave your browser</li>
+<li>All data stored locally (localStorage)</li>
+<li>Direct API connections (no intermediary servers)</li>
+</ul>
+<h3 id="multiple-configurations">Multiple Configurations<a class="headerlink" href="#multiple-configurations" title="Permanent link">&para;</a></h3>
+<p>You can configure multiple providers and switch between them:</p>
+<ol class="docs-list docs-list-ordered">
+<li>Open <strong>Setup</strong></li>
+<li>Configure each provider you want to use</li>
+<li>Select the active provider from dropdown</li>
+<li>Settings are saved automatically</li>
+</ol>
+<h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<h3 id="getting-good-results">Getting Good Results<a class="headerlink" href="#getting-good-results" title="Permanent link">&para;</a></h3>
+<ol class="docs-list docs-list-ordered">
+<li><strong>Load your simulation first</strong>: The AI needs context</li>
+<li><strong>Be specific</strong>: "Change task 3's duration to 45 minutes" vs "make it faster"</li>
+<li><strong>Review suggestions</strong>: Not all AI suggestions are optimal for your use case</li>
+<li><strong>Iterate</strong>: Use follow-up questions to refine suggestions</li>
+<li><strong>Approve carefully</strong>: Review diffs before approving changes</li>
+</ol>
+<h3 id="effective-prompts">Effective Prompts<a class="headerlink" href="#effective-prompts" title="Permanent link">&para;</a></h3>
+<p><strong>Good:</strong></p>
+<div class="codehilite"><pre><span></span><code class="docs-inline-code">&quot;The validation shows resource conflicts. Can you identify which
+tasks are causing the issue and suggest how to resolve them?&quot;
+</code></pre></div>
+
+<p><strong>Less Effective:</strong></p>
+<div class="codehilite"><pre><span></span><code class="docs-inline-code">&quot;Fix it&quot;
+</code></pre></div>
+
+<p><strong>Good:</strong></p>
+<div class="codehilite"><pre><span></span><code class="docs-inline-code">&quot;I want to add a quality control step after baking. It should take
+10 minutes, be performed by the assistant, and check the product quality.&quot;
+</code></pre></div>
+
+<p><strong>Less Effective:</strong></p>
+<div class="codehilite"><pre><span></span><code class="docs-inline-code">&quot;Add QC&quot;
+</code></pre></div>
+
+<h3 id="when-to-use-smart-actions">When to Use Smart Actions<a class="headerlink" href="#when-to-use-smart-actions" title="Permanent link">&para;</a></h3>
+<p>Smart Actions is ideal for:</p>
+<ul class="docs-list">
+<li>✅ Understanding complex validation errors</li>
+<li>✅ Getting optimization suggestions</li>
+<li>✅ Learning UOM best practices</li>
+<li>✅ Quick edits to existing simulations</li>
+<li>✅ Analyzing simulation economics</li>
+</ul>
+<p>Smart Actions may not be ideal for:</p>
+<ul class="docs-list">
+<li>❌ Building entire simulations from scratch (use the editor)</li>
+<li>❌ Highly specialized domain calculations (use external tools)</li>
+<li>❌ Real-time constraint solving (use validation engine)</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="api-key-invalid-error">"API key invalid" Error<a class="headerlink" href="#api-key-invalid-error" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
+<li>Verify your API key is correct</li>
+<li>Check the key has appropriate permissions</li>
+<li>Ensure billing is set up (OpenAI, Anthropic)</li>
+<li>Try regenerating the key</li>
+</ul>
+<h3 id="model-not-available-error">"Model not available" Error<a class="headerlink" href="#model-not-available-error" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
+<li>Check your API plan supports the selected model</li>
+<li>Verify model name is spelled correctly</li>
+<li>Try a different model from the same provider</li>
+<li>For Ollama: ensure the model is installed (<code class="docs-inline-code">ollama list</code>)</li>
+</ul>
+<h3 id="slow-responses">Slow Responses<a class="headerlink" href="#slow-responses" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
+<li>Larger models take longer to respond</li>
+<li>Complex simulations require more processing</li>
+<li>Try a faster model (GPT-5 Mini, Claude 4.5 Haiku)</li>
+<li>Check your internet connection</li>
+</ul>
+<h3 id="changes-not-applying">Changes Not Applying<a class="headerlink" href="#changes-not-applying" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
+<li>Ensure you clicked <strong>Approve</strong> in the diff view</li>
+<li>Check the browser console for errors</li>
+<li>Try making smaller, more targeted edits</li>
+</ul>
+<h3 id="conversation-lost">Conversation Lost<a class="headerlink" href="#conversation-lost" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
+<li>Conversations are saved in localStorage</li>
+<li>Clearing browser data will delete conversations</li>
+<li>Export important conversations (copy/paste)</li>
+<li>Use version control for important simulations</li>
+</ul>
+<h2 id="technical-details">Technical Details<a class="headerlink" href="#technical-details" title="Permanent link">&para;</a></h2>
+<h3 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h3>
+<p>Smart Actions consists of several modules:</p>
+<ul class="docs-list">
+<li><strong>smart-actions-ui.js</strong>: Main interface orchestrator</li>
+<li><strong>smart-actions-client.js</strong>: API client for multiple providers</li>
+<li><strong>smart-actions-context.js</strong>: Simulation context gathering</li>
+<li><strong>smart-actions-markdown.js</strong>: Markdown rendering</li>
+<li><strong>smart-actions-setup.js</strong>: Configuration modal</li>
+<li><strong>smart-actions-diff.js</strong>: Visual diff editor for changes</li>
+</ul>
+<h3 id="api-integration">API Integration<a class="headerlink" href="#api-integration" title="Permanent link">&para;</a></h3>
+<p>Native function calling is supported for:
+- OpenAI (GPT-5, GPT-5 Mini, etc.)
+- Anthropic (Claude 4 family and later)
+- GitHub Models (provider-dependent)</p>
+<p>Fallback text-based tool commands for:
+- Ollama (local models)
+- Legacy providers</p>
+<h3 id="storage">Storage<a class="headerlink" href="#storage" title="Permanent link">&para;</a></h3>
+<p>Smart Actions uses browser storage:</p>
+<ul class="docs-list">
+<li><strong>Cookies</strong>: Configuration (API keys, model selections)</li>
+<li>Expiry: 365 days</li>
+<li>Scope: Current domain</li>
+<li>
+<p>Secure: HTTPS only</p>
+</li>
+<li>
+<p><strong>localStorage</strong>: Conversation history</p>
+</li>
+<li>Max conversations: 10</li>
+<li>Auto-pruning: Oldest first</li>
+<li>Format: JSON</li>
+</ul>
+<h3 id="performance">Performance<a class="headerlink" href="#performance" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
+<li>Streaming reduces perceived latency</li>
+<li>Context caching minimizes token usage</li>
+<li>Diff previews prevent unnecessary reloads</li>
+<li>Lazy loading of large simulations</li>
+</ul>
+<h2 id="keyboard-shortcuts">Keyboard Shortcuts<a class="headerlink" href="#keyboard-shortcuts" title="Permanent link">&para;</a></h2>
+<ul class="docs-list">
+<li><strong>Shift+Enter</strong>: Send message (while in input field)</li>
+<li><strong>Enter</strong>: New line (while in input field)</li>
+<li><strong>Escape</strong>: Close Smart Actions panel (planned)</li>
+</ul>
+<h2 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permanent link">&para;</a></h2>
+<p>Current limitations:</p>
+<ol class="docs-list docs-list-ordered">
+<li><strong>Context Window</strong>: Very large simulations may exceed model context limits</li>
+<li><strong>Rate Limits</strong>: Subject to provider API rate limits</li>
+<li><strong>Local Storage</strong>: Limited conversation history (10 conversations)</li>
+<li><strong>Language</strong>: English only for system prompts</li>
+<li><strong>Offline</strong>: Requires internet connection (except Ollama)</li>
+</ol>
+<h2 id="future-enhancements">Future Enhancements<a class="headerlink" href="#future-enhancements" title="Permanent link">&para;</a></h2>
+<p>Planned features:</p>
+<ul class="docs-list">
+<li>Multi-file simulation support</li>
+<li>Simulation templates via AI</li>
+<li>Automated testing suggestions</li>
+<li>Cost estimation for changes</li>
+<li>Simulation comparison mode</li>
+<li>Export conversations as documentation</li>
+<li>Custom system prompts</li>
+<li>Team collaboration features</li>
+</ul>
+<h2 id="provider-specific-notes">Provider-Specific Notes<a class="headerlink" href="#provider-specific-notes" title="Permanent link">&para;</a></h2>
+<h3 id="openai">OpenAI<a class="headerlink" href="#openai" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
+<li>Best model: GPT-5 Pro</li>
+<li>Fastest model: GPT-5 Mini</li>
+<li>Tool calling: Excellent</li>
+<li>Streaming: Supported (OpenAI requires invasive scanning of official government IDs for some models, recommended to use OpenRouter as an alternative)</li>
+<li>Cost: Moderate to high</li>
+</ul>
+<h3 id="anthropic">Anthropic<a class="headerlink" href="#anthropic" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
+<li>Best model: Claude 4.5 Sonnet</li>
+<li>Fastest model: Claude 4.5 Haiku</li>
+<li>Tool calling: Excellent</li>
+<li>Streaming: Supported</li>
+<li>Cost: Moderate to high</li>
+</ul>
+<h3 id="github-models">GitHub Models<a class="headerlink" href="#github-models" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
+<li>Variety of models available</li>
+<li>Free tier available</li>
+<li>Requires GitHub account</li>
+<li>Tool calling: Model-dependent</li>
+<li>Note: Preview/beta feature</li>
+</ul>
+<h3 id="ollama">Ollama<a class="headerlink" href="#ollama" title="Permanent link">&para;</a></h3>
+<ul class="docs-list">
+<li>Fully local and private</li>
+<li>No API costs</li>
+<li>Requires local setup</li>
+<li>Tool calling: Limited</li>
+<li>Streaming: Supported</li>
+<li>Note: Performance depends on hardware</li>
+</ul>
+<h2 id="privacy-and-data">Privacy and Data<a class="headerlink" href="#privacy-and-data" title="Permanent link">&para;</a></h2>
+<p>Smart Actions respects your privacy:</p>
+<ul class="docs-list">
+<li><strong>Direct API calls</strong>: Your data goes directly to your chosen provider</li>
+<li><strong>No intermediaries</strong>: No proxy servers or middleware</li>
+<li><strong>Open source</strong>: All code is inspectable</li>
+</ul>
+<p>Your simulation data is only sent to:
+1. The AI provider you explicitly configure
+2. According to that provider's privacy policy
+3. When you explicitly request analysis or edits</p>
+<h2 id="getting-help">Getting Help<a class="headerlink" href="#getting-help" title="Permanent link">&para;</a></h2>
+<p>If you encounter issues:</p>
+<ol class="docs-list docs-list-ordered">
+<li>Check the browser console for error messages</li>
+<li>Verify your configuration in Setup</li>
+<li>Try a different model or provider</li>
+<li>Test with a simple sample simulation</li>
+<li>Report issues on GitHub</li>
+</ol>
+<h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
+<h3 id="example-1-adding-a-task">Example 1: Adding a Task<a class="headerlink" href="#example-1-adding-a-task" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code><span class="nl">User:</span><span class="w"> </span><span class="s">&quot;Add a cleanup task after baking, duration 15 minutes,</span>
+<span class="n">assigned</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">assistant</span><span class="s">&quot;</span>
+
+<span class="nl">AI:</span><span class="w"> </span><span class="n">I</span><span class="p">&#39;</span><span class="n">ll</span><span class="w"> </span><span class="n">add</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">cleanup</span><span class="w"> </span><span class="k">task</span><span class="w"> </span><span class="n">after</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">baking</span><span class="w"> </span><span class="k">task</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="mh">15</span><span class="w"> </span><span class="n">minute</span>
+<span class="n">duration</span><span class="w"> </span><span class="n">assigned</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">assistant</span><span class="p">.</span>
+
+<span class="p">[</span><span class="n">Editing</span><span class="w"> </span><span class="n">Simulation</span><span class="p">...]</span>
+
+<span class="p">[</span><span class="n">Diff</span><span class="w"> </span><span class="n">shows</span><span class="w"> </span><span class="n">new</span><span class="w"> </span><span class="k">task</span><span class="w"> </span><span class="n">being</span><span class="w"> </span><span class="n">added</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="n">proper</span><span class="w"> </span><span class="n">dependencies</span><span class="p">]</span>
+
+<span class="nl">User:</span><span class="w"> </span><span class="p">[</span><span class="n">Reviews</span><span class="w"> </span><span class="n">diff</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="n">clicks</span><span class="w"> </span><span class="n">Approve</span><span class="p">]</span>
+
+<span class="nl">System:</span><span class="w"> </span><span class="err">✓</span><span class="w"> </span><span class="n">Changes</span><span class="w"> </span><span class="n">applied</span><span class="w"> </span><span class="n">successfully</span>
+</code></pre></div>
+
+<h3 id="example-2-optimizing-costs">Example 2: Optimizing Costs<a class="headerlink" href="#example-2-optimizing-costs" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code><span class="nv">User</span>:<span class="w"> </span><span class="s2">&quot;How can I reduce the total cost of this simulation?&quot;</span>
+
+<span class="nv">AI</span>:<span class="w"> </span>[<span class="nv">Accessing</span><span class="w"> </span><span class="nv">Simulation</span>...]
+
+<span class="nv">Based</span><span class="w"> </span><span class="nv">on</span><span class="w"> </span><span class="nv">my</span><span class="w"> </span><span class="nv">analysis</span>,<span class="w"> </span><span class="nv">here</span><span class="w"> </span><span class="nv">are</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">main</span><span class="w"> </span><span class="nv">cost</span><span class="w"> </span><span class="nv">optimization</span><span class="w"> </span><span class="nv">opportunities</span>:
+
+<span class="mi">1</span>.<span class="w"> </span><span class="o">**</span><span class="nv">Labor</span><span class="w"> </span><span class="nv">Costs</span><span class="o">**</span><span class="w"> </span><span class="ss">(</span><span class="mh">$450</span>.<span class="mi">00</span><span class="o">/</span><span class="nv">day</span>,<span class="w"> </span><span class="mi">72</span><span class="o">%</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">total</span><span class="ss">)</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="nv">The</span><span class="w"> </span><span class="nv">assistant</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">idle</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="nv">hours</span><span class="w"> </span><span class="ss">(</span><span class="mi">12</span>:<span class="mi">00</span><span class="o">-</span><span class="mi">14</span>:<span class="mi">00</span><span class="ss">)</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="nv">Consider</span><span class="w"> </span><span class="nv">reducing</span><span class="w"> </span><span class="nv">work</span><span class="w"> </span><span class="nv">hours</span><span class="w"> </span><span class="nv">or</span><span class="w"> </span><span class="nv">adding</span><span class="w"> </span><span class="nv">tasks</span>
+
+<span class="mi">2</span>.<span class="w"> </span><span class="o">**</span><span class="nv">Resource</span><span class="w"> </span><span class="nv">Waste</span><span class="o">**</span><span class="w"> </span><span class="ss">(</span><span class="mh">$85</span>.<span class="mi">00</span><span class="o">/</span><span class="nv">day</span><span class="ss">)</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="nv">Flour</span><span class="w"> </span><span class="nv">consumption</span><span class="w"> </span><span class="nv">exceeds</span><span class="w"> </span><span class="nv">requirements</span><span class="w"> </span><span class="nv">by</span><span class="w"> </span><span class="mi">15</span><span class="o">%</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="nv">Reduce</span><span class="w"> </span><span class="nv">flour</span><span class="w"> </span><span class="nv">quantity</span><span class="w"> </span><span class="nv">in</span><span class="w"> </span><span class="nv">mixing</span><span class="w"> </span><span class="nv">tasks</span>
+
+<span class="mi">3</span>.<span class="w"> </span><span class="o">**</span><span class="nv">Equipment</span><span class="w"> </span><span class="nv">Utilization</span><span class="o">**</span><span class="w"> </span><span class="ss">(</span><span class="nv">Only</span><span class="w"> </span><span class="mi">60</span><span class="o">%</span><span class="w"> </span><span class="nv">utilized</span><span class="ss">)</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="nv">The</span><span class="w"> </span><span class="nv">oven</span><span class="w"> </span><span class="nv">sits</span><span class="w"> </span><span class="nv">idle</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="nv">hours</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="nv">Consider</span><span class="w"> </span><span class="nv">adding</span><span class="w"> </span><span class="nv">additional</span><span class="w"> </span><span class="nv">baking</span><span class="w"> </span><span class="nv">tasks</span>
+
+<span class="nv">Would</span><span class="w"> </span><span class="nv">you</span><span class="w"> </span><span class="nv">like</span><span class="w"> </span><span class="nv">me</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">suggest</span><span class="w"> </span><span class="nv">specific</span><span class="w"> </span><span class="nv">changes</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">any</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">these</span><span class="w"> </span><span class="nv">areas</span>?
+</code></pre></div>
+
+<h3 id="example-3-fixing-validation-errors">Example 3: Fixing Validation Errors<a class="headerlink" href="#example-3-fixing-validation-errors" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code class="docs-inline-code">User: &quot;I have 5 validation errors. What&#39;s wrong?&quot;
+
+AI: Let me analyze the validation errors.
+
+I can see 5 errors in your simulation:
+
+1. **Missing actor reference** (Task &quot;mix_dough&quot;)
+   - Error: References actor &quot;baker_john&quot; which doesn&#39;t exist
+   - Fix: Change to &quot;baker&quot; or create the actor
+
+2. **Dependency cycle** (Tasks &quot;proof&quot; and &quot;shape&quot;)
+   - Error: Circular dependency detected
+   - Fix: Remove &quot;shape&quot; from &quot;proof&quot; dependencies
+
+3. **Invalid time format** (Task &quot;bake&quot;)
+   - Error: start time &quot;1:00PM&quot; should be &quot;13:00&quot;
+   - Fix: Use 24-hour format
+
+4. **Resource quantity** (Resource &quot;flour&quot;)
+   - Error: Quantity is negative (-5)
+   - Fix: Set quantity to positive value
+
+5. **Missing required field** (Object &quot;workspace&quot;)
+   - Error: Equipment objects require &quot;state&quot; property
+   - Fix: Add &quot;state&quot;: &quot;available&quot;
+
+Would you like me to fix these issues?
+</code></pre></div>
+
+<h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
+<p>Smart Actions is a powerful tool for simulation analysis and optimization. By combining AI capabilities with the Universal Object Model, it provides intelligent assistance that respects the structure and constraints of your simulations while offering creative solutions and optimizations.</p>
+<p>Start with the <strong>Analyse</strong> button to explore what Smart Actions can do, then experiment with natural language questions and edit requests to discover its full potential.</p>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

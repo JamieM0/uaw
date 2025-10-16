@@ -75,6 +75,8 @@
 <ul class="docs-list">
 <li><strong><a href="./playground/playground-guide.md">Playground Guide</a></strong>: A comprehensive overview of the playground's features and a deep dive into the <code class="docs-inline-code">simulation.json</code> schema.</li>
 <li><strong><a href="./playground/space-editor-guide.md">Space Editor Guide</a></strong>: A guide to the visual tool for defining the physical layout of your simulation.</li>
+<li><strong><a href="./playground/multi-day-simulations.md">Multi-Day Simulations</a></strong>: Guide to creating simulations spanning multiple days with varying operational patterns, day types, and calendar systems.</li>
+<li><strong><a href="./playground/smart-actions.md">Smart Actions</a></strong>: AI-powered assistant for analyzing, optimizing, and editing simulations using natural language.</li>
 <li><strong><a href="./playground/save-load.md">Saving and Loading Simulations</a></strong>: Instructions on how to save your simulations locally or to the cloud.</li>
 <li><strong><a href="./simulations/metrics-editor.md">The Metrics Editor</a></strong>: A detailed guide on how to create your own custom validation logic.</li>
 </ul>
@@ -105,9 +107,9 @@
 <h4 id="2-code-examples-and-explanations">2. Code Examples and Explanations<a class="headerlink" href="#2-code-examples-and-explanations" title="Permanent link">&para;</a></h4>
 <h5 id="assemblepy-hypothetical-example"><code class="docs-inline-code">assemble.py</code> (Hypothetical Example)<a class="headerlink" href="#assemblepy-hypothetical-example" title="Permanent link">&para;</a></h5>
 <div class="codehilite"><pre><span></span><code><span class="c1"># assemble.py</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span>
+<span class="kn">import</span> <span class="nn">utils</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="n">input_data</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">load_json</span><span class="p">(</span><span class="s2">&quot;input.json&quot;</span><span class="p">)</span>
     <span class="n">processed_data</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">process_data</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span>
     <span class="n">utils</span><span class="o">.</span><span class="n">save_output</span><span class="p">(</span><span class="n">processed_data</span><span class="p">,</span> <span class="s2">&quot;output.json&quot;</span><span class="p">)</span>
@@ -119,17 +121,17 @@
 <p>Explanation: This example demonstrates how <code class="docs-inline-code">assemble.py</code> might use functions from <code class="docs-inline-code">utils.py</code> to load data, process it, and save the output.</p>
 <h5 id="utilspy-example"><code class="docs-inline-code">utils.py</code> (Example)<a class="headerlink" href="#utilspy-example" title="Permanent link">&para;</a></h5>
 <div class="codehilite"><pre><span></span><code><span class="c1"># utils.py</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">json</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">load_json</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">load_json</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">save_output</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">save_output</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">process_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">process_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
     <span class="c1"># Example data processing logic</span>
     <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 </code></pre></div>
@@ -137,12 +139,12 @@
 <p>Explanation: This code shows example utility functions for loading JSON data, saving output, and processing data.  The <code class="docs-inline-code">process_data</code> function converts all values in a dictionary to uppercase.</p>
 <h5 id="automation-adoptionpy-key-functions"><code class="docs-inline-code">automation-adoption.py</code> (Key Functions)<a class="headerlink" href="#automation-adoptionpy-key-functions" title="Permanent link">&para;</a></h5>
 <div class="codehilite"><pre><span></span><code><span class="c1"># automation-adoption.py</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">chat_with_llm</span><span class="p">,</span> <span class="n">parse_llm_json_response</span><span class="p">,</span> <span class="n">saveToFile</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">chat_with_llm</span><span class="p">,</span> <span class="n">parse_llm_json_response</span><span class="p">,</span> <span class="n">saveToFile</span>
 
 <span class="n">flowUUID</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># Global variable for flow UUID</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">generate_automation_adoption</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">save_inputs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">generate_automation_adoption</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">save_inputs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate detailed information about automation adoption phases for a specific topic.&quot;&quot;&quot;</span>
     <span class="c1"># Extract information from input data</span>
     <span class="n">topic</span> <span class="o">=</span> <span class="n">input_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;topic&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -286,9 +288,9 @@
 <h3 id="utilspy"><code class="docs-inline-code">utils.py</code><a class="headerlink" href="#utilspy" title="Permanent link">&para;</a></h3>
 <p>Example function (assuming a function <code class="docs-inline-code">load_json</code> exists in <code class="docs-inline-code">utils.py</code>):</p>
 <div class="codehilite"><pre><span></span><code><span class="c1"># utils.py</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">json</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">load_json</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">load_json</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Loads JSON data from a file.</span>
 
 <span class="sd">    Args:</span>
@@ -316,7 +318,7 @@
 <p>Example function:</p>
 <div class="codehilite"><pre><span></span><code><span class="c1"># prompt.py</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">create_prompt</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">create_prompt</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a prompt by substituting data into a template.</span>
 
 <span class="sd">    Args:</span>
@@ -339,10 +341,10 @@
 <h3 id="reconstructorpy"><code class="docs-inline-code">reconstructor.py</code><a class="headerlink" href="#reconstructorpy" title="Permanent link">&para;</a></h3>
 <p>Example function:</p>
 <div class="codehilite"><pre><span></span><code><span class="c1"># reconstructor.py</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">re</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">parse_llm_json_response</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">parse_llm_json_response</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Extracts a JSON object from a string response, handling potential surrounding text.</span>
 
@@ -682,12 +684,12 @@ if extracted_data:
 <h4 id="generate-metadatapy"><code class="docs-inline-code">generate-metadata.py</code><a class="headerlink" href="#generate-metadatapy" title="Permanent link">&para;</a></h4>
 <p>This script generates the initial metadata for the wiki page.</p>
 <div class="codehilite"><pre><span></span><code><span class="c1"># generate-metadata.py</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_json</span><span class="p">,</span> <span class="n">saveToFile</span><span class="p">,</span> <span class="n">parse_llm_json_response</span><span class="p">,</span> <span class="n">chat_with_llm</span><span class="p">,</span> <span class="n">handle_command_args</span><span class="p">,</span> <span class="n">get_output_filepath</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">load_json</span><span class="p">,</span> <span class="n">saveToFile</span><span class="p">,</span> <span class="n">parse_llm_json_response</span><span class="p">,</span> <span class="n">chat_with_llm</span><span class="p">,</span> <span class="n">handle_command_args</span><span class="p">,</span> <span class="n">get_output_filepath</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">generate_page_metadata</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">save_inputs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">generate_page_metadata</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">save_inputs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates metadata for a Universal Automation Wiki page using an LLM.&quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">flowUUID</span>
     <span class="n">topic</span> <span class="o">=</span> <span class="n">input_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;topic&quot;</span><span class="p">,</span> <span class="s2">&quot;Default Topic&quot;</span><span class="p">)</span>
@@ -725,7 +727,7 @@ if extracted_data:
         <span class="k">return</span> <span class="kc">None</span>
     <span class="k">return</span> <span class="n">metadata</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Main function to run the metadata generation.&quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">flowUUID</span>
     <span class="n">usage_msg</span> <span class="o">=</span> <span class="s2">&quot;Usage: python generate-metadata.py &lt;input_json&gt; [output_json] [-saveInputs] [-uuid=</span><span class="se">\&quot;</span><span class="s2">UUID</span><span class="se">\&quot;</span><span class="s2">] [-flow_uuid=</span><span class="se">\&quot;</span><span class="s2">FLOW-UUID</span><span class="se">\&quot;</span><span class="s2">]&quot;</span>
@@ -981,7 +983,7 @@ systemMsg = (
 </code></pre></div>
 
 <p>This function takes a topic as input and uses an LLM to generate metadata for a wiki page.  It constructs a system message and user message to prompt the LLM, then parses the LLM's response to extract the metadata.</p>
-<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_automation_adoption_phases</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">save_inputs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">generate_automation_adoption_phases</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">save_inputs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates phases of automation adoption for a given topic.&quot;&quot;&quot;</span>
     <span class="n">topic</span> <span class="o">=</span> <span class="n">input_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;topic&quot;</span><span class="p">)</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">input_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;gpt-3.5-turbo&quot;</span><span class="p">)</span>
@@ -1039,10 +1041,10 @@ systemMsg = (
 <span class="w">        </span><span class="n">UTILS</span><span class="o">[</span><span class="n">routines.utils</span><span class="o">]</span>
 <span class="w">    </span><span class="k">end</span>
 
-<span class="w">    </span><span class="n">STE</span><span class="o">[</span><span class="n">simplified-technical-english.py</span><span class="o">]</span><span class="w"> </span><span class="c1">--&gt; LLM</span>
-<span class="w">    </span><span class="n">STE</span><span class="w"> </span><span class="c1">--&gt; JSON</span>
-<span class="w">    </span><span class="n">STE</span><span class="w"> </span><span class="c1">--&gt; UTILS</span>
-<span class="w">    </span><span class="n">EXAMPLES</span><span class="o">[</span><span class="n">examples/simplified-technical-english-in.json</span><span class="o">]</span><span class="w"> </span><span class="c1">--&gt; STE</span>
+<span class="w">    </span><span class="n">STE</span><span class="o">[</span><span class="n">simplified-technical-english.py</span><span class="o">]</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">LLM</span>
+<span class="w">    </span><span class="n">STE</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">JSON</span>
+<span class="w">    </span><span class="n">STE</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">UTILS</span>
+<span class="w">    </span><span class="n">EXAMPLES</span><span class="o">[</span><span class="n">examples/simplified-technical-english-in.json</span><span class="o">]</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">STE</span>
 <span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">STE</span><span class="w"> </span><span class="nl">fill</span><span class="p">:</span><span class="n">#f9f</span><span class="p">,</span><span class="nl">stroke</span><span class="p">:</span><span class="n">#333</span><span class="p">,</span><span class="n">stroke</span><span class="o">-</span><span class="nl">width</span><span class="p">:</span><span class="mi">2</span><span class="n">px</span>
 </code></pre></div>
 
@@ -1097,10 +1099,10 @@ systemMsg = (
 <h3 id="code-examples-and-explanation">Code Examples and Explanation<a class="headerlink" href="#code-examples-and-explanation" title="Permanent link">&para;</a></h3>
 <p>The core functionality revolves around the <code class="docs-inline-code">generate_page_metadata</code>, <code class="docs-inline-code">generate_automation_adoption</code>, and <code class="docs-inline-code">generate_industrial_specifications</code> functions. These functions construct system and user messages to prompt an LLM, then parse the LLM's JSON response.</p>
 <div class="codehilite"><pre><span></span><code><span class="c1"># File: search-queries.py</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">load_json</span><span class="p">,</span> <span class="n">save_output</span><span class="p">,</span> <span class="n">chat_with_llm</span><span class="p">,</span> <span class="n">parse_llm_json_response</span><span class="p">,</span>
     <span class="n">create_output_metadata</span><span class="p">,</span> <span class="n">get_output_filepath</span><span class="p">,</span> <span class="n">handle_command_args</span><span class="p">,</span>
     <span class="n">saveToFile</span>
@@ -1108,7 +1110,7 @@ systemMsg = (
 
 <span class="n">flowUUID</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># Global variable for flow UUID</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">generate_page_metadata</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">save_inputs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">generate_page_metadata</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">save_inputs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate standardized metadata for a topic page.&quot;&quot;&quot;</span>
     <span class="c1"># Extract information from input data</span>
     <span class="n">topic</span> <span class="o">=</span> <span class="n">input_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;topic&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -1147,7 +1149,7 @@ systemMsg = (
         <span class="k">return</span> <span class="kc">None</span>
     <span class="k">return</span> <span class="n">metadata</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">generate_automation_adoption</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">save_inputs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">generate_automation_adoption</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">save_inputs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate detailed information about automation adoption phases for a specific topic.&quot;&quot;&quot;</span>
     <span class="c1"># Extract information from input data</span>
     <span class="n">topic</span> <span class="o">=</span> <span class="n">input_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;topic&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -1202,7 +1204,7 @@ systemMsg = (
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: LLM response is not valid JSON. Full response: &quot;</span> <span class="o">+</span> <span class="n">response</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">generate_industrial_specifications</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">save_inputs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">generate_industrial_specifications</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">save_inputs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate detailed industrial specifications for a given topic.&quot;&quot;&quot;</span>
     <span class="c1"># Extract information from input data</span>
     <span class="n">topic</span> <span class="o">=</span> <span class="n">input_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;topic&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -1245,7 +1247,7 @@ systemMsg = (
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: LLM response is not valid JSON. Full response: &quot;</span> <span class="o">+</span> <span class="n">response</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Main function to run the metadata generation.&quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">flowUUID</span>
     <span class="n">usage_msg</span> <span class="o">=</span> <span class="s2">&quot;Usage: python generate-metadata.py &lt;input_json&gt; [output_json] [-saveInputs] [-uuid=</span><span class="se">\&quot;</span><span class="s2">UUID</span><span class="se">\&quot;</span><span class="s2">] [-flow_uuid=</span><span class="se">\&quot;</span><span class="s2">FLOW-UUID</span><span class="se">\&quot;</span><span class="s2">]&quot;</span>
