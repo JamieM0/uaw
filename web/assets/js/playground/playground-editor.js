@@ -1,6 +1,12 @@
 // Playground Editor - Monaco editor initialization and management
 // Universal Automation Wiki - Simulation Playground
 
+// Helper function to strip comments from a JSON string
+function stripJsonComments(jsonString) {
+    // Regular expression to remove single-line and multi-line comments
+    return jsonString.replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, '');
+}
+
 // LocalStorage quota checking utility
 function canStoreInLocalStorage(key, value) {
     try {
@@ -483,6 +489,11 @@ require(["vs/editor/editor.main"], function () {
         initialData = JSON.stringify(defaultSimulationData, null, 2);
     }
 
+    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+        validate: true,
+        allowComments: true
+    });
+
     editor = monaco.editor.create(
         document.getElementById("json-editor"),
         {
@@ -598,7 +609,7 @@ require(["vs/editor/editor.main"], function () {
 
         if (spaceEditor && !spaceEditor.isDrawing && !spaceEditor.isDragging && !spaceEditor.isUpdatingJson) {
             try {
-                const currentJson = JSON.parse(editor.getValue());
+                const currentJson = JSON.parse(stripJsonComments(editor.getValue()));
                 spaceEditor.loadLayout(currentJson.simulation.layout);
             } catch(e) { /* Ignore parse errors during typing */ }
         } else if (spaceEditor) {
@@ -665,7 +676,7 @@ async function autoCollapseAssetsObject(moveToTop = false) {
         // Find the opening brace after "assets":
         let openBraceLine = startLine;
         let openBraceFound = false;
-        const content = model.getValue();
+        const content = stripJsonComments(model.getValue());
         const lines = content.split('\n');
 
         // Look for the opening brace on the same line or subsequent lines
@@ -743,8 +754,9 @@ async function autoCollapseAssetsObject(moveToTop = false) {
 function validateJSON() {
     const jsonStatus = document.getElementById("json-status");
     const jsonText = editor.getValue();
+    const strippedJson = stripJsonComments(jsonText);
 
-    if (!jsonText.trim()) {
+    if (!strippedJson.trim()) {
         if (jsonStatus) {
             jsonStatus.className = "validation-indicator warning";
             jsonStatus.textContent = "⚠ Empty Editor";
@@ -754,7 +766,7 @@ function validateJSON() {
     }
 
     try {
-        const parsed = JSON.parse(jsonText);
+        const parsed = JSON.parse(strippedJson);
         if (jsonStatus) {
             jsonStatus.className = "validation-indicator success";
             jsonStatus.textContent = "✓ Valid JSON";
@@ -825,13 +837,14 @@ function validateJSON() {
 // Manual validation function for when auto-validation is disabled
 function runManualValidation() {
     const jsonText = editor.getValue();
+    const strippedJson = stripJsonComments(jsonText);
 
-    if (!jsonText.trim()) {
+    if (!strippedJson.trim()) {
         return false;
     }
 
     try {
-        const parsed = JSON.parse(jsonText);
+        const parsed = JSON.parse(strippedJson);
         
         // Get merged catalog (built-in + custom metrics)
         const mergedCatalog = getMergedMetricsCatalog();

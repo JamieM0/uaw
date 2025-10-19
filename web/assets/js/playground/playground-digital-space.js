@@ -880,7 +880,7 @@ class DigitalSpaceEditor {
                 console.warn('DIGITAL-SPACE: No simulation data available');
                 return;
             }
-            const simulation = JSON.parse(jsonText);
+            const simulation = JSON.parse(stripJsonComments(jsonText));
             
             // Load digital locations
             if (simulation.digital_space && simulation.digital_space.digital_locations) {
@@ -1218,7 +1218,7 @@ class DigitalSpaceEditor {
         this.updateSimulationJsonTimeout = setTimeout(() => {
             try {
                 const jsonText = this.monacoEditor.getValue();
-                const simulation = JSON.parse(jsonText);
+                const simulation = JSON.parse(stripJsonComments(jsonText));
 
                 // Ensure digital_space structure exists
                 if (!simulation.digital_space) {

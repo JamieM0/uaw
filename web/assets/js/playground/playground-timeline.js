@@ -219,7 +219,7 @@ function renderSimulation(skipJsonValidation = false) {
 
         if (!skipJsonValidation) {
             try {
-                JSON.parse(jsonText);
+                JSON.parse(stripJsonComments(jsonText));
             } catch (e) {
                 simulationContent.innerHTML =
                     '<p style="color: var(--error-color); text-align: center; margin-top: 2rem;">Cannot render: Invalid JSON syntax</p>';
@@ -228,7 +228,7 @@ function renderSimulation(skipJsonValidation = false) {
                 return;
             }
         }
-        const simulationData = JSON.parse(jsonText);
+        const simulationData = JSON.parse(stripJsonComments(jsonText));
 
         let dataToProcess = simulationData;
 
@@ -978,7 +978,7 @@ function updateTaskInJSON(taskId, newActorId, newTimeMinutes) {
         // Use window.editor if available (for custom editor wrappers), otherwise fall back to global editor
         const editorToUse = window.editor || editor;
 
-        const currentJson = JSON.parse(editorToUse.getValue());
+        const currentJson = JSON.parse(stripJsonComments(editorToUse.getValue()));
 
         // Handle both formats: day type wrapper and full multi-period JSON
         const tasks = currentJson.simulation?.tasks || [];
@@ -1005,7 +1005,7 @@ function updateTaskDurationInJSON(taskId, newDuration, newStartTime) {
         // Use window.editor if available (for custom editor wrappers), otherwise fall back to global editor
         const editorToUse = window.editor || editor;
 
-        const currentJson = JSON.parse(editorToUse.getValue());
+        const currentJson = JSON.parse(stripJsonComments(editorToUse.getValue()));
         const task = currentJson.simulation.tasks.find(t => t.id === taskId);
 
         if (task) {
@@ -1025,7 +1025,7 @@ function updateTaskDurationInJSON(taskId, newDuration, newStartTime) {
 function updateDynamicPanels() {
     try {
         const jsonText = editor.getValue();
-        const simulationData = JSON.parse(jsonText);
+        const simulationData = JSON.parse(stripJsonComments(jsonText));
         const processedData = processSimulationData(simulationData);
         
         // Check if live state container exists

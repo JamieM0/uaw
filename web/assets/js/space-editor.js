@@ -93,7 +93,7 @@ class SpaceEditor {
 
         try {
             const jsonText = this.monacoEditor.getValue();
-            const simulation = JSON.parse(jsonText);
+            const simulation = JSON.parse(stripJsonComments(jsonText));
             
             // Load layout data from simulation
             if (simulation.simulation && simulation.simulation.layout) {
@@ -1025,7 +1025,7 @@ class SpaceEditor {
     updateJson() {
         try {
             this.isUpdatingJson = true;
-            const fullSim = JSON.parse(this.monacoEditor.getValue());
+            const fullSim = JSON.parse(stripJsonComments(this.monacoEditor.getValue()));
             if (!fullSim.simulation) fullSim.simulation = {};
             fullSim.simulation.layout = {
                 meta: { units: 'meters', pixels_per_unit: this.pixelsPerMeter },

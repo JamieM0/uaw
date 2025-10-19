@@ -1581,7 +1581,7 @@ class DisplayEditor {
 
         try {
             const jsonText = this.monacoEditor.getValue();
-            const simulation = JSON.parse(jsonText);
+            const simulation = JSON.parse(stripJsonComments(jsonText));
             
             if (simulation.displays && Array.isArray(simulation.displays)) {
                 // Ensure numeric values are properly preserved during JSON loading
@@ -1621,7 +1621,7 @@ class DisplayEditor {
         this.updateSimulationJsonTimeout = setTimeout(() => {
             try {
                 const jsonText = this.monacoEditor.getValue();
-                const simulation = JSON.parse(jsonText);
+                const simulation = JSON.parse(stripJsonComments(jsonText));
                 
                 simulation.displays = this.displays;
                 

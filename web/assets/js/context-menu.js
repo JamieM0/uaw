@@ -160,7 +160,7 @@ class ContextMenuManager {
 
         try {
             // Get current simulation data from Monaco editor
-            const currentJson = JSON.parse(editor.getValue());
+            const currentJson = JSON.parse(stripJsonComments(editor.getValue()));
 
             // Find the task to edit
             if (currentJson.simulation && currentJson.simulation.tasks) {
@@ -211,7 +211,7 @@ class ContextMenuManager {
 
         try {
             // Get current simulation data from Monaco editor
-            const currentJson = JSON.parse(editor.getValue());
+            const currentJson = JSON.parse(stripJsonComments(editor.getValue()));
             
             // Find and remove the task from the simulation data
             if (currentJson.simulation && currentJson.simulation.tasks) {
@@ -260,7 +260,7 @@ class ContextMenuManager {
                     rectElement.remove();
                     
                     // Update the JSON in Monaco editor
-                    const currentJson = JSON.parse(editor.getValue());
+                    const currentJson = JSON.parse(stripJsonComments(editor.getValue()));
                     
                     if (currentJson.simulation && currentJson.simulation.layout && currentJson.simulation.layout.locations) {
                         const layoutLocationIndex = currentJson.simulation.layout.locations.findIndex(loc => loc.id === locationId);
@@ -337,7 +337,7 @@ class ContextMenuManager {
                         rectElement.remove();
                         
                         // Update the JSON in Monaco editor
-                        const currentJson = JSON.parse(editor.getValue());
+                        const currentJson = JSON.parse(stripJsonComments(editor.getValue()));
 
                         if (currentJson.displays) {
                             const displayIndex = currentJson.displays.findIndex(disp => disp.id === activeDisplay.id);
