@@ -215,6 +215,8 @@ class MultiDaySimulator {
 
     /**
      * Get the definition (full single-day simulation) for a day type
+     * Merges global objects (from simulation root) with day-type specific objects
+     * Merges global locations with day-type specific locations
      */
     getDayTypeDefinition(dayType) {
         if (!dayType || !this.dayTypes[dayType]) {
@@ -224,13 +226,51 @@ class MultiDaySimulator {
         const dayTypeData = this.dayTypes[dayType];
 
         // If there's a nested "definition" key, use it
+        let definition;
         if (dayTypeData.definition) {
-            return dayTypeData.definition;
+            definition = { ...dayTypeData.definition };
+        } else {
+            // Otherwise, the day type data IS the definition
+            // Extract everything except the "name" field
+            const { name, ...rest } = dayTypeData;
+            definition = { ...rest };
         }
 
-        // Otherwise, the day type data IS the definition
-        // Extract everything except the "name" field
-        const { name, ...definition } = dayTypeData;
+        // Merge global objects with day-type specific objects
+        const globalObjects = this.simulation?.objects || [];
+        const dayTypeObjects = definition.objects || [];
+
+        // Combine global objects with day-type objects
+        // Day-type objects take precedence if there are ID conflicts
+        const combinedObjects = [...globalObjects];
+        const globalObjectIds = new Set(globalObjects.map(o => o.id));
+
+        for (const obj of dayTypeObjects) {
+            if (globalObjectIds.has(obj.id)) {
+                // Replace global object with day-type specific version
+                const index = combinedObjects.findIndex(o => o.id === obj.id);
+                combinedObjects[index] = obj;
+            } else {
+                // Add new day-type specific object
+                combinedObjects.push(obj);
+            }
+        }
+
+        definition.objects = combinedObjects;
+
+        // Merge global locations with day-type specific locations
+        // Day-type locations completely override global locations if specified
+        const globalLocations = this.simulation?.locations || [];
+        const dayTypeLocations = dayTypeData.locations || definition.locations || [];
+
+        if (dayTypeLocations.length > 0) {
+            // Day type has specific locations - use them instead of global
+            definition.locations = dayTypeLocations;
+        } else if (globalLocations.length > 0) {
+            // No day-type specific locations - use global locations
+            definition.locations = globalLocations;
+        }
+
         return definition;
     }
 
