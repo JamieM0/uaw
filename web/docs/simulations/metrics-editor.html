@@ -62,10 +62,10 @@
                     </header>
 
                     <div class="docs-content">
-                        <p>The Metrics Editor is a powerful, advanced mode within the Simulation Playground that allows you to create, edit, and test your own custom validation metrics. It transforms the playground into a full development environment for extending the UAW's validation capabilities.</p>
-<h2 id="accessing-the-metrics-editor">Accessing the Metrics Editor<a class="headerlink" href="#accessing-the-metrics-editor" title="Permanent link">&para;</a></h2>
-<p>You can switch to the Metrics Editor by clicking the "Open Metrics Editor" button in the playground's header. This will change the layout to reveal the two core components of the editor.</p>
-<h2 id="metrics-editor-layout">Metrics Editor Layout<a class="headerlink" href="#metrics-editor-layout" title="Permanent link">&para;</a></h2>
+                        <p>The Metrics Editor is a powerful, advanced mode within the Simulation Playground that allows you to create, edit, and test your own custom validation metrics. It transforms the playground into a full development environment for extending the UAW’s validation capabilities.</p>
+<h2 class="docs-heading" id="accessing-the-metrics-editor">Accessing the Metrics Editor<a class="headerlink" href="#accessing-the-metrics-editor" title="Link to this section">¶</a></h2>
+<p>You can switch to the Metrics Editor by clicking the “Open Metrics Editor” button in the playground’s header. This will change the layout to reveal the two core components of the editor.</p>
+<h2 class="docs-heading" id="metrics-editor-layout">Metrics Editor Layout<a class="headerlink" href="#metrics-editor-layout" title="Link to this section">¶</a></h2>
 <p>When you enter Metrics Editor mode, the interface is rearranged:</p>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Left Panel:</strong> This panel contains tabs for viewing the <strong>JSON Editor</strong>, the <strong>Simulation Render</strong>, and the <strong>Space Editor</strong>, allowing you to see the simulation you are testing against.</li>
@@ -75,8 +75,8 @@
 </ul>
 </li>
 </ol>
-<p>All content in the Metrics Editor is saved to your browser's <code class="docs-inline-code">localStorage</code>, so your custom work persists between sessions.</p>
-<h2 id="defining-a-custom-metric">Defining a Custom Metric<a class="headerlink" href="#defining-a-custom-metric" title="Permanent link">&para;</a></h2>
+<p>All content in the Metrics Editor is saved to your browser’s <code class="docs-inline-code">localStorage</code>, so your custom work persists between sessions.</p>
+<h2 class="docs-heading" id="defining-a-custom-metric">Defining a Custom Metric<a class="headerlink" href="#defining-a-custom-metric" title="Link to this section">¶</a></h2>
 <p>Metrics are defined as JSON objects in the <code class="docs-inline-code">metrics-catalog-custom.json</code> file. Each metric definition must include the following fields:</p>
 <div class="table-container"><table class="docs-table">
 <thead>
@@ -95,7 +95,7 @@
 <tr>
 <td><code class="docs-inline-code">name</code></td>
 <td>string</td>
-<td>A human-readable name for the metric (e.g., "Oven Temperature Check").</td>
+<td>A human-readable name for the metric (e.g., “Oven Temperature Check”).</td>
 </tr>
 <tr>
 <td><code class="docs-inline-code">emoji</code></td>
@@ -105,7 +105,7 @@
 <tr>
 <td><code class="docs-inline-code">category</code></td>
 <td>string</td>
-<td>The category the metric belongs to (e.g., "Quality Assurance").</td>
+<td>The category the metric belongs to (e.g., “Quality Assurance”).</td>
 </tr>
 <tr>
 <td><code class="docs-inline-code">severity</code></td>
@@ -134,33 +134,32 @@
 </tr>
 </tbody>
 </table></div>
-<h3 id="example-metric-definition">Example Metric Definition<a class="headerlink" href="#example-metric-definition" title="Permanent link">&para;</a></h3>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;custom.equipment.check_mixer_usage&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Check Mixer Usage&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🌀&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;category&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Equipment Utilization&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;severity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;warning&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;custom&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;validateMixerUsage&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Checks if the mixer is used in any task that doesn&#39;t involve mixing.&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;validation_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computational&quot;</span>
+<h3 class="docs-heading" id="example-metric-definition">Example Metric Definition<a class="headerlink" href="#example-metric-definition" title="Link to this section">¶</a></h3>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"custom.equipment.check_mixer_usage"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Check Mixer Usage"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"🌀"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"category"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Equipment Utilization"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"severity"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warning"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"custom"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"validateMixerUsage"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Checks if the mixer is used in any task that doesn't involve mixing."</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"validation_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"computational"</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="writing-a-custom-validation-function">Writing a Custom Validation Function<a class="headerlink" href="#writing-a-custom-validation-function" title="Permanent link">&para;</a></h2>
-<p>The logic for your custom metric is written in the <code class="docs-inline-code">simulation-validator-custom.js</code> file. The function name must match the <code class="docs-inline-code">function</code> field in your metric's catalog definition.</p>
-<h3 id="the-validation-context">The Validation Context<a class="headerlink" href="#the-validation-context" title="Permanent link">&para;</a></h3>
+<h2 class="docs-heading" id="writing-a-custom-validation-function">Writing a Custom Validation Function<a class="headerlink" href="#writing-a-custom-validation-function" title="Link to this section">¶</a></h2>
+<p>The logic for your custom metric is written in the <code class="docs-inline-code">simulation-validator-custom.js</code> file. The function name must match the <code class="docs-inline-code">function</code> field in your metric’s catalog definition.</p>
+<h3 class="docs-heading" id="the-validation-context">The Validation Context<a class="headerlink" href="#the-validation-context" title="Link to this section">¶</a></h3>
 <p>Each validation function is executed within a specific context, giving you access to the simulation data and helper methods:</p>
 <ul class="docs-list">
 <li><code class="docs-inline-code">this.simulation</code>: The full, parsed <code class="docs-inline-code">simulation</code> object from the JSON editor.</li>
-<li><code class="docs-inline-code">this.addResult(resultObject)</code>: A method to report the result of your validation. The <code class="docs-inline-code">resultObject</code> should have <code class="docs-inline-code">metricId</code>, <code class="docs-inline-code">status</code> ('success', 'warning', 'error'), and a <code class="docs-inline-code">message</code>.</li>
+<li><code class="docs-inline-code">this.addResult(resultObject)</code>: A method to report the result of your validation. The <code class="docs-inline-code">resultObject</code> should have <code class="docs-inline-code">metricId</code>, <code class="docs-inline-code">status</code> (‘success’, ‘warning’, ‘error’), and a <code class="docs-inline-code">message</code>.</li>
 <li><code class="docs-inline-code">metric.params</code>: An object containing any parameters passed to the metric from its definition in the catalog.</li>
 </ul>
-<h3 id="example-validation-function">Example Validation Function<a class="headerlink" href="#example-validation-function" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="example-validation-function">Example Validation Function<a class="headerlink" href="#example-validation-function" title="Link to this section">¶</a></h3>
 <p>This function corresponds to the example metric definition above.</p>
-<div class="codehilite"><pre><span></span><code><span class="cm">/**</span>
-<span class="cm"> * Checks if the mixer is used in any task that doesn&#39;t involve mixing.</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="cm">/**</span>
+<span class="cm"> * Checks if the mixer is used in any task that doesn't involve mixing.</span>
 <span class="cm"> */</span>
 <span class="kd">function</span><span class="w"> </span><span class="nx">validateMixerUsage</span><span class="p">(</span><span class="nx">metric</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">simulation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">simulation</span><span class="p">;</span>
@@ -169,15 +168,15 @@
 
 <span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">task</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">tasks</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">usesMixer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">task</span><span class="p">.</span><span class="nx">interactions</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">[]).</span><span class="nx">some</span><span class="p">(</span>
-<span class="w">            </span><span class="nx">interaction</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">interaction</span><span class="p">.</span><span class="nx">object_id</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s1">&#39;mixer&#39;</span>
+<span class="w">            </span><span class="nx">interaction</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">interaction</span><span class="p">.</span><span class="nx">object_id</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s1">'mixer'</span>
 <span class="w">        </span><span class="p">);</span>
 
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">usesMixer</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="nx">task</span><span class="p">.</span><span class="nx">id</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">().</span><span class="nx">includes</span><span class="p">(</span><span class="s1">&#39;mix&#39;</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">usesMixer</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="nx">task</span><span class="p">.</span><span class="nx">id</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">().</span><span class="nx">includes</span><span class="p">(</span><span class="s1">'mix'</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
 <span class="w">            </span><span class="nx">foundIncorrectUsage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span>
 <span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">addResult</span><span class="p">({</span>
 <span class="w">                </span><span class="nx">metricId</span><span class="o">:</span><span class="w"> </span><span class="nx">metric</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span>
-<span class="w">                </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;warning&#39;</span><span class="p">,</span>
-<span class="w">                </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="sb">`Task &#39;</span><span class="si">${</span><span class="nx">task</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">&#39; uses the mixer but does not seem to be a mixing task.`</span>
+<span class="w">                </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s1">'warning'</span><span class="p">,</span>
+<span class="w">                </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="sb">`Task '</span><span class="si">${</span><span class="nx">task</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">' uses the mixer but does not seem to be a mixing task.`</span>
 <span class="w">            </span><span class="p">});</span>
 <span class="w">            </span><span class="k">break</span><span class="p">;</span><span class="w"> </span><span class="c1">// Report first instance and stop</span>
 <span class="w">        </span><span class="p">}</span>
@@ -186,8 +185,8 @@
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">foundIncorrectUsage</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">addResult</span><span class="p">({</span>
 <span class="w">            </span><span class="nx">metricId</span><span class="o">:</span><span class="w"> </span><span class="nx">metric</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span>
-<span class="w">            </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;success&#39;</span><span class="p">,</span>
-<span class="w">            </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;All mixer usages appear to be in appropriate tasks.&#39;</span>
+<span class="w">            </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s1">'success'</span><span class="p">,</span>
+<span class="w">            </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="s1">'All mixer usages appear to be in appropriate tasks.'</span>
 <span class="w">        </span><span class="p">});</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>

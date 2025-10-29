@@ -63,40 +63,38 @@
 
                     <div class="docs-content">
                         <p>This script extracts actionable step-by-step instructions from a given input text (like an article, recipe, or guide) using a Large Language Model (LLM). It processes the input, interacts with the LLM, parses the response, and saves the extracted steps along with metadata to an output JSON file.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
 <p>The primary goal of <code class="docs-inline-code">extract-steps.py</code> is to distill longer texts into a concise, ordered list of actionable steps. It leverages an LLM to understand the input content and identify the core instructions, filtering out extraneous information.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>The script is executed from the command line:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>extract-steps.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>extract-steps.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;input_json&gt;</code>: (Required) Path to the input JSON file containing the text and configuration.</li>
 <li><code class="docs-inline-code">[output_json]</code>: (Optional) Path where the output JSON file should be saved. If not provided, a path is automatically generated based on the script name and a UUID (e.g., <code class="docs-inline-code">output/extract-steps_&lt;uuid&gt;.json</code>).</li>
 </ul>
 <p>The script uses the <code class="docs-inline-code">handle_command_args</code> utility function to parse these arguments.</p>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <p>The script expects an input JSON file with the following structure:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;article_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="s2">&quot;Line 1 of the article.&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;Line 2 of the article.&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;...&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"article_text"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">"Line 1 of the article."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"Line 2 of the article."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"..."</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gemma3&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Or another model identifier</span>
-<span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// Optional LLM parameters</span>
-<span class="w">    </span><span class="nt">&quot;temperature&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.7</span>
+<span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gemma3"</span><span class="p">,</span><span class="w"> </span><span class="c1">// Or another model identifier</span>
+<span class="w">  </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// Optional LLM parameters</span>
+<span class="w">    </span><span class="nt">"temperature"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.7</span>
 <span class="w">    </span><span class="c1">// ... other parameters</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">article_text</code>: A list of strings, where each string is a line or segment of the input text.</li>
-<li><code class="docs-inline-code">model</code>: The identifier for the LLM to be used (e.g., "gemma3").</li>
+<li><code class="docs-inline-code">model</code>: The identifier for the LLM to be used (e.g., “gemma3”).</li>
 <li><code class="docs-inline-code">parameters</code>: (Optional) A dictionary of parameters to pass to the LLM during the generation process (e.g., temperature, max tokens).</li>
 </ul>
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><strong><code class="docs-inline-code">extract_step(input_data)</code></strong>: This is the core function responsible for preparing the prompt, interacting with the LLM, and processing the response to extract steps. It takes the loaded input data dictionary as an argument.</li>
 <li><strong><code class="docs-inline-code">main()</code></strong>: The main execution function. It handles command-line arguments, loads the input JSON, calls <code class="docs-inline-code">extract_step</code>, creates output metadata, determines the output file path, combines metadata with the extracted steps, and saves the final output JSON.</li>
@@ -104,25 +102,25 @@
 <li><code class="docs-inline-code">load_json</code>: Loads data from the input JSON file.</li>
 <li><code class="docs-inline-code">save_output</code>: Saves the processed data to the output JSON file.</li>
 <li><code class="docs-inline-code">chat_with_llm</code>: Handles the communication with the specified LLM, sending the system and user prompts.</li>
-<li><code class="docs-inline-code">parse_llm_json_response</code>: Parses the LLM's response. In this script, it's used with <code class="docs-inline-code">include_children=False</code>, suggesting it primarily expects a simple list format or line-separated text rather than complex nested JSON.</li>
+<li><code class="docs-inline-code">parse_llm_json_response</code>: Parses the LLM’s response. In this script, it’s used with <code class="docs-inline-code">include_children=False</code>, suggesting it primarily expects a simple list format or line-separated text rather than complex nested JSON.</li>
 <li><code class="docs-inline-code">create_output_metadata</code>: Generates standard metadata (like task name, start time, UUID) for the output file.</li>
 <li><code class="docs-inline-code">get_output_filepath</code>: Determines the final output file path, either using the user-specified path or generating one automatically.</li>
 <li><code class="docs-inline-code">handle_command_args</code>: Parses command-line arguments for input and output file paths.</li>
 </ul>
 </li>
 </ul>
-<h2 id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Link to this section">¶</a></h2>
 <p>The script constructs specific prompts for the LLM:</p>
 <ul class="docs-list">
 <li><strong>System Prompt</strong>: Instructs the LLM to act as an AI assistant specialized in extracting actionable steps. It provides detailed guidelines: extract only necessary steps, keep them concise and clear, maintain logical order, and output them as a simple list with each step on a new line, without any numbering or formatting. An example input and expected output are provided for clarity.</li>
 <li><strong>User Prompt</strong>: Contains the actual <code class="docs-inline-code">article_text</code> (joined into a single string) and reiterates the key requirements for the output format (concise, ordered, simple list, one step per line).</li>
 </ul>
 <p>The <code class="docs-inline-code">chat_with_llm</code> function sends these prompts to the specified <code class="docs-inline-code">model</code> along with any optional <code class="docs-inline-code">parameters</code>.</p>
-<h2 id="output-processing">Output Processing<a class="headerlink" href="#output-processing" title="Permanent link">&para;</a></h2>
-<p>The raw text response from the LLM is processed using <code class="docs-inline-code">parse_llm_json_response(response_text, include_children=False)</code>. Based on the prompt's instructions, the script expects the LLM to return a simple text response where each line represents a single step.</p>
+<h2 class="docs-heading" id="output-processing">Output Processing<a class="headerlink" href="#output-processing" title="Link to this section">¶</a></h2>
+<p>The raw text response from the LLM is processed using <code class="docs-inline-code">parse_llm_json_response(response_text, include_children=False)</code>. Based on the prompt’s instructions, the script expects the LLM to return a simple text response where each line represents a single step.</p>
 <p>The <code class="docs-inline-code">parse_llm_json_response</code> function (likely) first attempts to parse the response as JSON. If that fails (which is expected given the prompt), it probably falls back to splitting the text by newlines to create a list of strings. Each string (step) is then likely wrapped in a dictionary structure.</p>
 <p>If the parsing process fails to produce a valid list (e.g., the LLM response is empty or malformed), the function returns a default list containing a single object indicating failure: <code class="docs-inline-code">[{"step": "No valid steps could be extracted"}]</code>.</p>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <p>The script generates a JSON output file containing:</p>
 <ul class="docs-list">
 <li><strong>Metadata</strong>: Information about the process, generated by <code class="docs-inline-code">create_output_metadata</code> (e.g., <code class="docs-inline-code">task_name</code>, <code class="docs-inline-code">start_time</code>, <code class="docs-inline-code">uuid</code>).</li>
@@ -131,18 +129,18 @@
 <p>Example Output Structure:</p>
 <p>```json
 {
-  "task_name": "Extract Steps",
-  "start_time": "...",
-  "end_time": "...",
-  "duration": "...",
-  "uuid": "...",
-  "model": "gemma3", // From input
-  "steps": [
-    {"step": "Crack eggs into a bowl and whisk."},
-    {"step": "Add salt, pepper, and a splash of milk."},
-    {"step": "Heat a pan over medium heat and add butter."},
-    {"step": "Pour in eggs and let them sit before stirring."},
-    {"step": "Cook until just set, then fold and serve."}
+  “task_name”: “Extract Steps”,
+  “start_time”: “…”,
+  “end_time”: “…”,
+  “duration”: “…”,
+  “uuid”: “…”,
+  “model”: “gemma3”, // From input
+  “steps”: [
+    {“step”: “Crack eggs into a bowl and whisk.”},
+    {“step”: “Add salt, pepper, and a splash of milk.”},
+    {“step”: “Heat a pan over medium heat and add butter.”},
+    {“step”: “Pour in eggs and let them sit before stirring.”},
+    {“step”: “Cook until just set, then fold and serve.”}
   ]
 }</p>
                     </div>

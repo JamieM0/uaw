@@ -63,40 +63,38 @@
 
                     <div class="docs-content">
                         <p>This script utilizes a Large Language Model (LLM) to generate a factual response based on a user-provided prompt. The response is structured as a simple list of facts, one per line.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
 <p>The script takes a JSON file containing a prompt, an optional model specification, and optional parameters as input. It interacts with an LLM via the <code class="docs-inline-code">chat_with_llm</code> utility function to generate a response according to specific instructions (factual, concise, varied facts, one per line). The resulting response, along with metadata, is saved to an output JSON file.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>To run the script, use the following command format:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>prompt.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>prompt.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;input_json&gt;</code>: Path to the required input JSON file.</li>
 <li><code class="docs-inline-code">[output_json]</code>: Optional path for the output JSON file. If not provided, a path will be generated automatically in the <code class="docs-inline-code">output/</code> directory based on the task name and a UUID.</li>
 </ul>
 <p>The script uses the <code class="docs-inline-code">handle_command_args</code> function from <code class="docs-inline-code">utils.py</code> to parse these command-line arguments.</p>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <p>The input must be a JSON file containing the following keys:</p>
 <ul class="docs-list">
-<li><code class="docs-inline-code">prompt</code> (string): The user's prompt or question for the LLM. (Required)</li>
+<li><code class="docs-inline-code">prompt</code> (string): The user’s prompt or question for the LLM. (Required)</li>
 <li><code class="docs-inline-code">model</code> (string): The identifier for the LLM to use. Defaults to <code class="docs-inline-code">"gemma3"</code> if not provided. (Optional)</li>
 <li><code class="docs-inline-code">parameters</code> (object): Additional parameters to pass to the LLM API. (Optional)</li>
 </ul>
 <p>Example (<code class="docs-inline-code">examples/prompt-in.json</code>):</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;List key facts about the planet Mars.&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gemma3&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"prompt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"List key facts about the planet Mars."</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gemma3"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><strong><code class="docs-inline-code">generate_prompt_response(input_data)</code></strong>:<ul class="docs-list">
 <li>Extracts the <code class="docs-inline-code">prompt</code>, <code class="docs-inline-code">model</code>, and <code class="docs-inline-code">parameters</code> from the input dictionary.</li>
 <li>Constructs a detailed system message instructing the LLM on the desired output format and style (factual, concise, varied, one fact per line, no extra formatting).</li>
 <li>Calls the <code class="docs-inline-code">chat_with_llm</code> function (from <code class="docs-inline-code">utils.py</code>) with the model, system message, user prompt, and parameters.</li>
-<li>Returns the content of the LLM's response.</li>
+<li>Returns the content of the LLM’s response.</li>
 </ul>
 </li>
 <li><strong><code class="docs-inline-code">main()</code></strong>:<ul class="docs-list">
@@ -119,8 +117,8 @@
 </ul>
 </li>
 </ul>
-<h2 id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Permanent link">&para;</a></h2>
-<p>The script interacts with an LLM specified by the <code class="docs-inline-code">model</code> parameter (defaulting to "gemma3").</p>
+<h2 class="docs-heading" id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Link to this section">¶</a></h2>
+<p>The script interacts with an LLM specified by the <code class="docs-inline-code">model</code> parameter (defaulting to “gemma3”).</p>
 <ol class="docs-list docs-list-ordered">
 <li><strong>System Prompt Construction</strong>: A specific system message is sent to the LLM:
     <code class="docs-inline-code">You are a knowledgeable assistant specialized in providing accurate, concise, and informative facts about various topics. Your responses should be factual, specific, and organized. When asked about a subject, provide clear, detailed information based on your knowledge, focusing on relevant details. Present your information in a clear, structured format with one fact per line. Avoid unnecessary commentary, opinions, or irrelevant details. Focus on providing factual, educational content about the requested topic. Focus on having a wide variety of facts. Output the instructions in a simple list format with no numbers, symbols, markdown, or extra formatting.</code>
@@ -129,28 +127,28 @@
 <li><strong>API Call</strong>: The <code class="docs-inline-code">chat_with_llm</code> function sends the system message, user prompt, model identifier, and any specified <code class="docs-inline-code">parameters</code> to the LLM API.</li>
 <li><strong>Response Processing</strong>: The raw text response from the LLM is returned by <code class="docs-inline-code">generate_prompt_response</code>.</li>
 </ol>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <p>The script generates a JSON file containing:</p>
 <ul class="docs-list">
 <li>Metadata generated by <code class="docs-inline-code">create_output_metadata</code> (including <code class="docs-inline-code">process_name</code>, <code class="docs-inline-code">start_time</code>, <code class="docs-inline-code">uuid</code>).</li>
 <li>The original <code class="docs-inline-code">prompt</code> provided in the input file.</li>
-<li>The <code class="docs-inline-code">response</code> from the LLM, formatted as a list of strings. Each string in the list corresponds to a line (intended to be a single fact) from the LLM's raw output, split by the newline character (<code class="docs-inline-code">\n</code>).</li>
+<li>The <code class="docs-inline-code">response</code> from the LLM, formatted as a list of strings. Each string in the list corresponds to a line (intended to be a single fact) from the LLM’s raw output, split by the newline character (<code class="docs-inline-code">\n</code>).</li>
 </ul>
 <p>Example (<code class="docs-inline-code">examples/prompt-out.json</code>):
 ```json
 {
-    "process_name": "Prompt Response",
-    "start_time": "2024-07-15T10:30:00.123456",
-    "uuid": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-    "prompt": "List key facts about the planet Mars.",
-    "response": [
-        "Mars is the fourth planet from the Sun.",
-        "It is often called the 'Red Planet' due to its reddish appearance.",
-        "Mars has two small moons, Phobos and Deimos.",
-        "A Martian day (sol) is slightly longer than an Earth day: 24 hours and 37 minutes.",
-        "The planet has polar ice caps composed of water ice and frozen carbon dioxide.",
-        "Olympus Mons on Mars is the largest volcano in the solar system.",
-        "Valles Marineris is one of the largest canyons in the solar system, located on Mars."
+    “process_name”: “Prompt Response”,
+    “start_time”: “2024-07-15T10:30:00.123456”,
+    “uuid”: “a1b2c3d4-e5f6-7890-1234-567890abcdef”,
+    “prompt”: “List key facts about the planet Mars.”,
+    “response”: [
+        “Mars is the fourth planet from the Sun.”,
+        “It is often called the ‘Red Planet’ due to its reddish appearance.”,
+        “Mars has two small moons, Phobos and Deimos.”,
+        “A Martian day (sol) is slightly longer than an Earth day: 24 hours and 37 minutes.”,
+        “The planet has polar ice caps composed of water ice and frozen carbon dioxide.”,
+        “Olympus Mons on Mars is the largest volcano in the solar system.”,
+        “Valles Marineris is one of the largest canyons in the solar system, located on Mars.”
     ]
 }</p>
                     </div>

@@ -63,36 +63,34 @@
 
                     <div class="docs-content">
                         <p>This script converts input text into BASIC English using a Large Language Model (LLM). It processes a JSON input file containing the text and configuration, interacts with the LLM according to specific constraints (using only the 850-word BASIC English vocabulary, short sentences, etc.), and saves the simplified text along with metadata to an output JSON file.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
 <p>The primary goal of this script is to simplify complex English text into BASIC English, making it more accessible and easier to understand. It leverages an LLM to perform the translation while adhering to the strict rules of BASIC English.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>Run the script from the command line:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>basic-english.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>basic-english.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;input_json&gt;</code>: (Required) Path to the input JSON file containing the text and configuration.</li>
 <li><code class="docs-inline-code">[output_json]</code>: (Optional) Path where the output JSON file should be saved. If not provided, a path will be generated automatically in the <code class="docs-inline-code">output/</code> directory based on the script name and a UUID.</li>
 </ul>
 <p><em>Note:</em> The script utilizes the <code class="docs-inline-code">handle_command_args</code> function from <code class="docs-inline-code">utils.py</code> for argument parsing. However, based on its usage within the <code class="docs-inline-code">main</code> function, it primarily expects the input and optional output file paths and does not seem to utilize other potential flags handled by <code class="docs-inline-code">handle_command_args</code> (like <code class="docs-inline-code">-uuid</code> or <code class="docs-inline-code">-saveInputs</code>).</p>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <p>The script expects an input JSON file with the following structure:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;input_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="s2">&quot;Line 1 of the text to be converted.&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;Line 2 of the text.&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"input_text"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">"Line 1 of the text to be converted."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"Line 2 of the text."</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;output_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Desired format description (e.g., &#39;plain text list&#39;)&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Name of the LLM model to use (e.g., &#39;ollama/llama3&#39;)&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nt">"output_format"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Desired format description (e.g., 'plain text list')"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Name of the LLM model to use (e.g., 'ollama/llama3')"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="c1">// Optional: LLM parameters like temperature, top_p, etc.</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;success_criteria&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nt">"success_criteria"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="c1">// Optional: Criteria for successful conversion</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">input_text</code>: A list of strings, where each string is a line or segment of the text to convert.</li>
 <li><code class="docs-inline-code">output_format</code>: A string describing the desired output format (used in the prompt).</li>
@@ -100,7 +98,7 @@
 <li><code class="docs-inline-code">parameters</code>: (Optional) A dictionary of parameters to pass to the LLM.</li>
 <li><code class="docs-inline-code">success_criteria</code>: (Optional) A dictionary defining success criteria, which will be included in the prompt if present.</li>
 </ul>
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><strong><code class="docs-inline-code">translate_basic_english(input_data)</code></strong>:<ul class="docs-list">
 <li>Constructs the system and user prompts for the LLM.</li>
@@ -128,7 +126,7 @@
 </ul>
 </li>
 </ul>
-<h2 id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Link to this section">¶</a></h2>
 <p>The script interacts with an LLM via the <code class="docs-inline-code">chat_with_llm</code> function.</p>
 <ul class="docs-list">
 <li><strong>System Prompt</strong>: Instructs the LLM to:<ul class="docs-list">
@@ -149,7 +147,7 @@
 <li><strong>LLM Call</strong>: The <code class="docs-inline-code">chat_with_llm</code> function sends these prompts to the specified <code class="docs-inline-code">model</code> along with any provided <code class="docs-inline-code">parameters</code>.</li>
 <li><strong>Expected Output</strong>: The script expects the LLM to return the converted text as a plain string.</li>
 </ul>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <p>The script generates a JSON file containing the results.</p>
 <ul class="docs-list">
 <li><strong>File Path</strong>: Determined by the optional <code class="docs-inline-code">output_json</code> argument or generated automatically (e.g., <code class="docs-inline-code">output/basic-english_&lt;uuid&gt;.json</code>).</li>
@@ -161,13 +159,13 @@
 </ul>
 <p>```json
 {
-  "routine": "BASIC English conversion",
-  "timestamp": "YYYY-MM-DDTHH:MM:SS.ffffff",
-  "uuid": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-  // ... other metadata fields ...
-  "output_text": [
-    "This is the first line in BASIC English.",
-    "This is the second line."
+  “routine”: “BASIC English conversion”,
+  “timestamp”: “YYYY-MM-DDTHH:MM:SS.ffffff”,
+  “uuid”: “xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx”,
+  // … other metadata fields …
+  “output_text”: [
+    “This is the first line in BASIC English.”,
+    “This is the second line.”
   ]
 }</p>
                     </div>

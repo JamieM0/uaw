@@ -63,17 +63,16 @@
 
                     <div class="docs-content">
                         <p>This script reads data from various JSON files located in a specified directory, processes it, and uses a Jinja2 template (<code class="docs-inline-code">page-template.html</code>) to generate a final HTML output file. It handles metadata, content structuring (like trees and timelines), breadcrumbs, and alternative approaches.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
 <p>The primary purpose of <code class="docs-inline-code">assemble.py</code> is to aggregate structured data from multiple JSON sources and render it into a standardized HTML page format using a predefined template. It serves as the final step in generating documentation or report pages from processed data.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>assemble.py<span class="w"> </span>&lt;files_dir&gt;<span class="w"> </span>&lt;output_dir&gt;
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>assemble.py<span class="w"> </span>&lt;files_dir&gt;<span class="w"> </span>&lt;output_dir&gt;
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;files_dir&gt;</code>: The directory containing the input JSON files (1.json - 9.json), <code class="docs-inline-code">breadcrumbs.txt</code>, and any alternative approach files (<code class="docs-inline-code">alt*.json</code>).</li>
 <li><code class="docs-inline-code">&lt;output_dir&gt;</code>: The directory where the generated HTML file will be saved.</li>
 </ul>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <p>The script expects the following files within the <code class="docs-inline-code">&lt;files_dir&gt;</code>:</p>
 <ul class="docs-list">
 <li><code class="docs-inline-code">1.json</code>: Contains page metadata (title, summary, status, progress, etc.).</li>
@@ -88,13 +87,13 @@
 <li><code class="docs-inline-code">breadcrumbs.txt</code>: A plain text file containing the breadcrumb path string (e.g., <code class="docs-inline-code">/category/sub-category</code>).</li>
 <li><code class="docs-inline-code">alt*.json</code> (Optional): JSON files starting with <code class="docs-inline-code">alt</code> and ending with <code class="docs-inline-code">.json</code>, each representing an alternative approach or tree structure.</li>
 </ul>
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><strong><code class="docs-inline-code">read_json_file(file_path)</code></strong>: Reads a specified JSON file and returns its content parsed as a Python dictionary. Handles file opening and JSON decoding.</li>
 <li><strong><code class="docs-inline-code">process_bold_text(text)</code></strong>: Uses regular expressions to find text enclosed in double asterisks (<code class="docs-inline-code">**text**</code>) and replaces it with HTML <code class="docs-inline-code">&lt;strong&gt;text&lt;/strong&gt;</code> tags.</li>
 <li><strong><code class="docs-inline-code">generate_tree_preview_text(tree_data)</code></strong>: Generates a compact, ASCII-art representation of the tree structure found in <code class="docs-inline-code">tree_data</code>. It includes the root, main steps (children), and initial sub-steps (grandchildren), using shortened names and UUIDs for brevity. Designed for previews, like in alternative approach cards.</li>
 <li><strong><code class="docs-inline-code">process_metadata(metadata, breadcrumb_str)</code></strong>: Takes the raw metadata dictionary (from <code class="docs-inline-code">1.json</code>) and the breadcrumb string. It processes fields like <code class="docs-inline-code">progress_percentage</code> (handling different keys and ensuring numeric conversion), formats the <code class="docs-inline-code">summary</code> into paragraphs, sets default values for missing fields, adds standard contributor text and the current date (<code class="docs-inline-code">last_updated</code>), and includes the raw breadcrumb string.</li>
-<li><strong><code class="docs-inline-code">process_breadcrumbs(breadcrumbs_str)</code></strong>: Parses the raw breadcrumb string (e.g., <code class="docs-inline-code">/category/sub-category</code>) into a structured list of dictionaries. Each dictionary represents a breadcrumb link with <code class="docs-inline-code">name</code> (formatted title) and <code class="docs-inline-code">url</code> (path to the parent index, or <code class="docs-inline-code">None</code> for the last item). Includes a 'Home' link.</li>
+<li><strong><code class="docs-inline-code">process_breadcrumbs(breadcrumbs_str)</code></strong>: Parses the raw breadcrumb string (e.g., <code class="docs-inline-code">/category/sub-category</code>) into a structured list of dictionaries. Each dictionary represents a breadcrumb link with <code class="docs-inline-code">name</code> (formatted title) and <code class="docs-inline-code">url</code> (path to the parent index, or <code class="docs-inline-code">None</code> for the last item). Includes a ‘Home’ link.</li>
 <li><strong><code class="docs-inline-code">main()</code></strong>: Orchestrates the entire process:<ul class="docs-list">
 <li>Parses command-line arguments (<code class="docs-inline-code">&lt;files_dir&gt;</code>, <code class="docs-inline-code">&lt;output_dir&gt;</code>).</li>
 <li>Constructs paths to all expected input JSON files and <code class="docs-inline-code">breadcrumbs.txt</code>.</li>
@@ -108,14 +107,14 @@
 <li>Processes data from optional JSONs (timeline, challenges, adoption, ROI, future tech, specs) into structured lists suitable for the template.</li>
 <li>Builds the final context dictionary containing all processed data.</li>
 <li>Renders the Jinja2 template with the context.</li>
-<li>Determines the output HTML filename based on the metadata's <code class="docs-inline-code">slug</code> or <code class="docs-inline-code">title</code>, sanitizing it.</li>
-<li>Creates the output directory if it doesn't exist.</li>
+<li>Determines the output HTML filename based on the metadata’s <code class="docs-inline-code">slug</code> or <code class="docs-inline-code">title</code>, sanitizing it.</li>
+<li>Creates the output directory if it doesn’t exist.</li>
 <li>Writes the rendered HTML content to the output file.</li>
 <li>Includes error handling for file not found, JSON decoding errors, and other exceptions.</li>
 </ul>
 </li>
 </ul>
-<h2 id="template-processing">Template Processing<a class="headerlink" href="#template-processing" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="template-processing">Template Processing<a class="headerlink" href="#template-processing" title="Link to this section">¶</a></h2>
 <p>The script utilizes the Jinja2 templating engine to generate the final HTML output:</p>
 <ul class="docs-list">
 <li><strong>Environment Setup</strong>: A Jinja2 <code class="docs-inline-code">Environment</code> is configured to load templates from the <code class="docs-inline-code">templates/</code> directory. Settings like <code class="docs-inline-code">autoescape=True</code>, <code class="docs-inline-code">trim_blocks=True</code>, and <code class="docs-inline-code">lstrip_blocks=True</code> are enabled for security and cleaner template rendering.</li>
@@ -129,10 +128,10 @@
 <li><strong>Context Data</strong>: A comprehensive Python dictionary (<code class="docs-inline-code">context</code>) is prepared, containing all the processed data extracted and transformed from the input JSON files (metadata, tree structure, timeline entries, challenges, adoption stages, implementation steps, ROI points, benefits, future technologies, specifications, breadcrumbs, and alternative approaches).</li>
 <li><strong>Rendering</strong>: The <code class="docs-inline-code">template.render(context)</code> method is called to inject the context data into the <code class="docs-inline-code">page-template.html</code>, producing the final HTML string.</li>
 </ul>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <p>The script generates a single HTML file located in the specified <code class="docs-inline-code">&lt;output_dir&gt;</code>.</p>
 <ul class="docs-list">
-<li><strong>Filename</strong>: The name of the HTML file is automatically generated based on the <code class="docs-inline-code">slug</code> field found in the processed metadata (<code class="docs-inline-code">1.json</code>). If <code class="docs-inline-code">slug</code> is not present, it falls back to the <code class="docs-inline-code">title</code> field. The name is converted to lowercase, spaces are replaced with hyphens, and characters other than alphanumerics, hyphens, or underscores are removed to ensure it's filesystem-safe. A default name like <code class="docs-inline-code">output.html</code> is used if no suitable title/slug is found.</li>
+<li><strong>Filename</strong>: The name of the HTML file is automatically generated based on the <code class="docs-inline-code">slug</code> field found in the processed metadata (<code class="docs-inline-code">1.json</code>). If <code class="docs-inline-code">slug</code> is not present, it falls back to the <code class="docs-inline-code">title</code> field. The name is converted to lowercase, spaces are replaced with hyphens, and characters other than alphanumerics, hyphens, or underscores are removed to ensure it’s filesystem-safe. A default name like <code class="docs-inline-code">output.html</code> is used if no suitable title/slug is found.</li>
 <li><strong>Content</strong>: The content of the file is the fully rendered HTML page, combining the structure from <code class="docs-inline-code">page-template.html</code> with the data processed from all the input JSON files.</li>
 </ul>
                     </div>

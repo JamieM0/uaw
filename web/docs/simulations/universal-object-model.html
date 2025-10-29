@@ -63,343 +63,328 @@
 
                     <div class="docs-content">
                         <p>The Universal Object Model is the standardized schema that defines how simulations are structured in the UAW system. This document describes the current implementation, including both legacy compatibility features and modern extensible patterns.</p>
-<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="overview">Overview<a class="headerlink" href="#overview" title="Link to this section">¶</a></h2>
 <p>The UOM provides a flexible foundation for modeling any real-world process by defining objects, their properties, and how tasks interact with those objects. The model supports both traditional manufacturing processes and modern digital-physical hybrid workflows.</p>
-<h2 id="core-principles">Core Principles<a class="headerlink" href="#core-principles" title="Permanent link">&para;</a></h2>
-<h3 id="1-flexible-object-typing">1. Flexible Object Typing<a class="headerlink" href="#1-flexible-object-typing" title="Permanent link">&para;</a></h3>
+<h2 class="docs-heading" id="core-principles">Core Principles<a class="headerlink" href="#core-principles" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="1-flexible-object-typing">1. Flexible Object Typing<a class="headerlink" href="#1-flexible-object-typing" title="Link to this section">¶</a></h3>
 <p>The system supports standard object types (<code class="docs-inline-code">actor</code>, <code class="docs-inline-code">equipment</code>, <code class="docs-inline-code">resource</code>, <code class="docs-inline-code">product</code>) as well as custom types for specialized domains (<code class="docs-inline-code">digital_object</code>, <code class="docs-inline-code">display</code>, <code class="docs-inline-code">screen_element</code>, <code class="docs-inline-code">vehicle</code>, etc.).</p>
-<h3 id="2-property-based-configuration">2. Property-Based Configuration<a class="headerlink" href="#2-property-based-configuration" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="2-property-based-configuration">2. Property-Based Configuration<a class="headerlink" href="#2-property-based-configuration" title="Link to this section">¶</a></h3>
 <p>All object behavior is defined through properties, allowing for unlimited customization without changing the core schema.</p>
-<h3 id="3-interaction-driven-dynamics">3. Interaction-Driven Dynamics<a class="headerlink" href="#3-interaction-driven-dynamics" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="3-interaction-driven-dynamics">3. Interaction-Driven Dynamics<a class="headerlink" href="#3-interaction-driven-dynamics" title="Link to this section">¶</a></h3>
 <p>Tasks modify object properties through a rich interaction system, enabling complex state changes and realistic process modeling.</p>
-<h2 id="schema-structure">Schema Structure<a class="headerlink" href="#schema-structure" title="Permanent link">&para;</a></h2>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;meta&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;layout&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;production_recipes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">}</span>
+<h2 class="docs-heading" id="schema-structure">Schema Structure<a class="headerlink" href="#schema-structure" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"production_recipes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="meta-section">Meta Section<a class="headerlink" href="#meta-section" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="meta-section">Meta Section<a class="headerlink" href="#meta-section" title="Link to this section">¶</a></h3>
 <p>Contains descriptive information about the simulation:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;meta&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Bread Production Process&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Complete bakery production workflow&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.1&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;created_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-09-13&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;author&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Process Engineer&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;industry&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Food Manufacturing&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;complexity_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;intermediate&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Bread Production Process"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Complete bakery production workflow"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.1"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"created_date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-09-13"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"author"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Process Engineer"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"industry"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Food Manufacturing"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"complexity_level"</span><span class="p">:</span><span class="w"> </span><span class="s2">"intermediate"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="config-section">Config Section<a class="headerlink" href="#config-section" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="config-section">Config Section<a class="headerlink" href="#config-section" title="Link to this section">¶</a></h3>
 <p>Defines timing and simulation parameters:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;time_unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;minutes&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;start_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;06:00&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;end_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;18:00&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;time_step&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;currency&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;USD&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;locale&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;en-US&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"time_unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"minutes"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"06:00"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"end_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"18:00"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"time_step"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"USD"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"locale"</span><span class="p">:</span><span class="w"> </span><span class="s2">"en-US"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="layout-section">Layout Section<a class="headerlink" href="#layout-section" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="layout-section">Layout Section<a class="headerlink" href="#layout-section" title="Link to this section">¶</a></h3>
 <p>Defines physical and digital spaces:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;layout&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;areas&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;prep_area&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Preparation Area&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;physical&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;coordinates&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">}</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"areas"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"prep_area"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Preparation Area"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"physical"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"coordinates"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;virtual_control_room&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Digital Control Center&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;digital&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;coordinates&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;bounds&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;depth&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"virtual_control_room"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Digital Control Center"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"digital"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"coordinates"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"bounds"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">"depth"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="object-types">Object Types<a class="headerlink" href="#object-types" title="Permanent link">&para;</a></h2>
-<h3 id="standard-object-types">Standard Object Types<a class="headerlink" href="#standard-object-types" title="Permanent link">&para;</a></h3>
-<h4 id="actor">Actor<a class="headerlink" href="#actor" title="Permanent link">&para;</a></h4>
+<h2 class="docs-heading" id="object-types">Object Types<a class="headerlink" href="#object-types" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="standard-object-types">Standard Object Types<a class="headerlink" href="#standard-object-types" title="Link to this section">¶</a></h3>
+<h4 class="docs-heading" id="actor">Actor<a class="headerlink" href="#actor" title="Link to this section">¶</a></h4>
 <p>Represents people or autonomous agents that perform tasks:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;head_baker&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;actor&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Head Baker&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;👨‍🍳&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Senior Baker&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;skill_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;expert&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;cost_per_hour&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">28.50</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_area&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;certifications&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;food_safety&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;artisan_bread&quot;</span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;shift_start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;06:00&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;shift_end&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;14:00&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"head_baker"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Head Baker"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"👨‍🍳"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Senior Baker"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"skill_level"</span><span class="p">:</span><span class="w"> </span><span class="s2">"expert"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"cost_per_hour"</span><span class="p">:</span><span class="w"> </span><span class="mf">28.50</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_area"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"certifications"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"food_safety"</span><span class="p">,</span><span class="w"> </span><span class="s2">"artisan_bread"</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"shift_start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"06:00"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"shift_end"</span><span class="p">:</span><span class="w"> </span><span class="s2">"14:00"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>Standard Properties:</strong>
 - <code class="docs-inline-code">role</code>: Job title or function
 - <code class="docs-inline-code">skill_level</code>: Proficiency level (beginner, intermediate, advanced, expert)
 - <code class="docs-inline-code">cost_per_hour</code>: Labor cost for economic analysis
 - <code class="docs-inline-code">location</code>: Current physical location
 - <code class="docs-inline-code">shift_start</code>/<code class="docs-inline-code">shift_end</code>: Working hours</p>
-<h4 id="equipment">Equipment<a class="headerlink" href="#equipment" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="equipment">Equipment<a class="headerlink" href="#equipment" title="Link to this section">¶</a></h4>
 <p>Physical tools, machinery, and apparatus:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;industrial_mixer&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;equipment&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Industrial Dough Mixer&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;⚙️&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;clean&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;capacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;capacity_unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kg&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;power_rating&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.5</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;power_unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kW&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_area&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;maintenance_hours&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2000</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;last_maintenance&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-09-01&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"industrial_mixer"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equipment"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Industrial Dough Mixer"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"⚙️"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"clean"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"capacity"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"capacity_unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kg"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"power_rating"</span><span class="p">:</span><span class="w"> </span><span class="mf">5.5</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"power_unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kW"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_area"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"maintenance_hours"</span><span class="p">:</span><span class="w"> </span><span class="mi">2000</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"last_maintenance"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-09-01"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>Standard Properties:</strong>
 - <code class="docs-inline-code">state</code>: Current operational state (clean, dirty, in_use, maintenance, broken)
 - <code class="docs-inline-code">capacity</code>: Maximum throughput or volume
 - <code class="docs-inline-code">power_rating</code>: Energy consumption
 - <code class="docs-inline-code">location</code>: Physical position
 - <code class="docs-inline-code">maintenance_hours</code>: Hours until next maintenance</p>
-<h4 id="resource">Resource<a class="headerlink" href="#resource" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="resource">Resource<a class="headerlink" href="#resource" title="Link to this section">¶</a></h4>
 <p>Consumable materials and supplies:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;organic_flour&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;resource&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Organic Bread Flour&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🌾&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kg&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;cost_per_unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.85</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;supplier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Local Grain Mill&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;expiration_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-12-15&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dry_storage&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;batch_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;FL-2024-089&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;quality_grade&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;premium&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"organic_flour"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Organic Bread Flour"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"🌾"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kg"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"cost_per_unit"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.85</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"supplier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Local Grain Mill"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"expiration_date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-12-15"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dry_storage"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"batch_number"</span><span class="p">:</span><span class="w"> </span><span class="s2">"FL-2024-089"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"quality_grade"</span><span class="p">:</span><span class="w"> </span><span class="s2">"premium"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>Standard Properties:</strong>
 - <code class="docs-inline-code">quantity</code>: Current amount available
 - <code class="docs-inline-code">unit</code>: Measurement unit (kg, L, pieces, etc.)
 - <code class="docs-inline-code">cost_per_unit</code>: Material cost for economic analysis
 - <code class="docs-inline-code">expiration_date</code>: Shelf life tracking
 - <code class="docs-inline-code">location</code>: Storage location</p>
-<h4 id="product">Product<a class="headerlink" href="#product" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="product">Product<a class="headerlink" href="#product" title="Link to this section">¶</a></h4>
 <p>Items created during the process:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;artisan_sourdough&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;product&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Artisan Sourdough Loaf&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🍞&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;loaves&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;revenue_per_unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">8.50</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;production_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">240</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;shelf_life_days&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cooling_area&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;weight_per_unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.8</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;quality_standards&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;artisan_grade&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"artisan_sourdough"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"product"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Artisan Sourdough Loaf"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"🍞"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"loaves"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"revenue_per_unit"</span><span class="p">:</span><span class="w"> </span><span class="mf">8.50</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"production_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">240</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"shelf_life_days"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cooling_area"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"weight_per_unit"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.8</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"quality_standards"</span><span class="p">:</span><span class="w"> </span><span class="s2">"artisan_grade"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>Standard Properties:</strong>
 - <code class="docs-inline-code">quantity</code>: Current inventory level
 - <code class="docs-inline-code">revenue_per_unit</code>: Selling price for economic analysis
 - <code class="docs-inline-code">production_time</code>: Time required to produce one unit
 - <code class="docs-inline-code">shelf_life_days</code>: Product freshness period</p>
-<h3 id="digital-object-types">Digital Object Types<a class="headerlink" href="#digital-object-types" title="Permanent link">&para;</a></h3>
-<h4 id="digital-location">Digital Location<a class="headerlink" href="#digital-location" title="Permanent link">&para;</a></h4>
+<h3 class="docs-heading" id="digital-object-types">Digital Object Types<a class="headerlink" href="#digital-object-types" title="Link to this section">¶</a></h3>
+<h4 class="docs-heading" id="digital-location">Digital Location<a class="headerlink" href="#digital-location" title="Link to this section">¶</a></h4>
 <p>Virtual spaces within digital systems:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;warehouse_sim&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;digital_location&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Virtual Warehouse Environment&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;environment_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;logistics_simulation&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;coordinate_system&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cartesian_3d&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;bounds&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;min&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-100</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;min&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;min&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-100</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">}</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_sim"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"digital_location"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Virtual Warehouse Environment"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"environment_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"logistics_simulation"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"coordinate_system"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cartesian_3d"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"bounds"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"min"</span><span class="p">:</span><span class="w"> </span><span class="mi">-100</span><span class="p">,</span><span class="w"> </span><span class="nt">"max"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"min"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"max"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"min"</span><span class="p">:</span><span class="w"> </span><span class="mi">-100</span><span class="p">,</span><span class="w"> </span><span class="nt">"max"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;physics_enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;lighting_model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;realistic&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;collision_detection&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;gravity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">9.81</span>
+<span class="w">    </span><span class="nt">"physics_enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"lighting_model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"realistic"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"collision_detection"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"gravity"</span><span class="p">:</span><span class="w"> </span><span class="mf">9.81</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h4 id="digital-object">Digital Object<a class="headerlink" href="#digital-object" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="digital-object">Digital Object<a class="headerlink" href="#digital-object" title="Link to this section">¶</a></h4>
 <p>Virtual items within digital spaces:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;autonomous_forklift&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;digital_object&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;AI-Powered Forklift&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;digital_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;autonomous_vehicle&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;rotation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;scale&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;movement_speed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">3.5</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;load_capacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2000</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;battery_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">85</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;digital_location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;warehouse_sim&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"autonomous_forklift"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"digital_object"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AI-Powered Forklift"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"digital_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"autonomous_vehicle"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"rotation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"scale"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"movement_speed"</span><span class="p">:</span><span class="w"> </span><span class="mf">3.5</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"load_capacity"</span><span class="p">:</span><span class="w"> </span><span class="mi">2000</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"battery_level"</span><span class="p">:</span><span class="w"> </span><span class="mi">85</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"digital_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_sim"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h4 id="display">Display<a class="headerlink" href="#display" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="display">Display<a class="headerlink" href="#display" title="Link to this section">¶</a></h4>
 <p>Screens and digital interfaces:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production_dashboard&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;display&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Production Control Dashboard&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;📊&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;display_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_interface&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;resolution&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2560</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1440</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;viewport&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2560</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1440</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_room&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;active&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;brightness&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">75</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;refresh_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">120</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;touch_enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"production_dashboard"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"display"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Production Control Dashboard"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"📊"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"display_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_interface"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"resolution"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">2560</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">1440</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"viewport"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">2560</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">1440</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_room"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"active"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"brightness"</span><span class="p">:</span><span class="w"> </span><span class="mi">75</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"refresh_rate"</span><span class="p">:</span><span class="w"> </span><span class="mi">120</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"touch_enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h4 id="screen-element">Screen Element<a class="headerlink" href="#screen-element" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="screen-element">Screen Element<a class="headerlink" href="#screen-element" title="Link to this section">¶</a></h4>
 <p>Interactive components within displays:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;efficiency_display&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Production Efficiency Display&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;label&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;display_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production_dashboard&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">250</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Efficiency: 87.5%&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;font_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">16</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;color&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;visible&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;interactive&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"efficiency_display"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Production Efficiency Display"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"label"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"display_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"production_dashboard"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">250</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Efficiency: 87.5%"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"font_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">16</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"color"</span><span class="p">:</span><span class="w"> </span><span class="s2">"green"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"visible"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"interactive"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="custom-object-types">Custom Object Types<a class="headerlink" href="#custom-object-types" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="custom-object-types">Custom Object Types<a class="headerlink" href="#custom-object-types" title="Link to this section">¶</a></h3>
 <p>The system supports unlimited custom object types for specialized domains:</p>
-<h4 id="vehicle-example">Vehicle Example<a class="headerlink" href="#vehicle-example" title="Permanent link">&para;</a></h4>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;delivery_truck_01&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vehicle&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Delivery Truck #1&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🚛&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;vehicle_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;box_truck&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;fuel_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.75</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;fuel_capacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">120</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;fuel_unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;liters&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;max_payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3500</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;current_load&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;loading_dock&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;license_plate&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DT-001&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;mileage&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">45280</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;next_maintenance&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-10-15&quot;</span>
+<h4 class="docs-heading" id="vehicle-example">Vehicle Example<a class="headerlink" href="#vehicle-example" title="Link to this section">¶</a></h4>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delivery_truck_01"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vehicle"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Delivery Truck #1"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"🚛"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"vehicle_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"box_truck"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"fuel_level"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.75</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"fuel_capacity"</span><span class="p">:</span><span class="w"> </span><span class="mi">120</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"fuel_unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"liters"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"max_payload"</span><span class="p">:</span><span class="w"> </span><span class="mi">3500</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"current_load"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"loading_dock"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"license_plate"</span><span class="p">:</span><span class="w"> </span><span class="s2">"DT-001"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"mileage"</span><span class="p">:</span><span class="w"> </span><span class="mi">45280</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"next_maintenance"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-10-15"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h4 id="sensor-example">Sensor Example<a class="headerlink" href="#sensor-example" title="Permanent link">&para;</a></h4>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;temp_sensor_01&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sensor&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Oven Temperature Sensor&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🌡️&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;sensor_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;temperature&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;current_reading&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">180</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;min_range&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-20</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;max_range&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;celsius&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;accuracy&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oven_chamber&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;calibration_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-08-15&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;digital_output&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<h4 class="docs-heading" id="sensor-example">Sensor Example<a class="headerlink" href="#sensor-example" title="Link to this section">¶</a></h4>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"temp_sensor_01"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sensor"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Oven Temperature Sensor"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"🌡️"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"sensor_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"temperature"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"current_reading"</span><span class="p">:</span><span class="w"> </span><span class="mi">180</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"min_range"</span><span class="p">:</span><span class="w"> </span><span class="mi">-20</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"max_range"</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"celsius"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"accuracy"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven_chamber"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"calibration_date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-08-15"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"digital_output"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="task-interactions">Task Interactions<a class="headerlink" href="#task-interactions" title="Permanent link">&para;</a></h2>
-<h3 id="modern-interaction-system">Modern Interaction System<a class="headerlink" href="#modern-interaction-system" title="Permanent link">&para;</a></h3>
+<h2 class="docs-heading" id="task-interactions">Task Interactions<a class="headerlink" href="#task-interactions" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="modern-interaction-system">Modern Interaction System<a class="headerlink" href="#modern-interaction-system" title="Link to this section">¶</a></h3>
 <p>The interaction system provides powerful ways to modify object properties:</p>
-<h4 id="property-changes">Property Changes<a class="headerlink" href="#property-changes" title="Permanent link">&para;</a></h4>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<h4 class="docs-heading" id="property-changes">Property Changes<a class="headerlink" href="#property-changes" title="Link to this section">¶</a></h4>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixing_bowl&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;empty&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;filled&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;contents&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flour_water_mixture&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;weight&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;delta&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.5</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixing_bowl"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"empty"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"filled"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"contents"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"flour_water_mixture"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"weight"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mf">2.5</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>Change Types:</strong>
 - <code class="docs-inline-code">from</code>/<code class="docs-inline-code">to</code>: Explicit state transitions
 - <code class="docs-inline-code">delta</code>: Numerical increments/decrements
 - <code class="docs-inline-code">set</code>: Direct value assignment
 - <code class="docs-inline-code">multiply</code>: Proportional changes</p>
-<h4 id="object-creation">Object Creation<a class="headerlink" href="#object-creation" title="Permanent link">&para;</a></h4>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<h4 class="docs-heading" id="object-creation">Object Creation<a class="headerlink" href="#object-creation" title="Link to this section">¶</a></h4>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;add_objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="nt">"add_objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;batch_001&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;product&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Bread Batch #001&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;loaves&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;batch_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;09:30&quot;</span>
+<span class="w">          </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"batch_001"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"product"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Bread Batch #001"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"loaves"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"batch_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:30"</span>
 <span class="w">          </span><span class="p">}</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">]</span>
@@ -407,148 +392,142 @@
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h4 id="object-removal">Object Removal<a class="headerlink" href="#object-removal" title="Permanent link">&para;</a></h4>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<h4 class="docs-heading" id="object-removal">Object Removal<a class="headerlink" href="#object-removal" title="Link to this section">¶</a></h4>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;remove_objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;expired_batch_001&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;damaged_equipment&quot;</span><span class="p">]</span>
+<span class="w">      </span><span class="nt">"remove_objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"expired_batch_001"</span><span class="p">,</span><span class="w"> </span><span class="s2">"damaged_equipment"</span><span class="p">]</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="complex-interaction-examples">Complex Interaction Examples<a class="headerlink" href="#complex-interaction-examples" title="Permanent link">&para;</a></h3>
-<h4 id="multi-object-state-changes">Multi-Object State Changes<a class="headerlink" href="#multi-object-state-changes" title="Permanent link">&para;</a></h4>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production_line_startup&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<h3 class="docs-heading" id="complex-interaction-examples">Complex Interaction Examples<a class="headerlink" href="#complex-interaction-examples" title="Link to this section">¶</a></h3>
+<h4 class="docs-heading" id="multi-object-state-changes">Multi-Object State Changes<a class="headerlink" href="#multi-object-state-changes" title="Link to this section">¶</a></h4>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"production_line_startup"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;conveyor_belt&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;stopped&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;running&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;speed&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;set&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"conveyor_belt"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"stopped"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"running"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"speed"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"set"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;quality_scanner&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;standby&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;active&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;scan_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;set&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"quality_scanner"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"standby"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"active"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"scan_rate"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"set"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production_display&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;active&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;set&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
-<span class="w">      </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-
-<h4 id="economic-transactions">Economic Transactions<a class="headerlink" href="#economic-transactions" title="Permanent link">&para;</a></h4>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;purchase_materials&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flour&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;delta&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;cost_total&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;delta&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">85.00</span><span class="w"> </span><span class="p">}</span>
-<span class="w">      </span><span class="p">}</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;company_cash&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;balance&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;delta&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">-85.00</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"production_display"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"active"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"set"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h4 id="digital-object-movement">Digital Object Movement<a class="headerlink" href="#digital-object-movement" title="Permanent link">&para;</a></h4>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;move_digital_asset&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<h4 class="docs-heading" id="economic-transactions">Economic Transactions<a class="headerlink" href="#economic-transactions" title="Link to this section">¶</a></h4>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"purchase_materials"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;inventory_bot&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"flour"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"cost_total"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mf">85.00</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"company_cash"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"balance"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mf">-85.00</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 class="docs-heading" id="digital-object-movement">Digital Object Movement<a class="headerlink" href="#digital-object-movement" title="Link to this section">¶</a></h4>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"move_digital_asset"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"inventory_bot"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="w"> </span><span class="p">}</span>
 <span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;battery_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;delta&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">-2.5</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="nt">"battery_level"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mf">-2.5</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="production-recipes">Production Recipes<a class="headerlink" href="#production-recipes" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="production-recipes">Production Recipes<a class="headerlink" href="#production-recipes" title="Link to this section">¶</a></h2>
 <p>Define complex production requirements:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;production_recipes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;artisan_bread&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;ingredients&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;flour&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.5</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;water&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.8</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;yeast&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.2</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;salt&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.05</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"production_recipes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"artisan_bread"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"ingredients"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"flour"</span><span class="p">:</span><span class="w"> </span><span class="mf">2.5</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"water"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.8</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"yeast"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.2</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"salt"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.05</span>
 <span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;equipment_required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;mixer&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;oven&quot;</span><span class="p">],</span>
-<span class="w">      </span><span class="nt">&quot;production_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">180</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;skill_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;intermediate&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;yield&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">      </span><span class="nt">"equipment_required"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"mixer"</span><span class="p">,</span><span class="w"> </span><span class="s2">"oven"</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">"production_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">180</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"skill_level"</span><span class="p">:</span><span class="w"> </span><span class="s2">"intermediate"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"yield"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="validation-integration">Validation Integration<a class="headerlink" href="#validation-integration" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="validation-integration">Validation Integration<a class="headerlink" href="#validation-integration" title="Link to this section">¶</a></h2>
 <p>The UOM works closely with the validation system to ensure:</p>
-<h3 id="schema-compliance">Schema Compliance<a class="headerlink" href="#schema-compliance" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="schema-compliance">Schema Compliance<a class="headerlink" href="#schema-compliance" title="Link to this section">¶</a></h3>
 <ul class="docs-list">
 <li>All required fields are present</li>
 <li>Data types match specifications</li>
 <li>Object references are valid</li>
 </ul>
-<h3 id="logical-consistency">Logical Consistency<a class="headerlink" href="#logical-consistency" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="logical-consistency">Logical Consistency<a class="headerlink" href="#logical-consistency" title="Link to this section">¶</a></h3>
 <ul class="docs-list">
 <li>State transitions are realistic</li>
 <li>Resource flows balance properly</li>
 <li>Timing constraints are respected</li>
 </ul>
-<h3 id="economic-viability">Economic Viability<a class="headerlink" href="#economic-viability" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="economic-viability">Economic Viability<a class="headerlink" href="#economic-viability" title="Link to this section">¶</a></h3>
 <ul class="docs-list">
 <li>Cost and revenue properties enable profitability analysis</li>
 <li>Resource consumption aligns with production output</li>
 <li>Labor costs reflect realistic market rates</li>
 </ul>
-<h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
-<h3 id="object-design">Object Design<a class="headerlink" href="#object-design" title="Permanent link">&para;</a></h3>
+<h2 class="docs-heading" id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="object-design">Object Design<a class="headerlink" href="#object-design" title="Link to this section">¶</a></h3>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Use descriptive IDs</strong>: <code class="docs-inline-code">industrial_mixer_01</code> vs <code class="docs-inline-code">mixer1</code></li>
-<li><strong>Include relevant properties</strong>: Don't over-engineer, but include what matters</li>
+<li><strong>Include relevant properties</strong>: Don’t over-engineer, but include what matters</li>
 <li><strong>Set realistic initial values</strong>: Base quantities and costs on real-world data</li>
 <li><strong>Plan for scalability</strong>: Design objects that can handle process variations</li>
 </ol>
-<h3 id="task-interactions_1">Task Interactions<a class="headerlink" href="#task-interactions_1" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="task-interactions_1">Task Interactions<a class="headerlink" href="#task-interactions_1" title="Link to this section">¶</a></h3>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Prefer modern interaction format</strong>: More explicit and flexible</li>
 <li><strong>Group related changes</strong>: Combine multiple property changes in one interaction</li>
 <li><strong>Include validation properties</strong>: Use <code class="docs-inline-code">from</code> values to enable state validation</li>
 <li><strong>Document complex interactions</strong>: Use clear task names and descriptions</li>
 </ol>
-<h3 id="custom-types">Custom Types<a class="headerlink" href="#custom-types" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="custom-types">Custom Types<a class="headerlink" href="#custom-types" title="Link to this section">¶</a></h3>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Follow naming conventions</strong>: Use clear, descriptive type names</li>
 <li><strong>Define standard properties</strong>: Establish patterns for similar objects</li>
-<li><strong>Avoid reserved types</strong>: Don't conflict with system-internal types</li>
+<li><strong>Avoid reserved types</strong>: Don’t conflict with system-internal types</li>
 <li><strong>Document custom schemas</strong>: Explain your custom types for other users</li>
 </ol>
-<h3 id="economic-modeling">Economic Modeling<a class="headerlink" href="#economic-modeling" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="economic-modeling">Economic Modeling<a class="headerlink" href="#economic-modeling" title="Link to this section">¶</a></h3>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Include all costs</strong>: Labor, materials, overhead, equipment depreciation</li>
 <li><strong>Use realistic prices</strong>: Base on market research or industry standards</li>

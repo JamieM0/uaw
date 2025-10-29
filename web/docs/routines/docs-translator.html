@@ -63,13 +63,12 @@
 
                     <div class="docs-content">
                         <p>This script converts Markdown documentation files into HTML pages using a specified HTML template. It extracts key elements like the title and subtitle from the Markdown source and injects them along with the main content (converted to HTML) into the template.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
 <p>The primary goal of this script is to automate the process of generating consistent HTML documentation pages from Markdown source files. It ensures that all generated pages adhere to a standard layout defined by the HTML template, while dynamically populating the title, subtitle, and main content area.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>The script is executed from the command line.</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>docs/docs-translator.py<span class="w"> </span>&lt;input_file&gt;<span class="w"> </span><span class="o">[</span>--output<span class="w"> </span>&lt;output_file&gt;<span class="o">]</span><span class="w"> </span><span class="o">[</span>--template<span class="w"> </span>&lt;template_file&gt;<span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>docs/docs-translator.py<span class="w"> </span>&lt;input_file&gt;<span class="w"> </span><span class="o">[</span>--output<span class="w"> </span>&lt;output_file&gt;<span class="o">]</span><span class="w"> </span><span class="o">[</span>--template<span class="w"> </span>&lt;template_file&gt;<span class="o">]</span>
 </code></pre></div>
-
 <p><strong>Arguments:</strong></p>
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;input_file&gt;</code> (Required): Path to the source Markdown file. This file <strong>must</strong> reside within the <code class="docs-inline-code">docs-md/</code> directory relative to the workspace root.<ul class="docs-list">
@@ -89,17 +88,17 @@
 <ol class="docs-list docs-list-ordered">
 <li>
 <p><strong>Basic usage (automatic output path):</strong>
-    <code class="docs-inline-code">bash
+<code class="docs-inline-code">bash
     python docs/docs-translator.py docs-md/introduction.md</code>
     This will generate <code class="docs-inline-code">docs/introduction.html</code> using the default template.</p>
 </li>
 <li>
 <p><strong>Specifying output and template:</strong>
-    <code class="docs-inline-code">bash
+<code class="docs-inline-code">bash
     python docs/docs-translator.py docs-md/guides/setup.md --output docs/generated/setup-guide.html --template templates/custom-template.html</code></p>
 </li>
 </ol>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><strong>Markdown Source (<code class="docs-inline-code">&lt;input_file&gt;</code>):</strong><ul class="docs-list">
 <li>Must be a valid Markdown file located within the <code class="docs-inline-code">docs-md/</code> directory.</li>
@@ -118,7 +117,7 @@
 </ul>
 </li>
 </ul>
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><code class="docs-inline-code">compute_output_path(input_path_str)</code>:<ul class="docs-list">
 <li>Takes the input Markdown file path string.</li>
@@ -149,7 +148,7 @@
 </ul>
 </li>
 </ul>
-<h2 id="template-processing">Template Processing<a class="headerlink" href="#template-processing" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="template-processing">Template Processing<a class="headerlink" href="#template-processing" title="Link to this section">¶</a></h2>
 <ol class="docs-list docs-list-ordered">
 <li>The script reads the entire content of the HTML template file specified by <code class="docs-inline-code">--template</code> (or the default).</li>
 <li>It calls <code class="docs-inline-code">parse_markdown</code> on the input Markdown content to extract the <code class="docs-inline-code">title</code> and <code class="docs-inline-code">subtitle</code>, and to convert the full Markdown body to <code class="docs-inline-code">html_body</code>.</li>
@@ -158,7 +157,7 @@
 <li>It finds the section <code class="docs-inline-code">&lt;section class="content-section"&gt;...&lt;/section&gt;</code>.</li>
 <li>It replaces the <em>first occurrence</em> of the literal word <code class="docs-inline-code">content</code> <em>within</em> that section with the generated <code class="docs-inline-code">html_body</code>. If the word <code class="docs-inline-code">content</code> is not found within the section, it prints a warning and replaces the entire original content of the section with the <code class="docs-inline-code">html_body</code>.</li>
 </ol>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <p>The script generates a single HTML file.</p>
 <ul class="docs-list">
 <li><strong>Path:</strong> The location of the output file is determined by the <code class="docs-inline-code">--output</code> argument if provided. If not provided, the path is automatically calculated by taking the relative path of the input file within <code class="docs-inline-code">docs-md/</code>, placing it under the <code class="docs-inline-code">docs/</code> directory, and changing the extension to <code class="docs-inline-code">.html</code>. For example, <code class="docs-inline-code">docs-md/folder/file.md</code> becomes <code class="docs-inline-code">docs/folder/file.html</code>.</li>

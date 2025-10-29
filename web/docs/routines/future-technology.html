@@ -63,13 +63,12 @@
 
                     <div class="docs-content">
                         <p>This script utilizes a Large Language Model (LLM) to generate a comprehensive overview of the technologies required for the full automation of a specified topic. It focuses on forecasting realistic technological advancements within a 5-15 year timeframe.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
 <p>The primary goal of <code class="docs-inline-code">future-technology.py</code> is to analyze a given topic and produce a structured JSON output detailing the sensory, control, mechanical, and software systems needed for its complete automation. It also estimates the timeline and identifies key research areas.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>Run the script from the command line:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>future-technology.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span><span class="w"> </span><span class="o">[</span>-saveInputs<span class="o">]</span><span class="w"> </span><span class="o">[</span>-uuid<span class="o">=</span><span class="s2">&quot;UUID&quot;</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>-flow_uuid<span class="o">=</span><span class="s2">&quot;FLOW-UUID&quot;</span><span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>future-technology.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span><span class="w"> </span><span class="o">[</span>-saveInputs<span class="o">]</span><span class="w"> </span><span class="o">[</span>-uuid<span class="o">=</span><span class="s2">"UUID"</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>-flow_uuid<span class="o">=</span><span class="s2">"FLOW-UUID"</span><span class="o">]</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;input_json&gt;</code>: (Required) Path to the input JSON file containing the analysis parameters.</li>
 <li><code class="docs-inline-code">[output_json]</code>: (Optional) Path to save the output JSON file. If omitted, a default path is generated.</li>
@@ -77,56 +76,54 @@
 <li><code class="docs-inline-code">-uuid="UUID"</code>: (Optional) Specify a custom UUID for the output metadata.</li>
 <li><code class="docs-inline-code">-flow_uuid="FLOW-UUID"</code>: (Optional) Specify a UUID for the flow, used for organizing saved inputs if <code class="docs-inline-code">-saveInputs</code> is used.</li>
 </ul>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <p>The script expects an input JSON file (<code class="docs-inline-code">&lt;input_json&gt;</code>) with the following structure:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;topic&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The subject area for automation analysis&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gemma3&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Or another LLM model identifier</span>
-<span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// Optional LLM parameters</span>
-<span class="w">    </span><span class="c1">// e.g., &quot;temperature&quot;: 0.7</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"topic"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The subject area for automation analysis"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gemma3"</span><span class="p">,</span><span class="w"> </span><span class="c1">// Or another LLM model identifier</span>
+<span class="w">  </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// Optional LLM parameters</span>
+<span class="w">    </span><span class="c1">// e.g., "temperature": 0.7</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><code class="docs-inline-code">sanitize_json_string(json_str)</code>: Removes invalid control characters from a string to prevent JSON parsing errors.</li>
-<li><code class="docs-inline-code">extract_json_from_response(response)</code>: Attempts to extract and parse a valid JSON object from the LLM's response, handling potential variations like direct JSON, JSON within code fences (<code class="docs-inline-code">json ...</code> or <code class="docs-inline-code">...</code>), or JSON enclosed in curly braces.</li>
+<li><code class="docs-inline-code">extract_json_from_response(response)</code>: Attempts to extract and parse a valid JSON object from the LLM’s response, handling potential variations like direct JSON, JSON within code fences (<code class="docs-inline-code">json ...</code> or <code class="docs-inline-code">...</code>), or JSON enclosed in curly braces.</li>
 <li><code class="docs-inline-code">generate_future_technology(input_data, save_inputs=False)</code>: Constructs the system and user prompts based on the input topic, interacts with the specified LLM using <code class="docs-inline-code">utils.chat_with_llm</code>, and processes the response using <code class="docs-inline-code">extract_json_from_response</code>.</li>
 <li><code class="docs-inline-code">main()</code>: Handles command-line arguments using <code class="docs-inline-code">utils.handle_command_args</code>, loads input data using <code class="docs-inline-code">utils.load_json</code>, orchestrates the analysis by calling <code class="docs-inline-code">generate_future_technology</code>, prepares metadata using <code class="docs-inline-code">utils.create_output_metadata</code> and <code class="docs-inline-code">utils.get_output_filepath</code>, and saves the final output using <code class="docs-inline-code">utils.save_output</code>.</li>
 <li><strong>Utility Functions (from <code class="docs-inline-code">utils.py</code>)</strong>: The script relies on several functions imported from <code class="docs-inline-code">utils.py</code> for common tasks like loading JSON (<code class="docs-inline-code">load_json</code>), saving output (<code class="docs-inline-code">save_output</code>, <code class="docs-inline-code">saveToFile</code>), interacting with the LLM (<code class="docs-inline-code">chat_with_llm</code>), creating metadata (<code class="docs-inline-code">create_output_metadata</code>), determining output paths (<code class="docs-inline-code">get_output_filepath</code>), and handling arguments (<code class="docs-inline-code">handle_command_args</code>).</li>
 </ul>
-<h2 id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Link to this section">¶</a></h2>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Prompt Construction</strong>: A system prompt instructs the LLM to act as a future technology forecaster. A user prompt provides the specific <code class="docs-inline-code">topic</code> and requests the output in a predefined JSON format.</li>
 <li><strong>LLM Call</strong>: The <code class="docs-inline-code">chat_with_llm</code> function sends these prompts to the specified LLM (<code class="docs-inline-code">model</code> from input).</li>
 <li><strong>Expected Response</strong>: The script anticipates a JSON response containing arrays for <code class="docs-inline-code">sensory_systems</code>, <code class="docs-inline-code">control_systems</code>, <code class="docs-inline-code">mechanical_systems</code>, <code class="docs-inline-code">software_integration</code>, <code class="docs-inline-code">key_research_areas</code>, and a <code class="docs-inline-code">timeline_estimate</code>.</li>
 </ol>
-<h2 id="json-handling">JSON Handling<a class="headerlink" href="#json-handling" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="json-handling">JSON Handling<a class="headerlink" href="#json-handling" title="Link to this section">¶</a></h2>
 <p>LLM responses can sometimes include extra text or formatting inconsistencies.
 *   <code class="docs-inline-code">sanitize_json_string</code>: Cleans the raw response string by removing characters that would break standard JSON parsers.
-*   <code class="docs-inline-code">extract_json_from_response</code>: Employs multiple strategies (direct parsing, code fence extraction, curly brace extraction) to robustly locate and parse the intended JSON payload within the potentially messy LLM output. This ensures the script can reliably retrieve the structured data even if the LLM doesn't strictly adhere to the "JSON only" request.</p>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+*   <code class="docs-inline-code">extract_json_from_response</code>: Employs multiple strategies (direct parsing, code fence extraction, curly brace extraction) to robustly locate and parse the intended JSON payload within the potentially messy LLM output. This ensures the script can reliably retrieve the structured data even if the LLM doesn’t strictly adhere to the “JSON only” request.</p>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <p>The script generates a JSON file containing:
 *   Process metadata (script name, start time, UUID) generated by <code class="docs-inline-code">create_output_metadata</code>.
 *   The core <code class="docs-inline-code">future_technology</code> data, structured as a JSON object extracted from the LLM response.</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;process_metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;script_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Future Technology Analysis&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;start_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;uuid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"process_metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"script_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Future Technology Analysis"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"uuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;future_technology&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;sensory_systems&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;control_systems&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;mechanical_systems&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;software_integration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;timeline_estimate&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;key_research_areas&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]</span>
+<span class="w">  </span><span class="nt">"future_technology"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"sensory_systems"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"control_systems"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"mechanical_systems"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"software_integration"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"timeline_estimate"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"key_research_areas"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p>The output is saved to the specified <code class="docs-inline-code">[output_json]</code> path or a generated default path.</p>
                     </div>
                     

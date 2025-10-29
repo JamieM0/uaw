@@ -63,23 +63,22 @@
 
                     <div class="docs-content">
                         <p>This script orchestrates a sequence of Python programs to perform a comprehensive analysis related to automation processes. It takes an initial JSON input, runs various analysis and generation scripts, potentially generates alternative process trees, and outputs the results, including intermediate files, metadata, and a final assembled report (typically HTML), into a unique flow-specific directory.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
 <p>The <code class="docs-inline-code">flow-maker.py</code> script serves as the main driver for a multi-step automation analysis workflow. It manages the execution order of several specialized Python scripts, handles input/output file paths between steps, creates a structured output directory for each run, and optionally generates alternative analysis variations based on input parameters.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>To run the script, use the following command structure:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>flow-maker.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>breadcrumbs<span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>flow-maker.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>breadcrumbs<span class="o">]</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;input_json&gt;</code>: (Required) Path to the primary JSON file containing the initial data and configuration for the flow.</li>
 <li><code class="docs-inline-code">[breadcrumbs]</code>: (Optional) A string providing context or tracking information, which will be saved in the output directory.</li>
 </ul>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><strong><code class="docs-inline-code">&lt;input_json&gt;</code>:</strong> A JSON file that provides the starting data for the analysis flow. It may contain parameters controlling the execution, such as the number of <code class="docs-inline-code">alternatives</code> to generate.</li>
-<li><strong><code class="docs-inline-code">[breadcrumbs]</code>:</strong> An optional string passed as a command-line argument. If provided, it's saved to <code class="docs-inline-code">breadcrumbs.txt</code> within the flow's output directory for tracking or informational purposes.</li>
+<li><strong><code class="docs-inline-code">[breadcrumbs]</code>:</strong> An optional string passed as a command-line argument. If provided, it’s saved to <code class="docs-inline-code">breadcrumbs.txt</code> within the flow’s output directory for tracking or informational purposes.</li>
 </ul>
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><strong><code class="docs-inline-code">run_program(program_name, input_path, output_path, extra_args=None)</code>:</strong><ul class="docs-list">
 <li>Executes a specified Python script (<code class="docs-inline-code">program_name</code>) using <code class="docs-inline-code">subprocess.run</code>.</li>
@@ -105,7 +104,7 @@
 </ul>
 </li>
 </ul>
-<h2 id="program-execution-flow">Program Execution Flow<a class="headerlink" href="#program-execution-flow" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="program-execution-flow">Program Execution Flow<a class="headerlink" href="#program-execution-flow" title="Link to this section">¶</a></h2>
 <p>The script executes a predefined sequence of Python programs. Each program typically takes the output of the previous step (or the initial input) as its input and generates an output file.</p>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Directory Setup:</strong> A unique directory <code class="docs-inline-code">flow/&lt;flow_uuid&gt;</code> is created. The initial <code class="docs-inline-code">&lt;input_json&gt;</code> is copied to <code class="docs-inline-code">flow/&lt;flow_uuid&gt;/input.json</code>.</li>
@@ -129,7 +128,7 @@
 </ul>
 </li>
 </ol>
-<h2 id="alternative-tree-generation">Alternative Tree Generation<a class="headerlink" href="#alternative-tree-generation" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="alternative-tree-generation">Alternative Tree Generation<a class="headerlink" href="#alternative-tree-generation" title="Link to this section">¶</a></h2>
 <p>If the initial <code class="docs-inline-code">&lt;input_json&gt;</code> file contains a key <code class="docs-inline-code">"alternatives"</code> with a value greater than 0, the script will generate that number of alternative process trees:</p>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Input Variation:</strong> For each alternative, a copy of the original <code class="docs-inline-code">input_data</code> is made. Parameters like <code class="docs-inline-code">temperature</code>, <code class="docs-inline-code">approach_name</code>, and <code class="docs-inline-code">approach_description</code> are modified to encourage diverse outputs.</li>
@@ -137,17 +136,17 @@
 <li><strong>Execution:</strong> <code class="docs-inline-code">hallucinate-tree.py</code> is run for each alternative input using the <code class="docs-inline-code">-flat</code> argument.</li>
 <li><strong>Output:</strong> The output for each alternative is saved to <code class="docs-inline-code">flow/&lt;flow_uuid&gt;/alt&lt;N&gt;.json</code>.</li>
 </ol>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <p>The script generates a primary output directory named <code class="docs-inline-code">flow/&lt;flow_uuid&gt;/</code>, where <code class="docs-inline-code">&lt;flow_uuid&gt;</code> is a unique identifier for the run. This directory contains:</p>
 <ul class="docs-list">
 <li><code class="docs-inline-code">input.json</code>: A copy of the original input JSON file provided to the script.</li>
 <li><code class="docs-inline-code">breadcrumbs.txt</code>: (Optional) Contains the breadcrumbs string if provided via the command line.</li>
 <li><code class="docs-inline-code">1.json</code> - <code class="docs-inline-code">9.json</code>: Intermediate JSON output files generated by the corresponding scripts in the execution flow.</li>
 <li><code class="docs-inline-code">inputs/</code>: A subdirectory created if alternatives are generated.<ul class="docs-list">
-<li><code class="docs-inline-code">alt_input_1.json</code>, <code class="docs-inline-code">alt_input_2.json</code>, ...: The modified input JSON files used for generating alternative trees.</li>
+<li><code class="docs-inline-code">alt_input_1.json</code>, <code class="docs-inline-code">alt_input_2.json</code>, …: The modified input JSON files used for generating alternative trees.</li>
 </ul>
 </li>
-<li><code class="docs-inline-code">alt1.json</code>, <code class="docs-inline-code">alt2.json</code>, ...: (Optional) The JSON output files for each generated alternative tree.</li>
+<li><code class="docs-inline-code">alt1.json</code>, <code class="docs-inline-code">alt2.json</code>, …: (Optional) The JSON output files for each generated alternative tree.</li>
 <li><code class="docs-inline-code">flow-metadata.json</code>: A JSON file containing metadata about the flow run, including the UUID, timestamp, time taken, input file path, and list of programs executed.</li>
 <li><strong>Final Report(s):</strong> Files generated by the final <code class="docs-inline-code">assemble.py</code> script (e.g., an HTML report). The exact filenames depend on the implementation of <code class="docs-inline-code">assemble.py</code>.</li>
 </ul>

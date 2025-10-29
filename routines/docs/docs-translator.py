@@ -5,12 +5,14 @@ import markdown
 from markdown.extensions.codehilite import CodeHiliteExtension
 from markdown.extensions.fenced_code import FencedCodeExtension
 from markdown.extensions.tables import TableExtension
-from markdown.extensions import wikilinks
 import os
 import sys
 import pathlib
 import re
 import glob
+import shutil
+from datetime import datetime
+from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 # Define paths for the UAW workspace - use current directory
@@ -18,6 +20,10 @@ UAW_ROOT = os.path.abspath(".")
 UAW_TEMPLATE_DIR = os.path.join(UAW_ROOT, "templates")
 UAW_DOCS_MD_DIR = os.path.join(UAW_ROOT, "docs-md")
 UAW_DOCS_DIR = os.path.join(UAW_ROOT, "web", "docs")
+UAW_DOCS_IMAGES_DIR = os.path.join(UAW_ROOT, "web", "assets", "images", "docs")
+
+# Supported image extensions for asset management
+SUPPORTED_IMAGE_EXTENSIONS = {'.svg', '.png', '.jpg', '.jpeg', '.gif', '.webp'}
 
 def compute_output_path(input_path):
     """Computes the default output path from the input Markdown path."""
@@ -72,8 +78,205 @@ def generate_breadcrumbs(input_path, title):
     
     # Add final page (no URL since it's current page)
     breadcrumbs.append({"name": title, "url": None})
-    
+
     return breadcrumbs
+
+def copy_image_asset(image_src, source_md_path):
+    """
+    Copy an image asset from markdown source to web assets directory.
+
+    Args:
+        image_src: The image source path from markdown
+        source_md_path: Absolute path to the markdown file containing the image reference
+
+    Returns:
+        Tuple of (new_web_path, success_bool) where new_web_path is the path to use in HTML
+    """
+    # Skip external URLs
+    if image_src.startswith(('http://', 'https://', '//')):
+        return image_src, True
+
+    # Skip absolute paths that are already in web directory
+    if image_src.startswith('/web/'):
+        return image_src, True
+
+    # Resolve the source image path relative to the markdown file
+    source_md_dir = os.path.dirname(source_md_path)
+    source_image_path = os.path.normpath(os.path.join(source_md_dir, image_src))
+
+    # Check if source image exists
+    if not os.path.isfile(source_image_path):
+        print(f"Warning: Image not found: {source_image_path}", file=sys.stderr)
+        return image_src, False
+
+    # Get file extension and validate it's a supported image
+    _, ext = os.path.splitext(source_image_path)
+    if ext.lower() not in SUPPORTED_IMAGE_EXTENSIONS:
+        print(f"Warning: Unsupported image type: {ext} for {source_image_path}", file=sys.stderr)
+        return image_src, False
+
+    # Get the filename
+    filename = os.path.basename(source_image_path)
+    name_without_ext = os.path.splitext(filename)[0]
+
+    # Determine target path
+    target_path = os.path.join(UAW_DOCS_IMAGES_DIR, filename)
+
+    # Handle conflicts with timestamp
+    if os.path.exists(target_path):
+        # Check if files are identical
+        if os.path.getsize(source_image_path) == os.path.getsize(target_path):
+            with open(source_image_path, 'rb') as f1, open(target_path, 'rb') as f2:
+                if f1.read() == f2.read():
+                    # Files are identical, use existing
+                    web_path = f"/assets/images/docs/{filename}"
+                    return web_path, True
+
+        # Files differ, create timestamped version
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        new_filename = f"{name_without_ext}-{timestamp}{ext}"
+        target_path = os.path.join(UAW_DOCS_IMAGES_DIR, new_filename)
+        filename = new_filename
+
+    # Create target directory if it doesn't exist
+    os.makedirs(UAW_DOCS_IMAGES_DIR, exist_ok=True)
+
+    # Copy the file
+    try:
+        shutil.copy2(source_image_path, target_path)
+        print(f"Copied image: {filename}")
+    except Exception as e:
+        print(f"Error copying image {source_image_path}: {e}", file=sys.stderr)
+        return image_src, False
+
+    # Return the web path
+    web_path = f"/assets/images/docs/{filename}"
+    return web_path, True
+
+def process_image_references(markdown_content, source_md_path):
+    """
+    Find and process all image references in markdown content.
+    Copies images to the web assets directory and updates paths.
+
+    Args:
+        markdown_content: The markdown content string
+        source_md_path: Absolute path to the source markdown file
+
+    Returns:
+        Updated markdown content with corrected image paths
+    """
+    # Pattern to match markdown images: ![alt](path) or ![alt](path "title")
+    image_pattern = r'!\[([^\]]*)\]\(([^\s\)]+)(?:\s+"([^"]*)")?\)'
+
+    def replace_image(match):
+        alt_text = match.group(1)
+        image_src = match.group(2)
+        title = match.group(3)
+
+        # Copy the image and get new path
+        new_path, success = copy_image_asset(image_src, source_md_path)
+
+        # Reconstruct markdown image syntax
+        if title:
+            return f'![{alt_text}]({new_path} "{title}")'
+        else:
+            return f'![{alt_text}]({new_path})'
+
+    # Replace all image references
+    updated_content = re.sub(image_pattern, replace_image, markdown_content)
+
+    return updated_content
+
+def validate_internal_links(markdown_content, source_md_path):
+    """
+    Validate internal links in markdown content and warn about broken links.
+
+    Args:
+        markdown_content: The markdown content string
+        source_md_path: Absolute path to the source markdown file
+    """
+    # Pattern to match markdown links: [text](path)
+    link_pattern = r'\[([^\]]+)\]\(([^\)]+)\)'
+
+    source_md_dir = os.path.dirname(source_md_path)
+
+    for match in re.finditer(link_pattern, markdown_content):
+        link_text = match.group(1)
+        link_target = match.group(2)
+
+        # Skip external URLs
+        if link_target.startswith(('http://', 'https://', '//', 'mailto:', '#')):
+            continue
+
+        # Split anchor from path
+        if '#' in link_target:
+            path_part, anchor_part = link_target.split('#', 1)
+        else:
+            path_part = link_target
+            anchor_part = None
+
+        # Skip if it's just an anchor
+        if not path_part:
+            continue
+
+        # Resolve the link relative to the markdown file
+        if path_part.startswith('/'):
+            # Absolute path from web root - harder to validate
+            continue
+        else:
+            # Relative path
+            target_path = os.path.normpath(os.path.join(source_md_dir, path_part))
+
+            # Check if it's a markdown file that should exist
+            if path_part.endswith('.md'):
+                if not os.path.isfile(target_path):
+                    print(f"Warning: Broken internal link in {os.path.basename(source_md_path)}: [{link_text}]({link_target}) - file not found", file=sys.stderr)
+
+def is_valid_subtitle_line(line):
+    """
+    Check if a line is a valid subtitle (paragraph text, not special markdown syntax).
+
+    Args:
+        line: The line to check
+
+    Returns:
+        True if the line is valid subtitle text
+    """
+    line = line.strip()
+
+    # Empty line
+    if not line:
+        return False
+
+    # Header
+    if line.startswith('#'):
+        return False
+
+    # List item
+    if line.startswith(('-', '*', '+')):
+        return False
+
+    # Ordered list
+    if re.match(r'^\d+\.', line):
+        return False
+
+    # Code block marker
+    if line.startswith('```') or line.startswith('~~~'):
+        return False
+
+    # Horizontal rule
+    if re.match(r'^[-*_]{3,}$', line):
+        return False
+
+    # HTML tag
+    if line.startswith('<') and line.endswith('>'):
+        return False
+
+    # Table separator
+    if re.match(r'^\|?[\s:-]*\|[\s:-]*\|', line):
+        return False
+
+    return True
 
 def parse_markdown(content, input_path=None):
     """Extracts title and subtitle, and converts Markdown to HTML."""
@@ -95,11 +298,11 @@ def parse_markdown(content, input_path=None):
             first_header_index = i
             break # Found the first H1
 
-    # Find the first non-empty paragraph after the header
+    # Find the first valid paragraph after the header (improved subtitle extraction)
     if title_found:
         for i in range(first_header_index + 1, len(lines)):
             line_stripped = lines[i].strip()
-            if line_stripped and not line_stripped.startswith("#"): # Found the first non-empty, non-header line
+            if is_valid_subtitle_line(line_stripped):
                 subtitle = line_stripped
                 subtitle_found = True
                 break
@@ -110,6 +313,12 @@ def parse_markdown(content, input_path=None):
     else:
         content_for_html = content
 
+    # Process image references and copy assets
+    if input_path:
+        content_for_html = process_image_references(content_for_html, input_path)
+        # Validate internal links
+        validate_internal_links(content_for_html, input_path)
+
     # Set up custom Markdown extensions with proper code highlighting
     extensions = [
         'markdown.extensions.tables',
@@ -119,35 +328,38 @@ def parse_markdown(content, input_path=None):
         'markdown.extensions.def_list',
         'markdown.extensions.footnotes',
         'markdown.extensions.md_in_html',
-        'markdown.extensions.toc'
+        'markdown.extensions.toc',
+        'markdown.extensions.sane_lists',  # Better list nesting behavior
+        'markdown.extensions.smarty',      # Smart quotes and dashes
+        'markdown.extensions.abbr'         # Abbreviations with tooltips
     ]
-    
+
     extension_configs = {
         'markdown.extensions.codehilite': {
-            'noclasses': False,   # Use CSS classes instead of inline styles
-            'linenums': False,    # No line numbers by default
-            'css_class': "codehilite"  # CSS class to use
+            'noclasses': False,           # Use CSS classes instead of inline styles
+            'linenums': False,            # No line numbers by default
+            'css_class': "codehilite",    # CSS class to use
+            'pygments_style': 'default'   # Pygments style
         },
         'markdown.extensions.toc': {
-            'permalink': True
+            'permalink': True,
+            'permalink_title': 'Link to this section',
+            'toc_depth': '2-4',           # Only H2-H4 in TOC
+            'marker': '[TOC]'
         }
     }
     
     # Convert the markdown content (without title) to HTML with syntax highlighting
     try:
         html_content = markdown.markdown(
-            content_for_html, 
-            extensions=extensions, 
+            content_for_html,
+            extensions=extensions,
             extension_configs=extension_configs
         )
-        
-        # Post-process HTML to ensure code blocks are properly formatted
-        # This adds any language-specific class for better syntax highlighting
-        html_content = post_process_code_blocks(html_content)
-        
-        # Post-process for better inline elements and tables
-        html_content = post_process_inline_elements(html_content)
-        
+
+        # Post-process HTML using BeautifulSoup for robust element enhancement
+        html_content = post_process_html_with_beautifulsoup(html_content)
+
     except Exception as e:
         raise RuntimeError(f"Markdown conversion failed: {e}")
 
@@ -158,66 +370,147 @@ def parse_markdown(content, input_path=None):
 
     return title, subtitle, html_content
 
-def post_process_code_blocks(html_content):
+def post_process_html_with_beautifulsoup(html_content):
     """
-    Post-process HTML content to enhance code blocks with appropriate classes
-    and ensure proper formatting.
+    Post-process HTML content using BeautifulSoup for robust element enhancement.
+    This replaces fragile regex-based post-processing.
     """
-    # Find all code blocks with language class already applied by CodeHilite
-    # Replace with properly formatted code blocks if needed
-    pattern = r'<div class="codehilite"><pre><code class="language-([a-zA-Z0-9_-]+)">(.*?)</code></pre></div>'
-    replacement = r'<div class="codehilite"><pre><code class="language-\1">\2</code></pre></div>'
-    
-    # Replace using regex with a callback to maintain the language and content
-    html_content = re.sub(pattern, replacement, html_content, flags=re.DOTALL)
-    
-    # Find code blocks without language specification and add default class
-    pattern_no_lang = r'<div class="codehilite"><pre><code>(.*?)</code></pre></div>'
-    replacement_no_lang = r'<div class="codehilite"><pre><code class="language-text">\1</code></pre></div>'
-    
-    # Replace using regex
-    html_content = re.sub(pattern_no_lang, replacement_no_lang, html_content, flags=re.DOTALL)
-    
-    return html_content
+    # Use html.parser instead of lxml to avoid auto-wrapping issues
+    soup = BeautifulSoup(html_content, 'html.parser')
 
-def post_process_inline_elements(html_content):
-    """
-    Post-process HTML content to enhance inline elements and tables.
-    """
-    # Wrap tables with a responsive container
-    html_content = re.sub(
-        r'<table>(.*?)</table>',
-        r'<div class="table-container"><table class="docs-table">\1</table></div>',
-        html_content,
-        flags=re.DOTALL
-    )
-    
-    # Add classes to various elements for better styling
-    # Add class to blockquotes
-    html_content = re.sub(
-        r'<blockquote>(.*?)</blockquote>',
-        r'<blockquote class="docs-blockquote">\1</blockquote>',
-        html_content,
-        flags=re.DOTALL
-    )
-    
+    # Add classes to all heading levels
+    for level in range(1, 7):
+        for heading in soup.find_all(f'h{level}'):
+            if 'class' in heading.attrs:
+                heading['class'].append('docs-heading')
+            else:
+                heading['class'] = ['docs-heading']
+
+    # Wrap tables with responsive container
+    for table in soup.find_all('table'):
+        if not table.parent or table.parent.name != 'div' or 'table-container' not in table.parent.get('class', []):
+            # Add class to table
+            if 'class' in table.attrs:
+                if 'docs-table' not in table['class']:
+                    table['class'].append('docs-table')
+            else:
+                table['class'] = ['docs-table']
+
+            # Wrap in container div
+            wrapper = soup.new_tag('div', attrs={'class': 'table-container'})
+            table.wrap(wrapper)
+
+    # Add classes to blockquotes
+    for blockquote in soup.find_all('blockquote'):
+        if 'class' in blockquote.attrs:
+            if 'docs-blockquote' not in blockquote['class']:
+                blockquote['class'].append('docs-blockquote')
+        else:
+            blockquote['class'] = ['docs-blockquote']
+
     # Add classes to lists
-    html_content = re.sub(r'<ul>', r'<ul class="docs-list">', html_content)
-    html_content = re.sub(r'<ol>', r'<ol class="docs-list docs-list-ordered">', html_content)
-    
-    # Enhance inline code elements
-    html_content = re.sub(
-        r'<code>([^<]+)</code>',
-        r'<code class="docs-inline-code">\1</code>',
-        html_content
-    )
-    
-    # Add classes to headings for consistent styling
-    html_content = re.sub(r'<h2>', r'<h2 class="docs-heading">', html_content)
-    html_content = re.sub(r'<h3>', r'<h3 class="docs-heading">', html_content)
-    html_content = re.sub(r'<h4>', r'<h4 class="docs-heading">', html_content)
-    
-    return html_content
+    for ul in soup.find_all('ul'):
+        if 'class' in ul.attrs:
+            if 'docs-list' not in ul['class']:
+                ul['class'].append('docs-list')
+        else:
+            ul['class'] = ['docs-list']
+
+    for ol in soup.find_all('ol'):
+        if 'class' in ol.attrs:
+            if 'docs-list' not in ol['class']:
+                ol['class'].append('docs-list')
+            if 'docs-list-ordered' not in ol['class']:
+                ol['class'].append('docs-list-ordered')
+        else:
+            ol['class'] = ['docs-list', 'docs-list-ordered']
+
+    # Add classes to inline code elements (but not those inside pre/code blocks)
+    for code in soup.find_all('code'):
+        # Check if this is inline code (not in a pre block)
+        if not code.find_parent('pre'):
+            if 'class' in code.attrs:
+                if 'docs-inline-code' not in code['class']:
+                    code['class'].append('docs-inline-code')
+            else:
+                code['class'] = ['docs-inline-code']
+
+    # Add classes to horizontal rules
+    for hr in soup.find_all('hr'):
+        if 'class' in hr.attrs:
+            if 'docs-hr' not in hr['class']:
+                hr['class'].append('docs-hr')
+        else:
+            hr['class'] = ['docs-hr']
+
+    # Add classes to definition lists
+    for dl in soup.find_all('dl'):
+        if 'class' in dl.attrs:
+            if 'docs-definition-list' not in dl['class']:
+                dl['class'].append('docs-definition-list')
+        else:
+            dl['class'] = ['docs-definition-list']
+
+    for dt in soup.find_all('dt'):
+        if 'class' in dt.attrs:
+            if 'docs-definition-term' not in dt['class']:
+                dt['class'].append('docs-definition-term')
+        else:
+            dt['class'] = ['docs-definition-term']
+
+    for dd in soup.find_all('dd'):
+        if 'class' in dd.attrs:
+            if 'docs-definition-description' not in dd['class']:
+                dd['class'].append('docs-definition-description')
+        else:
+            dd['class'] = ['docs-definition-description']
+
+    # Enhance images with figure/figcaption wrapping if they have a title
+    for img in soup.find_all('img'):
+        # Add class to image
+        if 'class' in img.attrs:
+            if 'docs-image' not in img['class']:
+                img['class'].append('docs-image')
+        else:
+            img['class'] = ['docs-image']
+
+        # Add lazy loading
+        if 'loading' not in img.attrs:
+            img['loading'] = 'lazy'
+
+        # If image has a title attribute, wrap in figure with figcaption
+        if 'title' in img.attrs and img.attrs['title']:
+            # Check if already wrapped in figure
+            if not img.parent or img.parent.name != 'figure':
+                figure = soup.new_tag('figure', attrs={'class': 'docs-figure'})
+                img.wrap(figure)
+
+                # Create figcaption with title text
+                figcaption = soup.new_tag('figcaption')
+                figcaption.string = img['title']
+                figure.append(figcaption)
+
+    # Add default language class to code blocks without one
+    for code in soup.find_all('code'):
+        parent = code.find_parent('pre')
+        if parent:  # This is a code block
+            # Check if it already has a language class
+            has_lang_class = False
+            if 'class' in code.attrs:
+                for cls in code['class']:
+                    if cls.startswith('language-'):
+                        has_lang_class = True
+                        break
+
+            if not has_lang_class:
+                # Add default language-text class
+                if 'class' in code.attrs:
+                    code['class'].append('language-text')
+                else:
+                    code['class'] = ['language-text']
+
+    # Return the processed HTML as a string
+    return str(soup)
 
 def generate_code_highlight_css():
     """

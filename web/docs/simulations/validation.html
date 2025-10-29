@@ -62,13 +62,13 @@
                     </header>
 
                     <div class="docs-content">
-                        <p>This document outlines the architecture and standards for the Universal Automation Wiki's simulation and validation engine. This system is designed to be robust, extensible, and community-driven, providing trustworthy, business-ready analysis of automation processes.</p>
-<h2 id="core-concepts">Core Concepts<a class="headerlink" href="#core-concepts" title="Permanent link">&para;</a></h2>
+                        <p>This document outlines the architecture and standards for the Universal Automation Wiki’s simulation and validation engine. This system is designed to be robust, extensible, and community-driven, providing trustworthy, business-ready analysis of automation processes.</p>
+<h2 class="docs-heading" id="core-concepts">Core Concepts<a class="headerlink" href="#core-concepts" title="Link to this section">¶</a></h2>
 <p>The system is built on three pillars: a standardized <strong>Simulation Schema</strong>, a central <strong>Metrics Catalog</strong>, and a client-side <strong>Validation Engine</strong>.</p>
-<h3 id="1-the-simulation-schema">1. The Simulation Schema<a class="headerlink" href="#1-the-simulation-schema" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="1-the-simulation-schema">1. The Simulation Schema<a class="headerlink" href="#1-the-simulation-schema" title="Link to this section">¶</a></h3>
 <p>All simulations must adhere to a strict schema. The key distinction is between <code class="docs-inline-code">equipment</code> (persistent objects with states) and <code class="docs-inline-code">resources</code> (consumable items).</p>
 <ul class="docs-list">
-<li><strong><code class="docs-inline-code">equipment</code></strong>: An array of objects that exist throughout the simulation. Each has an <code class="docs-inline-code">id</code>, <code class="docs-inline-code">name</code>, <code class="docs-inline-code">emoji</code>, and a starting <code class="docs-inline-code">state</code> (e.g., "clean", "available").</li>
+<li><strong><code class="docs-inline-code">equipment</code></strong>: An array of objects that exist throughout the simulation. Each has an <code class="docs-inline-code">id</code>, <code class="docs-inline-code">name</code>, <code class="docs-inline-code">emoji</code>, and a starting <code class="docs-inline-code">state</code> (e.g., “clean”, “available”).</li>
 <li><strong><code class="docs-inline-code">resources</code></strong>: An array of consumable items. Each has an <code class="docs-inline-code">id</code>, <code class="docs-inline-code">unit</code>, and <code class="docs-inline-code">starting_stock</code>.</li>
 <li><strong><code class="docs-inline-code">tasks</code></strong>: The core of the simulation. Tasks interact with the world via two primary mechanisms:<ul class="docs-list">
 <li><code class="docs-inline-code">consumes</code> / <code class="docs-inline-code">produces</code>: For depleting and creating <code class="docs-inline-code">resources</code>.</li>
@@ -77,39 +77,38 @@
 </li>
 </ul>
 <p><strong>Example Task Interaction:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mix_dough 🔸 🥄&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;consumes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;flour&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;water&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.7</span><span class="w"> </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;produces&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;mixed_dough&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;equipment_interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixer&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;from_state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;clean&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;to_state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dirty&quot;</span><span class="w"> </span><span class="p">}</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mix_dough 🔸 🥄"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"consumes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"flour"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">"water"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.7</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"produces"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"mixed_dough"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"equipment_interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixer"</span><span class="p">,</span><span class="w"> </span><span class="nt">"from_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"clean"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dirty"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="2-the-metrics-catalog">2. The Metrics Catalog<a class="headerlink" href="#2-the-metrics-catalog" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="2-the-metrics-catalog">2. The Metrics Catalog<a class="headerlink" href="#2-the-metrics-catalog" title="Link to this section">¶</a></h3>
 <p>The single source of truth for all validation is <code class="docs-inline-code">/assets/static/metrics-catalog.json</code>. This file contains a list of <strong>Metric Definition Objects</strong>, each describing a single, atomic check.</p>
 <p>Each metric has a <code class="docs-inline-code">validation_type</code> which can be:
 *   <strong><code class="docs-inline-code">computational</code></strong>: A deterministic check run by a JavaScript function in the browser. These are fast and objective.
-*   <strong><code class="docs-inline-code">llm</code></strong>: (Future) A qualitative check that sends a formatted prompt to a local LLM for nuanced, "realism" assessments.</p>
-<h3 id="3-the-validation-engine">3. The Validation Engine<a class="headerlink" href="#3-the-validation-engine" title="Permanent link">&para;</a></h3>
+*   <strong><code class="docs-inline-code">llm</code></strong>: (Future) A qualitative check that sends a formatted prompt to a local LLM for nuanced, “realism” assessments.</p>
+<h3 class="docs-heading" id="3-the-validation-engine">3. The Validation Engine<a class="headerlink" href="#3-the-validation-engine" title="Link to this section">¶</a></h3>
 <p>The file <code class="docs-inline-code">/web/assets/js/simulation-validator.js</code> contains the runtime for all <code class="docs-inline-code">computational</code> metrics. It is a JavaScript class that:
 1.  Loads the simulation JSON.
 2.  Iterates through the <code class="docs-inline-code">metrics-catalog.json</code>.
 3.  Executes the JavaScript function specified by each metric.
 4.  Collects and returns a structured list of results (<code class="docs-inline-code">success</code>, <code class="docs-inline-code">error</code>, <code class="docs-inline-code">warning</code>, <code class="docs-inline-code">info</code>).</p>
-<h2 id="how-validation-works">How Validation Works<a class="headerlink" href="#how-validation-works" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="how-validation-works">How Validation Works<a class="headerlink" href="#how-validation-works" title="Link to this section">¶</a></h2>
 <p>The process is fully automated in the Simulation Playground:</p>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Edit &amp; Render:</strong> As you edit the JSON, the simulation is rendered.</li>
 <li><strong>Run Checks:</strong> The Validation Engine runs all computational checks from the catalog against the current JSON.</li>
 <li><strong>Display Results:</strong> The results are grouped by category (Structural Integrity, Resource Flow, Scheduling, Optimization) and displayed with color-coding based on severity.</li>
 </ol>
-<h3 id="business-readiness-score">Business Readiness Score<a class="headerlink" href="#business-readiness-score" title="Permanent link">&para;</a></h3>
-<p>While not a direct metric, the playground can calculate a "Business Readiness" score based on the validation results. This provides a high-level indicator of the simulation's quality, weighted by the severity of the issues found.</p>
-<h2 id="economic-validation">Economic Validation<a class="headerlink" href="#economic-validation" title="Permanent link">&para;</a></h2>
+<h3 class="docs-heading" id="business-readiness-score">Business Readiness Score<a class="headerlink" href="#business-readiness-score" title="Link to this section">¶</a></h3>
+<p>While not a direct metric, the playground can calculate a “Business Readiness” score based on the validation results. This provides a high-level indicator of the simulation’s quality, weighted by the severity of the issues found.</p>
+<h2 class="docs-heading" id="economic-validation">Economic Validation<a class="headerlink" href="#economic-validation" title="Link to this section">¶</a></h2>
 <p>The UAW system includes comprehensive economic validation to ensure simulations are financially realistic and profitable. This is critical for business decision-making and investment analysis.</p>
-<h3 id="profitability-analysis">Profitability Analysis<a class="headerlink" href="#profitability-analysis" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="profitability-analysis">Profitability Analysis<a class="headerlink" href="#profitability-analysis" title="Link to this section">¶</a></h3>
 <p>The <strong>Negative Profitability</strong> metric (<code class="docs-inline-code">economic.profitability.negative_margin</code>) performs a complete economic analysis:</p>
 <p><strong>Calculation Formula:</strong>
 - <strong>Total Revenue</strong> = Sum of (revenue_per_unit × quantity produced) for final products
@@ -117,118 +116,113 @@
 - <strong>Labor Costs</strong> = Sum of (actor cost_per_hour × task duration in hours)
 - <strong>Resource Costs</strong> = Sum of (resource cost_per_unit × quantity consumed)
 - <strong>Profit</strong> = Total Revenue - Total Costs</p>
-<h3 id="economic-properties-setup">Economic Properties Setup<a class="headerlink" href="#economic-properties-setup" title="Permanent link">&para;</a></h3>
-<h4 id="actor-labor-costs">Actor Labor Costs<a class="headerlink" href="#actor-labor-costs" title="Permanent link">&para;</a></h4>
+<h3 class="docs-heading" id="economic-properties-setup">Economic Properties Setup<a class="headerlink" href="#economic-properties-setup" title="Link to this section">¶</a></h3>
+<h4 class="docs-heading" id="actor-labor-costs">Actor Labor Costs<a class="headerlink" href="#actor-labor-costs" title="Link to this section">¶</a></h4>
 <p>Actors require a <code class="docs-inline-code">cost_per_hour</code> property for labor cost calculation:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;baker&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;actor&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Professional Baker&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;cost_per_hour&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">25.00</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Professional Baker"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"cost_per_hour"</span><span class="p">:</span><span class="w"> </span><span class="mf">25.00</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h4 id="resource-costs">Resource Costs<a class="headerlink" href="#resource-costs" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="resource-costs">Resource Costs<a class="headerlink" href="#resource-costs" title="Link to this section">¶</a></h4>
 <p>Resources and materials need <code class="docs-inline-code">cost_per_unit</code> for consumption costs:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flour&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;resource&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;All-Purpose Flour&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;cost_per_unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.50</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"flour"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"All-Purpose Flour"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"cost_per_unit"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.50</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h4 id="product-revenue">Product Revenue<a class="headerlink" href="#product-revenue" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="product-revenue">Product Revenue<a class="headerlink" href="#product-revenue" title="Link to this section">¶</a></h4>
 <p>Products need <code class="docs-inline-code">revenue_per_unit</code> to generate revenue:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;baked_bread&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;product&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Freshly Baked Bread&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;revenue_per_unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.50</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baked_bread"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"product"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Freshly Baked Bread"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"revenue_per_unit"</span><span class="p">:</span><span class="w"> </span><span class="mf">5.50</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="complete-economic-example">Complete Economic Example<a class="headerlink" href="#complete-economic-example" title="Permanent link">&para;</a></h3>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<h3 class="docs-heading" id="complete-economic-example">Complete Economic Example<a class="headerlink" href="#complete-economic-example" title="Link to this section">¶</a></h3>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;baker&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;actor&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;cost_per_hour&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">20.00</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"cost_per_hour"</span><span class="p">:</span><span class="w"> </span><span class="mf">20.00</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flour&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;resource&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;cost_per_unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.50</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"flour"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"cost_per_unit"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.50</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;baked_bread&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;product&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;revenue_per_unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">8.00</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baked_bread"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"product"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"revenue_per_unit"</span><span class="p">:</span><span class="w"> </span><span class="mf">8.00</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bake_bread&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;baker&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;09:00&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;consumes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;flour&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;produces&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;baked_bread&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bake_bread"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"consumes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"flour"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"produces"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"baked_bread"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>Economic Analysis:</strong>
 - Revenue: 4 units × $8.00 = <strong>$32.00</strong>
 - Labor Cost: 1 hour × $20.00 = <strong>$20.00</strong>
 - Material Cost: 2 units × $0.50 = <strong>$1.00</strong>
 - <strong>Profit: $32.00 - $21.00 = $11.00</strong> ✓</p>
-<h3 id="configuring-final-products">Configuring Final Products<a class="headerlink" href="#configuring-final-products" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="configuring-final-products">Configuring Final Products<a class="headerlink" href="#configuring-final-products" title="Link to this section">¶</a></h3>
 <p>The profitability metric only counts revenue from products listed in the <code class="docs-inline-code">final_product_ids</code> parameter. By default, this is <code class="docs-inline-code">["baked_bread"]</code> but can be customized in the metrics catalog for your specific simulation domain.</p>
-<h3 id="new-style-economic-interactions">New-Style Economic Interactions<a class="headerlink" href="#new-style-economic-interactions" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="new-style-economic-interactions">New-Style Economic Interactions<a class="headerlink" href="#new-style-economic-interactions" title="Link to this section">¶</a></h3>
 <p>The system also supports the new Universal Object Model interaction syntax for economic modeling:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production_task&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;worker&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"production_task"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;raw_material&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;delta&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-5</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"raw_material"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">-5</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;finished_product&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;delta&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"finished_product"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="contributing-new-metrics">Contributing New Metrics<a class="headerlink" href="#contributing-new-metrics" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="contributing-new-metrics">Contributing New Metrics<a class="headerlink" href="#contributing-new-metrics" title="Link to this section">¶</a></h2>
 <p>The power of this system comes from its extensibility. To add a new validation check:</p>
 <ol class="docs-list docs-list-ordered">
-<li><strong>Propose the Metric:</strong> Open a "Metric/Constraint Proposal" issue on GitHub. Describe the logic, provide examples of passing/failing cases, and suggest a JSON definition.</li>
+<li><strong>Propose the Metric:</strong> Open a “Metric/Constraint Proposal” issue on GitHub. Describe the logic, provide examples of passing/failing cases, and suggest a JSON definition.</li>
 <li><strong>Discuss &amp; Refine:</strong> The community and maintainers will discuss the proposal.</li>
 <li><strong>Implement via Pull Request:</strong> Once approved, a contributor can open a PR that includes:<ul class="docs-list">
 <li>The new Metric Definition Object added to <code class="docs-inline-code">metrics-catalog.json</code>.</li>
@@ -237,7 +231,7 @@
 </li>
 </ol>
 <p>This workflow allows us to systematically build a comprehensive library of validation checks.</p>
-<hr />
+<hr class="docs-hr"/>
 <p><em>This system deprecates the legacy files <code class="docs-inline-code">constraint_config.json</code> and <code class="docs-inline-code">maintenance_rules.json</code>. Their logic has been migrated into the more modular and extensible Metrics Catalog.</em></p>
                     </div>
                     

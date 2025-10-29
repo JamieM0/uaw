@@ -63,43 +63,41 @@
 
                     <div class="docs-content">
                         <p>This script utilizes a large language model (LLM) to generate a concise summary of input text provided in a JSON file. It processes the input, interacts with the LLM via a utility function, and saves the resulting summary along with metadata to an output JSON file.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
 <p>The primary goal of this script is to automate the process of text summarization. It takes a potentially long text input and produces a shorter, coherent summary that captures the main points.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>To run the script, use the following command in your terminal:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>summary.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>summary.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;input_json&gt;</code>: (Required) Path to the input JSON file containing the text to be summarized and configuration.</li>
 <li><code class="docs-inline-code">[output_json]</code>: (Optional) Path where the output JSON file containing the summary and metadata should be saved. If not provided, a default path is generated based on the script name and a UUID.</li>
 </ul>
 <p>The script uses the <code class="docs-inline-code">handle_command_args</code> utility function to parse these command-line arguments.</p>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <p>The script expects an input JSON file with the following structure:</p>
 <ul class="docs-list">
 <li><code class="docs-inline-code">input_text</code>: (Required) A list of strings. These strings will be joined together to form the full text to be summarized.</li>
-<li><code class="docs-inline-code">model</code>: (Required) The identifier for the LLM to be used (e.g., "gemma3").</li>
+<li><code class="docs-inline-code">model</code>: (Required) The identifier for the LLM to be used (e.g., “gemma3”).</li>
 <li><code class="docs-inline-code">parameters</code>: (Optional) A dictionary of parameters to pass to the LLM during the chat interaction (e.g., temperature, top_p). Defaults to an empty dictionary if not provided.</li>
 <li><code class="docs-inline-code">max_length</code>: (Optional) An integer specifying a desired maximum length for the summary. <em>Note: While this value is read from the input, it is not currently used in the prompt sent to the LLM.</em> Defaults to 200 if not provided.</li>
 </ul>
 <p>Example (<code class="docs-inline-code">examples/summary-in.json</code>):</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;input_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="s2">&quot;The Industrial Revolution, starting in Great Britain around 1760, marked a major turning point in history.&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;It involved the transition to new manufacturing processes, including the rise of factories and mechanization.&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;Key inventions like the steam engine, power loom, and cotton gin dramatically increased production efficiency.&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;This era led to significant economic growth, urbanization, and social changes, but also brought challenges like poor working conditions and pollution.&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"input_text"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">"The Industrial Revolution, starting in Great Britain around 1760, marked a major turning point in history."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"It involved the transition to new manufacturing processes, including the rise of factories and mechanization."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"Key inventions like the steam engine, power loom, and cotton gin dramatically increased production efficiency."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"This era led to significant economic growth, urbanization, and social changes, but also brought challenges like poor working conditions and pollution."</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gemma3&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;temperature&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.7</span>
+<span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gemma3"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"temperature"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.7</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;max_length&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span>
+<span class="w">  </span><span class="nt">"max_length"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><code class="docs-inline-code">generate_summary(input_data)</code>: Takes the parsed input data dictionary, extracts the text and configuration, constructs the prompts, interacts with the LLM using <code class="docs-inline-code">chat_with_llm</code>, and returns the raw summary text.</li>
 <li><code class="docs-inline-code">main()</code>: The main execution function. It handles command-line arguments, loads the input JSON (<code class="docs-inline-code">load_json</code>), calls <code class="docs-inline-code">generate_summary</code>, prepares metadata (<code class="docs-inline-code">create_output_metadata</code>, <code class="docs-inline-code">get_output_filepath</code>), formats the output data, and saves it to a JSON file (<code class="docs-inline-code">save_output</code>).</li>
@@ -113,7 +111,7 @@
 </ul>
 </li>
 </ul>
-<h2 id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Link to this section">¶</a></h2>
 <p>The script interacts with the LLM through the <code class="docs-inline-code">chat_with_llm</code> utility function. It constructs two messages:</p>
 <ol class="docs-list docs-list-ordered">
 <li><strong>System Prompt</strong>: Instructs the LLM on its role and desired output style.
@@ -127,13 +125,13 @@
 </li>
 </ol>
 <p>The <code class="docs-inline-code">chat_with_llm</code> function sends these prompts along with the specified <code class="docs-inline-code">model</code> and <code class="docs-inline-code">parameters</code> to the LLM service and returns the generated summary as a single string.</p>
-<h2 id="output-processing">Output Processing<a class="headerlink" href="#output-processing" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output-processing">Output Processing<a class="headerlink" href="#output-processing" title="Link to this section">¶</a></h2>
 <p>The raw text summary received from the LLM is processed by splitting it into a list of strings based on newline characters (<code class="docs-inline-code">\n</code>). This list becomes the value for the <code class="docs-inline-code">summary</code> key in the output JSON.</p>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <p>The script generates a JSON output file containing:</p>
 <ul class="docs-list">
 <li><strong>Metadata</strong>: Information about the process, including:<ul class="docs-list">
-<li><code class="docs-inline-code">task_name</code>: "Text Summary"</li>
+<li><code class="docs-inline-code">task_name</code>: “Text Summary”</li>
 <li><code class="docs-inline-code">start_time</code>: Timestamp when the script started.</li>
 <li><code class="docs-inline-code">end_time</code>: Timestamp when the script finished.</li>
 <li><code class="docs-inline-code">duration_seconds</code>: Execution time.</li>
@@ -142,23 +140,23 @@
 </ul>
 </li>
 <li><strong>Summary</strong>:<ul class="docs-list">
-<li><code class="docs-inline-code">summary</code>: A list of strings, where each string is a line from the LLM's generated summary.</li>
+<li><code class="docs-inline-code">summary</code>: A list of strings, where each string is a line from the LLM’s generated summary.</li>
 </ul>
 </li>
 </ul>
 <p>Example (<code class="docs-inline-code">examples/summary-out.json</code> structure):
 ```json
 {
-  "task_name": "Text Summary",
-  "start_time": "...",
-  "end_time": "...",
-  "duration_seconds": ...,
-  "uuid": "...",
-  "input_filepath": "examples/summary-in.json",
-  "summary": [
-    "The Industrial Revolution, beginning around 1760 in Great Britain, was a pivotal historical period.",
-    "It introduced new manufacturing methods, mechanization, and factories.",
-    "Key inventions like the steam engine boosted efficiency, leading to economic growth, urbanization, and social shifts, alongside issues like poor working conditions."
+  “task_name”: “Text Summary”,
+  “start_time”: “…”,
+  “end_time”: “…”,
+  “duration_seconds”: …,
+  “uuid”: “…”,
+  “input_filepath”: “examples/summary-in.json”,
+  “summary”: [
+    “The Industrial Revolution, beginning around 1760 in Great Britain, was a pivotal historical period.”,
+    “It introduced new manufacturing methods, mechanization, and factories.”,
+    “Key inventions like the steam engine boosted efficiency, leading to economic growth, urbanization, and social shifts, alongside issues like poor working conditions.”
   ]
 }</p>
                     </div>

@@ -63,13 +63,12 @@
 
                     <div class="docs-content">
                         <p>This script utilizes a large language model (LLM), prompted to act as an industrial engineering specialist, to generate comprehensive industrial and commercial specifications for a user-provided topic. It expects the LLM to return a structured JSON object containing detailed information relevant to professionals in the field.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
 <p>The primary goal of this script is to automate the generation of detailed industrial specifications, including performance metrics, implementation requirements, relevant standards, key suppliers, and operational considerations for a specific topic.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>The script is executed from the command line:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>specifications-industrial.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span><span class="w"> </span><span class="o">[</span>-saveInputs<span class="o">]</span><span class="w"> </span><span class="o">[</span>-uuid<span class="o">=</span><span class="s2">&quot;UUID&quot;</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>-flow_uuid<span class="o">=</span><span class="s2">&quot;FLOW-UUID&quot;</span><span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>specifications-industrial.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span><span class="w"> </span><span class="o">[</span>-saveInputs<span class="o">]</span><span class="w"> </span><span class="o">[</span>-uuid<span class="o">=</span><span class="s2">"UUID"</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>-flow_uuid<span class="o">=</span><span class="s2">"FLOW-UUID"</span><span class="o">]</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;input_json&gt;</code>: (Required) Path to the input JSON file containing the topic and configuration.</li>
 <li><code class="docs-inline-code">[output_json]</code>: (Optional) Path where the output JSON file should be saved. If omitted, a default path is generated.</li>
@@ -77,31 +76,30 @@
 <li><code class="docs-inline-code">-uuid="UUID"</code>: (Optional) Custom UUID for the output file metadata.</li>
 <li><code class="docs-inline-code">-flow_uuid="FLOW-UUID"</code>: (Optional) UUID for the flow, used for saving inputs if <code class="docs-inline-code">-saveInputs</code> is specified.</li>
 </ul>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <p>The script requires an input JSON file (<code class="docs-inline-code">&lt;input_json&gt;</code>) with the following structure:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;topic&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The specific industrial topic (e.g., High-Volume Lithium-ion Battery Manufacturing)&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gemma3&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Or another LLM model identifier</span>
-<span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"topic"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The specific industrial topic (e.g., High-Volume Lithium-ion Battery Manufacturing)"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gemma3"</span><span class="p">,</span><span class="w"> </span><span class="c1">// Or another LLM model identifier</span>
+<span class="w">  </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="c1">// Optional LLM parameters (e.g., temperature, max_tokens)</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">topic</code>: A string describing the subject for which specifications are needed.</li>
 <li><code class="docs-inline-code">model</code>: The identifier for the LLM to use (defaults to <code class="docs-inline-code">gemma3</code> if not provided).</li>
 <li><code class="docs-inline-code">parameters</code>: An optional object containing parameters to pass to the LLM during generation.</li>
 </ul>
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><code class="docs-inline-code">main()</code>: Parses command-line arguments using <code class="docs-inline-code">handle_command_args</code>, loads the input JSON using <code class="docs-inline-code">load_json</code>, orchestrates the specification generation by calling <code class="docs-inline-code">generate_industrial_specifications</code>, determines the output path using <code class="docs-inline-code">get_output_filepath</code>, creates metadata using <code class="docs-inline-code">create_output_metadata</code>, combines metadata with the results, and saves the final output using <code class="docs-inline-code">save_output</code>. It also handles setting the global <code class="docs-inline-code">flowUUID</code>.</li>
 <li><code class="docs-inline-code">generate_industrial_specifications(input_data, save_inputs=False)</code>: Extracts the <code class="docs-inline-code">topic</code>, <code class="docs-inline-code">model</code>, and <code class="docs-inline-code">parameters</code> from the input data. Constructs the system and user prompts for the LLM. Optionally saves these prompts using <code class="docs-inline-code">saveToFile</code> (from <code class="docs-inline-code">utils</code>). Calls <code class="docs-inline-code">chat_with_llm</code> (from <code class="docs-inline-code">utils</code>) to interact with the LLM. Processes the LLM response using <code class="docs-inline-code">extract_json_from_response</code>.</li>
-<li><code class="docs-inline-code">extract_json_from_response(response)</code>: Attempts to robustly extract and parse a JSON object from the LLM's potentially messy response string. It tries direct parsing, then looks for JSON within <code class="docs-inline-code">json ...</code> or <code class="docs-inline-code">...</code> code fences, and finally searches for content between the first <code class="docs-inline-code">{</code> and last <code class="docs-inline-code">}</code>. It uses <code class="docs-inline-code">sanitize_json_string</code> before attempting to parse.</li>
+<li><code class="docs-inline-code">extract_json_from_response(response)</code>: Attempts to robustly extract and parse a JSON object from the LLM’s potentially messy response string. It tries direct parsing, then looks for JSON within <code class="docs-inline-code">json ...</code> or <code class="docs-inline-code">...</code> code fences, and finally searches for content between the first <code class="docs-inline-code">{</code> and last <code class="docs-inline-code">}</code>. It uses <code class="docs-inline-code">sanitize_json_string</code> before attempting to parse.</li>
 <li><code class="docs-inline-code">sanitize_json_string(json_str)</code>: Removes invalid control characters (ASCII 0-31, excluding tab, newline, carriage return) from a string using regular expressions to prevent JSON parsing errors.</li>
 <li><strong>Utility Functions (<code class="docs-inline-code">utils</code>)</strong>: The script relies heavily on shared functions from <code class="docs-inline-code">utils.py</code>, including <code class="docs-inline-code">load_json</code>, <code class="docs-inline-code">save_output</code>, <code class="docs-inline-code">chat_with_llm</code>, <code class="docs-inline-code">create_output_metadata</code>, <code class="docs-inline-code">get_output_filepath</code>, <code class="docs-inline-code">handle_command_args</code>, and <code class="docs-inline-code">saveToFile</code>.</li>
 </ul>
-<h2 id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Link to this section">¶</a></h2>
 <p>The script crafts specific prompts to guide the LLM:</p>
 <ul class="docs-list">
 <li><strong>System Prompt</strong>: Instructs the LLM to act as an AI assistant specialized in industrial engineering and specifications. It requests a comprehensive overview for the given topic, including performance metrics and implementation requirements, emphasizing precision with numerical values/ranges and practical technical details relevant to professionals.</li>
@@ -116,7 +114,7 @@ The prompt stresses the need for realistic values for industrial/commercial scal
 </li>
 <li><strong>LLM Call</strong>: The <code class="docs-inline-code">chat_with_llm</code> function (from <code class="docs-inline-code">utils</code>) is used to send these prompts to the specified LLM and retrieve the response.</li>
 </ul>
-<h2 id="json-handling">JSON Handling<a class="headerlink" href="#json-handling" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="json-handling">JSON Handling<a class="headerlink" href="#json-handling" title="Link to this section">¶</a></h2>
 <p>Robust JSON handling is crucial due to the variability of LLM outputs:</p>
 <ul class="docs-list">
 <li><strong>Sanitization (<code class="docs-inline-code">sanitize_json_string</code>)</strong>: Before any parsing attempt, the raw LLM response is cleaned to remove control characters that are invalid in JSON strings but might be present in the LLM output.</li>
@@ -128,7 +126,7 @@ This approach increases the likelihood of successfully extracting the desired JS
 </ol>
 </li>
 </ul>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <p>The script generates a JSON file (at the path determined by <code class="docs-inline-code">get_output_filepath</code> or specified by the user) containing:</p>
 <ul class="docs-list">
 <li><code class="docs-inline-code">process_metadata</code>: Standard metadata including script name, start time, duration, and UUID (generated by <code class="docs-inline-code">create_output_metadata</code>).</li>

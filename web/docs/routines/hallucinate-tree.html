@@ -62,14 +62,13 @@
                     </header>
 
                     <div class="docs-content">
-                        <p>This script uses a Large Language Model (LLM) to generate a hierarchical breakdown of tasks (a "tree") for a given topic. It can save the resulting tree structure either as a nested directory structure on the filesystem or as a single flat JSON file.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
-<p>The primary goal of <code class="docs-inline-code">hallucinate-tree.py</code> is to take a high-level task or topic and recursively break it down into smaller, manageable sub-steps using an LLM. This process, often referred to as "hallucination" in the context of AI, creates a structured plan or workflow.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+                        <p>This script uses a Large Language Model (LLM) to generate a hierarchical breakdown of tasks (a “tree”) for a given topic. It can save the resulting tree structure either as a nested directory structure on the filesystem or as a single flat JSON file.</p>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
+<p>The primary goal of <code class="docs-inline-code">hallucinate-tree.py</code> is to take a high-level task or topic and recursively break it down into smaller, manageable sub-steps using an LLM. This process, often referred to as “hallucination” in the context of AI, creates a structured plan or workflow.</p>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>The script is executed from the command line:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>hallucinate-tree.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_path<span class="o">]</span><span class="w"> </span><span class="o">[</span>-flat<span class="o">]</span><span class="w"> </span><span class="o">[</span>-saveInputs<span class="o">]</span><span class="w"> </span><span class="o">[</span>-uuid<span class="o">=</span><span class="s2">&quot;UUID&quot;</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>-flow_uuid<span class="o">=</span><span class="s2">&quot;FLOW-UUID&quot;</span><span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>hallucinate-tree.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_path<span class="o">]</span><span class="w"> </span><span class="o">[</span>-flat<span class="o">]</span><span class="w"> </span><span class="o">[</span>-saveInputs<span class="o">]</span><span class="w"> </span><span class="o">[</span>-uuid<span class="o">=</span><span class="s2">"UUID"</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>-flow_uuid<span class="o">=</span><span class="s2">"FLOW-UUID"</span><span class="o">]</span>
 </code></pre></div>
-
 <p><strong>Arguments:</strong></p>
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;input_json&gt;</code>: (Required) Path to the input JSON file containing the task details.</li>
@@ -83,20 +82,19 @@
 <li><code class="docs-inline-code">-uuid="UUID"</code>: (Optional) Specify a custom UUID for the root node of the generated tree. If omitted, a new UUID is generated.</li>
 <li><code class="docs-inline-code">-flow_uuid="FLOW-UUID"</code>: (Optional) Specify a UUID for the overall flow, used primarily for organizing saved inputs when <code class="docs-inline-code">-saveInputs</code> is active.</li>
 </ul>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <p>The script expects an input JSON file (<code class="docs-inline-code">&lt;input_json&gt;</code>) with the following structure:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;topic&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The main task or topic to break down&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;depth&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="c1">// Optional: How many levels deep to generate steps (default: 2)</span>
-<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gemma3&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Optional: The LLM model to use (default: &quot;gemma3&quot;)</span>
-<span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="c1">// Optional: Additional parameters for the LLM API call</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"topic"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The main task or topic to break down"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"depth"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="c1">// Optional: How many levels deep to generate steps (default: 2)</span>
+<span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gemma3"</span><span class="p">,</span><span class="w"> </span><span class="c1">// Optional: The LLM model to use (default: "gemma3")</span>
+<span class="w">  </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="c1">// Optional: Additional parameters for the LLM API call</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><code class="docs-inline-code">sanitize_filename(name)</code>: Converts a step name into a valid, lowercase directory name using underscores, removing invalid characters and truncating length.</li>
-<li><code class="docs-inline-code">save_tree_to_filesystem(tree, base_path, parent_uuid=None)</code>: Recursively saves the generated tree structure to the filesystem. Each node becomes a directory containing a <code class="docs-inline-code">node.json</code> file. Directory names are generated using <code class="docs-inline-code">translate_to_basic_english</code>, <code class="docs-inline-code">sanitize_filename</code>, and the node's UUID.</li>
+<li><code class="docs-inline-code">save_tree_to_filesystem(tree, base_path, parent_uuid=None)</code>: Recursively saves the generated tree structure to the filesystem. Each node becomes a directory containing a <code class="docs-inline-code">node.json</code> file. Directory names are generated using <code class="docs-inline-code">translate_to_basic_english</code>, <code class="docs-inline-code">sanitize_filename</code>, and the node’s UUID.</li>
 <li><code class="docs-inline-code">save_tree_as_flat_json(tree, metadata, output_path)</code>: Saves the complete tree structure and associated metadata into a single JSON file.</li>
 <li><code class="docs-inline-code">generate_task_tree(input_data, save_inputs=False)</code>: The main function orchestrating the tree generation. It initializes the process and calls the recursive <code class="docs-inline-code">expand_step</code> function.<ul class="docs-list">
 <li><code class="docs-inline-code">expand_step(step, current_depth)</code>: (Nested within <code class="docs-inline-code">generate_task_tree</code>) This recursive function interacts with the LLM. For a given <code class="docs-inline-code">step</code>, it prompts the LLM to generate sub-steps. It continues recursively until the specified <code class="docs-inline-code">depth</code> is reached. It uses <code class="docs-inline-code">utils.chat_with_llm</code> for the API call and <code class="docs-inline-code">utils.parse_llm_json_response</code> to interpret the hierarchical JSON response. If <code class="docs-inline-code">save_inputs</code> is true, it uses <code class="docs-inline-code">utils.saveToFile</code> to store prompts.</li>
@@ -104,42 +102,42 @@
 </li>
 <li><code class="docs-inline-code">main()</code>: Parses command-line arguments (using <code class="docs-inline-code">utils.handle_command_args</code>), loads the input JSON (<code class="docs-inline-code">utils.load_json</code>), calls <code class="docs-inline-code">generate_task_tree</code>, creates metadata (<code class="docs-inline-code">utils.create_output_metadata</code>), and then calls either <code class="docs-inline-code">save_tree_to_filesystem</code> or <code class="docs-inline-code">save_tree_as_flat_json</code> based on the presence of the <code class="docs-inline-code">-flat</code> flag.</li>
 </ul>
-<h2 id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Link to this section">¶</a></h2>
 <p>The core of the task breakdown happens in the <code class="docs-inline-code">generate_task_tree</code> function, specifically within its nested <code class="docs-inline-code">expand_step</code> function.</p>
 <ol class="docs-list docs-list-ordered">
 <li><code class="docs-inline-code">expand_step</code> is called initially with the main <code class="docs-inline-code">topic</code> and <code class="docs-inline-code">current_depth = 0</code>.</li>
 <li>If <code class="docs-inline-code">current_depth</code> is less than the target <code class="docs-inline-code">depth</code>, it constructs a prompt asking the LLM to break down the current <code class="docs-inline-code">step</code> into 3-7 sub-steps.</li>
 <li>It calls the LLM using the <code class="docs-inline-code">utils.chat_with_llm</code> function, providing the system message (instructing the LLM to return hierarchical JSON) and the user message (the specific task breakdown request).</li>
-<li>The LLM's response is expected to be a JSON array of step objects, potentially containing nested <code class="docs-inline-code">children</code> arrays for sub-sub-steps.</li>
+<li>The LLM’s response is expected to be a JSON array of step objects, potentially containing nested <code class="docs-inline-code">children</code> arrays for sub-sub-steps.</li>
 <li><code class="docs-inline-code">utils.parse_llm_json_response(response_text, include_children=True)</code> is used to parse this potentially complex JSON structure. The <code class="docs-inline-code">include_children=True</code> argument is crucial for handling the hierarchical nature of the expected response.</li>
-<li>For each sub-step returned by the LLM (if it doesn't already have children), <code class="docs-inline-code">expand_step</code> calls itself recursively with the sub-step text and an incremented <code class="docs-inline-code">current_depth</code>.</li>
+<li>For each sub-step returned by the LLM (if it doesn’t already have children), <code class="docs-inline-code">expand_step</code> calls itself recursively with the sub-step text and an incremented <code class="docs-inline-code">current_depth</code>.</li>
 <li>This process continues until the maximum <code class="docs-inline-code">depth</code> is reached for all branches of the tree.</li>
 </ol>
-<h2 id="output-formats">Output Formats<a class="headerlink" href="#output-formats" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output-formats">Output Formats<a class="headerlink" href="#output-formats" title="Link to this section">¶</a></h2>
 <p>The script supports two distinct output formats, controlled by the <code class="docs-inline-code">-flat</code> command-line flag.</p>
-<h3 id="default-directory-structure">Default (Directory Structure)<a class="headerlink" href="#default-directory-structure" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="default-directory-structure">Default (Directory Structure)<a class="headerlink" href="#default-directory-structure" title="Link to this section">¶</a></h3>
 <ul class="docs-list">
 <li><strong>Triggered by:</strong> Running the script without the <code class="docs-inline-code">-flat</code> flag.</li>
 <li><strong>Function:</strong> <code class="docs-inline-code">save_tree_to_filesystem</code> is used.</li>
 <li><strong>Structure:</strong><ul class="docs-list">
 <li>A base directory is created (either at <code class="docs-inline-code">[output_path]</code> or <code class="docs-inline-code">output/hallucinate-tree/&lt;tree_uuid&gt;/</code>).</li>
 <li>Inside the base directory, a <code class="docs-inline-code">metadata.json</code> file is saved containing information about the generation process (script name, timestamp, tree UUID).</li>
-<li>The root node's details (<code class="docs-inline-code">step</code>, <code class="docs-inline-code">uuid</code>) are saved in <code class="docs-inline-code">node.json</code> within the base directory.</li>
-<li>For each child node, a subdirectory is created within its parent's directory.<ul class="docs-list">
+<li>The root node’s details (<code class="docs-inline-code">step</code>, <code class="docs-inline-code">uuid</code>) are saved in <code class="docs-inline-code">node.json</code> within the base directory.</li>
+<li>For each child node, a subdirectory is created within its parent’s directory.<ul class="docs-list">
 <li>The subdirectory name is generated by:<ol class="docs-list docs-list-ordered">
 <li>Translating the child step text to Basic English (<code class="docs-inline-code">utils.translate_to_basic_english</code>).</li>
 <li>Sanitizing the Basic English text (<code class="docs-inline-code">sanitize_filename</code>).</li>
-<li>Appending <code class="docs-inline-code">_</code> and the child node's full UUID (e.g., <code class="docs-inline-code">sanitized_name_&lt;child_uuid&gt;</code>).</li>
+<li>Appending <code class="docs-inline-code">_</code> and the child node’s full UUID (e.g., <code class="docs-inline-code">sanitized_name_&lt;child_uuid&gt;</code>).</li>
 </ol>
 </li>
-<li>Inside the child subdirectory, a <code class="docs-inline-code">node.json</code> file is created containing the child's <code class="docs-inline-code">step</code>, <code class="docs-inline-code">uuid</code>, and a <code class="docs-inline-code">parent_uuid</code> referencing its parent node.</li>
+<li>Inside the child subdirectory, a <code class="docs-inline-code">node.json</code> file is created containing the child’s <code class="docs-inline-code">step</code>, <code class="docs-inline-code">uuid</code>, and a <code class="docs-inline-code">parent_uuid</code> referencing its parent node.</li>
 </ul>
 </li>
 <li>This process repeats recursively for all nodes in the tree.</li>
 </ul>
 </li>
 </ul>
-<h3 id="flat-json-flat-flag">Flat JSON (<code class="docs-inline-code">-flat</code> flag)<a class="headerlink" href="#flat-json-flat-flag" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="flat-json-flat-flag">Flat JSON (<code class="docs-inline-code">-flat</code> flag)<a class="headerlink" href="#flat-json-flat-flag" title="Link to this section">¶</a></h3>
 <ul class="docs-list">
 <li><strong>Triggered by:</strong> Running the script <em>with</em> the <code class="docs-inline-code">-flat</code> flag.</li>
 <li><strong>Function:</strong> <code class="docs-inline-code">save_tree_as_flat_json</code> is used.</li>

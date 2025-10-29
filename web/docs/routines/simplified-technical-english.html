@@ -63,39 +63,37 @@
 
                     <div class="docs-content">
                         <p>This script uses a Large Language Model (LLM) to convert input text into Simplified Technical English (STE). It follows a defined set of STE rules to ensure clarity, conciseness, and consistency in technical documentation.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
 <p>The primary goal of this script is to take a given text input (provided in a JSON file) and transform it into Simplified Technical English using an LLM, adhering to specified formatting and success criteria.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>To run the script, use the following command in your terminal:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>simplified-technical-english.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>simplified-technical-english.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;input_json&gt;</code>: (Required) Path to the input JSON file containing the text and parameters.</li>
 <li><code class="docs-inline-code">[output_json]</code>: (Optional) Path where the output JSON file should be saved. If not provided, a path is generated automatically in the <code class="docs-inline-code">output/</code> directory based on the script name and a UUID.</li>
 </ul>
 <p>The script utilizes the <code class="docs-inline-code">handle_command_args</code> function from the <code class="docs-inline-code">utils</code> module to parse these command-line arguments.</p>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <p>The script expects an input JSON file with the following structure:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;input_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="s2">&quot;Paragraph 1 of the text to be converted.&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;Paragraph 2, potentially longer and more complex.&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"input_text"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">"Paragraph 1 of the text to be converted."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"Paragraph 2, potentially longer and more complex."</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;output_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A description of the desired output format (e.g., &#39;list of short sentences&#39;, &#39;step-by-step instructions&#39;).&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The identifier of the LLM to use (e.g., &#39;ollama/llama3&#39;).&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;temperature&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span>
+<span class="w">  </span><span class="nt">"output_format"</span><span class="p">:</span><span class="w"> </span><span class="s2">"A description of the desired output format (e.g., 'list of short sentences', 'step-by-step instructions')."</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The identifier of the LLM to use (e.g., 'ollama/llama3')."</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"temperature"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span>
 <span class="w">    </span><span class="c1">// Other LLM parameters can be included here</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;success_criteria&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;max_sentence_length&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;voice&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;active&quot;</span>
+<span class="w">  </span><span class="nt">"success_criteria"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"max_sentence_length"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"voice"</span><span class="p">:</span><span class="w"> </span><span class="s2">"active"</span>
 <span class="w">    </span><span class="c1">// Other criteria defining successful conversion</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">input_text</code> (list of strings): The text content to be converted, typically split into paragraphs or logical sections.</li>
 <li><code class="docs-inline-code">output_format</code> (string): Specifies the desired format for the STE output.</li>
@@ -103,7 +101,7 @@
 <li><code class="docs-inline-code">parameters</code> (dict, optional): Parameters to pass to the LLM (e.g., temperature, top_p).</li>
 <li><code class="docs-inline-code">success_criteria</code> (dict/list, optional): Criteria that the LLM should aim to meet in the output.</li>
 </ul>
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><strong><code class="docs-inline-code">translate_simplified_technical_english(input_data)</code></strong>:<ul class="docs-list">
 <li>Takes the loaded input data dictionary as an argument.</li>
@@ -133,7 +131,7 @@
 </ul>
 </li>
 </ul>
-<h2 id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Link to this section">¶</a></h2>
 <p>The script interacts with the LLM by providing two main prompts:</p>
 <ol class="docs-list docs-list-ordered">
 <li><strong>System Prompt</strong>: This prompt instructs the LLM on its role and the rules it must follow. It explicitly lists the 10 core rules of Simplified Technical English:<ul class="docs-list">
@@ -157,7 +155,7 @@
 </li>
 </ol>
 <p>The <code class="docs-inline-code">chat_with_llm</code> function sends these prompts along with any specified <code class="docs-inline-code">parameters</code> to the designated LLM and retrieves the generated text response.</p>
-<h2 id="output-processing">Output Processing<a class="headerlink" href="#output-processing" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output-processing">Output Processing<a class="headerlink" href="#output-processing" title="Link to this section">¶</a></h2>
 <p>The raw text response obtained from the LLM is processed before saving:</p>
 <ol class="docs-list docs-list-ordered">
 <li>The response string is split into segments using double newlines (<code class="docs-inline-code">\n\n</code>) as delimiters. This attempts to separate paragraphs or distinct blocks of text.</li>
@@ -165,24 +163,24 @@
 <li>Only non-empty segments are kept.</li>
 <li>These processed segments are stored as a list of strings in the <code class="docs-inline-code">output_lines</code> variable.</li>
 </ol>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <p>The script generates a JSON output file containing:</p>
 <ul class="docs-list">
-<li><strong>Metadata</strong>: Information about the process, including the task name ("Simplified Technical English conversion"), start time, and a unique identifier (UUID), generated by <code class="docs-inline-code">create_output_metadata</code>.</li>
+<li><strong>Metadata</strong>: Information about the process, including the task name (“Simplified Technical English conversion”), start time, and a unique identifier (UUID), generated by <code class="docs-inline-code">create_output_metadata</code>.</li>
 <li><strong><code class="docs-inline-code">output_text</code></strong>: A list of strings, where each string represents a paragraph or line of the STE-converted text as processed from the LLM response.</li>
 </ul>
 <p>Example Output Structure:</p>
 <p>```json
 {
-  "task_name": "Simplified Technical English conversion",
-  "start_time": "YYYY-MM-DDTHH:MM:SS.ffffff",
-  "end_time": "YYYY-MM-DDTHH:MM:SS.ffffff",
-  "duration_seconds": 10.5,
-  "uuid": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-  "output_text": [
-    "This is the first sentence converted to STE.",
-    "This is the second sentence, also in STE.",
-    "Follow this instruction carefully."
+  “task_name”: “Simplified Technical English conversion”,
+  “start_time”: “YYYY-MM-DDTHH:MM:SS.ffffff”,
+  “end_time”: “YYYY-MM-DDTHH:MM:SS.ffffff”,
+  “duration_seconds”: 10.5,
+  “uuid”: “xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx”,
+  “output_text”: [
+    “This is the first sentence converted to STE.”,
+    “This is the second sentence, also in STE.”,
+    “Follow this instruction carefully.”
   ]
 }</p>
                     </div>

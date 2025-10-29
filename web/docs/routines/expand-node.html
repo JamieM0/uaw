@@ -62,14 +62,13 @@
                     </header>
 
                     <div class="docs-content">
-                        <p>This script expands a specified node within a filesystem-based tree structure. It uses a Large Language Model (LLM) to generate substeps for the node's task and creates corresponding subdirectories and <code class="docs-inline-code">node.json</code> files for each substep.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+                        <p>This script expands a specified node within a filesystem-based tree structure. It uses a Large Language Model (LLM) to generate substeps for the node’s task and creates corresponding subdirectories and <code class="docs-inline-code">node.json</code> files for each substep.</p>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
 <p>The primary goal of <code class="docs-inline-code">expand-node.py</code> is to break down a task represented by a node into smaller, more manageable substeps. It automates the process of generating these substeps using an LLM and organizing them within the existing filesystem tree structure.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>The script is executed from the command line:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>expand-node.py<span class="w"> </span>&lt;input_directory&gt;<span class="w"> </span><span class="o">[</span>node_path_or_uuid<span class="o">]</span><span class="w"> </span><span class="o">[</span>output_metadata_path<span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>expand-node.py<span class="w"> </span>&lt;input_directory&gt;<span class="w"> </span><span class="o">[</span>node_path_or_uuid<span class="o">]</span><span class="w"> </span><span class="o">[</span>output_metadata_path<span class="o">]</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><strong><code class="docs-inline-code">&lt;input_directory&gt;</code> (Required):</strong> The path to the root directory of the filesystem tree structure (e.g., <code class="docs-inline-code">output/hallucinate-tree/some_uuid</code>). This directory should contain the initial <code class="docs-inline-code">node.json</code> and potentially subdirectories representing existing nodes.</li>
 <li><strong><code class="docs-inline-code">[node_path_or_uuid]</code> (Optional):</strong> Specifies the target node to expand. If omitted, the root node in the <code class="docs-inline-code">&lt;input_directory&gt;</code> is expanded. This can be:<ul class="docs-list">
@@ -80,34 +79,33 @@
 <li><strong><code class="docs-inline-code">[output_metadata_path]</code> (Optional):</strong> The path where the JSON metadata file for this expansion operation will be saved. If omitted, a default path is generated based on the script name and a UUID (e.g., <code class="docs-inline-code">output/expand-node/some_uuid.json</code>).</li>
 </ul>
 <p><strong>Examples:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="c1"># Expand the root node in the specified directory</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="c1"># Expand the root node in the specified directory</span>
 python<span class="w"> </span>expand-node.py<span class="w"> </span>output/hallucinate-tree/e2dd9b38-ab19-4156-8031-bcb2db5c93a7
 
 <span class="c1"># Expand the node found by navigating to the 2nd subdir, then the 1st subdir</span>
 python<span class="w"> </span>expand-node.py<span class="w"> </span>output/hallucinate-tree/e2dd9b38-ab19-4156-8031-bcb2db5c93a7<span class="w"> </span><span class="m">1</span>-0
 
-<span class="c1"># Expand the node with a UUID starting with &#39;e2dd9b38&#39;</span>
+<span class="c1"># Expand the node with a UUID starting with 'e2dd9b38'</span>
 python<span class="w"> </span>expand-node.py<span class="w"> </span>output/hallucinate-tree/e2dd9b38-ab19-4156-8031-bcb2db5c93a7<span class="w"> </span>e2dd9b38
 
 <span class="c1"># Expand the root node and save metadata to a specific file</span>
 python<span class="w"> </span>expand-node.py<span class="w"> </span>output/hallucinate-tree/e2dd9b38-ab19-4156-8031-bcb2db5c93a7<span class="w"> </span>output/my_expansion_metadata.json
 </code></pre></div>
-
-<h2 id="input">Input<a class="headerlink" href="#input" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input">Input<a class="headerlink" href="#input" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><strong>Filesystem Tree:</strong> The script requires an <code class="docs-inline-code">&lt;input_directory&gt;</code> containing a tree structure where each node is represented by a directory.</li>
 <li><strong><code class="docs-inline-code">node.json</code>:</strong> Each node directory must contain a <code class="docs-inline-code">node.json</code> file with at least a <code class="docs-inline-code">"step"</code> (describing the task) and a <code class="docs-inline-code">"uuid"</code> field.</li>
 <li><strong><code class="docs-inline-code">metadata.json</code> (Optional):</strong> If a <code class="docs-inline-code">metadata.json</code> file exists in the <code class="docs-inline-code">&lt;input_directory&gt;</code>, the script will attempt to read the <code class="docs-inline-code">"model"</code> and <code class="docs-inline-code">"parameters"</code> fields to use for the LLM interaction. Defaults are used if the file is missing or cannot be parsed.</li>
 </ul>
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><strong><code class="docs-inline-code">sanitize_filename(name)</code>:</strong> Converts a given step name into a valid, lowercase directory name using underscores instead of spaces or invalid characters. Limits length.</li>
-<li><strong><code class="docs-inline-code">find_node_by_path(base_dir, path_indices)</code>:</strong> Locates a node's data (<code class="docs-inline-code">node.json</code>) and its directory path within the <code class="docs-inline-code">base_dir</code> by following a list of subdirectory indices (<code class="docs-inline-code">path_indices</code>). Handles the root node case (empty <code class="docs-inline-code">path_indices</code>).</li>
+<li><strong><code class="docs-inline-code">find_node_by_path(base_dir, path_indices)</code>:</strong> Locates a node’s data (<code class="docs-inline-code">node.json</code>) and its directory path within the <code class="docs-inline-code">base_dir</code> by following a list of subdirectory indices (<code class="docs-inline-code">path_indices</code>). Handles the root node case (empty <code class="docs-inline-code">path_indices</code>).</li>
 <li><strong><code class="docs-inline-code">find_node_by_uuid(search_uuid, base_dir)</code>:</strong> Searches the entire filesystem tree starting from <code class="docs-inline-code">base_dir</code> to find a node whose <code class="docs-inline-code">node.json</code> contains a matching <code class="docs-inline-code">uuid</code>.</li>
-<li><strong><code class="docs-inline-code">expand_node_in_filesystem(node_data, node_dir, model, parameters, num_substeps)</code>:</strong> The core function that takes a target node's data and directory, interacts with the LLM to get substeps, translates substep names to Basic English, creates sanitized directory names (Basic English + UUID), creates the subdirectories, and generates <code class="docs-inline-code">node.json</code> files for each new substep.</li>
-<li><strong><code class="docs-inline-code">parse_path_string(path_str)</code>:</strong> Converts a dash-separated string of indices (e.g., "1-0-2") or a single number string into a list of integers.</li>
+<li><strong><code class="docs-inline-code">expand_node_in_filesystem(node_data, node_dir, model, parameters, num_substeps)</code>:</strong> The core function that takes a target node’s data and directory, interacts with the LLM to get substeps, translates substep names to Basic English, creates sanitized directory names (Basic English + UUID), creates the subdirectories, and generates <code class="docs-inline-code">node.json</code> files for each new substep.</li>
+<li><strong><code class="docs-inline-code">parse_path_string(path_str)</code>:</strong> Converts a dash-separated string of indices (e.g., “1-0-2”) or a single number string into a list of integers.</li>
 <li><strong><code class="docs-inline-code">handle_expand_node_args()</code>:</strong> Parses the command-line arguments provided to the script, determining the input directory, node specifier (path or UUID), and output metadata path.</li>
-<li><strong><code class="docs-inline-code">main()</code>:</strong> Orchestrates the script's execution: handles arguments, finds the target node, calls the expansion function, creates metadata for the operation, and saves the output metadata.</li>
+<li><strong><code class="docs-inline-code">main()</code>:</strong> Orchestrates the script’s execution: handles arguments, finds the target node, calls the expansion function, creates metadata for the operation, and saves the output metadata.</li>
 <li><strong>Imported <code class="docs-inline-code">utils</code>:</strong><ul class="docs-list">
 <li><code class="docs-inline-code">load_json</code>, <code class="docs-inline-code">save_output</code>: For reading/writing JSON files.</li>
 <li><code class="docs-inline-code">chat_with_llm</code>: Interacts with the specified LLM.</li>
@@ -117,31 +115,31 @@ python<span class="w"> </span>expand-node.py<span class="w"> </span>output/hallu
 </ul>
 </li>
 </ul>
-<h2 id="filesystem-interaction">Filesystem Interaction<a class="headerlink" href="#filesystem-interaction" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="filesystem-interaction">Filesystem Interaction<a class="headerlink" href="#filesystem-interaction" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><strong>Reading:</strong> The script reads <code class="docs-inline-code">node.json</code> files to get task descriptions (<code class="docs-inline-code">step</code>) and UUIDs. It navigates the directory structure based on either index paths or by searching for UUIDs. It also reads an optional <code class="docs-inline-code">metadata.json</code> in the input directory.</li>
 <li><strong>Writing:</strong><ul class="docs-list">
-<li>Creates new subdirectories under the target node's directory for each generated substep.</li>
+<li>Creates new subdirectories under the target node’s directory for each generated substep.</li>
 <li>Directory names are generated by:<ol class="docs-list docs-list-ordered">
 <li>Translating the LLM-generated substep text to Basic English.</li>
 <li>Sanitizing the Basic English text (lowercase, underscores, limited length).</li>
 <li>Appending <code class="docs-inline-code">_</code> and the full UUID of the substep. (e.g., <code class="docs-inline-code">prepare_warm_water_b06cfe1f-7104-48eb-8fe4-e0ceb140a1b3</code>)</li>
 </ol>
 </li>
-<li>Writes a new <code class="docs-inline-code">node.json</code> file inside each created subdirectory, containing the original substep text, the new substep's UUID, and the parent node's UUID.</li>
+<li>Writes a new <code class="docs-inline-code">node.json</code> file inside each created subdirectory, containing the original substep text, the new substep’s UUID, and the parent node’s UUID.</li>
 </ul>
 </li>
 </ul>
-<h2 id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Link to this section">¶</a></h2>
 <ol class="docs-list docs-list-ordered">
-<li><strong>Substep Generation:</strong> The script constructs a prompt asking the LLM (specified by <code class="docs-inline-code">model</code> and <code class="docs-inline-code">parameters</code>, potentially read from <code class="docs-inline-code">metadata.json</code>) to break down the target node's <code class="docs-inline-code">"step"</code> text into a specified range of detailed substeps (defaulting to 3-7).</li>
+<li><strong>Substep Generation:</strong> The script constructs a prompt asking the LLM (specified by <code class="docs-inline-code">model</code> and <code class="docs-inline-code">parameters</code>, potentially read from <code class="docs-inline-code">metadata.json</code>) to break down the target node’s <code class="docs-inline-code">"step"</code> text into a specified range of detailed substeps (defaulting to 3-7).</li>
 <li><strong>JSON Formatting:</strong> The prompt explicitly requests the LLM to return <em>only</em> a valid JSON array of objects, where each object has a <code class="docs-inline-code">"step"</code> field containing the substep description.</li>
-<li><strong>Response Parsing:</strong> The <code class="docs-inline-code">parse_llm_json_response</code> utility is used to extract the list of substep objects from the LLM's raw text response.</li>
+<li><strong>Response Parsing:</strong> The <code class="docs-inline-code">parse_llm_json_response</code> utility is used to extract the list of substep objects from the LLM’s raw text response.</li>
 <li><strong>Basic English Translation:</strong> For each generated substep, <code class="docs-inline-code">translate_to_basic_english</code> is called to get a simplified version of the step text, which is then used to create a more readable and filesystem-friendly directory name.</li>
 </ol>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <ol class="docs-list docs-list-ordered">
-<li><strong>Filesystem Modifications:</strong> The primary output is the creation of new subdirectories and corresponding <code class="docs-inline-code">node.json</code> files under the expanded node's directory, representing the generated substeps.</li>
+<li><strong>Filesystem Modifications:</strong> The primary output is the creation of new subdirectories and corresponding <code class="docs-inline-code">node.json</code> files under the expanded node’s directory, representing the generated substeps.</li>
 <li><strong>Metadata File:</strong> A JSON file is saved (either to the specified path or a default location) containing metadata about the expansion process. This includes:<ul class="docs-list">
 <li>General run information (script name, timestamp, UUID of the run).</li>
 <li>Details of the node that was expanded (step, UUID, directory).</li>

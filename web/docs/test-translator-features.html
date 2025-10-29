@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Document for Translator Features - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">Test Document for Translator Features</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">Test Document for Translator Features</h1>
+                            
+                            <p class="docs-page-subtitle">This is a valid subtitle paragraph that should be properly extracted.</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>This is a valid subtitle paragraph that should be properly extracted.</p>
+<h2 class="docs-heading" id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Link to this section">¶</a></h2>
+<div class="toc">
+<ul class="docs-list">
+<li><a href="#table-of-contents">Table of Contents</a></li>
+<li><a href="#testing-various-markdown-elements">Testing Various Markdown Elements</a><ul class="docs-list">
+<li><a href="#code-blocks">Code Blocks</a></li>
+<li><a href="#inline-code-with-html-entities">Inline Code with HTML Entities</a></li>
+<li><a href="#lists">Lists</a><ul class="docs-list">
+<li><a href="#unordered-list">Unordered List</a></li>
+<li><a href="#ordered-list">Ordered List</a></li>
+</ul>
+</li>
+<li><a href="#tables">Tables</a></li>
+<li><a href="#blockquotes">Blockquotes</a></li>
+<li><a href="#horizontal-rule">Horizontal Rule</a></li>
+<li><a href="#definition-lists">Definition Lists</a></li>
+<li><a href="#headings-at-all-levels">Headings at All Levels</a></li>
+</ul>
+</li>
+<li><a href="#h2-heading">H2 Heading</a><ul class="docs-list">
+<li><a href="#h3-heading">H3 Heading</a><ul class="docs-list">
+<li><a href="#h4-heading">H4 Heading</a></li>
+</ul>
+</li>
+<li><a href="#smart-typography">Smart Typography</a></li>
+<li><a href="#abbreviations">Abbreviations</a></li>
+<li><a href="#footnotes">Footnotes</a></li>
+</ul>
+</li>
+<li><a href="#links-testing">Links Testing</a></li>
+<li><a href="#end-of-test">End of Test</a></li>
+</ul>
+</div>
+<h2 class="docs-heading" id="testing-various-markdown-elements">Testing Various Markdown Elements<a class="headerlink" href="#testing-various-markdown-elements" title="Link to this section">¶</a></h2>
+<p>This section tests the comprehensive improvements to the documentation translator.</p>
+<h3 class="docs-heading" id="code-blocks">Code Blocks<a class="headerlink" href="#code-blocks" title="Link to this section">¶</a></h3>
+<p>Here’s a Python code block:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="k">def</span><span class="w"> </span><span class="nf">hello_world</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Hello, World!"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+</code></pre></div>
+<p>Here’s a code block without language specification:</p>
+<div class="codehilite"><pre><span></span><code class="language-text">plain text code
+no highlighting
+</code></pre></div>
+<h3 class="docs-heading" id="inline-code-with-html-entities">Inline Code with <abbr title="HyperText Markup Language">HTML</abbr> Entities<a class="headerlink" href="#inline-code-with-html-entities" title="Link to this section">¶</a></h3>
+<p>Use <code class="docs-inline-code">&lt;div&gt;</code> tags for containers. The <code class="docs-inline-code">&amp;lt;script&amp;gt;</code> tag should work. Try <code class="docs-inline-code">&lt;p&gt;test&lt;/p&gt;</code>.</p>
+<h3 class="docs-heading" id="lists">Lists<a class="headerlink" href="#lists" title="Link to this section">¶</a></h3>
+<h4 class="docs-heading" id="unordered-list">Unordered List<a class="headerlink" href="#unordered-list" title="Link to this section">¶</a></h4>
+<ul class="docs-list">
+<li>First item</li>
+<li>Second item</li>
+<li>Nested item 1</li>
+<li>Nested item 2</li>
+<li>Third item</li>
+</ul>
+<h4 class="docs-heading" id="ordered-list">Ordered List<a class="headerlink" href="#ordered-list" title="Link to this section">¶</a></h4>
+<ol class="docs-list docs-list-ordered">
+<li>First step</li>
+<li>Second step</li>
+<li>Sub-step A</li>
+<li>Sub-step B</li>
+<li>Third step</li>
+</ol>
+<h3 class="docs-heading" id="tables">Tables<a class="headerlink" href="#tables" title="Link to this section">¶</a></h3>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Feature</th>
+<th>Status</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wikilinks</td>
+<td>Fixed</td>
+<td>High</td>
+</tr>
+<tr>
+<td>Asset Management</td>
+<td>Added</td>
+<td>High</td>
+</tr>
+<tr>
+<td>BeautifulSoup</td>
+<td>Implemented</td>
+<td>High</td>
+</tr>
+</tbody>
+</table></div>
+<h3 class="docs-heading" id="blockquotes">Blockquotes<a class="headerlink" href="#blockquotes" title="Link to this section">¶</a></h3>
+<blockquote class="docs-blockquote">
+<p>This is a blockquote that should get the docs-blockquote class.
+It can span multiple lines.</p>
+</blockquote>
+<h3 class="docs-heading" id="horizontal-rule">Horizontal Rule<a class="headerlink" href="#horizontal-rule" title="Link to this section">¶</a></h3>
+<hr class="docs-hr"/>
+<h3 class="docs-heading" id="definition-lists">Definition Lists<a class="headerlink" href="#definition-lists" title="Link to this section">¶</a></h3>
+<dl class="docs-definition-list">
+<dt class="docs-definition-term"><abbr title="HyperText Markup Language">HTML</abbr></dt>
+<dd class="docs-definition-description">HyperText Markup Language</dd>
+<dt class="docs-definition-term">CSS</dt>
+<dd class="docs-definition-description">Cascading Style Sheets</dd>
+</dl>
+<h3 class="docs-heading" id="headings-at-all-levels">Headings at All Levels<a class="headerlink" href="#headings-at-all-levels" title="Link to this section">¶</a></h3>
+<h1 class="docs-heading" id="h1-heading">H1 Heading<a class="headerlink" href="#h1-heading" title="Link to this section">¶</a></h1>
+<h2 class="docs-heading" id="h2-heading">H2 Heading<a class="headerlink" href="#h2-heading" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="h3-heading">H3 Heading<a class="headerlink" href="#h3-heading" title="Link to this section">¶</a></h3>
+<h4 class="docs-heading" id="h4-heading">H4 Heading<a class="headerlink" href="#h4-heading" title="Link to this section">¶</a></h4>
+<h5 class="docs-heading" id="h5-heading">H5 Heading<a class="headerlink" href="#h5-heading" title="Link to this section">¶</a></h5>
+<h6 class="docs-heading" id="h6-heading">H6 Heading<a class="headerlink" href="#h6-heading" title="Link to this section">¶</a></h6>
+<h3 class="docs-heading" id="smart-typography">Smart Typography<a class="headerlink" href="#smart-typography" title="Link to this section">¶</a></h3>
+<p>This should have “smart quotes” and proper em-dashes—like this.</p>
+<h3 class="docs-heading" id="abbreviations">Abbreviations<a class="headerlink" href="#abbreviations" title="Link to this section">¶</a></h3>
+<p>The <abbr title="HyperText Markup Language">HTML</abbr> specification is maintained by the <abbr title="World Wide Web Consortium">W3C</abbr>.</p>
+<h3 class="docs-heading" id="footnotes">Footnotes<a class="headerlink" href="#footnotes" title="Link to this section">¶</a></h3>
+<p>Here’s a sentence with a footnote<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup>.</p>
+<h2 class="docs-heading" id="links-testing">Links Testing<a class="headerlink" href="#links-testing" title="Link to this section">¶</a></h2>
+<ul class="docs-list">
+<li>External link: <a href="https://python.org">Python</a></li>
+<li>Anchor link: <a href="#test-document-for-translator-features">Back to top</a></li>
+<li>Internal link: <a href="./architecture-overview.md">Architecture</a></li>
+</ul>
+<h2 class="docs-heading" id="end-of-test">End of Test<a class="headerlink" href="#end-of-test" title="Link to this section">¶</a></h2>
+<p>This document tests all major features added to the translator.</p>
+<div class="footnote">
+<hr class="docs-hr"/>
+<ol class="docs-list docs-list-ordered">
+<li id="fn:1">
+<p>This is the footnote content. <a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">↩</a></p>
+</li>
+</ol>
+</div>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

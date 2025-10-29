@@ -63,7 +63,7 @@
 
                     <div class="docs-content">
                         <p>To ensure the system remains organized and scalable, all metric IDs will follow a three-level <code class="docs-inline-code">TOP.MIDDLE.SPECIFIC</code> structure. This creates a clear, predictable, and self-documenting namespace.</p>
-<h2 id="structure-overview">Structure Overview<a class="headerlink" href="#structure-overview" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="structure-overview">Structure Overview<a class="headerlink" href="#structure-overview" title="Link to this section">¶</a></h2>
 <div class="table-container"><table class="docs-table">
 <thead>
 <tr>
@@ -75,24 +75,24 @@
 <tbody>
 <tr>
 <td><strong>TOP</strong></td>
-<td>The highest-level domain the metric belongs to.<br><em>What part of the simulation is this about?</em></td>
+<td>The highest-level domain the metric belongs to.<br/><em>What part of the simulation is this about?</em></td>
 <td><code class="docs-inline-code">schema</code>, <code class="docs-inline-code">actor</code>, <code class="docs-inline-code">equipment</code>, <code class="docs-inline-code">resource</code>, <code class="docs-inline-code">task</code>, <code class="docs-inline-code">temporal</code>, <code class="docs-inline-code">economic</code>, <code class="docs-inline-code">optimization</code></td>
 </tr>
 <tr>
 <td><strong>MIDDLE</strong></td>
-<td>A sub-category specifying the type of check.<br><em>What property is being checked?</em></td>
+<td>A sub-category specifying the type of check.<br/><em>What property is being checked?</em></td>
 <td><code class="docs-inline-code">integrity</code>, <code class="docs-inline-code">scheduling</code>, <code class="docs-inline-code">utilization</code>, <code class="docs-inline-code">state</code>, <code class="docs-inline-code">capacity</code>, <code class="docs-inline-code">flow</code>, <code class="docs-inline-code">definition</code>, <code class="docs-inline-code">dependency</code>, <code class="docs-inline-code">profitability</code>, <code class="docs-inline-code">efficiency</code></td>
 </tr>
 <tr>
 <td><strong>SPECIFIC</strong></td>
-<td>A concise, snake_case name for the specific rule.<br><em>What is the exact problem?</em></td>
+<td>A concise, snake_case name for the specific rule.<br/><em>What is the exact problem?</em></td>
 <td><code class="docs-inline-code">missing_root</code>, <code class="docs-inline-code">overlap</code>, <code class="docs-inline-code">exceeded</code>, <code class="docs-inline-code">negative_stock</code>, <code class="docs-inline-code">unreachable</code>, <code class="docs-inline-code">negative_margin</code></td>
 </tr>
 </tbody>
 </table></div>
-<hr />
-<h2 id="detailed-level-breakdown">Detailed Level Breakdown<a class="headerlink" href="#detailed-level-breakdown" title="Permanent link">&para;</a></h2>
-<h3 id="top-level">Top Level<a class="headerlink" href="#top-level" title="Permanent link">&para;</a></h3>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="detailed-level-breakdown">Detailed Level Breakdown<a class="headerlink" href="#detailed-level-breakdown" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="top-level">Top Level<a class="headerlink" href="#top-level" title="Link to this section">¶</a></h3>
 <ul class="docs-list">
 <li><strong>schema</strong>: Rules about the structural correctness of the JSON itself.</li>
 <li><strong>actor</strong>: Rules concerning the actors (people, machines).</li>
@@ -103,7 +103,7 @@
 <li><strong>economic</strong>: Rules for financial viability (costs, revenue, profitability).</li>
 <li><strong>optimization</strong>: Suggestions for improvement that are not strictly errors.</li>
 </ul>
-<h3 id="middle-level">Middle Level<a class="headerlink" href="#middle-level" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="middle-level">Middle Level<a class="headerlink" href="#middle-level" title="Link to this section">¶</a></h3>
 <ul class="docs-list">
 <li><strong>integrity</strong>: Checks for structural soundness and completeness.</li>
 <li><strong>scheduling</strong>: Checks for timing, overlaps, and assignments.</li>

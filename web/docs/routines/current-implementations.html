@@ -63,13 +63,12 @@
 
                     <div class="docs-content">
                         <p>This script analyzes the current state of automation for a given topic. It identifies key process steps, assesses the automation level for each step across different production scales (Low, Medium, High) using a Large Language Model (LLM), and provides explanations for the assessments.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
 <p>The primary goal of this script is to generate a structured assessment of how automated the various processes related to a specific topic currently are. It leverages an LLM to analyze the topic and provide ratings and descriptions.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>The script is executed from the command line:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>current-implementations.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span><span class="w"> </span><span class="o">[</span>-saveInputs<span class="o">]</span><span class="w"> </span><span class="o">[</span>-uuid<span class="o">=</span><span class="s2">&quot;UUID&quot;</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>-flow_uuid<span class="o">=</span><span class="s2">&quot;FLOW-UUID&quot;</span><span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>current-implementations.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span><span class="w"> </span><span class="o">[</span>-saveInputs<span class="o">]</span><span class="w"> </span><span class="o">[</span>-uuid<span class="o">=</span><span class="s2">"UUID"</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>-flow_uuid<span class="o">=</span><span class="s2">"FLOW-UUID"</span><span class="o">]</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;input_json&gt;</code>: (Required) Path to the input JSON file containing the topic and LLM parameters.</li>
 <li><code class="docs-inline-code">[output_json]</code>: (Optional) Path to save the output JSON file. If not provided, a path is generated based on the script name and a UUID.</li>
@@ -77,28 +76,27 @@
 <li><code class="docs-inline-code">-uuid="UUID"</code>: (Optional) Specify a custom UUID for the output file generation.</li>
 <li><code class="docs-inline-code">-flow_uuid="FLOW-UUID"</code>: (Optional) Specify a UUID for the flow, used for saving inputs if <code class="docs-inline-code">-saveInputs</code> is active.</li>
 </ul>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <p>The script requires an input JSON file (<code class="docs-inline-code">&lt;input_json&gt;</code>) with the following structure:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;topic&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The topic to be assessed&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gemma3&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Or another LLM model identifier</span>
-<span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"topic"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The topic to be assessed"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gemma3"</span><span class="p">,</span><span class="w"> </span><span class="c1">// Or another LLM model identifier</span>
+<span class="w">  </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="c1">// Optional LLM parameters (e.g., temperature, max_tokens)</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><code class="docs-inline-code">sanitize_json_string(json_str)</code>: Removes invalid control characters from a string to prepare it for JSON parsing.</li>
-<li><code class="docs-inline-code">extract_json_from_response(response)</code>: Attempts to extract and parse a valid JSON object from the LLM's response string. It handles direct JSON, JSON within Markdown code fences (<code class="docs-inline-code">json ...</code> or <code class="docs-inline-code">...</code>), and JSON enclosed in curly braces <code class="docs-inline-code">{...}</code>.</li>
+<li><code class="docs-inline-code">extract_json_from_response(response)</code>: Attempts to extract and parse a valid JSON object from the LLM’s response string. It handles direct JSON, JSON within Markdown code fences (<code class="docs-inline-code">json ...</code> or <code class="docs-inline-code">...</code>), and JSON enclosed in curly braces <code class="docs-inline-code">{...}</code>.</li>
 <li><code class="docs-inline-code">generate_implementation_assessment(input_data, save_inputs=False)</code>: Orchestrates the assessment generation. It extracts data from the input, constructs the system and user prompts for the LLM, calls <code class="docs-inline-code">chat_with_llm</code>, and uses <code class="docs-inline-code">extract_json_from_response</code> to get the structured data. Optionally saves input prompts.</li>
 <li><code class="docs-inline-code">main()</code>: The main execution function. It handles command-line arguments using <code class="docs-inline-code">handle_command_args</code>, loads the input JSON using <code class="docs-inline-code">load_json</code>, calls <code class="docs-inline-code">generate_implementation_assessment</code>, creates output metadata using <code class="docs-inline-code">create_output_metadata</code>, determines the output path using <code class="docs-inline-code">get_output_filepath</code>, and saves the final combined output using <code class="docs-inline-code">save_output</code>.</li>
 <li><strong>Utility Functions (from <code class="docs-inline-code">utils.py</code>)</strong>: The script also relies on several functions imported from <code class="docs-inline-code">utils.py</code>, including <code class="docs-inline-code">load_json</code>, <code class="docs-inline-code">save_output</code>, <code class="docs-inline-code">chat_with_llm</code>, <code class="docs-inline-code">create_output_metadata</code>, <code class="docs-inline-code">get_output_filepath</code>, <code class="docs-inline-code">handle_command_args</code>, and <code class="docs-inline-code">saveToFile</code>.</li>
 </ul>
-<h2 id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Link to this section">¶</a></h2>
 <ol class="docs-list docs-list-ordered">
-<li><strong>Prompt Construction</strong>: A detailed system prompt instructs the LLM to act as an automation analyst, identify process steps for the given topic, assess automation levels ('None', 'Low', 'Medium', 'High') for each step at Low, Medium, and High production scales, provide explanations, and format the output strictly as JSON. The user prompt simply provides the topic.</li>
+<li><strong>Prompt Construction</strong>: A detailed system prompt instructs the LLM to act as an automation analyst, identify process steps for the given topic, assess automation levels (‘None’, ‘Low’, ‘Medium’, ‘High’) for each step at Low, Medium, and High production scales, provide explanations, and format the output strictly as JSON. The user prompt simply provides the topic.</li>
 <li><strong>API Call</strong>: The <code class="docs-inline-code">chat_with_llm</code> function (from <code class="docs-inline-code">utils.py</code>) is used to send the prompts to the specified LLM (<code class="docs-inline-code">model</code> from input).</li>
 <li><strong>Expected Response</strong>: The script expects the LLM to return <em>only</em> a valid JSON object containing:<ul class="docs-list">
 <li><code class="docs-inline-code">process_steps</code>: An array where each object has <code class="docs-inline-code">step_name</code>, <code class="docs-inline-code">description</code>, <code class="docs-inline-code">automation_levels</code> (object with <code class="docs-inline-code">low_scale</code>, <code class="docs-inline-code">medium_scale</code>, <code class="docs-inline-code">high_scale</code>), and <code class="docs-inline-code">explanation</code>.</li>
@@ -106,11 +104,11 @@
 </ul>
 </li>
 </ol>
-<h2 id="json-handling">JSON Handling<a class="headerlink" href="#json-handling" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="json-handling">JSON Handling<a class="headerlink" href="#json-handling" title="Link to this section">¶</a></h2>
 <p>Because LLM output can sometimes include extra text or formatting inconsistencies, the script employs robust JSON handling:
 *   <code class="docs-inline-code">sanitize_json_string</code>: Cleans the raw response string by removing characters that would invalidate JSON.
-*   <code class="docs-inline-code">extract_json_from_response</code>: Tries multiple strategies (direct parsing, code fence extraction, brace extraction) to reliably isolate and parse the JSON payload from the LLM's potentially noisy response. This ensures the script can proceed even if the LLM doesn't perfectly adhere to the "JSON only" instruction.</p>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+*   <code class="docs-inline-code">extract_json_from_response</code>: Tries multiple strategies (direct parsing, code fence extraction, brace extraction) to reliably isolate and parse the JSON payload from the LLM’s potentially noisy response. This ensures the script can proceed even if the LLM doesn’t perfectly adhere to the “JSON only” instruction.</p>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <p>The script generates a JSON output file containing:
 *   <code class="docs-inline-code">process_metadata</code>: Information about the script execution, including the process name, start time, and a unique UUID.
 *   <code class="docs-inline-code">implementation_assessment</code>: The structured JSON data received and successfully extracted from the LLM, detailing the process steps, automation levels, explanations, and the overall assessment.</p>

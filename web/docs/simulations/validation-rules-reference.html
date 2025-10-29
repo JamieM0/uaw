@@ -63,7 +63,7 @@
 
                     <div class="docs-content">
                         <p>This comprehensive guide covers all validation rules in the UAW system. Each rule is automatically checked when you edit your simulation in the playground, helping ensure your process models are structurally sound, logically consistent, and ready for business analysis.</p>
-<h2 id="validation-categories">Validation Categories<a class="headerlink" href="#validation-categories" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="validation-categories">Validation Categories<a class="headerlink" href="#validation-categories" title="Link to this section">¶</a></h2>
 <p>The validation system organizes rules into logical categories:</p>
 <ul class="docs-list">
 <li><strong>Structural Integrity</strong>: Basic schema and data consistency checks</li>
@@ -72,32 +72,30 @@
 <li><strong>Economic</strong>: Financial analysis and profitability checks</li>
 <li><strong>Optimization</strong>: Performance improvement suggestions</li>
 </ul>
-<h2 id="structural-integrity">Structural Integrity<a class="headerlink" href="#structural-integrity" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="structural-integrity">Structural Integrity<a class="headerlink" href="#structural-integrity" title="Link to this section">¶</a></h2>
 <p>These rules ensure your simulation data is properly formatted and internally consistent.</p>
-<h3 id="simulation-root-check">Simulation Root Check<a class="headerlink" href="#simulation-root-check" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="simulation-root-check">Simulation Root Check<a class="headerlink" href="#simulation-root-check" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">schema.integrity.missing_root</code>
 <strong>Severity</strong>: Error</p>
-<p>Ensures the top-level 'simulation' object exists in your JSON.</p>
+<p>Ensures the top-level ‘simulation’ object exists in your JSON.</p>
 <p><strong>What it checks:</strong>
-- Root JSON contains a "simulation" key
+- Root JSON contains a “simulation” key
 - Simulation object is properly structured</p>
 <p><strong>Common failure:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;meta&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>Correct format:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;meta&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="unassigned-task-actor">Unassigned Task Actor<a class="headerlink" href="#unassigned-task-actor" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="unassigned-task-actor">Unassigned Task Actor<a class="headerlink" href="#unassigned-task-actor" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">task.integrity.unassigned_actor</code>
 <strong>Severity</strong>: Error</p>
 <p>Ensures every task is assigned to a valid, defined actor.</p>
@@ -106,54 +104,52 @@
 - Each <code class="docs-inline-code">actor_id</code> corresponds to an existing object
 - The referenced object exists in the simulation</p>
 <p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bake_bread&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;missing_baker&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;09:00&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bake_bread"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"missing_baker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;actual_baker&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;actor&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Real Baker&quot;</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actual_baker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Real Baker"</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>How to fix:</strong>
 - Ensure <code class="docs-inline-code">actor_id</code> matches an existing object ID
 - Add the missing actor object
 - Check for typos in actor IDs</p>
-<h3 id="unreachable-task-dependency">Unreachable Task Dependency<a class="headerlink" href="#unreachable-task-dependency" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="unreachable-task-dependency">Unreachable Task Dependency<a class="headerlink" href="#unreachable-task-dependency" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">task.dependency.unreachable</code>
 <strong>Severity</strong>: Error</p>
-<p>Ensures every task listed in a 'depends_on' array corresponds to a valid, defined task ID.</p>
+<p>Ensures every task listed in a ‘depends_on’ array corresponds to a valid, defined task ID.</p>
 <p><strong>What it checks:</strong>
 - All dependency references point to existing tasks
 - No circular dependencies exist
 - Dependency graph is resolvable</p>
 <p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mix_dough&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;depends_on&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;nonexistent_task&quot;</span><span class="p">],</span>
-<span class="w">      </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;baker&quot;</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mix_dough"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"depends_on"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"nonexistent_task"</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>How to fix:</strong>
 - Verify all task IDs in <code class="docs-inline-code">depends_on</code> arrays exist
 - Remove invalid dependencies
 - Check for typos in task names</p>
-<h3 id="undefined-location">Undefined Location<a class="headerlink" href="#undefined-location" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="undefined-location">Undefined Location<a class="headerlink" href="#undefined-location" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">object.spatial.location_undefined</code>
 <strong>Severity</strong>: Error</p>
 <p>Ensures every object with a location property is assigned to a valid, defined location from the layout.</p>
@@ -162,55 +158,53 @@
 - Layout contains all referenced locations
 - Location IDs match exactly</p>
 <p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;layout&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;areas&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;kitchen&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">}</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"areas"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"kitchen"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;baker&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;actor&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_area&quot;</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_area"</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>How to fix:</strong>
 - Add missing locations to the layout
 - Correct location ID spelling
 - Remove invalid location references</p>
-<h3 id="disallowed-object-types">Disallowed Object Types<a class="headerlink" href="#disallowed-object-types" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="disallowed-object-types">Disallowed Object Types<a class="headerlink" href="#disallowed-object-types" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">schema.integrity.disallowed_types</code>
 <strong>Severity</strong>: Error</p>
 <p>Ensures no objects use internally reserved types that could cause system conflicts.</p>
 <p><strong>What it checks:</strong>
-- Objects don't use reserved type names
-- Custom types don't conflict with system types
+- Objects don’t use reserved type names
+- Custom types don’t conflict with system types
 - Type names follow conventions</p>
 <p><strong>Reserved types:</strong>
 - <code class="docs-inline-code">timeline_actors</code> (used internally by the system)</p>
 <p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;special_object&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;timeline_actors&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Invalid Type&quot;</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"special_object"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"timeline_actors"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Invalid Type"</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>How to fix:</strong>
 - Use standard types: <code class="docs-inline-code">actor</code>, <code class="docs-inline-code">equipment</code>, <code class="docs-inline-code">resource</code>, <code class="docs-inline-code">product</code>
-- Create custom types that don't conflict with reserved names
+- Create custom types that don’t conflict with reserved names
 - Choose descriptive, unique type names</p>
-<h3 id="invalid-task-duration">Invalid Task Duration<a class="headerlink" href="#invalid-task-duration" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="invalid-task-duration">Invalid Task Duration<a class="headerlink" href="#invalid-task-duration" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">task.integrity.invalid_duration</code>
 <strong>Severity</strong>: Error</p>
 <p>Ensures all task durations are positive integers.</p>
@@ -219,67 +213,64 @@
 - Duration is greater than 0
 - Duration is a reasonable value</p>
 <p><strong>Example failures:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;invalid_task_1&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-30</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"invalid_task_1"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">-30</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;invalid_task_2&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sixty minutes&quot;</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"invalid_task_2"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sixty minutes"</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;invalid_task_3&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"invalid_task_3"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>How to fix:</strong>
 - Use positive numbers for duration
 - Duration should be in minutes
 - Remove or correct invalid duration values</p>
-<h3 id="invalid-start-time-format">Invalid Start Time Format<a class="headerlink" href="#invalid-start-time-format" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="invalid-start-time-format">Invalid Start Time Format<a class="headerlink" href="#invalid-start-time-format" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">task.integrity.invalid_start_time</code>
 <strong>Severity</strong>: Error</p>
 <p>Ensures all task start times follow HH:MM string format.</p>
 <p><strong>What it checks:</strong>
-- Start times are in "HH:MM" format
+- Start times are in “HH:MM” format
 - Hours are 00-23, minutes are 00-59
 - Values are properly zero-padded</p>
 <p><strong>Example failures:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bad_time_1&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;9:30&quot;</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bad_time_1"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"9:30"</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bad_time_2&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;25:00&quot;</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bad_time_2"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"25:00"</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bad_time_3&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">930</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bad_time_3"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="mi">930</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>Correct format:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;good_time&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;09:30&quot;</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"good_time"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:30"</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="invalid-object-reference">Invalid Object Reference<a class="headerlink" href="#invalid-object-reference" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="invalid-object-reference">Invalid Object Reference<a class="headerlink" href="#invalid-object-reference" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">task.integrity.invalid_object_reference</code>
 <strong>Severity</strong>: Error</p>
 <p>Ensures all tasks reference valid object IDs that exist in the simulation.</p>
@@ -288,131 +279,127 @@
 - Consumes/produces reference existing resources
 - Equipment interactions reference existing equipment</p>
 <p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mix_dough&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;consumes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;nonexistent_flour&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mix_dough"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"consumes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"nonexistent_flour"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;missing_mixer&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">}</span>
+<span class="w">          </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"missing_mixer"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">}</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">]</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>How to fix:</strong>
 - Verify all object IDs exist in the objects array
 - Check for typos in object references
 - Add missing objects to the simulation</p>
-<h3 id="display-elements-outside-bounds">Display Elements Outside Bounds<a class="headerlink" href="#display-elements-outside-bounds" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="display-elements-outside-bounds">Display Elements Outside Bounds<a class="headerlink" href="#display-elements-outside-bounds" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">display.spatial.elements_outside_bounds</code>
 <strong>Severity</strong>: Warning</p>
 <p>Checks if any display elements extend beyond the viewport boundaries of their display.</p>
 <p><strong>What it checks:</strong>
-- Screen elements fit within their display's viewport
-- Position + dimensions don't exceed display bounds
+- Screen elements fit within their display’s viewport
+- Position + dimensions don’t exceed display bounds
 - Elements are properly positioned</p>
 <p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;small_display&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;display&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;resolution&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">800</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"small_display"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"display"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"resolution"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">800</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oversized_button&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;display_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;small_display&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">700</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oversized_button"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"display_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"small_display"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">700</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>How to fix:</strong>
 - Resize elements to fit within display bounds
 - Adjust element positions
 - Increase display resolution if needed</p>
-<h2 id="resource-flow">Resource Flow<a class="headerlink" href="#resource-flow" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="resource-flow">Resource Flow<a class="headerlink" href="#resource-flow" title="Link to this section">¶</a></h2>
 <p>These rules validate resource consumption, production, and recipe compliance.</p>
-<h3 id="negative-stock-check">Negative Stock Check<a class="headerlink" href="#negative-stock-check" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="negative-stock-check">Negative Stock Check<a class="headerlink" href="#negative-stock-check" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">resource.flow.negative_stock</code>
 <strong>Severity</strong>: Error</p>
 <p>Verifies that no consumable resource stock level drops below zero during simulation execution.</p>
 <p><strong>What it checks:</strong>
 - Resource quantities remain non-negative throughout
-- Consumption tasks don't exceed available stock
+- Consumption tasks don’t exceed available stock
 - Production and consumption are balanced</p>
 <p><strong>Example failure scenario:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flour&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;resource&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"flour"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;big_batch&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;consumes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;flour&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"big_batch"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"consumes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"flour"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>How to fix:</strong>
 - Increase initial resource quantities
 - Reduce consumption amounts
 - Add production tasks to replenish resources
 - Reorder tasks to produce before consuming</p>
-<h3 id="recipe-ingredients-check">Recipe Ingredients Check<a class="headerlink" href="#recipe-ingredients-check" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="recipe-ingredients-check">Recipe Ingredients Check<a class="headerlink" href="#recipe-ingredients-check" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">resource.flow.recipe_violation</code>
 <strong>Severity</strong>: Warning</p>
-<p>Checks if tasks producing a composite resource consume all the ingredients defined in the simulation's 'production_recipes' section.</p>
+<p>Checks if tasks producing a composite resource consume all the ingredients defined in the simulation’s ‘production_recipes’ section.</p>
 <p><strong>What it checks:</strong>
 - Production tasks follow defined recipes
 - All required ingredients are consumed
 - Recipe ratios are maintained</p>
 <p><strong>Example recipe definition:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;production_recipes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;bread&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;ingredients&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;flour&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;water&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;yeast&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"production_recipes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"bread"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"ingredients"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"flour"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"water"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"yeast"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;make_bread&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;produces&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;bread&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;consumes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;flour&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"make_bread"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"produces"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"bread"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"consumes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"flour"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>Issue</strong>: Missing water and yeast consumption</p>
 <p><strong>How to fix:</strong>
 - Include all recipe ingredients in task consumption
 - Update recipe definitions to match actual processes
 - Add separate tasks for ingredient preparation</p>
-<h3 id="unused-resource">Unused Resource<a class="headerlink" href="#unused-resource" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="unused-resource">Unused Resource<a class="headerlink" href="#unused-resource" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">resource.definition.unused</code>
 <strong>Severity</strong>: Info</p>
 <p>Flags consumable resources that are defined in the simulation but are never consumed or produced by any task.</p>
@@ -421,69 +408,67 @@
 - Resources appear in consumes, produces, or interactions
 - No orphaned resource definitions exist</p>
 <p><strong>Example warning:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;salt&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;resource&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"salt"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flour&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;resource&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"flour"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bake_bread&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;consumes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;flour&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bake_bread"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"consumes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"flour"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>Issue</strong>: Salt is defined but never used</p>
 <p><strong>How to fix:</strong>
 - Remove unused resource definitions
 - Add tasks that use the resource
 - Include in existing task consumption</p>
-<h2 id="scheduling">Scheduling<a class="headerlink" href="#scheduling" title="Permanent link">&para;</a></h2>
-<p>These rules ensure tasks are properly scheduled and don't conflict with each other.</p>
-<h3 id="actor-task-overlap">Actor Task Overlap<a class="headerlink" href="#actor-task-overlap" title="Permanent link">&para;</a></h3>
+<h2 class="docs-heading" id="scheduling">Scheduling<a class="headerlink" href="#scheduling" title="Link to this section">¶</a></h2>
+<p>These rules ensure tasks are properly scheduled and don’t conflict with each other.</p>
+<h3 class="docs-heading" id="actor-task-overlap">Actor Task Overlap<a class="headerlink" href="#actor-task-overlap" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">actor.scheduling.overlap</code>
 <strong>Severity</strong>: Error</p>
 <p>Checks if any single actor is assigned to multiple tasks that overlap in time.</p>
 <p><strong>What it checks:</strong>
-- Actors aren't double-booked
-- Task time ranges don't overlap for the same actor
+- Actors aren’t double-booked
+- Task time ranges don’t overlap for the same actor
 - Schedule conflicts are identified</p>
 <p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;task_1&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;worker&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;09:00&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"task_1"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;task_2&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;worker&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;09:30&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">45</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"task_2"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:30"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">45</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>Issue</strong>: Worker has overlapping tasks from 09:30-10:00</p>
 <p><strong>How to fix:</strong>
 - Adjust task start times to prevent overlap
 - Assign tasks to different actors
 - Reduce task durations
 - Add task dependencies to sequence properly</p>
-<h3 id="task-dependency-timing">Task Dependency Timing<a class="headerlink" href="#task-dependency-timing" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="task-dependency-timing">Task Dependency Timing<a class="headerlink" href="#task-dependency-timing" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">temporal.dependency.violation</code>
 <strong>Severity</strong>: Warning</p>
 <p>Ensures that no task starts before its declared dependencies have finished.</p>
@@ -492,29 +477,28 @@
 - Dependency timing is logically consistent
 - No temporal paradoxes exist</p>
 <p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_ingredients&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;09:00&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_ingredients"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mix_dough&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;depends_on&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;prep_ingredients&quot;</span><span class="p">],</span>
-<span class="w">      </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;09:15&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mix_dough"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"depends_on"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"prep_ingredients"</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:15"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>Issue</strong>: mix_dough starts before prep_ingredients finishes</p>
 <p><strong>How to fix:</strong>
 - Adjust start times to respect dependencies
 - Update dependency relationships
 - Modify task durations appropriately</p>
-<h3 id="task-proximity-check">Task Proximity Check<a class="headerlink" href="#task-proximity-check" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="task-proximity-check">Task Proximity Check<a class="headerlink" href="#task-proximity-check" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">task.spatial.unmet_proximity_requirement</code>
 <strong>Severity</strong>: Error</p>
 <p>Checks if the actor and all required equipment/resources for a task are in the same location as the task itself.</p>
@@ -524,42 +508,41 @@
 - Resources are accessible from task location
 - Spatial consistency is maintained</p>
 <p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;baker&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;actor&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_area&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_area"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oven&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;equipment&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oven_area&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equipment"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven_area"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bake_bread&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;baker&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oven_area&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bake_bread"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven_area"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oven&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">}</span>
+<span class="w">          </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">}</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">]</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>Issue</strong>: Baker is in prep_area but task is in oven_area</p>
 <p><strong>How to fix:</strong>
 - Move actor to correct location
 - Add movement tasks to transport actor
 - Adjust task location to match actor
 - Update object locations as needed</p>
-<h3 id="missing-buffer-time">Missing Buffer Time<a class="headerlink" href="#missing-buffer-time" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="missing-buffer-time">Missing Buffer Time<a class="headerlink" href="#missing-buffer-time" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">scheduling.optimization.missing_buffer</code>
 <strong>Severity</strong>: Info</p>
 <p>Suggests adding a small buffer between consecutive tasks for the same actor to improve realism.</p>
@@ -568,57 +551,56 @@
 - Minimum buffer time (default: 5 minutes)
 - Realistic scheduling practices</p>
 <p><strong>Example suggestion:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;task_1&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;worker&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;09:00&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"task_1"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;task_2&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;worker&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;09:30&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"task_2"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:30"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>Suggestion</strong>: Add 5-minute buffer between tasks</p>
 <p><strong>How to improve:</strong>
 - Add buffer time between consecutive tasks
 - Account for setup/cleanup time
 - Include travel time between locations
 - Make scheduling more realistic</p>
-<h2 id="equipment-state-logic">Equipment State Logic<a class="headerlink" href="#equipment-state-logic" title="Permanent link">&para;</a></h2>
-<h3 id="equipment-state-logic_1">Equipment State Logic<a class="headerlink" href="#equipment-state-logic_1" title="Permanent link">&para;</a></h3>
+<h2 class="docs-heading" id="equipment-state-logic">Equipment State Logic<a class="headerlink" href="#equipment-state-logic" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="equipment-state-logic_1">Equipment State Logic<a class="headerlink" href="#equipment-state-logic_1" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">equipment.state.logic</code>
 <strong>Severity</strong>: Error</p>
-<p>Checks for logical consistency in equipment usage, such as using a 'dirty' mixer or equipment that is already in use.</p>
+<p>Checks for logical consistency in equipment usage, such as using a ‘dirty’ mixer or equipment that is already in use.</p>
 <p><strong>What it checks:</strong>
 - Equipment state transitions are logical
-- Equipment isn't used in impossible states
+- Equipment isn’t used in impossible states
 - State changes follow realistic patterns
 - No conflicting equipment usage</p>
 <p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixer&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;equipment&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dirty&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixer"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equipment"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dirty"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mix_ingredients&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mix_ingredients"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixer&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;clean&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;in_use&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">          </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixer"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"clean"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"in_use"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">          </span><span class="p">}</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">]</span>
@@ -626,16 +608,15 @@
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<p><strong>Issue</strong>: Trying to use mixer as "clean" when it's actually "dirty"</p>
+<p><strong>Issue</strong>: Trying to use mixer as “clean” when it’s actually “dirty”</p>
 <p><strong>How to fix:</strong>
 - Add cleaning tasks before use
 - Update initial equipment states
 - Correct state transition logic
 - Add maintenance workflows</p>
-<h2 id="economic">Economic<a class="headerlink" href="#economic" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="economic">Economic<a class="headerlink" href="#economic" title="Link to this section">¶</a></h2>
 <p>Economic validation ensures your simulation is financially realistic and profitable.</p>
-<h3 id="negative-profitability">Negative Profitability<a class="headerlink" href="#negative-profitability" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="negative-profitability">Negative Profitability<a class="headerlink" href="#negative-profitability" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">economic.profitability.negative_margin</code>
 <strong>Severity</strong>: Warning</p>
 <p>Calculates total revenue from final products and subtracts total costs of labor and consumed resources. Flags if the result is negative.</p>
@@ -650,36 +631,35 @@
 - <strong>Resource Cost</strong>: Σ(consumed_quantity × resource_cost_per_unit)
 - <strong>Profit</strong>: Revenue - (Labor Cost + Resource Cost)</p>
 <p><strong>Example profitable setup:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;baker&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;actor&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;cost_per_hour&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"cost_per_hour"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flour&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;resource&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;cost_per_unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.50</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"flour"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"cost_per_unit"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.50</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bread&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;product&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;revenue_per_unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">8.00</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bread"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"product"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"revenue_per_unit"</span><span class="p">:</span><span class="w"> </span><span class="mf">8.00</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bake_bread&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;baker&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;consumes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;flour&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;produces&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;bread&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bake_bread"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"consumes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"flour"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"produces"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"bread"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>Analysis:</strong>
 - Revenue: 4 × $8.00 = $32.00
 - Labor: 1 hour × $20.00 = $20.00
@@ -691,14 +671,14 @@
 - Find cheaper material suppliers
 - Optimize production processes
 - Increase production volume</p>
-<h2 id="validation-best-practices">Validation Best Practices<a class="headerlink" href="#validation-best-practices" title="Permanent link">&para;</a></h2>
-<h3 id="regular-validation">Regular Validation<a class="headerlink" href="#regular-validation" title="Permanent link">&para;</a></h3>
+<h2 class="docs-heading" id="validation-best-practices">Validation Best Practices<a class="headerlink" href="#validation-best-practices" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="regular-validation">Regular Validation<a class="headerlink" href="#regular-validation" title="Link to this section">¶</a></h3>
 <ul class="docs-list">
 <li>Run validation frequently during simulation development</li>
 <li>Address errors before warnings</li>
 <li>Use info-level suggestions to improve realism</li>
 </ul>
-<h3 id="error-resolution-priority">Error Resolution Priority<a class="headerlink" href="#error-resolution-priority" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="error-resolution-priority">Error Resolution Priority<a class="headerlink" href="#error-resolution-priority" title="Link to this section">¶</a></h3>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Structural Integrity Errors</strong>: Fix data format issues first</li>
 <li><strong>Resource Flow Errors</strong>: Ensure resource balance</li>
@@ -706,8 +686,8 @@
 <li><strong>Equipment Logic Errors</strong>: Fix state inconsistencies</li>
 <li><strong>Warnings and Info</strong>: Improve optimization and realism</li>
 </ol>
-<h3 id="common-validation-workflows">Common Validation Workflows<a class="headerlink" href="#common-validation-workflows" title="Permanent link">&para;</a></h3>
-<h4 id="starting-a-new-simulation">Starting a New Simulation<a class="headerlink" href="#starting-a-new-simulation" title="Permanent link">&para;</a></h4>
+<h3 class="docs-heading" id="common-validation-workflows">Common Validation Workflows<a class="headerlink" href="#common-validation-workflows" title="Link to this section">¶</a></h3>
+<h4 class="docs-heading" id="starting-a-new-simulation">Starting a New Simulation<a class="headerlink" href="#starting-a-new-simulation" title="Link to this section">¶</a></h4>
 <ol class="docs-list docs-list-ordered">
 <li>Create basic structure and validate schema</li>
 <li>Add objects and check for invalid references</li>
@@ -715,7 +695,7 @@
 <li>Balance resource flow</li>
 <li>Optimize for economic viability</li>
 </ol>
-<h4 id="debugging-validation-errors">Debugging Validation Errors<a class="headerlink" href="#debugging-validation-errors" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="debugging-validation-errors">Debugging Validation Errors<a class="headerlink" href="#debugging-validation-errors" title="Link to this section">¶</a></h4>
 <ol class="docs-list docs-list-ordered">
 <li>Read the specific error message carefully</li>
 <li>Locate the problematic object or task</li>
@@ -723,7 +703,7 @@
 <li>Verify data types and formats</li>
 <li>Test incremental changes</li>
 </ol>
-<h4 id="performance-optimization">Performance Optimization<a class="headerlink" href="#performance-optimization" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="performance-optimization">Performance Optimization<a class="headerlink" href="#performance-optimization" title="Link to this section">¶</a></h4>
 <ol class="docs-list docs-list-ordered">
 <li>Address all error-level issues first</li>
 <li>Review warning-level suggestions</li>

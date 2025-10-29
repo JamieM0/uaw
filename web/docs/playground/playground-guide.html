@@ -62,10 +62,10 @@
                     </header>
 
                     <div class="docs-content">
-                        <p>The Simulation Playground is an interactive, web-based tool for creating, editing, visualizing, and validating real-world process simulations. It serves as a complete Integrated Development Environment (IDE) for the Universal Automation Wiki's simulation data.</p>
-<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+                        <p>The Simulation Playground is an interactive, web-based tool for creating, editing, visualizing, and validating real-world process simulations. It serves as a complete Integrated Development Environment (IDE) for the Universal Automation Wiki’s simulation data.</p>
+<h2 class="docs-heading" id="overview">Overview<a class="headerlink" href="#overview" title="Link to this section">¶</a></h2>
 <p>The Playground is designed to give you immediate feedback on your simulation design. You can edit the underlying JSON data and see the changes reflected in a visual timeline in real-time. This tight feedback loop allows for rapid prototyping and refinement of process models.</p>
-<h2 id="layout">Layout<a class="headerlink" href="#layout" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="layout">Layout<a class="headerlink" href="#layout" title="Link to this section">¶</a></h2>
 <p>The Playground interface is divided into three main panels:</p>
 <ol class="docs-list docs-list-ordered">
 <li><strong>JSON Editor Panel (Left):</strong> This panel contains the raw <code class="docs-inline-code">simulation.json</code> data for your process. It uses the Monaco editor, providing features like syntax highlighting, auto-formatting, and error checking for the JSON format.</li>
@@ -76,117 +76,115 @@
 <li><strong>Display Editor:</strong> Interface for creating and managing digital displays and screen elements.</li>
 </ul>
 </li>
-<li><strong>Validation Panel (Bottom):</strong> This panel displays the results of running the simulation against the project's metrics catalog. It shows a summary of errors, warnings, suggestions, and passed checks, helping you identify issues and areas for improvement in your simulation.</li>
+<li><strong>Validation Panel (Bottom):</strong> This panel displays the results of running the simulation against the project’s metrics catalog. It shows a summary of errors, warnings, suggestions, and passed checks, helping you identify issues and areas for improvement in your simulation.</li>
 </ol>
-<h2 id="interacting-with-the-simulation">Interacting with the Simulation<a class="headerlink" href="#interacting-with-the-simulation" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="interacting-with-the-simulation">Interacting with the Simulation<a class="headerlink" href="#interacting-with-the-simulation" title="Link to this section">¶</a></h2>
 <p>The Playground offers several ways to interact with and modify your simulation directly from the UI, which will automatically update the JSON data.</p>
-<h3 id="timeline-interaction">Timeline Interaction<a class="headerlink" href="#timeline-interaction" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="timeline-interaction">Timeline Interaction<a class="headerlink" href="#timeline-interaction" title="Link to this section">¶</a></h3>
 <ul class="docs-list">
-<li><strong>Move Task:</strong> Click and drag a task block on the timeline to a different actor's lane or to a different time slot. This will update the task's <code class="docs-inline-code">actor_id</code> and <code class="docs-inline-code">start</code> time.</li>
-<li><strong>Resize Task:</strong> Hover over the left or right edge of a task block until the cursor changes to a resize icon. Click and drag to change the task's <code class="docs-inline-code">duration</code>.</li>
+<li><strong>Move Task:</strong> Click and drag a task block on the timeline to a different actor’s lane or to a different time slot. This will update the task’s <code class="docs-inline-code">actor_id</code> and <code class="docs-inline-code">start</code> time.</li>
+<li><strong>Resize Task:</strong> Hover over the left or right edge of a task block until the cursor changes to a resize icon. Click and drag to change the task’s <code class="docs-inline-code">duration</code>.</li>
 <li><strong>Jump to Definition:</strong> Clicking on a task block will highlight the corresponding task object in the JSON editor, allowing you to quickly find and edit its details.</li>
 </ul>
-<h3 id="adding-objects-and-tasks">Adding Objects and Tasks<a class="headerlink" href="#adding-objects-and-tasks" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="adding-objects-and-tasks">Adding Objects and Tasks<a class="headerlink" href="#adding-objects-and-tasks" title="Link to this section">¶</a></h3>
 <p>You can use the <code class="docs-inline-code">+ Object</code> and <code class="docs-inline-code">+ Task</code> buttons in the header to open modals for adding new elements to your simulation. These modals provide a user-friendly form for entering the required data, which is then inserted into the <code class="docs-inline-code">simulation.json</code> file.</p>
-<h2 id="digital-space-editor">Digital Space Editor<a class="headerlink" href="#digital-space-editor" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="digital-space-editor">Digital Space Editor<a class="headerlink" href="#digital-space-editor" title="Link to this section">¶</a></h2>
 <p>The Digital Space Editor provides a way to model digital locations and digital objects. This is essential for simulating modern digital processes.</p>
-<h3 id="accessing-the-digital-space-editor">Accessing the Digital Space Editor<a class="headerlink" href="#accessing-the-digital-space-editor" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="accessing-the-digital-space-editor">Accessing the Digital Space Editor<a class="headerlink" href="#accessing-the-digital-space-editor" title="Link to this section">¶</a></h3>
 <ol class="docs-list docs-list-ordered">
 <li>Click the <strong>Digital Space</strong> tab in the Simulation Panel</li>
 <li>The environment will initialize with your current simulation objects</li>
 <li>Drag and Drop to create and re-arrange digital locations</li>
 </ol>
-<h3 id="digital-space-features">Digital Space Features<a class="headerlink" href="#digital-space-features" title="Permanent link">&para;</a></h3>
-<h4 id="object-placement-and-management">Object Placement and Management<a class="headerlink" href="#object-placement-and-management" title="Permanent link">&para;</a></h4>
+<h3 class="docs-heading" id="digital-space-features">Digital Space Features<a class="headerlink" href="#digital-space-features" title="Link to this section">¶</a></h3>
+<h4 class="docs-heading" id="object-placement-and-management">Object Placement and Management<a class="headerlink" href="#object-placement-and-management" title="Link to this section">¶</a></h4>
 <ul class="docs-list">
 <li><strong>Drag and Drop:</strong> Select digital objects from the object palette and place them in the space</li>
 <li><strong>Snapping:</strong> X and Z axis snapping for precise positioning</li>
 <li><strong>Layer Organization:</strong> Organize objects into layers for complex scenes</li>
 </ul>
-<h4 id="navigation-controls">Navigation Controls<a class="headerlink" href="#navigation-controls" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="navigation-controls">Navigation Controls<a class="headerlink" href="#navigation-controls" title="Link to this section">¶</a></h4>
 <ul class="docs-list">
 <li><strong>Pan:</strong> Hold space and move the mouse, or click and hold outside a location while moving the mouse to pan</li>
 <li><strong>Zoom:</strong> Mouse wheel to zoom in and out (or use the zoom buttons) - zoom sensitivity can be adjusted</li>
 <li><strong>Zoom-to-fit:</strong> Tap the space bar to zoom-to-fit. Or use the 3rd zoom button.</li>
 </ul>
-<h4 id="digital-object-types">Digital Object Types<a class="headerlink" href="#digital-object-types" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="digital-object-types">Digital Object Types<a class="headerlink" href="#digital-object-types" title="Link to this section">¶</a></h4>
 <p><strong>Digital Location</strong>
 Digital locations represent virtual spaces that exist within digital systems:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;virtual_warehouse&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;digital_location&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Virtual Warehouse Environment&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;environment_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;warehouse_simulation&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;coordinate_system&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cartesian_3d&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;bounds&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;min&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-50</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;min&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;min&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-50</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">}</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"virtual_warehouse"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"digital_location"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Virtual Warehouse Environment"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"environment_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_simulation"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"coordinate_system"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cartesian_3d"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"bounds"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"min"</span><span class="p">:</span><span class="w"> </span><span class="mi">-50</span><span class="p">,</span><span class="w"> </span><span class="nt">"max"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"min"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"max"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"min"</span><span class="p">:</span><span class="w"> </span><span class="mi">-50</span><span class="p">,</span><span class="w"> </span><span class="nt">"max"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;lighting&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;industrial&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;physics_enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="nt">"lighting"</span><span class="p">:</span><span class="w"> </span><span class="s2">"industrial"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"physics_enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>Digital Object</strong>
 Digital objects are virtual items that exist and interact within digital spaces:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;inventory_scanner&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;digital_object&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Digital Inventory Scanner&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;digital_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;scanner_interface&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-15</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;rotation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">45</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;scale&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;interactive&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;scan_radius&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;digital_location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;virtual_warehouse&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"inventory_scanner"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"digital_object"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Digital Inventory Scanner"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"digital_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"scanner_interface"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mi">-15</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"rotation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">45</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"scale"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"interactive"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"scan_radius"</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"digital_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"virtual_warehouse"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="digital-space-workflow-example">Digital Space Workflow Example<a class="headerlink" href="#digital-space-workflow-example" title="Permanent link">&para;</a></h3>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<h3 class="docs-heading" id="digital-space-workflow-example">Digital Space Workflow Example<a class="headerlink" href="#digital-space-workflow-example" title="Link to this section">¶</a></h3>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;virtual_warehouse&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;digital_location&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Warehouse Management System&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;environment_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;logistics_hub&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;coordinate_system&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cartesian_3d&quot;</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"virtual_warehouse"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"digital_location"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Warehouse Management System"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"environment_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"logistics_hub"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"coordinate_system"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cartesian_3d"</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;inventory_bot&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;digital_object&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Automated Inventory Bot&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;digital_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;autonomous_agent&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;movement_speed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.5</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;digital_location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;virtual_warehouse&quot;</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"inventory_bot"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"digital_object"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Automated Inventory Bot"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"digital_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"autonomous_agent"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"movement_speed"</span><span class="p">:</span><span class="w"> </span><span class="mf">2.5</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"digital_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"virtual_warehouse"</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;scan_inventory&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;inventory_bot&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;08:00&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;virtual_warehouse&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"scan_inventory"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"inventory_bot"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"08:00"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"virtual_warehouse"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">          </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;inventory_bot&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">              </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
-<span class="w">                </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"inventory_bot"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
+<span class="w">                </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
 <span class="w">              </span><span class="p">}</span>
 <span class="w">            </span><span class="p">}</span>
 <span class="w">          </span><span class="p">}</span>
@@ -196,48 +194,45 @@ Digital objects are virtual items that exist and interact within digital spaces:
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="display-editor">Display Editor<a class="headerlink" href="#display-editor" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="display-editor">Display Editor<a class="headerlink" href="#display-editor" title="Link to this section">¶</a></h2>
 <p>The Display Editor allows you to create and manage digital displays and screen elements within your simulation. This is crucial for modeling modern digital interfaces and human-computer interaction workflows.</p>
-<h3 id="display-object-type">Display Object Type<a class="headerlink" href="#display-object-type" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="display-object-type">Display Object Type<a class="headerlink" href="#display-object-type" title="Link to this section">¶</a></h3>
 <p>Displays represent screens, monitors, or any digital interface elements:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_monitor&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;display&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Production Control Monitor&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;display_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_interface&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;resolution&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_room&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;viewport&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_monitor"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"display"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Production Control Monitor"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"display_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_interface"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"resolution"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_room"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"viewport"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;active&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="nt">"active"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="screen-element-object-type">Screen Element Object Type<a class="headerlink" href="#screen-element-object-type" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="screen-element-object-type">Screen Element Object Type<a class="headerlink" href="#screen-element-object-type" title="Link to this section">¶</a></h3>
 <p>Screen elements are interactive components that exist within displays:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;temperature_gauge&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Oven Temperature Display&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;label&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;display_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_monitor&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Temperature: 180°C&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;font_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">16</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;color&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;visible&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"temperature_gauge"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Oven Temperature Display"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"label"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"display_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_monitor"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Temperature: 180°C"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"font_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">16</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"color"</span><span class="p">:</span><span class="w"> </span><span class="s2">"red"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"visible"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="display-editor-features">Display Editor Features<a class="headerlink" href="#display-editor-features" title="Permanent link">&para;</a></h3>
-<h4 id="screen-element-types">Screen Element Types<a class="headerlink" href="#screen-element-types" title="Permanent link">&para;</a></h4>
+<h3 class="docs-heading" id="display-editor-features">Display Editor Features<a class="headerlink" href="#display-editor-features" title="Link to this section">¶</a></h3>
+<h4 class="docs-heading" id="screen-element-types">Screen Element Types<a class="headerlink" href="#screen-element-types" title="Link to this section">¶</a></h4>
 <ul class="docs-list">
 <li><strong>Window:</strong> Container elements that represent application windows or main interface areas</li>
 <li><strong>Button:</strong> Interactive clickable elements for user input and actions</li>
@@ -247,56 +242,56 @@ Digital objects are virtual items that exist and interact within digital spaces:
 <li><strong>Menu:</strong> Navigation elements including menu bars, context menus, and dropdown menus</li>
 <li><strong>Dialog:</strong> Modal windows for user interactions, confirmations, and data entry</li>
 </ul>
-<h4 id="display-management">Display Management<a class="headerlink" href="#display-management" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="display-management">Display Management<a class="headerlink" href="#display-management" title="Link to this section">¶</a></h4>
 <ul class="docs-list">
 <li><strong>Element Positioning:</strong> Drag and drop elements within display boundaries</li>
 <li><strong>Layering:</strong> Z-index management for overlapping elements</li>
 <li><strong>Responsive Layout:</strong> Automatic scaling for different display resolutions</li>
 <li><strong>Animation Timeline:</strong> Sync screen element changes with task timeline</li>
 </ul>
-<h3 id="complete-display-example">Complete Display Example<a class="headerlink" href="#complete-display-example" title="Permanent link">&para;</a></h3>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<h3 class="docs-heading" id="complete-display-example">Complete Display Example<a class="headerlink" href="#complete-display-example" title="Link to this section">¶</a></h3>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production_dashboard&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;display&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Production Line Dashboard&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;display_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dashboard&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;resolution&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span><span class="w"> </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_room&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;active&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"production_dashboard"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"display"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Production Line Dashboard"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"display_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dashboard"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"resolution"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_room"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"active"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production_counter&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Units Produced Counter&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;label&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;display_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production_dashboard&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">80</span><span class="w"> </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0 units&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;font_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;color&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;visible&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"production_counter"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Units Produced Counter"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"label"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"display_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"production_dashboard"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">80</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0 units"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"font_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"color"</span><span class="p">:</span><span class="w"> </span><span class="s2">"green"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"visible"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;update_production_count&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;system&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;09:30&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"update_production_count"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"system"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:30"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">          </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production_counter&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">              </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0 units&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1 unit&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">              </span><span class="nt">&quot;color&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;green&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;blue&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"production_counter"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0 units"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1 unit"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">              </span><span class="nt">"color"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"green"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"blue"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">            </span><span class="p">}</span>
 <span class="w">          </span><span class="p">}</span>
 <span class="w">        </span><span class="p">]</span>
@@ -305,21 +300,19 @@ Digital objects are virtual items that exist and interact within digital spaces:
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="the-simulationjson-schema-a-deep-dive">The <code class="docs-inline-code">simulation.json</code> Schema: A Deep Dive<a class="headerlink" href="#the-simulationjson-schema-a-deep-dive" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="the-simulationjson-schema-a-deep-dive">The <code class="docs-inline-code">simulation.json</code> Schema: A Deep Dive<a class="headerlink" href="#the-simulationjson-schema-a-deep-dive" title="Link to this section">¶</a></h2>
 <p>The core of every simulation is a single JSON object. Understanding its structure is key to building effective and realistic process models. The root of your JSON must contain a single key, <code class="docs-inline-code">"simulation"</code>, which holds all the data for the process.</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;meta&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;layout&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="high-level-structure">High-Level Structure<a class="headerlink" href="#high-level-structure" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="high-level-structure">High-Level Structure<a class="headerlink" href="#high-level-structure" title="Link to this section">¶</a></h3>
 <ul class="docs-list">
 <li><code class="docs-inline-code">meta</code>: Contains descriptive information about the simulation.</li>
 <li><code class="docs-inline-code">config</code>: Defines the overall timing and units for the simulation.</li>
@@ -327,10 +320,10 @@ Digital objects are virtual items that exist and interact within digital spaces:
 <li><code class="docs-inline-code">objects</code>: An array of all the people, equipment, and materials involved in the process.</li>
 <li><code class="docs-inline-code">tasks</code>: An array of all the actions and steps that make up the process.</li>
 </ul>
-<hr />
-<h3 id="defining-objects">Defining Objects<a class="headerlink" href="#defining-objects" title="Permanent link">&para;</a></h3>
+<hr class="docs-hr"/>
+<h3 class="docs-heading" id="defining-objects">Defining Objects<a class="headerlink" href="#defining-objects" title="Link to this section">¶</a></h3>
 <p>The <code class="docs-inline-code">objects</code> array is where you define every person, piece of equipment, raw material, and product in your simulation. Each object is a dictionary with a set of base properties and a <code class="docs-inline-code">properties</code> object for type-specific data.</p>
-<h4 id="base-object-properties">Base Object Properties<a class="headerlink" href="#base-object-properties" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="base-object-properties">Base Object Properties<a class="headerlink" href="#base-object-properties" title="Link to this section">¶</a></h4>
 <div class="table-container"><table class="docs-table">
 <thead>
 <tr>
@@ -353,7 +346,7 @@ Digital objects are virtual items that exist and interact within digital spaces:
 <tr>
 <td><code class="docs-inline-code">name</code></td>
 <td>string</td>
-<td>A human-readable name for display (e.g., "Head Chef").</td>
+<td>A human-readable name for display (e.g., “Head Chef”).</td>
 </tr>
 <tr>
 <td><code class="docs-inline-code">emoji</code></td>
@@ -362,89 +355,85 @@ Digital objects are virtual items that exist and interact within digital spaces:
 </tr>
 </tbody>
 </table></div>
-<h4 id="standard-object-types">Standard Object Types<a class="headerlink" href="#standard-object-types" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="standard-object-types">Standard Object Types<a class="headerlink" href="#standard-object-types" title="Link to this section">¶</a></h4>
 <p>The system supports multiple object types, each with its own recommended <code class="docs-inline-code">properties</code>.</p>
 <p><strong>1. <code class="docs-inline-code">actor</code></strong>
 An <code class="docs-inline-code">actor</code> is a person or agent that performs tasks.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;baker&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;actor&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Baker&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Head Baker&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;cost_per_hour&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_area&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Baker"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Head Baker"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"cost_per_hour"</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_area"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <ul class="docs-list">
-<li><code class="docs-inline-code">role</code>: The actor's job title or function.</li>
+<li><code class="docs-inline-code">role</code>: The actor’s job title or function.</li>
 <li><code class="docs-inline-code">cost_per_hour</code>: A numerical value used for cost analysis metrics.</li>
 <li><code class="docs-inline-code">location</code>: The initial physical location of the actor, corresponding to an ID in the <code class="docs-inline-code">layout</code> object.</li>
 </ul>
 <p><strong>2. <code class="docs-inline-code">equipment</code></strong>
 <code class="docs-inline-code">equipment</code> represents tools, machinery, or other non-consumable items.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oven&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;equipment&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Commercial Oven&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🔥&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;available&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;capacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oven_area&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equipment"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Commercial Oven"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"🔥"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"available"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"capacity"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven_area"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">state</code>: The initial state of the equipment (e.g., <code class="docs-inline-code">clean</code>, <code class="docs-inline-code">dirty</code>, <code class="docs-inline-code">in-use</code>). This is a crucial property that can be changed by tasks.</li>
 <li><code class="docs-inline-code">capacity</code>: A number indicating how many items the equipment can handle at once.</li>
-<li><code class="docs-inline-code">location</code>: The equipment's physical location.</li>
+<li><code class="docs-inline-code">location</code>: The equipment’s physical location.</li>
 </ul>
 <p><strong>3. <code class="docs-inline-code">resource</code></strong>
 A <code class="docs-inline-code">resource</code> is a consumable material used in the process.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flour&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;resource&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Flour&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🌾&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kg&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;cost_per_unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.50</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_area&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"flour"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Flour"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"🌾"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kg"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"cost_per_unit"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.50</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_area"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">unit</code>: The unit of measurement (e.g., <code class="docs-inline-code">kg</code>, <code class="docs-inline-code">liter</code>, <code class="docs-inline-code">g</code>).</li>
 <li><code class="docs-inline-code">quantity</code>: The starting amount of the resource. This can be modified by tasks.</li>
 <li><code class="docs-inline-code">cost_per_unit</code>: Cost per unit for economic analysis.</li>
-<li><code class="docs-inline-code">location</code>: The resource's storage location.</li>
+<li><code class="docs-inline-code">location</code>: The resource’s storage location.</li>
 </ul>
 <p><strong>4. <code class="docs-inline-code">product</code></strong>
 A <code class="docs-inline-code">product</code> is the output or an intermediate item created during the process.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixed_dough&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;product&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Mixed Dough&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🍞&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;batch&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;revenue_per_unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.50</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_area&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixed_dough"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"product"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Mixed Dough"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"🍞"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"batch"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"revenue_per_unit"</span><span class="p">:</span><span class="w"> </span><span class="mf">5.50</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_area"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">unit</code>: The unit of measurement for the product.</li>
 <li><code class="docs-inline-code">quantity</code>: The initial quantity, which is typically <code class="docs-inline-code">0</code>. Tasks will increase this value.</li>
@@ -453,94 +442,89 @@ A <code class="docs-inline-code">product</code> is the output or an intermediate
 <p><strong>5. <code class="docs-inline-code">digital_location</code></strong>
 A <code class="docs-inline-code">digital_location</code> represents virtual spaces within digital systems.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;virtual_control_room&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;digital_location&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Virtual Control Center&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;environment_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_interface&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;coordinate_system&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cartesian_3d&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;bounds&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;min&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-10</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;min&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;min&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-10</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"virtual_control_room"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"digital_location"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Virtual Control Center"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"environment_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_interface"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"coordinate_system"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cartesian_3d"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"bounds"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"min"</span><span class="p">:</span><span class="w"> </span><span class="mi">-10</span><span class="p">,</span><span class="w"> </span><span class="nt">"max"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"min"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"max"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"min"</span><span class="p">:</span><span class="w"> </span><span class="mi">-10</span><span class="p">,</span><span class="w"> </span><span class="nt">"max"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>6. <code class="docs-inline-code">digital_object</code></strong>
 A <code class="docs-inline-code">digital_object</code> represents virtual items that exist within digital spaces.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;data_processor&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;digital_object&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Real-time Data Processor&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;digital_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;processing_unit&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;processing_capacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;digital_location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;virtual_control_room&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"data_processor"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"digital_object"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Real-time Data Processor"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"digital_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"processing_unit"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"processing_capacity"</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"digital_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"virtual_control_room"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>7. <code class="docs-inline-code">display</code></strong>
 A <code class="docs-inline-code">display</code> represents screens, monitors, or digital interface elements.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main_dashboard&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;display&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Production Dashboard&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;display_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dashboard&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;resolution&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_room&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;active&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"main_dashboard"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"display"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Production Dashboard"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"display_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dashboard"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"resolution"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_room"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"active"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p><strong>8. <code class="docs-inline-code">screen_element</code></strong>
 A <code class="docs-inline-code">screen_element</code> represents interactive components within displays.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;status_indicator&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;System Status Light&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;indicator&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;display_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main_dashboard&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;color&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;visible&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"status_indicator"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"System Status Light"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"indicator"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"display_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"main_dashboard"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"color"</span><span class="p">:</span><span class="w"> </span><span class="s2">"green"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"visible"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h4 id="custom-object-types">Custom Object Types<a class="headerlink" href="#custom-object-types" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="custom-object-types">Custom Object Types<a class="headerlink" href="#custom-object-types" title="Link to this section">¶</a></h4>
 <p>You are not limited to the standard types. The system is flexible, allowing you to define your own object types. This is useful for creating more specialized and realistic simulations.</p>
 <p><strong>Why create a custom type?</strong>
 Imagine you are simulating a delivery service. You could create a <code class="docs-inline-code">vehicle</code> type with properties like <code class="docs-inline-code">fuel_level</code> and <code class="docs-inline-code">max_speed</code>.</p>
 <p><em>Example of a custom <code class="docs-inline-code">vehicle</code> type:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;delivery_van_1&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vehicle&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Main Delivery Van&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🚚&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;fuel_level_percent&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;max_payload_kg&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;idle&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;depot&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delivery_van_1"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vehicle"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Main Delivery Van"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"🚚"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"fuel_level_percent"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"max_payload_kg"</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"idle"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"depot"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<p>The simulation will render this custom object and its properties, and you can create tasks that interact with its custom properties (e.g., a "drive_route" task that decreases <code class="docs-inline-code">fuel_level_percent</code>).</p>
-<hr />
-<h3 id="defining-tasks">Defining Tasks<a class="headerlink" href="#defining-tasks" title="Permanent link">&para;</a></h3>
+<p>The simulation will render this custom object and its properties, and you can create tasks that interact with its custom properties (e.g., a “drive_route” task that decreases <code class="docs-inline-code">fuel_level_percent</code>).</p>
+<hr class="docs-hr"/>
+<h3 class="docs-heading" id="defining-tasks">Defining Tasks<a class="headerlink" href="#defining-tasks" title="Link to this section">¶</a></h3>
 <p>The <code class="docs-inline-code">tasks</code> array defines the sequence of actions that make up your process. Each task is an object with several key properties.</p>
 <div class="table-container"><table class="docs-table">
 <thead>
@@ -594,94 +578,88 @@ Imagine you are simulating a delivery service. You could create a <code class="d
 </tbody>
 </table></div>
 <p><em>Example Task:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mix_dough&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🥄&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;baker&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;06:55&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_area&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;depends_on&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;measure_flour&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;activate_yeast&quot;</span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mix_dough"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"🥄"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"06:55"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_area"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"depends_on"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"measure_flour"</span><span class="p">,</span><span class="w"> </span><span class="s2">"activate_yeast"</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<hr />
-<h3 id="task-interactions-the-engine-of-the-simulation">Task Interactions: The Engine of the Simulation<a class="headerlink" href="#task-interactions-the-engine-of-the-simulation" title="Permanent link">&para;</a></h3>
-<p>The <code class="docs-inline-code">interactions</code> array is the most powerful part of a task definition. It's how you make your simulation dynamic by changing the state of objects. An interaction is an object that describes a change.</p>
-<h4 id="1-property_changes">1. <code class="docs-inline-code">property_changes</code><a class="headerlink" href="#1-property_changes" title="Permanent link">&para;</a></h4>
+<hr class="docs-hr"/>
+<h3 class="docs-heading" id="task-interactions-the-engine-of-the-simulation">Task Interactions: The Engine of the Simulation<a class="headerlink" href="#task-interactions-the-engine-of-the-simulation" title="Link to this section">¶</a></h3>
+<p>The <code class="docs-inline-code">interactions</code> array is the most powerful part of a task definition. It’s how you make your simulation dynamic by changing the state of objects. An interaction is an object that describes a change.</p>
+<h4 class="docs-heading" id="1-property_changes">1. <code class="docs-inline-code">property_changes</code><a class="headerlink" href="#1-property_changes" title="Link to this section">¶</a></h4>
 <p>This is the most common interaction type. It allows you to change the value of any property of any object.</p>
 <p><strong>A) Changing State (From/To)</strong>
-Use this to change a text-based property, like an equipment's <code class="docs-inline-code">state</code>.</p>
+Use this to change a text-based property, like an equipment’s <code class="docs-inline-code">state</code>.</p>
 <p><em>Example:</em> A task that makes a mixer dirty.</p>
-<div class="codehilite"><pre><span></span><code><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">  </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixer&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;clean&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dirty&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixer"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"clean"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dirty"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">]</span>
 </code></pre></div>
-
-<p>The <code class="docs-inline-code">from</code> value is used by the validation engine to ensure the simulation is realistic (e.g., you can't make a mixer dirty if it's already dirty).</p>
+<p>The <code class="docs-inline-code">from</code> value is used by the validation engine to ensure the simulation is realistic (e.g., you can’t make a mixer dirty if it’s already dirty).</p>
 <p><strong>B) Changing a Numerical Value (Delta)</strong>
-Use this to increase or decrease a number, like a resource's <code class="docs-inline-code">quantity</code>.</p>
+Use this to increase or decrease a number, like a resource’s <code class="docs-inline-code">quantity</code>.</p>
 <p><em>Example:</em> A task that uses up 15g of yeast.</p>
-<div class="codehilite"><pre><span></span><code><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">  </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;yeast&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;delta&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-15</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"yeast"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">-15</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">]</span>
 </code></pre></div>
-
 <p><strong>C) Changing Position (3D Coordinates)</strong>
 For digital objects, you can change their position in 3D space:</p>
 <p><em>Example:</em> Moving a digital object in virtual space.</p>
-<div class="codehilite"><pre><span></span><code><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">  </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;inventory_bot&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"inventory_bot"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">]</span>
 </code></pre></div>
-
-<h4 id="2-add_objects">2. <code class="docs-inline-code">add_objects</code><a class="headerlink" href="#2-add_objects" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="2-add_objects">2. <code class="docs-inline-code">add_objects</code><a class="headerlink" href="#2-add_objects" title="Link to this section">¶</a></h4>
 <p>This interaction allows a task to create one or more new objects and add them to the simulation. This is perfect for tasks that produce something new.</p>
-<p><em>Example:</em> A "receive_shipment" task that adds new resources to the inventory.</p>
-<div class="codehilite"><pre><span></span><code><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<p><em>Example:</em> A “receive_shipment” task that adds new resources to the inventory.</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">  </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;add_objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nt">"add_objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;resource&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;new_flour_shipment&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Fresh Flour&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🌾&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;quantity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kg&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;storage_room&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"new_flour_shipment"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Fresh Flour"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"🌾"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kg"</span><span class="p">,</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_room"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">]</span>
 </code></pre></div>
-
-<h4 id="3-remove_objects">3. <code class="docs-inline-code">remove_objects</code><a class="headerlink" href="#3-remove_objects" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="3-remove_objects">3. <code class="docs-inline-code">remove_objects</code><a class="headerlink" href="#3-remove_objects" title="Link to this section">¶</a></h4>
 <p>This interaction allows a task to remove an object from the simulation. This is useful for representing items that are fully consumed, discarded, or delivered.</p>
-<p><em>Example:</em> A "deliver_order" task that removes the final product from the simulation.</p>
-<div class="codehilite"><pre><span></span><code><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<p><em>Example:</em> A “deliver_order” task that removes the final product from the simulation.</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">  </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;remove_objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;baked_bread_order_123&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="nt">"remove_objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"baked_bread_order_123"</span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">]</span>
 </code></pre></div>
-
 <p>By combining these different object and task definitions, you can create rich, dynamic, and realistic simulations of almost any process.</p>
                     </div>
                     

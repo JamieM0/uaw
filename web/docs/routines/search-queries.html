@@ -63,36 +63,34 @@
 
                     <div class="docs-content">
                         <p>This script utilizes a Large Language Model (LLM) to generate a diverse list of search engine queries based on a user-provided topic. It aims to produce queries that facilitate comprehensive and relevant information retrieval.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
 <p>The primary goal of <code class="docs-inline-code">search-queries.py</code> is to automate the creation of varied search queries for a given subject. This includes general overview queries, specific queries targeting authoritative sources, question-based queries, alternative phrasings, and queries using advanced search operators.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>Run the script from the command line:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>search-queries.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>search-queries.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;input_json&gt;</code>: (Required) Path to the input JSON file containing the topic and configuration.</li>
 <li><code class="docs-inline-code">[output_json]</code>: (Optional) Path to save the output JSON file. If not provided, a path is generated automatically based on the script name and a UUID.</li>
 </ul>
 <p>The script uses the <code class="docs-inline-code">handle_command_args</code> utility function to parse these arguments.</p>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <p>The script expects a JSON input file with the following structure:</p>
 <ul class="docs-list">
 <li><code class="docs-inline-code">topic</code>: (String, Required) The subject for which to generate search queries.</li>
-<li><code class="docs-inline-code">model</code>: (String, Optional) The identifier for the LLM to use (defaults to "gemma3" if not provided in the script, although the script shows it defaults to "gemma3" within the function).</li>
+<li><code class="docs-inline-code">model</code>: (String, Optional) The identifier for the LLM to use (defaults to “gemma3” if not provided in the script, although the script shows it defaults to “gemma3” within the function).</li>
 <li><code class="docs-inline-code">parameters</code>: (Object, Optional) Any additional parameters to pass to the LLM during the chat interaction (e.g., temperature, top_p).</li>
 </ul>
 <p>Example (<code class="docs-inline-code">examples/search-queries-in.json</code>):</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;topic&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Sustainable agriculture practices&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gemma3&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;temperature&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.7</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"topic"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Sustainable agriculture practices"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gemma3"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"temperature"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.7</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><code class="docs-inline-code">generate_search_queries(input_data)</code>: Takes the loaded input data, constructs prompts, interacts with the LLM via <code class="docs-inline-code">chat_with_llm</code>, processes the response using <code class="docs-inline-code">parse_llm_json_response</code>, and returns a list of generated queries.</li>
 <li><code class="docs-inline-code">main()</code>: Handles command-line arguments using <code class="docs-inline-code">handle_command_args</code>, loads the input JSON using <code class="docs-inline-code">load_json</code>, calls <code class="docs-inline-code">generate_search_queries</code>, prepares metadata using <code class="docs-inline-code">create_output_metadata</code> and <code class="docs-inline-code">get_output_filepath</code>, structures the final output data, and saves it using <code class="docs-inline-code">save_output</code>.</li>
@@ -100,26 +98,26 @@
 <li><code class="docs-inline-code">load_json</code>: Loads data from a JSON file.</li>
 <li><code class="docs-inline-code">save_output</code>: Saves data to a JSON file.</li>
 <li><code class="docs-inline-code">chat_with_llm</code>: Manages the interaction with the specified LLM.</li>
-<li><code class="docs-inline-code">parse_llm_json_response</code>: Parses the LLM's response, attempting to interpret it as JSON or splitting it into lines if parsing fails.</li>
+<li><code class="docs-inline-code">parse_llm_json_response</code>: Parses the LLM’s response, attempting to interpret it as JSON or splitting it into lines if parsing fails.</li>
 <li><code class="docs-inline-code">create_output_metadata</code>: Generates standard metadata (script name, timestamp, UUID).</li>
 <li><code class="docs-inline-code">get_output_filepath</code>: Determines the appropriate output file path.</li>
 <li><code class="docs-inline-code">handle_command_args</code>: Parses command-line arguments for input and output file paths.</li>
 </ul>
 </li>
 </ul>
-<h2 id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Link to this section">¶</a></h2>
 <ol class="docs-list docs-list-ordered">
 <li><strong>System Prompt Construction</strong>: A detailed system message instructs the LLM to act as a search query generation assistant. It specifies the goal: generate multiple high-quality queries for a given topic, covering various types (general, specific, question-based, alternative phrasings, advanced operators like <code class="docs-inline-code">site:</code>, <code class="docs-inline-code">filetype:</code>, <code class="docs-inline-code">intitle:</code>).</li>
 <li><strong>Output Format Request</strong>: The system prompt explicitly asks the LLM to output the queries in a simple list format, with each query separated by a single newline, and without any numbers, symbols, or extra formatting.</li>
 <li><strong>User Prompt Construction</strong>: A simple user message is created, providing the <code class="docs-inline-code">topic</code> from the input file to the LLM.</li>
 <li><strong>LLM Call</strong>: The <code class="docs-inline-code">chat_with_llm</code> function is called with the specified <code class="docs-inline-code">model</code>, the constructed system and user messages, and any optional <code class="docs-inline-code">parameters</code>.</li>
 </ol>
-<h2 id="output-processing">Output Processing<a class="headerlink" href="#output-processing" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output-processing">Output Processing<a class="headerlink" href="#output-processing" title="Link to this section">¶</a></h2>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Parsing</strong>: The raw text response from the LLM is passed to the <code class="docs-inline-code">parse_llm_json_response</code> utility function with <code class="docs-inline-code">include_children=False</code>. This function attempts to parse the response. Based on typical utility function behavior, it likely tries to parse the response as a JSON list first. If that fails, it might split the raw text by newlines to create a list of strings, where each string is a query.</li>
-<li><strong>Validation &amp; Fallback</strong>: The script checks if the result from <code class="docs-inline-code">parse_llm_json_response</code> is a list. If it's not a list (indicating parsing or processing failed to produce the expected structure), it defaults to a list containing a single fallback message: <code class="docs-inline-code">["No valid search queries could be generated"]</code>.</li>
+<li><strong>Validation &amp; Fallback</strong>: The script checks if the result from <code class="docs-inline-code">parse_llm_json_response</code> is a list. If it’s not a list (indicating parsing or processing failed to produce the expected structure), it defaults to a list containing a single fallback message: <code class="docs-inline-code">["No valid search queries could be generated"]</code>.</li>
 </ol>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <p>The script generates a JSON output file containing:</p>
 <ul class="docs-list">
 <li><code class="docs-inline-code">metadata</code>: An object with information about the script execution (script name, timestamp, UUID).</li>
@@ -129,24 +127,24 @@
 <p>Example (<code class="docs-inline-code">examples/search-queries-out.json</code> structure):</p>
 <p>```json
 {
-  "metadata": {
-    "script": "Search Queries",
-    "timestamp": "YYYY-MM-DDTHH:MM:SS.ffffff",
-    "uuid": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  “metadata”: {
+    “script”: “Search Queries”,
+    “timestamp”: “YYYY-MM-DDTHH:MM:SS.ffffff”,
+    “uuid”: “xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx”
   },
-  "topic": "Sustainable agriculture practices",
-  "queries": [
-    "sustainable agriculture definition",
-    "benefits of sustainable farming",
-    "types of sustainable agriculture practices",
-    "organic farming vs sustainable agriculture",
-    "site:fao.org sustainable agriculture",
-    "filetype:pdf sustainable agriculture techniques",
-    "\"regenerative agriculture\" principles",
-    "how does sustainable agriculture help the environment?",
-    "challenges facing sustainable agriculture",
-    "intitle:\"sustainable farming\" case studies"
-    // ... more queries
+  “topic”: “Sustainable agriculture practices”,
+  “queries”: [
+    “sustainable agriculture definition”,
+    “benefits of sustainable farming”,
+    “types of sustainable agriculture practices”,
+    “organic farming vs sustainable agriculture”,
+    “site:fao.org sustainable agriculture”,
+    “filetype:pdf sustainable agriculture techniques”,
+    “"regenerative agriculture" principles”,
+    “how does sustainable agriculture help the environment?”,
+    “challenges facing sustainable agriculture”,
+    “intitle:"sustainable farming" case studies”
+    // … more queries
   ]
 }</p>
                     </div>

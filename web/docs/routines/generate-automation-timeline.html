@@ -63,13 +63,12 @@
 
                     <div class="docs-content">
                         <p>This script generates a historical timeline and future predictions for automation technologies related to a specific topic. It utilizes a Large Language Model (LLM) to create the timeline content based on the provided topic.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
 <p>The primary goal of this script is to produce a structured timeline detailing the evolution and projected future of automation within a given domain. It leverages an LLM to synthesize historical data and make informed predictions.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>The script is executed from the command line:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>generate_automation_timeline.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span><span class="w"> </span><span class="o">[</span>-saveInputs<span class="o">]</span><span class="w"> </span><span class="o">[</span>-uuid<span class="o">=</span><span class="s2">&quot;UUID&quot;</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>-flow_uuid<span class="o">=</span><span class="s2">&quot;FLOW-UUID&quot;</span><span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>generate_automation_timeline.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span><span class="w"> </span><span class="o">[</span>-saveInputs<span class="o">]</span><span class="w"> </span><span class="o">[</span>-uuid<span class="o">=</span><span class="s2">"UUID"</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>-flow_uuid<span class="o">=</span><span class="s2">"FLOW-UUID"</span><span class="o">]</span>
 </code></pre></div>
-
 <p><strong>Arguments:</strong></p>
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;input_json&gt;</code>: (Required) Path to the input JSON file containing the topic and configuration.</li>
@@ -78,34 +77,33 @@
 <li><code class="docs-inline-code">-uuid="UUID"</code>: (Optional) Custom UUID to use for the output file generation.</li>
 <li><code class="docs-inline-code">-flow_uuid="FLOW-UUID"</code>: (Optional) UUID representing the overarching flow this script execution is part of. Used for organizing saved inputs if <code class="docs-inline-code">-saveInputs</code> is active.</li>
 </ul>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <p>The script expects an input JSON file (<code class="docs-inline-code">&lt;input_json&gt;</code>) with the following structure:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;topic&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Your Automation Topic&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gemma3&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Or another LLM model identifier</span>
-<span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"topic"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Your Automation Topic"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gemma3"</span><span class="p">,</span><span class="w"> </span><span class="c1">// Or another LLM model identifier</span>
+<span class="w">  </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="c1">// Optional LLM parameters (e.g., temperature, top_p)</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;timeline&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// Optional: If provided, bypasses LLM generation</span>
-<span class="w">    </span><span class="nt">&quot;historical&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;1920s&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Description...&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"timeline"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// Optional: If provided, bypasses LLM generation</span>
+<span class="w">    </span><span class="nt">"historical"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"1920s"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Description..."</span><span class="p">,</span>
 <span class="w">      </span><span class="c1">// ... other decades</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;predictions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;2030s&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Prediction...&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"predictions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"2030s"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Prediction..."</span><span class="p">,</span>
 <span class="w">      </span><span class="c1">// ... other future decades</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">topic</code>: The subject for which the automation timeline should be generated.</li>
-<li><code class="docs-inline-code">model</code>: The identifier for the LLM to use (defaults to "gemma3" if not specified).</li>
+<li><code class="docs-inline-code">model</code>: The identifier for the LLM to use (defaults to “gemma3” if not specified).</li>
 <li><code class="docs-inline-code">parameters</code>: An object containing any specific parameters to pass to the LLM during generation.</li>
 <li><code class="docs-inline-code">timeline</code>: (Optional) If this key exists and contains <code class="docs-inline-code">historical</code> and <code class="docs-inline-code">predictions</code> objects, the script will use this data directly instead of querying the LLM.</li>
 </ul>
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><strong><code class="docs-inline-code">generate_automation_timeline(input_data, save_inputs=False)</code></strong>:<ul class="docs-list">
 <li>Extracts <code class="docs-inline-code">topic</code>, <code class="docs-inline-code">model</code>, and <code class="docs-inline-code">parameters</code> from the input data.</li>
@@ -130,41 +128,40 @@
 </li>
 <li><strong><code class="docs-inline-code">utils</code> Functions</strong>: The script relies on helper functions imported from <code class="docs-inline-code">utils.py</code> for common tasks like loading/saving JSON (<code class="docs-inline-code">load_json</code>, <code class="docs-inline-code">save_output</code>, <code class="docs-inline-code">saveToFile</code>), interacting with the LLM (<code class="docs-inline-code">chat_with_llm</code>), parsing LLM responses (<code class="docs-inline-code">parse_llm_json_response</code>), creating metadata (<code class="docs-inline-code">create_output_metadata</code>), determining file paths (<code class="docs-inline-code">get_output_filepath</code>), and handling arguments (<code class="docs-inline-code">handle_command_args</code>).</li>
 </ul>
-<h2 id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Link to this section">¶</a></h2>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Prompt Construction</strong>: A system prompt instructs the LLM to act as an AI specialized in automation timelines. The user prompt specifies the <code class="docs-inline-code">topic</code> and requests:<ul class="docs-list">
 <li>Historical developments by decade (1920s-present).</li>
 <li>Future predictions by decade until full automation.</li>
-<li>Output formatted as a JSON object with <code class="docs-inline-code">historical</code> and <code class="docs-inline-code">predictions</code> keys, where each key holds an object mapping decades (e.g., "1950s", "2040s") to descriptive strings.</li>
+<li>Output formatted as a JSON object with <code class="docs-inline-code">historical</code> and <code class="docs-inline-code">predictions</code> keys, where each key holds an object mapping decades (e.g., “1950s”, “2040s”) to descriptive strings.</li>
 </ul>
 </li>
 <li><strong>API Call</strong>: The <code class="docs-inline-code">chat_with_llm</code> function sends these prompts to the specified LLM (<code class="docs-inline-code">model</code>).</li>
 <li><strong>Response Parsing</strong>: The script expects the LLM to return a valid JSON string matching the requested format. <code class="docs-inline-code">parse_llm_json_response</code> attempts to decode this JSON.</li>
 <li><strong>Bypass</strong>: If the input JSON already contains a <code class="docs-inline-code">timeline</code> key, the LLM interaction steps are skipped entirely, and the provided timeline is used instead.</li>
 </ol>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <p>The script generates a JSON file (at <code class="docs-inline-code">[output_json]</code> or a default path) containing:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;process_metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;script_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Automation Timeline Generation&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;start_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;YYYY-MM-DD HH:MM:SS.ffffff&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;end_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;YYYY-MM-DD HH:MM:SS.ffffff&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;duration_seconds&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">12.345</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;uuid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;generated-or-provided-uuid&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"process_metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"script_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Automation Timeline Generation"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"YYYY-MM-DD HH:MM:SS.ffffff"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"end_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"YYYY-MM-DD HH:MM:SS.ffffff"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"duration_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mf">12.345</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"uuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"generated-or-provided-uuid"</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;timeline&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;historical&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;1920s&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"timeline"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"historical"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"1920s"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
 <span class="w">      </span><span class="c1">// ... other decades</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;predictions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;2030s&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"predictions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"2030s"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
 <span class="w">      </span><span class="c1">// ... other future decades</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">process_metadata</code>: Information about the script execution.</li>
 <li><code class="docs-inline-code">timeline</code>: The core output, containing the <code class="docs-inline-code">historical</code> and <code class="docs-inline-code">predictions</code> data, either generated by the LLM or taken directly from the input file.</li>

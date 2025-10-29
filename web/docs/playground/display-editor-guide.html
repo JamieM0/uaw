@@ -63,41 +63,40 @@
 
                     <div class="docs-content">
                         <p>The Display Editor is a powerful tool within the UAW Simulation Playground for creating and managing digital displays and screen elements. This guide covers everything from basic display setup to advanced interactive interface design.</p>
-<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="overview">Overview<a class="headerlink" href="#overview" title="Link to this section">¶</a></h2>
 <p>Modern processes increasingly involve digital interfaces, control panels, dashboards, and screens. The Display Editor allows you to model these digital components and their interactions within your simulations, providing complete visibility into human-computer interaction workflows.</p>
-<h2 id="core-concepts">Core Concepts<a class="headerlink" href="#core-concepts" title="Permanent link">&para;</a></h2>
-<h3 id="displays">Displays<a class="headerlink" href="#displays" title="Permanent link">&para;</a></h3>
+<h2 class="docs-heading" id="core-concepts">Core Concepts<a class="headerlink" href="#core-concepts" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="displays">Displays<a class="headerlink" href="#displays" title="Link to this section">¶</a></h3>
 <p>Displays represent physical or virtual screens, monitors, dashboards, or any digital interface surface. They act as containers for screen elements and define the coordinate system for positioning interface components.</p>
-<h3 id="screen-elements">Screen Elements<a class="headerlink" href="#screen-elements" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="screen-elements">Screen Elements<a class="headerlink" href="#screen-elements" title="Link to this section">¶</a></h3>
 <p>Screen elements are the individual interactive components that live within displays. These can be windows, buttons, textboxes, labels, panels, menus, dialogs, or any custom interface element.</p>
-<h2 id="display-object-type">Display Object Type<a class="headerlink" href="#display-object-type" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="display-object-type">Display Object Type<a class="headerlink" href="#display-object-type" title="Link to this section">¶</a></h2>
 <p>A display object defines the properties and capabilities of a screen or digital interface:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production_control_panel&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;display&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Production Control Panel&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;📺&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;display_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_interface&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;resolution&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"production_control_panel"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"display"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Production Control Panel"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"📺"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"display_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_interface"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"resolution"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;viewport&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span>
+<span class="w">    </span><span class="nt">"viewport"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_room&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;active&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;refresh_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;touch_enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_room"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"active"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"refresh_rate"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"touch_enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="display-properties-reference">Display Properties Reference<a class="headerlink" href="#display-properties-reference" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="display-properties-reference">Display Properties Reference<a class="headerlink" href="#display-properties-reference" title="Link to this section">¶</a></h3>
 <div class="table-container"><table class="docs-table">
 <thead>
 <tr>
@@ -110,7 +109,7 @@
 <tr>
 <td><code class="docs-inline-code">display_type</code></td>
 <td>string</td>
-<td>Type of display (e.g., "dashboard", "control_interface", "information_display")</td>
+<td>Type of display (e.g., “dashboard”, “control_interface”, “information_display”)</td>
 </tr>
 <tr>
 <td><code class="docs-inline-code">resolution</code></td>
@@ -149,34 +148,33 @@
 </tr>
 </tbody>
 </table></div>
-<h2 id="screen-element-object-type">Screen Element Object Type<a class="headerlink" href="#screen-element-object-type" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="screen-element-object-type">Screen Element Object Type<a class="headerlink" href="#screen-element-object-type" title="Link to this section">¶</a></h2>
 <p>Screen elements are the building blocks of digital interfaces:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;temperature_label&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Temperature Status Display&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;emoji&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;🌡️&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;label&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;display_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production_control_panel&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"temperature_label"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Temperature Status Display"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"🌡️"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"label"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"display_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"production_control_panel"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span>
+<span class="w">    </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Temperature: 325°F&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;font_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">16</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;color&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;orange&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;visible&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;interactive&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="w">    </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Temperature: 325°F"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"font_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">16</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"color"</span><span class="p">:</span><span class="w"> </span><span class="s2">"orange"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"visible"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"interactive"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="screen-element-properties-reference">Screen Element Properties Reference<a class="headerlink" href="#screen-element-properties-reference" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="screen-element-properties-reference">Screen Element Properties Reference<a class="headerlink" href="#screen-element-properties-reference" title="Link to this section">¶</a></h3>
 <div class="table-container"><table class="docs-table">
 <thead>
 <tr>
@@ -223,388 +221,375 @@
 </tr>
 </tbody>
 </table></div>
-<h2 id="screen-element-types">Screen Element Types<a class="headerlink" href="#screen-element-types" title="Permanent link">&para;</a></h2>
-<h3 id="1-window">1. Window<a class="headerlink" href="#1-window" title="Permanent link">&para;</a></h3>
+<h2 class="docs-heading" id="screen-element-types">Screen Element Types<a class="headerlink" href="#screen-element-types" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="1-window">1. Window<a class="headerlink" href="#1-window" title="Link to this section">¶</a></h3>
 <p>Container elements that represent application windows or main interface areas.</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main_application_window&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;window&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Production Control System&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">800</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;resizable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;minimizable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;closable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;modal&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;visible&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"main_application_window"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"window"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Production Control System"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">800</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"resizable"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"minimizable"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"closable"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"modal"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"visible"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="2-button">2. Button<a class="headerlink" href="#2-button" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="2-button">2. Button<a class="headerlink" href="#2-button" title="Link to this section">¶</a></h3>
 <p>Interactive clickable elements for user input and actions.</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;start_process_button&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;button&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Start Process&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">120</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">40</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;color&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;font_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">14</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;button_style&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;raised&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"start_process_button"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"button"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Start Process"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">120</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">40</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"color"</span><span class="p">:</span><span class="w"> </span><span class="s2">"green"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"font_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">14</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"button_style"</span><span class="p">:</span><span class="w"> </span><span class="s2">"raised"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="3-textbox">3. Textbox<a class="headerlink" href="#3-textbox" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="3-textbox">3. Textbox<a class="headerlink" href="#3-textbox" title="Link to this section">¶</a></h3>
 <p>Input fields for text entry and editing.</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;operator_name_input&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;textbox&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;placeholder&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Enter operator name&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">150</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;max_length&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;read_only&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;password&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;border&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"operator_name_input"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"textbox"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"placeholder"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Enter operator name"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">150</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"max_length"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"read_only"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"password"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"border"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="4-label">4. Label<a class="headerlink" href="#4-label" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="4-label">4. Label<a class="headerlink" href="#4-label" title="Link to this section">¶</a></h3>
 <p>Static text elements for displaying information and field labels.</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;temperature_label&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;label&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Current Temperature: 72°F&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;font_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;font_weight&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;normal&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;color&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;text_align&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;left&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"temperature_label"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"label"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Current Temperature: 72°F"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"font_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"font_weight"</span><span class="p">:</span><span class="w"> </span><span class="s2">"normal"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"color"</span><span class="p">:</span><span class="w"> </span><span class="s2">"black"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"text_align"</span><span class="p">:</span><span class="w"> </span><span class="s2">"left"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="5-panel">5. Panel<a class="headerlink" href="#5-panel" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="5-panel">5. Panel<a class="headerlink" href="#5-panel" title="Link to this section">¶</a></h3>
 <p>Container elements for grouping related interface components.</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_panel&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;panel&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Process Controls&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">80</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">250</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;border&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;background_color&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;lightgray&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;collapsible&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;collapsed&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_panel"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"panel"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Process Controls"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">80</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">250</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"border"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"background_color"</span><span class="p">:</span><span class="w"> </span><span class="s2">"lightgray"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"collapsible"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"collapsed"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="6-menu">6. Menu<a class="headerlink" href="#6-menu" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="6-menu">6. Menu<a class="headerlink" href="#6-menu" title="Link to this section">¶</a></h3>
 <p>Navigation elements including menu bars, context menus, and dropdown menus.</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main_menu&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;menu&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;menu_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;horizontal&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">800</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;items&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;File&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;submenu&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;New&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Open&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Save&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Exit&quot;</span><span class="p">]</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Edit&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;submenu&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Copy&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Paste&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Clear&quot;</span><span class="p">]</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;View&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;submenu&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Refresh&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Full Screen&quot;</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"main_menu"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"menu"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"menu_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"horizontal"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">800</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"items"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"File"</span><span class="p">,</span><span class="w"> </span><span class="nt">"submenu"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"New"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Open"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Save"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Exit"</span><span class="p">]</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Edit"</span><span class="p">,</span><span class="w"> </span><span class="nt">"submenu"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"Copy"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Paste"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Clear"</span><span class="p">]</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"View"</span><span class="p">,</span><span class="w"> </span><span class="nt">"submenu"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"Refresh"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Full Screen"</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="7-dialog">7. Dialog<a class="headerlink" href="#7-dialog" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="7-dialog">7. Dialog<a class="headerlink" href="#7-dialog" title="Link to this section">¶</a></h3>
 <p>Modal windows for user interactions, confirmations, and data entry.</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;confirmation_dialog&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dialog&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Confirm Action&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Are you sure you want to stop the production line?&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">400</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">150</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;modal&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;buttons&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Yes&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;No&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Cancel&quot;</span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;default_button&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;No&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;closable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"confirmation_dialog"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dialog"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Confirm Action"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Are you sure you want to stop the production line?"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">400</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">150</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"modal"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"buttons"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"Yes"</span><span class="p">,</span><span class="w"> </span><span class="s2">"No"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Cancel"</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"default_button"</span><span class="p">:</span><span class="w"> </span><span class="s2">"No"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"closable"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="using-the-display-editor">Using the Display Editor<a class="headerlink" href="#using-the-display-editor" title="Permanent link">&para;</a></h2>
-<h3 id="accessing-the-display-editor">Accessing the Display Editor<a class="headerlink" href="#accessing-the-display-editor" title="Permanent link">&para;</a></h3>
+<h2 class="docs-heading" id="using-the-display-editor">Using the Display Editor<a class="headerlink" href="#using-the-display-editor" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="accessing-the-display-editor">Accessing the Display Editor<a class="headerlink" href="#accessing-the-display-editor" title="Link to this section">¶</a></h3>
 <ol class="docs-list docs-list-ordered">
 <li>Open the Simulation Playground</li>
 <li>Click the <strong>Display Editor</strong> tab in the Simulation Panel</li>
 <li>Your displays will be listed in the displays panel</li>
 <li>Select a display to edit its screen elements</li>
 </ol>
-<h3 id="display-editor-interface">Display Editor Interface<a class="headerlink" href="#display-editor-interface" title="Permanent link">&para;</a></h3>
-<h4 id="display-management-panel">Display Management Panel<a class="headerlink" href="#display-management-panel" title="Permanent link">&para;</a></h4>
+<h3 class="docs-heading" id="display-editor-interface">Display Editor Interface<a class="headerlink" href="#display-editor-interface" title="Link to this section">¶</a></h3>
+<h4 class="docs-heading" id="display-management-panel">Display Management Panel<a class="headerlink" href="#display-management-panel" title="Link to this section">¶</a></h4>
 <ul class="docs-list">
 <li><strong>Display List:</strong> Shows all displays in your simulation</li>
 <li><strong>Add Display:</strong> Button to create new displays</li>
 <li><strong>Display Properties:</strong> Edit display settings and properties</li>
 <li><strong>Display Preview:</strong> Real-time preview of the selected display</li>
 </ul>
-<h4 id="screen-element-panel">Screen Element Panel<a class="headerlink" href="#screen-element-panel" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="screen-element-panel">Screen Element Panel<a class="headerlink" href="#screen-element-panel" title="Link to this section">¶</a></h4>
 <ul class="docs-list">
 <li><strong>Element Palette:</strong> Drag and drop different element types</li>
 <li><strong>Element List:</strong> Shows all elements in the current display</li>
 <li><strong>Property Editor:</strong> Modify selected element properties</li>
 <li><strong>Layer Manager:</strong> Organize element z-index and visibility</li>
 </ul>
-<h4 id="visual-editor">Visual Editor<a class="headerlink" href="#visual-editor" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="visual-editor">Visual Editor<a class="headerlink" href="#visual-editor" title="Link to this section">¶</a></h4>
 <ul class="docs-list">
 <li><strong>Canvas:</strong> Visual representation of the display with interactive elements</li>
 <li><strong>Selection Tools:</strong> Click to select and move elements</li>
 <li><strong>Alignment Guides:</strong> Snap to grid and alignment helpers</li>
 <li><strong>Zoom Controls:</strong> Navigate large displays effectively</li>
 </ul>
-<h3 id="creating-displays-and-elements">Creating Displays and Elements<a class="headerlink" href="#creating-displays-and-elements" title="Permanent link">&para;</a></h3>
-<h4 id="step-1-create-a-display">Step 1: Create a Display<a class="headerlink" href="#step-1-create-a-display" title="Permanent link">&para;</a></h4>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main_hmi&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;display&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Human Machine Interface&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;display_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hmi&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;resolution&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1280</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">800</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;operator_station&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;active&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<h3 class="docs-heading" id="creating-displays-and-elements">Creating Displays and Elements<a class="headerlink" href="#creating-displays-and-elements" title="Link to this section">¶</a></h3>
+<h4 class="docs-heading" id="step-1-create-a-display">Step 1: Create a Display<a class="headerlink" href="#step-1-create-a-display" title="Link to this section">¶</a></h4>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"main_hmi"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"display"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Human Machine Interface"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"display_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"hmi"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"resolution"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">1280</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">800</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"operator_station"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"active"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h4 id="step-2-add-screen-elements">Step 2: Add Screen Elements<a class="headerlink" href="#step-2-add-screen-elements" title="Permanent link">&para;</a></h4>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;start_button&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;button&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;display_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main_hmi&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">700</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;START&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;color&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;green&quot;</span>
+<h4 class="docs-heading" id="step-2-add-screen-elements">Step 2: Add Screen Elements<a class="headerlink" href="#step-2-add-screen-elements" title="Link to this section">¶</a></h4>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"start_button"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"button"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"display_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"main_hmi"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">700</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"START"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"color"</span><span class="p">:</span><span class="w"> </span><span class="s2">"green"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h4 id="step-3-add-interactions">Step 3: Add Interactions<a class="headerlink" href="#step-3-add-interactions" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="step-3-add-interactions">Step 3: Add Interactions<a class="headerlink" href="#step-3-add-interactions" title="Link to this section">¶</a></h4>
 <p>Tasks can interact with screen elements to create dynamic interfaces:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;system_startup&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;operator&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"system_startup"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"operator"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;start_button&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;color&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;green&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gray&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"start_button"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"color"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"green"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gray"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;status_label&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Ready&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Starting System...&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"status_label"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Ready"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Starting System..."</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="advanced-display-features">Advanced Display Features<a class="headerlink" href="#advanced-display-features" title="Permanent link">&para;</a></h2>
-<h3 id="multi-display-systems">Multi-Display Systems<a class="headerlink" href="#multi-display-systems" title="Permanent link">&para;</a></h3>
+<h2 class="docs-heading" id="advanced-display-features">Advanced Display Features<a class="headerlink" href="#advanced-display-features" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="multi-display-systems">Multi-Display Systems<a class="headerlink" href="#multi-display-systems" title="Link to this section">¶</a></h3>
 <p>Create complex control rooms with multiple coordinated displays:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;overview_display&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;display&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Plant Overview&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;display_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;overview&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;resolution&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3840</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2160</span><span class="w"> </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_room&quot;</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"overview_display"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"display"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Plant Overview"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"display_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"overview"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"resolution"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">3840</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">2160</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_room"</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;detail_display&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;display&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Process Details&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;display_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;detail_view&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;resolution&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span><span class="w"> </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_room&quot;</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"detail_display"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"display"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Process Details"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"display_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"detail_view"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"resolution"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_room"</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="dynamic-content-updates">Dynamic Content Updates<a class="headerlink" href="#dynamic-content-updates" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="dynamic-content-updates">Dynamic Content Updates<a class="headerlink" href="#dynamic-content-updates" title="Link to this section">¶</a></h3>
 <p>Screen elements can change based on simulation state:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;update_production_metrics&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;system&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"update_production_metrics"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"system"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hourly_production&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;delta&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"hourly_production"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;efficiency_chart&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;data_series&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;add_point&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;11:00&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.87</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"efficiency_chart"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"data_series"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"add_point"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"11:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.87</span><span class="w"> </span><span class="p">}</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="alarm-and-alert-systems">Alarm and Alert Systems<a class="headerlink" href="#alarm-and-alert-systems" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="alarm-and-alert-systems">Alarm and Alert Systems<a class="headerlink" href="#alarm-and-alert-systems" title="Link to this section">¶</a></h3>
 <p>Create visual and interactive alarm systems:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;temperature_alarm&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dialog&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;display_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_panel&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Temperature Warning&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;High Temperature Detected&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">400</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">350</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">120</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;modal&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;buttons&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Acknowledge&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Dismiss&quot;</span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;closable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"temperature_alarm"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dialog"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"display_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_panel"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Temperature Warning"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"High Temperature Detected"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">400</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">350</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">120</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"modal"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"buttons"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"Acknowledge"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Dismiss"</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"closable"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="complete-example-manufacturing-dashboard">Complete Example: Manufacturing Dashboard<a class="headerlink" href="#complete-example-manufacturing-dashboard" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="complete-example-manufacturing-dashboard">Complete Example: Manufacturing Dashboard<a class="headerlink" href="#complete-example-manufacturing-dashboard" title="Link to this section">¶</a></h2>
 <p>This example demonstrates a comprehensive manufacturing dashboard with multiple screen elements and interactions:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;simulation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;manufacturing_dashboard&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;display&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Manufacturing Control Dashboard&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;display_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;manufacturing_hmi&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;resolution&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span><span class="w"> </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_room&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;active&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;touch_enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"manufacturing_dashboard"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"display"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Manufacturing Control Dashboard"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"display_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"manufacturing_hmi"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"resolution"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_room"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"active"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"touch_enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production_counter&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;label&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;display_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;manufacturing_dashboard&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">80</span><span class="w"> </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Production: 0 units&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;font_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;color&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;blue&quot;</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"production_counter"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"label"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"display_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"manufacturing_dashboard"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">80</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Production: 0 units"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"font_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"color"</span><span class="p">:</span><span class="w"> </span><span class="s2">"blue"</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;operator_input&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;textbox&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;display_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;manufacturing_dashboard&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">400</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;placeholder&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Enter batch number&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;max_length&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"operator_input"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"textbox"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"display_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"manufacturing_dashboard"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">400</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"placeholder"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Enter batch number"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"max_length"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_panel&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;panel&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;display_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;manufacturing_dashboard&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">400</span><span class="w"> </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="w"> </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Process Controls&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;border&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;background_color&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;lightgray&quot;</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_panel"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"panel"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"display_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"manufacturing_dashboard"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">400</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Process Controls"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"border"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"background_color"</span><span class="p">:</span><span class="w"> </span><span class="s2">"lightgray"</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;emergency_stop_btn&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;screen_element&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;element_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;button&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;display_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;manufacturing_dashboard&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1650</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;dimensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EMERGENCY STOP&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;color&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;font_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;font_weight&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bold&quot;</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"emergency_stop_btn"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"element_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"button"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"display_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"manufacturing_dashboard"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">1650</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"EMERGENCY STOP"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"color"</span><span class="p">:</span><span class="w"> </span><span class="s2">"red"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"font_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"font_weight"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bold"</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;update_dashboard_metrics&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;actor_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;monitoring_system&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;08:00&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;interactions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"update_dashboard_metrics"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"monitoring_system"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"08:00"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">          </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production_counter&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">              </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Production: 0 units&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Production: 45 units&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"production_counter"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">"text"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Production: 0 units"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Production: 45 units"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">            </span><span class="p">}</span>
 <span class="w">          </span><span class="p">},</span>
 <span class="w">          </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;operator_input&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">              </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BATCH001&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"operator_input"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"BATCH001"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">            </span><span class="p">}</span>
 <span class="w">          </span><span class="p">},</span>
 <span class="w">          </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control_panel&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;property_changes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">              </span><span class="nt">&quot;background_color&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;lightgray&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;lightgreen&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"control_panel"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">"background_color"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"lightgray"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"lightgreen"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">            </span><span class="p">}</span>
 <span class="w">          </span><span class="p">}</span>
 <span class="w">        </span><span class="p">]</span>
@@ -613,39 +598,38 @@
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
-<h3 id="display-design">Display Design<a class="headerlink" href="#display-design" title="Permanent link">&para;</a></h3>
+<h2 class="docs-heading" id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="display-design">Display Design<a class="headerlink" href="#display-design" title="Link to this section">¶</a></h3>
 <ul class="docs-list">
 <li><strong>Keep interfaces clean and uncluttered</strong></li>
 <li><strong>Use consistent color schemes and fonts</strong></li>
 <li><strong>Group related information together</strong></li>
 <li><strong>Provide clear visual hierarchy with size and positioning</strong></li>
 </ul>
-<h3 id="screen-element-organization">Screen Element Organization<a class="headerlink" href="#screen-element-organization" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="screen-element-organization">Screen Element Organization<a class="headerlink" href="#screen-element-organization" title="Link to this section">¶</a></h3>
 <ul class="docs-list">
 <li><strong>Use meaningful IDs and names</strong></li>
 <li><strong>Organize elements with appropriate z-index values</strong></li>
 <li><strong>Consider different screen resolutions and sizes</strong></li>
 <li><strong>Plan for responsive behavior</strong></li>
 </ul>
-<h3 id="interaction-design">Interaction Design<a class="headerlink" href="#interaction-design" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="interaction-design">Interaction Design<a class="headerlink" href="#interaction-design" title="Link to this section">¶</a></h3>
 <ul class="docs-list">
 <li><strong>Make interactive elements obviously clickable</strong></li>
 <li><strong>Provide visual feedback for user actions</strong></li>
 <li><strong>Use appropriate colors for different states (normal, warning, error)</strong></li>
 <li><strong>Consider accessibility and usability principles</strong></li>
 </ul>
-<h3 id="performance-considerations">Performance Considerations<a class="headerlink" href="#performance-considerations" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="performance-considerations">Performance Considerations<a class="headerlink" href="#performance-considerations" title="Link to this section">¶</a></h3>
 <ul class="docs-list">
 <li><strong>Limit the number of real-time updating elements</strong></li>
 <li><strong>Use efficient data structures for chart data</strong></li>
 <li><strong>Consider display refresh rates for smooth animations</strong></li>
 <li><strong>Optimize image and video assets</strong></li>
 </ul>
-<h2 id="integration-with-tasks">Integration with Tasks<a class="headerlink" href="#integration-with-tasks" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="integration-with-tasks">Integration with Tasks<a class="headerlink" href="#integration-with-tasks" title="Link to this section">¶</a></h2>
 <p>Screen elements can be modified by tasks to create dynamic, responsive interfaces that reflect the actual state of your process. This allows you to model complete human-machine interaction workflows and understand how digital interfaces support operational processes.</p>
-<p>Use the Display Editor to create realistic digital interfaces that enhance your simulation's accuracy and provide insights into the role of technology in modern automation processes.</p>
+<p>Use the Display Editor to create realistic digital interfaces that enhance your simulation’s accuracy and provide insights into the role of technology in modern automation processes.</p>
                     </div>
                     
                     <footer class="docs-footer">

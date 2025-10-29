@@ -63,13 +63,12 @@
 
                     <div class="docs-content">
                         <p>This script utilizes a Large Language Model (LLM) to generate a list of specific technical, practical, and conceptual challenges related to automating tasks within a given topic or field.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
 <p>The primary goal of this script is to identify and articulate the difficulties encountered when attempting to automate processes in a specific domain. It prompts an LLM to list challenges, focusing on technical limitations, practical constraints, and the nuances of human expertise that are hard to replicate.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>The script is executed from the command line:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>generate-automation-challenges.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span><span class="w"> </span><span class="o">[</span>-saveInputs<span class="o">]</span><span class="w"> </span><span class="o">[</span>-uuid<span class="o">=</span><span class="s2">&quot;UUID&quot;</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>-flow_uuid<span class="o">=</span><span class="s2">&quot;FLOW-UUID&quot;</span><span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>generate-automation-challenges.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span><span class="w"> </span><span class="o">[</span>-saveInputs<span class="o">]</span><span class="w"> </span><span class="o">[</span>-uuid<span class="o">=</span><span class="s2">"UUID"</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>-flow_uuid<span class="o">=</span><span class="s2">"FLOW-UUID"</span><span class="o">]</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;input_json&gt;</code>: (Required) Path to the input JSON file containing the topic and LLM parameters.</li>
 <li><code class="docs-inline-code">[output_json]</code>: (Optional) Path where the output JSON file should be saved. If omitted, a default path is generated based on the script name and a UUID.</li>
@@ -77,16 +76,15 @@
 <li><code class="docs-inline-code">-uuid="UUID"</code>: (Optional) Specify a custom UUID for the output file generation.</li>
 <li><code class="docs-inline-code">-flow_uuid="FLOW-UUID"</code>: (Optional) Specify a UUID for the flow, used for saving inputs when <code class="docs-inline-code">-saveInputs</code> is active.</li>
 </ul>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <p>The script expects an input JSON file (<code class="docs-inline-code">&lt;input_json&gt;</code>) with the following structure:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;topic&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The specific field or topic for challenge analysis&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gemma3&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Optional: Specify the LLM model (defaults if not provided)</span>
-<span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="c1">// Optional: Dictionary of parameters for the LLM call</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"topic"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The specific field or topic for challenge analysis"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gemma3"</span><span class="p">,</span><span class="w"> </span><span class="c1">// Optional: Specify the LLM model (defaults if not provided)</span>
+<span class="w">  </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="c1">// Optional: Dictionary of parameters for the LLM call</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><strong><code class="docs-inline-code">generate_automation_challenges(input_data, save_inputs=False)</code></strong>:<ul class="docs-list">
 <li>Extracts <code class="docs-inline-code">topic</code>, <code class="docs-inline-code">model</code>, and <code class="docs-inline-code">parameters</code> from the input data.</li>
@@ -111,17 +109,17 @@
 </li>
 <li><strong><code class="docs-inline-code">utils</code> Module Functions</strong>: The script relies on helper functions from <code class="docs-inline-code">utils.py</code> for common tasks like loading/saving JSON (<code class="docs-inline-code">load_json</code>, <code class="docs-inline-code">save_output</code>, <code class="docs-inline-code">saveToFile</code>), interacting with the LLM (<code class="docs-inline-code">chat_with_llm</code>), parsing LLM responses (<code class="docs-inline-code">parse_llm_json_response</code>), handling arguments (<code class="docs-inline-code">handle_command_args</code>), managing output files (<code class="docs-inline-code">get_output_filepath</code>), and creating metadata (<code class="docs-inline-code">create_output_metadata</code>).</li>
 </ul>
-<h2 id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Link to this section">¶</a></h2>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Prompt Construction</strong>:<ul class="docs-list">
-<li>A system message defines the AI's role as an expert in automation challenges.</li>
+<li>A system message defines the AI’s role as an expert in automation challenges.</li>
 <li>A user message requests 4-8 specific challenges for the provided <code class="docs-inline-code">topic</code>, asking for a title and detailed explanation for each, focusing on technical, practical, and human factors. It explicitly requests the output in JSON format.</li>
 </ul>
 </li>
 <li><strong>API Call</strong>: The <code class="docs-inline-code">chat_with_llm</code> function sends these prompts to the specified LLM.</li>
 <li><strong>Response Parsing</strong>: The script expects the LLM to return a JSON object containing a list of challenges, each with a <code class="docs-inline-code">title</code> and <code class="docs-inline-code">explanation</code>. The <code class="docs-inline-code">parse_llm_json_response</code> function handles extracting this data. If the response is not valid JSON, an error is printed.</li>
 </ol>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <p>The script generates a JSON output file containing:</p>
 <ul class="docs-list">
 <li><code class="docs-inline-code">process_metadata</code>: Information about the script execution (name, start time, UUID).</li>
@@ -130,23 +128,23 @@
 <p>Example Output Structure:</p>
 <p>```json
 {
-  "process_metadata": {
-    "script_name": "Automation Challenges Generation",
-    "start_time": "YYYY-MM-DDTHH:MM:SS.ffffff",
-    "end_time": "YYYY-MM-DDTHH:MM:SS.ffffff",
-    "duration_seconds": 10.5,
-    "uuid": "generated-or-provided-uuid"
+  “process_metadata”: {
+    “script_name”: “Automation Challenges Generation”,
+    “start_time”: “YYYY-MM-DDTHH:MM:SS.ffffff”,
+    “end_time”: “YYYY-MM-DDTHH:MM:SS.ffffff”,
+    “duration_seconds”: 10.5,
+    “uuid”: “generated-or-provided-uuid”
   },
-  "challenges": [
+  “challenges”: [
     {
-      "title": "Challenge Title 1",
-      "explanation": "Detailed explanation of the first challenge..."
+      “title”: “Challenge Title 1”,
+      “explanation”: “Detailed explanation of the first challenge…”
     },
     {
-      "title": "Challenge Title 2",
-      "explanation": "Detailed explanation of the second challenge..."
+      “title”: “Challenge Title 2”,
+      “explanation”: “Detailed explanation of the second challenge…”
     }
-    // ... more challenges
+    // … more challenges
   ]
 }</p>
                     </div>

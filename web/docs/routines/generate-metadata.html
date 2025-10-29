@@ -63,13 +63,12 @@
 
                     <div class="docs-content">
                         <p>This script generates standardized metadata for a technical topic page. It can either use pre-existing metadata provided in the input or leverage a Large Language Model (LLM) to generate new metadata based on the topic name.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
 <p>The primary goal of <code class="docs-inline-code">generate-metadata.py</code> is to create consistent and informative metadata for pages within a knowledge base or wiki, specifically focusing on automation topics. This metadata includes a title, subtitle, automation status, progress percentage, and a descriptive explanation.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>The script is executed from the command line:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>generate-metadata.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span><span class="w"> </span><span class="o">[</span>-saveInputs<span class="o">]</span><span class="w"> </span><span class="o">[</span>-uuid<span class="o">=</span><span class="s2">&quot;UUID&quot;</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>-flow_uuid<span class="o">=</span><span class="s2">&quot;FLOW-UUID&quot;</span><span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>generate-metadata.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span><span class="w"> </span><span class="o">[</span>-saveInputs<span class="o">]</span><span class="w"> </span><span class="o">[</span>-uuid<span class="o">=</span><span class="s2">"UUID"</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>-flow_uuid<span class="o">=</span><span class="s2">"FLOW-UUID"</span><span class="o">]</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;input_json&gt;</code>: (Required) Path to the input JSON file containing topic information.</li>
 <li><code class="docs-inline-code">[output_json]</code>: (Optional) Path where the output JSON containing the generated metadata should be saved. If not provided, a path is automatically generated based on the process name and a UUID.</li>
@@ -77,31 +76,30 @@
 <li><code class="docs-inline-code">-uuid="UUID"</code>: (Optional) Specify a custom UUID for the output file naming and process metadata.</li>
 <li><code class="docs-inline-code">-flow_uuid="FLOW-UUID"</code>: (Optional) Specify a UUID for the overall flow, used for organizing saved inputs when <code class="docs-inline-code">-saveInputs</code> is active.</li>
 </ul>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <p>The script expects an input JSON file (<code class="docs-inline-code">&lt;input_json&gt;</code>) with the following structure:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;topic&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Name of the Technical Topic&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gemma3&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Optional: LLM model to use (defaults if not provided)</span>
-<span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="c1">// Optional: Parameters for the LLM call</span>
-<span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// Optional: Pre-existing metadata object</span>
-<span class="w">    </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Existing Title&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;subtitle&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Existing Subtitle&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;automation_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Some Automation&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;automation_percentage&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;40%&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;explanation&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Existing explanation text...&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"topic"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Name of the Technical Topic"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gemma3"</span><span class="p">,</span><span class="w"> </span><span class="c1">// Optional: LLM model to use (defaults if not provided)</span>
+<span class="w">  </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="c1">// Optional: Parameters for the LLM call</span>
+<span class="w">  </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// Optional: Pre-existing metadata object</span>
+<span class="w">    </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Existing Title"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"subtitle"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Existing Subtitle"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"automation_status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Some Automation"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"automation_percentage"</span><span class="p">:</span><span class="w"> </span><span class="s2">"40%"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"explanation"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Existing explanation text..."</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p>If the <code class="docs-inline-code">metadata</code> key exists in the input JSON, its value will be used directly, bypassing the LLM generation step.</p>
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><strong><code class="docs-inline-code">generate_page_metadata(input_data, save_inputs=False)</code></strong>:<ul class="docs-list">
 <li>Checks if <code class="docs-inline-code">input_data</code> contains a <code class="docs-inline-code">metadata</code> key. If yes, returns that metadata.</li>
 <li>If no pre-existing metadata, it constructs system and user prompts based on the <code class="docs-inline-code">topic</code>.</li>
 <li>Optionally saves prompts using <code class="docs-inline-code">saveToFile</code> if <code class="docs-inline-code">save_inputs</code> is True and <code class="docs-inline-code">flowUUID</code> is set.</li>
 <li>Calls the LLM using <code class="docs-inline-code">chat_with_llm</code>.</li>
-<li>Parses the LLM's JSON response using <code class="docs-inline-code">parse_llm_json_response</code>.</li>
+<li>Parses the LLM’s JSON response using <code class="docs-inline-code">parse_llm_json_response</code>.</li>
 <li>Returns the parsed metadata dictionary.</li>
 </ul>
 </li>
@@ -127,7 +125,7 @@
 </ul>
 </li>
 </ul>
-<h2 id="metadata-generation-logic">Metadata Generation Logic<a class="headerlink" href="#metadata-generation-logic" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="metadata-generation-logic">Metadata Generation Logic<a class="headerlink" href="#metadata-generation-logic" title="Link to this section">¶</a></h2>
 <p>The script follows two main paths for obtaining metadata:</p>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Pre-existing Metadata:</strong> If the input JSON file contains a top-level key named <code class="docs-inline-code">"metadata"</code>, the script assumes this object contains the required metadata fields and uses it directly. The LLM is not called in this case.</li>
@@ -139,17 +137,17 @@
 </ul>
 </li>
 </ol>
-<h2 id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Link to this section">¶</a></h2>
 <p>When generating metadata via the LLM, the script specifically requests the following fields in JSON format:</p>
 <ul class="docs-list">
 <li><code class="docs-inline-code">title</code>: A short (2-3 words max), descriptive title based on the topic. No subtitles (text after a semicolon) should be included.</li>
-<li><code class="docs-inline-code">subtitle</code>: A brief explanation of the topic's scope.</li>
+<li><code class="docs-inline-code">subtitle</code>: A brief explanation of the topic’s scope.</li>
 <li><code class="docs-inline-code">automation_status</code>: The current level of automation, chosen from a predefined list (No Automation, Very Early Automation, Early Automation, Some Automation, Partially Fully Automated, Mostly Fully Automated, Fully Automated).</li>
-<li><code class="docs-inline-code">automation_percentage</code>: An estimated percentage (e.g., "25%") representing progress towards full automation. The prompt emphasizes being critical and avoiding exaggeration.</li>
+<li><code class="docs-inline-code">automation_percentage</code>: An estimated percentage (e.g., “25%”) representing progress towards full automation. The prompt emphasizes being critical and avoiding exaggeration.</li>
 <li><code class="docs-inline-code">explanation</code>: 2-3 full paragraphs describing the topic and its automation journey.</li>
 </ul>
 <p>The interaction relies on the <code class="docs-inline-code">chat_with_llm</code> utility function for the API call and <code class="docs-inline-code">parse_llm_json_response</code> to reliably extract the JSON block from the potentially verbose LLM response.</p>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <p>The script generates a JSON output file (at the path specified by <code class="docs-inline-code">[output_json]</code> or an auto-generated path). This file contains:</p>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Process Metadata:</strong> Information about the script execution itself (e.g., script name, timestamp, UUID), generated by <code class="docs-inline-code">create_output_metadata</code>.</li>
@@ -158,17 +156,17 @@
 <p>Example Output Structure:</p>
 <p>```json
 {
-  "process_name": "Page Metadata Generation",
-  "start_time": "2023-10-27T10:00:00.123456",
-  "end_time": "2023-10-27T10:00:05.678910",
-  "duration_seconds": 5.555,
-  "uuid": "generated-or-specified-uuid",
-  "page_metadata": {
-    "title": "Topic Title",
-    "subtitle": "Scope explanation.",
-    "automation_status": "Some Automation",
-    "automation_percentage": "30%",
-    "explanation": "Paragraph 1 describing the topic...\n\nParagraph 2 detailing automation journey..."
+  “process_name”: “Page Metadata Generation”,
+  “start_time”: “2023-10-27T10:00:00.123456”,
+  “end_time”: “2023-10-27T10:00:05.678910”,
+  “duration_seconds”: 5.555,
+  “uuid”: “generated-or-specified-uuid”,
+  “page_metadata”: {
+    “title”: “Topic Title”,
+    “subtitle”: “Scope explanation.”,
+    “automation_status”: “Some Automation”,
+    “automation_percentage”: “30%”,
+    “explanation”: “Paragraph 1 describing the topic…\n\nParagraph 2 detailing automation journey…”
   }
 }</p>
                     </div>

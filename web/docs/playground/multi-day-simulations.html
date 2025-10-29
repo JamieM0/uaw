@@ -63,7 +63,7 @@
 
                     <div class="docs-content">
                         <p>Multi-day simulations allow you to model processes that span multiple days with varying operational patterns. This feature enables you to simulate realistic business operations with weekdays, weekends, maintenance days, delivery days, and custom day types.</p>
-<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="overview">Overview<a class="headerlink" href="#overview" title="Link to this section">¶</a></h2>
 <p>The multi-day simulation system introduces several powerful concepts:</p>
 <ul class="docs-list">
 <li><strong>Day Types</strong>: Templates that define what happens during a specific type of day</li>
@@ -72,8 +72,8 @@
 <li><strong>Overrides</strong>: Special dates that use different day types than the pattern suggests</li>
 <li><strong>Date Expressions</strong>: Flexible date referencing system using shortcuts</li>
 </ul>
-<h2 id="key-concepts">Key Concepts<a class="headerlink" href="#key-concepts" title="Permanent link">&para;</a></h2>
-<h3 id="day-types">Day Types<a class="headerlink" href="#day-types" title="Permanent link">&para;</a></h3>
+<h2 class="docs-heading" id="key-concepts">Key Concepts<a class="headerlink" href="#key-concepts" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="day-types">Day Types<a class="headerlink" href="#day-types" title="Link to this section">¶</a></h3>
 <p>Day types are templates that define a complete single-day simulation. Each day type can have:</p>
 <ul class="docs-list">
 <li><strong>Configuration</strong>: Time ranges and settings specific to that day type</li>
@@ -82,70 +82,67 @@
 <li><strong>Tasks</strong>: The activities that occur during that day type</li>
 </ul>
 <p>Example day type structure:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;day_types&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;weekday&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Weekday Operations&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;start_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;06:00&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;end_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;18:00&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"day_types"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"weekday"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Weekday Operations"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"06:00"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"end_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"18:00"</span>
 <span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;locations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
-<span class="w">      </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
-<span class="w">      </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]</span>
+<span class="w">      </span><span class="nt">"locations"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;weekend&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Weekend Service&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;start_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;08:00&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;end_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;16:00&quot;</span>
+<span class="w">    </span><span class="nt">"weekend"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Weekend Service"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"08:00"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"end_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"16:00"</span>
 <span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;locations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
-<span class="w">      </span><span class="nt">&quot;objects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
-<span class="w">      </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]</span>
+<span class="w">      </span><span class="nt">"locations"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="calendar-system">Calendar System<a class="headerlink" href="#calendar-system" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="calendar-system">Calendar System<a class="headerlink" href="#calendar-system" title="Link to this section">¶</a></h3>
 <p>The calendar system determines which day type is used for each simulation day. It consists of:</p>
-<h4 id="pattern">Pattern<a class="headerlink" href="#pattern" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="pattern">Pattern<a class="headerlink" href="#pattern" title="Link to this section">¶</a></h4>
 <p>A repeating cycle that defines the default day types. Most commonly used for weekly patterns:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;calendar&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;cycle_length&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;pattern&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;day&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;weekday&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;day&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;weekday&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;day&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;weekday&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;day&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;weekday&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;day&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;weekday&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;day&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;weekend&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;day&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;closed&quot;</span><span class="w"> </span><span class="p">}</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"calendar"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"cycle_length"</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"pattern"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"day"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"weekday"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"day"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"weekday"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"day"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"weekday"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"day"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"weekday"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"day"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"weekday"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"day"</span><span class="p">:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"weekend"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"day"</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"closed"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h4 id="overrides">Overrides<a class="headerlink" href="#overrides" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="overrides">Overrides<a class="headerlink" href="#overrides" title="Link to this section">¶</a></h4>
 <p>Specific dates that deviate from the pattern (holidays, maintenance days, special events):</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;calendar&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;cycle_length&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;pattern&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;overrides&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;date.start + 7&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;maintenance&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;date.start + 10&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;delivery&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2025-12-25&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;closed&quot;</span><span class="w"> </span><span class="p">}</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"calendar"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"cycle_length"</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"pattern"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"overrides"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"date.start + 7"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"maintenance"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"date.start + 10"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delivery"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2025-12-25"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"closed"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="date-expressions">Date Expressions<a class="headerlink" href="#date-expressions" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="date-expressions">Date Expressions<a class="headerlink" href="#date-expressions" title="Link to this section">¶</a></h3>
 <p>Multi-day simulations support flexible date expressions for easy date referencing:</p>
-<h4 id="date-shortcuts">Date Shortcuts<a class="headerlink" href="#date-shortcuts" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="date-shortcuts">Date Shortcuts<a class="headerlink" href="#date-shortcuts" title="Link to this section">¶</a></h4>
 <ul class="docs-list">
 <li><code class="docs-inline-code">date.today</code> - Resolves to the current date (today)</li>
 <li><code class="docs-inline-code">date.start</code> - Resolves to the simulation start date</li>
@@ -154,61 +151,59 @@
 <li><code class="docs-inline-code">date.start + n</code> - n days after the simulation start date</li>
 <li><code class="docs-inline-code">date.start - n</code> - n days before the simulation start date</li>
 </ul>
-<h4 id="explicit-dates">Explicit Dates<a class="headerlink" href="#explicit-dates" title="Permanent link">&para;</a></h4>
+<h4 class="docs-heading" id="explicit-dates">Explicit Dates<a class="headerlink" href="#explicit-dates" title="Link to this section">¶</a></h4>
 <p>You can also use explicit ISO date format:</p>
 <ul class="docs-list">
 <li><code class="docs-inline-code">2025-12-25</code> - Christmas Day 2025</li>
-<li><code class="docs-inline-code">2026-01-01</code> - New Year's Day 2026</li>
+<li><code class="docs-inline-code">2026-01-01</code> - New Year’s Day 2026</li>
 </ul>
-<h4 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h4>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;simulation_config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;start_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;date.today&quot;</span>
+<h4 class="docs-heading" id="examples">Examples<a class="headerlink" href="#examples" title="Link to this section">¶</a></h4>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"simulation_config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"start_date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"date.today"</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;calendar&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;overrides&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;date.start + 14&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;maintenance&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2025-12-25&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;holiday&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;date.today + 30&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;special_event&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="nt">"calendar"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"overrides"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"date.start + 14"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"maintenance"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2025-12-25"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"holiday"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"date.today + 30"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"special_event"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="simulation-configuration">Simulation Configuration<a class="headerlink" href="#simulation-configuration" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="simulation-configuration">Simulation Configuration<a class="headerlink" href="#simulation-configuration" title="Link to this section">¶</a></h2>
 <p>Multi-day simulations use a <code class="docs-inline-code">simulation_config</code> object to define overall settings:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;simulation_config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;start_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;date.today&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;duration_days&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"simulation_config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"start_date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"date.today"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"duration_days"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h3 id="configuration-options">Configuration Options<a class="headerlink" href="#configuration-options" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="configuration-options">Configuration Options<a class="headerlink" href="#configuration-options" title="Link to this section">¶</a></h3>
 <ul class="docs-list">
 <li><strong>start_date</strong>: When the simulation begins (supports date expressions)</li>
 <li><strong>duration_days</strong>: Total number of days to simulate (optional)</li>
 </ul>
-<h2 id="visualization-views">Visualization Views<a class="headerlink" href="#visualization-views" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="visualization-views">Visualization Views<a class="headerlink" href="#visualization-views" title="Link to this section">¶</a></h2>
 <p>Multi-day simulations can be viewed in multiple ways in the playground:</p>
-<h3 id="calendar-view">Calendar View<a class="headerlink" href="#calendar-view" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="calendar-view">Calendar View<a class="headerlink" href="#calendar-view" title="Link to this section">¶</a></h3>
 <p>A month-by-month calendar showing all simulation days with:
 - Color-coded day types
 - Daily profit/revenue at a glance
 - Task counts per day
 - Navigation between months
 - Click any day to view detailed timeline</p>
-<h3 id="timeline-view">Timeline View<a class="headerlink" href="#timeline-view" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="timeline-view">Timeline View<a class="headerlink" href="#timeline-view" title="Link to this section">¶</a></h3>
 <p>Traditional single-day timeline showing:
 - Detailed task execution for selected day
 - Object interactions
 - Resource flows
 - Time-based visualization</p>
-<h2 id="view-controller">View Controller<a class="headerlink" href="#view-controller" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="view-controller">View Controller<a class="headerlink" href="#view-controller" title="Link to this section">¶</a></h2>
 <p>Multi-day simulations use a view controller to manage navigation between different views and days:</p>
-<div class="codehilite"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">viewController</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="nx">currentView</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;calendar&#39;</span><span class="p">,</span><span class="w">  </span><span class="c1">// &#39;calendar&#39;, &#39;week&#39;, or &#39;timeline&#39;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="kd">const</span><span class="w"> </span><span class="nx">viewController</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">currentView</span><span class="o">:</span><span class="w"> </span><span class="s1">'calendar'</span><span class="p">,</span><span class="w">  </span><span class="c1">// 'calendar', 'week', or 'timeline'</span>
 <span class="w">  </span><span class="nx">currentDay</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span>
 <span class="w">  </span><span class="nx">currentWeek</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span>
 <span class="w">  </span><span class="nx">currentMonthOffset</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span>
@@ -226,8 +221,7 @@
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<h2 id="color-coding">Color Coding<a class="headerlink" href="#color-coding" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="color-coding">Color Coding<a class="headerlink" href="#color-coding" title="Link to this section">¶</a></h2>
 <p>The playground automatically generates visually distinct colors for each day type using a sophisticated color generation algorithm that:</p>
 <ol class="docs-list docs-list-ordered">
 <li>Maximizes perceptual distance between colors</li>
@@ -235,7 +229,7 @@
 <li>Uses HSL color space for vibrant, consistent colors</li>
 <li>Caches generated colors for performance</li>
 </ol>
-<h2 id="financial-metrics">Financial Metrics<a class="headerlink" href="#financial-metrics" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="financial-metrics">Financial Metrics<a class="headerlink" href="#financial-metrics" title="Link to this section">¶</a></h2>
 <p>Multi-day simulations automatically calculate financial metrics for each day:</p>
 <ul class="docs-list">
 <li><strong>Revenue</strong>: Total income from products sold</li>
@@ -248,43 +242,43 @@
 - Per week
 - Per month
 - Per day type (averages and totals)</p>
-<h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
-<h3 id="designing-day-types">Designing Day Types<a class="headerlink" href="#designing-day-types" title="Permanent link">&para;</a></h3>
+<h2 class="docs-heading" id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="designing-day-types">Designing Day Types<a class="headerlink" href="#designing-day-types" title="Link to this section">¶</a></h3>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Start Simple</strong>: Create 2-3 basic day types first (e.g., open, closed)</li>
 <li><strong>Reuse Objects</strong>: Common objects can appear in multiple day types</li>
 <li><strong>Vary Intensity</strong>: Different day types should reflect realistic workload variations</li>
 <li><strong>Consider Dependencies</strong>: Tasks within a day should have proper dependencies</li>
 </ol>
-<h3 id="calendar-planning">Calendar Planning<a class="headerlink" href="#calendar-planning" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="calendar-planning">Calendar Planning<a class="headerlink" href="#calendar-planning" title="Link to this section">¶</a></h3>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Use Patterns</strong>: Weekly patterns work well for most businesses</li>
 <li><strong>Strategic Overrides</strong>: Use overrides for holidays, maintenance, special events</li>
 <li><strong>Realistic Duration</strong>: 14-30 days provides good balance of detail and overview</li>
 <li><strong>Test Patterns</strong>: Verify pattern repeats correctly across weeks</li>
 </ol>
-<h3 id="performance-considerations">Performance Considerations<a class="headerlink" href="#performance-considerations" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="performance-considerations">Performance Considerations<a class="headerlink" href="#performance-considerations" title="Link to this section">¶</a></h3>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Day Type Complexity</strong>: Keep individual day types focused and efficient</li>
 <li><strong>Duration Limits</strong>: Very long simulations (100+ days) may impact performance</li>
 <li><strong>Object Reuse</strong>: Reusing object definitions across day types reduces memory</li>
 </ol>
-<h3 id="financial-accuracy">Financial Accuracy<a class="headerlink" href="#financial-accuracy" title="Permanent link">&para;</a></h3>
+<h3 class="docs-heading" id="financial-accuracy">Financial Accuracy<a class="headerlink" href="#financial-accuracy" title="Link to this section">¶</a></h3>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Consistent Pricing</strong>: Ensure product prices are consistent across day types</li>
 <li><strong>Labor Costs</strong>: Account for different staffing levels on different day types</li>
 <li><strong>Resource Consumption</strong>: Track inventory properly across multi-day spans</li>
 <li><strong>Overhead Costs</strong>: Consider fixed costs vs. variable costs per day type</li>
 </ol>
-<h2 id="loading-sample-simulations">Loading Sample Simulations<a class="headerlink" href="#loading-sample-simulations" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="loading-sample-simulations">Loading Sample Simulations<a class="headerlink" href="#loading-sample-simulations" title="Link to this section">¶</a></h2>
 <p>The playground includes a sample multi-day simulation:</p>
 <ol class="docs-list docs-list-ordered">
 <li>Open the playground</li>
-<li>Click "Load Sample"</li>
-<li>Select "Coffee Shop (Multi-Period)"</li>
+<li>Click “Load Sample”</li>
+<li>Select “Coffee Shop (Multi-Period)”</li>
 <li>Explore the calendar, week, and timeline views</li>
 </ol>
-<h2 id="technical-implementation">Technical Implementation<a class="headerlink" href="#technical-implementation" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="technical-implementation">Technical Implementation<a class="headerlink" href="#technical-implementation" title="Link to this section">¶</a></h2>
 <p>Multi-day simulations are powered by the <code class="docs-inline-code">MultiDaySimulator</code> class (<code class="docs-inline-code">playground-multi-period.js</code>), which:</p>
 <ul class="docs-list">
 <li>Resolves day types for any simulation day</li>
@@ -298,15 +292,15 @@
 - <strong>playground-week-view.js</strong>: Weekly breakdown views
 - <strong>playground-timeline.js</strong>: Enhanced to support multi-day context
 - <strong>playground-view-controller.js</strong>: Coordinates view switching and navigation</p>
-<h2 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="limitations">Limitations<a class="headerlink" href="#limitations" title="Link to this section">¶</a></h2>
 <p>Current limitations of multi-day simulations:</p>
 <ol class="docs-list docs-list-ordered">
 <li><strong>No Cross-Day Dependencies</strong>: Tasks cannot span multiple days</li>
-<li><strong>No State Persistence</strong>: Object states don't carry over between days (yet)</li>
+<li><strong>No State Persistence</strong>: Object states don’t carry over between days (yet)</li>
 <li><strong>Memory Constraints</strong>: Very large simulations (100+ days with complex day types) may impact browser performance</li>
-<li><strong>Date Ranges</strong>: Infinite scrolling works, but only current month's data is calculated at once</li>
+<li><strong>Date Ranges</strong>: Infinite scrolling works, but only current month’s data is calculated at once</li>
 </ol>
-<h2 id="future-enhancements">Future Enhancements<a class="headerlink" href="#future-enhancements" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="future-enhancements">Future Enhancements<a class="headerlink" href="#future-enhancements" title="Link to this section">¶</a></h2>
 <p>Planned improvements:</p>
 <ul class="docs-list">
 <li>Cross-day task dependencies</li>

@@ -63,43 +63,41 @@
 
                     <div class="docs-content">
                         <p>This script utilizes a Large Language Model (LLM) to process a list of facts provided in an input JSON file. It identifies duplicate or semantically similar facts, merges them into comprehensive, unique statements, and outputs the deduplicated list along with metadata to a new JSON file.</p>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
-<p>The primary goal of this script is to reduce redundancy in a list of factual statements by leveraging an LLM's understanding of language to consolidate similar information.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="purpose">Purpose<a class="headerlink" href="#purpose" title="Link to this section">¶</a></h2>
+<p>The primary goal of this script is to reduce redundancy in a list of factual statements by leveraging an LLM’s understanding of language to consolidate similar information.</p>
+<h2 class="docs-heading" id="usage">Usage<a class="headerlink" href="#usage" title="Link to this section">¶</a></h2>
 <p>Run the script from the command line:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>merge-duplicate-facts.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span>
+<div class="codehilite"><pre><span></span><code class="language-text">python<span class="w"> </span>merge-duplicate-facts.py<span class="w"> </span>&lt;input_json&gt;<span class="w"> </span><span class="o">[</span>output_json<span class="o">]</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">&lt;input_json&gt;</code>: (Required) Path to the input JSON file containing the facts to be processed.</li>
 <li><code class="docs-inline-code">[output_json]</code>: (Optional) Path where the output JSON file should be saved. If not provided, a path will be generated automatically in the <code class="docs-inline-code">output/</code> directory based on the script name and a UUID.</li>
 </ul>
 <p><strong>Note:</strong> The script comments recommend using the model <code class="docs-inline-code">llama3.1:8b-instruct-q5_K_M</code> for potentially better results, although the default is <code class="docs-inline-code">gemma3</code>. This can be specified in the input JSON.</p>
-<h2 id="input-files">Input Files<a class="headerlink" href="#input-files" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="input-files">Input Files<a class="headerlink" href="#input-files" title="Link to this section">¶</a></h2>
 <p>The script expects an input JSON file with the following structure:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;facts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="s2">&quot;Fact statement 1.&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;Fact statement 2.&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;A statement similar to fact 1.&quot;</span>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"facts"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">"Fact statement 1."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"Fact statement 2."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"A statement similar to fact 1."</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;llama3.1:8b-instruct-q5_K_M&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Optional: Defaults to &quot;gemma3&quot; if omitted</span>
-<span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="c1">// Optional: LLM parameters (e.g., temperature)</span>
+<span class="w">  </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"llama3.1:8b-instruct-q5_K_M"</span><span class="p">,</span><span class="w"> </span><span class="c1">// Optional: Defaults to "gemma3" if omitted</span>
+<span class="w">  </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="c1">// Optional: LLM parameters (e.g., temperature)</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <ul class="docs-list">
 <li><code class="docs-inline-code">facts</code>: A list of strings, where each string is a fact to be processed.</li>
 <li><code class="docs-inline-code">model</code>: (Optional) The name of the LLM model to use (e.g., from Ollama).</li>
 <li><code class="docs-inline-code">parameters</code>: (Optional) A dictionary of parameters to pass to the LLM during the chat interaction.</li>
 </ul>
-<h2 id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="key-functions">Key Functions<a class="headerlink" href="#key-functions" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><strong><code class="docs-inline-code">merge_duplicate_facts(input_data)</code></strong>:<ul class="docs-list">
 <li>Extracts the <code class="docs-inline-code">facts</code>, <code class="docs-inline-code">model</code>, and <code class="docs-inline-code">parameters</code> from the input data.</li>
 <li>Constructs system and user messages to instruct the LLM.</li>
 <li>Calls <code class="docs-inline-code">chat_with_llm</code> to interact with the specified LLM.</li>
-<li>Uses <code class="docs-inline-code">parse_llm_json_response</code> to attempt parsing the LLM's response into a list of strings.</li>
+<li>Uses <code class="docs-inline-code">parse_llm_json_response</code> to attempt parsing the LLM’s response into a list of strings.</li>
 <li>Returns the list of merged facts or a default error message if parsing fails.</li>
 </ul>
 </li>
@@ -117,14 +115,14 @@
 <li><code class="docs-inline-code">load_json</code>: Loads data from a JSON file.</li>
 <li><code class="docs-inline-code">save_output</code>: Saves data to a JSON file.</li>
 <li><code class="docs-inline-code">chat_with_llm</code>: Handles the interaction with the LLM service.</li>
-<li><code class="docs-inline-code">parse_llm_json_response</code>: Parses JSON content from the LLM's text response.</li>
+<li><code class="docs-inline-code">parse_llm_json_response</code>: Parses JSON content from the LLM’s text response.</li>
 <li><code class="docs-inline-code">create_output_metadata</code>: Generates standard metadata for output files.</li>
 <li><code class="docs-inline-code">get_output_filepath</code>: Determines the appropriate output file path.</li>
 <li><code class="docs-inline-code">handle_command_args</code>: Parses command-line arguments.</li>
 </ul>
 </li>
 </ul>
-<h2 id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="llm-interaction">LLM Interaction<a class="headerlink" href="#llm-interaction" title="Link to this section">¶</a></h2>
 <ol class="docs-list docs-list-ordered">
 <li><strong>Prompt Construction</strong>:<ul class="docs-list">
 <li>A <strong>system message</strong> instructs the LLM that its role is to identify duplicate/similar facts, merge them comprehensively, organize logically, remove redundancy, and format the output as a JSON array of unique fact strings.</li>
@@ -134,7 +132,7 @@
 <li><strong>LLM Call</strong>: The <code class="docs-inline-code">chat_with_llm</code> utility function sends these messages to the specified LLM (<code class="docs-inline-code">model</code> from input or default).</li>
 <li><strong>Response Parsing</strong>: The script expects the LLM to return a JSON-formatted string representing an array of unique facts. The <code class="docs-inline-code">parse_llm_json_response</code> utility attempts to parse this string into a Python list.</li>
 </ol>
-<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+<h2 class="docs-heading" id="output">Output<a class="headerlink" href="#output" title="Link to this section">¶</a></h2>
 <p>The script generates a JSON file containing:</p>
 <ul class="docs-list">
 <li><strong>Metadata</strong>: Information about the script execution, including the script name (<code class="docs-inline-code">routine_name</code>), a unique identifier (<code class="docs-inline-code">uuid</code>), and the start time (<code class="docs-inline-code">start_time_utc</code>).</li>
@@ -143,14 +141,14 @@
 <p>Example Output Structure:</p>
 <p>```json
 {
-  "metadata": {
-    "routine_name": "Merge Duplicate Facts",
-    "uuid": "...",
-    "start_time_utc": "..."
+  “metadata”: {
+    “routine_name”: “Merge Duplicate Facts”,
+    “uuid”: “…”,
+    “start_time_utc”: “…”
   },
-  "merged_facts": [
-    "Merged fact statement 1.",
-    "Unique fact statement 2."
+  “merged_facts”: [
+    “Merged fact statement 1.”,
+    “Unique fact statement 2.”
   ]
 }</p>
                     </div>
