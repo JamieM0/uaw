@@ -332,13 +332,101 @@ function validateObjectDeletion(simulation, objectIdToDelete, taskStartTime) {
 function getNextAvailableId(objectType, existingObjects) {
     let counter = 1;
     let candidateId = `${objectType}_${counter}`;
-    
+
     while (existingObjects.some(obj => obj.id === candidateId)) {
         counter++;
         candidateId = `${objectType}_${counter}`;
     }
-    
+
     return candidateId;
+}
+
+// Non-blocking progress indicator - doesn't prevent user interaction
+function showProgressIndicator(message = 'Processing...') {
+    // Create or update existing indicator
+    let indicator = document.getElementById('uaw-progress-indicator');
+
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'uaw-progress-indicator';
+        indicator.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary-color, #4a90e2);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+        `;
+
+        // Add spinner
+        const spinner = document.createElement('div');
+        spinner.className = 'progress-spinner';
+        spinner.style.cssText = `
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        `;
+        indicator.appendChild(spinner);
+
+        // Add message span
+        const messageSpan = document.createElement('span');
+        messageSpan.className = 'progress-message';
+        indicator.appendChild(messageSpan);
+
+        // Add CSS animation if not already present
+        if (!document.getElementById('uaw-progress-styles')) {
+            const style = document.createElement('style');
+            style.id = 'uaw-progress-styles';
+            style.textContent = `
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(indicator);
+
+        // Trigger reflow to enable transition
+        indicator.offsetHeight;
+    }
+
+    // Update message
+    const messageSpan = indicator.querySelector('.progress-message');
+    if (messageSpan) {
+        messageSpan.textContent = message;
+    }
+
+    // Show indicator
+    indicator.style.opacity = '1';
+}
+
+function hideProgressIndicator() {
+    const indicator = document.getElementById('uaw-progress-indicator');
+    if (indicator) {
+        indicator.style.opacity = '0';
+
+        // Remove after transition completes
+        setTimeout(() => {
+            if (indicator.parentNode) {
+                indicator.parentNode.removeChild(indicator);
+            }
+        }, 200);
+    }
 }
 
 // Export utility functions to global scope if needed
@@ -362,6 +450,8 @@ if (typeof window !== 'undefined') {
         smoothScrollToElement,
         getCurrentTimelineContext,
         validateObjectDeletion,
-        getNextAvailableId
+        getNextAvailableId,
+        showProgressIndicator,
+        hideProgressIndicator
     };
 }

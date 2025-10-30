@@ -574,6 +574,8 @@ require(["vs/editor/editor.main"], function () {
     // Debounced auto-collapse for assets object
     let autoCollapseTimeout;
     let changeTimeout;
+    let validationTimeout; // Separate timeout for validation
+
     const debounceAutoCollapse = () => {
         clearTimeout(autoCollapseTimeout);
         autoCollapseTimeout = setTimeout(async () => {
@@ -589,6 +591,14 @@ require(["vs/editor/editor.main"], function () {
         }, 1000); // 1 second delay to avoid conflicts with user typing
     };
 
+    // Separate debounced validation with longer delay
+    const debounceValidation = () => {
+        clearTimeout(validationTimeout);
+        validationTimeout = setTimeout(() => {
+            validateJSON();
+        }, 500); // 500ms delay - longer than render to be less intrusive
+    };
+
     // Editor event handlers
     editor.onDidChangeModelContent(() => {
         if (autoRender) {
@@ -601,10 +611,11 @@ require(["vs/editor/editor.main"], function () {
             updateDynamicPanels();
         }
 
+        // Use separate debounced validation instead of immediate validation
         if (tutorialManager && tutorialManager.isActive) {
             tutorialManager.runStepValidation();
         } else {
-            validateJSON();
+            debounceValidation(); // Changed from immediate validateJSON()
         }
 
         if (spaceEditor && !spaceEditor.isDrawing && !spaceEditor.isDragging && !spaceEditor.isUpdatingJson) {

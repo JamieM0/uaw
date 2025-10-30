@@ -176,13 +176,16 @@ function renderSimulation(skipJsonValidation = false) {
         console.log('TIMELINE: Skipping renderSimulation() - already in progress');
         return;
     }
-    
+
     window.renderingInProgress = true;
-    
+
     const simulationContent =
         document.getElementById("simulation-content");
     const loadingOverlay =
         document.getElementById("simulation-loading");
+
+    // Show non-blocking progress indicator
+    showProgressIndicator('Processing simulation...');
 
     // Clean up any existing resize state
     if (isResizing && resizeHandle) {
@@ -549,6 +552,9 @@ function renderSimulation(skipJsonValidation = false) {
     } finally {
         loadingOverlay.style.display = "none";
         window.renderingInProgress = false;
+
+        // Hide progress indicator
+        hideProgressIndicator();
 
         // If we're in day view within multi-period, re-render breadcrumbs
         if (window.renderingSingleDayFromMultiPeriod && window.multiPeriodViewController) {

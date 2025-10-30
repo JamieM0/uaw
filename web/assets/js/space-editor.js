@@ -24,6 +24,8 @@ class SpaceEditor {
         this.isUpdatingJson = false;
         this.hasInitiallyLoaded = false;
         this.pendingSyncNeeded = false;
+        this.isDayTypeMode = false; // Track if we're editing day_type locations
+        this.currentDayTypeName = null; // Store the day_type name when in day_type mode
         this.world = document.createElement('div');
         this.world.className = 'space-world';
         this.canvas.appendChild(this.world);
@@ -94,14 +96,118 @@ class SpaceEditor {
         try {
             const jsonText = this.monacoEditor.getValue();
             const simulation = JSON.parse(stripJsonComments(jsonText));
-            
-            // Load layout data from simulation
+
+            // Check if we're editing a day_type (multi-period context)
+            const isEditingDayType = window.activeDayTypeEditor !== undefined;
+
+            if (isEditingDayType && simulation.simulation) {
+                // Get the current day_type name from the multi-period view controller
+                const viewController = window.multiPeriodViewController;
+                const dayTypeName = viewController ? viewController.currentDayType : null;
+
+                if (dayTypeName && simulation.simulation.day_types && simulation.simulation.day_types[dayTypeName]) {
+                    const dayTypeData = simulation.simulation.day_types[dayTypeName];
+
+                    // Transform day_type locations to Space Editor format
+                    const layoutData = this.transformDayTypeLocationsToLayout(dayTypeData);
+                    if (layoutData) {
+                        // Mark that we're in day_type editing mode and store the day type name
+                        this.isDayTypeMode = true;
+                        this.currentDayTypeName = dayTypeName;
+                        this.loadLayout(layoutData, false);
+                        console.log(`SPACE-EDITOR: Loaded ${layoutData.locations.length} locations from day_type "${dayTypeName}"`);
+                        return;
+                    }
+                }
+            }
+
+            // Standard single-day or global layout loading
+            this.isDayTypeMode = false;
+            this.currentDayTypeName = null;
             if (simulation.simulation && simulation.simulation.layout) {
                 this.loadLayout(simulation.simulation.layout, false);
             }
         } catch (e) {
-            console.warn("SPACE-EDITOR: Could not parse JSON for space layout");
+            console.warn("SPACE-EDITOR: Could not parse JSON for space layout", e);
         }
+    }
+
+    /**
+     * Transform day_type locations array to Space Editor layout format
+     * Day_types use: locations: [{ id, name, emoji, position: {x, y, z}, width?, height? }]
+     * Space Editor expects: layout: { locations: [{ id, name, shape: {type, x, y, width, height, depth}, layer?, ... }] }
+     */
+    transformDayTypeLocationsToLayout(dayTypeData) {
+        const dayTypeLocations = dayTypeData.locations || [];
+
+        if (!dayTypeLocations || dayTypeLocations.length === 0) {
+            return null;
+        }
+
+        // Transform each location from day_type format to Space Editor format
+        const transformedLocations = dayTypeLocations.map(loc => {
+            // Day_type locations may have:
+            // - position: {x, y, z} (in meters, relative positioning)
+            // - width, height (optional, in meters)
+            // - emoji (visual identifier)
+            // - name
+
+            return {
+                id: loc.id,
+                name: loc.name || loc.id,
+                shape: {
+                    type: 'rect',
+                    x: (loc.position?.x || 0) * this.pixelsPerMeter,
+                    y: (loc.position?.z || 0) * this.pixelsPerMeter, // Z maps to Y in 2D view
+                    width: (loc.width || 5) * this.pixelsPerMeter,    // Default 5m if not specified
+                    height: (loc.height || 3) * this.pixelsPerMeter,  // Default 3m if not specified
+                    depth: (loc.position?.y || 2.5) * this.pixelsPerMeter  // Y is vertical height
+                },
+                layer: loc.layer || "ground",
+                emoji: loc.emoji,
+                // Preserve any other properties
+                ...Object.fromEntries(
+                    Object.entries(loc).filter(([key]) =>
+                        !['id', 'name', 'position', 'width', 'height', 'emoji', 'layer'].includes(key)
+                    )
+                )
+            };
+        });
+
+        return {
+            meta: {
+                units: 'meters',
+                pixels_per_unit: this.pixelsPerMeter
+            },
+            locations: transformedLocations
+        };
+    }
+
+    /**
+     * Transform Space Editor locations back to day_type locations format
+     */
+    transformLayoutToDayTypeLocations(locations) {
+        return locations.map(loc => {
+            return {
+                id: loc.id,
+                name: loc.name || loc.id,
+                emoji: loc.emoji || "📍",
+                position: {
+                    x: loc.shape.x / this.pixelsPerMeter,
+                    y: loc.shape.depth / this.pixelsPerMeter,  // Vertical height
+                    z: loc.shape.y / this.pixelsPerMeter       // Z maps to Y in 2D view
+                },
+                width: loc.shape.width / this.pixelsPerMeter,
+                height: loc.shape.height / this.pixelsPerMeter,
+                layer: loc.layer,
+                // Preserve any other properties
+                ...Object.fromEntries(
+                    Object.entries(loc).filter(([key]) =>
+                        !['id', 'name', 'shape', 'emoji', 'layer'].includes(key)
+                    )
+                )
+            };
+        });
     }
 
     init() {
@@ -555,7 +661,13 @@ class SpaceEditor {
         const rectEl = document.createElement('div');
         rectEl.className = 'location-rect enable-transitions';
         rectEl.dataset.id = loc.id;
-        rectEl.innerHTML = `<span class="location-text">${sanitizeHTML(loc.name || loc.id)}</span>`;
+
+        // Display emoji if available (common in day_type locations)
+        const displayText = loc.emoji
+            ? `${loc.emoji} ${sanitizeHTML(loc.name || loc.id)}`
+            : sanitizeHTML(loc.name || loc.id);
+
+        rectEl.innerHTML = `<span class="location-text">${displayText}</span>`;
     rectEl.addEventListener('mousedown', (e) => this.onRectMouseDown(e, loc.id));
         
         // Apply 3D transformation
@@ -1027,13 +1139,28 @@ class SpaceEditor {
             this.isUpdatingJson = true;
             const fullSim = JSON.parse(stripJsonComments(this.monacoEditor.getValue()));
             if (!fullSim.simulation) fullSim.simulation = {};
-            fullSim.simulation.layout = {
-                meta: { units: 'meters', pixels_per_unit: this.pixelsPerMeter },
-                locations: this.locations
-            };
+
+            // Check if we're in day_type editing mode
+            if (this.isDayTypeMode && this.currentDayTypeName) {
+                // Transform locations back to day_type format and save to correct path
+                if (!fullSim.simulation.day_types) fullSim.simulation.day_types = {};
+                if (!fullSim.simulation.day_types[this.currentDayTypeName]) {
+                    fullSim.simulation.day_types[this.currentDayTypeName] = {};
+                }
+
+                fullSim.simulation.day_types[this.currentDayTypeName].locations =
+                    this.transformLayoutToDayTypeLocations(this.locations);
+            } else {
+                // Standard layout format
+                fullSim.simulation.layout = {
+                    meta: { units: 'meters', pixels_per_unit: this.pixelsPerMeter },
+                    locations: this.locations
+                };
+            }
+
             this.monacoEditor.setValue(JSON.stringify(fullSim, null, 2));
             setTimeout(() => { this.isUpdatingJson = false; }, 5);
-        } catch(e) { 
+        } catch(e) {
             this.isUpdatingJson = false;
             console.error("Failed to update JSON from Space Editor:", e);
         }
@@ -1639,7 +1766,14 @@ class SpaceEditor {
                 <label for="prop-name">Name</label>
                 <input type="text" id="prop-name" value="${loc.name || ''}">
             </div>
-            
+            ${this.isDayTypeMode ? `
+            <div class="prop-field">
+                <label for="prop-emoji">Emoji</label>
+                <input type="text" id="prop-emoji" value="${loc.emoji || ''}" placeholder="📍" maxlength="2">
+                <small>Visual identifier for this location</small>
+            </div>
+            ` : ''}
+
             <div class="prop-section">
                 <label class="section-label">Position</label>
                 <div class="inline-inputs cols-3">
@@ -1761,7 +1895,30 @@ class SpaceEditor {
                 e.target.blur(); // This will trigger the blur event and updateNameData
             }
         });
-        
+
+        // Emoji input listener (only in day_type mode)
+        if (this.isDayTypeMode) {
+            const emojiInput = document.getElementById('prop-emoji');
+            if (emojiInput) {
+                emojiInput.addEventListener('input', e => {
+                    loc.emoji = e.target.value;
+                    // Update visual display immediately
+                    const rectEl = document.querySelector(`.location-rect[data-id="${this.selectedRectId}"]`);
+                    if (rectEl) {
+                        const textSpan = rectEl.querySelector('.location-text');
+                        if (textSpan) {
+                            const displayText = loc.emoji
+                                ? `${loc.emoji} ${loc.name || loc.id}`
+                                : loc.name || loc.id;
+                            textSpan.textContent = displayText;
+                        }
+                        this.adjustTextSize(rectEl);
+                    }
+                    this.updateJson();
+                });
+            }
+        }
+
         // Position event listeners
         document.getElementById('prop-pos-x').addEventListener('change', e => {
             const newPosXM = parseFloat(e.target.value);
@@ -1855,9 +2012,18 @@ class SpaceEditor {
         const rectEl = document.querySelector(`.location-rect[data-id="${loc.id}"]`);
         if (!rectEl) return;
 
+        // Update text content (including emoji if present)
+        const textSpan = rectEl.querySelector('.location-text');
+        if (textSpan) {
+            const displayText = loc.emoji
+                ? `${loc.emoji} ${loc.name || loc.id}`
+                : loc.name || loc.id;
+            textSpan.textContent = displayText;
+        }
+
         // Update 3D positioning and styling
         this.apply3DTransform(rectEl, loc);
-        
+
         // Re-adjust text size after rectangle update
         this.adjustTextSize(rectEl);
     }

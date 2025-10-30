@@ -9,6 +9,10 @@ class SimulationPlayer {
         this.isUpdatingEditor = false;
         this.isScrubbing = false;
 
+        // Cache for optimized state calculations
+        this.lastStateCalculationTime = -1;
+        this.stateCalculationThreshold = 0.5; // Only recalculate if moved > 0.5 minutes
+
         this.ui = {
             playPauseBtn: document.getElementById('player-play-pause-btn'),
             speedSelect: document.getElementById('player-speed-select'),
@@ -170,7 +174,7 @@ class SimulationPlayer {
     update(timeInMinutes) {
         this.playheadTime = timeInMinutes;
 
-        // 1. Update Playhead Position
+        // 1. Update Playhead Position (always fast, no optimization needed)
         const percentage = (this.playheadTime - this.simData.start_time_minutes) / this.simData.total_duration_minutes;
 
         // Create playheads if they don't exist or track count changed, otherwise just reposition them
@@ -212,7 +216,7 @@ class SimulationPlayer {
             this.attachScrubbing();
         }
 
-        // 2. Update Time Displays
+        // 2. Update Time Displays (always fast)
         const formattedTime = this.formatTime(this.playheadTime);
         if (this.ui.currentTimeDisplay) {
             this.ui.currentTimeDisplay.textContent = formattedTime;
@@ -220,15 +224,29 @@ class SimulationPlayer {
         if (this.ui.liveTimeSpans) {
             this.ui.liveTimeSpans.forEach(span => span.textContent = formattedTime);
         }
-        
-        // 3. Calculate live object states (including created/deleted objects)
-        this.updateLiveObjectState();
-        
-        // 4. Calculate and Render Live States  
-        this.updateAllObjectStates();
-        
-        // 5. Update the Monaco editor with any changes and notify editors
-        this.updateMonacoEditorAndNotifyEditors();
+
+        // 3-5. Optimize expensive state calculations - only recalculate if significant movement
+        const timeDelta = Math.abs(this.playheadTime - this.lastStateCalculationTime);
+        const shouldRecalculateStates = (
+            this.lastStateCalculationTime === -1 || // First run
+            timeDelta >= this.stateCalculationThreshold || // Moved significantly
+            this.isPlaying || // During playback, always update for smooth animation
+            !this.isScrubbing // Not scrubbing (e.g., user clicked)
+        );
+
+        if (shouldRecalculateStates) {
+            // 3. Calculate live object states (including created/deleted objects)
+            this.updateLiveObjectState();
+
+            // 4. Calculate and Render Live States
+            this.updateAllObjectStates();
+
+            // 5. Update the Monaco editor with any changes and notify editors
+            this.updateMonacoEditorAndNotifyEditors();
+
+            // Cache this calculation time
+            this.lastStateCalculationTime = this.playheadTime;
+        }
     }
 
     updateLiveObjectState() {
@@ -1043,23 +1061,39 @@ class SimulationPlayer {
 
     initScrubbing() {
         let currentScrubTrack = null;
+        let rafId = null; // RequestAnimationFrame ID for throttling
+        let pendingUpdate = null; // Store pending update data
 
         const onScrub = (e) => {
             if (!this.isScrubbing || !currentScrubTrack) return;
 
+            // Calculate new time but don't update immediately
             const rect = currentScrubTrack.getBoundingClientRect();
             const percentage = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
             const newTime = this.simData.start_time_minutes + (percentage * this.simData.total_duration_minutes);
-            this.update(newTime);
+
+            // Store pending update
+            pendingUpdate = newTime;
+
+            // Only schedule update if one isn't already pending
+            if (!rafId) {
+                rafId = requestAnimationFrame(() => {
+                    if (pendingUpdate !== null) {
+                        this.update(pendingUpdate);
+                        pendingUpdate = null;
+                    }
+                    rafId = null; // Clear ID so next mousemove can schedule
+                });
+            }
         };
 
         const startScrubbing = (e, track) => {
             this.isScrubbing = true;
             currentScrubTrack = track;
-            
+
             // CRITICAL FIX: Set global flag to prevent renderSimulation during scrubbing
             window.simulationPlayerActive = true;
-            
+
             if (this.isPlaying) this.togglePlay();
             onScrub(e);
 
@@ -1067,10 +1101,16 @@ class SimulationPlayer {
             document.addEventListener('mouseup', () => {
                 this.isScrubbing = false;
                 currentScrubTrack = null;
-                
+
+                // Cancel any pending RAF
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
+
                 // CRITICAL FIX: Clear global flag when scrubbing ends
                 window.simulationPlayerActive = false;
-                
+
                 document.removeEventListener('mousemove', onScrub);
             }, { once: true });
         };

@@ -286,6 +286,16 @@ class MultiDaySimulator {
 
     /**
      * Simulate a single day and return metrics
+     *
+     * This method calculates financial metrics by analyzing:
+     * 1. Labor costs from actor hourly rates
+     * 2. Resource consumption costs
+     * 3. Revenue from sales and production
+     *
+     * Revenue and costs can be tracked through:
+     * - Property changes on ANY object (not just products/resources)
+     * - Financial property names (sales_usd, revenue_usd, cost_usd, etc.)
+     * - Delta operations on financial properties
      */
     simulateDay(dayDefinition) {
         if (!dayDefinition) {
@@ -295,11 +305,16 @@ class MultiDaySimulator {
         const tasks = dayDefinition.tasks || [];
         const objects = dayDefinition.objects || [];
         const actors = objects.filter(o => o.type === 'actor');
-        const resources = objects.filter(o => o.type === 'resource' || o.type === 'product');
 
-        // Calculate labor costs
+        // Create a map of ALL objects for fast lookup
+        const objectMap = new Map(objects.map(o => [o.id, o]));
+
+        // Calculate labor costs - check both cost_per_hour and hourly_rate
         let totalLaborCost = 0;
-        const actorCostMap = new Map(actors.map(a => [a.id, a.properties?.cost_per_hour || 0]));
+        const actorCostMap = new Map(actors.map(a => [
+            a.id,
+            a.properties?.cost_per_hour || a.properties?.hourly_rate || 0
+        ]));
 
         for (const task of tasks) {
             const costPerHour = actorCostMap.get(task.actor_id) || 0;
@@ -307,48 +322,119 @@ class MultiDaySimulator {
             totalLaborCost += costPerHour * durationHours;
         }
 
-        // Calculate resource costs and revenue
+        // Calculate resource costs and revenue from all interactions
         let totalResourceCost = 0;
         let totalRevenue = 0;
-        const resourceMap = new Map(resources.map(r => [r.id, r.properties]));
+
+        // Helper function to check if a property name indicates revenue
+        const isRevenueProperty = (propName) => {
+            const lower = propName.toLowerCase();
+            return (lower.includes('sales') || lower.includes('revenue') || lower.includes('income')) &&
+                   (lower.includes('usd') || lower.includes('price') || lower.includes('total'));
+        };
+
+        // Helper function to check if a property name indicates cost
+        const isCostProperty = (propName) => {
+            const lower = propName.toLowerCase();
+            return (lower.includes('cost') || lower.includes('expense') || lower.includes('fee')) &&
+                   (lower.includes('usd') || lower.includes('total'));
+        };
 
         for (const task of tasks) {
-            // Old-style consumes/produces
+            // Old-style consumes/produces (legacy support)
             for (const [resId, amount] of Object.entries(task.consumes || {})) {
-                const props = resourceMap.get(resId);
-                const cost = props?.cost_per_unit || props?.unit_cost || 0;
+                const obj = objectMap.get(resId);
+                const cost = obj?.properties?.cost_per_unit || obj?.properties?.unit_cost || 0;
                 totalResourceCost += cost * amount;
             }
             for (const [resId, amount] of Object.entries(task.produces || {})) {
-                const props = resourceMap.get(resId);
-                const revenue = props?.revenue_per_unit || props?.sale_price || 0;
+                const obj = objectMap.get(resId);
+                const revenue = obj?.properties?.revenue_per_unit ||
+                               obj?.properties?.sale_price ||
+                               obj?.properties?.retail_price ||
+                               obj?.properties?.retail_price_usd || 0;
                 totalRevenue += revenue * amount;
             }
 
             // New-style interactions
             for (const interaction of (task.interactions || [])) {
-                const obj = resources.find(r => r.id === interaction.object_id);
-                if (obj && (obj.type === 'resource' || obj.type === 'product')) {
-                    // Handle interaction_type format (consume/create/produce)
-                    if (interaction.interaction_type && interaction.quantity) {
-                        const quantity = interaction.quantity;
-                        if (interaction.interaction_type === 'consume') {
-                            const cost = obj.properties?.cost_per_unit || obj.properties?.unit_cost || 0;
-                            totalResourceCost += cost * quantity;
-                        } else if (interaction.interaction_type === 'create' || interaction.interaction_type === 'produce') {
-                            const revenue = obj.properties?.revenue_per_unit || obj.properties?.sale_price || 0;
-                            totalRevenue += revenue * quantity;
-                        }
+                const obj = objectMap.get(interaction.object_id);
+                if (!obj) continue;
+
+                // Handle interaction_type format (consume/create/produce)
+                if (interaction.interaction_type && interaction.quantity) {
+                    const quantity = interaction.quantity;
+                    if (interaction.interaction_type === 'consume') {
+                        const cost = obj.properties?.cost_per_unit || obj.properties?.unit_cost || 0;
+                        totalResourceCost += cost * quantity;
+                    } else if (interaction.interaction_type === 'create' || interaction.interaction_type === 'produce') {
+                        const revenue = obj.properties?.revenue_per_unit ||
+                                       obj.properties?.sale_price ||
+                                       obj.properties?.retail_price ||
+                                       obj.properties?.retail_price_usd || 0;
+                        totalRevenue += revenue * quantity;
                     }
-                    // Handle property_changes format (legacy)
-                    else if (interaction.property_changes?.quantity) {
-                        const deltaAmount = interaction.property_changes.quantity.delta || 0;
-                        if (deltaAmount < 0) {
-                            const cost = obj.properties?.cost_per_unit || obj.properties?.unit_cost || 0;
-                            totalResourceCost += cost * Math.abs(deltaAmount);
-                        } else if (deltaAmount > 0) {
-                            const revenue = obj.properties?.revenue_per_unit || obj.properties?.sale_price || 0;
-                            totalRevenue += revenue * deltaAmount;
+                }
+                // Handle property_changes format - iterate through ALL properties
+                else if (interaction.property_changes) {
+                    for (const [propName, propChange] of Object.entries(interaction.property_changes)) {
+                        // Check if this is a financial property by name
+                        const isRevenue = isRevenueProperty(propName);
+                        const isCost = isCostProperty(propName);
+
+                        // Handle delta operations
+                        if (propChange.delta !== undefined) {
+                            const deltaAmount = propChange.delta;
+
+                            // Direct financial property (e.g., daily_sales_today_usd)
+                            if (isRevenue && deltaAmount > 0) {
+                                totalRevenue += deltaAmount;
+                            } else if (isCost && deltaAmount > 0) {
+                                totalResourceCost += deltaAmount;
+                            }
+                            // Resource/product quantity changes
+                            else if (!isRevenue && !isCost) {
+                                // Negative delta = consumption (cost)
+                                if (deltaAmount < 0 && (obj.type === 'resource' || obj.type === 'product')) {
+                                    const cost = obj.properties?.cost_per_unit || obj.properties?.unit_cost || 0;
+                                    totalResourceCost += cost * Math.abs(deltaAmount);
+                                }
+                                // Positive delta = production (revenue)
+                                else if (deltaAmount > 0 && obj.type === 'product') {
+                                    const revenue = obj.properties?.revenue_per_unit ||
+                                                   obj.properties?.sale_price ||
+                                                   obj.properties?.retail_price ||
+                                                   obj.properties?.retail_price_usd || 0;
+                                    totalRevenue += revenue * deltaAmount;
+                                }
+                            }
+                        }
+                        // Handle from/to operations (quantity changed from X to Y)
+                        else if (propChange.from !== undefined && propChange.to !== undefined) {
+                            const change = propChange.to - propChange.from;
+
+                            // Direct financial property
+                            if (isRevenue && change > 0) {
+                                totalRevenue += change;
+                            } else if (isCost && change > 0) {
+                                totalResourceCost += change;
+                            }
+                            // Resource/product quantity changes
+                            else if (!isRevenue && !isCost) {
+                                // Negative change = consumption (cost)
+                                if (change < 0 && (obj.type === 'resource' || obj.type === 'product')) {
+                                    const cost = obj.properties?.cost_per_unit || obj.properties?.unit_cost || 0;
+                                    totalResourceCost += cost * Math.abs(change);
+                                }
+                                // Positive change = production (revenue)
+                                else if (change > 0 && obj.type === 'product') {
+                                    const revenue = obj.properties?.revenue_per_unit ||
+                                                   obj.properties?.sale_price ||
+                                                   obj.properties?.retail_price ||
+                                                   obj.properties?.retail_price_usd || 0;
+                                    totalRevenue += revenue * change;
+                                }
+                            }
                         }
                     }
                 }

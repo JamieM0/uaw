@@ -52,6 +52,7 @@ class MultiPeriodViewController {
             window.editor = this.originalEditor;
             window.activeDayTypeEditor = null; // Clear the wrapper reference
             this.originalEditor = null;
+            this.currentDayType = null; // Clear day type when leaving day view
         }
 
         this.currentView = viewName;
@@ -317,18 +318,21 @@ class MultiPeriodViewController {
         const dayTypeEditor = {
             getValue: () => {
                 // Return the current state of this day type from the original JSON
+                // IMPORTANT: Use getDayTypeDefinition() to get merged global + day-type objects
                 const currentJsonStr = originalEditor.getValue();
 
-                const currentJson = JSON.parse(currentJsonStr);
-                const currentDayTypeDef = currentJson.simulation?.day_types?.[currentDayType];
+                const currentJson = JSON.parse(stripJsonComments(currentJsonStr));
 
-                if (!currentDayTypeDef) {
+                // Re-create simulator with current data to get merged definition
+                const currentSimulator = new MultiDaySimulator({ simulation: currentJson.simulation });
+                const mergedDefinition = currentSimulator.getDayTypeDefinition(currentDayType);
+
+                if (!mergedDefinition) {
                     return JSON.stringify(dayTypeEditWrapper, null, 2);
                 }
 
-                // Extract the definition (everything except 'name' field)
-                const { name, ...definition } = currentDayTypeDef;
-                return JSON.stringify({ simulation: definition }, null, 2);
+                // Return the merged definition (includes global objects + day-type objects)
+                return JSON.stringify({ simulation: mergedDefinition }, null, 2);
             },
             setValue: (newValue) => {
                 // Parse the edited day type definition
@@ -337,13 +341,26 @@ class MultiPeriodViewController {
                     const editedDefinition = edited.simulation;
 
                     // Update the day type in the original JSON
-                    const currentJson = JSON.parse(originalEditor.getValue());
+                    const currentJson = JSON.parse(stripJsonComments(originalEditor.getValue()));
                     if (currentJson.simulation && currentJson.simulation.day_types && currentJson.simulation.day_types[currentDayType]) {
                         // Preserve the name, update everything else
                         const name = currentJson.simulation.day_types[currentDayType].name;
+
+                        // Separate global objects from day-type specific objects
+                        const globalObjects = currentJson.simulation.objects || [];
+                        const globalObjectIds = new Set(globalObjects.map(o => o.id));
+
+                        // Filter out global objects from the edited definition
+                        // Only keep objects that are day-type specific (not in global list)
+                        const dayTypeOnlyObjects = (editedDefinition.objects || []).filter(
+                            obj => !globalObjectIds.has(obj.id)
+                        );
+
+                        // Update the day type with only day-type specific data
                         currentJson.simulation.day_types[currentDayType] = {
                             name: name,
-                            ...editedDefinition
+                            ...editedDefinition,
+                            objects: dayTypeOnlyObjects  // Only store day-type specific objects
                         };
 
                         // Write back to the actual editor
@@ -402,6 +419,11 @@ class MultiPeriodViewController {
             localStorage.setItem('uaw-multi-period-view', this.currentView);
             localStorage.setItem('uaw-multi-period-day', this.currentDay.toString());
             localStorage.setItem('uaw-multi-period-week', this.currentWeek.toString());
+            if (this.currentDayType) {
+                localStorage.setItem('uaw-multi-period-daytype', this.currentDayType);
+            } else {
+                localStorage.removeItem('uaw-multi-period-daytype');
+            }
         } catch (e) {
             console.warn('Could not save multi-period state:', e.message);
         }
@@ -415,6 +437,7 @@ class MultiPeriodViewController {
             const savedView = localStorage.getItem('uaw-multi-period-view');
             const savedDay = localStorage.getItem('uaw-multi-period-day');
             const savedWeek = localStorage.getItem('uaw-multi-period-week');
+            const savedDayType = localStorage.getItem('uaw-multi-period-daytype');
 
             if (savedView) {
                 this.currentView = savedView;
@@ -424,6 +447,9 @@ class MultiPeriodViewController {
             }
             if (savedWeek) {
                 this.currentWeek = parseInt(savedWeek) || 1;
+            }
+            if (savedDayType) {
+                this.currentDayType = savedDayType;
             }
         } catch (e) {
             console.warn('Could not load multi-period state:', e.message);
