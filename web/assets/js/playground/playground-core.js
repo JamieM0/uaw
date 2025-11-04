@@ -373,8 +373,8 @@ function populateSimulationLibrary() {
   window.simulationLibrary.simulations.forEach((simulation) => {
     const option = document.createElement("a");
     option.href = "#";
-    option.textContent = simulation.name;
-    option.title = `${simulation.description} (${simulation.complexity})`;
+    option.textContent = `${simulation.name} (${simulation.complexity})`;
+    option.title = simulation.description;
     option.dataset.simulationId = simulation.id;
 
     option.addEventListener("click", (e) => {

@@ -413,14 +413,15 @@ input[type="number"]:hover::-webkit-inner-spin-button {
 }
 
 /* --- Properties Panel Styles --- */
-.properties-panel-container { 
-    width: 300px; 
-    border-left: 1px solid var(--border-color); 
-    background: white; 
-    overflow-y: auto; 
-    flex-shrink: 0; 
+.properties-panel-container {
+    width: 300px;
+    border-left: 1px solid var(--border-color);
+    background: white;
+    overflow: hidden;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .properties-panel-header { 
@@ -558,12 +559,20 @@ input[type="number"]:hover::-webkit-inner-spin-button {
 }
 
 /* --- Property Section Styles --- */
-.prop-section { 
+.prop-section {
     margin-bottom: 16px;
     padding: 10px;
     background: var(--bg-light);
     border-radius: 6px;
     border: 1px solid var(--border-color);
+}
+
+/* Allow prop sections in digital space to expand and fill available height */
+.digital-space-tab .prop-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    max-height: none;
 }
 
 .prop-section .section-label { 
@@ -744,11 +753,12 @@ input[type="number"]:hover::-webkit-inner-spin-button {
 
 /* Digital Objects List */
 .digital-objects-list {
-    max-height: 300px;
+    max-height: none;
     overflow-y: auto;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     background: var(--bg-light);
+    flex: 1;
 }
 
 .object-item {
@@ -1170,6 +1180,61 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     border-bottom: none;
 }
 
+/* Element Type Selection Dialog */
+.element-type-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    padding: 1rem;
+}
+
+.element-type-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.element-type-option:hover {
+    background: var(--bg-light);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.element-type-option .element-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.element-type-option .element-name {
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+/* Display Editor Properties Panel Height Fix */
+.display-editor-tab #display-properties-panel-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.display-editor-tab .prop-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    max-height: none;
+}
+
+.display-editor-tab .prop-section .elements-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
 /* Improved Location Labels */
 .location-label {
     display: flex;
@@ -1332,6 +1397,84 @@ body.disable-animations * {
     letter-spacing: 0.3px;
     line-height: 1.2;
 }
+
+/* --- Connection Visualization Styles --- */
+.connections-svg {
+    pointer-events: none;
+}
+
+.connection-line {
+    transition: stroke-width 0.2s ease, filter 0.2s ease;
+    pointer-events: stroke !important;
+    cursor: pointer !important;
+}
+
+.connection-line:hover {
+    stroke-width: 3 !important;
+    filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.4));
+}
+
+/* Task Indicators */
+.task-indicator {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.2);
+    }
+}
+
+/* Data Flow Animation */
+.flow-animation {
+    filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.6));
+}
+
+/* State Indicators for Digital Objects */
+.digital-object-visual.state-busy {
+    border-color: #F59E0B !important;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+}
+
+.digital-object-visual.state-idle {
+    opacity: 0.7;
+}
+
+.digital-object-visual.state-error {
+    border-color: #EF4444 !important;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+}
+
+/* Physical-Digital Connection Indicator */
+.physical-digital-link {
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    width: 10px;
+    height: 10px;
+    background: #8B5CF6;
+    border-radius: 50%;
+    box-shadow: 0 0 4px rgba(139, 92, 246, 0.6);
+}
+
+/* Connection Management UI Enhancements */
+.connection-type-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.connection-type-data_flow { background: #3B82F6; }
+.connection-type-network { background: #10B981; }
+.connection-type-backup { background: #F59E0B; }
+.connection-type-sync { background: #8B5CF6; }
 
 /* Different colors for different resize contexts */
 .location-rect .dimension-text {

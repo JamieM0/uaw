@@ -512,7 +512,7 @@
                                                     </div>
                                                 </div>
                                                 <div id="digital-properties-panel-content">
-                                                    <p class="placeholder">Select a digital location, or click '+ Add Location' to create a new storage area.</p>
+                                                    <p style="color: var(--text-lighter); font-style: italic; font-size: 13px; text-align: center; padding: 16px;">Select a digital location, or click '+ Add Location' to create a new storage area.</p>
                                                 </div>
                                                 <div class="options-panel-container">
                                                     <div class="options-panel-header">
@@ -575,11 +575,19 @@
                                                         <div class="option-field">
                                                             <button type="button" class="btn btn-secondary" id="add-display-element-btn" style="width: 100%; margin-bottom: 0.5rem;">+ Add Element</button>
                                                         </div>
-                                                        <div class="option-field" style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
-                                                            <button type="button" class="element-quick-btn" data-element-type="button">🔘 Button</button>
-                                                            <button type="button" class="element-quick-btn" data-element-type="textbox">📝 Input</button>
-                                                            <button type="button" class="element-quick-btn" data-element-type="label">🏷️ Label</button>
-                                                            <button type="button" class="element-quick-btn" data-element-type="panel">📋 Panel</button>
+                                                        <div class="option-field" style="display: none; grid-template-columns: repeat(3, 1fr); gap: 0.25rem;">
+                                                            <button type="button" class="element-quick-btn" data-element-type="button" style="font-size: 0.75rem; padding: 0.3rem;">🔘 Button</button>
+                                                            <button type="button" class="element-quick-btn" data-element-type="textbox" style="font-size: 0.75rem; padding: 0.3rem;">📝 Input</button>
+                                                            <button type="button" class="element-quick-btn" data-element-type="label" style="font-size: 0.75rem; padding: 0.3rem;">🏷️ Label</button>
+                                                            <button type="button" class="element-quick-btn" data-element-type="checkbox" style="font-size: 0.75rem; padding: 0.3rem;">☑️ Checkbox</button>
+                                                            <button type="button" class="element-quick-btn" data-element-type="dropdown" style="font-size: 0.75rem; padding: 0.3rem;">🔽 Dropdown</button>
+                                                            <button type="button" class="element-quick-btn" data-element-type="slider" style="font-size: 0.75rem; padding: 0.3rem;">🎚️ Slider</button>
+                                                            <button type="button" class="element-quick-btn" data-element-type="panel" style="font-size: 0.75rem; padding: 0.3rem;">📋 Panel</button>
+                                                            <button type="button" class="element-quick-btn" data-element-type="card" style="font-size: 0.75rem; padding: 0.3rem;">🃏 Card</button>
+                                                            <button type="button" class="element-quick-btn" data-element-type="list" style="font-size: 0.75rem; padding: 0.3rem;">📜 List</button>
+                                                            <button type="button" class="element-quick-btn" data-element-type="image" style="font-size: 0.75rem; padding: 0.3rem;">🖼️ Image</button>
+                                                            <button type="button" class="element-quick-btn" data-element-type="table" style="font-size: 0.75rem; padding: 0.3rem;">📋 Table</button>
+                                                            <button type="button" class="element-quick-btn" data-element-type="modal" style="font-size: 0.75rem; padding: 0.3rem;">📱 Modal</button>
                                                         </div>
                                                         <div class="option-field">
                                                             <label for="display-scroll-sensitivity">Scroll Sensitivity:</label>

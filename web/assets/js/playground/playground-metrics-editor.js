@@ -190,14 +190,18 @@ function switchLeftTab(targetTab) {
         } else if (targetTab === 'digital-space' && digitalSpaceEditor) {
             try {
                 const currentJson = JSON.parse(editor.getValue());
-                digitalSpaceEditor.loadLayout(currentJson.simulation.digital_space || {}, true);
+                // Support both new (nested) and old (root-level) formats for backward compatibility
+                const digitalSpace = currentJson.simulation?.digital_space || currentJson.digital_space || {};
+                digitalSpaceEditor.loadLayout(digitalSpace, true);
             } catch(e) {
                 // Ignore parse errors
             }
         } else if (targetTab === 'display-editor' && displayEditor) {
             try {
                 const currentJson = JSON.parse(editor.getValue());
-                displayEditor.loadLayout(currentJson.simulation.displays || {}, true);
+                // Support both new (nested) and old (root-level) formats for backward compatibility
+                const displays = currentJson.simulation?.displays || currentJson.displays || {};
+                displayEditor.loadLayout(displays, true);
             } catch(e) {
                 // Ignore parse errors
             }
@@ -548,11 +552,15 @@ function refreshAllEditors() {
         }
         
         if (digitalSpaceEditor) {
-            digitalSpaceEditor.loadLayout(currentJson.simulation.digital_space || {});
+            // Support both new (nested) and old (root-level) formats for backward compatibility
+            const digitalSpace = currentJson.simulation?.digital_space || currentJson.digital_space || {};
+            digitalSpaceEditor.loadLayout(digitalSpace);
         }
-        
+
         if (displayEditor) {
-            displayEditor.loadLayout(currentJson.simulation.displays || {});
+            // Support both new (nested) and old (root-level) formats for backward compatibility
+            const displays = currentJson.simulation?.displays || currentJson.displays || {};
+            displayEditor.loadLayout(displays);
         }
     } catch(e) {
         // Ignore JSON parse errors
