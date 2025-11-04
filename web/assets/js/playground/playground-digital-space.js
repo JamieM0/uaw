@@ -4,7 +4,7 @@ class DigitalSpaceEditor {
         this.canvas = null;
         this.propsPanel = null;
         this.monacoEditor = null;
-        
+
         this.pixelsPerMeter = 20;
         this.isDrawing = false;
         this.isDragging = false;
@@ -21,10 +21,25 @@ class DigitalSpaceEditor {
     this.resizeStartRect = null; // {x,y,width,height}
         this.digitalLocations = [];
         this.digitalObjects = [];
+        this.connections = [];
+        this.dataFlows = [];
 
         this.isUpdatingJson = false;
         this.hasInitiallyLoaded = false;
         this.world = null;
+
+        // Connection visualization
+        this.showConnections = true;
+        this.selectedConnectionId = null;
+        this.connectionElements = new Map();
+
+        // Task integration
+        this.activeTaskId = null;
+        this.taskObjectStates = new Map(); // Track object states during simulation
+
+        // Animation state
+        this.animationFrameId = null;
+        this.currentSimulationTime = null;
         
         // Cache for performance optimization
         this.canvasRect = null;
@@ -145,6 +160,16 @@ class DigitalSpaceEditor {
             this.view.scrollSensitivity = parseFloat(scrollSensitivitySlider.value);
             scrollSensitivitySlider.addEventListener('input', (e) => {
                 this.view.scrollSensitivity = parseFloat(e.target.value);
+            });
+        }
+
+        // Show connections checkbox
+        const showConnectionsCheckbox = document.getElementById('digital-show-connections');
+        if (showConnectionsCheckbox) {
+            this.showConnections = showConnectionsCheckbox.checked;
+            showConnectionsCheckbox.addEventListener('change', (e) => {
+                this.showConnections = e.target.checked;
+                this.renderAllConnections();
             });
         }
     }
@@ -672,6 +697,7 @@ class DigitalSpaceEditor {
                                     <div class="object-actions">
                                         <button class="btn btn-xs" onclick="digitalSpaceEditor.showMoveObjectDialog('${obj.id}')" title="Move to different location">Move</button>
                                         <button class="btn btn-xs" onclick="digitalSpaceEditor.showEditObjectDialog('${obj.id}')" title="Edit object properties">Edit</button>
+                                        <button class="btn btn-xs" onclick="digitalSpaceEditor.showConnectionDialog('${obj.id}')" title="Manage connections">Connections</button>
                                     </div>
                                 </div>
                             `;
@@ -881,7 +907,7 @@ class DigitalSpaceEditor {
                 return;
             }
             const simulation = JSON.parse(stripJsonComments(jsonText));
-            
+
             // Load digital locations
             if (simulation.digital_space && simulation.digital_space.digital_locations) {
                 this.digitalLocations = [...simulation.digital_space.digital_locations];
@@ -903,8 +929,25 @@ class DigitalSpaceEditor {
                 this.digitalObjects = [...simulation.digital_space.digital_objects];
             }
 
+            // Load connections
+            if (simulation.digital_space && simulation.digital_space.connections) {
+                this.connections = [...simulation.digital_space.connections];
+            } else {
+                this.connections = [];
+            }
+
+            // Load data flows
+            if (simulation.digital_space && simulation.digital_space.data_flows) {
+                this.dataFlows = [...simulation.digital_space.data_flows];
+            } else {
+                this.dataFlows = [];
+            }
+
             // Render digital objects in their locations AFTER both locations and objects are loaded
             this.renderDigitalObjectsInLocations();
+
+            // Render connections
+            this.renderAllConnections();
         } catch (e) {
             console.log("DIGITAL-SPACE: Could not parse JSON for digital space");
         }
@@ -1225,9 +1268,11 @@ class DigitalSpaceEditor {
                     simulation.digital_space = {};
                 }
 
-                // Update digital locations
+                // Update digital locations, objects, connections, and data flows
                 simulation.digital_space.digital_locations = this.digitalLocations;
                 simulation.digital_space.digital_objects = this.digitalObjects;
+                simulation.digital_space.connections = this.connections;
+                simulation.digital_space.data_flows = this.dataFlows;
 
                 this.isUpdatingJson = true;
                 this.monacoEditor.setValue(JSON.stringify(simulation, null, 2));
@@ -1809,6 +1854,89 @@ class DigitalSpaceEditor {
         ]);
     }
 
+    showConnectionDialog(objectId) {
+        const obj = this.digitalObjects.find(o => o.id === objectId);
+        if (!obj) return;
+
+        // Get existing connections for this object
+        const outgoingConnections = this.connections.filter(c => c.from === objectId);
+        const incomingConnections = this.connections.filter(c => c.to === objectId);
+
+        // Get available objects for new connections
+        const availableObjects = this.digitalObjects.filter(o => o.id !== objectId);
+
+        const modal = this.createQuickModal('Manage Connections', `
+            <p style="margin-bottom: 12px;">Object: <strong>${sanitizeHTML(obj.name)}</strong></p>
+
+            <div class="form-group">
+                <label>Outgoing Connections (${outgoingConnections.length}):</label>
+                <div style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 4px; padding: 8px; background: var(--bg-light);">
+                    ${outgoingConnections.length > 0 ? outgoingConnections.map(conn => {
+                        const toObj = this.digitalObjects.find(o => o.id === conn.to);
+                        return `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px; margin-bottom: 4px; background: white; border-radius: 3px;">
+                                <span style="font-size: 12px;">→ ${sanitizeHTML(toObj?.name || conn.to)} (${conn.type})</span>
+                                <button onclick="digitalSpaceEditor.deleteConnection('${conn.id}')" style="background: var(--error-color); color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 11px;">Delete</button>
+                            </div>
+                        `;
+                    }).join('') : '<div style="color: var(--text-light); font-size: 12px; font-style: italic;">No outgoing connections</div>'}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Incoming Connections (${incomingConnections.length}):</label>
+                <div style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 4px; padding: 8px; background: var(--bg-light);">
+                    ${incomingConnections.length > 0 ? incomingConnections.map(conn => {
+                        const fromObj = this.digitalObjects.find(o => o.id === conn.from);
+                        return `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px; margin-bottom: 4px; background: white; border-radius: 3px;">
+                                <span style="font-size: 12px;">← ${sanitizeHTML(fromObj?.name || conn.from)} (${conn.type})</span>
+                                <button onclick="digitalSpaceEditor.deleteConnection('${conn.id}')" style="background: var(--error-color); color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 11px;">Delete</button>
+                            </div>
+                        `;
+                    }).join('') : '<div style="color: var(--text-light); font-size: 12px; font-style: italic;">No incoming connections</div>'}
+                </div>
+            </div>
+
+            ${availableObjects.length > 0 ? `
+                <div class="form-group">
+                    <label>Add New Connection:</label>
+                    <select id="new-connection-target" style="width: 100%; padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 6px;">
+                        <option value="">Select target object...</option>
+                        ${availableObjects.map(o => `<option value="${o.id}">${sanitizeHTML(o.name)}</option>`).join('')}
+                    </select>
+                    <select id="new-connection-type" style="width: 100%; padding: 6px; border: 1px solid var(--border-color); border-radius: 4px;">
+                        <option value="data_flow">Data Flow</option>
+                        <option value="network">Network</option>
+                        <option value="backup">Backup</option>
+                        <option value="sync">Sync</option>
+                    </select>
+                </div>
+            ` : '<p style="color: var(--text-light); font-size: 12px; font-style: italic;">No other objects available for connections</p>'}
+        `, [
+            { text: 'Close', class: 'btn-secondary' },
+            ...(availableObjects.length > 0 ? [{
+                text: 'Add Connection',
+                class: 'btn-primary',
+                action: () => {
+                    const targetId = document.getElementById('new-connection-target').value;
+                    const connectionType = document.getElementById('new-connection-type').value;
+
+                    if (targetId) {
+                        this.createConnection(objectId, targetId, connectionType);
+                        console.log(`DIGITAL-SPACE: Created ${connectionType} connection from ${obj.name} to ${this.digitalObjects.find(o => o.id === targetId)?.name}`);
+                        // Reopen dialog to show updated connections
+                        setTimeout(() => this.showConnectionDialog(objectId), 100);
+                    } else {
+                        alert('Please select a target object');
+                        // Keep modal open
+                        return false;
+                    }
+                }
+            }] : [])
+        ]);
+    }
+
     createQuickModal(title, content, buttons) {
         // Remove existing quick modal
         const existingModal = document.getElementById('quick-modal');
@@ -1907,6 +2035,449 @@ class DigitalSpaceEditor {
         // Check if the digital-space tab is currently active
         const digitalSpaceTab = document.querySelector('[data-tab="digital-space"]');
         return digitalSpaceTab && digitalSpaceTab.classList.contains('active');
+    }
+
+    // ========== CONNECTION VISUALIZATION SYSTEM ==========
+
+    renderAllConnections() {
+        // Clear existing connections
+        this.connectionElements.forEach(el => el.remove());
+        this.connectionElements.clear();
+
+        if (!this.showConnections) {
+            return;
+        }
+
+        // Render all connections
+        this.connections.forEach(connection => {
+            this.renderConnection(connection);
+        });
+    }
+
+    renderConnection(connection) {
+        const fromObject = this.digitalObjects.find(obj => obj.id === connection.from);
+        const toObject = this.digitalObjects.find(obj => obj.id === connection.to);
+
+        if (!fromObject || !toObject) {
+            console.warn(`DIGITAL-SPACE: Cannot render connection ${connection.id} - objects not found`);
+            return;
+        }
+
+        // Get object positions
+        const fromPos = this.getObjectCenterPosition(fromObject);
+        const toPos = this.getObjectCenterPosition(toObject);
+
+        if (!fromPos || !toPos) {
+            return;
+        }
+
+        // Create SVG line element
+        const svg = this.getOrCreateConnectionSvg();
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', fromPos.x);
+        line.setAttribute('y1', fromPos.y);
+        line.setAttribute('x2', toPos.x);
+        line.setAttribute('y2', toPos.y);
+        line.setAttribute('stroke', this.getConnectionColor(connection.type));
+        line.setAttribute('stroke-width', '2');
+        line.setAttribute('stroke-dasharray', connection.type === 'backup' ? '5,5' : 'none');
+        line.setAttribute('data-connection-id', connection.id);
+        line.classList.add('connection-line');
+
+        // Make connection interactive
+        line.style.cursor = 'pointer';
+        line.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.selectConnection(connection.id);
+        });
+
+        // Add arrow marker
+        const markerId = `arrow-${connection.id}`;
+        this.createArrowMarker(svg, markerId, this.getConnectionColor(connection.type));
+        line.setAttribute('marker-end', `url(#${markerId})`);
+
+        svg.appendChild(line);
+        this.connectionElements.set(connection.id, line);
+
+        // Add connection label
+        if (connection.properties) {
+            this.addConnectionLabel(line, connection, fromPos, toPos);
+        }
+    }
+
+    getOrCreateConnectionSvg() {
+        let svg = this.world.querySelector('.connections-svg');
+        if (!svg) {
+            svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.classList.add('connections-svg');
+            svg.style.position = 'absolute';
+            svg.style.top = '0';
+            svg.style.left = '0';
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+            svg.style.pointerEvents = 'none';
+            svg.style.zIndex = '0';
+            this.world.insertBefore(svg, this.world.firstChild);
+        }
+        return svg;
+    }
+
+    createArrowMarker(svg, markerId, color) {
+        let defs = svg.querySelector('defs');
+        if (!defs) {
+            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            svg.appendChild(defs);
+        }
+
+        // Remove existing marker if present
+        const existingMarker = defs.querySelector(`#${markerId}`);
+        if (existingMarker) {
+            existingMarker.remove();
+        }
+
+        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+        marker.setAttribute('id', markerId);
+        marker.setAttribute('markerWidth', '10');
+        marker.setAttribute('markerHeight', '10');
+        marker.setAttribute('refX', '9');
+        marker.setAttribute('refY', '3');
+        marker.setAttribute('orient', 'auto');
+        marker.setAttribute('markerUnits', 'strokeWidth');
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', 'M0,0 L0,6 L9,3 z');
+        path.setAttribute('fill', color);
+
+        marker.appendChild(path);
+        defs.appendChild(marker);
+    }
+
+    addConnectionLabel(line, connection, fromPos, toPos) {
+        const midX = (fromPos.x + toPos.x) / 2;
+        const midY = (fromPos.y + toPos.y) / 2;
+
+        let label = '';
+        if (connection.properties?.bandwidth_mbps) {
+            label = `${connection.properties.bandwidth_mbps} Mbps`;
+        }
+        if (connection.properties?.latency_ms) {
+            label += label ? ` | ${connection.properties.latency_ms}ms` : `${connection.properties.latency_ms}ms`;
+        }
+
+        if (label) {
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', midX);
+            text.setAttribute('y', midY - 5);
+            text.setAttribute('fill', '#666');
+            text.setAttribute('font-size', '10');
+            text.setAttribute('font-weight', '500');
+            text.setAttribute('text-anchor', 'middle');
+            text.textContent = label;
+            text.style.pointerEvents = 'none';
+            line.parentElement.appendChild(text);
+        }
+    }
+
+    getConnectionColor(type) {
+        const colors = {
+            'data_flow': '#3B82F6',  // Blue
+            'network': '#10B981',     // Green
+            'backup': '#F59E0B',      // Amber
+            'sync': '#8B5CF6'         // Purple
+        };
+        return colors[type] || '#6B7280';
+    }
+
+    getObjectCenterPosition(digitalObject) {
+        const locationId = digitalObject.properties?.location_id;
+        if (!locationId) return null;
+
+        const location = this.digitalLocations.find(loc => loc.id === locationId);
+        if (!location) return null;
+
+        // Get location position in pixels
+        const locX = location.x * this.pixelsPerMeter;
+        const locY = location.y * this.pixelsPerMeter;
+        const locWidth = location.width * this.pixelsPerMeter;
+        const locHeight = location.height * this.pixelsPerMeter;
+
+        // Return center of location (approximate object position)
+        return {
+            x: locX + locWidth / 2,
+            y: locY + locHeight / 2
+        };
+    }
+
+    selectConnection(connectionId) {
+        this.selectedConnectionId = connectionId;
+
+        // Highlight selected connection
+        this.connectionElements.forEach((line, id) => {
+            if (id === connectionId) {
+                line.setAttribute('stroke-width', '4');
+                line.style.filter = 'drop-shadow(0 0 4px rgba(59, 130, 246, 0.6))';
+            } else {
+                line.setAttribute('stroke-width', '2');
+                line.style.filter = 'none';
+            }
+        });
+
+        // Show connection properties panel
+        this.renderConnectionPropertiesPanel(connectionId);
+    }
+
+    renderConnectionPropertiesPanel(connectionId) {
+        const connection = this.connections.find(c => c.id === connectionId);
+        if (!connection) return;
+
+        const fromObject = this.digitalObjects.find(obj => obj.id === connection.from);
+        const toObject = this.digitalObjects.find(obj => obj.id === connection.to);
+
+        this.propsPanel.innerHTML = `
+            <div class="prop-section">
+                <label class="section-label">Connection Properties</label>
+
+                <div class="prop-field">
+                    <label>From:</label>
+                    <div style="padding: 6px; background: var(--bg-light); border-radius: 4px; font-size: 12px;">
+                        ${sanitizeHTML(fromObject?.name || connection.from)}
+                    </div>
+                </div>
+
+                <div class="prop-field">
+                    <label>To:</label>
+                    <div style="padding: 6px; background: var(--bg-light); border-radius: 4px; font-size: 12px;">
+                        ${sanitizeHTML(toObject?.name || connection.to)}
+                    </div>
+                </div>
+
+                <div class="prop-field">
+                    <label for="connection-type">Type:</label>
+                    <select id="connection-type">
+                        <option value="data_flow" ${connection.type === 'data_flow' ? 'selected' : ''}>Data Flow</option>
+                        <option value="network" ${connection.type === 'network' ? 'selected' : ''}>Network</option>
+                        <option value="backup" ${connection.type === 'backup' ? 'selected' : ''}>Backup</option>
+                        <option value="sync" ${connection.type === 'sync' ? 'selected' : ''}>Sync</option>
+                    </select>
+                </div>
+
+                <div class="prop-field">
+                    <label for="connection-bandwidth">Bandwidth (Mbps):</label>
+                    <input type="number" id="connection-bandwidth" value="${connection.properties?.bandwidth_mbps || 100}" min="1" step="10">
+                </div>
+
+                <div class="prop-field">
+                    <label for="connection-latency">Latency (ms):</label>
+                    <input type="number" id="connection-latency" value="${connection.properties?.latency_ms || 5}" min="0" step="1">
+                </div>
+
+                <div class="prop-field">
+                    <label for="connection-protocol">Protocol:</label>
+                    <input type="text" id="connection-protocol" value="${connection.properties?.protocol || 'TCP'}" placeholder="TCP, UDP, HTTP...">
+                </div>
+            </div>
+
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                <button type="button" class="btn-danger" id="delete-connection" style="width: 100%;">Delete Connection</button>
+            </div>
+        `;
+
+        // Setup event listeners
+        document.getElementById('connection-type').addEventListener('change', (e) => {
+            connection.type = e.target.value;
+            this.renderAllConnections();
+            this.updateSimulationJson();
+        });
+
+        document.getElementById('connection-bandwidth').addEventListener('input', (e) => {
+            if (!connection.properties) connection.properties = {};
+            connection.properties.bandwidth_mbps = parseFloat(e.target.value) || 100;
+            this.renderAllConnections();
+            this.updateSimulationJson();
+        });
+
+        document.getElementById('connection-latency').addEventListener('input', (e) => {
+            if (!connection.properties) connection.properties = {};
+            connection.properties.latency_ms = parseFloat(e.target.value) || 5;
+            this.renderAllConnections();
+            this.updateSimulationJson();
+        });
+
+        document.getElementById('connection-protocol').addEventListener('input', (e) => {
+            if (!connection.properties) connection.properties = {};
+            connection.properties.protocol = e.target.value || 'TCP';
+            this.updateSimulationJson();
+        });
+
+        document.getElementById('delete-connection').addEventListener('click', () => {
+            this.deleteConnection(connectionId);
+        });
+    }
+
+    deleteConnection(connectionId) {
+        const index = this.connections.findIndex(c => c.id === connectionId);
+        if (index >= 0) {
+            this.connections.splice(index, 1);
+            this.renderAllConnections();
+            this.updateSimulationJson();
+            this.deselectAll();
+        }
+    }
+
+    createConnection(fromObjectId, toObjectId, type = 'data_flow') {
+        const connectionId = `conn_${Date.now()}`;
+        const newConnection = {
+            id: connectionId,
+            from: fromObjectId,
+            to: toObjectId,
+            type: type,
+            properties: {
+                bandwidth_mbps: 1000,
+                latency_ms: 5,
+                protocol: 'TCP'
+            }
+        };
+
+        this.connections.push(newConnection);
+        this.renderConnection(newConnection);
+        this.updateSimulationJson();
+        return connectionId;
+    }
+
+    // ========== TASK INTEGRATION ==========
+
+    setActiveTask(taskId, simulationTime) {
+        this.activeTaskId = taskId;
+        this.currentSimulationTime = simulationTime;
+        this.updateTaskStates();
+    }
+
+    updateTaskStates() {
+        // Clear all task states
+        this.taskObjectStates.clear();
+
+        if (!this.activeTaskId) {
+            this.clearObjectStates();
+            return;
+        }
+
+        // Find active data flows for this task
+        const activeFlows = this.dataFlows.filter(flow => {
+            if (flow.task_id !== this.activeTaskId) return false;
+
+            // Check if flow is active at current simulation time
+            if (!this.currentSimulationTime || !flow.start_time || !flow.duration) return false;
+
+            const flowStart = this.parseTime(flow.start_time);
+            const flowEnd = flowStart + flow.duration;
+            const currentTime = this.parseTime(this.currentSimulationTime);
+
+            return currentTime >= flowStart && currentTime <= flowEnd;
+        });
+
+        // Update object states based on active flows
+        activeFlows.forEach(flow => {
+            this.taskObjectStates.set(flow.source, { state: 'sending', taskId: this.activeTaskId });
+            this.taskObjectStates.set(flow.destination, { state: 'receiving', taskId: this.activeTaskId });
+        });
+
+        // Visual update
+        this.renderTaskIndicators();
+    }
+
+    parseTime(timeString) {
+        // Simple time parser for HH:MM format
+        const parts = timeString.split(':');
+        return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    }
+
+    renderTaskIndicators() {
+        // Clear existing indicators
+        document.querySelectorAll('.task-indicator').forEach(el => el.remove());
+
+        // Add indicators to active objects
+        this.taskObjectStates.forEach((state, objectId) => {
+            const objectEl = document.querySelector(`.digital-object-visual[data-object-id="${objectId}"]`);
+            if (objectEl) {
+                const indicator = document.createElement('div');
+                indicator.className = 'task-indicator';
+                indicator.style.cssText = `
+                    position: absolute;
+                    top: -3px;
+                    right: -3px;
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 50%;
+                    background: ${state.state === 'sending' ? '#10B981' : '#3B82F6'};
+                    box-shadow: 0 0 6px ${state.state === 'sending' ? '#10B981' : '#3B82F6'};
+                    animation: pulse 1s infinite;
+                    z-index: 10;
+                `;
+                objectEl.style.position = 'relative';
+                objectEl.appendChild(indicator);
+            }
+        });
+    }
+
+    clearObjectStates() {
+        this.taskObjectStates.clear();
+        document.querySelectorAll('.task-indicator').forEach(el => el.remove());
+    }
+
+    // ========== DATA FLOW ANIMATION ==========
+
+    animateDataFlows() {
+        const svg = this.getOrCreateConnectionSvg();
+
+        // Remove existing flow animations
+        svg.querySelectorAll('.flow-animation').forEach(el => el.remove());
+
+        this.dataFlows.forEach(flow => {
+            if (!this.isFlowActive(flow)) return;
+
+            const connection = this.connections.find(c =>
+                c.from === flow.source && c.to === flow.destination
+            );
+
+            if (!connection) return;
+
+            const fromPos = this.getObjectCenterPosition(
+                this.digitalObjects.find(obj => obj.id === flow.source)
+            );
+            const toPos = this.getObjectCenterPosition(
+                this.digitalObjects.find(obj => obj.id === flow.destination)
+            );
+
+            if (!fromPos || !toPos) return;
+
+            // Create animated circle along the connection line
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('r', '4');
+            circle.setAttribute('fill', '#3B82F6');
+            circle.classList.add('flow-animation');
+
+            const animate = document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion');
+            animate.setAttribute('dur', '2s');
+            animate.setAttribute('repeatCount', 'indefinite');
+
+            const path = `M ${fromPos.x},${fromPos.y} L ${toPos.x},${toPos.y}`;
+            const mpath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            mpath.setAttribute('d', path);
+
+            animate.appendChild(mpath);
+            circle.appendChild(animate);
+            svg.appendChild(circle);
+        });
+    }
+
+    isFlowActive(flow) {
+        if (!this.currentSimulationTime || !flow.start_time || !flow.duration) return false;
+
+        const flowStart = this.parseTime(flow.start_time);
+        const flowEnd = flowStart + flow.duration;
+        const currentTime = this.parseTime(this.currentSimulationTime);
+
+        return currentTime >= flowStart && currentTime <= flowEnd;
     }
 }
 

@@ -60,6 +60,14 @@ class DisplayEditor {
             tolerance: 10
         };
 
+        // Copy/paste buffer
+        this.copiedElement = null;
+
+        // Timeline integration
+        this.playbackTime = 0;
+        this.isPlaying = false;
+        this.activeInteractions = [];
+
         // UI element types and their properties
         this.elementTypes = {
             'window': { icon: '🪟', canHaveChildren: true, defaultWidth: 400, defaultHeight: 300 },
@@ -68,7 +76,22 @@ class DisplayEditor {
             'label': { icon: '🏷️', canHaveChildren: false, defaultWidth: 100, defaultHeight: 20 },
             'panel': { icon: '📋', canHaveChildren: true, defaultWidth: 200, defaultHeight: 150 },
             'menu': { icon: '📋', canHaveChildren: true, defaultWidth: 120, defaultHeight: 200 },
-            'dialog': { icon: '💭', canHaveChildren: true, defaultWidth: 300, defaultHeight: 200 }
+            'dialog': { icon: '💭', canHaveChildren: true, defaultWidth: 300, defaultHeight: 200 },
+            'dropdown': { icon: '🔽', canHaveChildren: false, defaultWidth: 150, defaultHeight: 30 },
+            'checkbox': { icon: '☑️', canHaveChildren: false, defaultWidth: 20, defaultHeight: 20 },
+            'radio': { icon: '🔘', canHaveChildren: false, defaultWidth: 20, defaultHeight: 20 },
+            'slider': { icon: '🎚️', canHaveChildren: false, defaultWidth: 200, defaultHeight: 30 },
+            'progressbar': { icon: '📊', canHaveChildren: false, defaultWidth: 200, defaultHeight: 20 },
+            'image': { icon: '🖼️', canHaveChildren: false, defaultWidth: 100, defaultHeight: 100 },
+            'table': { icon: '📋', canHaveChildren: true, defaultWidth: 300, defaultHeight: 200 },
+            'tabs': { icon: '📑', canHaveChildren: true, defaultWidth: 400, defaultHeight: 300 },
+            'accordion': { icon: '📑', canHaveChildren: true, defaultWidth: 300, defaultHeight: 200 },
+            'tooltip': { icon: '💡', canHaveChildren: false, defaultWidth: 120, defaultHeight: 40 },
+            'modal': { icon: '📱', canHaveChildren: true, defaultWidth: 400, defaultHeight: 300 },
+            'navbar': { icon: '📌', canHaveChildren: true, defaultWidth: 600, defaultHeight: 50 },
+            'sidebar': { icon: '🗂️', canHaveChildren: true, defaultWidth: 200, defaultHeight: 400 },
+            'card': { icon: '🃏', canHaveChildren: true, defaultWidth: 250, defaultHeight: 300 },
+            'list': { icon: '📜', canHaveChildren: true, defaultWidth: 200, defaultHeight: 300 }
         };
     }
 
@@ -238,7 +261,17 @@ class DisplayEditor {
                 border: elementType === 'button' ? '#0056b3' : '#cccccc',
                 text_color: elementType === 'button' ? '#ffffff' : '#333333',
                 layout: 'stretch'
-            }
+            },
+            state: {
+                enabled: true,
+                selected: false,
+                visible: true,
+                value: elementType === 'textbox' ? '' : (elementType === 'checkbox' || elementType === 'radio' ? false : null),
+                validation_state: 'valid',
+                loading: false
+            },
+            interactions: [],
+            animations: []
         };
 
         const activeDisplay = this.getActiveDisplay();
@@ -863,7 +896,17 @@ class DisplayEditor {
                 border: '#cccccc',
                 text_color: '#333333',
                 layout: 'stretch'
-            }
+            },
+            state: {
+                enabled: true,
+                selected: false,
+                visible: true,
+                value: null,
+                validation_state: 'valid',
+                loading: false
+            },
+            interactions: [],
+            animations: []
         };
 
         const activeDisplay = this.getActiveDisplay();
@@ -879,7 +922,7 @@ class DisplayEditor {
         this.activeRectEl = null;
         this.isDrawing = false;
         this.canvas.style.cursor = 'default';
-        
+
         // Re-render properties to update element list
         this.renderPropertiesPanel();
     }
@@ -907,23 +950,56 @@ class DisplayEditor {
         rectEl.style.width = element.bounds.width + 'px';
         rectEl.style.height = element.bounds.height + 'px';
         rectEl.style.zIndex = element.z_index || 1;
-        
+
         // Prevent default browser dragging behavior
         rectEl.draggable = false;
         rectEl.addEventListener('dragstart', (e) => e.preventDefault());
         rectEl.addEventListener('contextmenu', (e) => {
             if (this.isDragging) e.preventDefault();
         });
-        
+
         // Apply visual styling
         rectEl.style.border = `1px solid ${element.properties.border || '#cccccc'}`;
         rectEl.style.backgroundColor = element.properties.background || '#f0f0f0';
         rectEl.style.color = element.properties.text_color || '#333333';
-        rectEl.style.display = element.properties.visible ? 'block' : 'none';
-        
+
+        // Apply state-based styling
+        if (element.state) {
+            const stateVisible = element.state.visible !== undefined ? element.state.visible : true;
+            rectEl.style.display = (element.properties.visible && stateVisible) ? 'block' : 'none';
+
+            // Disabled state
+            if (!element.state.enabled) {
+                rectEl.style.opacity = '0.5';
+                rectEl.style.cursor = 'not-allowed';
+            }
+
+            // Selected state
+            if (element.state.selected) {
+                rectEl.style.boxShadow = '0 0 0 2px #007bff inset';
+            }
+
+            // Loading state
+            if (element.state.loading) {
+                rectEl.style.cursor = 'wait';
+                rectEl.classList.add('loading-state');
+            }
+
+            // Validation states
+            if (element.state.validation_state === 'invalid') {
+                rectEl.style.borderColor = '#dc3545';
+                rectEl.style.borderWidth = '2px';
+            } else if (element.state.validation_state === 'warning') {
+                rectEl.style.borderColor = '#ffc107';
+                rectEl.style.borderWidth = '2px';
+            }
+        } else {
+            rectEl.style.display = element.properties.visible ? 'block' : 'none';
+        }
+
         // Add content
         this.renderElementContent(rectEl, element);
-        
+
         // Append to viewport if it exists, otherwise to world (for compatibility)
         const container = this.viewport || this.world;
         container.appendChild(rectEl);
@@ -1233,7 +1309,80 @@ class DisplayEditor {
                     <small style="color: var(--text-light); font-size: 0.75rem;">How SVG icons and images fit within the element</small>
                 </div>
             </div>
-            
+
+            <div class="prop-section">
+                <label class="section-label">State Management</label>
+
+                <div class="prop-field">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="state-enabled" ${element.state && element.state.enabled !== false ? 'checked' : ''}> Enabled
+                    </label>
+                </div>
+
+                <div class="prop-field">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="state-selected" ${element.state && element.state.selected ? 'checked' : ''}> Selected
+                    </label>
+                </div>
+
+                <div class="prop-field">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="state-loading" ${element.state && element.state.loading ? 'checked' : ''}> Loading
+                    </label>
+                </div>
+
+                <div class="prop-field">
+                    <label for="state-validation">Validation State:</label>
+                    <select id="state-validation">
+                        <option value="valid" ${!element.state || element.state.validation_state === 'valid' ? 'selected' : ''}>✅ Valid</option>
+                        <option value="invalid" ${element.state && element.state.validation_state === 'invalid' ? 'selected' : ''}>❌ Invalid</option>
+                        <option value="warning" ${element.state && element.state.validation_state === 'warning' ? 'selected' : ''}>⚠️ Warning</option>
+                    </select>
+                </div>
+
+                ${element.type === 'textbox' || element.type === 'checkbox' || element.type === 'radio' || element.type === 'dropdown' || element.type === 'slider' ? `
+                    <div class="prop-field">
+                        <label for="state-value">Current Value:</label>
+                        <input type="text" id="state-value" value="${element.state && element.state.value !== null && element.state.value !== undefined ? element.state.value : ''}" placeholder="Element value">
+                        <small style="color: var(--text-light); font-size: 0.75rem;">Current state value for this element</small>
+                    </div>
+                ` : ''}
+            </div>
+
+            <div class="prop-section">
+                <label class="section-label">Interactions (${element.interactions ? element.interactions.length : 0})</label>
+                <button type="button" class="btn-secondary" id="add-interaction-btn" style="width: 100%; margin-bottom: 0.5rem;">+ Add Interaction</button>
+                <div id="interactions-list" style="max-height: 150px; overflow-y: auto;">
+                    ${element.interactions && element.interactions.length > 0 ? element.interactions.map((interaction, index) => `
+                        <div class="interaction-item" style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 0.5rem; background: var(--bg-light);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                                <strong style="font-size: 0.85rem;">${interaction.trigger || 'click'} → ${interaction.action || 'none'}</strong>
+                                <button type="button" class="btn-danger remove-interaction-btn" data-index="${index}" style="padding: 0.1rem 0.4rem; font-size: 0.7rem;">✕</button>
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-light);">
+                                ${interaction.target ? `Target: ${interaction.target}` : 'No target'}
+                                ${interaction.task_id ? ` | Task: ${interaction.task_id}` : ''}
+                            </div>
+                        </div>
+                    `).join('') : '<div style="padding: 0.5rem; text-align: center; color: var(--text-light); font-style: italic; font-size: 0.8rem;">No interactions defined</div>'}
+                </div>
+            </div>
+
+            <div class="prop-section">
+                <label class="section-label">Layout Tools</label>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25rem; margin-bottom: 0.5rem;">
+                    <button type="button" class="btn-secondary" id="align-left-btn" style="font-size: 0.7rem; padding: 0.3rem;">⬅️ Left</button>
+                    <button type="button" class="btn-secondary" id="align-center-h-btn" style="font-size: 0.7rem; padding: 0.3rem;">↔️ Center</button>
+                    <button type="button" class="btn-secondary" id="align-right-btn" style="font-size: 0.7rem; padding: 0.3rem;">➡️ Right</button>
+                    <button type="button" class="btn-secondary" id="align-top-btn" style="font-size: 0.7rem; padding: 0.3rem;">⬆️ Top</button>
+                    <button type="button" class="btn-secondary" id="align-center-v-btn" style="font-size: 0.7rem; padding: 0.3rem;">↕️ Middle</button>
+                    <button type="button" class="btn-secondary" id="align-bottom-btn" style="font-size: 0.7rem; padding: 0.3rem;">⬇️ Bottom</button>
+                </div>
+                <small style="color: var(--text-light); font-size: 0.7rem; display: block; margin-bottom: 0.5rem;">
+                    Keyboard: Arrow keys to nudge (Shift for 10px), Ctrl+D to duplicate, Delete to remove
+                </small>
+            </div>
+
             <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.5rem;">
                 <button type="button" class="btn-secondary" id="duplicate-element" style="flex: 1;">Duplicate</button>
                 <button type="button" class="btn-danger" id="delete-element" style="flex: 1;">Delete</button>
@@ -1478,6 +1627,104 @@ class DisplayEditor {
             });
         }
 
+        // State controls
+        const stateControls = ['state-enabled', 'state-selected', 'state-loading'];
+        stateControls.forEach(id => {
+            const checkbox = document.getElementById(id);
+            if (checkbox) {
+                checkbox.addEventListener('change', (e) => {
+                    if (!element.state) element.state = {};
+                    const stateProp = id.replace('state-', '');
+                    element.state[stateProp] = e.target.checked;
+                    this.renderElement(element);
+                    this.updateSimulationJson();
+                });
+            }
+        });
+
+        const stateValidation = document.getElementById('state-validation');
+        if (stateValidation) {
+            stateValidation.addEventListener('change', (e) => {
+                if (!element.state) element.state = {};
+                element.state.validation_state = e.target.value;
+                this.renderElement(element);
+                this.updateSimulationJson();
+            });
+        }
+
+        const stateValue = document.getElementById('state-value');
+        if (stateValue) {
+            stateValue.addEventListener('input', (e) => {
+                if (!element.state) element.state = {};
+                element.state.value = e.target.value;
+                this.updateSimulationJson();
+            });
+        }
+
+        // Interaction management
+        const addInteractionBtn = document.getElementById('add-interaction-btn');
+        if (addInteractionBtn) {
+            addInteractionBtn.addEventListener('click', () => {
+                const trigger = prompt('Interaction trigger (click, hover, focus):', 'click');
+                if (!trigger) return;
+                const action = prompt('Action (navigate, show_tooltip, update_value, toggle_visibility):', 'navigate');
+                if (!action) return;
+                const target = prompt('Target element ID or screen:', '');
+
+                if (!element.interactions) element.interactions = [];
+                element.interactions.push({
+                    trigger,
+                    action,
+                    target,
+                    task_id: null
+                });
+                this.renderPropertiesPanel();
+                this.updateSimulationJson();
+            });
+        }
+
+        document.querySelectorAll('.remove-interaction-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = parseInt(e.target.dataset.index);
+                if (element.interactions && index >= 0) {
+                    element.interactions.splice(index, 1);
+                    this.renderPropertiesPanel();
+                    this.updateSimulationJson();
+                }
+            });
+        });
+
+        // Alignment buttons
+        const alignLeftBtn = document.getElementById('align-left-btn');
+        if (alignLeftBtn) {
+            alignLeftBtn.addEventListener('click', () => this.alignLeft([element.id]));
+        }
+
+        const alignRightBtn = document.getElementById('align-right-btn');
+        if (alignRightBtn) {
+            alignRightBtn.addEventListener('click', () => this.alignRight([element.id]));
+        }
+
+        const alignTopBtn = document.getElementById('align-top-btn');
+        if (alignTopBtn) {
+            alignTopBtn.addEventListener('click', () => this.alignTop([element.id]));
+        }
+
+        const alignBottomBtn = document.getElementById('align-bottom-btn');
+        if (alignBottomBtn) {
+            alignBottomBtn.addEventListener('click', () => this.alignBottom([element.id]));
+        }
+
+        const alignCenterHBtn = document.getElementById('align-center-h-btn');
+        if (alignCenterHBtn) {
+            alignCenterHBtn.addEventListener('click', () => this.alignCenterHorizontal([element.id]));
+        }
+
+        const alignCenterVBtn = document.getElementById('align-center-v-btn');
+        if (alignCenterVBtn) {
+            alignCenterVBtn.addEventListener('click', () => this.alignCenterVertical([element.id]));
+        }
+
         // Action buttons
         const deleteBtn = document.getElementById('delete-element');
         if (deleteBtn) {
@@ -1716,7 +1963,7 @@ class DisplayEditor {
             this.spaceKeyState.isDown = true;
             this.spaceKeyState.downTime = Date.now();
             this.spaceKeyState.panActivated = false;
-            
+
             // Start panning after a short delay to allow for quick taps
             setTimeout(() => {
                 if (this.spaceKeyState.isDown && !this.view.isPanning) {
@@ -1729,9 +1976,74 @@ class DisplayEditor {
             }, 150); // 150ms delay to detect quick taps
             return;
         }
-        
+
+        // Delete element
         if (e.key === 'Delete' && this.selectedRectId) {
+            e.preventDefault();
             this.deleteElement(this.selectedRectId);
+            return;
+        }
+
+        // Duplicate element (Ctrl/Cmd + D)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'd' && this.selectedRectId) {
+            e.preventDefault();
+            const activeDisplay = this.getActiveDisplay();
+            const element = activeDisplay?.rectangles.find(r => r.id === this.selectedRectId);
+            if (element) {
+                this.duplicateElement(element);
+            }
+            return;
+        }
+
+        // Copy element (Ctrl/Cmd + C)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'c' && this.selectedRectId) {
+            e.preventDefault();
+            const activeDisplay = this.getActiveDisplay();
+            const element = activeDisplay?.rectangles.find(r => r.id === this.selectedRectId);
+            if (element) {
+                this.copiedElement = JSON.parse(JSON.stringify(element));
+            }
+            return;
+        }
+
+        // Paste element (Ctrl/Cmd + V)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'v' && this.copiedElement) {
+            e.preventDefault();
+            const newElement = {
+                ...JSON.parse(JSON.stringify(this.copiedElement)),
+                id: 'element_' + Date.now(),
+                bounds: {
+                    ...this.copiedElement.bounds,
+                    x: this.copiedElement.bounds.x + 20,
+                    y: this.copiedElement.bounds.y + 20
+                }
+            };
+            const activeDisplay = this.getActiveDisplay();
+            if (activeDisplay) {
+                activeDisplay.rectangles.push(newElement);
+                this.renderElement(newElement);
+                this.selectElement(newElement.id);
+                this.updateSimulationJson();
+            }
+            return;
+        }
+
+        // Arrow key nudging
+        if (this.selectedRectId && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            e.preventDefault();
+            const activeDisplay = this.getActiveDisplay();
+            const element = activeDisplay?.rectangles.find(r => r.id === this.selectedRectId);
+            if (element) {
+                const shift = e.shiftKey ? 10 : 1;
+                if (e.key === 'ArrowUp') element.bounds.y -= shift;
+                if (e.key === 'ArrowDown') element.bounds.y += shift;
+                if (e.key === 'ArrowLeft') element.bounds.x -= shift;
+                if (e.key === 'ArrowRight') element.bounds.x += shift;
+                this.renderElement(element);
+                this.renderPropertiesPanel();
+                this.updateSimulationJson();
+            }
+            return;
         }
     }
 
@@ -1936,6 +2248,377 @@ class DisplayEditor {
         
         // Refresh properties panel if needed
         this.renderPropertiesPanel();
+    }
+
+    // Alignment and layout tools
+    alignLeft(elementIds = null) {
+        const ids = elementIds || (this.selectedRectId ? [this.selectedRectId] : []);
+        if (ids.length === 0) return;
+
+        const activeDisplay = this.getActiveDisplay();
+        if (!activeDisplay) return;
+
+        const elements = activeDisplay.rectangles.filter(r => ids.includes(r.id));
+        if (elements.length === 0) return;
+
+        const minX = Math.min(...elements.map(e => e.bounds.x));
+        elements.forEach(e => {
+            e.bounds.x = minX;
+            this.renderElement(e);
+        });
+        this.updateSimulationJson();
+        this.renderPropertiesPanel();
+    }
+
+    alignRight(elementIds = null) {
+        const ids = elementIds || (this.selectedRectId ? [this.selectedRectId] : []);
+        if (ids.length === 0) return;
+
+        const activeDisplay = this.getActiveDisplay();
+        if (!activeDisplay) return;
+
+        const elements = activeDisplay.rectangles.filter(r => ids.includes(r.id));
+        if (elements.length === 0) return;
+
+        const maxRight = Math.max(...elements.map(e => e.bounds.x + e.bounds.width));
+        elements.forEach(e => {
+            e.bounds.x = maxRight - e.bounds.width;
+            this.renderElement(e);
+        });
+        this.updateSimulationJson();
+        this.renderPropertiesPanel();
+    }
+
+    alignTop(elementIds = null) {
+        const ids = elementIds || (this.selectedRectId ? [this.selectedRectId] : []);
+        if (ids.length === 0) return;
+
+        const activeDisplay = this.getActiveDisplay();
+        if (!activeDisplay) return;
+
+        const elements = activeDisplay.rectangles.filter(r => ids.includes(r.id));
+        if (elements.length === 0) return;
+
+        const minY = Math.min(...elements.map(e => e.bounds.y));
+        elements.forEach(e => {
+            e.bounds.y = minY;
+            this.renderElement(e);
+        });
+        this.updateSimulationJson();
+        this.renderPropertiesPanel();
+    }
+
+    alignBottom(elementIds = null) {
+        const ids = elementIds || (this.selectedRectId ? [this.selectedRectId] : []);
+        if (ids.length === 0) return;
+
+        const activeDisplay = this.getActiveDisplay();
+        if (!activeDisplay) return;
+
+        const elements = activeDisplay.rectangles.filter(r => ids.includes(r.id));
+        if (elements.length === 0) return;
+
+        const maxBottom = Math.max(...elements.map(e => e.bounds.y + e.bounds.height));
+        elements.forEach(e => {
+            e.bounds.y = maxBottom - e.bounds.height;
+            this.renderElement(e);
+        });
+        this.updateSimulationJson();
+        this.renderPropertiesPanel();
+    }
+
+    alignCenterHorizontal(elementIds = null) {
+        const ids = elementIds || (this.selectedRectId ? [this.selectedRectId] : []);
+        if (ids.length === 0) return;
+
+        const activeDisplay = this.getActiveDisplay();
+        if (!activeDisplay) return;
+
+        const elements = activeDisplay.rectangles.filter(r => ids.includes(r.id));
+        if (elements.length === 0) return;
+
+        const minX = Math.min(...elements.map(e => e.bounds.x));
+        const maxRight = Math.max(...elements.map(e => e.bounds.x + e.bounds.width));
+        const centerX = (minX + maxRight) / 2;
+
+        elements.forEach(e => {
+            e.bounds.x = centerX - e.bounds.width / 2;
+            this.renderElement(e);
+        });
+        this.updateSimulationJson();
+        this.renderPropertiesPanel();
+    }
+
+    alignCenterVertical(elementIds = null) {
+        const ids = elementIds || (this.selectedRectId ? [this.selectedRectId] : []);
+        if (ids.length === 0) return;
+
+        const activeDisplay = this.getActiveDisplay();
+        if (!activeDisplay) return;
+
+        const elements = activeDisplay.rectangles.filter(r => ids.includes(r.id));
+        if (elements.length === 0) return;
+
+        const minY = Math.min(...elements.map(e => e.bounds.y));
+        const maxBottom = Math.max(...elements.map(e => e.bounds.y + e.bounds.height));
+        const centerY = (minY + maxBottom) / 2;
+
+        elements.forEach(e => {
+            e.bounds.y = centerY - e.bounds.height / 2;
+            this.renderElement(e);
+        });
+        this.updateSimulationJson();
+        this.renderPropertiesPanel();
+    }
+
+    distributeHorizontal(elementIds = null) {
+        const ids = elementIds || (this.selectedRectId ? [this.selectedRectId] : []);
+        if (ids.length < 3) {
+            console.warn('Need at least 3 elements to distribute');
+            return;
+        }
+
+        const activeDisplay = this.getActiveDisplay();
+        if (!activeDisplay) return;
+
+        const elements = activeDisplay.rectangles.filter(r => ids.includes(r.id));
+        if (elements.length < 3) return;
+
+        // Sort by x position
+        elements.sort((a, b) => a.bounds.x - b.bounds.x);
+
+        const first = elements[0];
+        const last = elements[elements.length - 1];
+        const totalSpace = (last.bounds.x + last.bounds.width) - first.bounds.x;
+        const totalElementWidth = elements.reduce((sum, e) => sum + e.bounds.width, 0);
+        const gap = (totalSpace - totalElementWidth) / (elements.length - 1);
+
+        let currentX = first.bounds.x + first.bounds.width + gap;
+        for (let i = 1; i < elements.length - 1; i++) {
+            elements[i].bounds.x = currentX;
+            currentX += elements[i].bounds.width + gap;
+            this.renderElement(elements[i]);
+        }
+
+        this.updateSimulationJson();
+        this.renderPropertiesPanel();
+    }
+
+    distributeVertical(elementIds = null) {
+        const ids = elementIds || (this.selectedRectId ? [this.selectedRectId] : []);
+        if (ids.length < 3) {
+            console.warn('Need at least 3 elements to distribute');
+            return;
+        }
+
+        const activeDisplay = this.getActiveDisplay();
+        if (!activeDisplay) return;
+
+        const elements = activeDisplay.rectangles.filter(r => ids.includes(r.id));
+        if (elements.length < 3) return;
+
+        // Sort by y position
+        elements.sort((a, b) => a.bounds.y - b.bounds.y);
+
+        const first = elements[0];
+        const last = elements[elements.length - 1];
+        const totalSpace = (last.bounds.y + last.bounds.height) - first.bounds.y;
+        const totalElementHeight = elements.reduce((sum, e) => sum + e.bounds.height, 0);
+        const gap = (totalSpace - totalElementHeight) / (elements.length - 1);
+
+        let currentY = first.bounds.y + first.bounds.height + gap;
+        for (let i = 1; i < elements.length - 1; i++) {
+            elements[i].bounds.y = currentY;
+            currentY += elements[i].bounds.height + gap;
+            this.renderElement(elements[i]);
+        }
+
+        this.updateSimulationJson();
+        this.renderPropertiesPanel();
+    }
+
+    // Timeline Integration Methods
+    updateFromPlaybackTime(currentTime) {
+        // Called by timeline/simulation player when playback time changes
+        this.playbackTime = currentTime;
+
+        const activeDisplay = this.getActiveDisplay();
+        if (!activeDisplay) return;
+
+        // Update element states based on task interactions at current time
+        activeDisplay.rectangles.forEach(element => {
+            if (!element.interactions || element.interactions.length === 0) return;
+
+            element.interactions.forEach(interaction => {
+                if (!interaction.task_id) return;
+
+                // Check if the task associated with this interaction is active at current time
+                const taskActive = this.isTaskActiveAtTime(interaction.task_id, currentTime);
+
+                if (taskActive && interaction.action) {
+                    this.executeInteraction(element, interaction);
+                }
+            });
+        });
+
+        this.renderActiveDisplay();
+    }
+
+    isTaskActiveAtTime(taskId, time) {
+        // Check if a task is active at the given time by querying the simulation
+        if (!this.monacoEditor) return false;
+
+        try {
+            const jsonText = this.monacoEditor.getValue();
+            const simulation = JSON.parse(stripJsonComments(jsonText));
+
+            if (!simulation.tasks) return false;
+
+            const task = simulation.tasks.find(t => t.id === taskId);
+            if (!task) return false;
+
+            // Parse task timing
+            const startTime = this.parseTime(task.start);
+            const endTime = this.parseTime(task.end);
+
+            return time >= startTime && time <= endTime;
+        } catch (e) {
+            console.warn('Error checking task timing:', e);
+            return false;
+        }
+    }
+
+    parseTime(timeString) {
+        // Parse time string like "09:00" to minutes since midnight
+        if (!timeString) return 0;
+        const parts = timeString.split(':');
+        if (parts.length !== 2) return 0;
+        return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    }
+
+    executeInteraction(element, interaction) {
+        // Execute the specified interaction
+        if (!element.state) {
+            element.state = {
+                enabled: true,
+                selected: false,
+                visible: true,
+                value: null,
+                validation_state: 'valid',
+                loading: false
+            };
+        }
+
+        switch (interaction.action) {
+            case 'click':
+            case 'trigger_click':
+                // Simulate a click on the element
+                element.state.selected = true;
+                setTimeout(() => {
+                    if (element.state) element.state.selected = false;
+                    this.renderElement(element);
+                }, 300);
+                break;
+
+            case 'update_value':
+                // Update element value
+                if (interaction.value !== undefined) {
+                    element.state.value = interaction.value;
+                }
+                break;
+
+            case 'toggle_visibility':
+                // Toggle element visibility
+                element.state.visible = !element.state.visible;
+                break;
+
+            case 'show':
+                element.state.visible = true;
+                break;
+
+            case 'hide':
+                element.state.visible = false;
+                break;
+
+            case 'enable':
+                element.state.enabled = true;
+                break;
+
+            case 'disable':
+                element.state.enabled = false;
+                break;
+
+            case 'set_loading':
+                element.state.loading = true;
+                break;
+
+            case 'clear_loading':
+                element.state.loading = false;
+                break;
+
+            case 'validate_success':
+                element.state.validation_state = 'valid';
+                break;
+
+            case 'validate_error':
+                element.state.validation_state = 'invalid';
+                break;
+
+            case 'navigate':
+                // Screen navigation would be handled here
+                if (interaction.target) {
+                    this.navigateToScreen(interaction.target);
+                }
+                break;
+
+            case 'show_tooltip':
+                // Show tooltip (visual indicator)
+                if (interaction.target) {
+                    const tooltipEl = document.querySelector(`[data-element-id="${interaction.target}"]`);
+                    if (tooltipEl) {
+                        tooltipEl.style.display = 'block';
+                        setTimeout(() => {
+                            tooltipEl.style.display = 'none';
+                        }, 2000);
+                    }
+                }
+                break;
+        }
+
+        this.renderElement(element);
+    }
+
+    navigateToScreen(screenId) {
+        // Navigate to a different screen in the display
+        const activeDisplay = this.getActiveDisplay();
+        if (!activeDisplay || !activeDisplay.navigation) return;
+
+        // Hide all screen-specific elements
+        if (activeDisplay.navigation.screens) {
+            activeDisplay.navigation.screens.forEach(screen => {
+                if (screen.elements) {
+                    screen.elements.forEach(elementId => {
+                        const el = activeDisplay.rectangles.find(r => r.id === elementId);
+                        if (el && el.state) {
+                            el.state.visible = false;
+                        }
+                    });
+                }
+            });
+        }
+
+        // Show elements for the target screen
+        const targetScreen = activeDisplay.navigation.screens?.find(s => s.id === screenId);
+        if (targetScreen && targetScreen.elements) {
+            targetScreen.elements.forEach(elementId => {
+                const el = activeDisplay.rectangles.find(r => r.id === elementId);
+                if (el && el.state) {
+                    el.state.visible = true;
+                }
+            });
+        }
+
+        this.renderActiveDisplay();
     }
 
     cleanup() {

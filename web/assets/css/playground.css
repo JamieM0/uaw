@@ -502,6 +502,61 @@ body {
     }
 }
 
+/* Display Editor - State Visual Indicators */
+.display-element-rect.loading-state {
+    position: relative;
+}
+
+.display-element-rect.loading-state::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-top-color: rgba(0, 0, 0, 0.8);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.display-element-rect[data-state-enabled="false"] {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.display-element-rect[data-state-selected="true"] {
+    box-shadow: 0 0 0 2px #007bff inset !important;
+}
+
+.display-element-rect[data-validation-state="invalid"] {
+    border-color: #dc3545 !important;
+    border-width: 2px !important;
+}
+
+.display-element-rect[data-validation-state="warning"] {
+    border-color: #ffc107 !important;
+    border-width: 2px !important;
+}
+
+/* Interaction indicators */
+.element-has-interactions::before {
+    content: '⚡';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ffc107;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    z-index: 1000;
+}
+
 /* Metrics Editor Styles */
 .metrics-editor-panel {
     background: var(--bg-color);
