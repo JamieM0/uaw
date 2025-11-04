@@ -327,9 +327,12 @@ function getDigitalLocations() {
     try {
         const editor = window.playgroundCore?.monacoEditor;
         if (!editor) return [];
-        
-        const simulation = JSON.parse(editor.getValue());
-        return simulation.digital_space?.digital_locations || [];
+
+        const data = JSON.parse(editor.getValue());
+        const sim = data.simulation || data;
+        // Support both new (nested) and old (root-level) formats for backward compatibility
+        const digitalSpace = sim.digital_space || data.digital_space;
+        return digitalSpace?.digital_locations || [];
     } catch (e) {
         return [];
     }
@@ -339,9 +342,12 @@ function getDigitalObjects() {
     try {
         const editor = window.playgroundCore?.monacoEditor;
         if (!editor) return [];
-        
-        const simulation = JSON.parse(editor.getValue());
-        return simulation.digital_space?.digital_objects || [];
+
+        const data = JSON.parse(editor.getValue());
+        const sim = data.simulation || data;
+        // Support both new (nested) and old (root-level) formats for backward compatibility
+        const digitalSpace = sim.digital_space || data.digital_space;
+        return digitalSpace?.digital_objects || [];
     } catch (e) {
         return [];
     }
@@ -351,9 +357,11 @@ function getDisplays() {
     try {
         const editor = window.playgroundCore?.monacoEditor;
         if (!editor) return [];
-        
-        const simulation = JSON.parse(editor.getValue());
-        return simulation.displays || [];
+
+        const data = JSON.parse(editor.getValue());
+        const sim = data.simulation || data;
+        // Support both new (nested) and old (root-level) formats for backward compatibility
+        return sim.displays || data.displays || [];
     } catch (e) {
         return [];
     }

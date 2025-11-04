@@ -906,11 +906,17 @@ class DigitalSpaceEditor {
                 console.warn('DIGITAL-SPACE: No simulation data available');
                 return;
             }
-            const simulation = JSON.parse(stripJsonComments(jsonText));
+            const data = JSON.parse(stripJsonComments(jsonText));
+
+            // Access the nested simulation object, or use data directly if not wrapped
+            const simulation = data.simulation || data;
+
+            // For backward compatibility, check both new (nested) and old (root) locations
+            const digitalSpace = simulation.digital_space || data.digital_space;
 
             // Load digital locations
-            if (simulation.digital_space && simulation.digital_space.digital_locations) {
-                this.digitalLocations = [...simulation.digital_space.digital_locations];
+            if (digitalSpace && digitalSpace.digital_locations) {
+                this.digitalLocations = [...digitalSpace.digital_locations];
                 this.renderAllLocations();
 
                 // Reset view and zoom to fit on initial load (like Space Editor)
@@ -925,20 +931,20 @@ class DigitalSpaceEditor {
             }
 
             // Load digital objects
-            if (simulation.digital_space && simulation.digital_space.digital_objects) {
-                this.digitalObjects = [...simulation.digital_space.digital_objects];
+            if (digitalSpace && digitalSpace.digital_objects) {
+                this.digitalObjects = [...digitalSpace.digital_objects];
             }
 
             // Load connections
-            if (simulation.digital_space && simulation.digital_space.connections) {
-                this.connections = [...simulation.digital_space.connections];
+            if (digitalSpace && digitalSpace.connections) {
+                this.connections = [...digitalSpace.connections];
             } else {
                 this.connections = [];
             }
 
             // Load data flows
-            if (simulation.digital_space && simulation.digital_space.data_flows) {
-                this.dataFlows = [...simulation.digital_space.data_flows];
+            if (digitalSpace && digitalSpace.data_flows) {
+                this.dataFlows = [...digitalSpace.data_flows];
             } else {
                 this.dataFlows = [];
             }
@@ -1261,21 +1267,27 @@ class DigitalSpaceEditor {
         this.updateSimulationJsonTimeout = setTimeout(() => {
             try {
                 const jsonText = this.monacoEditor.getValue();
-                const simulation = JSON.parse(stripJsonComments(jsonText));
+                const data = JSON.parse(stripJsonComments(jsonText));
 
-                // Ensure digital_space structure exists
-                if (!simulation.digital_space) {
-                    simulation.digital_space = {};
+                // Ensure the simulation object exists
+                if (!data.simulation) {
+                    data.simulation = {};
+                }
+
+                // Ensure digital_space structure exists within simulation
+                if (!data.simulation.digital_space) {
+                    data.simulation.digital_space = {};
                 }
 
                 // Update digital locations, objects, connections, and data flows
-                simulation.digital_space.digital_locations = this.digitalLocations;
-                simulation.digital_space.digital_objects = this.digitalObjects;
-                simulation.digital_space.connections = this.connections;
-                simulation.digital_space.data_flows = this.dataFlows;
+                // Always write to the CORRECT nested location inside simulation
+                data.simulation.digital_space.digital_locations = this.digitalLocations;
+                data.simulation.digital_space.digital_objects = this.digitalObjects;
+                data.simulation.digital_space.connections = this.connections;
+                data.simulation.digital_space.data_flows = this.dataFlows;
 
                 this.isUpdatingJson = true;
-                this.monacoEditor.setValue(JSON.stringify(simulation, null, 2));
+                this.monacoEditor.setValue(JSON.stringify(data, null, 2));
                 this.isUpdatingJson = false;
             } catch (e) {
                 console.error("DIGITAL-SPACE: Error updating simulation JSON:", e);

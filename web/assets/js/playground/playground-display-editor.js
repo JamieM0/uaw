@@ -1820,7 +1820,7 @@ class DisplayEditor {
 
     loadFromSimulation() {
         if (!this.monacoEditor) return;
-        
+
         // Skip reloading if we're currently updating properties to prevent position reset
         if (this.isUpdatingProperties) {
             return;
@@ -1828,11 +1828,17 @@ class DisplayEditor {
 
         try {
             const jsonText = this.monacoEditor.getValue();
-            const simulation = JSON.parse(stripJsonComments(jsonText));
-            
-            if (simulation.displays && Array.isArray(simulation.displays)) {
+            const data = JSON.parse(stripJsonComments(jsonText));
+
+            // Access the nested simulation object, or use data directly if not wrapped
+            const simulation = data.simulation || data;
+
+            // For backward compatibility, check both new (nested) and old (root) locations
+            const displays = simulation.displays || data.displays;
+
+            if (displays && Array.isArray(displays)) {
                 // Ensure numeric values are properly preserved during JSON loading
-                this.displays = simulation.displays.map(display => ({
+                this.displays = displays.map(display => ({
                     ...display,
                     rectangles: display.rectangles.map(rect => ({
                         ...rect,
@@ -1845,7 +1851,7 @@ class DisplayEditor {
                         z_index: typeof rect.z_index === 'number' ? rect.z_index : parseInt(rect.z_index) || 1
                     }))
                 }));
-                
+
                 if (this.displays.length > 0 && !this.activeDisplayId) {
                     this.activeDisplayId = this.displays[0].id;
                 }
@@ -1859,21 +1865,27 @@ class DisplayEditor {
 
     updateSimulationJson() {
         if (this.isUpdatingJson || !this.monacoEditor) return;
-        
+
         // Debounce to prevent excessive updates and infinite loops
         if (this.updateSimulationJsonTimeout) {
             clearTimeout(this.updateSimulationJsonTimeout);
         }
-        
+
         this.updateSimulationJsonTimeout = setTimeout(() => {
             try {
                 const jsonText = this.monacoEditor.getValue();
-                const simulation = JSON.parse(stripJsonComments(jsonText));
-                
-                simulation.displays = this.displays;
-                
+                const data = JSON.parse(stripJsonComments(jsonText));
+
+                // Ensure the simulation object exists
+                if (!data.simulation) {
+                    data.simulation = {};
+                }
+
+                // Always write to the CORRECT nested location inside simulation
+                data.simulation.displays = this.displays;
+
                 this.isUpdatingJson = true;
-                this.monacoEditor.setValue(JSON.stringify(simulation, null, 2));
+                this.monacoEditor.setValue(JSON.stringify(data, null, 2));
                 this.isUpdatingJson = false;
             } catch (e) {
                 console.error("DISPLAY-EDITOR: Error updating simulation JSON:", e);

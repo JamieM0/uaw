@@ -232,13 +232,16 @@ function getCurrentTimelineContext() {
         });
 
         // Get digital locations (from current context only)
-        const digitalLocations = simulation.digital_space?.digital_locations || [];
+        // Support both new (nested) and old (root-level) formats for backward compatibility
+        const digitalSpace = sim.digital_space || simulation.digital_space;
+        const digitalLocations = digitalSpace?.digital_locations || [];
 
         // Get digital objects (from current context only)
-        const digitalObjects = simulation.digital_space?.digital_objects || [];
+        const digitalObjects = digitalSpace?.digital_objects || [];
 
         // Get displays (from current context only)
-        const displays = simulation.displays || [];
+        // Support both new (nested) and old (root-level) formats for backward compatibility
+        const displays = sim.displays || simulation.displays || [];
 
         // Get display elements from all displays (from current context only)
         const displayElements = [];

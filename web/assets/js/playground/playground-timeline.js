@@ -49,10 +49,12 @@ function processSimulationData(simulationData) {
     let actualFirstTaskStart = startTimeMinutes; // Track earliest task start
 
     const allObjects = sim.objects || [];
-    
-    // Include digital locations from the raw simulationData structure
-    if (simulationData.digital_space && simulationData.digital_space.digital_locations) {
-        allObjects.push(...simulationData.digital_space.digital_locations);
+
+    // Include digital locations from the simulation structure
+    // Support both new (nested) and old (root-level) formats for backward compatibility
+    const digitalSpace = (simulationData.simulation && simulationData.simulation.digital_space) || simulationData.digital_space;
+    if (digitalSpace && digitalSpace.digital_locations) {
+        allObjects.push(...digitalSpace.digital_locations);
     }
     
     // Group objects by type dynamically (no hardcoded filtering)
