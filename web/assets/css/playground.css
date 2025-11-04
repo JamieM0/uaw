@@ -1200,6 +1200,43 @@ body {
     font-size: var(--font-size-lg);
 }
 
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.dialog-header h3 {
+    margin: 0;
+}
+
+.dialog-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text-light);
+    padding: 0;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.dialog-close:hover {
+    background: var(--bg-light);
+    color: var(--text-color);
+}
+
+.dialog-content {
+    margin-top: 0;
+}
+
 .dialog-form {
     display: flex;
     flex-direction: column;
@@ -1772,6 +1809,48 @@ body.tutorial-active #auto-render-toggle {
 
 .dropdown:hover .dropdown-content {
     display: block;
+}
+
+/* Dropdown checkbox items */
+.dropdown-checkbox-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid #eee;
+}
+
+.dropdown-checkbox-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-checkbox-item:hover {
+    background: #f5f5f5;
+}
+
+.dropdown-checkbox-item input[type="checkbox"] {
+    margin-right: 0.5rem;
+    cursor: pointer;
+}
+
+.dropdown-checkbox-item span {
+    flex: 1;
+}
+
+/* View controls positioning */
+.simulation-header {
+    display: flex !important;
+    align-items: center;
+    gap: 1rem;
+}
+
+.simulation-header-content {
+    flex: 1;
+}
+
+.view-controls {
+    margin-left: auto;
 }
 
 /* Simulation Library specific styles */

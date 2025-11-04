@@ -151,7 +151,7 @@ class DigitalSpaceEditor {
         if (layerFilter) {
             layerFilter.addEventListener('change', (e) => {
                 this.activeLayer = e.target.value;
-                this.applyLayerFilter();
+                this.applyObjectTypeFilter();
             });
         }
 
@@ -644,8 +644,8 @@ class DigitalSpaceEditor {
         
         if (!this.selectedRectId) {
             this.propsPanel.innerHTML = `
-                <p class="placeholder">Select a digital location, or click '+ Add Location' to create a new storage area.</p>
-                
+                <p style="color: var(--text-lighter); font-style: italic; font-size: 13px; text-align: center; padding: 16px;">Select a digital location, or click '+ Add Location' to create a new storage area.</p>
+
                 <div class="prop-section">
                     <div class="section-header">
                         <div class="section-label">Digital Objects</div>
@@ -705,6 +705,8 @@ class DigitalSpaceEditor {
                     </div>
                 </div>
             `;
+            // Apply the current filter after rendering the objects list
+            setTimeout(() => this.applyObjectTypeFilter(), 0);
             return;
         }
 
@@ -2021,6 +2023,24 @@ class DigitalSpaceEditor {
     applyLayerFilter() {
         // Layer filtering logic if needed
         console.log("DIGITAL-SPACE: Layer filter applied:", this.activeLayer);
+    }
+
+    applyObjectTypeFilter() {
+        // Filter digital objects in the list by type
+        const objectItems = document.querySelectorAll('.object-item');
+        objectItems.forEach(item => {
+            const objectId = item.dataset.objectId;
+            const object = this.digitalObjects.find(obj => obj.id === objectId);
+            if (!object) return;
+
+            if (this.activeLayer === 'all') {
+                item.style.display = '';
+            } else {
+                // Filter based on object type property
+                const objectType = object.type || 'file';
+                item.style.display = objectType === this.activeLayer ? '' : 'none';
+            }
+        });
     }
 
     refreshFromSimulation() {

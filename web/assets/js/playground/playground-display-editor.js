@@ -145,9 +145,7 @@ class DisplayEditor {
         const addElementBtn = document.getElementById('add-display-element-btn');
         if (addElementBtn) {
             addElementBtn.addEventListener('click', () => {
-                this.isDrawing = true;
-                this.canvas.style.cursor = 'crosshair';
-                this.deselectAll();
+                this.showElementTypeDialog();
             });
         }
 
@@ -228,6 +226,68 @@ class DisplayEditor {
         this.isDrawingDisplay = true;
         this.canvas.style.cursor = 'crosshair';
         this.deselectAll();
+    }
+
+    showElementTypeDialog() {
+        if (!this.getActiveDisplay()) {
+            alert('Please create or select a display first.');
+            return;
+        }
+
+        const dialog = document.createElement('div');
+        dialog.className = 'dialog-overlay';
+        dialog.id = 'element-type-dialog';
+
+        const elementTypes = Object.entries(this.elementTypes).map(([type, info]) => {
+            const displayName = type.charAt(0).toUpperCase() + type.slice(1).replace(/_/g, ' ');
+            return `
+                <button class="element-type-option" data-type="${type}">
+                    <span class="element-icon">${info.icon}</span>
+                    <span class="element-name">${displayName}</span>
+                </button>
+            `;
+        }).join('');
+
+        dialog.innerHTML = `
+            <div class="dialog" style="max-width: 600px;">
+                <div class="dialog-header">
+                    <h3>Choose Element Type</h3>
+                    <button class="dialog-close" onclick="this.closest('.dialog-overlay').remove()">×</button>
+                </div>
+                <div class="dialog-content">
+                    <div class="element-type-grid">
+                        ${elementTypes}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(dialog);
+
+        // Add click handlers for each element type
+        dialog.querySelectorAll('.element-type-option').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.dataset.type;
+                this.createQuickElement(type);
+                dialog.remove();
+            });
+        });
+
+        // Close on overlay click
+        dialog.addEventListener('click', (e) => {
+            if (e.target === dialog) {
+                dialog.remove();
+            }
+        });
+
+        // Close on Escape key
+        const closeOnEscape = (e) => {
+            if (e.key === 'Escape') {
+                dialog.remove();
+                document.removeEventListener('keydown', closeOnEscape);
+            }
+        };
+        document.addEventListener('keydown', closeOnEscape);
     }
 
     createQuickElement(elementType) {
@@ -1122,7 +1182,6 @@ class DisplayEditor {
                                 <input type="number" id="display-height" value="${activeDisplay.viewport.height}" min="100" step="10" style="width: 70px; padding: 2px 4px; border: 1px solid var(--border-color); border-radius: 3px; font-size: 0.75rem;">
                                 <span>px</span>
                             </div>
-                            <div>Elements: ${activeDisplay.rectangles.length}</div>
                             ${activeDisplay.physical_object_id ? `<div>Linked to: ${activeDisplay.physical_object_id}</div>` : ''}
                         </div>
                     ` : `
@@ -1132,22 +1191,10 @@ class DisplayEditor {
                     `}
                 </div>
 
-                ${window.AssetManager ? `
-                    <div class="prop-section">
-                        <label class="section-label">Asset Management</label>
-                        <button type="button" class="btn-secondary" id="cleanup-assets-btn" style="width: 100%; font-size: 0.8rem;">
-                            🧹 Clean Up Unused Assets
-                        </button>
-                        <div style="font-size: 0.75rem; color: var(--text-light); margin-top: 4px;">
-                            Remove asset files no longer referenced in the simulation
-                        </div>
-                    </div>
-                ` : ''}
-                
                 ${activeDisplay ? `
                     <div class="prop-section">
-                        <label class="section-label">Elements (${activeDisplay.rectangles.length})</label>
-                        <div class="elements-list" style="max-height: 120px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-light);">
+                        <label class="section-label">Elements</label>
+                        <div class="elements-list" style="overflow-y: auto; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-light); flex: 1;">
                             ${activeDisplay.rectangles.length > 0 ? activeDisplay.rectangles
                                 .sort((a, b) => (b.z_index || 1) - (a.z_index || 1))
                                 .map(element => `
@@ -1163,19 +1210,10 @@ class DisplayEditor {
                     </div>
                 ` : ''}
             `;
-            
+
             // Setup display property listeners if display is active
             if (activeDisplay) {
                 this.setupDisplayPropertyListeners();
-            }
-
-            // Setup asset cleanup button listener
-            const cleanupBtn = document.getElementById('cleanup-assets-btn');
-            if (cleanupBtn && window.AssetManager) {
-                cleanupBtn.addEventListener('click', () => {
-                    window.AssetManager.cleanupUnusedAssets();
-                    this.renderPropertiesPanel(); // Refresh to update any UI changes
-                });
             }
             return;
         }

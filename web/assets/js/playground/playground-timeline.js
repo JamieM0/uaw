@@ -297,10 +297,71 @@ function renderSimulation(skipJsonValidation = false) {
         const header = document.createElement("div");
         header.className = "simulation-header";
         header.innerHTML = `
-            <h4>${sanitizeHTML(currentSimulationData.article_title)}</h4>
-            <p>${sanitizeHTML(currentSimulationData.domain)} • ${sanitizeHTML(currentSimulationData.start_time)} - ${sanitizeHTML(currentSimulationData.end_time)} (${sanitizeHTML(currentSimulationData.total_duration_minutes)} minutes)</p>
+            <div class="simulation-header-content">
+                <h4>${sanitizeHTML(currentSimulationData.article_title)}</h4>
+                <p>${sanitizeHTML(currentSimulationData.domain)} • ${sanitizeHTML(currentSimulationData.start_time)} - ${sanitizeHTML(currentSimulationData.end_time)} (${sanitizeHTML(currentSimulationData.total_duration_minutes)} minutes)</p>
+            </div>
         `;
+
+        // Add View dropdown controls
+        const viewControls = document.createElement('div');
+        viewControls.className = 'view-controls';
+        viewControls.style.cssText = 'margin-left: auto; position: relative;';
+
+        const viewDropdown = document.createElement('div');
+        viewDropdown.className = 'dropdown';
+        viewDropdown.innerHTML = `
+            <button class="action-btn dropdown-toggle">View ▼</button>
+            <div class="dropdown-content" style="right: 0; left: auto; min-width: 180px;">
+                <label class="dropdown-checkbox-item">
+                    <input type="checkbox" id="view-toggle-objects" checked>
+                    <span>Objects</span>
+                </label>
+                <label class="dropdown-checkbox-item">
+                    <input type="checkbox" id="view-toggle-digital-objects" checked>
+                    <span>Digital Objects</span>
+                </label>
+                <label class="dropdown-checkbox-item">
+                    <input type="checkbox" id="view-toggle-statistics" checked>
+                    <span>Statistics</span>
+                </label>
+            </div>
+        `;
+
+        viewControls.appendChild(viewDropdown);
+        header.appendChild(viewControls);
+
         container.appendChild(header);
+
+        // Add event listeners for view toggles
+        setTimeout(() => {
+            document.getElementById('view-toggle-objects')?.addEventListener('change', (e) => {
+                const objectsPanels = document.querySelectorAll('.resources-panel');
+                objectsPanels.forEach(panel => {
+                    // Only hide panels that are NOT for digital objects
+                    if (!panel.id.includes('digital')) {
+                        panel.style.display = e.target.checked ? '' : 'none';
+                    }
+                });
+            });
+
+            document.getElementById('view-toggle-digital-objects')?.addEventListener('change', (e) => {
+                const digitalPanels = document.querySelectorAll('.resources-panel');
+                digitalPanels.forEach(panel => {
+                    // Only hide panels that ARE for digital objects
+                    if (panel.id.includes('digital')) {
+                        panel.style.display = e.target.checked ? '' : 'none';
+                    }
+                });
+            });
+
+            document.getElementById('view-toggle-statistics')?.addEventListener('change', (e) => {
+                const statsSection = document.querySelector('.simulation-stats');
+                if (statsSection) {
+                    statsSection.style.display = e.target.checked ? '' : 'none';
+                }
+            });
+        }, 0);
 
         const timeline = document.createElement("div");
         timeline.className = "simulation-timeline";
