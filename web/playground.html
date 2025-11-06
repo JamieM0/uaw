@@ -8,6 +8,34 @@
             name="description"
             content="Interactive simulation playground for testing and visualizing automation workflows"
         />
+
+        <!-- SEO Meta Tags -->
+        <meta name="keywords" content="simulation, automation, workflow, process optimization, playground, interactive, visualization" />
+        <meta name="author" content="Universal Automation Wiki" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://jamiem0.github.io/uaw/playground.html" />
+
+        <!-- Open Graph Meta Tags for Social Sharing -->
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Simulation Playground - Universal Automation Wiki" />
+        <meta property="og:description" content="Interactive simulation playground for testing and visualizing automation workflows. Create, edit, and simulate complex processes with real-time validation." />
+        <meta property="og:url" content="https://jamiem0.github.io/uaw/playground.html" />
+        <meta property="og:site_name" content="Universal Automation Wiki" />
+        <meta property="og:locale" content="en_US" />
+
+        <!-- Twitter Card Meta Tags -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Simulation Playground - Universal Automation Wiki" />
+        <meta name="twitter:description" content="Interactive simulation playground for testing and visualizing automation workflows" />
+
+        <!-- Theme and Browser Chrome -->
+        <meta name="theme-color" content="#007bff" />
+        <meta name="color-scheme" content="light dark" />
+
+        <!-- Preload critical CSS for better performance -->
+        <link rel="preload" href="/assets/css/main.css" as="style" />
+        <link rel="preload" href="/assets/css/playground.css" as="style" />
+
         <link rel="stylesheet" href="/assets/css/main.css" />
         <link rel="stylesheet" href="/assets/css/components.css" />
         <link rel="stylesheet" href="/assets/css/simulation.css" />
@@ -81,20 +109,25 @@
                 overflow-y: auto;
             }
         </style>
+        <!-- DNS prefetch and preconnect for external resources -->
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+        <link rel="dns-prefetch" href="https://unpkg.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="preconnect" href="https://unpkg.com" crossorigin />
         <link
             href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
             rel="stylesheet"
         />
 
-        <script src="/assets/js/simulation-validator.js"></script>
-        <script src="/assets/js/space-editor.js"></script>
-        <script src="/assets/js/emoji-picker.js"></script>
+        <script src="/assets/js/simulation-validator.js" defer></script>
+        <script src="/assets/js/space-editor.js" defer></script>
+        <script src="/assets/js/emoji-picker.js" defer></script>
 
-        <script src="/assets/js/tutorial.js"></script>
-        <script src="/assets/js/tutorial-validator.js"></script>
-        <script src="/assets/js/simulation-player.js"></script>
+        <script src="/assets/js/tutorial.js" defer></script>
+        <script src="/assets/js/tutorial-validator.js" defer></script>
+        <script src="/assets/js/simulation-player.js" defer></script>
 
         <!-- Monaco Editor for JSON syntax highlighting -->
         <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
@@ -238,9 +271,9 @@
 
     </head>
     <body>
-        <div id="welcome-overlay" class="dialog-overlay" style="display: flex;">
+        <div id="welcome-overlay" class="dialog-overlay" style="display: flex;" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
             <div class="dialog">
-                <h2 class="special-subtitle">Welcome to the Simulation Playground!</h2>
+                <h2 id="welcome-title" class="special-subtitle">Welcome to the Simulation Playground!</h2>
                 <p>This playground is an interactive tool for testing and visualising automation workflows.</p>
                 <p>You can create, edit, and simulate complex processes to understand how they work and identify potential improvements.</p>
                 <p>The Universal Automation Wiki (UAW) project, including this playground, is open source. We welcome contributions and feedback from the community. You can find the project on <a href="https://github.com/JamieM0/uaw" target="_blank">GitHub</a>.</p>
@@ -267,10 +300,10 @@
                 </div>
             </div>
         </div>
-        <header class="playground-header">
+        <header class="playground-header" role="banner">
             <div class="container header-container">
                 <div class="logo">
-                    <a href="/">
+                    <a href="/" aria-label="Return to Universal Automation Wiki homepage">
                         <img
                             src="/assets/images/logo-abbrev-inline.svg"
                             alt="Universal Automation Wiki Logo"
@@ -278,17 +311,17 @@
                     </a>
                 </div>
                 <h1 class="special-title">Playground</h1>
-                <div class="header-actions">
+                <nav class="header-actions" role="navigation" aria-label="Playground controls">
                     <!-- File Operations Group -->
                     <div class="file-operations-group">
                         <div class="dropdown">
-                            <button id="simulation-library-btn" class="dropdown-toggle">Simulation Library ▼</button>
-                            <div id="simulation-library-dropdown" class="dropdown-content">
+                            <button id="simulation-library-btn" class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">Simulation Library ▼</button>
+                            <div id="simulation-library-dropdown" class="dropdown-content" role="menu">
                                 <!-- Simulation options will be populated here -->
                             </div>
                         </div>
-                        <button id="load-simulation-btn" class="action-btn" title="Load simulation from save code">Load</button>
-                        <button id="save-simulation-btn" class="action-btn" title="Save simulation and get save code">Save</button>
+                        <button id="load-simulation-btn" class="action-btn" title="Load simulation from save code" aria-label="Load simulation">Load</button>
+                        <button id="save-simulation-btn" class="action-btn" title="Save simulation and get save code" aria-label="Save simulation">Save</button>
                     </div>
 
                     <!-- Edit Operations Group -->
@@ -300,15 +333,15 @@
                     <!-- View Options Group -->
                     <div class="view-options-group">
                         <div class="dropdown">
-                            <button class="action-btn">Tools ▼</button>
-                            <div class="dropdown-content">
-                                <a href="#" id="format-json-btn">Format JSON</a>
-                                <a href="#" id="clear-editor-btn">Clear</a>
-                                <a href="#" id="undo-btn" class="undo-button" disabled title="Undo last change (Ctrl+Z)">↶ Undo</a>
-                                <a href="#" id="reset-panel-sizes-btn">Reset Panel Sizes</a>
-                                <a href="#" id="render-simulation-btn" class="hidden">Render Simulation</a>
-                                <a href="#" id="auto-render-toggle" class="hidden">Toggle Auto-render</a>
-                                <a href="#" id="toggle-auto-validate-btn">Disable Auto-Validate</a>
+                            <button class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="Tools menu">Tools ▼</button>
+                            <div class="dropdown-content" role="menu">
+                                <a href="#" id="format-json-btn" role="menuitem">Format JSON</a>
+                                <a href="#" id="clear-editor-btn" role="menuitem">Clear</a>
+                                <a href="#" id="undo-btn" class="undo-button" disabled title="Undo last change (Ctrl+Z)" role="menuitem">↶ Undo</a>
+                                <a href="#" id="reset-panel-sizes-btn" role="menuitem">Reset Panel Sizes</a>
+                                <a href="#" id="render-simulation-btn" class="hidden" role="menuitem">Render Simulation</a>
+                                <a href="#" id="auto-render-toggle" class="hidden" role="menuitem">Toggle Auto-render</a>
+                                <a href="#" id="toggle-auto-validate-btn" role="menuitem">Disable Auto-Validate</a>
                             </div>
                         </div>
                         <button id="dark-mode-toggle" class="mode-toggle-btn" title="Toggle Dark Mode">
@@ -331,13 +364,13 @@
 
                     <!-- Playback Controls Group -->
                     <div class="playback-controls-group">
-                        <button id="player-play-pause-btn" title="Play/Pause Simulation">▶️</button>
-                        <div class="player-time-display">
+                        <button id="player-play-pause-btn" title="Play/Pause Simulation" aria-label="Play or pause simulation">▶️</button>
+                        <div class="player-time-display" role="timer" aria-live="off">
                             <span id="player-current-time">00:00</span>
                         </div>
                         <div class="player-speed-control">
                             <label for="player-speed-select">Speed:</label>
-                            <select id="player-speed-select">
+                            <select id="player-speed-select" aria-label="Playback speed">
                                 <option value="0.5">0.5x</option>
                                 <option value="1" selected>1x</option>
                                 <option value="2">2x</option>
@@ -350,31 +383,31 @@
                     <!-- Advanced Tools Group -->
                     <div class="advanced-tools-group">
                         <div class="dropdown" id="smart-actions-dropdown">
-                            <button class="action-btn" id="smart-actions-menu-btn">Smart Actions ▼</button>
-                            <div class="dropdown-content">
-                                <a href="#" id="smart-action-chat">Chat</a>
-                                <a href="#" id="smart-action-setup">Setup</a>
+                            <button class="action-btn" id="smart-actions-menu-btn" aria-haspopup="true" aria-expanded="false">Smart Actions ▼</button>
+                            <div class="dropdown-content" role="menu">
+                                <a href="#" id="smart-action-chat" role="menuitem">Chat</a>
+                                <a href="#" id="smart-action-setup" role="menuitem">Setup</a>
                             </div>
                         </div>
                         <div class="dropdown">
-                            <button class="action-btn">Help ▼</button>
-                            <div class="dropdown-content">
-                                <a href="#" id="start-tutorial-btn">Start Tutorial</a>
-                                <a href="#" id="start-llm-btn">Experimental LLM</a>
+                            <button class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="Help menu">Help ▼</button>
+                            <div class="dropdown-content" role="menu">
+                                <a href="#" id="start-tutorial-btn" role="menuitem">Start Tutorial</a>
+                                <a href="#" id="start-llm-btn" role="menuitem">Experimental LLM</a>
                             </div>
                         </div>
                         <button id="submit-btn" class="action-btn" title="Submit simulation to page" style="display: none;">Submit</button>
                         <button id="feedback-btn" class="action-btn" title="Send feedback about the playground">Feedback</button>
                     </div>
-                </div>
+                </nav>
             </div>
         </header>
 
-        <main class="playground-main">
-            <div id="tutorial-panel" class="tutorial-panel">
+        <main class="playground-main" role="main">
+            <div id="tutorial-panel" class="tutorial-panel" role="complementary" aria-labelledby="tutorial-title">
                 <div class="tutorial-header">
                     <h3 id="tutorial-title">Tutorial</h3>
-                    <button id="tutorial-exit-btn" class="tutorial-exit-btn" title="Exit Tutorial">×</button>
+                    <button id="tutorial-exit-btn" class="tutorial-exit-btn" title="Exit Tutorial" aria-label="Exit tutorial">×</button>
                 </div>
                 <div class="tutorial-content">
                     <div id="tutorial-instructions"></div>
@@ -400,26 +433,26 @@
                             </div>
 
                             <div class="simulation-panel">
-                                <div class="tab-bar">
-                                    <button class="tab-btn active" data-tab="timeline">Simulation Render</button>
-                                    <button class="tab-btn" data-tab="space-editor">Space Editor</button>
-                                    <button class="tab-btn" data-tab="digital-space">Digital Locations</button>
-                                    <button class="tab-btn" data-tab="display-editor">Display Editor</button>
+                                <div class="tab-bar" role="tablist" aria-label="Simulation view tabs">
+                                    <button class="tab-btn active" data-tab="timeline" role="tab" aria-selected="true" aria-controls="simulation-tab">Simulation Render</button>
+                                    <button class="tab-btn" data-tab="space-editor" role="tab" aria-selected="false" aria-controls="space-editor-tab">Space Editor</button>
+                                    <button class="tab-btn" data-tab="digital-space" role="tab" aria-selected="false" aria-controls="digital-space-tab">Digital Locations</button>
+                                    <button class="tab-btn" data-tab="display-editor" role="tab" aria-selected="false" aria-controls="display-editor-tab">Display Editor</button>
                                 </div>
 
                                 <div class="tab-content-wrapper">
-                                    <div id="simulation-tab" class="tab-content active">
+                                    <div id="simulation-tab" class="tab-content active" role="tabpanel" aria-labelledby="simulation-render-tab">
                                         <div id="simulation-content" class="simulation-content">
                                             <!-- Existing simulation content -->
                                         </div>
-                                        <div id="simulation-loading" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.9); padding: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                                        <div id="simulation-loading" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.9); padding: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" role="status" aria-live="polite">
                                             <div style="display: flex; align-items: center; gap: 0.5rem;">
                                                 <div style="width: 20px; height: 20px; border: 2px solid #ddd; border-top: 2px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
                                                 Rendering simulation...
                                             </div>
                                         </div>
                                     </div>
-                                    <div id="space-editor-tab" class="tab-content">
+                                    <div id="space-editor-tab" class="tab-content" role="tabpanel" aria-labelledby="space-editor-tab-btn">
                                         <div class="space-editor-container">
                                             <div class="space-canvas" id="space-canvas">
                                                 <div class="zoom-controls">
@@ -479,7 +512,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div id="digital-space-tab" class="tab-content">
+                                    <div id="digital-space-tab" class="tab-content" role="tabpanel" aria-labelledby="digital-space-tab-btn">
                                         <div class="space-editor-container">
                                             <div class="space-canvas" id="digital-space-canvas">
                                                 <div class="zoom-controls">
@@ -536,7 +569,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div id="display-editor-tab" class="tab-content">
+                                    <div id="display-editor-tab" class="tab-content" role="tabpanel" aria-labelledby="display-editor-tab-btn">
                                         <div class="space-editor-container">
                                             <div class="space-canvas" id="display-canvas">
                                                 <div class="zoom-controls">
@@ -688,14 +721,16 @@
 
                 <div class="playground-bottom">
                     <div class="resize-handle-horizontal"></div>
-                    <div class="validation-panel">
+                    <div class="validation-panel" role="region" aria-labelledby="validation-panel-title">
                         <div class="validation-header">
                             <div class="validation-inline">
-                                <span>Validation</span>
+                                <span id="validation-panel-title">Validation</span>
                                 <div
                                     class="validation-indicator success"
                                     id="json-status"
                                     title="Click for details"
+                                    role="status"
+                                    aria-live="polite"
                                 >
                                     ✓ Valid JSON
                                 </div>
@@ -786,16 +821,16 @@
         </main>
 
         <!-- Dialog overlay -->
-        <div id="dialog-overlay" class="dialog-overlay" style="display: none">
+        <div id="dialog-overlay" class="dialog-overlay" style="display: none" role="dialog" aria-modal="true" aria-live="polite">
             <div class="dialog" id="dialog-content">
                 <!-- Dialog content will be inserted here -->
             </div>
         </div>
 
         <!-- Save Simulation Modal -->
-        <div id="save-modal" class="dialog-overlay" style="display: none;">
+        <div id="save-modal" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="save-modal-title">
             <div class="dialog">
-                <h3>Save Simulation</h3>
+                <h3 id="save-modal-title">Save Simulation</h3>
                 <div class="save-method-selection">
                     <div class="save-method-options">
                         <label class="save-method-option">
@@ -852,9 +887,9 @@
                         <p><strong>Saved as:</strong> <span id="saved-filename"></span></p>
                     </div>
                 </div>
-                <div id="save-loading" style="display: none;" class="save-loading">
+                <div id="save-loading" style="display: none;" class="save-loading" role="status" aria-live="polite">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <div style="width: 20px; height: 20px; border: 2px solid #ddd; border-top: 2px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        <div style="width: 20px; height: 20px; border: 2px solid #ddd; border-top: 2px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;" aria-hidden="true"></div>
                         Saving simulation...
                     </div>
                 </div>
@@ -866,9 +901,9 @@
         </div>
 
         <!-- Add Task Modal -->
-        <div id="add-task-modal" class="dialog-overlay" style="display: none;">
+        <div id="add-task-modal" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="add-task-modal-title">
             <div class="dialog">
-                <h3>Add Task</h3>
+                <h3 id="add-task-modal-title">Add Task</h3>
                 <div class="modal-content">
                     <div class="form-row">
                         <div class="form-group">
@@ -974,9 +1009,9 @@
         </div>
 
         <!-- Add Object Modal -->
-        <div id="add-object-modal" class="dialog-overlay" style="display: none;">
+        <div id="add-object-modal" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="add-object-modal-title">
             <div class="dialog">
-                <h3>Add Object</h3>
+                <h3 id="add-object-modal-title">Add Object</h3>
                 <div class="modal-content">
                     <div class="form-group">
                         <label for="object-type-select">Object Type: <span class="required-indicator">*</span></label>
@@ -1031,9 +1066,9 @@
         </div>
 
         <!-- Load Simulation Modal -->
-        <div id="load-modal" class="dialog-overlay" style="display: none;">
+        <div id="load-modal" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="load-modal-title">
             <div class="dialog">
-                <h3>Load Simulation</h3>
+                <h3 id="load-modal-title">Load Simulation</h3>
                 <div class="load-method-selection">
                     <div class="load-method-options">
                         <label class="load-method-option">
@@ -1067,12 +1102,12 @@
                         </div>
                     </div>
                 </div>
-                <div id="load-error" style="display: none;" class="load-error">
+                <div id="load-error" style="display: none;" class="load-error" role="alert" aria-live="assertive">
                     <p style="color: #d32f2f;"><strong>Error:</strong> <span id="load-error-message"></span></p>
                 </div>
-                <div id="load-loading" style="display: none;" class="load-loading">
+                <div id="load-loading" style="display: none;" class="load-loading" role="status" aria-live="polite">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <div style="width: 20px; height: 20px; border: 2px solid #ddd; border-top: 2px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        <div style="width: 20px; height: 20px; border: 2px solid #ddd; border-top: 2px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;" aria-hidden="true"></div>
                         Loading simulation...
                     </div>
                 </div>
@@ -1084,9 +1119,9 @@
         </div>
 
 
-        <div id="llm-info-overlay" class="dialog-overlay" style="display: none;">
+        <div id="llm-info-overlay" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="llm-info-title">
             <div class="dialog">
-                <h3>🚀 Experimental AI Feature (Canary)</h3>
+                <h3 id="llm-info-title">🚀 Experimental AI Feature (Canary)</h3>
                 <p>You are about to test UAW's integration with an experimental, built-in AI. This feature uses the new Prompt API which is under active development.</p>
                 
                 <strong>Requirements:</strong>
@@ -1110,8 +1145,8 @@
             </div>
         </div>
 
-        <!-- Overlay 2: The Chat Interface (No changes needed) -->
-        <div id="llm-chat-overlay" class="dialog-overlay" style="display: none;">
+        <!-- Overlay 2: The Chat Interface -->
+        <div id="llm-chat-overlay" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="llm-chat-title">
             <div class="dialog" style="max-width: 600px; display: flex; flex-direction: column;">
                 <h3 id="llm-chat-title">Chat with Built-in AI</h3>
                 <div id="llm-chat-history" style="flex: 1; overflow-y: auto; border: 1px solid var(--border-color); padding: 1rem; border-radius: 4px; min-height: 300px; margin-bottom: 1rem;"></div>
@@ -1129,9 +1164,9 @@
         </div>
 
         <!-- Feedback Modal -->
-        <div id="feedback-modal" class="dialog-overlay" style="display: none;">
+        <div id="feedback-modal" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
             <div class="dialog">
-                <h3>Send Feedback</h3>
+                <h3 id="feedback-modal-title">Send Feedback</h3>
                 <p>Help us improve the Simulation Playground by sharing your suggestions and feedback.</p>
                 
                 <form id="feedback-form" class="feedback-form">
@@ -1166,9 +1201,9 @@
         </div>
 
         <!-- Add Metric Modal -->
-        <div id="add-metric-modal" class="dialog-overlay" style="display: none;">
+        <div id="add-metric-modal" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="add-metric-modal-title">
             <div class="dialog" style="max-width: 600px;">
-                <h3>🔧 Add Custom Metric</h3>
+                <h3 id="add-metric-modal-title">🔧 Add Custom Metric</h3>
                 <p>Create a new validation metric that will be automatically inserted into your metrics catalog and validator.</p>
                 
                 <form id="add-metric-form" class="metric-form">
@@ -1269,37 +1304,37 @@
         <!-- Drag Overlay for Resizing -->
         <div id="drag-overlay" class="drag-overlay"></div>
 
-        <script src="/assets/js/context-menu.js"></script>
-        <script src="/assets/js/html-sanitizer.js"></script>
+        <script src="/assets/js/context-menu.js" defer></script>
+        <script src="/assets/js/html-sanitizer.js" defer></script>
         <!-- Smart Actions modules -->
-        <script src="/assets/js/playground/smart-actions-markdown.js"></script>
-        <script src="/assets/js/playground/smart-actions-context.js"></script>
-        <script src="/assets/js/playground/smart-actions-client.js"></script>
-        <script src="/assets/js/playground/smart-actions-diff.js"></script>
-        <script src="/assets/js/playground/smart-actions-setup.js"></script>
-        <script src="/assets/js/playground/smart-actions-ui.js"></script>
+        <script src="/assets/js/playground/smart-actions-markdown.js" defer></script>
+        <script src="/assets/js/playground/smart-actions-context.js" defer></script>
+        <script src="/assets/js/playground/smart-actions-client.js" defer></script>
+        <script src="/assets/js/playground/smart-actions-diff.js" defer></script>
+        <script src="/assets/js/playground/smart-actions-setup.js" defer></script>
+        <script src="/assets/js/playground/smart-actions-ui.js" defer></script>
 
         <!-- Playground modules in dependency order -->
-        <script src="/assets/js/playground/playground-utils.js"></script>
-        <script src="/assets/js/playground/playground-ui.js"></script>
-        <script src="/assets/js/playground/playground-validation.js"></script>
+        <script src="/assets/js/playground/playground-utils.js" defer></script>
+        <script src="/assets/js/playground/playground-ui.js" defer></script>
+        <script src="/assets/js/playground/playground-validation.js" defer></script>
 
         <!-- Multi-period simulation modules -->
-        <script src="/assets/js/playground/playground-multi-period.js"></script>
-        <script src="/assets/js/playground/playground-view-controller.js"></script>
-        <script src="/assets/js/playground/playground-calendar-view.js"></script>
-        <script src="/assets/js/playground/playground-week-view.js"></script>
+        <script src="/assets/js/playground/playground-multi-period.js" defer></script>
+        <script src="/assets/js/playground/playground-view-controller.js" defer></script>
+        <script src="/assets/js/playground/playground-calendar-view.js" defer></script>
+        <script src="/assets/js/playground/playground-week-view.js" defer></script>
 
-        <script src="/assets/js/playground/playground-timeline.js"></script>
-        <script src="/assets/js/playground/playground-timeline-extensions.js"></script>
-        <script src="/assets/js/playground/playground-digital-space.js"></script>
-        <script src="/assets/js/playground/playground-display-editor.js"></script>
-        <script src="/assets/js/playground/playground-save-load.js"></script>
-        <script src="/assets/js/playground/playground-metrics-editor.js"></script>
-        <script src="/assets/js/playground/playground-objects.js"></script>
-        <script src="/assets/js/playground/playground-features.js"></script>
-        <script src="/assets/js/playground/playground-editor.js"></script>
-        <script src="/assets/js/playground/playground-core.js"></script>
+        <script src="/assets/js/playground/playground-timeline.js" defer></script>
+        <script src="/assets/js/playground/playground-timeline-extensions.js" defer></script>
+        <script src="/assets/js/playground/playground-digital-space.js" defer></script>
+        <script src="/assets/js/playground/playground-display-editor.js" defer></script>
+        <script src="/assets/js/playground/playground-save-load.js" defer></script>
+        <script src="/assets/js/playground/playground-metrics-editor.js" defer></script>
+        <script src="/assets/js/playground/playground-objects.js" defer></script>
+        <script src="/assets/js/playground/playground-features.js" defer></script>
+        <script src="/assets/js/playground/playground-editor.js" defer></script>
+        <script src="/assets/js/playground/playground-core.js" defer></script>
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 const continueBtn = document.getElementById('welcome-continue-btn');
