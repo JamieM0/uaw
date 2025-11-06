@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actor Movement in UAW Simulations - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/simulations/">Simulations</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">Actor Movement in UAW Simulations</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">Actor Movement in UAW Simulations</h1>
+                            
+                            <p class="docs-page-subtitle">This guide explains how to model actor movement between physical locations in UAW simulations. The system provides two distinct methods for tracking actor movement, each suited to different use cases.</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>This guide explains how to model actor movement between physical locations in UAW simulations. The system provides two distinct methods for tracking actor movement, each suited to different use cases.</p>
+<h2 class="docs-heading" id="overview">Overview<a class="headerlink" href="#overview" title="Link to this section">¶</a></h2>
+<p>Actor movement is critical for realistic process simulations. Whether modeling warehouse operations, manufacturing workflows, or service processes, actors need to move between locations to perform their tasks. The UAW validation system now includes <strong>timeline-aware location tracking</strong> that simulates actor positions throughout the entire process.</p>
+<h2 class="docs-heading" id="two-methods-for-movement">Two Methods for Movement<a class="headerlink" href="#two-methods-for-movement" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="method-1-property-changes-timeline-aware">Method 1: Property Changes (Timeline-Aware)<a class="headerlink" href="#method-1-property-changes-timeline-aware" title="Link to this section">¶</a></h3>
+<p>Use <code class="docs-inline-code">property_changes</code> to track location changes within a task’s interactions. This method is ideal when movement is incidental to the task’s primary purpose.</p>
+<p><strong>Example:</strong></p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"retrieve_and_move"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10:00"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"loading_dock"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"inventory"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>When to use:</strong>
+- Movement is part of a larger action
+- You want to combine location change with other property updates
+- Task duration already includes travel time
+- Movement doesn’t need to be shown as a distinct timeline activity</p>
+<p><strong>Timeline behavior:</strong>
+- Actor location updates when the task <strong>completes</strong>
+- Validation checks location at task <strong>start time</strong> against simulated position
+- Location change is combined with other property updates in one task</p>
+<h3 class="docs-heading" id="method-2-movement-task-type">Method 2: Movement Task Type<a class="headerlink" href="#method-2-movement-task-type" title="Link to this section">¶</a></h3>
+<p>Use the dedicated <code class="docs-inline-code">type: "movement"</code> task to explicitly show travel as a distinct activity on the timeline.</p>
+<p><strong>Example:</strong></p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"walk_to_warehouse"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"movement"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"forklift_operator"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"from_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"loading_dock"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"to_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"movement_speed"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Fields:</strong>
+- <code class="docs-inline-code">type</code>: Must be <code class="docs-inline-code">"movement"</code> to identify this as a movement task
+- <code class="docs-inline-code">from_location</code>: Starting location (must match actor’s current location)
+- <code class="docs-inline-code">to_location</code>: Destination location (must exist in layout)
+- <code class="docs-inline-code">movement_speed</code>: (Optional) Speed in meters/second for duration calculation</p>
+<p><strong>When to use:</strong>
+- Movement is the primary purpose of the task
+- You want to explicitly show travel time in the timeline
+- You need to track movement speed or distance
+- Movement should be visible as a distinct activity</p>
+<p><strong>Timeline behavior:</strong>
+- Actor location updates when the movement task <strong>completes</strong>
+- Validation checks that actor is in <code class="docs-inline-code">from_location</code> at task start
+- Movement appears as a distinct task on the timeline</p>
+<h2 class="docs-heading" id="timeline-simulation">Timeline Simulation<a class="headerlink" href="#timeline-simulation" title="Link to this section">¶</a></h2>
+<p>The validation system simulates the entire timeline to track actor locations:</p>
+<ol class="docs-list docs-list-ordered">
+<li><strong>Initialization</strong>: Each actor starts at their initial <code class="docs-inline-code">location</code> property</li>
+<li><strong>Simulation</strong>: As the timeline progresses, the system tracks location changes</li>
+<li><strong>Updates</strong>: When a task with location changes completes, actor position updates</li>
+<li><strong>Validation</strong>: Each task validates that the actor is in the correct location at its start time</li>
+</ol>
+<h3 class="docs-heading" id="timeline-flow-example">Timeline Flow Example<a class="headerlink" href="#timeline-flow-example" title="Link to this section">¶</a></h3>
+<div class="codehilite"><pre><span></span><code class="language-text">Timeline Simulation:
+┌─────────────────────────────────────────────────────────────┐
+│ 09:00 - Actor "baker" starts at "prep_area" (initial)       │
+│ 09:00-09:20 - Task "prep_dough" at prep_area (✓ valid)     │
+│ 09:20 - Task completes, actor still at "prep_area"          │
+│ 09:20-09:22 - Movement task to "oven_area" (✓ valid)       │
+│ 09:22 - Movement completes, actor now at "oven_area"        │
+│ 09:22-09:52 - Task "bake_bread" at oven_area (✓ valid)     │
+└─────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<h2 class="docs-heading" id="complete-examples">Complete Examples<a class="headerlink" href="#complete-examples" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="example-1-manufacturing-process">Example 1: Manufacturing Process<a class="headerlink" href="#example-1-manufacturing-process" title="Link to this section">¶</a></h3>
+<p>This example shows a manufacturing process with explicit movement between workstations:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"areas"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"assembly_station"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Assembly Station"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"physical"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"coordinates"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"quality_check"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Quality Check Station"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"physical"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"coordinates"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"packaging_area"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Packaging Area"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"physical"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"coordinates"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">28</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"technician"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Assembly Technician"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"assembly_station"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"cost_per_hour"</span><span class="p">:</span><span class="w"> </span><span class="mf">22.50</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"assembly_tools"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equipment"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Assembly Tools"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"assembly_station"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ready"</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"quality_scanner"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equipment"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Quality Scanner"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"quality_check"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ready"</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"assemble_unit"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"technician"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"assembly_station"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"assembly_tools"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ready"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"in_use"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"walk_to_quality_check"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"movement"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"technician"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:15"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"from_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"assembly_station"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"to_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"quality_check"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"movement_speed"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.4</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"inspect_unit"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"technician"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:17"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"quality_check"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"quality_scanner"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ready"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"scanning"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"walk_to_packaging"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"movement"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"technician"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:25"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"from_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"quality_check"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"to_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"packaging_area"</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"package_unit"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"technician"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:27"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"packaging_area"</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Key Points:</strong>
+- Technician moves through three stations
+- Each movement is shown as a distinct task with realistic duration
+- Validation ensures technician is in correct location for each work task
+- Movement speed is tracked for realistic timing</p>
+<h3 class="docs-heading" id="example-2-combined-movement-and-actions">Example 2: Combined Movement and Actions<a class="headerlink" href="#example-2-combined-movement-and-actions" title="Link to this section">¶</a></h3>
+<p>This example shows movement combined with other property changes:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"areas"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"office"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Office"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"physical"</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"server_room"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Server Room"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"physical"</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"it_admin"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"IT Administrator"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"office"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"access_level"</span><span class="p">:</span><span class="w"> </span><span class="s2">"standard"</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"server"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equipment"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Production Server"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"server_room"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"running"</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prepare_and_move_to_server_room"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"it_admin"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"14:00"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"server_room"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"it_admin"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">"access_level"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"standard"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"elevated"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">              </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"office"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"server_room"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"perform_maintenance"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"it_admin"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"14:05"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"server_room"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"server"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"running"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"maintenance"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"complete_and_return"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"it_admin"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"14:25"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"server_room"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"server"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"maintenance"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"running"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">          </span><span class="p">},</span>
+<span class="w">          </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"it_admin"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">"access_level"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"elevated"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"standard"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">              </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"server_room"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"office"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Key Points:</strong>
+- Movement is combined with permission changes
+- Both properties update when task completes
+- Useful when movement is part of a larger workflow step
+- Reduces number of separate tasks needed</p>
+<h3 class="docs-heading" id="example-3-multi-actor-movement">Example 3: Multi-Actor Movement<a class="headerlink" href="#example-3-multi-actor-movement" title="Link to this section">¶</a></h3>
+<p>This example shows multiple actors moving through a shared workspace:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"areas"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"prep_station_a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Prep Station A"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"physical"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"prep_station_b"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Prep Station B"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"physical"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"oven"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Commercial Oven"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"physical"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"plating_area"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Plating Area"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"physical"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"chef_1"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Head Chef"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_station_a"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"chef_2"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Sous Chef"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_station_b"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"chef1_prep"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"chef_1"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"12:00"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_station_a"</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"chef2_prep"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"chef_2"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"12:00"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_station_b"</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"chef1_to_oven"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"movement"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"chef_1"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"12:20"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"from_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_station_a"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"to_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven"</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"chef2_to_oven"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"movement"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"chef_2"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"12:15"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"from_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_station_b"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"to_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven"</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"chef2_cook"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"chef_2"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"12:16"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven"</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"chef1_cook"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"chef_1"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"12:21"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven"</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Key Points:</strong>
+- Each actor’s location is tracked independently
+- Actors can move to same location at different times
+- Timeline simulation handles multiple concurrent movements
+- Validation ensures each actor is in correct location for their tasks</p>
+<h2 class="docs-heading" id="validation-rules">Validation Rules<a class="headerlink" href="#validation-rules" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="task-proximity-validation">Task Proximity Validation<a class="headerlink" href="#task-proximity-validation" title="Link to this section">¶</a></h3>
+<p>The <code class="docs-inline-code">task.spatial.unmet_proximity_requirement</code> rule validates:</p>
+<ol class="docs-list docs-list-ordered">
+<li><strong>Initial Location Check</strong>: Actor starts in a valid location from their properties</li>
+<li><strong>Movement Tracking</strong>: All location changes are tracked chronologically</li>
+<li><strong>Task Validation</strong>: At each task’s start time, validates actor is in required location</li>
+<li><strong>Equipment Proximity</strong>: Validates equipment/resources are in same location as task</li>
+</ol>
+<h3 class="docs-heading" id="common-validation-errors">Common Validation Errors<a class="headerlink" href="#common-validation-errors" title="Link to this section">¶</a></h3>
+<h4 class="docs-heading" id="error-actor-not-in-required-location">Error: “Actor not in required location”<a class="headerlink" href="#error-actor-not-in-required-location" title="Link to this section">¶</a></h4>
+<div class="codehilite"><pre><span></span><code class="language-text">Task 'bake_bread' requires actor 'baker' to be in 'oven_area',
+but actor is currently in 'prep_area'
+</code></pre></div>
+<p><strong>Causes:</strong>
+- No movement task to transport actor
+- Movement task starts/completes after work task starts
+- Incorrect from_location in movement task
+- Missing location property change</p>
+<p><strong>Solutions:</strong>
+- Add movement task before the work task
+- Adjust timing: ensure movement completes before work starts
+- Verify from_location matches actor’s simulated location
+- Add location property_change in preceding task</p>
+<h4 class="docs-heading" id="error-movement-from_location-mismatch">Error: “Movement from_location mismatch”<a class="headerlink" href="#error-movement-from_location-mismatch" title="Link to this section">¶</a></h4>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="n">Movement</span><span class="w"> </span><span class="n">task</span><span class="w"> </span><span class="s1">'walk_to_storage'</span><span class="w"> </span><span class="n">has</span><span class="w"> </span><span class="n">from_location</span><span class="w"> </span><span class="s1">'loading_dock'</span><span class="p">,</span>
+<span class="n">but</span><span class="w"> </span><span class="n">actor</span><span class="w"> </span><span class="s1">'worker'</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">currently</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="s1">'office'</span>
+</code></pre></div>
+<p><strong>Causes:</strong>
+- Previous task changed location but movement task wasn’t updated
+- Initial location property is incorrect
+- Missing intermediate movement task</p>
+<p><strong>Solutions:</strong>
+- Check earlier tasks for location changes
+- Update from_location to match actual simulated position
+- Add intermediate movement tasks to connect locations
+- Verify initial actor location property</p>
+<h4 class="docs-heading" id="error-task-starts-before-movement-completes">Error: “Task starts before movement completes”<a class="headerlink" href="#error-task-starts-before-movement-completes" title="Link to this section">¶</a></h4>
+<div class="codehilite"><pre><span></span><code class="language-text">Task 'assemble_part' starts at 09:15, but movement to required
+location completes at 09:17
+</code></pre></div>
+<p><strong>Causes:</strong>
+- Task scheduled too early
+- Movement duration is too long
+- Timing miscalculation</p>
+<p><strong>Solutions:</strong>
+- Adjust task start time to be ≥ movement end time
+- Reduce movement duration if realistic
+- Add buffer time between movement and task</p>
+<h2 class="docs-heading" id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="1-realistic-movement-duration">1. Realistic Movement Duration<a class="headerlink" href="#1-realistic-movement-duration" title="Link to this section">¶</a></h3>
+<p>Calculate movement time based on distance and speed:</p>
+<div class="codehilite"><pre><span></span><code class="language-text">Duration (minutes) = Distance (meters) / Speed (m/s) / 60
+
+Example:
+- Distance: 20 meters
+- Walking speed: 1.4 m/s (typical)
+- Duration: 20 / 1.4 / 60 ≈ 0.24 minutes (round to 1 minute minimum)
+</code></pre></div>
+<h3 class="docs-heading" id="2-consistent-timing">2. Consistent Timing<a class="headerlink" href="#2-consistent-timing" title="Link to this section">¶</a></h3>
+<p>Ensure no timing gaps or overlaps:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="c1">// Correct timing</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"work_1"</span><span class="p">,</span><span class="w"> </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="w"> </span><span class="p">},</span><span class="w">      </span><span class="c1">// Ends 09:15</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"move"</span><span class="p">,</span><span class="w"> </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:15"</span><span class="p">,</span><span class="w"> </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">},</span><span class="w">         </span><span class="c1">// Ends 09:17</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"work_2"</span><span class="p">,</span><span class="w"> </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:17"</span><span class="p">,</span><span class="w"> </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span><span class="w">       </span><span class="c1">// Can start</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="c1">// Incorrect timing</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"work_1"</span><span class="p">,</span><span class="w"> </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="w"> </span><span class="p">},</span><span class="w">      </span><span class="c1">// Ends 09:15</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"move"</span><span class="p">,</span><span class="w"> </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:15"</span><span class="p">,</span><span class="w"> </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">},</span><span class="w">         </span><span class="c1">// Ends 09:17</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"work_2"</span><span class="p">,</span><span class="w"> </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:16"</span><span class="p">,</span><span class="w"> </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span><span class="w">       </span><span class="c1">// ERROR!</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 class="docs-heading" id="3-use-dependencies">3. Use Dependencies<a class="headerlink" href="#3-use-dependencies" title="Link to this section">¶</a></h3>
+<p>Add <code class="docs-inline-code">depends_on</code> to enforce sequential execution:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_work"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"move_to_next_station"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"movement"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:15"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"depends_on"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"prep_work"</span><span class="p">]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"assembly_work"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:17"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"depends_on"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"move_to_next_station"</span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 class="docs-heading" id="4-choose-the-right-method">4. Choose the Right Method<a class="headerlink" href="#4-choose-the-right-method" title="Link to this section">¶</a></h3>
+<p><strong>Use Movement Task Type when:</strong>
+- Movement takes significant time (&gt; 1 minute)
+- Movement should be visible on timeline
+- Tracking movement speed/distance is important
+- Movement is the task’s primary purpose</p>
+<p><strong>Use Property Changes when:</strong>
+- Movement is quick (&lt; 1 minute)
+- Movement is combined with other actions
+- You want to reduce task count
+- Movement is incidental to main action</p>
+<h3 class="docs-heading" id="5-document-movement-patterns">5. Document Movement Patterns<a class="headerlink" href="#5-document-movement-patterns" title="Link to this section">¶</a></h3>
+<p>Use clear task IDs and add comments in your simulation JSON:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"walk_from_prep_to_oven"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"movement"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:20"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"from_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_area"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"to_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven_area"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"movement_speed"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.4</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 class="docs-heading" id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="location-tracking-issues">Location Tracking Issues<a class="headerlink" href="#location-tracking-issues" title="Link to this section">¶</a></h3>
+<p><strong>Problem</strong>: “I added a movement task but validation still fails”</p>
+<p><strong>Debugging steps:</strong>
+1. Check movement task completes before next task starts
+2. Verify from_location matches actor’s previous location
+3. Ensure to_location exists in layout
+4. Check for typos in location IDs
+5. Review timeline chronologically to track location changes</p>
+<p><strong>Solution</strong>: Use the playground’s validation panel to see detailed error messages showing:
+- Actor’s expected location
+- Actor’s actual simulated location
+- Task timing information</p>
+<h3 class="docs-heading" id="performance-considerations">Performance Considerations<a class="headerlink" href="#performance-considerations" title="Link to this section">¶</a></h3>
+<p>For very large simulations with many actors and movements:</p>
+<ol class="docs-list docs-list-ordered">
+<li><strong>Consolidate movements</strong> where possible using property_changes</li>
+<li><strong>Use movement tasks</strong> only when movement needs to be visible</li>
+<li><strong>Group related actions</strong> in single tasks when realistic</li>
+<li><strong>Optimize task count</strong> without sacrificing accuracy</li>
+</ol>
+<h2 class="docs-heading" id="summary">Summary<a class="headerlink" href="#summary" title="Link to this section">¶</a></h2>
+<p>Actor movement in UAW simulations provides:</p>
+<ul class="docs-list">
+<li><strong>Timeline-aware tracking</strong> of actor positions throughout the process</li>
+<li><strong>Two flexible methods</strong> for modeling movement (dedicated tasks vs property changes)</li>
+<li><strong>Validation rules</strong> that ensure spatial consistency</li>
+<li><strong>Realistic process modeling</strong> that accounts for travel time and location constraints</li>
+</ul>
+<p>By following these guidelines and using the appropriate movement method for your use case, you can create accurate, validated simulations that realistically model real-world processes with actor movement.</p>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

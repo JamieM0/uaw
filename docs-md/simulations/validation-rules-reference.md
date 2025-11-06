@@ -539,15 +539,23 @@ Ensures that no task starts before its declared dependencies have finished.
 **Rule ID**: `task.spatial.unmet_proximity_requirement`
 **Severity**: Error
 
-Checks if the actor and all required equipment/resources for a task are in the same location as the task itself.
+Checks if the actor and all required equipment/resources for a task are in the same location as the task itself. This validation is **timeline-aware**, meaning it simulates actor movement throughout the timeline to track location changes.
 
 **What it checks:**
-- Task location matches actor location
+- Task location matches actor location at task start time
 - Required equipment is in the same location
 - Resources are accessible from task location
 - Spatial consistency is maintained
+- Actor location changes via movement tasks or property_changes are tracked
 
-**Example failure:**
+**Timeline Simulation:**
+The validator simulates the entire timeline to track where actors are at any given time:
+1. Starts with each actor's initial location from their properties
+2. Updates actor locations when movement tasks complete
+3. Updates actor locations when property_changes modify location
+4. Validates each task against the simulated location at its start time
+
+**Example failure (without movement):**
 ```json
 {
   "objects": [
@@ -566,11 +574,13 @@ Checks if the actor and all required equipment/resources for a task are in the s
     {
       "id": "bake_bread",
       "actor_id": "baker",
+      "start": "09:00",
+      "duration": 30,
       "location": "oven_area",
       "interactions": [
         {
           "object_id": "oven",
-          "property_changes": { ... }
+          "property_changes": { "state": { "from": "ready", "to": "baking" } }
         }
       ]
     }
@@ -580,11 +590,149 @@ Checks if the actor and all required equipment/resources for a task are in the s
 
 **Issue**: Baker is in prep_area but task is in oven_area
 
-**How to fix:**
-- Move actor to correct location
-- Add movement tasks to transport actor
-- Adjust task location to match actor
-- Update object locations as needed
+**Example success (with movement task):**
+```json
+{
+  "objects": [
+    {
+      "id": "baker",
+      "type": "actor",
+      "properties": { "location": "prep_area" }
+    },
+    {
+      "id": "oven",
+      "type": "equipment",
+      "properties": { "location": "oven_area" }
+    }
+  ],
+  "tasks": [
+    {
+      "id": "walk_to_oven",
+      "type": "movement",
+      "actor_id": "baker",
+      "start": "08:55",
+      "duration": 2,
+      "from_location": "prep_area",
+      "to_location": "oven_area"
+    },
+    {
+      "id": "bake_bread",
+      "actor_id": "baker",
+      "start": "09:00",
+      "duration": 30,
+      "location": "oven_area",
+      "interactions": [
+        {
+          "object_id": "oven",
+          "property_changes": { "state": { "from": "ready", "to": "baking" } }
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Success**: Movement task completes at 08:57, so baker is in oven_area when bake_bread starts at 09:00
+
+**Example success (with property_changes):**
+```json
+{
+  "tasks": [
+    {
+      "id": "move_to_storage",
+      "actor_id": "warehouse_worker",
+      "start": "10:00",
+      "duration": 3,
+      "location": "storage_area",
+      "interactions": [
+        {
+          "object_id": "warehouse_worker",
+          "property_changes": {
+            "location": { "from": "loading_dock", "to": "storage_area" }
+          }
+        }
+      ]
+    },
+    {
+      "id": "retrieve_parts",
+      "actor_id": "warehouse_worker",
+      "start": "10:05",
+      "duration": 10,
+      "location": "storage_area"
+    }
+  ]
+}
+```
+
+**Success**: Property change completes at 10:03, so worker is in storage_area when retrieve_parts starts at 10:05
+
+**Movement Methods:**
+
+The validator recognizes two methods for actor movement:
+
+1. **Movement Task Type** (`type: "movement"`)
+   - Dedicated task for explicit movement
+   - Must have `from_location` and `to_location` fields
+   - Actor location updates when movement task completes
+   - Best for showing travel as a distinct activity
+
+2. **Property Changes** (`property_changes.location`)
+   - Location change within a task's interactions
+   - Uses `from`/`to` structure
+   - Actor location updates when task completes
+   - Best for incidental movement within a larger action
+
+**Common Timing Issues:**
+
+**Problem**: Task starts before movement completes
+```json
+{
+  "tasks": [
+    {
+      "id": "walk_to_kitchen",
+      "type": "movement",
+      "start": "09:00",
+      "duration": 5,
+      "from_location": "dining_room",
+      "to_location": "kitchen"
+    },
+    {
+      "id": "cook_meal",
+      "start": "09:03",  // TOO EARLY! Movement completes at 09:05
+      "location": "kitchen"
+    }
+  ]
+}
+```
+
+**Solution**: Ensure movement completes before next task
+```json
+{
+  "tasks": [
+    {
+      "id": "walk_to_kitchen",
+      "type": "movement",
+      "start": "09:00",
+      "duration": 5,
+      "from_location": "dining_room",
+      "to_location": "kitchen"
+    },
+    {
+      "id": "cook_meal",
+      "start": "09:05",  // Correct! Movement completes at 09:05
+      "location": "kitchen"
+    }
+  ]
+}
+```
+
+**How to fix location mismatches:**
+- Add movement tasks to transport actor between locations
+- Use property_changes to update actor location within a task
+- Ensure movement tasks complete before dependent tasks start
+- Verify task timing: movement_end_time ≤ next_task_start_time
+- Check that from_location matches actor's current simulated location
+- Update object initial locations in properties
 
 ### Missing Buffer Time
 **Rule ID**: `scheduling.optimization.missing_buffer`

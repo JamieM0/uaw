@@ -477,6 +477,153 @@ The interaction system provides powerful ways to modify object properties:
 }
 ```
 
+#### Physical Actor Movement
+
+Actors can move between physical locations using two methods:
+
+**Method 1: Property Changes (Timeline-Aware)**
+Track location changes through the timeline using property_changes:
+
+```json
+{
+  "id": "move_to_warehouse",
+  "actor_id": "forklift_operator",
+  "start": "09:00",
+  "duration": 5,
+  "location": "warehouse",
+  "interactions": [
+    {
+      "object_id": "forklift_operator",
+      "property_changes": {
+        "location": {
+          "from": "loading_dock",
+          "to": "warehouse"
+        }
+      }
+    }
+  ]
+}
+```
+
+The validation system simulates the timeline and tracks the actor's location changes, ensuring subsequent tasks have the actor in the correct location.
+
+**Method 2: Movement Task Type**
+Use the dedicated movement task type for explicit movement actions:
+
+```json
+{
+  "id": "travel_to_oven",
+  "type": "movement",
+  "actor_id": "baker",
+  "start": "09:00",
+  "duration": 2,
+  "from_location": "prep_area",
+  "to_location": "oven_area",
+  "movement_speed": 1.5
+}
+```
+
+**Movement Task Properties:**
+- `type`: Must be "movement" to identify this as a movement task
+- `from_location`: Starting location (must match actor's current location)
+- `to_location`: Destination location
+- `movement_speed`: Optional speed in meters/second for realistic duration calculation
+
+**When to Use Each Method:**
+
+Use **Property Changes** when:
+- Movement is part of a larger task action
+- You want to combine location change with other property updates
+- Movement is incidental to the task's primary purpose
+
+Use **Movement Task Type** when:
+- Movement is the primary purpose of the task
+- You want to explicitly show travel time in the timeline
+- You need to track movement speed or distance
+- The movement needs to be visible as a distinct activity
+
+**Complete Movement Example:**
+
+```json
+{
+  "simulation": {
+    "layout": {
+      "areas": {
+        "prep_area": {
+          "name": "Preparation Area",
+          "type": "physical",
+          "coordinates": { "x": 0, "y": 0, "width": 10, "height": 5 }
+        },
+        "oven_area": {
+          "name": "Oven Area",
+          "type": "physical",
+          "coordinates": { "x": 15, "y": 0, "width": 8, "height": 5 }
+        }
+      }
+    },
+    "objects": [
+      {
+        "id": "baker",
+        "type": "actor",
+        "name": "Baker",
+        "properties": {
+          "location": "prep_area",
+          "cost_per_hour": 25
+        }
+      },
+      {
+        "id": "oven",
+        "type": "equipment",
+        "name": "Commercial Oven",
+        "properties": {
+          "location": "oven_area",
+          "state": "ready"
+        }
+      }
+    ],
+    "tasks": [
+      {
+        "id": "prep_dough",
+        "actor_id": "baker",
+        "start": "09:00",
+        "duration": 20,
+        "location": "prep_area"
+      },
+      {
+        "id": "walk_to_oven",
+        "type": "movement",
+        "actor_id": "baker",
+        "start": "09:20",
+        "duration": 2,
+        "from_location": "prep_area",
+        "to_location": "oven_area"
+      },
+      {
+        "id": "bake_bread",
+        "actor_id": "baker",
+        "start": "09:22",
+        "duration": 30,
+        "location": "oven_area",
+        "interactions": [
+          {
+            "object_id": "oven",
+            "property_changes": {
+              "state": { "from": "ready", "to": "baking" }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+In this example:
+1. Baker starts in prep_area, prepares dough
+2. Movement task explicitly shows 2-minute walk to oven_area
+3. Baker's location is updated by the movement task
+4. Baking task can now proceed because baker is in oven_area with the oven
+
 ## Production Recipes
 
 Define complex production requirements:

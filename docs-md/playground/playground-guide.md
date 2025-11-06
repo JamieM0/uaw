@@ -587,6 +587,26 @@ For digital objects, you can change their position in 3D space:
 ]
 ```
 
+**D) Changing Physical Location**
+For actors moving between physical locations, you can track their movement:
+
+*Example:* Worker moving to a different area.
+```json
+"interactions": [
+  {
+    "object_id": "warehouse_worker",
+    "property_changes": {
+      "location": {
+        "from": "loading_dock",
+        "to": "storage_area"
+      }
+    }
+  }
+]
+```
+
+This updates the actor's location, which is tracked by the validation system to ensure subsequent tasks have the actor in the correct location.
+
 #### 2. `add_objects`
 
 This interaction allows a task to create one or more new objects and add them to the simulation. This is perfect for tasks that produce something new.
@@ -621,4 +641,267 @@ This interaction allows a task to remove an object from the simulation. This is 
 ]
 ```
 
-By combining these different object and task definitions, you can create rich, dynamic, and realistic simulations of almost any process.
+---
+
+### Movement Tasks
+
+The Playground supports two methods for modeling actor movement between physical locations. Understanding when and how to use each method is key to creating realistic, validated simulations.
+
+#### Method 1: Movement Task Type
+
+Use a dedicated movement task to explicitly show travel time as a distinct activity on the timeline.
+
+**Structure:**
+```json
+{
+  "id": "walk_to_warehouse",
+  "type": "movement",
+  "actor_id": "forklift_operator",
+  "start": "09:00",
+  "duration": 5,
+  "from_location": "loading_dock",
+  "to_location": "warehouse",
+  "movement_speed": 1.5
+}
+```
+
+**Fields:**
+- `type`: Must be set to `"movement"` to identify this as a movement task
+- `from_location`: Starting location (must match actor's current location at task start)
+- `to_location`: Destination location (must exist in layout)
+- `movement_speed`: (Optional) Speed in meters/second for realistic duration calculation
+
+**When to use:**
+- Movement is the primary purpose of the task
+- You want to explicitly show travel time in the timeline
+- You need to track movement speed or distance
+- The movement should be visible as a distinct activity
+
+**Timeline Behavior:**
+The validation system tracks the actor's location throughout the timeline:
+1. At task start, validates that actor is in `from_location`
+2. At task completion, updates actor's location to `to_location`
+3. Subsequent tasks can use the updated location
+
+#### Method 2: Property Changes
+
+Use property_changes within a task's interactions to update location as part of a larger action.
+
+**Structure:**
+```json
+{
+  "id": "retrieve_supplies",
+  "actor_id": "warehouse_worker",
+  "start": "10:00",
+  "duration": 8,
+  "location": "storage_area",
+  "interactions": [
+    {
+      "object_id": "warehouse_worker",
+      "property_changes": {
+        "location": {
+          "from": "loading_dock",
+          "to": "storage_area"
+        }
+      }
+    }
+  ]
+}
+```
+
+**When to use:**
+- Movement is incidental to the task's primary purpose
+- You want to combine location change with other property updates
+- The task duration already includes travel time
+- Movement doesn't need to be shown as a separate timeline activity
+
+**Timeline Behavior:**
+Location is updated when the task completes, just like other property changes.
+
+#### Complete Movement Example
+
+This example shows a warehouse workflow with both movement methods:
+
+```json
+{
+  "simulation": {
+    "meta": {
+      "title": "Warehouse Fulfillment Process"
+    },
+    "config": {
+      "time_unit": "minutes",
+      "start_time": "08:00",
+      "end_time": "12:00"
+    },
+    "layout": {
+      "areas": {
+        "receiving_dock": {
+          "name": "Receiving Dock",
+          "type": "physical",
+          "coordinates": { "x": 0, "y": 0, "width": 15, "height": 10 }
+        },
+        "storage_area": {
+          "name": "Storage Area",
+          "type": "physical",
+          "coordinates": { "x": 20, "y": 0, "width": 30, "height": 20 }
+        },
+        "shipping_dock": {
+          "name": "Shipping Dock",
+          "type": "physical",
+          "coordinates": { "x": 55, "y": 0, "width": 15, "height": 10 }
+        }
+      }
+    },
+    "objects": [
+      {
+        "id": "warehouse_worker",
+        "type": "actor",
+        "name": "Warehouse Worker",
+        "properties": {
+          "location": "receiving_dock",
+          "cost_per_hour": 18.50
+        }
+      },
+      {
+        "id": "forklift",
+        "type": "equipment",
+        "name": "Electric Forklift",
+        "properties": {
+          "location": "storage_area",
+          "state": "available"
+        }
+      },
+      {
+        "id": "inventory",
+        "type": "resource",
+        "name": "Warehouse Inventory",
+        "properties": {
+          "quantity": 100,
+          "unit": "pallets",
+          "location": "storage_area"
+        }
+      }
+    ],
+    "tasks": [
+      {
+        "id": "receive_delivery",
+        "actor_id": "warehouse_worker",
+        "start": "08:00",
+        "duration": 15,
+        "location": "receiving_dock",
+        "interactions": [
+          {
+            "object_id": "inventory",
+            "property_changes": {
+              "quantity": { "delta": 10 }
+            }
+          }
+        ]
+      },
+      {
+        "id": "walk_to_storage",
+        "type": "movement",
+        "actor_id": "warehouse_worker",
+        "start": "08:15",
+        "duration": 3,
+        "from_location": "receiving_dock",
+        "to_location": "storage_area"
+      },
+      {
+        "id": "organize_inventory",
+        "actor_id": "warehouse_worker",
+        "start": "08:18",
+        "duration": 25,
+        "location": "storage_area",
+        "interactions": [
+          {
+            "object_id": "forklift",
+            "property_changes": {
+              "state": { "from": "available", "to": "in_use" }
+            }
+          }
+        ]
+      },
+      {
+        "id": "return_forklift_and_move",
+        "actor_id": "warehouse_worker",
+        "start": "08:43",
+        "duration": 5,
+        "location": "storage_area",
+        "interactions": [
+          {
+            "object_id": "forklift",
+            "property_changes": {
+              "state": { "from": "in_use", "to": "available" }
+            }
+          },
+          {
+            "object_id": "warehouse_worker",
+            "property_changes": {
+              "location": {
+                "from": "storage_area",
+                "to": "shipping_dock"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "prepare_shipment",
+        "actor_id": "warehouse_worker",
+        "start": "08:48",
+        "duration": 20,
+        "location": "shipping_dock",
+        "interactions": [
+          {
+            "object_id": "inventory",
+            "property_changes": {
+              "quantity": { "delta": -5 }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Key Points in This Example:**
+
+1. **Explicit Movement (08:15-08:18)**: The worker uses a dedicated movement task to walk from receiving_dock to storage_area. This shows the 3-minute travel time clearly on the timeline.
+
+2. **Incidental Movement (08:43-08:48)**: The worker returns the forklift and moves to shipping_dock within the same task. Since the movement is combined with another action, we use property_changes instead of a separate movement task.
+
+3. **Timeline Validation**: The validation system tracks:
+   - Worker starts at receiving_dock (initial property)
+   - After walk_to_storage completes (08:18), worker is in storage_area
+   - After return_forklift_and_move completes (08:48), worker is in shipping_dock
+   - Each task validates that the worker is in the correct location at its start time
+
+4. **Common Pattern**: Move to a location, work there for a period, then move elsewhere. This reflects realistic workflows where travel and work are distinct phases.
+
+#### Best Practices for Movement
+
+1. **Realistic Duration**: Movement tasks should have durations based on actual walking/travel time
+   - Typical walking speed: 1.4 m/s (5 km/h)
+   - Calculate duration based on layout coordinates if available
+   - Include time for any obstacles or delays
+
+2. **Timing Gaps**: Ensure movement completes before the next task starts
+   ```json
+   // Movement completes at 09:05
+   { "start": "09:00", "duration": 5, "type": "movement" }
+   // Next task must start at or after 09:05
+   { "start": "09:05", "duration": 10 }
+   ```
+
+3. **Location Consistency**: The from_location must match where the actor actually is
+   - The validator simulates the timeline to track current location
+   - If mismatch occurs, you'll get a validation error
+   - Check earlier tasks to see where the actor was moved
+
+4. **Choose the Right Method**:
+   - **Dedicated Movement Task**: Use when travel time is significant and should be visible
+   - **Property Changes**: Use when movement is quick or combined with other actions
+
+By combining these different object and task definitions, including proper movement modeling, you can create rich, dynamic, and realistic simulations of almost any process.

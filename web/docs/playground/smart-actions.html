@@ -195,10 +195,10 @@ AI: The total cost across all tasks is $247.50, broken down as follows...
 </code></pre></div>
 <h3 class="docs-heading" id="direct-editing">Direct Editing<a class="headerlink" href="#direct-editing" title="Link to this section">¶</a></h3>
 <p>Request changes using natural language:</p>
-<div class="codehilite"><pre><span></span><code class="language-text">"Change the baker's hourly rate to $30"
-"Add a 15-minute break task at 12:00"
-"Rename the 'workspace' location to 'prep_counter'"
-"Set all resource quantities to 100"
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="s2">"Change the baker's hourly rate to $30"</span>
+<span class="s2">"Add a 15-minute break task at 12:00"</span>
+<span class="s2">"Rename the 'workspace' location to 'prep_counter'"</span>
+<span class="s2">"Set all resource quantities to 100"</span>
 </code></pre></div>
 <h2 class="docs-heading" id="system-prompts">System Prompts<a class="headerlink" href="#system-prompts" title="Link to this section">¶</a></h2>
 <p>Smart Actions uses carefully crafted system prompts to provide accurate, helpful assistance:</p>
@@ -484,25 +484,25 @@ tasks are causing the issue and suggest how to resolve them?"
 <span class="nl">System:</span><span class="w"> </span><span class="err">✓</span><span class="w"> </span><span class="n">Changes</span><span class="w"> </span><span class="n">applied</span><span class="w"> </span><span class="n">successfully</span>
 </code></pre></div>
 <h3 class="docs-heading" id="example-2-optimizing-costs">Example 2: Optimizing Costs<a class="headerlink" href="#example-2-optimizing-costs" title="Link to this section">¶</a></h3>
-<div class="codehilite"><pre><span></span><code class="language-text">User: "How can I reduce the total cost of this simulation?"
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nv">User</span>:<span class="w"> </span><span class="s2">"How can I reduce the total cost of this simulation?"</span>
 
-AI: [Accessing Simulation...]
+<span class="nv">AI</span>:<span class="w"> </span>[<span class="nv">Accessing</span><span class="w"> </span><span class="nv">Simulation</span>...]
 
-Based on my analysis, here are the main cost optimization opportunities:
+<span class="nv">Based</span><span class="w"> </span><span class="nv">on</span><span class="w"> </span><span class="nv">my</span><span class="w"> </span><span class="nv">analysis</span>,<span class="w"> </span><span class="nv">here</span><span class="w"> </span><span class="nv">are</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">main</span><span class="w"> </span><span class="nv">cost</span><span class="w"> </span><span class="nv">optimization</span><span class="w"> </span><span class="nv">opportunities</span>:
 
-1. **Labor Costs** ($450.00/day, 72% of total)
-   <span class="k">-</span> The assistant is idle for 2 hours (12:00-14:00)
-   <span class="k">-</span> Consider reducing work hours or adding tasks
+<span class="mi">1</span>.<span class="w"> </span><span class="o">**</span><span class="nv">Labor</span><span class="w"> </span><span class="nv">Costs</span><span class="o">**</span><span class="w"> </span><span class="ss">(</span><span class="mh">$450</span>.<span class="mi">00</span><span class="o">/</span><span class="nv">day</span>,<span class="w"> </span><span class="mi">72</span><span class="o">%</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">total</span><span class="ss">)</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="nv">The</span><span class="w"> </span><span class="nv">assistant</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">idle</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="nv">hours</span><span class="w"> </span><span class="ss">(</span><span class="mi">12</span>:<span class="mi">00</span><span class="o">-</span><span class="mi">14</span>:<span class="mi">00</span><span class="ss">)</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="nv">Consider</span><span class="w"> </span><span class="nv">reducing</span><span class="w"> </span><span class="nv">work</span><span class="w"> </span><span class="nv">hours</span><span class="w"> </span><span class="nv">or</span><span class="w"> </span><span class="nv">adding</span><span class="w"> </span><span class="nv">tasks</span>
 
-2. **Resource Waste** ($85.00/day)
-   <span class="k">-</span> Flour consumption exceeds requirements by 15%
-   <span class="k">-</span> Reduce flour quantity in mixing tasks
+<span class="mi">2</span>.<span class="w"> </span><span class="o">**</span><span class="nv">Resource</span><span class="w"> </span><span class="nv">Waste</span><span class="o">**</span><span class="w"> </span><span class="ss">(</span><span class="mh">$85</span>.<span class="mi">00</span><span class="o">/</span><span class="nv">day</span><span class="ss">)</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="nv">Flour</span><span class="w"> </span><span class="nv">consumption</span><span class="w"> </span><span class="nv">exceeds</span><span class="w"> </span><span class="nv">requirements</span><span class="w"> </span><span class="nv">by</span><span class="w"> </span><span class="mi">15</span><span class="o">%</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="nv">Reduce</span><span class="w"> </span><span class="nv">flour</span><span class="w"> </span><span class="nv">quantity</span><span class="w"> </span><span class="nv">in</span><span class="w"> </span><span class="nv">mixing</span><span class="w"> </span><span class="nv">tasks</span>
 
-3. **Equipment Utilization** (Only 60% utilized)
-   <span class="k">-</span> The oven sits idle for 3 hours
-   <span class="k">-</span> Consider adding additional baking tasks
+<span class="mi">3</span>.<span class="w"> </span><span class="o">**</span><span class="nv">Equipment</span><span class="w"> </span><span class="nv">Utilization</span><span class="o">**</span><span class="w"> </span><span class="ss">(</span><span class="nv">Only</span><span class="w"> </span><span class="mi">60</span><span class="o">%</span><span class="w"> </span><span class="nv">utilized</span><span class="ss">)</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="nv">The</span><span class="w"> </span><span class="nv">oven</span><span class="w"> </span><span class="nv">sits</span><span class="w"> </span><span class="nv">idle</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="nv">hours</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="nv">Consider</span><span class="w"> </span><span class="nv">adding</span><span class="w"> </span><span class="nv">additional</span><span class="w"> </span><span class="nv">baking</span><span class="w"> </span><span class="nv">tasks</span>
 
-Would you like me to suggest specific changes for any of these areas?
+<span class="nv">Would</span><span class="w"> </span><span class="nv">you</span><span class="w"> </span><span class="nv">like</span><span class="w"> </span><span class="nv">me</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">suggest</span><span class="w"> </span><span class="nv">specific</span><span class="w"> </span><span class="nv">changes</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">any</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">these</span><span class="w"> </span><span class="nv">areas</span>?
 </code></pre></div>
 <h3 class="docs-heading" id="example-3-fixing-validation-errors">Example 3: Fixing Validation Errors<a class="headerlink" href="#example-3-fixing-validation-errors" title="Link to this section">¶</a></h3>
 <div class="codehilite"><pre><span></span><code class="language-text">User: "I have 5 validation errors. What's wrong?"
@@ -512,24 +512,24 @@ AI: Let me analyze the validation errors.
 I can see 5 errors in your simulation:
 
 1. **Missing actor reference** (Task "mix_dough")
-   <span class="k">-</span> Error: References actor "baker_john" which doesn't exist
-   <span class="k">-</span> Fix: Change to "baker" or create the actor
+   - Error: References actor "baker_john" which doesn't exist
+   - Fix: Change to "baker" or create the actor
 
 2. **Dependency cycle** (Tasks "proof" and "shape")
-   <span class="k">-</span> Error: Circular dependency detected
-   <span class="k">-</span> Fix: Remove "shape" from "proof" dependencies
+   - Error: Circular dependency detected
+   - Fix: Remove "shape" from "proof" dependencies
 
 3. **Invalid time format** (Task "bake")
-   <span class="k">-</span> Error: start time "1:00PM" should be "13:00"
-   <span class="k">-</span> Fix: Use 24-hour format
+   - Error: start time "1:00PM" should be "13:00"
+   - Fix: Use 24-hour format
 
 4. **Resource quantity** (Resource "flour")
-   <span class="k">-</span> Error: Quantity is negative (-5)
-   <span class="k">-</span> Fix: Set quantity to positive value
+   - Error: Quantity is negative (-5)
+   - Fix: Set quantity to positive value
 
 5. **Missing required field** (Object "workspace")
-   <span class="k">-</span> Error: Equipment objects require "state" property
-   <span class="k">-</span> Fix: Add "state": "available"
+   - Error: Equipment objects require "state" property
+   - Fix: Add "state": "available"
 
 Would you like me to fix these issues?
 </code></pre></div>

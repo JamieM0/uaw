@@ -634,6 +634,22 @@ For digital objects, you can change their position in 3D space:</p>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">]</span>
 </code></pre></div>
+<p><strong>D) Changing Physical Location</strong>
+For actors moving between physical locations, you can track their movement:</p>
+<p><em>Example:</em> Worker moving to a different area.</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"loading_dock"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</code></pre></div>
+<p>This updates the actor’s location, which is tracked by the validation system to ensure subsequent tasks have the actor in the correct location.</p>
 <h4 class="docs-heading" id="2-add_objects">2. <code class="docs-inline-code">add_objects</code><a class="headerlink" href="#2-add_objects" title="Link to this section">¶</a></h4>
 <p>This interaction allows a task to create one or more new objects and add them to the simulation. This is perfect for tasks that produce something new.</p>
 <p><em>Example:</em> A “receive_shipment” task that adds new resources to the inventory.</p>
@@ -660,7 +676,259 @@ For digital objects, you can change their position in 3D space:</p>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">]</span>
 </code></pre></div>
-<p>By combining these different object and task definitions, you can create rich, dynamic, and realistic simulations of almost any process.</p>
+<hr class="docs-hr"/>
+<h3 class="docs-heading" id="movement-tasks">Movement Tasks<a class="headerlink" href="#movement-tasks" title="Link to this section">¶</a></h3>
+<p>The Playground supports two methods for modeling actor movement between physical locations. Understanding when and how to use each method is key to creating realistic, validated simulations.</p>
+<h4 class="docs-heading" id="method-1-movement-task-type">Method 1: Movement Task Type<a class="headerlink" href="#method-1-movement-task-type" title="Link to this section">¶</a></h4>
+<p>Use a dedicated movement task to explicitly show travel time as a distinct activity on the timeline.</p>
+<p><strong>Structure:</strong></p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"walk_to_warehouse"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"movement"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"forklift_operator"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"from_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"loading_dock"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"to_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"movement_speed"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Fields:</strong>
+- <code class="docs-inline-code">type</code>: Must be set to <code class="docs-inline-code">"movement"</code> to identify this as a movement task
+- <code class="docs-inline-code">from_location</code>: Starting location (must match actor’s current location at task start)
+- <code class="docs-inline-code">to_location</code>: Destination location (must exist in layout)
+- <code class="docs-inline-code">movement_speed</code>: (Optional) Speed in meters/second for realistic duration calculation</p>
+<p><strong>When to use:</strong>
+- Movement is the primary purpose of the task
+- You want to explicitly show travel time in the timeline
+- You need to track movement speed or distance
+- The movement should be visible as a distinct activity</p>
+<p><strong>Timeline Behavior:</strong>
+The validation system tracks the actor’s location throughout the timeline:
+1. At task start, validates that actor is in <code class="docs-inline-code">from_location</code>
+2. At task completion, updates actor’s location to <code class="docs-inline-code">to_location</code>
+3. Subsequent tasks can use the updated location</p>
+<h4 class="docs-heading" id="method-2-property-changes">Method 2: Property Changes<a class="headerlink" href="#method-2-property-changes" title="Link to this section">¶</a></h4>
+<p>Use property_changes within a task’s interactions to update location as part of a larger action.</p>
+<p><strong>Structure:</strong></p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"retrieve_supplies"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10:00"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"loading_dock"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>When to use:</strong>
+- Movement is incidental to the task’s primary purpose
+- You want to combine location change with other property updates
+- The task duration already includes travel time
+- Movement doesn’t need to be shown as a separate timeline activity</p>
+<p><strong>Timeline Behavior:</strong>
+Location is updated when the task completes, just like other property changes.</p>
+<h4 class="docs-heading" id="complete-movement-example">Complete Movement Example<a class="headerlink" href="#complete-movement-example" title="Link to this section">¶</a></h4>
+<p>This example shows a warehouse workflow with both movement methods:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Warehouse Fulfillment Process"</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"time_unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"minutes"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"08:00"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"end_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"12:00"</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"areas"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"receiving_dock"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Receiving Dock"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"physical"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"coordinates"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"storage_area"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Storage Area"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"physical"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"coordinates"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"shipping_dock"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Shipping Dock"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"physical"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"coordinates"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">55</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Warehouse Worker"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"receiving_dock"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"cost_per_hour"</span><span class="p">:</span><span class="w"> </span><span class="mf">18.50</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"forklift"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equipment"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Electric Forklift"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"available"</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"inventory"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Warehouse Inventory"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pallets"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"receive_delivery"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"08:00"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"receiving_dock"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"inventory"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"walk_to_storage"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"movement"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"08:15"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"from_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"receiving_dock"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"to_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"organize_inventory"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"08:18"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"forklift"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"available"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"in_use"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"return_forklift_and_move"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"08:43"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"forklift"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"in_use"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"available"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">          </span><span class="p">},</span>
+<span class="w">          </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shipping_dock"</span>
+<span class="w">              </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prepare_shipment"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"08:48"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shipping_dock"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"inventory"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">-5</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Key Points in This Example:</strong></p>
+<ol class="docs-list docs-list-ordered">
+<li>
+<p><strong>Explicit Movement (08:15-08:18)</strong>: The worker uses a dedicated movement task to walk from receiving_dock to storage_area. This shows the 3-minute travel time clearly on the timeline.</p>
+</li>
+<li>
+<p><strong>Incidental Movement (08:43-08:48)</strong>: The worker returns the forklift and moves to shipping_dock within the same task. Since the movement is combined with another action, we use property_changes instead of a separate movement task.</p>
+</li>
+<li>
+<p><strong>Timeline Validation</strong>: The validation system tracks:
+   - Worker starts at receiving_dock (initial property)
+   - After walk_to_storage completes (08:18), worker is in storage_area
+   - After return_forklift_and_move completes (08:48), worker is in shipping_dock
+   - Each task validates that the worker is in the correct location at its start time</p>
+</li>
+<li>
+<p><strong>Common Pattern</strong>: Move to a location, work there for a period, then move elsewhere. This reflects realistic workflows where travel and work are distinct phases.</p>
+</li>
+</ol>
+<h4 class="docs-heading" id="best-practices-for-movement">Best Practices for Movement<a class="headerlink" href="#best-practices-for-movement" title="Link to this section">¶</a></h4>
+<ol class="docs-list docs-list-ordered">
+<li>
+<p><strong>Realistic Duration</strong>: Movement tasks should have durations based on actual walking/travel time
+   - Typical walking speed: 1.4 m/s (5 km/h)
+   - Calculate duration based on layout coordinates if available
+   - Include time for any obstacles or delays</p>
+</li>
+<li>
+<p><strong>Timing Gaps</strong>: Ensure movement completes before the next task starts
+   <code class="docs-inline-code">json
+   // Movement completes at 09:05
+   { "start": "09:00", "duration": 5, "type": "movement" }
+   // Next task must start at or after 09:05
+   { "start": "09:05", "duration": 10 }</code></p>
+</li>
+<li>
+<p><strong>Location Consistency</strong>: The from_location must match where the actor actually is
+   - The validator simulates the timeline to track current location
+   - If mismatch occurs, you’ll get a validation error
+   - Check earlier tasks to see where the actor was moved</p>
+</li>
+<li>
+<p><strong>Choose the Right Method</strong>:
+   - <strong>Dedicated Movement Task</strong>: Use when travel time is significant and should be visible
+   - <strong>Property Changes</strong>: Use when movement is quick or combined with other actions</p>
+</li>
+</ol>
+<p>By combining these different object and task definitions, including proper movement modeling, you can create rich, dynamic, and realistic simulations of almost any process.</p>
                     </div>
                     
                     <footer class="docs-footer">

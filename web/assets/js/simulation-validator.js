@@ -606,38 +606,249 @@ class SimulationValidator {
     const tasks = this.simulation.tasks || [];
     let issueFound = false;
 
-    for (const task of tasks) {
+    // Build initial location state map
+    const locationState = new Map();
+    for (const obj of objects) {
+      if (obj.properties?.location) {
+        locationState.set(obj.id, obj.properties.location);
+      }
+    }
+
+    // Sort tasks chronologically to simulate timeline
+    const sortedTasks = [...tasks]
+      .map(t => ({
+        ...t,
+        start_minutes: this._timeToMinutes(t.start),
+        end_minutes: this._timeToMinutes(t.start) + (t.duration || 0)
+      }))
+      .filter(t => t.start_minutes !== null)
+      .sort((a, b) => a.start_minutes - b.start_minutes);
+
+    // Process tasks chronologically
+    for (const task of sortedTasks) {
+        // METHOD 4: Check if this is a movement task
+        if (task.type === 'movement') {
+          const hasError = this._validateMovementTask(task, locationState, objectMap, metric);
+          if (hasError) {
+            issueFound = true;
+          }
+          continue;
+        }
+
         if (!task.location) continue; // Skip tasks without a location
 
-        // 1. Check the actor's location
-        const actor = objectMap.get(task.actor_id);
-        if (actor && actor.properties?.location !== task.location) {
-            this.addResult({ metricId: metric.id, status: 'error', message: `Proximity Error: Actor '${actor.id}' must be in location '${task.location}' to perform task '${task.id}', but is in '${actor.properties.location}'.` });
+        // 1. Check the actor's location AT TASK START TIME
+        const actorLocation = this._getObjectLocationAtTime(task.actor_id, task.start_minutes, sortedTasks, locationState);
+        if (actorLocation && actorLocation !== task.location) {
+            this.addResult({
+              metricId: metric.id,
+              status: 'error',
+              message: `Proximity Error: Actor '${task.actor_id}' must be in location '${task.location}' to perform task '${task.id}' at ${task.start}, but is in '${actorLocation}'. Consider adding a movement task or location change before this task.`
+            });
             issueFound = true;
         }
 
         // 2. Check the location of all required equipment (support both old and new interaction styles)
         for (const interaction of (task.equipment_interactions || [])) {
-            const equipment = objectMap.get(interaction.id);
-            if (equipment && equipment.properties?.location !== task.location) {
-                 this.addResult({ metricId: metric.id, status: 'error', message: `Proximity Error: Equipment '${equipment.id}' must be in location '${task.location}' for task '${task.id}', but is in '${equipment.properties.location}'.` });
+            const equipmentLocation = this._getObjectLocationAtTime(interaction.id, task.start_minutes, sortedTasks, locationState);
+            if (equipmentLocation && equipmentLocation !== task.location) {
+                 this.addResult({
+                   metricId: metric.id,
+                   status: 'error',
+                   message: `Proximity Error: Equipment '${interaction.id}' must be in location '${task.location}' for task '${task.id}', but is in '${equipmentLocation}'.`
+                 });
                  issueFound = true;
             }
         }
-        
-        // Also check new-style interactions
+
+        // Also check new-style interactions for equipment
         for (const interaction of (task.interactions || [])) {
             const obj = objectMap.get(interaction.object_id);
-            if (obj && obj.type === 'equipment' && obj.properties?.location !== task.location) {
-                 this.addResult({ metricId: metric.id, status: 'error', message: `Proximity Error: Equipment '${obj.id}' must be in location '${task.location}' for task '${task.id}', but is in '${obj.properties.location}'.` });
-                 issueFound = true;
+            if (obj && obj.type === 'equipment') {
+              const equipmentLocation = this._getObjectLocationAtTime(interaction.object_id, task.start_minutes, sortedTasks, locationState);
+              if (equipmentLocation && equipmentLocation !== task.location) {
+                   this.addResult({
+                     metricId: metric.id,
+                     status: 'error',
+                     message: `Proximity Error: Equipment '${interaction.object_id}' must be in location '${task.location}' for task '${task.id}', but is in '${equipmentLocation}'.`
+                   });
+                   issueFound = true;
+              }
             }
         }
+
+        // METHOD 2: Apply location property changes AFTER task completes
+        this._applyLocationChanges(task, locationState);
     }
 
     if (!issueFound) {
         this.addResult({ metricId: metric.id, status: 'success', message: 'All task proximity requirements are met.' });
     }
+  }
+
+  /**
+   * METHOD 2 Helper: Get object location at a specific time in the timeline
+   * @param {string} objectId - ID of the object
+   * @param {number} timeMinutes - Time in minutes from start of day
+   * @param {Array} sortedTasks - Tasks sorted by start time
+   * @param {Map} initialLocationState - Initial location state map
+   * @returns {string|null} - Location ID or null if not found
+   */
+  _getObjectLocationAtTime(objectId, timeMinutes, sortedTasks, initialLocationState) {
+    // Start with initial location
+    let currentLocation = initialLocationState.get(objectId) || null;
+
+    // Apply all location changes that occurred before or at this time
+    for (const task of sortedTasks) {
+      // Only process tasks that started before the query time
+      // (location changes apply at task END, so we need to check if task completed)
+      if (task.start_minutes >= timeMinutes) break;
+
+      // Check for location changes in task interactions
+      for (const interaction of (task.interactions || [])) {
+        if (interaction.object_id === objectId && interaction.property_changes?.location) {
+          const locationChange = interaction.property_changes.location;
+
+          // Apply location change at task END time
+          if (task.end_minutes <= timeMinutes) {
+            if (locationChange.to !== undefined) {
+              // Check if we should revert after task
+              if (interaction.revert_after === true) {
+                // Location reverts to 'from' after task completes
+                currentLocation = locationChange.from;
+              } else {
+                // Location changes to 'to' after task completes
+                currentLocation = locationChange.to;
+              }
+            }
+          }
+        }
+      }
+
+      // METHOD 4: Handle movement tasks
+      if (task.type === 'movement' && task.actor_id === objectId && task.end_minutes <= timeMinutes) {
+        currentLocation = task.to_location;
+      }
+    }
+
+    return currentLocation;
+  }
+
+  /**
+   * METHOD 2 Helper: Apply location changes from a task's interactions
+   * @param {Object} task - The task to process
+   * @param {Map} locationState - Current location state map to update
+   */
+  _applyLocationChanges(task, locationState) {
+    // Check for location changes in task interactions
+    for (const interaction of (task.interactions || [])) {
+      if (interaction.property_changes?.location) {
+        const locationChange = interaction.property_changes.location;
+
+        if (locationChange.to !== undefined) {
+          // Update location state at task END time
+          if (interaction.revert_after === true) {
+            // Will revert to 'from' location
+            locationState.set(interaction.object_id, locationChange.from);
+          } else {
+            // Changes to 'to' location
+            locationState.set(interaction.object_id, locationChange.to);
+          }
+        }
+      }
+    }
+
+    // METHOD 4: Handle movement tasks
+    if (task.type === 'movement' && task.to_location) {
+      locationState.set(task.actor_id, task.to_location);
+    }
+  }
+
+  /**
+   * METHOD 4: Validate movement type tasks
+   * @param {Object} task - Movement task to validate
+   * @param {Map} locationState - Current location state map
+   * @param {Map} objectMap - Map of object IDs to object definitions
+   * @param {Object} metric - The metric being validated
+   * @returns {boolean} - True if an error was found, false otherwise
+   */
+  _validateMovementTask(task, locationState, objectMap, metric) {
+    const locations = this.simulation.layout?.locations || [];
+    const locationIds = new Set(locations.map(l => l.id));
+
+    // Validate required fields
+    if (!task.actor_id) {
+      this.addResult({
+        metricId: metric.id,
+        status: 'error',
+        message: `Movement task '${task.id}' is missing required field 'actor_id'.`
+      });
+      return true;
+    }
+
+    if (!task.from_location) {
+      this.addResult({
+        metricId: metric.id,
+        status: 'error',
+        message: `Movement task '${task.id}' is missing required field 'from_location'.`
+      });
+      return true;
+    }
+
+    if (!task.to_location) {
+      this.addResult({
+        metricId: metric.id,
+        status: 'error',
+        message: `Movement task '${task.id}' is missing required field 'to_location'.`
+      });
+      return true;
+    }
+
+    // Validate from_location exists in layout
+    if (!locationIds.has(task.from_location)) {
+      this.addResult({
+        metricId: metric.id,
+        status: 'error',
+        message: `Movement task '${task.id}' references non-existent from_location '${task.from_location}'.`
+      });
+      return true;
+    }
+
+    // Validate to_location exists in layout
+    if (!locationIds.has(task.to_location)) {
+      this.addResult({
+        metricId: metric.id,
+        status: 'error',
+        message: `Movement task '${task.id}' references non-existent to_location '${task.to_location}'.`
+      });
+      return true;
+    }
+
+    // Validate actor exists
+    const actor = objectMap.get(task.actor_id);
+    if (!actor) {
+      this.addResult({
+        metricId: metric.id,
+        status: 'error',
+        message: `Movement task '${task.id}' references non-existent actor '${task.actor_id}'.`
+      });
+      return true;
+    }
+
+    // Validate from_location matches actor's current location
+    const currentLocation = locationState.get(task.actor_id);
+    if (currentLocation && currentLocation !== task.from_location) {
+      this.addResult({
+        metricId: metric.id,
+        status: 'error',
+        message: `Movement task '${task.id}' expects actor '${task.actor_id}' to be at '${task.from_location}', but actor is currently at '${currentLocation}' at ${task.start}.`
+      });
+      return true;
+    }
+
+    // Movement task is valid - apply location change
+    locationState.set(task.actor_id, task.to_location);
+    return false;
   }
   validateInteractions(metric) {
     const objects = this.simulation.objects || [];

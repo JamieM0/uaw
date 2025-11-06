@@ -501,13 +501,20 @@
 <h3 class="docs-heading" id="task-proximity-check">Task Proximity Check<a class="headerlink" href="#task-proximity-check" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">task.spatial.unmet_proximity_requirement</code>
 <strong>Severity</strong>: Error</p>
-<p>Checks if the actor and all required equipment/resources for a task are in the same location as the task itself.</p>
+<p>Checks if the actor and all required equipment/resources for a task are in the same location as the task itself. This validation is <strong>timeline-aware</strong>, meaning it simulates actor movement throughout the timeline to track location changes.</p>
 <p><strong>What it checks:</strong>
-- Task location matches actor location
+- Task location matches actor location at task start time
 - Required equipment is in the same location
 - Resources are accessible from task location
-- Spatial consistency is maintained</p>
-<p><strong>Example failure:</strong></p>
+- Spatial consistency is maintained
+- Actor location changes via movement tasks or property_changes are tracked</p>
+<p><strong>Timeline Simulation:</strong>
+The validator simulates the entire timeline to track where actors are at any given time:
+1. Starts with each actor’s initial location from their properties
+2. Updates actor locations when movement tasks complete
+3. Updates actor locations when property_changes modify location
+4. Validates each task against the simulated location at its start time</p>
+<p><strong>Example failure (without movement):</strong></p>
 <div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
 <span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
@@ -525,11 +532,13 @@
 <span class="w">    </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bake_bread"</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven_area"</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="p">{</span>
 <span class="w">          </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven"</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">}</span>
+<span class="w">          </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ready"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baking"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">]</span>
 <span class="w">    </span><span class="p">}</span>
@@ -537,11 +546,140 @@
 <span class="p">}</span>
 </code></pre></div>
 <p><strong>Issue</strong>: Baker is in prep_area but task is in oven_area</p>
-<p><strong>How to fix:</strong>
-- Move actor to correct location
-- Add movement tasks to transport actor
-- Adjust task location to match actor
-- Update object locations as needed</p>
+<p><strong>Example success (with movement task):</strong></p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_area"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equipment"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven_area"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"walk_to_oven"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"movement"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"08:55"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"from_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_area"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"to_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven_area"</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bake_bread"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven_area"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ready"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baking"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Success</strong>: Movement task completes at 08:57, so baker is in oven_area when bake_bread starts at 09:00</p>
+<p><strong>Example success (with property_changes):</strong></p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"move_to_storage"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10:00"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"loading_dock"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"retrieve_parts"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10:05"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Success</strong>: Property change completes at 10:03, so worker is in storage_area when retrieve_parts starts at 10:05</p>
+<p><strong>Movement Methods:</strong></p>
+<p>The validator recognizes two methods for actor movement:</p>
+<ol class="docs-list docs-list-ordered">
+<li>
+<p><strong>Movement Task Type</strong> (<code class="docs-inline-code">type: "movement"</code>)
+   - Dedicated task for explicit movement
+   - Must have <code class="docs-inline-code">from_location</code> and <code class="docs-inline-code">to_location</code> fields
+   - Actor location updates when movement task completes
+   - Best for showing travel as a distinct activity</p>
+</li>
+<li>
+<p><strong>Property Changes</strong> (<code class="docs-inline-code">property_changes.location</code>)
+   - Location change within a task’s interactions
+   - Uses <code class="docs-inline-code">from</code>/<code class="docs-inline-code">to</code> structure
+   - Actor location updates when task completes
+   - Best for incidental movement within a larger action</p>
+</li>
+</ol>
+<p><strong>Common Timing Issues:</strong></p>
+<p><strong>Problem</strong>: Task starts before movement completes</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"walk_to_kitchen"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"movement"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"from_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dining_room"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"to_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kitchen"</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cook_meal"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:03"</span><span class="p">,</span><span class="w">  </span><span class="c1">// TOO EARLY! Movement completes at 09:05</span>
+<span class="w">      </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kitchen"</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Solution</strong>: Ensure movement completes before next task</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"walk_to_kitchen"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"movement"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"from_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dining_room"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"to_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kitchen"</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cook_meal"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:05"</span><span class="p">,</span><span class="w">  </span><span class="c1">// Correct! Movement completes at 09:05</span>
+<span class="w">      </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kitchen"</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>How to fix location mismatches:</strong>
+- Add movement tasks to transport actor between locations
+- Use property_changes to update actor location within a task
+- Ensure movement tasks complete before dependent tasks start
+- Verify task timing: movement_end_time ≤ next_task_start_time
+- Check that from_location matches actor’s current simulated location
+- Update object initial locations in properties</p>
 <h3 class="docs-heading" id="missing-buffer-time">Missing Buffer Time<a class="headerlink" href="#missing-buffer-time" title="Link to this section">¶</a></h3>
 <p><strong>Rule ID</strong>: <code class="docs-inline-code">scheduling.optimization.missing_buffer</code>
 <strong>Severity</strong>: Info</p>
