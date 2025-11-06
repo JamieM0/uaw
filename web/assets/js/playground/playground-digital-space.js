@@ -73,6 +73,21 @@ class DigitalSpaceEditor {
             downTime: 0,
             panActivated: false
         };
+
+        // Animation control state - tracks multiple sources that want animations disabled
+        this.animationDisablers = new Set();
+    }
+
+    disableAnimations(source) {
+        this.animationDisablers.add(source);
+        document.body.classList.add('disable-animations');
+    }
+
+    enableAnimations(source) {
+        this.animationDisablers.delete(source);
+        if (this.animationDisablers.size === 0) {
+            document.body.classList.remove('disable-animations');
+        }
     }
 
     initialize(canvasEl, propsPanelEl, editor) {
@@ -221,7 +236,7 @@ class DigitalSpaceEditor {
                 this.view.lastPan = { x: e.clientX, y: e.clientY };
                 this.canvas.style.cursor = 'grabbing';
                 document.body.classList.add('digital-space-panning');
-                document.body.classList.add('disable-animations');
+                this.disableAnimations('canvas-pan');
                 this.deselectAll();
             }
         } else {
@@ -243,7 +258,7 @@ class DigitalSpaceEditor {
         this.activeRectEl.style.transition = 'none';
         this.activeRectEl.style.transform = 'none';
         this.activeRectEl.style.boxShadow = 'none';
-        document.body.classList.add('disable-animations');
+        this.disableAnimations('drawing');
 
         this.world.appendChild(this.activeRectEl);
     }
@@ -344,7 +359,7 @@ class DigitalSpaceEditor {
             this.view.isPanning = false;
             this.canvas.style.cursor = 'default';
             document.body.classList.remove('digital-space-panning');
-            document.body.classList.remove('disable-animations');
+            this.enableAnimations('canvas-pan');
             return;
         }
 
@@ -406,7 +421,7 @@ class DigitalSpaceEditor {
             this.activeRectEl.style.transition = 'none';
             this.activeRectEl.classList.add('resizing');
         }
-        document.body.classList.add('disable-animations');
+        this.disableAnimations('resizing');
     }
 
     performResize(e) {
@@ -498,7 +513,7 @@ class DigitalSpaceEditor {
             this.activeRectEl.style.transition = '';
             this.activeRectEl.classList.remove('resizing');
         }
-        document.body.classList.remove('disable-animations');
+        this.enableAnimations('resizing');
 
         const locationId = this.selectedRectId;
         const location = this.digitalLocations.find(l => l.id === locationId);
@@ -532,7 +547,7 @@ class DigitalSpaceEditor {
         const heightPx = parseFloat(this.activeRectEl.style.height);
 
         // Re-enable animations after drawing
-        document.body.classList.remove('disable-animations');
+        this.enableAnimations('drawing');
 
         if (widthPx < 20 || heightPx < 20) {
             // Too small, cancel
@@ -1474,7 +1489,7 @@ class DigitalSpaceEditor {
                     this.spaceKeyState.panActivated = true;
                     this.canvas.style.cursor = 'grab';
                     document.body.classList.add('digital-space-panning');
-                    document.body.classList.add('disable-animations');
+                    this.disableAnimations('space-key-pan');
                 }
             }, 150); // 150ms delay to detect quick taps
             return;
@@ -1518,7 +1533,7 @@ class DigitalSpaceEditor {
             this.spaceKeyState.panActivated = false;
             document.body.classList.remove('digital-space-panning');
             this.canvas.style.cursor = this.isDrawing ? 'crosshair' : 'default';
-            document.body.classList.remove('disable-animations');
+            this.enableAnimations('space-key-pan');
         }
     }
 
@@ -1526,6 +1541,13 @@ class DigitalSpaceEditor {
         this.isPreparingToDrag = true;
         this.activeRectEl = rectEl;
         this.initialMousePosition = { x: e.clientX, y: e.clientY };
+
+        // Disable transitions IMMEDIATELY before any movement to prevent lag
+        if (this.activeRectEl) {
+            this.activeRectEl.style.transition = 'none';
+            // Force reflow to ensure transition is disabled before any position changes
+            this.activeRectEl.offsetHeight;
+        }
 
         const rect = this.canvasRect || this.canvas.getBoundingClientRect();
         const mouseX = (e.clientX - rect.left - this.view.x) / this.view.scale;
@@ -1543,13 +1565,14 @@ class DigitalSpaceEditor {
         this.isDragging = true;
         this.isPreparingToDrag = false;
 
-        // Disable ALL CSS animations/transitions during dragging for performance
+        // Confirm transitions are disabled and add dragging class
         rectEl.style.transition = 'none';
         rectEl.style.transform = 'none';
-        rectEl.style.boxShadow = 'none';
         rectEl.classList.add('dragging');
-        document.body.classList.add('disable-animations');
+        // Force reflow before continuing
+        rectEl.offsetHeight;
 
+        this.disableAnimations('dragging');
         this.canvas.style.cursor = 'move';
     }
 
@@ -1560,10 +1583,9 @@ class DigitalSpaceEditor {
         if (this.activeRectEl) {
             this.activeRectEl.style.transition = '';
             this.activeRectEl.style.transform = '';
-            this.activeRectEl.style.boxShadow = '';
             this.activeRectEl.classList.remove('dragging');
         }
-        document.body.classList.remove('disable-animations');
+        this.enableAnimations('dragging');
         
         const location = this.digitalLocations.find(l => l.id === this.selectedRectId);
         if (location) {
