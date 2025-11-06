@@ -872,23 +872,27 @@
                 <div class="modal-content">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="task-id-input">Task ID:</label>
-                            <input type="text" id="task-id-input" placeholder="task_name">
+                            <label for="task-id-input">Task ID: <span class="required-indicator">*</span></label>
+                            <input type="text" id="task-id-input" placeholder="task_name" required>
+                            <div class="field-error" id="task-id-error"></div>
+                            <small class="field-help">Use lowercase letters, numbers, and underscores</small>
                         </div>
                         <div class="form-group">
-                            <label for="task-emoji-input">Emoji:</label>
+                            <label for="task-emoji-input">Emoji: <span class="required-indicator">*</span></label>
                             <input type="text" id="task-emoji-input" placeholder="🔧" maxlength="2" required>
+                            <div class="field-error" id="task-emoji-error"></div>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="task-actor-select">Actor:</label>
-                            <select id="task-actor-select">
+                            <label for="task-actor-select">Actor: <span class="required-indicator">*</span></label>
+                            <select id="task-actor-select" required>
                                 <option value="">Select actor...</option>
                             </select>
-                            <small style="color: #666; font-size: 0.8rem; display: block; margin-top: 0.25rem;">
+                            <small class="field-help">
                                 Any object can act as an actor (e.g., equipment self-maintenance, product self-processing)
                             </small>
+                            <div class="field-error" id="task-actor-error"></div>
                         </div>
                         <div class="form-group">
                             <label for="task-location-select">Location:</label>
@@ -899,7 +903,9 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <!-- Empty space to align with radio buttons -->
+                            <label for="task-start-input">Start Time: <span class="required-indicator">*</span></label>
+                            <input type="text" id="task-start-input" placeholder="HH:MM" required pattern="[0-2][0-9]:[0-5][0-9]">
+                            <div class="field-error" id="task-start-error"></div>
                         </div>
                         <div class="form-group">
                             <div class="time-input-toggle">
@@ -914,29 +920,46 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="task-start-input">Start Time:</label>
-                            <input type="text" id="task-start-input" placeholder="HH:MM">
-                        </div>
-                        <div class="form-group">
                             <div id="duration-input-group">
-                                <label for="task-duration-input">Duration (minutes):</label>
-                                <input type="number" id="task-duration-input" placeholder="30" min="1">
+                                <label for="task-duration-input">Duration (minutes): <span class="required-indicator">*</span></label>
+                                <input type="number" id="task-duration-input" placeholder="30" min="1" required>
+                                <div class="field-error" id="task-duration-error"></div>
                             </div>
                             <div id="end-time-input-group" style="display: none;">
-                                <label for="task-end-time-input">End Time:</label>
-                                <input type="text" id="task-end-time-input" placeholder="HH:MM">
+                                <label for="task-end-time-input">End Time: <span class="required-indicator">*</span></label>
+                                <input type="text" id="task-end-time-input" placeholder="HH:MM" pattern="[0-2][0-9]:[0-5][0-9]">
+                                <div class="field-error" id="task-end-time-error"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="task-schedule-preview">
+                                <label>Schedule Preview:</label>
+                                <div id="task-schedule-text">-</div>
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="task-depends-input">Dependencies (comma-separated task IDs):</label>
-                        <input type="text" id="task-depends-input" placeholder="task1, task2">
+                        <input type="text" id="task-depends-input" placeholder="task1, task2" list="task-depends-datalist">
+                        <datalist id="task-depends-datalist">
+                            <!-- Task IDs will be populated here -->
+                        </datalist>
+                        <div class="field-error" id="task-depends-error"></div>
+                        <small class="field-help">Optional: Enter task IDs that must complete before this task</small>
                     </div>
-                    
+
                     <div class="interactions-section">
                         <div class="section-header">
-                            <h4>Interactions</h4>
+                            <h4>Interactions
+                                <span class="help-icon" title="Interactions define how this task modifies objects, such as changing properties, adding/removing objects, or moving digital items">ⓘ</span>
+                            </h4>
                             <button type="button" class="btn-secondary" id="add-interaction-btn">+ Add Interaction</button>
+                        </div>
+                        <div class="interaction-templates" id="interaction-templates">
+                            <small>Quick templates:</small>
+                            <button type="button" class="btn-template" data-template="change-state">Change State</button>
+                            <button type="button" class="btn-template" data-template="modify-quantity">Modify Quantity</button>
+                            <button type="button" class="btn-template" data-template="create-object">Create Object</button>
                         </div>
                         <div id="interactions-container">
                             <!-- Interactions will be dynamically added here -->
@@ -945,7 +968,7 @@
                 </div>
                 <div class="dialog-buttons">
                     <button type="button" class="btn-secondary" id="task-cancel-btn">Cancel</button>
-                    <button type="button" class="btn-primary" id="task-add-btn">Add Task</button>
+                    <button type="button" class="btn-primary" id="task-add-btn" disabled>Add Task</button>
                 </div>
             </div>
         </div>
@@ -956,7 +979,7 @@
                 <h3>Add Object</h3>
                 <div class="modal-content">
                     <div class="form-group">
-                        <label for="object-type-select">Object Type:</label>
+                        <label for="object-type-select">Object Type: <span class="required-indicator">*</span></label>
                         <select id="object-type-select">
                             <option value="">Select type...</option>
                             <option value="actor">Actor (People, AI agents)</option>
@@ -965,18 +988,33 @@
                             <option value="product">Product (Outputs, deliverables)</option>
                             <option value="custom">Custom (Define your own)</option>
                         </select>
+                        <div class="field-error" id="object-type-error"></div>
                     </div>
                     <div class="form-group">
-                        <label for="object-id-input">ID:</label>
-                        <input type="text" id="object-id-input" placeholder="unique_identifier">
+                        <label for="object-id-input">ID: <span class="required-indicator">*</span></label>
+                        <div class="input-with-validation">
+                            <input type="text" id="object-id-input" placeholder="unique_identifier">
+                            <span class="validation-icon"></span>
+                        </div>
+                        <div class="field-error" id="object-id-error"></div>
+                        <div class="field-hint">Use lowercase with underscores (e.g., my_object_1)</div>
                     </div>
                     <div class="form-group">
-                        <label for="object-name-input">Name:</label>
-                        <input type="text" id="object-name-input" placeholder="Display Name">
+                        <label for="object-name-input">Name: <span class="required-indicator">*</span></label>
+                        <div class="input-with-validation">
+                            <input type="text" id="object-name-input" placeholder="Display Name">
+                            <span class="validation-icon"></span>
+                        </div>
+                        <div class="field-error" id="object-name-error"></div>
                     </div>
                     <div class="form-group">
                         <label for="object-emoji-input">Emoji:</label>
-                        <input type="text" id="object-emoji-input" placeholder="🔧" maxlength="2">
+                        <div class="input-with-validation">
+                            <input type="text" id="object-emoji-input" placeholder="🔧" maxlength="2">
+                            <span class="validation-icon"></span>
+                        </div>
+                        <div class="field-error" id="object-emoji-error"></div>
+                        <div class="field-hint">Optional: Add a single emoji character</div>
                     </div>
                     <div id="object-type-specific-fields">
                         <!-- Type-specific fields will be dynamically inserted here -->
@@ -984,7 +1022,10 @@
                 </div>
                 <div class="dialog-buttons">
                     <button type="button" class="btn-secondary" id="object-cancel-btn">Cancel</button>
-                    <button type="button" class="btn-primary" id="object-add-btn">Add Object</button>
+                    <button type="button" class="btn-primary" id="object-add-btn" disabled>
+                        <span class="btn-text">Add Object</span>
+                        <span class="btn-spinner" style="display: none;">Adding...</span>
+                    </button>
                 </div>
             </div>
         </div>

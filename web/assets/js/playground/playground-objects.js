@@ -20,44 +20,334 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 500);
 });
 
+// Store preserved field values when switching types
+let preservedObjectFields = {};
+
 // Open add object modal
 function openAddObjectModal() {
     const modal = document.getElementById('add-object-modal');
     const typeSelect = document.getElementById('object-type-select');
     const fieldsContainer = document.getElementById('object-type-specific-fields');
-    
-    // Clear form
+
+    // Clear form and validation
     modal.querySelectorAll('input, select').forEach(input => {
         input.value = '';
+        input.classList.remove('valid', 'invalid');
     });
-    
+    modal.querySelectorAll('.validation-icon').forEach(icon => {
+        icon.classList.remove('valid', 'invalid');
+    });
+    modal.querySelectorAll('.field-error').forEach(error => {
+        error.textContent = '';
+    });
+
+    // Reset preserved fields
+    preservedObjectFields = {};
+
     // Show modal
     modal.style.display = 'flex';
-    
+
     // Setup type change handler
     typeSelect.addEventListener('change', function() {
+        preserveCommonObjectFields();
         updateObjectTypeFields(this.value, fieldsContainer);
+        restoreCommonObjectFields();
+        validateObjectForm();
     });
-    
+
     // Trigger initial update
     updateObjectTypeFields(typeSelect.value, fieldsContainer);
-    
+
+    // Setup validation listeners
+    setupObjectValidation();
+
+    // Setup keyboard shortcuts
+    setupObjectModalKeyboardShortcuts(modal);
+
     // Setup close button and form submission for object modal
     const cancelBtn = document.getElementById('object-cancel-btn');
     const addBtn = document.getElementById('object-add-btn');
-    
+
     if (cancelBtn) {
         cancelBtn.onclick = () => {
             modal.style.display = 'none';
         };
     }
-    
+
     if (addBtn) {
         addBtn.onclick = (e) => {
             e.preventDefault();
             addObjectToSimulation();
         };
     }
+
+    // Autofocus on first field
+    setTimeout(() => {
+        const firstInput = typeSelect;
+        if (firstInput) {
+            firstInput.focus();
+        }
+    }, 100);
+
+    // Initial validation
+    validateObjectForm();
+}
+
+// Preserve common fields when switching object types
+function preserveCommonObjectFields() {
+    const idInput = document.getElementById('object-id-input');
+    const nameInput = document.getElementById('object-name-input');
+    const emojiInput = document.getElementById('object-emoji-input');
+
+    preservedObjectFields = {
+        id: idInput ? idInput.value : '',
+        name: nameInput ? nameInput.value : '',
+        emoji: emojiInput ? emojiInput.value : ''
+    };
+}
+
+// Restore common fields after switching object types
+function restoreCommonObjectFields() {
+    const idInput = document.getElementById('object-id-input');
+    const nameInput = document.getElementById('object-name-input');
+    const emojiInput = document.getElementById('object-emoji-input');
+
+    if (idInput && preservedObjectFields.id) {
+        idInput.value = preservedObjectFields.id;
+    }
+    if (nameInput && preservedObjectFields.name) {
+        nameInput.value = preservedObjectFields.name;
+    }
+    if (emojiInput && preservedObjectFields.emoji) {
+        emojiInput.value = preservedObjectFields.emoji;
+    }
+}
+
+// Setup keyboard shortcuts for object modal
+function setupObjectModalKeyboardShortcuts(modal) {
+    const keyHandler = (e) => {
+        if (e.key === 'Escape') {
+            modal.style.display = 'none';
+            document.removeEventListener('keydown', keyHandler);
+        } else if (e.key === 'Enter' && !e.shiftKey) {
+            const addBtn = document.getElementById('object-add-btn');
+            if (addBtn && !addBtn.disabled) {
+                e.preventDefault();
+                addObjectToSimulation();
+                document.removeEventListener('keydown', keyHandler);
+            }
+        }
+    };
+
+    document.addEventListener('keydown', keyHandler);
+
+    // Clean up listener when modal closes
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'style' && modal.style.display === 'none') {
+                document.removeEventListener('keydown', keyHandler);
+                observer.disconnect();
+            }
+        });
+    });
+
+    observer.observe(modal, { attributes: true });
+}
+
+// Setup validation listeners for object form
+function setupObjectValidation() {
+    const typeSelect = document.getElementById('object-type-select');
+    const idInput = document.getElementById('object-id-input');
+    const nameInput = document.getElementById('object-name-input');
+    const emojiInput = document.getElementById('object-emoji-input');
+
+    if (typeSelect) {
+        typeSelect.addEventListener('change', validateObjectForm);
+    }
+
+    if (idInput) {
+        idInput.addEventListener('input', debounce(() => {
+            validateObjectId();
+            validateObjectForm();
+        }, 300));
+    }
+
+    if (nameInput) {
+        nameInput.addEventListener('input', debounce(() => {
+            validateObjectName();
+            validateObjectForm();
+        }, 300));
+    }
+
+    if (emojiInput) {
+        emojiInput.addEventListener('input', debounce(() => {
+            validateObjectEmoji();
+            validateObjectForm();
+        }, 300));
+    }
+}
+
+// Validate object ID field
+function validateObjectId() {
+    const idInput = document.getElementById('object-id-input');
+    const errorElement = document.getElementById('object-id-error');
+    const validationIcon = idInput.parentElement.querySelector('.validation-icon');
+    const id = idInput.value.trim();
+
+    // Clear previous validation
+    idInput.classList.remove('valid', 'invalid');
+    validationIcon.classList.remove('valid', 'invalid');
+    errorElement.textContent = '';
+
+    if (!id) {
+        idInput.classList.add('invalid');
+        validationIcon.classList.add('invalid');
+        errorElement.textContent = 'ID is required';
+        return false;
+    }
+
+    // Check format (lowercase, underscores, numbers)
+    const validIdPattern = /^[a-z][a-z0-9_]*$/;
+    if (!validIdPattern.test(id)) {
+        idInput.classList.add('invalid');
+        validationIcon.classList.add('invalid');
+        errorElement.textContent = 'ID must start with lowercase letter and contain only lowercase letters, numbers, and underscores';
+        return false;
+    }
+
+    // Check for duplicates
+    if (isObjectIdDuplicate(id)) {
+        idInput.classList.add('invalid');
+        validationIcon.classList.add('invalid');
+        errorElement.textContent = 'This ID already exists in the simulation';
+        return false;
+    }
+
+    // Valid
+    idInput.classList.add('valid');
+    validationIcon.classList.add('valid');
+    return true;
+}
+
+// Check if object ID already exists
+function isObjectIdDuplicate(id) {
+    try {
+        const dayTypeEditor = window.activeDayTypeEditor;
+        const effectiveEditor = dayTypeEditor || editor;
+        const currentJson = JSON.parse(effectiveEditor.getValue());
+
+        if (!currentJson.simulation || !currentJson.simulation.objects) {
+            return false;
+        }
+
+        return currentJson.simulation.objects.some(obj => obj.id === id);
+    } catch (error) {
+        console.error('Error checking for duplicate ID:', error);
+        return false;
+    }
+}
+
+// Validate object name field
+function validateObjectName() {
+    const nameInput = document.getElementById('object-name-input');
+    const errorElement = document.getElementById('object-name-error');
+    const validationIcon = nameInput.parentElement.querySelector('.validation-icon');
+    const name = nameInput.value.trim();
+
+    // Clear previous validation
+    nameInput.classList.remove('valid', 'invalid');
+    validationIcon.classList.remove('valid', 'invalid');
+    errorElement.textContent = '';
+
+    if (!name) {
+        nameInput.classList.add('invalid');
+        validationIcon.classList.add('invalid');
+        errorElement.textContent = 'Name is required';
+        return false;
+    }
+
+    if (name.length < 2) {
+        nameInput.classList.add('invalid');
+        validationIcon.classList.add('invalid');
+        errorElement.textContent = 'Name must be at least 2 characters';
+        return false;
+    }
+
+    // Valid
+    nameInput.classList.add('valid');
+    validationIcon.classList.add('valid');
+    return true;
+}
+
+// Validate emoji field
+function validateObjectEmoji() {
+    const emojiInput = document.getElementById('object-emoji-input');
+    const errorElement = document.getElementById('object-emoji-error');
+    const validationIcon = emojiInput.parentElement.querySelector('.validation-icon');
+    const emoji = emojiInput.value;
+
+    // Clear previous validation
+    emojiInput.classList.remove('valid', 'invalid');
+    validationIcon.classList.remove('valid', 'invalid');
+    errorElement.textContent = '';
+
+    // Emoji is optional
+    if (!emoji) {
+        return true;
+    }
+
+    // Check if it contains emoji characters
+    const emojiPattern = /[\p{Emoji}\u200d]/u;
+    if (!emojiPattern.test(emoji)) {
+        emojiInput.classList.add('invalid');
+        validationIcon.classList.add('invalid');
+        errorElement.textContent = 'Please enter a valid emoji character';
+        return false;
+    }
+
+    // Valid
+    emojiInput.classList.add('valid');
+    validationIcon.classList.add('valid');
+    return true;
+}
+
+// Validate object type field
+function validateObjectType() {
+    const typeSelect = document.getElementById('object-type-select');
+    const errorElement = document.getElementById('object-type-error');
+    const type = typeSelect.value;
+
+    // Clear previous validation
+    typeSelect.classList.remove('valid', 'invalid');
+    errorElement.textContent = '';
+
+    if (!type) {
+        typeSelect.classList.add('invalid');
+        errorElement.textContent = 'Please select an object type';
+        return false;
+    }
+
+    // Valid
+    typeSelect.classList.add('valid');
+    return true;
+}
+
+// Validate entire object form and update submit button state
+function validateObjectForm() {
+    const addBtn = document.getElementById('object-add-btn');
+
+    const isTypeValid = validateObjectType();
+    const isIdValid = validateObjectId();
+    const isNameValid = validateObjectName();
+    const isEmojiValid = validateObjectEmoji();
+
+    const isFormValid = isTypeValid && isIdValid && isNameValid && isEmojiValid;
+
+    if (addBtn) {
+        addBtn.disabled = !isFormValid;
+    }
+
+    return isFormValid;
 }
 
 function getObjectTypeFieldsHTML(type, context, counter) {
@@ -203,7 +493,8 @@ function openAddTaskModal() {
     const actorSelect = document.getElementById('task-actor-select');
     const locationSelect = document.getElementById('task-location-select');
     const startTimeInput = document.getElementById('task-start-input');
-    
+    const taskIdInput = document.getElementById('task-id-input');
+
     // Clear form
     modal.querySelectorAll('input, select, textarea').forEach(input => {
         if (input.type === 'checkbox' || input.type === 'radio') {
@@ -216,14 +507,16 @@ function openAddTaskModal() {
         document.querySelector('input[name="time-input-mode"][value="duration"]').checked = true;
     }
 
-    
+    // Clear all error messages
+    clearAllTaskModalErrors();
+
     // Clear interactions
     document.getElementById('interactions-container').innerHTML = '';
     interactionCounter = 0;
-    
+
     // Populate dropdowns from current simulation
     const context = getCurrentTimelineContext();
-    
+
     // Populate actors/objects
     if (actorSelect) {
         actorSelect.innerHTML = '<option value="">Select actor/object...</option>';
@@ -239,7 +532,7 @@ function openAddTaskModal() {
             actorSelect.appendChild(optgroup);
         });
     }
-    
+
     // Populate locations
     if (locationSelect) {
         locationSelect.innerHTML = '<option value="">Select location...</option>';
@@ -250,30 +543,47 @@ function openAddTaskModal() {
             locationSelect.appendChild(option);
         });
     }
-    
+
+    // Populate task dependencies datalist
+    populateTaskDependenciesDatalist();
+
     // Set default start time
     if (startTimeInput) {
         startTimeInput.value = context.startTime;
     }
-    
-    // Setup time input toggle
-    setupTimeInputToggle();
+
+    // Setup time input toggle with value preservation
+    setupTimeInputToggleWithPreservation();
 
     // Setup task time change listener for interaction 'from' values
     setupTaskTimeChangeListener();
 
+    // Setup real-time validation
+    setupTaskModalValidation();
+
+    // Setup keyboard shortcuts
+    setupTaskModalKeyboardShortcuts();
+
+    // Setup interaction templates
+    setupInteractionTemplates();
+
     modal.style.display = 'flex';
-    
+
+    // Autofocus first field
+    setTimeout(() => {
+        if (taskIdInput) taskIdInput.focus();
+    }, 100);
+
     // Setup close button and form submission for task modal
     const cancelBtn = document.getElementById('task-cancel-btn');
     const addBtn = document.getElementById('task-add-btn');
-    
+
     if (cancelBtn) {
         cancelBtn.onclick = () => {
             modal.style.display = 'none';
         };
     }
-    
+
     if (addBtn) {
         // Reset button text to "Add" for add mode
         addBtn.textContent = 'Add Task';
@@ -283,15 +593,20 @@ function openAddTaskModal() {
 
         addBtn.onclick = (e) => {
             e.preventDefault();
-            saveTaskToSimulation(); // Use unified save function
+            if (!addBtn.disabled) {
+                saveTaskToSimulation(); // Use unified save function
+            }
         };
     }
-    
+
     // Setup add interaction button
     const addInteractionBtn = document.getElementById('add-interaction-btn');
     if (addInteractionBtn) {
         addInteractionBtn.onclick = addInteraction;
     }
+
+    // Validate initial state
+    validateTaskModal();
 }
 
 function setupTimeInputToggle() {
@@ -1049,13 +1364,26 @@ function updateAllInteractionFromValues() {
 function addObjectToSimulation() {
     try {
         const modal = document.getElementById('add-object-modal');
+        const addBtn = document.getElementById('object-add-btn');
+        const btnText = addBtn.querySelector('.btn-text');
+        const btnSpinner = addBtn.querySelector('.btn-spinner');
+
+        // Show loading state
+        addBtn.disabled = true;
+        btnText.style.display = 'none';
+        btnSpinner.style.display = 'inline-block';
+
         const objectType = document.getElementById('object-type-select').value;
-        const objectName = document.getElementById('object-name-input').value;
-        const objectId = document.getElementById('object-id-input').value;
+        const objectName = document.getElementById('object-name-input').value.trim();
+        const objectId = document.getElementById('object-id-input').value.trim();
         const emoji = document.getElementById('object-emoji-input').value;
 
         if (!objectType || !objectName) {
             alert('Please fill in object type and name');
+            // Reset button state
+            btnText.style.display = 'inline-block';
+            btnSpinner.style.display = 'none';
+            addBtn.disabled = false;
             return;
         }
 
@@ -1172,9 +1500,25 @@ function addObjectToSimulation() {
 
         showNotification(`Added ${objectType}: ${objectName}`);
 
+        // Reset button state
+        setTimeout(() => {
+            const btnText = document.getElementById('object-add-btn').querySelector('.btn-text');
+            const btnSpinner = document.getElementById('object-add-btn').querySelector('.btn-spinner');
+            btnText.style.display = 'inline-block';
+            btnSpinner.style.display = 'none';
+        }, 100);
+
     } catch (error) {
         console.error('Error adding object:', error);
         alert(`Error adding object: ${error.message}`);
+
+        // Reset button state on error
+        const addBtn = document.getElementById('object-add-btn');
+        const btnText = addBtn.querySelector('.btn-text');
+        const btnSpinner = addBtn.querySelector('.btn-spinner');
+        btnText.style.display = 'inline-block';
+        btnSpinner.style.display = 'none';
+        addBtn.disabled = false;
     }
 }
 
@@ -1554,5 +1898,571 @@ function saveTaskToSimulation() {
     } catch (error) {
         console.error('Error saving task:', error);
         alert(`Error saving task: ${error.message}`);
+    }
+}
+
+// ========== TASK MODAL VALIDATION AND UX FUNCTIONS ==========
+
+// Clear all error messages in task modal
+function clearAllTaskModalErrors() {
+    const errorElements = document.querySelectorAll('#add-task-modal .field-error');
+    errorElements.forEach(el => el.textContent = '');
+
+    const inputs = document.querySelectorAll('#add-task-modal input, #add-task-modal select');
+    inputs.forEach(input => {
+        input.classList.remove('valid', 'invalid');
+    });
+}
+
+// Validate task ID
+function validateTaskId() {
+    const taskIdInput = document.getElementById('task-id-input');
+    const errorElement = document.getElementById('task-id-error');
+    const id = taskIdInput.value.trim();
+
+    // Clear previous validation
+    taskIdInput.classList.remove('valid', 'invalid');
+    errorElement.textContent = '';
+
+    if (!id) {
+        taskIdInput.classList.add('invalid');
+        errorElement.textContent = 'Task ID is required';
+        return false;
+    }
+
+    // Check format (lowercase, underscores, numbers)
+    const validIdPattern = /^[a-z][a-z0-9_]*$/;
+    if (!validIdPattern.test(id)) {
+        taskIdInput.classList.add('invalid');
+        errorElement.textContent = 'ID must start with lowercase letter and contain only lowercase letters, numbers, and underscores';
+        return false;
+    }
+
+    // Check for duplicates (only in add mode, not edit mode)
+    const modal = document.getElementById('add-task-modal');
+    const isEditMode = modal.dataset.mode === 'edit';
+    const editTaskId = modal.dataset.taskId;
+
+    if (!isEditMode || id !== editTaskId) {
+        if (isTaskIdDuplicate(id)) {
+            taskIdInput.classList.add('invalid');
+            errorElement.textContent = 'This task ID already exists';
+            return false;
+        }
+    }
+
+    // Valid
+    taskIdInput.classList.add('valid');
+    return true;
+}
+
+// Check if task ID already exists
+function isTaskIdDuplicate(id) {
+    try {
+        const dayTypeEditor = window.activeDayTypeEditor;
+        const effectiveEditor = dayTypeEditor || editor;
+        const currentJson = JSON.parse(effectiveEditor.getValue());
+
+        if (!currentJson.simulation || !currentJson.simulation.tasks) {
+            return false;
+        }
+
+        return currentJson.simulation.tasks.some(task => task.id === id);
+    } catch (error) {
+        console.error('Error checking for duplicate task ID:', error);
+        return false;
+    }
+}
+
+// Validate emoji field
+function validateTaskEmoji() {
+    const emojiInput = document.getElementById('task-emoji-input');
+    const errorElement = document.getElementById('task-emoji-error');
+    const emoji = emojiInput.value;
+
+    // Clear previous validation
+    emojiInput.classList.remove('valid', 'invalid');
+    errorElement.textContent = '';
+
+    if (!emoji) {
+        emojiInput.classList.add('invalid');
+        errorElement.textContent = 'Emoji is required';
+        return false;
+    }
+
+    // Valid
+    emojiInput.classList.add('valid');
+    return true;
+}
+
+// Validate actor selection
+function validateTaskActor() {
+    const actorSelect = document.getElementById('task-actor-select');
+    const errorElement = document.getElementById('task-actor-error');
+    const actor = actorSelect.value;
+
+    // Clear previous validation
+    actorSelect.classList.remove('valid', 'invalid');
+    errorElement.textContent = '';
+
+    if (!actor) {
+        actorSelect.classList.add('invalid');
+        errorElement.textContent = 'Actor is required';
+        return false;
+    }
+
+    // Valid
+    actorSelect.classList.add('valid');
+    return true;
+}
+
+// Validate time format (HH:MM)
+function validateTimeFormat(timeString) {
+    if (!timeString) return false;
+    const timePattern = /^([0-2][0-9]):([0-5][0-9])$/;
+    const match = timeString.match(timePattern);
+    if (!match) return false;
+
+    const hours = parseInt(match[1]);
+    const minutes = parseInt(match[2]);
+    return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+}
+
+// Format time input as HH:MM
+function formatTimeInput(input) {
+    let value = input.value.replace(/[^0-9]/g, '');
+
+    if (value.length >= 2) {
+        value = value.substring(0, 2) + ':' + value.substring(2, 4);
+    }
+
+    input.value = value;
+}
+
+// Validate start time
+function validateTaskStartTime() {
+    const startTimeInput = document.getElementById('task-start-input');
+    const errorElement = document.getElementById('task-start-error');
+    const startTime = startTimeInput.value;
+
+    // Clear previous validation
+    startTimeInput.classList.remove('valid', 'invalid');
+    errorElement.textContent = '';
+
+    if (!startTime) {
+        startTimeInput.classList.add('invalid');
+        errorElement.textContent = 'Start time is required';
+        return false;
+    }
+
+    if (!validateTimeFormat(startTime)) {
+        startTimeInput.classList.add('invalid');
+        errorElement.textContent = 'Invalid time format (use HH:MM, e.g., 09:30)';
+        return false;
+    }
+
+    // Valid
+    startTimeInput.classList.add('valid');
+    return true;
+}
+
+// Validate duration
+function validateTaskDuration() {
+    const durationInput = document.getElementById('task-duration-input');
+    const errorElement = document.getElementById('task-duration-error');
+    const duration = durationInput.value;
+
+    // Clear previous validation
+    durationInput.classList.remove('valid', 'invalid');
+    errorElement.textContent = '';
+
+    if (!duration || duration <= 0) {
+        durationInput.classList.add('invalid');
+        errorElement.textContent = 'Duration must be greater than 0';
+        return false;
+    }
+
+    // Valid
+    durationInput.classList.add('valid');
+    return true;
+}
+
+// Validate end time
+function validateTaskEndTime() {
+    const endTimeInput = document.getElementById('task-end-time-input');
+    const startTimeInput = document.getElementById('task-start-input');
+    const errorElement = document.getElementById('task-end-time-error');
+    const endTime = endTimeInput.value;
+    const startTime = startTimeInput.value;
+
+    // Clear previous validation
+    endTimeInput.classList.remove('valid', 'invalid');
+    errorElement.textContent = '';
+
+    if (!endTime) {
+        endTimeInput.classList.add('invalid');
+        errorElement.textContent = 'End time is required';
+        return false;
+    }
+
+    if (!validateTimeFormat(endTime)) {
+        endTimeInput.classList.add('invalid');
+        errorElement.textContent = 'Invalid time format (use HH:MM, e.g., 10:30)';
+        return false;
+    }
+
+    // Check if end time is after start time
+    if (startTime && validateTimeFormat(startTime)) {
+        const startMinutes = parseTimeToMinutes(startTime);
+        const endMinutes = parseTimeToMinutes(endTime);
+
+        if (endMinutes <= startMinutes) {
+            endTimeInput.classList.add('invalid');
+            errorElement.textContent = 'End time must be after start time';
+            return false;
+        }
+    }
+
+    // Valid
+    endTimeInput.classList.add('valid');
+    return true;
+}
+
+// Validate dependencies
+function validateTaskDependencies() {
+    const dependsInput = document.getElementById('task-depends-input');
+    const errorElement = document.getElementById('task-depends-error');
+    const dependencies = dependsInput.value.trim();
+
+    // Clear previous validation
+    dependsInput.classList.remove('valid', 'invalid');
+    errorElement.textContent = '';
+
+    // Dependencies are optional
+    if (!dependencies) {
+        return true;
+    }
+
+    // Parse comma-separated task IDs
+    const taskIds = dependencies.split(',').map(id => id.trim()).filter(id => id);
+
+    // Check if all dependencies exist
+    try {
+        const dayTypeEditor = window.activeDayTypeEditor;
+        const effectiveEditor = dayTypeEditor || editor;
+        const currentJson = JSON.parse(effectiveEditor.getValue());
+
+        if (currentJson.simulation && currentJson.simulation.tasks) {
+            const existingTaskIds = currentJson.simulation.tasks.map(t => t.id);
+            const invalidDeps = taskIds.filter(id => !existingTaskIds.includes(id));
+
+            if (invalidDeps.length > 0) {
+                dependsInput.classList.add('invalid');
+                errorElement.textContent = `Unknown task ID(s): ${invalidDeps.join(', ')}`;
+                return false;
+            }
+        }
+    } catch (error) {
+        console.error('Error validating dependencies:', error);
+    }
+
+    // Valid
+    dependsInput.classList.add('valid');
+    return true;
+}
+
+// Validate entire task form and update submit button state
+function validateTaskModal() {
+    const addBtn = document.getElementById('task-add-btn');
+    const timeInputMode = document.querySelector('input[name="time-input-mode"]:checked')?.value;
+
+    const isIdValid = validateTaskId();
+    const isEmojiValid = validateTaskEmoji();
+    const isActorValid = validateTaskActor();
+    const isStartTimeValid = validateTaskStartTime();
+    const isDependsValid = validateTaskDependencies();
+
+    let isTimeValid = false;
+    if (timeInputMode === 'duration') {
+        isTimeValid = validateTaskDuration();
+    } else {
+        isTimeValid = validateTaskEndTime();
+    }
+
+    const isFormValid = isIdValid && isEmojiValid && isActorValid && isStartTimeValid && isTimeValid && isDependsValid;
+
+    if (addBtn) {
+        addBtn.disabled = !isFormValid;
+    }
+
+    return isFormValid;
+}
+
+// Setup real-time validation for task modal
+function setupTaskModalValidation() {
+    const taskIdInput = document.getElementById('task-id-input');
+    const emojiInput = document.getElementById('task-emoji-input');
+    const actorSelect = document.getElementById('task-actor-select');
+    const startTimeInput = document.getElementById('task-start-input');
+    const durationInput = document.getElementById('task-duration-input');
+    const endTimeInput = document.getElementById('task-end-time-input');
+    const dependsInput = document.getElementById('task-depends-input');
+
+    // Add input listeners for real-time validation
+    if (taskIdInput) {
+        taskIdInput.addEventListener('input', () => {
+            validateTaskId();
+            validateTaskModal();
+        });
+        taskIdInput.addEventListener('blur', validateTaskId);
+    }
+
+    if (emojiInput) {
+        emojiInput.addEventListener('input', () => {
+            validateTaskEmoji();
+            validateTaskModal();
+        });
+    }
+
+    if (actorSelect) {
+        actorSelect.addEventListener('change', () => {
+            validateTaskActor();
+            validateTaskModal();
+        });
+    }
+
+    if (startTimeInput) {
+        startTimeInput.addEventListener('input', (e) => {
+            formatTimeInput(e.target);
+            validateTaskStartTime();
+            updateSchedulePreview();
+            validateTaskModal();
+        });
+        startTimeInput.addEventListener('blur', validateTaskStartTime);
+    }
+
+    if (durationInput) {
+        durationInput.addEventListener('input', () => {
+            validateTaskDuration();
+            updateSchedulePreview();
+            validateTaskModal();
+        });
+    }
+
+    if (endTimeInput) {
+        endTimeInput.addEventListener('input', (e) => {
+            formatTimeInput(e.target);
+            validateTaskEndTime();
+            updateSchedulePreview();
+            validateTaskModal();
+        });
+        endTimeInput.addEventListener('blur', validateTaskEndTime);
+    }
+
+    if (dependsInput) {
+        dependsInput.addEventListener('input', debounce(() => {
+            validateTaskDependencies();
+            validateTaskModal();
+        }, 500));
+        dependsInput.addEventListener('blur', validateTaskDependencies);
+    }
+}
+
+// Update schedule preview
+function updateSchedulePreview() {
+    const previewElement = document.getElementById('task-schedule-text');
+    const startTimeInput = document.getElementById('task-start-input');
+    const durationInput = document.getElementById('task-duration-input');
+    const endTimeInput = document.getElementById('task-end-time-input');
+    const timeInputMode = document.querySelector('input[name="time-input-mode"]:checked')?.value;
+
+    if (!previewElement) return;
+
+    const startTime = startTimeInput.value;
+
+    if (!validateTimeFormat(startTime)) {
+        previewElement.textContent = '-';
+        return;
+    }
+
+    let endTime;
+    let duration;
+
+    if (timeInputMode === 'duration') {
+        duration = parseInt(durationInput.value);
+        if (duration && duration > 0) {
+            const startMinutes = parseTimeToMinutes(startTime);
+            const endMinutes = startMinutes + duration;
+            endTime = minutesToTimeString(endMinutes);
+        }
+    } else {
+        endTime = endTimeInput.value;
+        if (validateTimeFormat(endTime)) {
+            const startMinutes = parseTimeToMinutes(startTime);
+            const endMinutes = parseTimeToMinutes(endTime);
+            duration = endMinutes - startMinutes;
+        }
+    }
+
+    if (endTime && duration > 0) {
+        previewElement.textContent = `${startTime} - ${endTime} (${duration} min)`;
+    } else {
+        previewElement.textContent = '-';
+    }
+}
+
+// Populate task dependencies datalist
+function populateTaskDependenciesDatalist() {
+    const datalist = document.getElementById('task-depends-datalist');
+    if (!datalist) return;
+
+    try {
+        const dayTypeEditor = window.activeDayTypeEditor;
+        const effectiveEditor = dayTypeEditor || editor;
+        const currentJson = JSON.parse(effectiveEditor.getValue());
+
+        datalist.innerHTML = '';
+
+        if (currentJson.simulation && currentJson.simulation.tasks) {
+            currentJson.simulation.tasks.forEach(task => {
+                const option = document.createElement('option');
+                option.value = task.id;
+                datalist.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error populating task dependencies:', error);
+    }
+}
+
+// Setup keyboard shortcuts for task modal
+function setupTaskModalKeyboardShortcuts() {
+    const modal = document.getElementById('add-task-modal');
+
+    const handleKeyDown = (e) => {
+        // Escape to cancel
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            modal.style.display = 'none';
+            document.removeEventListener('keydown', handleKeyDown);
+        }
+
+        // Enter to submit (if valid and not in textarea)
+        if (e.key === 'Enter' && !e.shiftKey) {
+            const target = e.target;
+            if (target.tagName !== 'TEXTAREA' && target.tagName !== 'BUTTON') {
+                e.preventDefault();
+                const addBtn = document.getElementById('task-add-btn');
+                if (addBtn && !addBtn.disabled) {
+                    addBtn.click();
+                }
+            }
+        }
+    };
+
+    // Remove any existing listener
+    document.removeEventListener('keydown', handleKeyDown);
+    // Add new listener
+    document.addEventListener('keydown', handleKeyDown);
+}
+
+// Setup interaction templates
+function setupInteractionTemplates() {
+    const templates = document.querySelectorAll('.btn-template');
+
+    templates.forEach(btn => {
+        btn.onclick = () => {
+            const template = btn.dataset.template;
+            applyInteractionTemplate(template);
+        };
+    });
+}
+
+// Apply interaction template
+function applyInteractionTemplate(template) {
+    // Add a new interaction
+    addInteraction();
+
+    // Get the last added interaction
+    const interactionGroups = document.querySelectorAll('.interaction-group');
+    const lastGroup = interactionGroups[interactionGroups.length - 1];
+    if (!lastGroup) return;
+
+    const counter = lastGroup.id.split('-')[1];
+    const changeTypeSelect = lastGroup.querySelector(`select[name="interaction_change_type_${counter}"]`);
+
+    if (!changeTypeSelect) return;
+
+    // Apply template based on type
+    switch (template) {
+        case 'change-state':
+            changeTypeSelect.value = 'from_to';
+            toggleInteractionFields(changeTypeSelect);
+            break;
+        case 'modify-quantity':
+            changeTypeSelect.value = 'delta';
+            toggleInteractionFields(changeTypeSelect);
+            // Pre-fill property name
+            const propertyInput = lastGroup.querySelector(`input[name="interaction_property_delta_${counter}"]`);
+            if (propertyInput) propertyInput.value = 'quantity';
+            break;
+        case 'create-object':
+            changeTypeSelect.value = 'add_object';
+            toggleInteractionFields(changeTypeSelect);
+            break;
+    }
+}
+
+// Preserve values when toggling between Duration and End Time
+function setupTimeInputToggleWithPreservation() {
+    const radioButtons = document.querySelectorAll('input[name="time-input-mode"]');
+    const durationField = document.getElementById('duration-input-group');
+    const endTimeField = document.getElementById('end-time-input-group');
+    const startTimeInput = document.getElementById('task-start-input');
+    const durationInput = document.getElementById('task-duration-input');
+    const endTimeInput = document.getElementById('task-end-time-input');
+
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', function() {
+            const startTime = startTimeInput.value;
+
+            if (this.value === 'duration') {
+                durationField.style.display = 'block';
+                endTimeField.style.display = 'none';
+
+                // Calculate duration from end time if available
+                if (validateTimeFormat(startTime) && validateTimeFormat(endTimeInput.value)) {
+                    const startMinutes = parseTimeToMinutes(startTime);
+                    const endMinutes = parseTimeToMinutes(endTimeInput.value);
+                    const duration = endMinutes - startMinutes;
+                    if (duration > 0) {
+                        durationInput.value = duration;
+                    }
+                }
+
+                validateTaskDuration();
+            } else {
+                durationField.style.display = 'none';
+                endTimeField.style.display = 'block';
+
+                // Calculate end time from duration if available
+                if (validateTimeFormat(startTime) && durationInput.value > 0) {
+                    const startMinutes = parseTimeToMinutes(startTime);
+                    const duration = parseInt(durationInput.value);
+                    const endMinutes = startMinutes + duration;
+                    endTimeInput.value = minutesToTimeString(endMinutes);
+                }
+
+                validateTaskEndTime();
+            }
+
+            updateSchedulePreview();
+            validateTaskModal();
+        });
+    });
+
+    const checkedRadio = document.querySelector('input[name="time-input-mode"]:checked');
+    if (checkedRadio) {
+        checkedRadio.dispatchEvent(new Event('change'));
     }
 }

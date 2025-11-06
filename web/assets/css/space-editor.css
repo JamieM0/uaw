@@ -712,6 +712,9 @@ input[type="number"]:hover::-webkit-inner-spin-button {
 .display-element-rect.drawing {
     border: 2px dashed #007bff;
     background-color: rgba(0, 123, 255, 0.1);
+    transition: none !important;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 .display-viewport {
@@ -720,6 +723,11 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     background-color: #ffffff;
     z-index: 0;
     overflow: hidden;
+}
+
+.display-viewport-drawing {
+    transition: none !important;
+    transform: none !important;
 }
 
 .display-world {
@@ -1283,46 +1291,53 @@ input[type="number"]:hover::-webkit-inner-spin-button {
 /* Improved Digital Location Styling */
 .digital-location-rect {
     border-radius: 6px;
-    transition: all 0.2s ease;
+    /* Only animate box-shadow, not transform, to prevent lag */
+    transition: box-shadow 0.1s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.digital-location-rect:hover:not(.dragging) {
-    transform: translateY(-2px);
+.digital-location-rect:hover:not(.dragging):not(.resizing) {
+    /* Remove transform to prevent lag, only change shadow */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.digital-location-rect.selected:not(.dragging) {
-    transform: translateY(-2px);
+.digital-location-rect.selected {
+    /* Disable transitions when selected to prevent lag during dragging */
+    transition: none;
     box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
 }
 
-.digital-location-rect.dragging {
+.digital-location-rect.dragging,
+.digital-location-rect.resizing {
     transition: none !important;
     transform: none !important;
-    box-shadow: none !important;
+    cursor: move !important;
 }
 
 /* Display Element Improvements */
 .display-element-rect {
     border-radius: 4px;
-    transition: all 0.2s ease;
+    /* Only animate box-shadow for subtle hover effect, not position/size/transform */
+    /* This prevents lag during drawing and dragging operations */
+    transition: box-shadow 0.1s ease;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.display-element-rect:hover {
+.display-element-rect:hover:not(.dragging):not(.drawing):not(.resizing) {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .display-element-rect.selected {
     box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
-    transform: translateY(-1px);
+    /* Disable transitions when selected to prevent lag during dragging */
+    transition: none;
 }
 
-.display-element-rect.dragging {
+.display-element-rect.dragging,
+.display-element-rect.drawing,
+.display-element-rect.resizing {
     transition: none !important;
     transform: none !important;
-    box-shadow: none !important;
 }
 
 /* Grid Toggle Improvements */
