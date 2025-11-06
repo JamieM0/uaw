@@ -1,9 +1,9 @@
 // Playground Save-Load - Save/load functionality for simulations
 // Universal Automation Wiki - Simulation Playground
 
-// Save/Load state variables
-let loadedSaveCode = null; // Track the save code we loaded (for lineage)
-let hasShownDisclaimer = false; // Track if user has seen disclaimer this session
+// Constants
+const MAX_FILE_SIZE_MB = 10;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 // Setup save/load buttons
 function setupSaveLoadButtons() {
@@ -85,14 +85,25 @@ function downloadSimulationFile(data, filename) {
     URL.revokeObjectURL(url);
 }
 
+// Get custom metrics content for export
+function getCustomMetricsContent() {
+    const catalog = localStorage.getItem('uaw-metrics-catalog-custom');
+    const validator = localStorage.getItem('uaw-metrics-validator-custom');
+
+    return {
+        catalog: catalog || null,
+        validator: validator || null
+    };
+}
+
 // Check if there are custom metrics
 function hasCustomMetrics() {
     // Check if there are any custom metrics in localStorage
     const customCatalog = localStorage.getItem('uaw-metrics-catalog-custom');
     const customValidator = localStorage.getItem('uaw-metrics-validator-custom');
-    
+
     if (!customCatalog || !customValidator) return false;
-    
+
     // Check if catalog has meaningful content (not just empty array)
     try {
         const catalog = JSON.parse(customCatalog);
@@ -106,64 +117,211 @@ function hasCustomMetrics() {
 function loadSimulationFromFileInput() {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.json';
-    
-    input.addEventListener('change', function(event) {
+    input.accept = '.json,.zip';
+
+    input.addEventListener('change', async function(event) {
         const file = event.target.files[0];
         if (!file) return;
-        
+
+        // Validate file size
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+            alert(`File too large. Maximum size is ${MAX_FILE_SIZE_MB}MB. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`);
+            return;
+        }
+
+        // Check if it's a ZIP file
+        if (file.name.endsWith('.zip')) {
+            await loadFromZipFile(file);
+        } else if (file.name.endsWith('.json')) {
+            await loadFromJsonFile(file);
+        } else {
+            alert('Invalid file type. Please select a .json or .zip file.');
+        }
+    });
+
+    input.click();
+}
+
+// Load simulation from JSON file
+async function loadFromJsonFile(file) {
+    return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
                 const content = e.target.result;
+
+                // Validate it's not empty
+                if (!content || content.trim() === '') {
+                    alert('File is empty');
+                    reject(new Error('Empty file'));
+                    return;
+                }
+
                 const data = JSON.parse(content);
-                
+
                 // Validate that it's a simulation file
                 if (!data.simulation) {
                     alert('Invalid simulation file: missing "simulation" property');
+                    reject(new Error('Missing simulation property'));
                     return;
                 }
-                
+
                 // Validate simulation structure
-                if (!Array.isArray(data.simulation.objects)) {
+                if (!data.simulation.objects || !Array.isArray(data.simulation.objects)) {
                     alert('Invalid simulation file: simulation.objects must be an array');
+                    reject(new Error('Invalid objects structure'));
                     return;
                 }
-                
-                if (!Array.isArray(data.simulation.tasks)) {
+
+                if (!data.simulation.tasks || !Array.isArray(data.simulation.tasks)) {
                     alert('Invalid simulation file: simulation.tasks must be an array');
+                    reject(new Error('Invalid tasks structure'));
                     return;
                 }
-                
+
                 // Load into editor
-                editor.setValue(JSON.stringify(data, null, 2));
-                // Auto-collapse assets object
-                setTimeout(async () => {
-                    if (typeof autoCollapseAssetsObject === 'function') {
-                        await autoCollapseAssetsObject(true); // Move cursor to top when loading data
+                if (typeof editor !== 'undefined' && editor) {
+                    editor.setValue(JSON.stringify(data, null, 2));
+
+                    // Auto-collapse assets object
+                    setTimeout(async () => {
+                        if (typeof autoCollapseAssetsObject === 'function') {
+                            await autoCollapseAssetsObject(true);
+                        }
+                    }, 100);
+
+                    if (typeof autoRender !== 'undefined' && autoRender) {
+                        renderSimulation();
                     }
-                }, 100);
-                clearSaveState();
-                
-                if (autoRender) {
-                    renderSimulation();
+
+                    showNotification(`Loaded simulation from ${file.name}`);
+                    resolve(data);
+                } else {
+                    alert('Editor not initialized');
+                    reject(new Error('Editor not initialized'));
                 }
-                
-                showNotification(`Loaded simulation from ${file.name}`);
-                
+
             } catch (error) {
-                console.error('Error loading file:', error);
+                console.error('Error loading JSON file:', error);
                 alert(`Error loading file: ${error.message}`);
+                reject(error);
             }
         };
-        
+
+        reader.onerror = function(error) {
+            console.error('Error reading file:', error);
+            alert('Error reading file. Please try again.');
+            reject(error);
+        };
+
         reader.readAsText(file);
     });
-    
-    input.click();
 }
 
-// Disclaimer functions
+// Load simulation from ZIP file (with custom metrics)
+async function loadFromZipFile(file) {
+    // Check if JSZip is available
+    if (typeof JSZip === 'undefined') {
+        alert('ZIP file support is not available. JSZip library not loaded.');
+        return;
+    }
+
+    try {
+        const zip = new JSZip();
+        const zipContents = await zip.loadAsync(file);
+
+        // Extract simulation.json
+        const simulationFile = zipContents.file('simulation.json');
+        if (!simulationFile) {
+            alert('Invalid ZIP file: missing simulation.json');
+            return;
+        }
+
+        const simulationContent = await simulationFile.async('text');
+
+        // Validate and load simulation
+        let data;
+        try {
+            data = JSON.parse(simulationContent);
+        } catch (error) {
+            alert('Invalid simulation.json in ZIP: ' + error.message);
+            return;
+        }
+
+        // Validate simulation structure
+        if (!data.simulation) {
+            alert('Invalid simulation file: missing "simulation" property');
+            return;
+        }
+
+        if (!data.simulation.objects || !Array.isArray(data.simulation.objects)) {
+            alert('Invalid simulation file: simulation.objects must be an array');
+            return;
+        }
+
+        if (!data.simulation.tasks || !Array.isArray(data.simulation.tasks)) {
+            alert('Invalid simulation file: simulation.tasks must be an array');
+            return;
+        }
+
+        // Load into editor
+        if (typeof editor !== 'undefined' && editor) {
+            editor.setValue(JSON.stringify(data, null, 2));
+
+            // Check for custom metrics files
+            const catalogFile = zipContents.file('metrics-catalog-custom.json');
+            const validatorFile = zipContents.file('simulation-validator-custom.js');
+
+            if (catalogFile || validatorFile) {
+                const loadMetrics = confirm('This ZIP file contains custom metrics. Do you want to load them? (This will replace your current custom metrics)');
+
+                if (loadMetrics) {
+                    if (catalogFile) {
+                        const catalogContent = await catalogFile.async('text');
+                        try {
+                            // Validate JSON before storing
+                            JSON.parse(catalogContent);
+                            localStorage.setItem('uaw-metrics-catalog-custom', catalogContent);
+                        } catch (error) {
+                            console.error('Invalid metrics catalog in ZIP:', error);
+                            alert('Warning: Custom metrics catalog is invalid and was not loaded.');
+                        }
+                    }
+
+                    if (validatorFile) {
+                        const validatorContent = await validatorFile.async('text');
+                        localStorage.setItem('uaw-metrics-validator-custom', validatorContent);
+                    }
+
+                    showNotification(`Loaded simulation and custom metrics from ${file.name}`);
+                } else {
+                    showNotification(`Loaded simulation from ${file.name} (custom metrics not loaded)`);
+                }
+            } else {
+                showNotification(`Loaded simulation from ${file.name}`);
+            }
+
+            // Auto-collapse assets object
+            setTimeout(async () => {
+                if (typeof autoCollapseAssetsObject === 'function') {
+                    await autoCollapseAssetsObject(true);
+                }
+            }, 100);
+
+            if (typeof autoRender !== 'undefined' && autoRender) {
+                renderSimulation();
+            }
+        } else {
+            alert('Editor not initialized');
+        }
+
+    } catch (error) {
+        console.error('Error loading ZIP file:', error);
+        alert(`Error loading ZIP file: ${error.message}`);
+    }
+}
+
+// Disclaimer functions (kept for backward compatibility)
 function hasAcceptedDisclaimer() {
     return localStorage.getItem('uaw-privacy-disclaimer-accepted') === 'true';
 }
@@ -174,11 +332,6 @@ function setDisclaimerAccepted() {
     } catch (e) {
         console.warn('Could not save privacy disclaimer acceptance:', e.message);
     }
-}
-
-// Clear save state
-function clearSaveState() {
-    loadedSaveCode = null;
 }
 
 // Open save dialog
@@ -313,41 +466,74 @@ function openSaveDialog() {
             }
 
             if (saveCloudRadio.checked) {
-                // Mock save to cloud
+                // Cloud save: encode simulation data as base64
                 await new Promise(resolve => setTimeout(resolve, 1000));
-                const saveCode = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+
+                // Parse simulation to ensure it's valid
+                let simulationData;
+                try {
+                    simulationData = JSON.parse(simulationContent);
+                    if (!simulationData.simulation) {
+                        throw new Error('Invalid simulation format');
+                    }
+                } catch (error) {
+                    throw new Error('Cannot save: Invalid simulation data - ' + error.message);
+                }
+
+                // Create save data object with just the simulation
+                const saveData = { simulation: simulationData.simulation };
+                const saveCode = btoa(JSON.stringify(saveData));
+
                 saveCodeResult.value = saveCode;
                 cloudSaveResultDiv.style.display = 'block';
                 localSaveResultDiv.style.display = 'none';
             } else {
-                // Mock save to local file
+                // Local save to file
                 const fileNameBase = localFileNameInput.value.trim() || 'simulation';
+
+                // Validate filename
+                const invalidChars = /[<>:"/\\|?*]/g;
+                if (invalidChars.test(fileNameBase)) {
+                    throw new Error('Filename contains invalid characters. Please use only letters, numbers, and basic punctuation.');
+                }
+
                 const includeMetrics = includeCustomMetricsCheckbox.checked;
+
+                // Validate simulation data before saving
+                let simulationData;
+                try {
+                    simulationData = JSON.parse(simulationContent);
+                    if (!simulationData.simulation) {
+                        throw new Error('Invalid simulation format');
+                    }
+                } catch (error) {
+                    throw new Error('Cannot save: Invalid simulation data - ' + error.message);
+                }
 
                 if (includeMetrics) {
                     // Check JSZip availability early
                     if (!window.JSZip) {
                         throw new Error("JSZip library is not loaded. Cannot create a zip file with custom metrics.");
                     }
-                    
+
                     try {
                         const zip = new JSZip();
                         zip.file("simulation.json", simulationContent);
-                        
+
                         // Get custom metrics content with error handling
                         let catalog, validator;
                         try {
-                            const customContent = getCustomMetricsContent(); 
+                            const customContent = getCustomMetricsContent();
                             catalog = customContent.catalog;
                             validator = customContent.validator;
                         } catch (metricsError) {
                             console.warn('Error getting custom metrics content:', metricsError);
                             // Continue with just simulation file
                         }
-                        
+
                         if (catalog) { zip.file("metrics-catalog-custom.json", catalog); }
                         if (validator) { zip.file("simulation-validator-custom.js", validator); }
-                        
+
                         const blob = await zip.generateAsync({ type: "blob" });
                         const fileName = `${fileNameBase}.zip`;
                         downloadSimulationFile(blob, fileName);
@@ -436,30 +622,68 @@ function openLoadDialog() {
         loadSimulationFromFileInput();
     };
 
-    loadBtn.onclick = () => {
+    loadBtn.onclick = async () => {
         // This needs to be implemented based on which radio is selected
-        const saveCode = document.getElementById('load-code-input').value;
-        if (cloudRadio.checked && saveCode) {
-            // Mock loading from cloud
+        const saveCodeInput = document.getElementById('load-code-input');
+        const saveCode = saveCodeInput ? saveCodeInput.value.trim() : '';
+
+        if (cloudRadio.checked) {
+            if (!saveCode) {
+                showLoadError('Please enter a save code');
+                return;
+            }
+
+            // Validate save code format (basic check)
+            if (saveCode.length < 10) {
+                showLoadError('Save code appears to be too short. Please check and try again.');
+                return;
+            }
+
             try {
-                const saveData = JSON.parse(atob(saveCode));
+                // Decode base64
+                const decoded = atob(saveCode);
+                const saveData = JSON.parse(decoded);
+
+                // Validate structure
                 if (!saveData.simulation) {
                     throw new Error('Invalid save code: missing simulation data');
                 }
-                editor.setValue(JSON.stringify({ simulation: saveData.simulation }, null, 2));
-                // Auto-collapse assets object
-                setTimeout(async () => {
-                    if (typeof autoCollapseAssetsObject === 'function') {
-                        await autoCollapseAssetsObject(true); // Move cursor to top when loading data
-                    }
-                }, 100);
-                if (autoRender) {
-                    renderSimulation();
+
+                if (!saveData.simulation.objects || !Array.isArray(saveData.simulation.objects)) {
+                    throw new Error('Invalid save code: simulation.objects must be an array');
                 }
-                dialog.style.display = 'none';
-                showNotification('Simulation loaded successfully!');
+
+                if (!saveData.simulation.tasks || !Array.isArray(saveData.simulation.tasks)) {
+                    throw new Error('Invalid save code: simulation.tasks must be an array');
+                }
+
+                // Load into editor
+                if (typeof editor !== 'undefined' && editor) {
+                    editor.setValue(JSON.stringify({ simulation: saveData.simulation }, null, 2));
+
+                    // Auto-collapse assets object
+                    setTimeout(async () => {
+                        if (typeof autoCollapseAssetsObject === 'function') {
+                            await autoCollapseAssetsObject(true);
+                        }
+                    }, 100);
+
+                    if (typeof autoRender !== 'undefined' && autoRender) {
+                        renderSimulation();
+                    }
+
+                    dialog.style.display = 'none';
+                    showNotification('Simulation loaded successfully from cloud save!');
+                } else {
+                    throw new Error('Editor not initialized');
+                }
             } catch (error) {
-                showLoadError(`Error loading simulation: ${error.message}`);
+                console.error('Error loading from cloud:', error);
+                if (error.name === 'InvalidCharacterError') {
+                    showLoadError('Invalid save code format. Please check and try again.');
+                } else {
+                    showLoadError(`Error loading simulation: ${error.message}`);
+                }
             }
         } else {
             // Local file is handled by loadSimulationFromFileInput, but we can close the dialog
