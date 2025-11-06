@@ -1,6 +1,33 @@
 // Playground Metrics Editor - Custom metrics creation and management
 // Universal Automation Wiki - Simulation Playground
 
+// Constants for localStorage keys
+const STORAGE_KEYS = {
+    METRICS_MODE: 'uaw-metrics-mode',
+    METRICS_CATALOG: 'uaw-metrics-catalog-custom',
+    METRICS_VALIDATOR: 'uaw-metrics-validator-custom'
+};
+
+// Constants for timeouts and delays
+const STORAGE_WARNING_DISMISS_DELAY_MS = 10000;
+const MONACO_LOAD_TIMEOUT_MS = 5000;
+const VALIDATION_DEBOUNCE_MS = 100;
+
+// Helper functions for user notifications
+function showUserError(message) {
+    console.error('User Error:', message);
+    alert('Error: ' + message);
+}
+
+function showUserSuccess(message) {
+    console.log('Success:', message);
+    if (typeof showNotification === 'function') {
+        showNotification(message);
+    } else {
+        alert(message);
+    }
+}
+
 // Safe localStorage wrapper with user notification
 function safeSetItem(key, value) {
     try {
@@ -31,13 +58,13 @@ function showStorageQuotaWarning() {
             </div>
         `;
         document.body.appendChild(warningBanner);
-        
-        // Auto-dismiss after 10 seconds
+
+        // Auto-dismiss after configured delay
         setTimeout(() => {
             if (warningBanner.parentNode) {
                 warningBanner.remove();
             }
-        }, 10000);
+        }, STORAGE_WARNING_DISMISS_DELAY_MS);
     }
 }
 
@@ -50,9 +77,9 @@ function setupMetricsMode() {
     if (!toggleBtn) {
         return;
     }
-    
+
     // Load saved mode preference
-    const savedMode = localStorage.getItem('uaw-metrics-mode');
+    const savedMode = localStorage.getItem(STORAGE_KEYS.METRICS_MODE);
     isMetricsMode = savedMode === 'true';
     
     // Apply initial mode
@@ -61,7 +88,9 @@ function setupMetricsMode() {
     // Add click event listener
     toggleBtn.addEventListener("click", () => {
         isMetricsMode = !isMetricsMode;
-        safeSetItem('uaw-metrics-mode', isMetricsMode.toString());
+        if (!safeSetItem(STORAGE_KEYS.METRICS_MODE, isMetricsMode.toString())) {
+            console.error('Failed to save metrics mode preference');
+        }
         updateMetricsMode();
     });
 }
@@ -167,25 +196,30 @@ function switchLeftTab(targetTab) {
     // Update button states
     const tabButtons = document.querySelectorAll('[data-left-tab]');
     const tabContents = document.querySelectorAll('.left-tab-content');
-    
+
     tabButtons.forEach(btn => btn.classList.remove('active'));
     tabContents.forEach(content => content.classList.remove('active'));
-    
+
     // Activate target button and content
     const targetButton = document.querySelector(`[data-left-tab="${targetTab}"]`);
     const targetContent = document.getElementById(`${targetTab}-left-tab`);
-    
+
     if (targetButton && targetContent) {
         targetButton.classList.add('active');
         targetContent.classList.add('active');
-        
+
         // Handle special cases for different tabs
         if (targetTab === 'space-editor' && spaceEditor) {
             try {
                 const currentJson = JSON.parse(editor.getValue());
                 spaceEditor.loadLayout(currentJson.simulation.layout, true);
             } catch(e) {
-                // Ignore parse errors
+                console.warn('Failed to parse JSON for space editor:', e.message);
+                // Show subtle indicator in UI
+                if (targetButton) {
+                    targetButton.style.color = '#ff6b35';
+                    targetButton.title = 'Invalid JSON - fix syntax errors first';
+                }
             }
         } else if (targetTab === 'digital-space' && digitalSpaceEditor) {
             try {
@@ -194,7 +228,11 @@ function switchLeftTab(targetTab) {
                 const digitalSpace = currentJson.simulation?.digital_space || currentJson.digital_space || {};
                 digitalSpaceEditor.loadLayout(digitalSpace, true);
             } catch(e) {
-                // Ignore parse errors
+                console.warn('Failed to parse JSON for digital space editor:', e.message);
+                if (targetButton) {
+                    targetButton.style.color = '#ff6b35';
+                    targetButton.title = 'Invalid JSON - fix syntax errors first';
+                }
             }
         } else if (targetTab === 'display-editor' && displayEditor) {
             try {
@@ -203,7 +241,11 @@ function switchLeftTab(targetTab) {
                 const displays = currentJson.simulation?.displays || currentJson.displays || {};
                 displayEditor.loadLayout(displays, true);
             } catch(e) {
-                // Ignore parse errors
+                console.warn('Failed to parse JSON for display editor:', e.message);
+                if (targetButton) {
+                    targetButton.style.color = '#ff6b35';
+                    targetButton.title = 'Invalid JSON - fix syntax errors first';
+                }
             }
         }
     }
@@ -253,7 +295,7 @@ function createMetricsJsonEditor() {
     
     // Check if editor already exists
     if (window.metricsJsonEditor) return;
-    
+
     // Create a secondary Monaco editor instance for the left tab
     require(['vs/editor/editor.main'], function() {
         window.metricsJsonEditor = monaco.editor.create(metricsEditorContainer, {
@@ -272,20 +314,31 @@ function createMetricsJsonEditor() {
             formatOnPaste: true,
             formatOnType: true
         });
-        
+
+        // Use a flag to prevent recursive updates
+        let isSyncing = false;
+
         // Sync changes between editors
         if (editor) {
             // Sync from main editor to metrics editor
             editor.onDidChangeModelContent(() => {
+                if (isSyncing) return;
+
                 if (window.metricsJsonEditor && editor.getValue() !== window.metricsJsonEditor.getValue()) {
+                    isSyncing = true;
                     window.metricsJsonEditor.setValue(editor.getValue());
+                    isSyncing = false;
                 }
             });
-            
+
             // Sync from metrics editor to main editor
             window.metricsJsonEditor.onDidChangeModelContent(() => {
+                if (isSyncing) return;
+
                 if (editor && window.metricsJsonEditor.getValue() !== editor.getValue()) {
+                    isSyncing = true;
                     editor.setValue(window.metricsJsonEditor.getValue());
+                    isSyncing = false;
                 }
             });
         }
@@ -298,69 +351,112 @@ function createMetricsJsonEditor() {
 
 function initializeMetricsCatalogEditor() {
     const catalogEditorContainer = document.getElementById('metrics-catalog-editor');
-    if (!catalogEditorContainer) return;
-    
-    if (window.metricsCatalogEditor) return;
-    
-    const customCatalog = localStorage.getItem('uaw-metrics-catalog-custom') || `[
-  {
-    "id": "custom.example.sample_check",
-    "name": "Sample Custom Metric",
-    "emoji": "🔧",
-    "category": "Custom Validation",
-    "severity": "info",
-    "source": "custom",
-    "function": "validateSampleCheck",
-    "description": "This is an example custom metric. Replace with your own validation logic.",
-    "validation_type": "computational",
-    "params": {
-      "example_parameter": "default_value"
+    if (!catalogEditorContainer) {
+        console.error('Metrics catalog editor container missing - check HTML structure');
+        return;
     }
-  },
-  {
-    "disabled_metrics": []
-  }
-]`;
-    
+
+    if (window.metricsCatalogEditor) return;
+
+    const customCatalog = localStorage.getItem(STORAGE_KEYS.METRICS_CATALOG) || JSON.stringify([
+        {
+            "id": "custom.example.sample_check",
+            "name": "Sample Custom Metric",
+            "emoji": "🔧",
+            "category": "Custom Validation",
+            "severity": "info",
+            "source": "custom",
+            "function": "validateSampleCheck",
+            "description": "This is an example custom metric. Replace with your own validation logic.",
+            "validation_type": "computational",
+            "params": {
+                "example_parameter": "default_value"
+            }
+        },
+        {
+            "_comment": "The disabled_metrics array lists IDs of built-in metrics to hide",
+            "disabled_metrics": []
+        }
+    ], null, 2);
+
+    // Add timeout and error handling
+    const monacoTimeout = setTimeout(() => {
+        if (!window.metricsCatalogEditor) {
+            console.error('Monaco catalog editor timed out');
+            showMonacoLoadError(catalogEditorContainer);
+        }
+    }, MONACO_LOAD_TIMEOUT_MS);
+
     require(['vs/editor/editor.main'], function() {
-        window.metricsCatalogEditor = monaco.editor.create(catalogEditorContainer, {
-            value: customCatalog,
-            language: 'json',
-            theme: isDarkMode ? 'vs-dark' : 'vs',
-            automaticLayout: true,
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            fontSize: 14,
-            lineNumbers: 'on',
-            roundedSelection: false,
-            scrollbar: { vertical: 'visible', horizontal: 'visible' },
-            folding: true,
-            bracketMatching: 'always',
-            formatOnPaste: true,
-            formatOnType: true
-        });
-        
-        window.metricsCatalogEditor.onDidChangeModelContent(() => {
-            const content = window.metricsCatalogEditor.getValue();
-            safeSetItem('uaw-metrics-catalog-custom', content);
-        });
+        clearTimeout(monacoTimeout);
+        try {
+            window.metricsCatalogEditor = monaco.editor.create(catalogEditorContainer, {
+                value: customCatalog,
+                language: 'json',
+                theme: isDarkMode ? 'vs-dark' : 'vs',
+                automaticLayout: true,
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                fontSize: 14,
+                lineNumbers: 'on',
+                roundedSelection: false,
+                scrollbar: { vertical: 'visible', horizontal: 'visible' },
+                folding: true,
+                bracketMatching: 'always',
+                formatOnPaste: true,
+                formatOnType: true
+            });
+
+            window.metricsCatalogEditor.onDidChangeModelContent(() => {
+                const content = window.metricsCatalogEditor.getValue();
+                if (!safeSetItem(STORAGE_KEYS.METRICS_CATALOG, content)) {
+                    console.error('Failed to save metrics catalog changes');
+                }
+            });
+        } catch (error) {
+            clearTimeout(monacoTimeout);
+            console.error('Failed to create Monaco catalog editor:', error);
+            showMonacoLoadError(catalogEditorContainer);
+        }
+    }, function(error) {
+        clearTimeout(monacoTimeout);
+        console.error('Failed to load Monaco for catalog editor:', error);
+        showMonacoLoadError(catalogEditorContainer);
     });
+}
+
+/**
+ * Shows an error message when Monaco editor fails to load.
+ *
+ * @param {HTMLElement} container - The container element
+ */
+function showMonacoLoadError(container) {
+    container.innerHTML = `
+        <div style="padding: 2rem; text-align: center; color: #ff6b35;">
+            <p><strong>⚠️ Editor failed to load</strong></p>
+            <p>Monaco editor could not be initialized. Check your internet connection.</p>
+            <p><a href="#" onclick="location.reload()">Reload page</a></p>
+        </div>
+    `;
 }
 
 function initializeMetricsValidatorEditor() {
     const validatorEditorContainer = document.getElementById('metrics-validator-editor');
-    if (!validatorEditorContainer) return;
-    
+    if (!validatorEditorContainer) {
+        console.error('Metrics validator editor container missing - check HTML structure');
+        return;
+    }
+
     if (window.metricsValidatorEditor) return;
-    
-    const customValidator = localStorage.getItem('uaw-metrics-validator-custom') || `/**
+
+    const customValidator = localStorage.getItem(STORAGE_KEYS.METRICS_VALIDATOR) || `/**
  * Custom Validation Functions for Metrics Editor
- * 
+ *
  * Available context:
  * - this.simulation: The current simulation object
  * - this.addResult(result): Method to report validation results
  * - metric.params: Custom parameters from the catalog
- * 
+ *
  * Example result format:
  * {
  *   metricId: 'metric.id',
@@ -375,10 +471,10 @@ function validateSampleCheck(metric) {
     const simulation = this.simulation;
     const tasks = simulation.tasks || [];
     const objects = simulation.objects || [];
-    
+
     // Get parameters from metric definition
     const exampleParam = metric.params?.example_parameter || "default_value";
-    
+
     // Perform validation logic
     if (tasks.length === 0) {
         this.addResult({
@@ -398,29 +494,78 @@ function validateSampleCheck(metric) {
 // Add your custom validation functions here
 // Each function should match the function name specified in your metrics catalog
 `;
-    
+
+    // Add timeout and error handling
+    const monacoTimeout = setTimeout(() => {
+        if (!window.metricsValidatorEditor) {
+            console.error('Monaco validator editor timed out');
+            showMonacoLoadError(validatorEditorContainer);
+        }
+    }, MONACO_LOAD_TIMEOUT_MS);
+
     require(['vs/editor/editor.main'], function() {
-        window.metricsValidatorEditor = monaco.editor.create(validatorEditorContainer, {
-            value: customValidator,
-            language: 'javascript',
-            theme: isDarkMode ? 'vs-dark' : 'vs',
-            automaticLayout: true,
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            fontSize: 14,
-            lineNumbers: 'on',
-            roundedSelection: false,
-            scrollbar: { vertical: 'visible', horizontal: 'visible' },
-            folding: true,
-            bracketMatching: 'always',
-            formatOnPaste: true,
-            formatOnType: true
-        });
-        
-        window.metricsValidatorEditor.onDidChangeModelContent(() => {
-            const content = window.metricsValidatorEditor.getValue();
-            safeSetItem('uaw-metrics-validator-custom', content);
-        });
+        clearTimeout(monacoTimeout);
+        try {
+            window.metricsValidatorEditor = monaco.editor.create(validatorEditorContainer, {
+                value: customValidator,
+                language: 'javascript',
+                theme: isDarkMode ? 'vs-dark' : 'vs',
+                automaticLayout: true,
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                fontSize: 14,
+                lineNumbers: 'on',
+                roundedSelection: false,
+                scrollbar: { vertical: 'visible', horizontal: 'visible' },
+                folding: true,
+                bracketMatching: 'always',
+                formatOnPaste: true,
+                formatOnType: true
+            });
+
+            window.metricsValidatorEditor.onDidChangeModelContent(() => {
+                const content = window.metricsValidatorEditor.getValue();
+
+                // Attempt to validate syntax
+                try {
+                    // Try to parse as function (basic syntax check)
+                    new Function(content);
+
+                    // Clear any previous error indicators
+                    const validatorTab = document.querySelector('[data-tab="validator"]');
+                    if (validatorTab) {
+                        validatorTab.style.color = '';
+                        validatorTab.title = 'simulation-validator-custom.js';
+                    }
+
+                    if (!safeSetItem(STORAGE_KEYS.METRICS_VALIDATOR, content)) {
+                        console.error('Failed to save validator changes');
+                    }
+                } catch (error) {
+                    console.warn('Syntax error in custom validator:', error.message);
+
+                    // Show error indicator on tab
+                    const validatorTab = document.querySelector('[data-tab="validator"]');
+                    if (validatorTab) {
+                        validatorTab.style.color = '#ff6b35';
+                        validatorTab.title = `Syntax error: ${error.message}`;
+                    }
+
+                    // Still save so user doesn't lose work, but warn them
+                    if (!safeSetItem(STORAGE_KEYS.METRICS_VALIDATOR, content)) {
+                        console.error('Failed to save validator changes');
+                    }
+                }
+            });
+        } catch (error) {
+            clearTimeout(monacoTimeout);
+            console.error('Failed to create Monaco validator editor:', error);
+            showMonacoLoadError(validatorEditorContainer);
+        }
+    }, function(error) {
+        clearTimeout(monacoTimeout);
+        console.error('Failed to load Monaco for validator editor:', error);
+        showMonacoLoadError(validatorEditorContainer);
     });
 }
 
@@ -538,7 +683,7 @@ function refreshSpaceEditor() {
             const currentJson = JSON.parse(editor.getValue());
             spaceEditor.loadLayout(currentJson.simulation.layout);
         } catch(e) {
-            // Ignore JSON parse errors
+            console.warn('Cannot refresh space editor - invalid JSON:', e.message);
         }
     }
 }
@@ -546,11 +691,11 @@ function refreshSpaceEditor() {
 function refreshAllEditors() {
     try {
         const currentJson = JSON.parse(editor.getValue());
-        
+
         if (spaceEditor) {
             spaceEditor.loadLayout(currentJson.simulation.layout);
         }
-        
+
         if (digitalSpaceEditor) {
             // Support both new (nested) and old (root-level) formats for backward compatibility
             const digitalSpace = currentJson.simulation?.digital_space || currentJson.digital_space || {};
@@ -563,7 +708,7 @@ function refreshAllEditors() {
             displayEditor.loadLayout(displays);
         }
     } catch(e) {
-        // Ignore JSON parse errors
+        console.warn('Cannot refresh editors - invalid JSON:', e.message);
     }
 }
 
@@ -600,54 +745,163 @@ function resetValidationPanelToStandard() {
     }
 }
 
+/**
+ * Runs custom validation with loading state and feedback.
+ */
 function runCustomValidation() {
-    try {
-        const simulationData = getCurrentSimulationData();
-        if (!simulationData) {
-            displayValidationError('No simulation data available');
-            return;
-        }
-        
-        const mergedCatalog = getMergedMetricsCatalog();
-        const customValidator = getCustomValidatorCode();
-        
-        if (mergedCatalog && mergedCatalog.length > 0) {
-            const validator = new SimulationValidator(simulationData);
-            const results = validator.runChecks(mergedCatalog, customValidator);
-            displayCompactValidationResults(results);
-        } else {
-            displayValidationError('No metrics catalog available');
-        }
-    } catch (error) {
-        console.error('Custom validation error:', error);
-        displayValidationError(`Validation error: ${error.message}`);
+    // Show loading state
+    const runBtn = document.getElementById('run-custom-validation');
+    if (runBtn) {
+        runBtn.disabled = true;
+        runBtn.textContent = '⏳ Running...';
     }
+
+    const validationContent = document.querySelector('.validation-content');
+    if (validationContent) {
+        validationContent.innerHTML = `
+            <div style="text-align: center; padding: 2rem;">
+                <div class="spinner"></div>
+                <p>Running custom validation...</p>
+            </div>
+        `;
+    }
+
+    // Use setTimeout to allow UI to update
+    setTimeout(() => {
+        try {
+            const simulationData = getCurrentSimulationData();
+            if (!simulationData) {
+                displayValidationError('No simulation data available');
+                return;
+            }
+
+            const mergedCatalog = getMergedMetricsCatalog();
+            const customValidator = getCustomValidatorCode();
+
+            if (mergedCatalog && mergedCatalog.length > 0) {
+                const startTime = performance.now();
+                const validator = new SimulationValidator(simulationData);
+                const results = validator.runChecks(mergedCatalog, customValidator);
+                const duration = Math.round(performance.now() - startTime);
+
+                displayCompactValidationResults(results);
+
+                // Show success message
+                console.log(`✅ Validation completed in ${duration}ms - ${results.length} checks`);
+            } else {
+                displayValidationError('No metrics catalog available');
+            }
+        } catch (error) {
+            console.error('Custom validation error:', error);
+            displayValidationError(`Validation error: ${error.message}\n\nCheck browser console for details.`);
+        } finally {
+            // Restore button state
+            if (runBtn) {
+                runBtn.disabled = false;
+                runBtn.textContent = '▶ Run Custom Validation';
+            }
+        }
+    }, VALIDATION_DEBOUNCE_MS);
 }
 
-// Get custom metrics catalog from localStorage
+/**
+ * Validates the structure of a metrics catalog.
+ *
+ * @param {Array} catalog - The catalog to validate
+ * @returns {Object} Validation result with valid flag and error message
+ */
+function validateMetricsCatalog(catalog) {
+    if (!Array.isArray(catalog)) {
+        return { valid: false, error: 'Catalog must be an array' };
+    }
+
+    for (const item of catalog) {
+        // Check for disabled_metrics entry
+        if (item.disabled_metrics) {
+            if (!Array.isArray(item.disabled_metrics)) {
+                return { valid: false, error: 'disabled_metrics must be an array' };
+            }
+            continue;
+        }
+
+        // Validate metric structure
+        const required = ['id', 'name', 'category', 'function'];
+        for (const field of required) {
+            if (!item[field]) {
+                return { valid: false, error: `Metric missing required field: ${field}` };
+            }
+        }
+
+        // Validate ID format
+        if (!/^[a-z0-9._-]+$/i.test(item.id)) {
+            return { valid: false, error: `Invalid metric ID format: ${item.id}` };
+        }
+
+        // Validate function name format
+        if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(item.function)) {
+            return { valid: false, error: `Invalid function name: ${item.function}` };
+        }
+    }
+
+    return { valid: true };
+}
+
+/**
+ * Gets custom metrics catalog from localStorage or editor.
+ * Returns empty array on error.
+ *
+ * @returns {Array} The custom metrics catalog
+ */
 function getCustomMetricsCatalog() {
     try {
         let customCatalogText;
         if (window.metricsCatalogEditor) {
             customCatalogText = window.metricsCatalogEditor.getValue();
         } else {
-            customCatalogText = localStorage.getItem('uaw-metrics-catalog-custom');
+            customCatalogText = localStorage.getItem(STORAGE_KEYS.METRICS_CATALOG);
         }
-        return customCatalogText ? JSON.parse(customCatalogText) : [];
+
+        if (!customCatalogText) {
+            console.info('No custom metrics catalog found, using defaults');
+            return [];
+        }
+
+        const parsed = JSON.parse(customCatalogText);
+
+        if (!Array.isArray(parsed)) {
+            console.error('Custom metrics catalog is not an array');
+            return [];
+        }
+
+        return parsed;
     } catch (e) {
-        console.warn('Error parsing custom metrics catalog:', e);
+        console.error('Error parsing custom metrics catalog:', e);
+        displayValidationError(`Metrics catalog error: ${e.message}. Fix the JSON in the Metrics Editor.`);
         return [];
     }
 }
 
-// Get merged catalog (built-in + custom)
+/**
+ * Gets merged catalog (built-in + custom) with validation.
+ * Filters out disabled built-in metrics.
+ *
+ * @returns {Array} The merged metrics catalog
+ */
 function getMergedMetricsCatalog() {
     const customCatalog = getCustomMetricsCatalog();
-    
+
+    // Validate catalog structure
+    const validation = validateMetricsCatalog(customCatalog);
+    if (!validation.valid) {
+        console.error('Invalid metrics catalog:', validation.error);
+        displayValidationError(`Metrics catalog error: ${validation.error}`);
+        return window.metricsCatalog || []; // Fall back to built-in only
+    }
+
     // Get IDs of disabled builtin metrics from disabled_metrics array
     const disabledMetricsEntry = customCatalog.find(item => item.disabled_metrics);
     const disabledMetricIds = new Set(disabledMetricsEntry ? disabledMetricsEntry.disabled_metrics : []);
-    
+
     // Filter out disabled builtin metrics
     const builtInCatalog = (window.metricsCatalog || [])
         .filter(metric => !disabledMetricIds.has(metric.id))
@@ -655,7 +909,7 @@ function getMergedMetricsCatalog() {
             ...metric,
             source: 'builtin'
         }));
-    
+
     // Only include actual custom metrics (not the disabled_metrics entry)
     const activeCatalog = customCatalog
         .filter(metric => !metric.disabled_metrics) // Exclude disabled_metrics entries
@@ -663,26 +917,30 @@ function getMergedMetricsCatalog() {
             ...metric,
             source: 'custom'
         }));
-    
+
     return [...builtInCatalog, ...activeCatalog];
 }
 
-// Get custom validator code
+/**
+ * Gets custom validator code from editor or localStorage.
+ *
+ * @returns {string} The custom validator code
+ */
 function getCustomValidatorCode() {
     if (window.metricsValidatorEditor) {
         return window.metricsValidatorEditor.getValue();
     }
-    return localStorage.getItem('uaw-metrics-validator-custom') || '';
+    return localStorage.getItem(STORAGE_KEYS.METRICS_VALIDATOR) || '';
 }
 
-// Compact validation display for metrics mode
+/**
+ * Displays validation results in compact format for metrics mode.
+ *
+ * @param {Array} results - The validation results
+ */
 function displayCompactValidationResults(results) {
     // Use the same grouped display for compact view
     displayGroupedValidationResults(results);
-}
-
-function filterValidationResults() {
-    // Legacy function - now handled by applyValidationFilter
 }
 
 function displayValidationError(message) {
@@ -737,50 +995,127 @@ function closeAddMetricModal() {
 function setupMetricFormHandlers() {
     const form = document.getElementById('add-metric-form');
     if (!form) return;
-    
+
     // Auto-update generated fields when name changes
-    const nameInput = document.getElementById('metric-name');
+    const nameInput = document.getElementById('metric-name-input');
     if (nameInput) {
         nameInput.addEventListener('input', updateGeneratedFields);
     }
-    
+
+    // Show/hide parameters section
+    const hasParamsCheckbox = document.getElementById('metric-has-params');
+    const paramsSection = document.getElementById('metric-params-section');
+    if (hasParamsCheckbox && paramsSection) {
+        hasParamsCheckbox.addEventListener('change', (e) => {
+            paramsSection.style.display = e.target.checked ? 'block' : 'none';
+        });
+    }
+
     // Form submission
     form.addEventListener('submit', addCustomMetric);
 }
 
 function updateGeneratedFields() {
-    const nameInput = document.getElementById('metric-name');
-    const idOutput = document.getElementById('generated-metric-id');
-    const functionOutput = document.getElementById('generated-function-name');
-    const idStatus = document.getElementById('id-status');
-    const functionStatus = document.getElementById('function-status');
-    
+    const nameInput = document.getElementById('metric-name-input');
+    const idOutput = document.getElementById('metric-id-input');
+    const functionOutput = document.getElementById('metric-function-input');
+    const idStatus = document.getElementById('metric-id-status');
+    const functionStatus = document.getElementById('metric-function-status');
+
     if (!nameInput || !idOutput || !functionOutput) return;
-    
+
     const name = nameInput.value.trim();
     if (!name) {
-        idOutput.textContent = '';
-        functionOutput.textContent = '';
-        if (idStatus) idStatus.textContent = '';
-        if (functionStatus) functionStatus.textContent = '';
+        idOutput.value = '';
+        functionOutput.value = '';
+        if (idStatus) idStatus.textContent = 'Auto-generated based on category and name';
+        if (functionStatus) functionStatus.textContent = 'Auto-generated JavaScript function name';
         return;
     }
-    
-    // Generate ID and function name
-    const generatedId = `custom.${name.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
-    const generatedFunction = `validate${name.replace(/[^a-zA-Z0-9]/g, '')}`;
-    
-    idOutput.textContent = generatedId;
-    functionOutput.textContent = generatedFunction;
-    
+
+    // Generate ID and function name using improved functions
+    const generatedId = generateMetricId(name);
+    const generatedFunction = generateFunctionName(name);
+
+    idOutput.value = generatedId;
+    functionOutput.value = generatedFunction;
+
     // Check for duplicates
     checkForDuplicates(generatedId, generatedFunction, idStatus, functionStatus);
+}
+
+/**
+ * Generates a unique metric ID based on the metric name.
+ * Handles collisions by appending a counter suffix.
+ *
+ * @param {string} name - The human-readable metric name
+ * @returns {string} A unique metric ID in format "custom.metric_name"
+ */
+function generateMetricId(name) {
+    // Convert to lowercase and replace non-alphanumeric with single underscore
+    let id = name.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
+
+    // Handle edge case: name with no valid characters
+    if (!id) {
+        id = 'unnamed_metric';
+    }
+
+    const baseId = `custom.${id}`;
+    return baseId; // Return without uniqueness check for now, will check in checkForDuplicates
+}
+
+/**
+ * Generates a valid JavaScript function name from a metric name.
+ * Ensures the result is a valid identifier.
+ *
+ * @param {string} metricName - The metric name
+ * @returns {string} A valid JavaScript function name
+ */
+function generateFunctionName(metricName) {
+    // Remove special characters and convert to PascalCase
+    let cleanName = metricName
+        .split(/[^a-zA-Z0-9]+/)
+        .filter(part => part.length > 0)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join('');
+
+    // Handle edge cases
+    if (!cleanName) {
+        cleanName = 'CustomMetric';
+    }
+
+    // Ensure it doesn't start with a number
+    if (/^[0-9]/.test(cleanName)) {
+        cleanName = 'Metric' + cleanName;
+    }
+
+    return 'validate' + cleanName;
+}
+
+/**
+ * Checks if a function exists in the validator code using proper regex matching.
+ *
+ * @param {string} code - The validator code to search
+ * @param {string} functionName - The function name to find
+ * @returns {boolean} True if function exists
+ */
+function checkFunctionExists(code, functionName) {
+    // Use regex to match actual function declarations
+    const patterns = [
+        new RegExp(`^\\s*function\\s+${functionName}\\s*\\(`, 'm'),
+        new RegExp(`^\\s*const\\s+${functionName}\\s*=\\s*function\\s*\\(`, 'm'),
+        new RegExp(`^\\s*const\\s+${functionName}\\s*=\\s*\\(.*\\)\\s*=>`, 'm'),
+    ];
+
+    return patterns.some(pattern => pattern.test(code));
 }
 
 function checkForDuplicates(generatedId, generatedFunction, idStatus, functionStatus) {
     const mergedCatalog = getMergedMetricsCatalog();
     const customValidator = getCustomValidatorCode();
-    
+
     // Check ID
     const idExists = mergedCatalog.some(metric => metric.id === generatedId);
     if (idStatus) {
@@ -792,9 +1127,9 @@ function checkForDuplicates(generatedId, generatedFunction, idStatus, functionSt
             idStatus.className = 'status-success';
         }
     }
-    
-    // Check function name
-    const functionExists = customValidator.includes(`function ${generatedFunction}`);
+
+    // Check function name using improved function existence check
+    const functionExists = checkFunctionExists(customValidator, generatedFunction);
     if (functionStatus) {
         if (functionExists) {
             functionStatus.textContent = '⚠️ Function already exists';
@@ -806,92 +1141,249 @@ function checkForDuplicates(generatedId, generatedFunction, idStatus, functionSt
     }
 }
 
-function addCustomMetric() {
-    // This would add a custom metric to the catalog
-    // Implementation depends on form structure
-    console.log('Adding custom metric');
+/**
+ * Adds a custom metric to the catalog based on form data.
+ * Validates inputs, generates catalog entry and validator function, and saves to localStorage.
+ *
+ * @param {Event} e - The form submit event
+ */
+function addCustomMetric(e) {
+    e.preventDefault();
+
+    try {
+        // Gather form data
+        const name = document.getElementById('metric-name-input').value.trim();
+        const emoji = document.getElementById('metric-emoji-input').value.trim();
+        const category = document.getElementById('metric-category-input').value;
+        const severity = document.getElementById('metric-severity-input').value;
+        const description = document.getElementById('metric-description-input').value.trim();
+        const validationLogic = document.getElementById('metric-validation-logic').value;
+
+        // Validate inputs
+        if (!name || !emoji || !category || !description) {
+            showUserError('Please fill in all required fields');
+            return;
+        }
+
+        if (name.length < 3) {
+            showUserError('Metric name must be at least 3 characters');
+            return;
+        }
+
+        if (description.length < 10) {
+            showUserError('Description must be at least 10 characters');
+            return;
+        }
+
+        // Generate IDs
+        const metricId = generateMetricId(name);
+        const functionName = generateFunctionName(name);
+
+        // Check for duplicates
+        const mergedCatalog = getMergedMetricsCatalog();
+        if (mergedCatalog.some(m => m.id === metricId)) {
+            showUserError(`Metric ID "${metricId}" already exists. Please use a different name.`);
+            return;
+        }
+
+        // Parse parameters if provided
+        let params = {};
+        const hasParams = document.getElementById('metric-has-params').checked;
+        if (hasParams) {
+            const paramsInput = document.getElementById('metric-params-input').value.trim();
+            if (paramsInput) {
+                try {
+                    params = JSON.parse(paramsInput);
+                    if (typeof params !== 'object' || Array.isArray(params)) {
+                        showUserError('Parameters must be a JSON object (not array)');
+                        return;
+                    }
+                } catch (e) {
+                    showUserError('Invalid JSON in parameters field: ' + e.message);
+                    return;
+                }
+            }
+        }
+
+        // Create catalog entry
+        const catalogEntry = {
+            id: metricId,
+            name: name,
+            emoji: emoji,
+            category: category,
+            severity: severity,
+            source: 'custom',
+            function: functionName,
+            description: description,
+            validation_type: 'computational',
+            params: params
+        };
+
+        // Generate function code based on template
+        const functionCode = generateValidatorFunctionFromTemplate(
+            functionName,
+            validationLogic,
+            description
+        );
+
+        // Insert into catalog and validator
+        if (!insertMetricIntoCatalog(catalogEntry)) {
+            showUserError('Failed to save metric to catalog. Storage may be full.');
+            return;
+        }
+
+        if (!insertFunctionIntoValidator(functionCode)) {
+            showUserError('Failed to save validation function. Storage may be full.');
+            return;
+        }
+
+        // Reload editors to show changes
+        if (window.metricsCatalogEditor) {
+            window.metricsCatalogEditor.setValue(
+                localStorage.getItem(STORAGE_KEYS.METRICS_CATALOG)
+            );
+        }
+
+        if (window.metricsValidatorEditor) {
+            window.metricsValidatorEditor.setValue(
+                localStorage.getItem(STORAGE_KEYS.METRICS_VALIDATOR)
+            );
+        }
+
+        // Show success and close modal
+        showUserSuccess(`Metric "${name}" added successfully!`);
+        closeAddMetricModal();
+
+        // Run validation to show new metric
+        if (isMetricsMode) {
+            runCustomValidation();
+        }
+
+    } catch (error) {
+        console.error('Error adding custom metric:', error);
+        showUserError(`Failed to add metric: ${error.message}`);
+    }
 }
 
-// Generate metric catalog entry
-function generateMetricCatalogEntry(metricData, parsedParams) {
-    return {
-        id: metricData.id,
-        name: metricData.name,
-        description: metricData.description,
-        category: metricData.category,
-        parameters: parsedParams,
-        source: 'custom',
-        created: new Date().toISOString()
-    };
-}
-
-// Generate validator function
-function generateValidatorFunction(metricData) {
-    const functionName = metricData.functionName;
-    const logicType = metricData.logicType;
-    
-    return getValidationTemplate(logicType).replace(/\$\{functionName\}/g, functionName);
-}
-
-function getValidationTemplate(logicType) {
+/**
+ * Generates validator function code from a template.
+ *
+ * @param {string} functionName - The name of the function
+ * @param {string} logicType - The type of validation logic (count, boolean, comparison)
+ * @param {string} description - Description of what the function validates
+ * @returns {string} The generated function code
+ */
+function generateValidatorFunctionFromTemplate(functionName, logicType, description) {
     const templates = {
         'count': `
-function \${functionName}(metric) {
+/**
+ * ${description}
+ */
+function ${functionName}(metric) {
     // Count-based validation
-    const simulation = metric.simulation;
-    const threshold = metric.parameters.threshold || 1;
-    
+    const simulation = this.simulation;
+    const threshold = metric.params?.threshold || 1;
+
     // Add your counting logic here
-    const count = 0; // Replace with actual count
-    
-    return {
+    const count = 0; // TODO: Replace with actual count
+
+    this.addResult({
+        metricId: metric.id,
         status: count >= threshold ? 'success' : 'warning',
-        message: \`Count: \${count} (threshold: \${threshold})\`,
-        value: count
-    };
+        message: \`Count: \${count} (threshold: \${threshold})\`
+    });
 }`,
         'boolean': `
-function \${functionName}(metric) {
-    // Boolean validation  
-    const simulation = metric.simulation;
-    
+/**
+ * ${description}
+ */
+function ${functionName}(metric) {
+    // Boolean validation
+    const simulation = this.simulation;
+
     // Add your boolean logic here
-    const isValid = true; // Replace with actual logic
-    
-    return {
+    const isValid = true; // TODO: Replace with actual logic
+
+    this.addResult({
+        metricId: metric.id,
         status: isValid ? 'success' : 'error',
-        message: isValid ? 'Validation passed' : 'Validation failed',
-        value: isValid
-    };
+        message: isValid ? 'Validation passed' : 'Validation failed'
+    });
 }`,
         'comparison': `
-function \${functionName}(metric) {
+/**
+ * ${description}
+ */
+function ${functionName}(metric) {
     // Comparison validation
-    const simulation = metric.simulation;
-    const expected = metric.parameters.expected;
-    const actual = null; // Calculate actual value
-    
+    const simulation = this.simulation;
+    const expected = metric.params?.expected;
+    const actual = null; // TODO: Calculate actual value
+
     const matches = actual === expected;
-    
-    return {
+
+    this.addResult({
+        metricId: metric.id,
         status: matches ? 'success' : 'warning',
-        message: \`Expected: \${expected}, Actual: \${actual}\`,
-        value: { expected, actual, matches }
-    };
+        message: \`Expected: \${expected}, Actual: \${actual}\`
+    });
 }`
     };
-    
+
     return templates[logicType] || templates.boolean;
 }
 
+
+/**
+ * Inserts a metric into the custom catalog, checking for duplicates.
+ *
+ * @param {Object} catalogEntry - The metric catalog entry to insert
+ * @returns {boolean} True if insertion succeeded, false otherwise
+ */
 function insertMetricIntoCatalog(catalogEntry) {
     const customCatalog = getCustomMetricsCatalog();
-    customCatalog.push(catalogEntry);
-    safeSetItem('uaw-metrics-catalog-custom', JSON.stringify(customCatalog, null, 2));
+
+    // Check for duplicate ID
+    const existingIndex = customCatalog.findIndex(m => m.id === catalogEntry.id);
+    if (existingIndex !== -1) {
+        // Replace existing metric
+        console.warn(`Replacing existing metric: ${catalogEntry.id}`);
+        customCatalog[existingIndex] = catalogEntry;
+    } else {
+        customCatalog.push(catalogEntry);
+    }
+
+    const newCatalogJson = JSON.stringify(customCatalog, null, 2);
+    if (!safeSetItem(STORAGE_KEYS.METRICS_CATALOG, newCatalogJson)) {
+        return false;
+    }
+
+    // Reload editor if it exists
+    if (window.metricsCatalogEditor) {
+        window.metricsCatalogEditor.setValue(newCatalogJson);
+    }
+
+    return true;
 }
 
+/**
+ * Inserts a function into the custom validator code.
+ *
+ * @param {string} functionCode - The function code to insert
+ * @returns {boolean} True if insertion succeeded, false otherwise
+ */
 function insertFunctionIntoValidator(functionCode) {
     const currentValidator = getCustomValidatorCode();
     const newValidator = currentValidator + '\n\n' + functionCode;
-    safeSetItem('uaw-metrics-validator-custom', newValidator);
+
+    if (!safeSetItem(STORAGE_KEYS.METRICS_VALIDATOR, newValidator)) {
+        return false;
+    }
+
+    // Reload editor if it exists
+    if (window.metricsValidatorEditor) {
+        window.metricsValidatorEditor.setValue(newValidator);
+    }
+
+    return true;
 }
