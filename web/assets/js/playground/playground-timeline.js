@@ -1,6 +1,11 @@
 // Playground Timeline - Timeline rendering and interactions
 // Universal Automation Wiki - Simulation Playground
 
+// Constants
+const EDGE_DETECTION_THRESHOLD = 8; // pixels for resize edge detection
+const THROTTLE_DELAY = 16; // ~60fps for mousemove throttling
+const MIN_TASK_DURATION = 1; // minimum task duration in minutes
+
 // Timeline rendering variables
 let renderTimeout;
 let currentSimulationData = null;
@@ -26,6 +31,89 @@ let durationPreview = null;
 
 // Drag time preview variable
 let timePreview = null;
+
+// Event listener cleanup tracking
+let eventListeners = [];
+
+// Utility Functions
+
+/**
+ * Throttle function to limit execution rate
+ * @param {Function} func - Function to throttle
+ * @param {number} delay - Delay in milliseconds
+ * @returns {Function} Throttled function
+ */
+function throttle(func, delay) {
+    let lastCall = 0;
+    return function(...args) {
+        const now = Date.now();
+        if (now - lastCall >= delay) {
+            lastCall = now;
+            return func.apply(this, args);
+        }
+    };
+}
+
+/**
+ * Format time in minutes to HH:MM string
+ * @param {number} minutes - Total minutes
+ * @returns {string} Formatted time string
+ */
+function formatTimeFromMinutes(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = Math.floor(minutes % 60);
+    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+}
+
+/**
+ * Clean up drag/resize state
+ */
+function cleanupDragResizeState() {
+    if (isResizing) {
+        document.body.classList.remove('resizing-active');
+        if (resizeHandle) {
+            resizeHandle.classList.remove('resizing');
+        }
+        if (durationPreview) {
+            durationPreview.remove();
+            durationPreview = null;
+        }
+        isResizing = false;
+        resizeType = null;
+        resizeHandle = null;
+    }
+
+    if (isDragging) {
+        document.body.classList.remove('dragging-active');
+        if (draggedTask) {
+            draggedTask.style.opacity = '';
+            draggedTask.style.zIndex = '';
+            draggedTask.style.transform = '';
+            draggedTask.style.overflow = '';
+        }
+        if (timePreview) {
+            timePreview.remove();
+            timePreview = null;
+        }
+        // Clear timeline highlights
+        document.querySelectorAll('.task-track').forEach(track => {
+            track.classList.remove('drag-target', 'drag-invalid');
+        });
+        isDragging = false;
+        draggedTask = null;
+        originalTaskData = null;
+    }
+}
+
+/**
+ * Remove all tracked event listeners and clean up
+ */
+function cleanupEventListeners() {
+    eventListeners.forEach(({ element, event, handler }) => {
+        element.removeEventListener(event, handler);
+    });
+    eventListeners = [];
+}
 
 // Process simulation data with timeline calculations
 function processSimulationData(simulationData) {
@@ -189,24 +277,8 @@ function renderSimulation(skipJsonValidation = false) {
     // Show non-blocking progress indicator
     showProgressIndicator('Processing simulation...');
 
-    // Clean up any existing resize state
-    if (isResizing && resizeHandle) {
-        resizeHandle.classList.remove("resizing");
-        if (durationPreview) {
-            durationPreview.remove();
-        }
-    }
-    // Clean up any existing drag state
-    if (timePreview) {
-        timePreview.remove();
-    }
-    isResizing = false;
-    resizeType = null;
-    resizeHandle = null;
-    durationPreview = null;
-    isDragging = false;
-    draggedTask = null;
-    timePreview = null;
+    // Clean up any existing drag/resize state
+    cleanupDragResizeState();
 
     try {
         loadingOverlay.style.display = "flex";
@@ -370,6 +442,8 @@ function renderSimulation(skipJsonValidation = false) {
 
         const timeMarkers = document.createElement("div");
         timeMarkers.className = "timeline-time-markers";
+        timeMarkers.setAttribute('role', 'presentation');
+        timeMarkers.setAttribute('aria-label', 'Timeline time markers');
         timeMarkers.style.cssText =
             "position: relative; height: 30px; border-bottom: 1px solid var(--border-color); background: #f8f9fa;";
 
@@ -379,6 +453,9 @@ function renderSimulation(skipJsonValidation = false) {
 
         const markerInterval = visualTotalDuration <= 120 ? 30 : 60; // use 30m for short sims, 60m for long
 
+        // Use DocumentFragment for efficient DOM batching
+        const markerFragment = document.createDocumentFragment();
+
         for (
             let minutes = 0;
             minutes <= visualTotalDuration;
@@ -386,41 +463,58 @@ function renderSimulation(skipJsonValidation = false) {
         ) {
             const marker = document.createElement("div");
             marker.className = "time-marker";
+            marker.setAttribute('role', 'presentation');
             // Use same scaling logic as tasks: relative position within visual duration
             marker.style.cssText = `position: absolute; left: ${(minutes / visualTotalDuration) * 100}%; top: 5px; font-size: 0.75rem; color: var(--text-light); transform: translateX(-50%);`;
 
             const totalMinutesFromStart = visualStartTimeMinutes + minutes;
-            const hours = Math.floor(totalMinutesFromStart / 60);
-            const mins = totalMinutesFromStart % 60;
-            marker.textContent = `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+            marker.textContent = formatTimeFromMinutes(totalMinutesFromStart);
 
-            timeMarkers.appendChild(marker);
+            markerFragment.appendChild(marker);
         }
-        
+
+        // Batch append all markers at once
+        timeMarkers.appendChild(markerFragment);
+
         timeline.appendChild(timeMarkers);
 
-        
+
         const playhead = document.createElement("div");
         playhead.id = "simulation-playhead";
         playhead.className = "simulation-playhead";
-        
+        playhead.setAttribute('role', 'presentation');
+        playhead.setAttribute('aria-label', 'Simulation playhead');
+
         const scrubHandle = document.createElement("div");
         scrubHandle.className = "scrub-handle";
+        scrubHandle.setAttribute('role', 'slider');
+        scrubHandle.setAttribute('aria-label', 'Scrub timeline');
+        scrubHandle.setAttribute('aria-valuemin', '0');
+        scrubHandle.setAttribute('aria-valuemax', visualTotalDuration.toString());
+        scrubHandle.setAttribute('aria-valuenow', '0');
+        scrubHandle.setAttribute('tabindex', '0');
         playhead.appendChild(scrubHandle);
 
-        // Append the playhead to the main timeline, not the marker bar
-        //timeMarkers.appendChild(playhead);
+        // Append the playhead to the main timeline
+        timeline.appendChild(playhead);
 
         const actorLanes = document.createElement("div");
         actorLanes.className = "actor-lanes";
+        actorLanes.setAttribute('role', 'list');
+        actorLanes.setAttribute('aria-label', 'Actor timelines');
         actorLanes.style.cssText =
             "padding: 1rem; width: 100%; box-sizing: border-box;";
 
         // Use objects that have tasks (regardless of type)
         const actors = currentSimulationData.timeline_actors || [];
+
+        // Use DocumentFragment for efficient DOM batching
+        const lanesFragment = document.createDocumentFragment();
+
         for (const actor of actors) {
             const lane = document.createElement("div");
             lane.className = "actor-lane";
+            lane.setAttribute('role', 'listitem');
             lane.style.cssText =
                 "display: flex; margin-bottom: 1rem; min-height: 60px; width: 100%; box-sizing: border-box;";
 
@@ -441,7 +535,7 @@ function renderSimulation(skipJsonValidation = false) {
             } else {
                 displayRole = `${actor.name} (${actor.type})`;
             }
-            
+
             actorLabel.innerHTML = `
                 <strong>${sanitizeHTML(displayRole)}</strong><br>
                 <small>Utilization: ${sanitizeHTML(actor.utilization_percentage)}%</small>
@@ -451,12 +545,18 @@ function renderSimulation(skipJsonValidation = false) {
             const taskTrack = document.createElement("div");
             taskTrack.className = "task-track";
             taskTrack.dataset.actorId = actor.id;
+            taskTrack.setAttribute('role', 'group');
+            taskTrack.setAttribute('aria-label', `Tasks for ${displayRole}`);
             taskTrack.style.cssText =
                 "flex: 1; position: relative; background: #f8f9fa; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); min-height: 40px; width: 100%; box-sizing: border-box;";
 
             const actorTasks = currentSimulationData.tasks.filter(
                 (task) => task.actor_id === actor.id,
             );
+
+            // Use DocumentFragment for task batching
+            const tasksFragment = document.createDocumentFragment();
+
             for (const task of actorTasks) {
                 const taskElement = document.createElement("div");
                 taskElement.className = "task-block";
@@ -464,6 +564,9 @@ function renderSimulation(skipJsonValidation = false) {
                 taskElement.dataset.actorId = task.actor_id;
                 taskElement.dataset.start = task.start;
                 taskElement.dataset.duration = task.duration;
+                taskElement.setAttribute('role', 'button');
+                taskElement.setAttribute('aria-label', `Task: ${task.display_name}, ${task.duration} minutes, starts at ${task.start}`);
+                taskElement.setAttribute('tabindex', '0');
 
                 taskElement.style.cssText = `position: absolute; left: ${task.start_percentage}%; width: ${task.duration_percentage}%; height: 30px; top: 5px; background: white; color: black; border: 2px solid var(--primary-color); border-radius: var(--border-radius-sm); font-size: 0.75rem; overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.5rem; user-select: none;`;
 
@@ -490,22 +593,23 @@ function renderSimulation(skipJsonValidation = false) {
                     }
                 });
 
-                // Add mousemove event listener for cursor changes on edges
-                taskElement.addEventListener("mousemove", (e) => {
+                // Add throttled mousemove event listener for cursor changes on edges
+                const throttledMouseMove = throttle((e) => {
                     if (isResizing || isDragging) return;
 
-                    const rect =
-                        taskElement.getBoundingClientRect();
+                    const rect = taskElement.getBoundingClientRect();
                     const relativeX = e.clientX - rect.left;
-                    const isLeftEdge = relativeX <= 8;
-                    const isRightEdge = relativeX >= rect.width - 8;
+                    const isLeftEdge = relativeX <= EDGE_DETECTION_THRESHOLD;
+                    const isRightEdge = relativeX >= rect.width - EDGE_DETECTION_THRESHOLD;
 
                     if (isLeftEdge || isRightEdge) {
                         taskElement.style.cursor = "ew-resize";
                     } else {
                         taskElement.style.cursor = "pointer";
                     }
-                });
+                }, THROTTLE_DELAY);
+
+                taskElement.addEventListener("mousemove", throttledMouseMove);
 
                 // Reset cursor when leaving task block
                 taskElement.addEventListener("mouseleave", () => {
@@ -513,12 +617,19 @@ function renderSimulation(skipJsonValidation = false) {
                         taskElement.style.cursor = "pointer";
                     }
                 });
-                taskTrack.appendChild(taskElement);
+
+                tasksFragment.appendChild(taskElement);
             }
 
+            // Batch append all tasks
+            taskTrack.appendChild(tasksFragment);
+
             lane.appendChild(taskTrack);
-            actorLanes.appendChild(lane);
+            lanesFragment.appendChild(lane);
         }
+
+        // Batch append all lanes
+        actorLanes.appendChild(lanesFragment);
 
         timeline.appendChild(actorLanes);
         container.appendChild(timeline);
@@ -642,9 +753,26 @@ function debounceRender() {
 
 // Drag and drop functionality
 function initializeDragAndDrop() {
-    document.addEventListener('mousedown', handleMouseDown);
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    // Clean up any existing listeners first
+    cleanupEventListeners();
+
+    // Create throttled version of handleMouseMove
+    const throttledMouseMove = throttle(handleMouseMove, THROTTLE_DELAY);
+
+    // Store event listener references for cleanup
+    const mouseDownHandler = handleMouseDown;
+    const mouseUpHandler = handleMouseUp;
+
+    document.addEventListener('mousedown', mouseDownHandler);
+    document.addEventListener('mousemove', throttledMouseMove);
+    document.addEventListener('mouseup', mouseUpHandler);
+
+    // Track listeners for cleanup
+    eventListeners.push(
+        { element: document, event: 'mousedown', handler: mouseDownHandler },
+        { element: document, event: 'mousemove', handler: throttledMouseMove },
+        { element: document, event: 'mouseup', handler: mouseUpHandler }
+    );
 }
 
 function handleMouseDown(e) {
@@ -663,8 +791,8 @@ function handleMouseDown(e) {
 
         const rect = taskElement.getBoundingClientRect();
         const relativeX = e.clientX - rect.left;
-        const isLeftEdge = relativeX <= 8;
-        const isRightEdge = relativeX >= rect.width - 8;
+        const isLeftEdge = relativeX <= EDGE_DETECTION_THRESHOLD;
+        const isRightEdge = relativeX >= rect.width - EDGE_DETECTION_THRESHOLD;
 
         if (isLeftEdge || isRightEdge) {
             // Start resizing
@@ -744,10 +872,7 @@ function handleMouseDown(e) {
     } catch (error) {
         console.error('Error in handleMouseDown:', error);
         // Clean up any partial state
-        isResizing = false;
-        isDragging = false;
-        draggedTask = null;
-        resizeHandle = null;
+        cleanupDragResizeState();
     }
 }
 
@@ -781,7 +906,7 @@ function handleMouseMove(e) {
             }
 
             // Minimum duration constraint
-            newDuration = Math.max(1, Math.round(newDuration));
+            newDuration = Math.max(MIN_TASK_DURATION, Math.round(newDuration));
 
             // Update preview tooltip
             durationPreview.textContent = `${newDuration} minutes`;
@@ -824,18 +949,14 @@ function handleMouseMove(e) {
                     const targetActorId = targetTrack.dataset.actorId;
                     const newTime = calculateNewTimeFromPosition(e.clientX - dragOffsetX, targetTrack);
                     if (newTime !== null) {
-                        const hours = Math.floor(newTime / 60);
-                        const mins = newTime % 60;
-                        const timeString = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+                        const timeString = formatTimeFromMinutes(newTime);
                         timePreview.textContent = `→ ${targetActorId} at ${timeString}`;
                     }
                 } else {
                     // Same timeline move - show just the time
                     const newTime = calculateNewTimeFromPosition(e.clientX - dragOffsetX, targetTrack);
                     if (newTime !== null) {
-                        const hours = Math.floor(newTime / 60);
-                        const mins = newTime % 60;
-                        const timeString = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+                        const timeString = formatTimeFromMinutes(newTime);
                         timePreview.textContent = timeString;
                     }
                 }
@@ -863,33 +984,7 @@ function handleMouseMove(e) {
     } catch (error) {
         console.error('Error in handleMouseMove:', error);
         // Clean up any problematic state
-        if (isResizing) {
-            document.body.classList.remove('resizing-active');
-            if (resizeHandle) resizeHandle.classList.remove('resizing');
-            if (durationPreview) durationPreview.remove();
-            isResizing = false;
-            resizeType = null;
-            resizeHandle = null;
-            durationPreview = null;
-        }
-        if (isDragging) {
-            document.body.classList.remove('dragging-active');
-            if (draggedTask) {
-                draggedTask.style.opacity = '';
-                draggedTask.style.zIndex = '';
-                draggedTask.style.overflow = ''; // Restore original overflow
-            }
-            if (timePreview) {
-                timePreview.remove();
-            }
-            // Clear timeline highlights
-            document.querySelectorAll('.task-track').forEach(track => {
-                track.classList.remove('drag-target', 'drag-invalid');
-            });
-            isDragging = false;
-            draggedTask = null;
-            timePreview = null;
-        }
+        cleanupDragResizeState();
     }
 }
 
@@ -904,24 +999,22 @@ function handleMouseUp(e) {
                 const taskStartMinutes = parseTimeToMinutes(originalStartTime);
                 
                 let newDuration, newStartTime = originalStartTime;
-                
+
                 if (resizeType === 'left') {
                     // Resizing from the left edge
                     const newStartMinutes = newPosition;
                     const originalEndMinutes = taskStartMinutes + originalDuration;
                     newDuration = originalEndMinutes - newStartMinutes;
-                    
+
                     // Update start time
-                    const hours = Math.floor(newStartMinutes / 60);
-                    const mins = newStartMinutes % 60;
-                    newStartTime = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+                    newStartTime = formatTimeFromMinutes(newStartMinutes);
                 } else {
                     // Resizing from the right edge
                     newDuration = newPosition - taskStartMinutes;
                 }
-                
+
                 // Minimum duration constraint
-                newDuration = Math.max(1, Math.round(newDuration));
+                newDuration = Math.max(MIN_TASK_DURATION, Math.round(newDuration));
                 
                 updateTaskDurationInJSON(taskId, newDuration, newStartTime);
             }
@@ -984,35 +1077,7 @@ function handleMouseUp(e) {
     } catch (error) {
         console.error('Error in handleMouseUp:', error);
         // Clean up all drag/resize state
-        if (isResizing) {
-            document.body.classList.remove('resizing-active');
-            if (resizeHandle) resizeHandle.classList.remove('resizing');
-            if (durationPreview) durationPreview.remove();
-            isResizing = false;
-            resizeType = null;
-            resizeHandle = null;
-            durationPreview = null;
-        }
-        if (isDragging) {
-            document.body.classList.remove('dragging-active');
-            if (draggedTask) {
-                draggedTask.style.opacity = '';
-                draggedTask.style.zIndex = '';
-                draggedTask.style.transform = '';
-                draggedTask.style.overflow = ''; // Restore original overflow
-            }
-            if (timePreview) {
-                timePreview.remove();
-            }
-            // Clear timeline highlights
-            document.querySelectorAll('.task-track').forEach(track => {
-                track.classList.remove('drag-target', 'drag-invalid');
-            });
-            isDragging = false;
-            draggedTask = null;
-            timePreview = null;
-            originalTaskData = null;
-        }
+        cleanupDragResizeState();
     }
 }
 
@@ -1058,9 +1123,7 @@ function updateTaskInJSON(taskId, newActorId, newTimeMinutes) {
             task.actor_id = newActorId;
 
             // Update time
-            const hours = Math.floor(newTimeMinutes / 60);
-            const mins = newTimeMinutes % 60;
-            task.start = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+            task.start = formatTimeFromMinutes(newTimeMinutes);
 
             editorToUse.setValue(JSON.stringify(currentJson, null, 2));
         }
