@@ -20,44 +20,334 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 500);
 });
 
+// Store preserved field values when switching types
+let preservedObjectFields = {};
+
 // Open add object modal
 function openAddObjectModal() {
     const modal = document.getElementById('add-object-modal');
     const typeSelect = document.getElementById('object-type-select');
     const fieldsContainer = document.getElementById('object-type-specific-fields');
-    
-    // Clear form
+
+    // Clear form and validation
     modal.querySelectorAll('input, select').forEach(input => {
         input.value = '';
+        input.classList.remove('valid', 'invalid');
     });
-    
+    modal.querySelectorAll('.validation-icon').forEach(icon => {
+        icon.classList.remove('valid', 'invalid');
+    });
+    modal.querySelectorAll('.field-error').forEach(error => {
+        error.textContent = '';
+    });
+
+    // Reset preserved fields
+    preservedObjectFields = {};
+
     // Show modal
     modal.style.display = 'flex';
-    
+
     // Setup type change handler
     typeSelect.addEventListener('change', function() {
+        preserveCommonObjectFields();
         updateObjectTypeFields(this.value, fieldsContainer);
+        restoreCommonObjectFields();
+        validateObjectForm();
     });
-    
+
     // Trigger initial update
     updateObjectTypeFields(typeSelect.value, fieldsContainer);
-    
+
+    // Setup validation listeners
+    setupObjectValidation();
+
+    // Setup keyboard shortcuts
+    setupObjectModalKeyboardShortcuts(modal);
+
     // Setup close button and form submission for object modal
     const cancelBtn = document.getElementById('object-cancel-btn');
     const addBtn = document.getElementById('object-add-btn');
-    
+
     if (cancelBtn) {
         cancelBtn.onclick = () => {
             modal.style.display = 'none';
         };
     }
-    
+
     if (addBtn) {
         addBtn.onclick = (e) => {
             e.preventDefault();
             addObjectToSimulation();
         };
     }
+
+    // Autofocus on first field
+    setTimeout(() => {
+        const firstInput = typeSelect;
+        if (firstInput) {
+            firstInput.focus();
+        }
+    }, 100);
+
+    // Initial validation
+    validateObjectForm();
+}
+
+// Preserve common fields when switching object types
+function preserveCommonObjectFields() {
+    const idInput = document.getElementById('object-id-input');
+    const nameInput = document.getElementById('object-name-input');
+    const emojiInput = document.getElementById('object-emoji-input');
+
+    preservedObjectFields = {
+        id: idInput ? idInput.value : '',
+        name: nameInput ? nameInput.value : '',
+        emoji: emojiInput ? emojiInput.value : ''
+    };
+}
+
+// Restore common fields after switching object types
+function restoreCommonObjectFields() {
+    const idInput = document.getElementById('object-id-input');
+    const nameInput = document.getElementById('object-name-input');
+    const emojiInput = document.getElementById('object-emoji-input');
+
+    if (idInput && preservedObjectFields.id) {
+        idInput.value = preservedObjectFields.id;
+    }
+    if (nameInput && preservedObjectFields.name) {
+        nameInput.value = preservedObjectFields.name;
+    }
+    if (emojiInput && preservedObjectFields.emoji) {
+        emojiInput.value = preservedObjectFields.emoji;
+    }
+}
+
+// Setup keyboard shortcuts for object modal
+function setupObjectModalKeyboardShortcuts(modal) {
+    const keyHandler = (e) => {
+        if (e.key === 'Escape') {
+            modal.style.display = 'none';
+            document.removeEventListener('keydown', keyHandler);
+        } else if (e.key === 'Enter' && !e.shiftKey) {
+            const addBtn = document.getElementById('object-add-btn');
+            if (addBtn && !addBtn.disabled) {
+                e.preventDefault();
+                addObjectToSimulation();
+                document.removeEventListener('keydown', keyHandler);
+            }
+        }
+    };
+
+    document.addEventListener('keydown', keyHandler);
+
+    // Clean up listener when modal closes
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'style' && modal.style.display === 'none') {
+                document.removeEventListener('keydown', keyHandler);
+                observer.disconnect();
+            }
+        });
+    });
+
+    observer.observe(modal, { attributes: true });
+}
+
+// Setup validation listeners for object form
+function setupObjectValidation() {
+    const typeSelect = document.getElementById('object-type-select');
+    const idInput = document.getElementById('object-id-input');
+    const nameInput = document.getElementById('object-name-input');
+    const emojiInput = document.getElementById('object-emoji-input');
+
+    if (typeSelect) {
+        typeSelect.addEventListener('change', validateObjectForm);
+    }
+
+    if (idInput) {
+        idInput.addEventListener('input', debounce(() => {
+            validateObjectId();
+            validateObjectForm();
+        }, 300));
+    }
+
+    if (nameInput) {
+        nameInput.addEventListener('input', debounce(() => {
+            validateObjectName();
+            validateObjectForm();
+        }, 300));
+    }
+
+    if (emojiInput) {
+        emojiInput.addEventListener('input', debounce(() => {
+            validateObjectEmoji();
+            validateObjectForm();
+        }, 300));
+    }
+}
+
+// Validate object ID field
+function validateObjectId() {
+    const idInput = document.getElementById('object-id-input');
+    const errorElement = document.getElementById('object-id-error');
+    const validationIcon = idInput.parentElement.querySelector('.validation-icon');
+    const id = idInput.value.trim();
+
+    // Clear previous validation
+    idInput.classList.remove('valid', 'invalid');
+    validationIcon.classList.remove('valid', 'invalid');
+    errorElement.textContent = '';
+
+    if (!id) {
+        idInput.classList.add('invalid');
+        validationIcon.classList.add('invalid');
+        errorElement.textContent = 'ID is required';
+        return false;
+    }
+
+    // Check format (lowercase, underscores, numbers)
+    const validIdPattern = /^[a-z][a-z0-9_]*$/;
+    if (!validIdPattern.test(id)) {
+        idInput.classList.add('invalid');
+        validationIcon.classList.add('invalid');
+        errorElement.textContent = 'ID must start with lowercase letter and contain only lowercase letters, numbers, and underscores';
+        return false;
+    }
+
+    // Check for duplicates
+    if (isObjectIdDuplicate(id)) {
+        idInput.classList.add('invalid');
+        validationIcon.classList.add('invalid');
+        errorElement.textContent = 'This ID already exists in the simulation';
+        return false;
+    }
+
+    // Valid
+    idInput.classList.add('valid');
+    validationIcon.classList.add('valid');
+    return true;
+}
+
+// Check if object ID already exists
+function isObjectIdDuplicate(id) {
+    try {
+        const dayTypeEditor = window.activeDayTypeEditor;
+        const effectiveEditor = dayTypeEditor || editor;
+        const currentJson = JSON.parse(effectiveEditor.getValue());
+
+        if (!currentJson.simulation || !currentJson.simulation.objects) {
+            return false;
+        }
+
+        return currentJson.simulation.objects.some(obj => obj.id === id);
+    } catch (error) {
+        console.error('Error checking for duplicate ID:', error);
+        return false;
+    }
+}
+
+// Validate object name field
+function validateObjectName() {
+    const nameInput = document.getElementById('object-name-input');
+    const errorElement = document.getElementById('object-name-error');
+    const validationIcon = nameInput.parentElement.querySelector('.validation-icon');
+    const name = nameInput.value.trim();
+
+    // Clear previous validation
+    nameInput.classList.remove('valid', 'invalid');
+    validationIcon.classList.remove('valid', 'invalid');
+    errorElement.textContent = '';
+
+    if (!name) {
+        nameInput.classList.add('invalid');
+        validationIcon.classList.add('invalid');
+        errorElement.textContent = 'Name is required';
+        return false;
+    }
+
+    if (name.length < 2) {
+        nameInput.classList.add('invalid');
+        validationIcon.classList.add('invalid');
+        errorElement.textContent = 'Name must be at least 2 characters';
+        return false;
+    }
+
+    // Valid
+    nameInput.classList.add('valid');
+    validationIcon.classList.add('valid');
+    return true;
+}
+
+// Validate emoji field
+function validateObjectEmoji() {
+    const emojiInput = document.getElementById('object-emoji-input');
+    const errorElement = document.getElementById('object-emoji-error');
+    const validationIcon = emojiInput.parentElement.querySelector('.validation-icon');
+    const emoji = emojiInput.value;
+
+    // Clear previous validation
+    emojiInput.classList.remove('valid', 'invalid');
+    validationIcon.classList.remove('valid', 'invalid');
+    errorElement.textContent = '';
+
+    // Emoji is optional
+    if (!emoji) {
+        return true;
+    }
+
+    // Check if it contains emoji characters
+    const emojiPattern = /[\p{Emoji}\u200d]/u;
+    if (!emojiPattern.test(emoji)) {
+        emojiInput.classList.add('invalid');
+        validationIcon.classList.add('invalid');
+        errorElement.textContent = 'Please enter a valid emoji character';
+        return false;
+    }
+
+    // Valid
+    emojiInput.classList.add('valid');
+    validationIcon.classList.add('valid');
+    return true;
+}
+
+// Validate object type field
+function validateObjectType() {
+    const typeSelect = document.getElementById('object-type-select');
+    const errorElement = document.getElementById('object-type-error');
+    const type = typeSelect.value;
+
+    // Clear previous validation
+    typeSelect.classList.remove('valid', 'invalid');
+    errorElement.textContent = '';
+
+    if (!type) {
+        typeSelect.classList.add('invalid');
+        errorElement.textContent = 'Please select an object type';
+        return false;
+    }
+
+    // Valid
+    typeSelect.classList.add('valid');
+    return true;
+}
+
+// Validate entire object form and update submit button state
+function validateObjectForm() {
+    const addBtn = document.getElementById('object-add-btn');
+
+    const isTypeValid = validateObjectType();
+    const isIdValid = validateObjectId();
+    const isNameValid = validateObjectName();
+    const isEmojiValid = validateObjectEmoji();
+
+    const isFormValid = isTypeValid && isIdValid && isNameValid && isEmojiValid;
+
+    if (addBtn) {
+        addBtn.disabled = !isFormValid;
+    }
+
+    return isFormValid;
 }
 
 function getObjectTypeFieldsHTML(type, context, counter) {
@@ -1049,13 +1339,26 @@ function updateAllInteractionFromValues() {
 function addObjectToSimulation() {
     try {
         const modal = document.getElementById('add-object-modal');
+        const addBtn = document.getElementById('object-add-btn');
+        const btnText = addBtn.querySelector('.btn-text');
+        const btnSpinner = addBtn.querySelector('.btn-spinner');
+
+        // Show loading state
+        addBtn.disabled = true;
+        btnText.style.display = 'none';
+        btnSpinner.style.display = 'inline-block';
+
         const objectType = document.getElementById('object-type-select').value;
-        const objectName = document.getElementById('object-name-input').value;
-        const objectId = document.getElementById('object-id-input').value;
+        const objectName = document.getElementById('object-name-input').value.trim();
+        const objectId = document.getElementById('object-id-input').value.trim();
         const emoji = document.getElementById('object-emoji-input').value;
 
         if (!objectType || !objectName) {
             alert('Please fill in object type and name');
+            // Reset button state
+            btnText.style.display = 'inline-block';
+            btnSpinner.style.display = 'none';
+            addBtn.disabled = false;
             return;
         }
 
@@ -1172,9 +1475,25 @@ function addObjectToSimulation() {
 
         showNotification(`Added ${objectType}: ${objectName}`);
 
+        // Reset button state
+        setTimeout(() => {
+            const btnText = document.getElementById('object-add-btn').querySelector('.btn-text');
+            const btnSpinner = document.getElementById('object-add-btn').querySelector('.btn-spinner');
+            btnText.style.display = 'inline-block';
+            btnSpinner.style.display = 'none';
+        }, 100);
+
     } catch (error) {
         console.error('Error adding object:', error);
         alert(`Error adding object: ${error.message}`);
+
+        // Reset button state on error
+        const addBtn = document.getElementById('object-add-btn');
+        const btnText = addBtn.querySelector('.btn-text');
+        const btnSpinner = addBtn.querySelector('.btn-spinner');
+        btnText.style.display = 'inline-block';
+        btnSpinner.style.display = 'none';
+        addBtn.disabled = false;
     }
 }
 
