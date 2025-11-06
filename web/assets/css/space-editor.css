@@ -45,10 +45,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
-    color: var(--text-dark);
+    transition: background var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-normal);
+    color: var(--text-color);
     font-size: 18px;
     font-weight: 600;
+}
+
+.zoom-btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 .zoom-btn:hover {
@@ -212,7 +217,7 @@
     cursor: pointer;
     font-weight: 500;
     color: var(--text-color);
-    transition: all var(--transition-fast);
+    transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
@@ -222,6 +227,11 @@
     color: var(--primary-color);
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn.btn-sm:focus, .btn.btn-secondary:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 .btn.full-width {
@@ -274,14 +284,14 @@
     cursor: pointer;
 }
 
-.option-field input[type="number"] { 
-    width: 80px; 
-    padding: var(--spacing-xs) var(--spacing-sm); 
-    border: 1px solid var(--border-color); 
-    border-radius: var(--border-radius-sm); 
+.option-field input[type="number"] {
+    width: 80px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
     font-size: var(--font-size-sm);
     background: white;
-    transition: all var(--transition-fast);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .option-field input[type="number"]:focus {
@@ -404,12 +414,17 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     background: var(--primary-color);
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: all var(--transition-fast);
+    transition: background var(--transition-fast), transform var(--transition-fast);
 }
 
 .option-field input[type="range"]::-webkit-slider-thumb:hover {
     background: var(--primary-dark);
     transform: scale(1.1);
+}
+
+.option-field input[type="range"]:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 /* --- Properties Panel Styles --- */
@@ -445,21 +460,26 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     margin-bottom: 8px;
 }
 
-.properties-panel-header button { 
-    padding: 6px 12px; 
-    font-size: 13px; 
+.properties-panel-header button {
+    padding: 6px 12px;
+    font-size: 13px;
     border: 1px solid var(--primary-color);
     background: var(--primary-color);
     color: white;
     border-radius: 4px;
     cursor: pointer;
     font-weight: 500;
-    transition: all 0.1s;
+    transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .properties-panel-header button:hover {
     background: var(--primary-dark);
     border-color: var(--primary-dark);
+}
+
+.properties-panel-header button:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 .layer-controls { 
@@ -516,15 +536,15 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     color: var(--text-color);
 }
 
-.prop-field input, .prop-field select, .prop-field textarea { 
-    width: 100%; 
-    padding: 6px 8px; 
-    border: 1px solid var(--border-color); 
-    border-radius: 4px; 
-    box-sizing: border-box; 
+.prop-field input, .prop-field select, .prop-field textarea {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
     font-size: 13px;
     background: white;
-    transition: border-color 0.1s;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .prop-field input:focus, .prop-field select:focus, .prop-field textarea:focus {
@@ -641,16 +661,16 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     letter-spacing: 0.3px;
 }
 
-.inline-input-group input { 
-    width: 100%; 
-    padding: 4px 6px; 
-    border: 1px solid var(--border-color); 
-    border-radius: 4px; 
-    box-sizing: border-box; 
-    font-size: 12px; 
+.inline-input-group input {
+    width: 100%;
+    padding: 4px 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 12px;
     text-align: center;
     background: white;
-    transition: border-color 0.1s;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .inline-input-group input:focus {
@@ -787,7 +807,7 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     margin: 4px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    transition: all 0.2s ease;
+    transition: box-shadow var(--transition-normal), border-color var(--transition-normal);
 }
 
 .object-item.enhanced:hover {
@@ -887,13 +907,18 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     background: white;
     color: var(--text-color);
     cursor: pointer;
-    transition: all 0.1s ease;
+    transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
 }
 
 .btn.btn-xs:hover {
     background: var(--primary-color);
     color: white;
     border-color: var(--primary-color);
+}
+
+.btn.btn-xs:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 .section-header {
@@ -1054,12 +1079,17 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    transition: all 0.1s ease;
+    transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 .modal-close:hover {
     background: var(--border-color);
     color: var(--text-color);
+}
+
+.modal-close:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 .modal-body {
@@ -1116,7 +1146,7 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--transition-fast);
+    transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
     font-weight: 600;
     box-shadow: 0 1px 2px rgba(220, 53, 69, 0.2);
 }
@@ -1125,6 +1155,11 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     background: #c82333;
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+.btn-danger-small:focus {
+    outline: 2px solid var(--error-color);
+    outline-offset: 2px;
 }
 
 /* Display Controls */
@@ -1157,7 +1192,7 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     cursor: pointer;
     font-size: var(--font-size-xs);
     color: var(--text-color);
-    transition: all var(--transition-fast);
+    transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
     white-space: nowrap;
     flex: 1;
     min-width: 0;
@@ -1172,6 +1207,11 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     border-color: var(--primary-color);
     transform: translateY(-1px);
     box-shadow: 0 2px 6px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.element-quick-btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 .element-quick-btn:active {
@@ -1205,7 +1245,7 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     border-radius: 8px;
     background: white;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background var(--transition-normal), border-color var(--transition-normal), transform var(--transition-normal), box-shadow var(--transition-normal);
 }
 
 .element-type-option:hover {
@@ -1213,6 +1253,11 @@ input[type="number"]:hover::-webkit-inner-spin-button {
     border-color: var(--primary-color);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.element-type-option:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 .element-type-option .element-icon {
@@ -1419,7 +1464,7 @@ body.disable-animations * {
 }
 
 .connection-line {
-    transition: stroke-width 0.2s ease, filter 0.2s ease;
+    transition: stroke-width var(--transition-normal), filter var(--transition-normal);
     pointer-events: stroke !important;
     cursor: pointer !important;
 }

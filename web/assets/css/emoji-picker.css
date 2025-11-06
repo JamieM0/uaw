@@ -88,6 +88,11 @@
     background: var(--bg-hover, #e9ecef);
 }
 
+.emoji-category-tab:focus {
+    outline: 2px solid var(--primary-color, #126ca8);
+    outline-offset: 2px;
+}
+
 .emoji-category-tab.active {
     background: var(--primary-color, #126ca8);
     color: white;
@@ -144,13 +149,18 @@
     justify-content: center;
     font-size: 20px;
     line-height: 1;
-    transition: all var(--transition-normal, 0.2s);
+    transition: background var(--transition-normal, 0.2s), transform var(--transition-normal, 0.2s);
     padding: 0;
 }
 
 .emoji-item:hover {
     background: var(--bg-hover, #e9ecef);
     transform: scale(1.1);
+}
+
+.emoji-item:focus {
+    outline: 2px solid var(--primary-color, #126ca8);
+    outline-offset: 2px;
 }
 
 .emoji-item:active {

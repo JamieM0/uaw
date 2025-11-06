@@ -155,12 +155,17 @@ body {
     color: white;
     border-radius: 4px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background var(--transition-normal), border-color var(--transition-normal);
 }
 
 .header-actions .action-btn:hover {
     background: var(--primary-dark);
     border-color: var(--primary-dark);
+}
+
+.header-actions .action-btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 .header-actions button {
@@ -171,12 +176,17 @@ body {
     color: var(--text-color);
     border-radius: 4px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background var(--transition-normal), border-color var(--transition-normal);
 }
 
 .header-actions button:hover {
     background: var(--bg-light);
     border-color: var(--primary-color);
+}
+
+.header-actions button:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 .header-actions button:disabled {
@@ -279,12 +289,17 @@ body {
     color: var(--text-light);
     cursor: pointer;
     border-bottom: 3px solid transparent;
-    transition: all var(--transition-normal);
+    transition: color var(--transition-normal), background var(--transition-normal), border-bottom-color var(--transition-normal);
 }
 
 .left-tab-btn:hover {
     color: var(--text-color);
     background: rgba(0, 0, 0, 0.05);
+}
+
+.left-tab-btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: -2px;
 }
 
 .left-tab-btn.active {
@@ -603,12 +618,17 @@ body {
     color: var(--text-light);
     cursor: pointer;
     border-bottom: 3px solid transparent;
-    transition: all var(--transition-normal);
+    transition: color var(--transition-normal), background var(--transition-normal), border-bottom-color var(--transition-normal);
 }
 
 .metrics-tab-btn:hover {
     color: var(--text-color);
     background: rgba(0, 0, 0, 0.05);
+}
+
+.metrics-tab-btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: -2px;
 }
 
 .metrics-tab-btn.active {
@@ -698,12 +718,17 @@ body {
     border-radius: var(--border-radius-sm);
     font-size: var(--font-size-sm);
     cursor: pointer;
-    transition: all var(--transition-normal);
+    transition: background var(--transition-normal), border-color var(--transition-normal);
 }
 
 .mode-toggle-btn:hover {
     background: var(--bg-lighter);
     border-color: var(--primary-color);
+}
+
+.mode-toggle-btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 .mode-toggle-btn.metrics-active {
@@ -796,11 +821,16 @@ body {
 }
 
 .stat-item.clickable:hover {
-    background: rgba(18, 108, 168, 0.1);
+    background: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.stat-item.clickable:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 .stat-item.clickable.active {
-    background: rgba(18, 108, 168, 0.15);
+    background: rgba(var(--primary-color-rgb), 0.15);
     border: 1px solid var(--primary-color);
 }
 
@@ -875,11 +905,16 @@ body {
 
 .validation-result-item[data-clickable="true"] {
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: background-color var(--transition-fast);
 }
 
 .validation-result-item[data-clickable="true"]:hover {
     background-color: rgba(0, 0, 0, 0.05);
+}
+
+.validation-result-item[data-clickable="true"]:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: -2px;
 }
 
 .validation-result-item:last-child {
@@ -965,7 +1000,7 @@ body {
     font-size: 0.75rem;
     cursor: pointer;
     opacity: 0.7;
-    transition: all 0.2s ease;
+    transition: opacity var(--transition-normal), background var(--transition-normal), color var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal);
 }
 
 .example-btn:hover {
@@ -976,24 +1011,34 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.example-btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
 /* Disable button for builtin metrics */
 .disable-btn {
     background: var(--bg-secondary);
-    border: 1px solid #dc3545;
+    border: 1px solid var(--error-color);
     border-radius: 4px;
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
     cursor: pointer;
-    color: #dc3545;
+    color: var(--error-color);
     opacity: 0.7;
-    transition: all 0.2s ease;
+    transition: opacity var(--transition-normal), background var(--transition-normal), color var(--transition-normal), box-shadow var(--transition-normal);
 }
 
 .disable-btn:hover {
     opacity: 1;
-    background: #dc3545;
+    background: var(--error-color);
     color: white;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.disable-btn:focus {
+    outline: 2px solid var(--error-color);
+    outline-offset: 2px;
 }
 
 .example-btn:active,
