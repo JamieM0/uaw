@@ -174,57 +174,20 @@ async function syncDigitalSpaceState() {
             return;
         }
 
-        // Check if Monaco editor is properly initialized (not just exists)
+        // Check if Monaco editor is properly initialized
         if (!editor || !editor.getValue || typeof editor.getValue !== 'function') {
             console.warn('Monaco editor not properly initialized for digital space sync');
             return;
         }
 
-        // Multiple attempts to ensure editor and simulation data are ready
-        let attempts = 0;
-        const maxAttempts = 3;
-        let validSimulationData = null;
+        // Wait a moment to ensure DOM is ready
+        await new Promise(resolve => setTimeout(resolve, 10));
 
-        while (attempts < maxAttempts && !validSimulationData) {
-            attempts++;
-
-            // Wait progressively longer for each attempt
-            if (attempts > 1) {
-                await new Promise(resolve => setTimeout(resolve, attempts * 100));
-            }
-
-            try {
-                const jsonText = editor.getValue();
-                if (!jsonText || jsonText.trim() === '') {
-                    console.warn(`Attempt ${attempts}: No simulation data available yet for digital space`);
-                    continue;
-                }
-
-                const parsedData = JSON.parse(jsonText);
-
-                // Validate that we have a proper simulation structure
-                if (!parsedData.simulation || typeof parsedData.simulation !== 'object') {
-                    console.warn(`Attempt ${attempts}: Invalid simulation structure for digital space`);
-                    continue;
-                }
-
-                validSimulationData = parsedData;
-                break;
-            } catch (parseError) {
-                console.warn(`Attempt ${attempts}: Invalid JSON data for digital space:`, parseError.message);
-                continue;
-            }
-        }
-
-        if (!validSimulationData) {
-            console.warn('Failed to get valid simulation data after multiple attempts, deferring digital space initialization');
-            return;
-        }
-
+        // Initialize or refresh the editor
         if (!digitalSpaceEditor.canvas) {
             digitalSpaceEditor.initialize(digitalCanvas, digitalPropsPanel, editor);
         } else {
-            // Refresh data from current simulation
+            // Force refresh data from current simulation to clear any stale data
             digitalSpaceEditor.loadFromSimulation();
         }
     } catch (error) {
@@ -247,15 +210,21 @@ async function syncDisplayEditorState() {
             return;
         }
 
-        // Wait a tick to ensure DOM is ready
+        // Check if Monaco editor is properly initialized
+        if (!editor || !editor.getValue || typeof editor.getValue !== 'function') {
+            console.warn('Monaco editor not properly initialized for display editor sync');
+            return;
+        }
+
+        // Wait a moment to ensure DOM is ready
         await new Promise(resolve => setTimeout(resolve, 10));
 
+        // Initialize or refresh the editor
         if (!displayEditor.canvas) {
             displayEditor.initialize(displayCanvas, displayPropsPanel, editor);
         } else {
-            // Refresh data from current simulation
+            // Force refresh data from current simulation to clear any stale data
             displayEditor.loadFromSimulation();
-            displayEditor.renderActiveDisplay();
         }
     } catch (error) {
         console.warn('Failed to sync display editor state:', error.message);
