@@ -411,6 +411,13 @@ function renderSimulation(skipJsonValidation = false) {
 
         // Add event listeners for view toggles
         setTimeout(() => {
+            document.getElementById('view-toggle-timeline')?.addEventListener('change', (e) => {
+                const timelineElement = document.querySelector('.simulation-timeline');
+                if (timelineElement) {
+                    timelineElement.style.display = e.target.checked ? '' : 'none';
+                }
+            });
+
             document.getElementById('view-toggle-objects')?.addEventListener('change', (e) => {
                 const objectsPanels = document.querySelectorAll('.resources-panel');
                 objectsPanels.forEach(panel => {
@@ -446,7 +453,7 @@ function renderSimulation(skipJsonValidation = false) {
         const timeline = document.createElement("div");
         timeline.className = "simulation-timeline";
         timeline.style.cssText =
-            "position: relative; min-height: 300px; background: #fff; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); margin: 1rem 0; width: 100%; box-sizing: border-box;";
+            "position: relative; min-height: 300px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); margin: 1rem 0; width: 100%; box-sizing: border-box;";
 
         const timeMarkers = document.createElement("div");
         timeMarkers.className = "timeline-time-markers";
@@ -556,7 +563,7 @@ function renderSimulation(skipJsonValidation = false) {
                 taskElement.setAttribute('aria-label', `Task: ${task.display_name}, ${task.duration} minutes, starts at ${task.start}`);
                 taskElement.setAttribute('tabindex', '0');
 
-                taskElement.style.cssText = `position: absolute; left: ${task.start_percentage}%; width: ${task.duration_percentage}%; height: 30px; top: 5px; background: white; color: black; border: 2px solid var(--primary-color); border-radius: var(--border-radius-sm); font-size: 0.75rem; overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.5rem; user-select: none;`;
+                taskElement.style.cssText = `position: absolute; left: ${task.start_percentage}%; width: ${task.duration_percentage}%; height: 30px; top: 5px; background: var(--bg-color); color: var(--text-color); border: 2px solid var(--primary-color); border-radius: var(--border-radius-sm); font-size: 0.75rem; overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.5rem; user-select: none;`;
 
                 // Gracefully scale emoji down for tasks under 10 minutes
                 let emojiStyle = '';

@@ -1095,26 +1095,15 @@ function applyDarkMode() {
       return;
     }
 
-    if (isEmbedded) {
-      // In embedded mode, match parent page logic:
-      // Dark mode: no data-theme attribute, Light mode: data-theme="light"
-      if (isDarkMode) {
-        documentElement.removeAttribute("data-theme");
-        applyMonacoDarkTheme();
-      } else {
-        documentElement.setAttribute("data-theme", "light");
-        applyMonacoLightTheme();
-      }
+    // Use consistent logic for both embedded and standalone modes:
+    // Dark mode: data-theme="dark", Light mode: no data-theme attribute
+    // This matches the CSS selectors in main.css (:root for light, [data-theme="dark"] for dark)
+    if (isDarkMode) {
+      documentElement.setAttribute("data-theme", "dark");
+      applyMonacoDarkTheme();
     } else {
-      // Standalone mode: original playground logic
-      // Dark mode: data-theme="dark", Light mode: no data-theme attribute
-      if (isDarkMode) {
-        documentElement.setAttribute("data-theme", "dark");
-        applyMonacoDarkTheme();
-      } else {
-        documentElement.removeAttribute("data-theme");
-        applyMonacoLightTheme();
-      }
+      documentElement.removeAttribute("data-theme");
+      applyMonacoLightTheme();
     }
   } catch (error) {
     console.error('Error applying dark mode:', error);
@@ -1237,15 +1226,15 @@ function syncWithParentTheme() {
 
       console.log("Parent theme detected:", parentTheme);
 
-      // Parent page logic: no data-theme = dark mode, data-theme="light" = light mode
-      if (parentTheme === 'light') {
-        isDarkMode = false;
-        PlaygroundState.isDarkMode = false;
-        console.log("Setting playground to light mode");
-      } else {
-        isDarkMode = true; // default to dark mode like parent
+      // Use consistent convention: data-theme="dark" = dark mode, no data-theme = light mode
+      if (parentTheme === 'dark') {
+        isDarkMode = true;
         PlaygroundState.isDarkMode = true;
         console.log("Setting playground to dark mode");
+      } else {
+        isDarkMode = false; // default to light mode
+        PlaygroundState.isDarkMode = false;
+        console.log("Setting playground to light mode");
       }
 
       // Apply the theme
@@ -1255,10 +1244,10 @@ function syncWithParentTheme() {
       setupParentThemeListener();
 
     } catch (e) {
-      // Cross-origin iframe - can't access parent, default to dark mode
-      console.warn("Cannot access parent theme (cross-origin), defaulting to dark mode:", e.message);
-      isDarkMode = true;
-      PlaygroundState.isDarkMode = true;
+      // Cross-origin iframe - can't access parent, default to light mode
+      console.warn("Cannot access parent theme (cross-origin), defaulting to light mode:", e.message);
+      isDarkMode = false;
+      PlaygroundState.isDarkMode = false;
       applyDarkMode();
     }
   }, 100); // Small delay to let parent finish loading
@@ -1275,7 +1264,7 @@ function setupParentThemeListener() {
         if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
           try {
             const parentTheme = window.parent.document.documentElement.getAttribute('data-theme');
-            const newIsDarkMode = parentTheme !== 'light';
+            const newIsDarkMode = parentTheme === 'dark';
 
             console.log("Parent theme changed to:", parentTheme, "newIsDarkMode:", newIsDarkMode);
 
