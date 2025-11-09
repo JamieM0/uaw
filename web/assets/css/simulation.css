@@ -134,6 +134,10 @@
     grid-template-columns: 2fr 1fr;
     gap: 1rem;
     padding: 1rem;
+    /* Performance optimizations for smooth scrolling */
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-overflow-scrolling: touch;
 }
 
 .gantt-chart-container {
@@ -154,6 +158,10 @@
     background: white;
     min-height: 300px;
     overflow-x: auto;
+    /* Performance optimizations for smooth scrolling */
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-overflow-scrolling: touch;
 }
 
 .timeline-header {
@@ -305,6 +313,10 @@
     padding: 0.5rem;
     max-height: 300px;
     overflow-y: auto;
+    /* Performance optimizations for smooth scrolling */
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-overflow-scrolling: touch;
 }
 
 .resource-item {
@@ -600,9 +612,13 @@
     font-size: 24px;
     font-weight: 500;
     cursor: pointer;
-    transition: border-color var(--transition-normal), transform var(--transition-normal), box-shadow var(--transition-normal), filter var(--transition-normal);
+    /* Simplified transitions for better performance - removed transform and filter */
+    transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
     border: 2px solid var(--primary-color);
     box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    /* Hardware acceleration for smoother rendering */
+    will-change: border-color, box-shadow;
+    transform: translateZ(0);
 }
 
 .task-block:focus {
@@ -612,9 +628,11 @@
 
 .task-block:hover {
     border-color: var(--primary-light);
-    transform: translateY(-2px);
+    /* Removed transform for better scroll performance */
+    /* transform: translateY(-2px); */
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    filter: brightness(1.1);
+    /* Removed filter for better performance */
+    /* filter: brightness(1.1); */
 }
 
 .task-block.active {
@@ -728,11 +746,17 @@
     border-radius: 4px;
     background: white;
     padding: 0.25rem;
+    /* Performance optimizations for smooth scrolling */
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
 }
 
 .tree-node {
     margin: 0.25rem 0;
-    transition: background-color var(--transition-normal);
+    /* Removed transition to prevent repaints during scroll */
+    /* transition: background-color var(--transition-normal); */
 }
 
 .tree-node:hover {
@@ -993,6 +1017,11 @@
     background: #fafafa;
     max-height: 600px;
     overflow-y: auto;
+    /* Performance optimizations for smooth scrolling */
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
 }
 
 .tree-node {

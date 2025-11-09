@@ -386,6 +386,10 @@ function renderSimulation(skipJsonValidation = false) {
             <button class="action-btn dropdown-toggle">View ▼</button>
             <div class="dropdown-content" style="right: 0; left: auto; min-width: 180px;">
                 <label class="dropdown-checkbox-item">
+                    <input type="checkbox" id="view-toggle-timeline" checked>
+                    <span>Timeline</span>
+                </label>
+                <label class="dropdown-checkbox-item">
                     <input type="checkbox" id="view-toggle-objects" checked>
                     <span>Objects</span>
                 </label>
@@ -418,10 +422,13 @@ function renderSimulation(skipJsonValidation = false) {
             });
 
             document.getElementById('view-toggle-digital-objects')?.addEventListener('change', (e) => {
+                // Find panels specifically for digital object types (digital_object, digital_location, etc.)
                 const digitalPanels = document.querySelectorAll('.resources-panel');
                 digitalPanels.forEach(panel => {
-                    // Only hide panels that ARE for digital objects
-                    if (panel.id.includes('digital')) {
+                    // Check if panel ID matches digital object type patterns
+                    const panelId = panel.id;
+                    const isDigitalPanel = panelId.match(/live-digital[_-]/i);
+                    if (isDigitalPanel) {
                         panel.style.display = e.target.checked ? '' : 'none';
                     }
                 });
@@ -430,7 +437,8 @@ function renderSimulation(skipJsonValidation = false) {
             document.getElementById('view-toggle-statistics')?.addEventListener('change', (e) => {
                 const statsSection = document.querySelector('.simulation-stats');
                 if (statsSection) {
-                    statsSection.style.display = e.target.checked ? '' : 'none';
+                    // Use 'flex' explicitly to maintain the horizontal layout
+                    statsSection.style.display = e.target.checked ? 'flex' : 'none';
                 }
             });
         }, 0);
@@ -477,26 +485,6 @@ function renderSimulation(skipJsonValidation = false) {
         timeMarkers.appendChild(markerFragment);
 
         timeline.appendChild(timeMarkers);
-
-
-        const playhead = document.createElement("div");
-        playhead.id = "simulation-playhead";
-        playhead.className = "simulation-playhead";
-        playhead.setAttribute('role', 'presentation');
-        playhead.setAttribute('aria-label', 'Simulation playhead');
-
-        const scrubHandle = document.createElement("div");
-        scrubHandle.className = "scrub-handle";
-        scrubHandle.setAttribute('role', 'slider');
-        scrubHandle.setAttribute('aria-label', 'Scrub timeline');
-        scrubHandle.setAttribute('aria-valuemin', '0');
-        scrubHandle.setAttribute('aria-valuemax', visualTotalDuration.toString());
-        scrubHandle.setAttribute('aria-valuenow', '0');
-        scrubHandle.setAttribute('tabindex', '0');
-        playhead.appendChild(scrubHandle);
-
-        // Append the playhead to the main timeline
-        timeline.appendChild(playhead);
 
         const actorLanes = document.createElement("div");
         actorLanes.className = "actor-lanes";

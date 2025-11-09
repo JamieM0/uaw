@@ -406,6 +406,11 @@ body {
     display: block !important;
     grid-template-columns: unset !important;
     user-select: none;
+    /* Performance optimizations for smooth scrolling */
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
 }
 
 .playground-bottom {
@@ -415,6 +420,10 @@ body {
     overflow-y: auto;
     position: relative;
     flex-shrink: 0;
+    /* Performance optimizations for smooth scrolling */
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-overflow-scrolling: touch;
 }
 
 .validation-panel {
@@ -870,6 +879,11 @@ body {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
     min-height: 0;
+    /* Performance optimizations for smooth scrolling */
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
 }
 
 .validation-group {
@@ -1111,7 +1125,8 @@ body {
 
 .task-block:hover {
     border: 2px solid var(--primary-color);
-    transform: translateY(-2px);
+    /* Removed transform for better scroll performance */
+    /* transform: translateY(-2px); */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     z-index: 5;
 }
@@ -1218,6 +1233,11 @@ body {
     max-height: 80vh;
     overflow-y: auto;
     box-shadow: var(--shadow-lg);
+    /* Performance optimizations for smooth scrolling */
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
 }
 
 #add-object-modal .dialog,
@@ -1930,6 +1950,11 @@ body {
     padding: 1rem;
     overflow-y: auto;
     line-height: 1.6;
+    /* Performance optimizations for smooth scrolling */
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
 }
 
 .tutorial-content code {
@@ -1991,7 +2016,7 @@ body.tutorial-active #auto-render-toggle {
     background-color: #f9f9f9;
     min-width: 200px;
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-    z-index: 1;
+    z-index: 2000;
     border-radius: var(--border-radius-sm);
     overflow: hidden;
     right: 0;
@@ -2049,6 +2074,7 @@ body.tutorial-active #auto-render-toggle {
     display: flex !important;
     align-items: center;
     gap: 1rem;
+    padding: 1rem;
 }
 
 .simulation-header-content {
@@ -2057,6 +2083,35 @@ body.tutorial-active #auto-render-toggle {
 
 .view-controls {
     margin-left: auto;
+    position: relative;
+}
+
+.view-controls .dropdown {
+    display: inline-block;
+}
+
+.view-controls .dropdown-toggle {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.view-controls .dropdown-toggle:hover {
+    background: var(--primary-dark);
+}
+
+.view-controls .dropdown-content {
+    right: 0;
+    left: auto;
+    min-width: 180px;
+    margin-top: 0.25rem;
+    border: 1px solid var(--border-color);
 }
 
 /* Simulation Library specific styles */
@@ -2730,6 +2785,11 @@ optgroup[label*="Products"] {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     max-height: 90vh;
     overflow-y: auto;
+    /* Performance optimizations for smooth scrolling */
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
 }
 
 #feedback-modal .dialog h3 {
