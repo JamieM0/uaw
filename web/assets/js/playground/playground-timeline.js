@@ -159,15 +159,35 @@ function processSimulationData(simulationData) {
         article_title: sim.meta?.article_title || "Process Simulation",
         domain: sim.meta?.domain || "General",
     };
-    
+
     // Add objects with tasks to a special "timeline_actors" group for timeline rendering
     result.timeline_actors = objectsWithTasks;
-    
+
+    // Track which object type keys come from digital space
+    const digitalObjectTypeKeys = new Set();
+    if (digitalSpace && digitalSpace.digital_locations) {
+        digitalSpace.digital_locations.forEach(loc => {
+            if (loc.type) {
+                digitalObjectTypeKeys.add(loc.type);
+            }
+        });
+    }
+    if (digitalSpace && digitalSpace.digital_objects) {
+        digitalSpace.digital_objects.forEach(obj => {
+            if (obj.type) {
+                digitalObjectTypeKeys.add(obj.type);
+            }
+        });
+    }
+
     // Add all object types dynamically
     Object.entries(objectsByType).forEach(([type, objects]) => {
         result[type] = objects;
     });
-    
+
+    // Store the digital object types as metadata
+    result._digitalObjectTypeKeys = Array.from(digitalObjectTypeKeys);
+
     return result;
 }
 
@@ -336,22 +356,16 @@ function renderSimulation(skipJsonValidation = false) {
         // Add event listeners for view toggles
         setTimeout(() => {
             document.getElementById('view-toggle-objects')?.addEventListener('change', (e) => {
-                const objectsPanels = document.querySelectorAll('.resources-panel');
+                const objectsPanels = document.querySelectorAll('.resources-panel[data-object-category="physical"]');
                 objectsPanels.forEach(panel => {
-                    // Only hide panels that are NOT for digital objects
-                    if (!panel.id.includes('digital')) {
-                        panel.style.display = e.target.checked ? '' : 'none';
-                    }
+                    panel.style.display = e.target.checked ? '' : 'none';
                 });
             });
 
             document.getElementById('view-toggle-digital-objects')?.addEventListener('change', (e) => {
-                const digitalPanels = document.querySelectorAll('.resources-panel');
+                const digitalPanels = document.querySelectorAll('.resources-panel[data-object-category="digital"]');
                 digitalPanels.forEach(panel => {
-                    // Only hide panels that ARE for digital objects
-                    if (panel.id.includes('digital')) {
-                        panel.style.display = e.target.checked ? '' : 'none';
-                    }
+                    panel.style.display = e.target.checked ? '' : 'none';
                 });
             });
 
@@ -533,24 +547,31 @@ function renderSimulation(skipJsonValidation = false) {
 
         // Create panels dynamically based on object types in simulation data
         const detectedTypes = new Set();
-        
+        const digitalObjectTypes = new Set();
+        const digitalTypeKeys = new Set(currentSimulationData._digitalObjectTypeKeys || []);
+
         // Add types that have existing objects (both standard and custom types)
         Object.keys(currentSimulationData).forEach(key => {
-            // Skip non-object-type keys
-            if (['tasks', 'start_time', 'end_time', 'start_time_minutes', 'end_time_minutes', 'total_duration_minutes', 'article_title', 'domain', 'timeline_actors'].includes(key)) {
+            // Skip non-object-type keys and metadata keys
+            if (['tasks', 'start_time', 'end_time', 'start_time_minutes', 'end_time_minutes', 'total_duration_minutes', 'article_title', 'domain', 'timeline_actors', '_digitalObjectTypeKeys'].includes(key)) {
                 return;
             }
-            
+
             // Check if this key represents an object type (arrays of objects)
             if (Array.isArray(currentSimulationData[key]) && currentSimulationData[key].length > 0) {
                 // Verify it's actually an object type by checking if items have typical object properties
                 const firstItem = currentSimulationData[key][0];
                 if (firstItem && (firstItem.id || firstItem.type)) {
                     detectedTypes.add(key);
+
+                    // Mark types that come from digital space as digital object types
+                    if (digitalTypeKeys.has(key)) {
+                        digitalObjectTypes.add(key);
+                    }
                 }
             }
         });
-        
+
         // Also check for objects that will be created during tasks
         (currentSimulationData.tasks || []).forEach(task => {
             (task.interactions || []).forEach(interaction => {
@@ -563,13 +584,19 @@ function renderSimulation(skipJsonValidation = false) {
                 }
             });
         });
-        
+
         const availableTypes = Array.from(detectedTypes);
 
         availableTypes.forEach(objectType => {
             const panel = document.createElement("div");
             panel.id = `live-${objectType}-panel`;
             panel.className = "resources-panel";
+            // Mark digital object panels with a data attribute for reliable filtering
+            if (digitalObjectTypes.has(objectType)) {
+                panel.setAttribute('data-object-category', 'digital');
+            } else {
+                panel.setAttribute('data-object-category', 'physical');
+            }
             panel.innerHTML = `<h5>${objectType} (at <span class="live-time">00:00</span>)</h5><div class="resource-grid"></div>`;
             liveStateContainer.appendChild(panel);
         });
@@ -1096,30 +1123,36 @@ function updateDynamicPanels() {
         const jsonText = editor.getValue();
         const simulationData = JSON.parse(stripJsonComments(jsonText));
         const processedData = processSimulationData(simulationData);
-        
+
         // Check if live state container exists
         const liveStateContainer = document.getElementById('live-state-container');
         if (!liveStateContainer) return;
-        
+
         // Update existing panels or create new ones as needed
         const detectedTypes = new Set();
-        
+        const digitalObjectTypes = new Set();
+        const digitalTypeKeys = new Set(processedData._digitalObjectTypeKeys || []);
+
         // Add types that have existing objects
         Object.keys(processedData).forEach(key => {
-            // Skip non-object-type keys
-            if (['tasks', 'start_time', 'end_time', 'start_time_minutes', 'end_time_minutes', 'total_duration_minutes', 'article_title', 'domain', 'timeline_actors'].includes(key)) {
+            // Skip non-object-type keys and metadata keys
+            if (['tasks', 'start_time', 'end_time', 'start_time_minutes', 'end_time_minutes', 'total_duration_minutes', 'article_title', 'domain', 'timeline_actors', '_digitalObjectTypeKeys'].includes(key)) {
                 return;
             }
-            
+
             // If there's no container yet, we'll let renderSimulation create it
             if (Array.isArray(processedData[key]) && processedData[key].length > 0) {
                 const firstItem = processedData[key][0];
                 if (firstItem && (firstItem.id || firstItem.type)) {
                     detectedTypes.add(key);
+                    // Mark types that come from digital space as digital object types
+                    if (digitalTypeKeys.has(key)) {
+                        digitalObjectTypes.add(key);
+                    }
                 }
             }
         });
-        
+
         // Check for objects that will be created during tasks
         (processedData.tasks || []).forEach(task => {
             (task.interactions || []).forEach(interaction => {
@@ -1132,7 +1165,7 @@ function updateDynamicPanels() {
                 }
             });
         });
-        
+
         // Create panels for new types
         detectedTypes.forEach(objectType => {
             const existingPanel = document.getElementById(`live-${objectType}-panel`);
@@ -1140,11 +1173,17 @@ function updateDynamicPanels() {
                 const panel = document.createElement("div");
                 panel.id = `live-${objectType}-panel`;
                 panel.className = "resources-panel";
+                // Mark digital object panels with a data attribute for reliable filtering
+                if (digitalObjectTypes.has(objectType)) {
+                    panel.setAttribute('data-object-category', 'digital');
+                } else {
+                    panel.setAttribute('data-object-category', 'physical');
+                }
                 panel.innerHTML = `<h5>${objectType} (at <span class="live-time">00:00</span>)</h5><div class="resource-grid"></div>`;
                 liveStateContainer.appendChild(panel);
             }
         });
-        
+
     } catch (e) {
         // JSON might be invalid during typing, ignore errors
     }
