@@ -17,16 +17,50 @@ function displayValidationResults(results) {
 
 function displayGroupedValidationResults(results) {
     const compactContainer = document.getElementById("validation-compact");
-    if (!compactContainer) return;
+    if (!compactContainer) {
+        console.warn('Validation compact container not found in DOM');
+        return;
+    }
 
-    // Calculate stats for each category
+    // Single-pass grouping for better performance (was 8 filters, now 1 loop)
+    const grouped = {
+        errors: [],
+        warnings: [],
+        suggestions: [],
+        success: []
+    };
+
     const stats = {
         total: results.length,
-        errors: results.filter(r => r.status === 'error').length,
-        warnings: results.filter(r => r.status === 'warning').length,
-        suggestions: results.filter(r => r.status === 'suggestion').length,
-        success: results.filter(r => r.status === 'success').length
+        errors: 0,
+        warnings: 0,
+        suggestions: 0,
+        success: 0
     };
+
+    // Single pass through results to group and count
+    for (const result of results) {
+        switch (result.status) {
+            case 'error':
+                grouped.errors.push(result);
+                stats.errors++;
+                break;
+            case 'warning':
+                grouped.warnings.push(result);
+                stats.warnings++;
+                break;
+            case 'suggestion':
+                grouped.suggestions.push(result);
+                stats.suggestions++;
+                break;
+            case 'success':
+                grouped.success.push(result);
+                stats.success++;
+                break;
+            default:
+                console.warn(`Unknown validation status: ${result.status}`);
+        }
+    }
 
     try {
         if (window.__uawValidationResultsCache) {
@@ -39,19 +73,14 @@ function displayGroupedValidationResults(results) {
     // Update stat counters
     updateValidationStats(stats);
 
-    // Group results by status
-    const grouped = {
-        errors: results.filter(r => r.status === 'error'),
-        warnings: results.filter(r => r.status === 'warning'), 
-        suggestions: results.filter(r => r.status === 'suggestion'),
-        success: results.filter(r => r.status === 'success')
-    };
+    // Cache metrics catalog to avoid repeated expensive calls
+    const mergedCatalog = getMergedMetricsCatalog();
 
-    // Display grouped results
-    displayValidationGroup('errors', grouped.errors, '❌');
-    displayValidationGroup('warnings', grouped.warnings, '⚠️');
-    displayValidationGroup('suggestions', grouped.suggestions, '💡');
-    displayValidationGroup('passed', grouped.success, '✅', false); // show passed messages by default
+    // Display grouped results (pass cached catalog)
+    displayValidationGroup('errors', grouped.errors, '❌', false, mergedCatalog);
+    displayValidationGroup('warnings', grouped.warnings, '⚠️', false, mergedCatalog);
+    displayValidationGroup('suggestions', grouped.suggestions, '💡', false, mergedCatalog);
+    displayValidationGroup('passed', grouped.success, '✅', false, mergedCatalog); // show passed messages by default
 
     // Apply current filter
     applyValidationFilter();
@@ -76,18 +105,28 @@ function updateValidationStats(stats) {
     if (elements.success) elements.success.textContent = stats.success;
 }
 
-function displayValidationGroup(groupId, results, icon, collapsedByDefault = false) {
+function displayValidationGroup(groupId, results, icon, collapsedByDefault = false, mergedCatalog = null) {
     const groupElement = document.getElementById(`${groupId}-group`);
     const contentElement = document.getElementById(`${groupId}-group-content`);
 
-    if (!groupElement || !contentElement) return;
+    if (!groupElement) {
+        console.warn(`Validation group element not found: ${groupId}-group`);
+        return;
+    }
+    if (!contentElement) {
+        console.warn(`Validation group content element not found: ${groupId}-group-content`);
+        return;
+    }
 
     // Show/hide group based on whether it has results
     if (results.length > 0) {
         groupElement.style.display = 'block';
 
         // Sort results to float custom metrics to the top
-        const mergedCatalog = getMergedMetricsCatalog();
+        // Use cached catalog if provided, otherwise fetch it
+        if (!mergedCatalog) {
+            mergedCatalog = getMergedMetricsCatalog();
+        }
         const sortedResults = [...results].sort((a, b) => {
             const metricA = mergedCatalog.find(m => m.id === a.metricId);
             const metricB = mergedCatalog.find(m => m.id === b.metricId);
@@ -107,8 +146,7 @@ function displayValidationGroup(groupId, results, icon, collapsedByDefault = fal
 
         // Generate HTML for results
         const html = sortedResults.map(result => {
-            const statusIcon = getStatusIcon(result.status);
-            const metricName = sanitizeHTML(getMetricDisplayName(result.metricId));
+            const metricName = sanitizeHTML(getMetricDisplayName(result.metricId, mergedCatalog));
             const sanitizedMessage = sanitizeHTML(result.message);
             const metric = mergedCatalog.find(m => m.id === result.metricId);
 
@@ -124,9 +162,19 @@ function displayValidationGroup(groupId, results, icon, collapsedByDefault = fal
                 `;
             }
 
+            // Create accessible status label for screen readers
+            const statusLabel = result.status === 'error' ? 'Error' :
+                               result.status === 'warning' ? 'Warning' :
+                               result.status === 'suggestion' ? 'Suggestion' : 'Success';
+
             return `
-                <div class="validation-result-item ${result.status}" data-metric-id="${sanitizeHTML(result.metricId)}" data-clickable="true">
-                    <div class="validation-result-status ${result.status}"></div>
+                <div class="validation-result-item ${result.status}"
+                     data-metric-id="${sanitizeHTML(result.metricId)}"
+                     data-clickable="true"
+                     role="button"
+                     tabindex="0"
+                     aria-label="${statusLabel}: ${metricName} - ${sanitizedMessage}">
+                    <div class="validation-result-status ${result.status}" aria-hidden="true"></div>
                     <div class="validation-result-details">
                         <div class="validation-result-name">
                             ${metricName} <span class="validation-message-inline">— ${sanitizedMessage}</span>
@@ -150,45 +198,49 @@ function displayValidationGroup(groupId, results, icon, collapsedByDefault = fal
     }
 }
 
-function getStatusIcon(status) {
-    // Return empty string since we'll use CSS for visual indicators
-    return '';
-}
-
-function getMetricDisplayName(metricId) {
+function getMetricDisplayName(metricId, mergedCatalog = null) {
     // Try to get a more friendly name from the merged metrics catalog
-    const mergedCatalog = getMergedMetricsCatalog();
+    // Use cached catalog if provided, otherwise fetch it
+    if (!mergedCatalog) {
+        mergedCatalog = getMergedMetricsCatalog();
+    }
+
     const metric = mergedCatalog.find(m => m.id === metricId);
-    
+
     if (!metric) {
+        console.warn(`Metric not found in catalog: ${metricId}`);
         return metricId;
     }
-    
+
     // For custom metrics, show ID; for built-in, show name
     const displayName = metric.source === 'custom' ? metric.id : metric.name;
-    
+
     return displayName;
 }
 
 // Store references to event handlers for cleanup
 let validationEventHandlers = {
     clickHandler: null,
+    keyboardHandler: null,
     filterChangeHandler: null
 };
 
 function setupValidationInteractions() {
     const validationContainer = document.querySelector('.validation-panel');
     const filterSelect = document.getElementById('validation-filter');
-    
+
     // Clean up existing event handlers to prevent duplicates
     if (validationEventHandlers.clickHandler && validationContainer) {
         validationContainer.removeEventListener('click', validationEventHandlers.clickHandler);
+    }
+    if (validationEventHandlers.keyboardHandler && validationContainer) {
+        validationContainer.removeEventListener('keydown', validationEventHandlers.keyboardHandler);
     }
     if (validationEventHandlers.filterChangeHandler && filterSelect) {
         filterSelect.removeEventListener('change', validationEventHandlers.filterChangeHandler);
         filterSelect.removeAttribute('data-listener-attached');
     }
-    
+
     if (validationContainer) {
         // Delegated event listener for stat items and example buttons
         validationEventHandlers.clickHandler = (e) => {
@@ -246,10 +298,41 @@ function setupValidationInteractions() {
                 }
             }
         };
-        
+
+        // Keyboard handler for accessibility
+        validationEventHandlers.keyboardHandler = (e) => {
+            // Handle Enter or Space key on validation result items
+            if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('.validation-result-item[data-clickable="true"]')) {
+                e.preventDefault();
+                const resultItem = e.target.closest('.validation-result-item');
+                const message = resultItem.querySelector('.validation-message-inline');
+                if (message) {
+                    const messageText = message.textContent.replace('— ', '');
+                    jumpToValidationTarget(messageText);
+                }
+            }
+
+            // Handle Enter or Space key on stat items
+            if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('.stat-item.clickable')) {
+                e.preventDefault();
+                const statItem = e.target.closest('.stat-item.clickable');
+                const filterValue = statItem.dataset.filter;
+                const filterSelect = document.getElementById('validation-filter');
+                if (filterSelect) {
+                    filterSelect.value = filterValue;
+                    applyValidationFilter();
+
+                    // Update visual state
+                    document.querySelectorAll('.stat-item.clickable').forEach(s => s.classList.remove('active'));
+                    statItem.classList.add('active');
+                }
+            }
+        };
+
         validationContainer.addEventListener('click', validationEventHandlers.clickHandler);
+        validationContainer.addEventListener('keydown', validationEventHandlers.keyboardHandler);
     }
-    
+
     // Setup filter dropdown
     if (filterSelect) {
         validationEventHandlers.filterChangeHandler = applyValidationFilter;
@@ -260,7 +343,12 @@ function setupValidationInteractions() {
 
 function applyValidationFilter() {
     const filterSelect = document.getElementById('validation-filter');
-    const filterValue = filterSelect?.value || 'all';
+    if (!filterSelect) {
+        console.warn('Validation filter select element not found');
+        return;
+    }
+
+    const filterValue = filterSelect.value || 'all';
 
     // Get all validation groups
     const groups = {
@@ -269,6 +357,15 @@ function applyValidationFilter() {
         suggestions: document.getElementById('suggestions-group'),
         passed: document.getElementById('passed-group')
     };
+
+    // Check if any groups are missing
+    const missingGroups = Object.entries(groups)
+        .filter(([_, element]) => !element)
+        .map(([name, _]) => name);
+
+    if (missingGroups.length > 0) {
+        console.warn(`Validation groups not found: ${missingGroups.join(', ')}`);
+    }
 
     // Update stat item visual states
     document.querySelectorAll('.stat-item.clickable').forEach(item => {
@@ -404,11 +501,24 @@ function filterValidationResults() {
 }
 
 function displayValidationError(message) {
+    // Ensure we have a valid error message
+    if (!message || typeof message !== 'string') {
+        message = 'An unknown validation error occurred. Please check your simulation data.';
+    }
+
+    // Add helpful context based on common error types
+    let enhancedMessage = message;
+    if (message.includes('JSON')) {
+        enhancedMessage = `${message}\n\nTip: Check for missing commas, quotes, or brackets in your JSON.`;
+    } else if (message.includes('simulation data')) {
+        enhancedMessage = `${message}\n\nMake sure your simulation follows the Universal Object Model structure.`;
+    }
+
     const errorResult = [
         {
-            metricId: 'json-syntax',
+            metricId: 'validation-error',
             status: 'error',
-            message: message
+            message: enhancedMessage
         }
     ];
     displayGroupedValidationResults(errorResult);
@@ -622,11 +732,18 @@ function enableBuiltinMetric(metricId) {
 // Refresh the current validation display (re-run validation to update buttons/visibility)
 function refreshValidationDisplay() {
     try {
+        // Check if getCurrentSimulationData function exists
+        if (typeof getCurrentSimulationData !== 'function') {
+            console.error('getCurrentSimulationData function not available');
+            displayValidationError('Unable to access simulation data. Please reload the page.');
+            return;
+        }
+
         // Get current simulation data
         const currentSimulationData = getCurrentSimulationData();
         if (!currentSimulationData) {
             // No simulation to validate, clear display
-            displayValidationError('No simulation data to validate');
+            displayValidationError('No simulation data available. Load or create a simulation to validate.');
             return;
         }
 
@@ -643,85 +760,73 @@ function refreshValidationDisplay() {
             } else {
                 // Fallback: run validation manually
                 const mergedCatalog = getMergedMetricsCatalog();
-                if (mergedCatalog && mergedCatalog.length > 0) {
-                    const validator = new SimulationValidator(currentSimulationData);
-                    const results = validator.runChecks(mergedCatalog);
-                    displayValidationResults(results);
+                if (!mergedCatalog || mergedCatalog.length === 0) {
+                    displayValidationError('No validation metrics available. Check metrics catalog.');
+                    return;
                 }
+
+                if (typeof SimulationValidator !== 'function') {
+                    console.error('SimulationValidator class not available');
+                    displayValidationError('Validation engine not loaded. Please reload the page.');
+                    return;
+                }
+
+                const validator = new SimulationValidator(currentSimulationData);
+                const results = validator.runChecks(mergedCatalog);
+                displayValidationResults(results);
             }
         }
     } catch (e) {
         console.error('Error refreshing validation display:', e);
-        displayValidationError('Error refreshing validation display');
+        displayValidationError(`Error refreshing validation: ${e.message}`);
     }
 }
 
 // Jump to the referenced JSON location from a validation message
 function jumpToValidationTarget(message) {
-    if (!message) return;
+    // Validate input
+    if (!message || typeof message !== 'string') {
+        console.warn('Invalid message passed to jumpToValidationTarget');
+        return;
+    }
 
     // Extract task or object IDs from validation messages using various patterns
     let targetId = null;
     let targetType = null;
 
-    // Pattern: Task 'task_id'
-    let match = message.match(/Task '([^']+)'/);
-    if (match) {
-        targetId = match[1];
-        targetType = 'task';
-    }
+    // Define all patterns to check - reduces code duplication
+    const patterns = [
+        { regex: /Task '([^']+)'/, type: 'task' },
+        { regex: /Object '([^']+)'/, type: 'object' },
+        { regex: /Actor '([^']+)'/, type: 'object' },
+        { regex: /Equipment '([^']+)'/, type: 'object' },
+        { regex: /Resource '([^']+)'/, type: 'object' },
+        { regex: /Product '([^']+)'/, type: 'object' },
+        { regex: /Location '([^']+)'/, type: 'object' }
+    ];
 
-    // Pattern: Object 'object_id'
-    if (!match) {
-        match = message.match(/Object '([^']+)'/);
-        if (match) {
+    // Find the first matching pattern
+    for (const pattern of patterns) {
+        const match = message.match(pattern.regex);
+        if (match && match[1]) {
             targetId = match[1];
-            targetType = 'object';
-        }
-    }
-
-    // Pattern: Actor 'actor_id'
-    if (!match) {
-        match = message.match(/Actor '([^']+)'/);
-        if (match) {
-            targetId = match[1];
-            targetType = 'object';
-        }
-    }
-
-    // Pattern: Equipment 'equipment_id'
-    if (!match) {
-        match = message.match(/Equipment '([^']+)'/);
-        if (match) {
-            targetId = match[1];
-            targetType = 'object';
-        }
-    }
-
-    // Pattern: Resource 'resource_id'
-    if (!match) {
-        match = message.match(/Resource '([^']+)'/);
-        if (match) {
-            targetId = match[1];
-            targetType = 'object';
-        }
-    }
-
-    // Pattern: Product 'product_id'
-    if (!match) {
-        match = message.match(/Product '([^']+)'/);
-        if (match) {
-            targetId = match[1];
-            targetType = 'object';
+            targetType = pattern.type;
+            break;
         }
     }
 
     // If we found a target, try to jump to it
     if (targetId && targetType) {
-        if (targetType === 'task' && typeof scrollToTaskInJSON === 'function') {
-            scrollToTaskInJSON(targetId);
-        } else if (targetType === 'object' && typeof scrollToObjectInJSON === 'function') {
-            scrollToObjectInJSON(targetId);
+        try {
+            if (targetType === 'task' && typeof scrollToTaskInJSON === 'function') {
+                scrollToTaskInJSON(targetId);
+            } else if (targetType === 'object' && typeof scrollToObjectInJSON === 'function') {
+                scrollToObjectInJSON(targetId);
+            } else {
+                console.warn(`Jump function not available for type: ${targetType}`);
+            }
+        } catch (error) {
+            console.error(`Error jumping to ${targetType} '${targetId}':`, error);
         }
     } else {
         console.log('No jumpable target found in validation message:', message);

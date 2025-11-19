@@ -1874,6 +1874,11 @@ class DisplayEditor {
             // For backward compatibility, check both new (nested) and old (root) locations
             const displays = simulation.displays || data.displays;
 
+            // Clear existing data first to prevent stale data from previous simulations
+            const previousDisplayIds = this.displays.map(d => d.id);
+            this.displays = [];
+            this.selectedRectId = null;
+
             if (displays && Array.isArray(displays)) {
                 // Ensure numeric values are properly preserved during JSON loading
                 this.displays = displays.map(display => ({
@@ -1889,13 +1894,29 @@ class DisplayEditor {
                         z_index: typeof rect.z_index === 'number' ? rect.z_index : parseInt(rect.z_index) || 1
                     }))
                 }));
+            }
 
-                if (this.displays.length > 0 && !this.activeDisplayId) {
+            // Reset active display ID if:
+            // 1. No displays exist (set to null)
+            // 2. Current active display no longer exists in new simulation (reset to first)
+            // 3. The set of display IDs has changed (new simulation loaded)
+            if (this.displays.length === 0) {
+                this.activeDisplayId = null;
+            } else {
+                const currentDisplayIds = this.displays.map(d => d.id);
+                const displayIdsChanged = previousDisplayIds.length !== currentDisplayIds.length ||
+                    !previousDisplayIds.every(id => currentDisplayIds.includes(id));
+
+                if (displayIdsChanged || !this.displays.find(d => d.id === this.activeDisplayId)) {
+                    // New simulation or current display no longer exists - reset to first display
                     this.activeDisplayId = this.displays[0].id;
                 }
-                this.updateDisplaySelect();
-                this.renderActiveDisplay();
             }
+
+            // Always update UI to reflect current state (even if displays is empty)
+            this.updateDisplaySelect();
+            this.renderActiveDisplay();
+            this.renderPropertiesPanel();
         } catch (e) {
             console.log("DISPLAY-EDITOR: Could not parse JSON for displays");
         }

@@ -3,22 +3,51 @@
 
 let interactionCounter = 0;
 
+// Track active event listeners for cleanup
+const eventListenerCleanup = {
+    objectModal: [],
+    taskModal: []
+};
+
 // Setup button event listeners
 document.addEventListener('DOMContentLoaded', () => {
     // Wait a bit for other modules to load
     setTimeout(() => {
         const addObjectBtn = document.getElementById("add-object-btn");
         const addTaskBtn = document.getElementById("add-task-btn");
-        
+
         if (addObjectBtn) {
             addObjectBtn.addEventListener("click", openAddObjectModal);
         }
-        
+
         if (addTaskBtn) {
             addTaskBtn.addEventListener("click", openAddTaskModal);
         }
     }, 500);
 });
+
+// Utility function to escape HTML and prevent XSS
+function escapeHtml(unsafe) {
+    if (typeof unsafe !== 'string') return unsafe;
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// Clean up event listeners for a modal
+function cleanupModalListeners(modalType) {
+    if (eventListenerCleanup[modalType]) {
+        eventListenerCleanup[modalType].forEach(({ element, event, handler }) => {
+            if (element) {
+                element.removeEventListener(event, handler);
+            }
+        });
+        eventListenerCleanup[modalType] = [];
+    }
+}
 
 // Store preserved field values when switching types
 let preservedObjectFields = {};
@@ -26,8 +55,16 @@ let preservedObjectFields = {};
 // Open add object modal
 function openAddObjectModal() {
     const modal = document.getElementById('add-object-modal');
+    if (!modal) {
+        console.error('Add object modal not found');
+        return;
+    }
+
     const typeSelect = document.getElementById('object-type-select');
     const fieldsContainer = document.getElementById('object-type-specific-fields');
+
+    // Clean up previous event listeners to prevent memory leaks
+    cleanupModalListeners('objectModal');
 
     // Clear form and validation
     modal.querySelectorAll('input, select').forEach(input => {
@@ -48,12 +85,21 @@ function openAddObjectModal() {
     modal.style.display = 'flex';
 
     // Setup type change handler
-    typeSelect.addEventListener('change', function() {
+    const typeChangeHandler = function() {
         preserveCommonObjectFields();
         updateObjectTypeFields(this.value, fieldsContainer);
         restoreCommonObjectFields();
         validateObjectForm();
-    });
+    };
+
+    if (typeSelect) {
+        typeSelect.addEventListener('change', typeChangeHandler);
+        eventListenerCleanup.objectModal.push({
+            element: typeSelect,
+            event: 'change',
+            handler: typeChangeHandler
+        });
+    }
 
     // Trigger initial update
     updateObjectTypeFields(typeSelect.value, fieldsContainer);
@@ -68,17 +114,32 @@ function openAddObjectModal() {
     const cancelBtn = document.getElementById('object-cancel-btn');
     const addBtn = document.getElementById('object-add-btn');
 
+    const cancelHandler = () => {
+        modal.style.display = 'none';
+        cleanupModalListeners('objectModal');
+    };
+
+    const addHandler = (e) => {
+        e.preventDefault();
+        addObjectToSimulation();
+    };
+
     if (cancelBtn) {
-        cancelBtn.onclick = () => {
-            modal.style.display = 'none';
-        };
+        cancelBtn.addEventListener('click', cancelHandler);
+        eventListenerCleanup.objectModal.push({
+            element: cancelBtn,
+            event: 'click',
+            handler: cancelHandler
+        });
     }
 
     if (addBtn) {
-        addBtn.onclick = (e) => {
-            e.preventDefault();
-            addObjectToSimulation();
-        };
+        addBtn.addEventListener('click', addHandler);
+        eventListenerCleanup.objectModal.push({
+            element: addBtn,
+            event: 'click',
+            handler: addHandler
+        });
     }
 
     // Autofocus on first field
@@ -88,9 +149,6 @@ function openAddObjectModal() {
             firstInput.focus();
         }
     }, 100);
-
-    // Initial validation
-    validateObjectForm();
 }
 
 // Preserve common fields when switching object types
@@ -161,29 +219,62 @@ function setupObjectValidation() {
     const nameInput = document.getElementById('object-name-input');
     const emojiInput = document.getElementById('object-emoji-input');
 
+    const typeHandler = validateObjectForm;
     if (typeSelect) {
-        typeSelect.addEventListener('change', validateObjectForm);
+        typeSelect.addEventListener('change', typeHandler);
+        eventListenerCleanup.objectModal.push({
+            element: typeSelect,
+            event: 'change',
+            handler: typeHandler
+        });
     }
 
+    const idHandler = typeof debounce === 'function' ? debounce(() => {
+        validateObjectId();
+        validateObjectForm();
+    }, 300) : () => {
+        validateObjectId();
+        validateObjectForm();
+    };
     if (idInput) {
-        idInput.addEventListener('input', debounce(() => {
-            validateObjectId();
-            validateObjectForm();
-        }, 300));
+        idInput.addEventListener('input', idHandler);
+        eventListenerCleanup.objectModal.push({
+            element: idInput,
+            event: 'input',
+            handler: idHandler
+        });
     }
 
+    const nameHandler = typeof debounce === 'function' ? debounce(() => {
+        validateObjectName();
+        validateObjectForm();
+    }, 300) : () => {
+        validateObjectName();
+        validateObjectForm();
+    };
     if (nameInput) {
-        nameInput.addEventListener('input', debounce(() => {
-            validateObjectName();
-            validateObjectForm();
-        }, 300));
+        nameInput.addEventListener('input', nameHandler);
+        eventListenerCleanup.objectModal.push({
+            element: nameInput,
+            event: 'input',
+            handler: nameHandler
+        });
     }
 
+    const emojiHandler = typeof debounce === 'function' ? debounce(() => {
+        validateObjectEmoji();
+        validateObjectForm();
+    }, 300) : () => {
+        validateObjectEmoji();
+        validateObjectForm();
+    };
     if (emojiInput) {
-        emojiInput.addEventListener('input', debounce(() => {
-            validateObjectEmoji();
-            validateObjectForm();
-        }, 300));
+        emojiInput.addEventListener('input', emojiHandler);
+        eventListenerCleanup.objectModal.push({
+            element: emojiInput,
+            event: 'input',
+            handler: emojiHandler
+        });
     }
 }
 
@@ -351,22 +442,25 @@ function validateObjectForm() {
 }
 
 function getObjectTypeFieldsHTML(type, context, counter) {
-    const locationOptions = context.locations.map(loc => 
-        `<option value="${loc.id}">${loc.name}</option>`
+    // Escape counter to prevent XSS
+    const safeCounter = escapeHtml(String(counter));
+
+    const locationOptions = context.locations.map(loc =>
+        `<option value="${escapeHtml(loc.id)}">${escapeHtml(loc.name)}</option>`
     ).join('');
-    
+
     let fieldsHTML = '';
-    
+
     switch (type) {
         case 'actor':
             fieldsHTML = `
                 <div class="form-group">
                     <label>Role</label>
-                    <input type="text" name="new_object_role_${counter}" placeholder="e.g., Baker, Assistant">
+                    <input type="text" name="new_object_role_${safeCounter}" placeholder="e.g., Baker, Assistant">
                 </div>
                 <div class="form-group">
                     <label>Cost per Hour ($)</label>
-                    <input type="number" name="new_object_cost_per_hour_${counter}" min="0" step="0.01" placeholder="25.00">
+                    <input type="number" name="new_object_cost_per_hour_${safeCounter}" min="0" step="0.01" placeholder="25.00">
                 </div>
             `;
             break;
@@ -374,11 +468,11 @@ function getObjectTypeFieldsHTML(type, context, counter) {
             fieldsHTML = `
                 <div class="form-group">
                     <label>Initial State</label>
-                    <input type="text" name="new_object_state_${counter}" placeholder="e.g., clean, available">
+                    <input type="text" name="new_object_state_${safeCounter}" placeholder="e.g., clean, available">
                 </div>
                 <div class="form-group">
                     <label>Capacity</label>
-                    <input type="number" name="new_object_capacity_${counter}" min="1" placeholder="1">
+                    <input type="number" name="new_object_capacity_${safeCounter}" min="1" placeholder="1">
                 </div>
             `;
             break;
@@ -386,11 +480,11 @@ function getObjectTypeFieldsHTML(type, context, counter) {
             fieldsHTML = `
                 <div class="form-group">
                     <label>Unit</label>
-                    <input type="text" name="new_object_unit_${counter}" placeholder="e.g., kg, liter, pieces">
+                    <input type="text" name="new_object_unit_${safeCounter}" placeholder="e.g., kg, liter, pieces">
                 </div>
                 <div class="form-group">
                     <label>Initial Quantity</label>
-                    <input type="number" name="new_object_quantity_${counter}" min="0" step="0.1" placeholder="10">
+                    <input type="number" name="new_object_quantity_${safeCounter}" min="0" step="0.1" placeholder="10">
                 </div>
             `;
             break;
@@ -398,11 +492,11 @@ function getObjectTypeFieldsHTML(type, context, counter) {
             fieldsHTML = `
                 <div class="form-group">
                     <label>Unit</label>
-                    <input type="text" name="new_object_unit_${counter}" placeholder="e.g., batch, loaves, pieces">
+                    <input type="text" name="new_object_unit_${safeCounter}" placeholder="e.g., batch, loaves, pieces">
                 </div>
                 <div class="form-group">
                     <label>Initial Quantity</label>
-                    <input type="number" name="new_object_quantity_${counter}" min="0" step="0.1" placeholder="0">
+                    <input type="number" name="new_object_quantity_${safeCounter}" min="0" step="0.1" placeholder="0">
                 </div>
             `;
             break;
@@ -410,38 +504,55 @@ function getObjectTypeFieldsHTML(type, context, counter) {
             fieldsHTML = `
                 <div class="form-group">
                     <label>Custom Type Name</label>
-                    <input type="text" name="new_object_custom_type_${counter}" placeholder="e.g., vehicle, document, sensor" required>
+                    <input type="text" name="new_object_custom_type_${safeCounter}" placeholder="e.g., vehicle, document, sensor" required>
                 </div>
                 <div class="custom-properties-section">
                     <div class="section-header">
                         <label>Custom Properties</label>
-                        <button type="button" class="btn-secondary btn-small" onclick="addCustomProperty('${counter}')">+ Add Property</button>
+                        <button type="button" class="btn-secondary btn-small" data-add-property="${safeCounter}">+ Add Property</button>
                     </div>
-                    <div id="custom-properties-${counter}" class="custom-properties-container">
+                    <div id="custom-properties-${safeCounter}" class="custom-properties-container">
                         <!-- Custom properties will be added here -->
                     </div>
                 </div>
             `;
             break;
     }
-    
+
     fieldsHTML += `
         <div class="form-group">
             <label>Location</label>
-            <select name="new_object_location_${counter}">
+            <select name="new_object_location_${safeCounter}">
                 <option value="">Select location...</option>
                 ${locationOptions}
             </select>
         </div>
     `;
-    
+
     return fieldsHTML;
 }
 
 
 function updateObjectTypeFields(type, container) {
+    if (typeof getCurrentTimelineContext !== 'function') {
+        console.error('getCurrentTimelineContext function not available');
+        return;
+    }
+
     const context = getCurrentTimelineContext();
+    if (!context) {
+        console.error('Failed to get timeline context');
+        return;
+    }
+
     container.innerHTML = getObjectTypeFieldsHTML(type, context, 'modal');
+
+    // Setup event delegation for add property button (replaces inline onclick)
+    const addPropertyBtn = container.querySelector('[data-add-property]');
+    if (addPropertyBtn) {
+        const counter = addPropertyBtn.getAttribute('data-add-property');
+        addPropertyBtn.addEventListener('click', () => addCustomProperty(counter));
+    }
 }
 
 // Add custom property to custom object type
@@ -450,16 +561,19 @@ function addCustomProperty(counter) {
     if (!container) return;
 
     const propertyCount = container.children.length;
+    const safeCounter = escapeHtml(String(counter));
+    const safePropertyCount = escapeHtml(String(propertyCount));
+
     const propertyHTML = `
         <div class="custom-property-group">
             <div class="form-row">
                 <div class="form-group">
                     <label>Property Name</label>
-                    <input type="text" name="custom_property_name_${counter}_${propertyCount}" placeholder="e.g., status, capacity">
+                    <input type="text" name="custom_property_name_${safeCounter}_${safePropertyCount}" placeholder="e.g., status, capacity">
                 </div>
                 <div class="form-group">
                     <label>Property Type</label>
-                    <select name="custom_property_type_${counter}_${propertyCount}">
+                    <select name="custom_property_type_${safeCounter}_${safePropertyCount}">
                         <option value="text">Text</option>
                         <option value="number">Number</option>
                         <option value="boolean">True/False</option>
@@ -467,16 +581,23 @@ function addCustomProperty(counter) {
                 </div>
                 <div class="form-group">
                     <label>Initial Value</label>
-                    <input type="text" name="custom_property_value_${counter}_${propertyCount}" placeholder="Initial value">
+                    <input type="text" name="custom_property_value_${safeCounter}_${safePropertyCount}" placeholder="Initial value">
                 </div>
                 <div class="form-group-actions">
-                    <button type="button" class="btn-remove" onclick="removeCustomProperty(this)">Remove</button>
+                    <button type="button" class="btn-remove" data-remove-property="true" aria-label="Remove property">Remove</button>
                 </div>
             </div>
         </div>
     `;
 
     container.insertAdjacentHTML('beforeend', propertyHTML);
+
+    // Setup event listener for the remove button (replaces inline onclick)
+    const newGroup = container.lastElementChild;
+    const removeBtn = newGroup.querySelector('[data-remove-property]');
+    if (removeBtn) {
+        removeBtn.addEventListener('click', () => removeCustomProperty(removeBtn));
+    }
 }
 
 // Remove custom property
@@ -604,9 +725,6 @@ function openAddTaskModal() {
     if (addInteractionBtn) {
         addInteractionBtn.onclick = addInteraction;
     }
-
-    // Validate initial state
-    validateTaskModal();
 }
 
 function setupTimeInputToggle() {
@@ -700,11 +818,15 @@ function openEditTaskModal(task) {
     if (taskDurationInput) taskDurationInput.value = task.duration || '';
 
     // Calculate end time if needed
-    if (task.start && task.duration) {
-        const startMinutes = parseTimeToMinutes(task.start);
-        const endMinutes = startMinutes + (task.duration || 0);
-        const endTime = minutesToTimeString(endMinutes);
-        if (taskEndTimeInput) taskEndTimeInput.value = endTime;
+    if (task.start && task.duration && typeof parseTimeToMinutes === 'function' && typeof minutesToTimeString === 'function') {
+        try {
+            const startMinutes = parseTimeToMinutes(task.start);
+            const endMinutes = startMinutes + (task.duration || 0);
+            const endTime = minutesToTimeString(endMinutes);
+            if (taskEndTimeInput) taskEndTimeInput.value = endTime;
+        } catch (error) {
+            console.warn('Error calculating end time:', error);
+        }
     }
 
     // Populate interactions if they exist
@@ -857,66 +979,85 @@ function openEditTaskModal(task) {
 function addInteraction() {
     interactionCounter++;
     const container = document.getElementById('interactions-container');
+    if (!container) {
+        console.error('Interactions container not found');
+        return;
+    }
+
+    if (typeof getCurrentTimelineContext !== 'function') {
+        console.error('getCurrentTimelineContext function not available');
+        return;
+    }
+
     const context = getCurrentTimelineContext();
-    
+    if (!context) {
+        console.error('Failed to get timeline context');
+        return;
+    }
+
+    const safeCounter = escapeHtml(String(interactionCounter));
+
     const objectOptions = [];
     Object.entries(context.objectsByType).forEach(([type, objects]) => {
-        const groupLabel = type.charAt(0).toUpperCase() + type.slice(1);
-        const options = objects.map(obj => `<option value="${obj.id}">${obj.name}</option>`).join('');
+        const groupLabel = escapeHtml(type.charAt(0).toUpperCase() + type.slice(1));
+        const options = objects.map(obj =>
+            `<option value="${escapeHtml(obj.id)}">${escapeHtml(obj.name)}</option>`
+        ).join('');
         objectOptions.push(`<optgroup label="${groupLabel}">${options}</optgroup>`);
     });
 
     // Add physical locations
     if (context.locations && context.locations.length > 0) {
         const locationOptions = context.locations.map(loc =>
-            `<option value="${loc.id}">${loc.name} (Physical Location)</option>`
+            `<option value="${escapeHtml(loc.id)}">${escapeHtml(loc.name)} (Physical Location)</option>`
         ).join('');
         objectOptions.push(`<optgroup label="Physical Locations">${locationOptions}</optgroup>`);
     }
 
     // Add digital locations
     if (context.digitalLocations && context.digitalLocations.length > 0) {
-        const digitalLocationOptions = context.digitalLocations.map(loc => 
-            `<option value="${loc.id}">${loc.name} (Digital Location)</option>`
+        const digitalLocationOptions = context.digitalLocations.map(loc =>
+            `<option value="${escapeHtml(loc.id)}">${escapeHtml(loc.name)} (Digital Location)</option>`
         ).join('');
         objectOptions.push(`<optgroup label="Digital Locations">${digitalLocationOptions}</optgroup>`);
     }
-    
+
     // Add digital objects
     if (context.digitalObjects && context.digitalObjects.length > 0) {
-        const digitalObjectOptions = context.digitalObjects.map(obj => 
-            `<option value="${obj.id}">${obj.name} (Digital Object)</option>`
+        const digitalObjectOptions = context.digitalObjects.map(obj =>
+            `<option value="${escapeHtml(obj.id)}">${escapeHtml(obj.name)} (Digital Object)</option>`
         ).join('');
         objectOptions.push(`<optgroup label="Digital Objects">${digitalObjectOptions}</optgroup>`);
     }
-    
+
     // Add displays
     if (context.displays && context.displays.length > 0) {
-        const displayOptions = context.displays.map(display => 
-            `<option value="${display.id}">${display.name} (Display)</option>`
+        const displayOptions = context.displays.map(display =>
+            `<option value="${escapeHtml(display.id)}">${escapeHtml(display.name)} (Display)</option>`
         ).join('');
         objectOptions.push(`<optgroup label="Displays">${displayOptions}</optgroup>`);
     }
-    
+
     // Add display elements
     if (context.displayElements && context.displayElements.length > 0) {
-        const displayElementOptions = context.displayElements.map(element => 
-            `<option value="${element.id}">${element.content.value || element.type} (Display Element)</option>`
-        ).join('');
+        const displayElementOptions = context.displayElements.map(element => {
+            const displayText = element.content && element.content.value ? element.content.value : element.type;
+            return `<option value="${escapeHtml(element.id)}">${escapeHtml(displayText)} (Display Element)</option>`;
+        }).join('');
         objectOptions.push(`<optgroup label="Display Elements">${displayElementOptions}</optgroup>`);
     }
-    
+
     const interactionHTML = `
-        <div class="interaction-group" id="interaction-${interactionCounter}">
+        <div class="interaction-group" id="interaction-${safeCounter}">
             <div class="interaction-header">
-                <h5>Interaction ${interactionCounter}</h5>
-                <button type="button" class="btn-remove" onclick="removeInteraction(this)">Remove</button>
+                <h5>Interaction ${safeCounter}</h5>
+                <button type="button" class="btn-remove" data-remove-interaction="true" aria-label="Remove interaction">Remove</button>
             </div>
-            
+
             <div class="form-row">
                 <div class="form-group">
-                    <label>Change Type</label>
-                    <select name="interaction_change_type_${interactionCounter}" onchange="toggleInteractionFields(this)">
+                    <label for="interaction_change_type_${safeCounter}">Change Type</label>
+                    <select id="interaction_change_type_${safeCounter}" name="interaction_change_type_${safeCounter}" data-toggle-fields="true">
                         <option value="from_to">From/To</option>
                         <option value="delta">Delta</option>
                         <option value="add_object">Add Object</option>
@@ -926,8 +1067,8 @@ function addInteraction() {
                     </select>
                 </div>
                 <div class="form-group object-selection-group">
-                    <label>Object</label>
-                    <select name="interaction_object_${interactionCounter}" onchange="updateInteractionPropertyOptions(this)" required>
+                    <label for="interaction_object_${safeCounter}">Object</label>
+                    <select id="interaction_object_${safeCounter}" name="interaction_object_${safeCounter}" data-update-properties="true" required>
                         <option value="">Select object...</option>
                         ${objectOptions.join('')}
                     </select>
@@ -937,71 +1078,71 @@ function addInteraction() {
             <div class="interaction-fields">
                 <div class="form-row from-to-fields">
                     <div class="form-group">
-                        <label>Property</label>
-                        <select name="interaction_property_${interactionCounter}" onchange="updatePropertyFromValue(this)" required>
+                        <label for="interaction_property_${safeCounter}">Property</label>
+                        <select id="interaction_property_${safeCounter}" name="interaction_property_${safeCounter}" data-update-from-value="true" required>
                             <option value="">Select property...</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>From</label>
-                        <input type="text" name="interaction_from_${interactionCounter}" placeholder="current value" readonly>
+                        <label for="interaction_from_${safeCounter}">From</label>
+                        <input type="text" id="interaction_from_${safeCounter}" name="interaction_from_${safeCounter}" placeholder="current value" readonly aria-label="Current value">
                     </div>
                     <div class="form-group">
-                        <label>To</label>
-                        <input type="text" name="interaction_to_${interactionCounter}" placeholder="new value">
+                        <label for="interaction_to_${safeCounter}">To</label>
+                        <input type="text" id="interaction_to_${safeCounter}" name="interaction_to_${safeCounter}" placeholder="new value" aria-label="New value">
                     </div>
                 </div>
 
                 <div class="form-row delta-fields" style="display: none;">
                     <div class="form-group">
-                        <label>Property</label>
-                        <input type="text" name="interaction_property_delta_${interactionCounter}" placeholder="e.g., quantity">
+                        <label for="interaction_property_delta_${safeCounter}">Property</label>
+                        <input type="text" id="interaction_property_delta_${safeCounter}" name="interaction_property_delta_${safeCounter}" placeholder="e.g., quantity">
                     </div>
                     <div class="form-group">
-                        <label>Delta</label>
-                        <input type="number" name="interaction_delta_${interactionCounter}" placeholder="e.g., -1 or 5">
+                        <label for="interaction_delta_${safeCounter}">Delta</label>
+                        <input type="number" id="interaction_delta_${safeCounter}" name="interaction_delta_${safeCounter}" placeholder="e.g., -1 or 5">
                     </div>
                 </div>
-                
+
                 <div class="move-digital-object-fields" style="display: none;">
                     <div class="form-row">
                         <div class="form-group">
-                            <label>From Digital Location:</label>
-                            <select name="from_digital_location_${interactionCounter}" class="from-location-select">
+                            <label for="from_digital_location_${safeCounter}">From Digital Location:</label>
+                            <select id="from_digital_location_${safeCounter}" name="from_digital_location_${safeCounter}" class="from-location-select">
                                 <option value="">Select source location...</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>To Digital Location:</label>
-                            <select name="to_digital_location_${interactionCounter}" class="to-location-select">
+                            <label for="to_digital_location_${safeCounter}">To Digital Location:</label>
+                            <select id="to_digital_location_${safeCounter}" name="to_digital_location_${safeCounter}" class="to-location-select">
                                 <option value="">Select target location...</option>
                             </select>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="move-display-element-fields" style="display: none;">
                     <div class="form-row">
                         <div class="form-group">
-                            <label>From Display:</label>
-                            <select name="from_display_${interactionCounter}" class="from-display-select">
+                            <label for="from_display_${safeCounter}">From Display:</label>
+                            <select id="from_display_${safeCounter}" name="from_display_${safeCounter}" class="from-display-select">
                                 <option value="">Select source display...</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>To Display:</label>
-                            <select name="to_display_${interactionCounter}" class="to-display-select">
+                            <label for="to_display_${safeCounter}">To Display:</label>
+                            <select id="to_display_${safeCounter}" name="to_display_${safeCounter}" class="to-display-select">
                                 <option value="">Select target display...</option>
                             </select>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="add-object-fields" style="display: none;">
                     <div class="form-row">
                         <div class="form-group">
-                            <label>New Object Type</label>
-                            <select name="new_object_type_${interactionCounter}" onchange="updateInteractionObjectTypeFields(this)">
+                            <label for="new_object_type_${safeCounter}">New Object Type</label>
+                            <select id="new_object_type_${safeCounter}" name="new_object_type_${safeCounter}" data-update-object-fields="true">
                                 <option value="">Select type...</option>
                                 <option value="actor">Actor</option>
                                 <option value="equipment">Equipment</option>
@@ -1011,16 +1152,16 @@ function addInteraction() {
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>New Object ID</label>
-                            <input type="text" name="new_object_id_${interactionCounter}" placeholder="e.g., new_bread_loaf">
+                            <label for="new_object_id_${safeCounter}">New Object ID</label>
+                            <input type="text" id="new_object_id_${safeCounter}" name="new_object_id_${safeCounter}" placeholder="e.g., new_bread_loaf">
                         </div>
                         <div class="form-group">
-                            <label>New Object Name</label>
-                            <input type="text" name="new_object_name_${interactionCounter}" placeholder="e.g., Fresh Bread">
+                            <label for="new_object_name_${safeCounter}">New Object Name</label>
+                            <input type="text" id="new_object_name_${safeCounter}" name="new_object_name_${safeCounter}" placeholder="e.g., Fresh Bread">
                         </div>
                          <div class="form-group">
-                            <label>Emoji</label>
-                            <input type="text" name="new_object_emoji_${interactionCounter}" placeholder="🍞" maxlength="2">
+                            <label for="new_object_emoji_${safeCounter}">Emoji</label>
+                            <input type="text" id="new_object_emoji_${safeCounter}" name="new_object_emoji_${safeCounter}" placeholder="🍞" maxlength="2">
                         </div>
                     </div>
                     <div class="form-row type-specific-fields-container">
@@ -1028,21 +1169,68 @@ function addInteraction() {
                     </div>
                 </div>
             </div>
-            
+
             <div class="form-group revert-checkbox-group">
                 <label class="inline-checkbox">
-                    <input type="checkbox" name="revert_after_${interactionCounter}">
+                    <input type="checkbox" id="revert_after_${safeCounter}" name="revert_after_${safeCounter}">
                     Revert After Task
                 </label>
             </div>
         </div>
     `;
-    
+
     container.insertAdjacentHTML('beforeend', interactionHTML);
 
+    // Setup event listeners for the new interaction (replaces inline onclick/onchange)
+    const newGroup = container.lastElementChild;
+    if (newGroup) {
+        // Remove button
+        const removeBtn = newGroup.querySelector('[data-remove-interaction]');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', () => removeInteraction(removeBtn));
+        }
+
+        // Change type toggle
+        const changeTypeSelect = newGroup.querySelector('[data-toggle-fields]');
+        if (changeTypeSelect) {
+            changeTypeSelect.addEventListener('change', function() {
+                toggleInteractionFields(this);
+            });
+        }
+
+        // Object selection
+        const objectSelect = newGroup.querySelector('[data-update-properties]');
+        if (objectSelect) {
+            objectSelect.addEventListener('change', function() {
+                updateInteractionPropertyOptions(this);
+            });
+        }
+
+        // Property selection
+        const propertySelect = newGroup.querySelector('[data-update-from-value]');
+        if (propertySelect) {
+            propertySelect.addEventListener('change', function() {
+                updatePropertyFromValue(this);
+            });
+        }
+
+        // Object type selection for add object
+        const objectTypeSelect = newGroup.querySelector('[data-update-object-fields]');
+        if (objectTypeSelect) {
+            objectTypeSelect.addEventListener('change', function() {
+                updateInteractionObjectTypeFields(this);
+            });
+        }
+    }
+
+    // Attach emoji picker if available (check global function exists)
     const newEmojiInput = container.querySelector(`input[name="new_object_emoji_${interactionCounter}"]`);
-    if (newEmojiInput && window.emojiPicker) {
-        window.emojiPicker.attachToInput(newEmojiInput, { autoOpen: true });
+    if (newEmojiInput && typeof window.emojiPicker !== 'undefined' && window.emojiPicker) {
+        try {
+            window.emojiPicker.attachToInput(newEmojiInput, { autoOpen: true });
+        } catch (error) {
+            console.warn('Failed to attach emoji picker:', error);
+        }
     }
 }
 
@@ -1479,7 +1667,7 @@ function addObjectToSimulation() {
         // Re-render the simulation to show the new object
         // When in day type mode, we need to manually trigger a re-render
         // because the editor change event might not fire properly
-        if (autoRender) {
+        if (typeof autoRender !== 'undefined' && autoRender) {
             if (dayTypeEditor) {
                 // Force a re-render in day type mode
                 setTimeout(() => {
@@ -1493,12 +1681,16 @@ function addObjectToSimulation() {
                         window.multiPeriodViewController.renderBreadcrumbs();
                     }
                 }, 100);
-            } else {
+            } else if (typeof renderSimulation === 'function') {
                 renderSimulation();
+            } else {
+                console.warn('renderSimulation function not available');
             }
         }
 
-        showNotification(`Added ${objectType}: ${objectName}`);
+        if (typeof showNotification === 'function') {
+            showNotification(`Added ${objectType}: ${objectName}`);
+        }
 
         // Reset button state
         setTimeout(() => {
@@ -1855,7 +2047,9 @@ function saveTaskToSimulation() {
             const taskIndex = currentJson.simulation.tasks.findIndex(t => t.id === editTaskId);
             if (taskIndex !== -1) {
                 currentJson.simulation.tasks[taskIndex] = newTask;
-                showNotification(`Updated task: ${taskId}`);
+                if (typeof showNotification === 'function') {
+                    showNotification(`Updated task: ${taskId}`);
+                }
             } else {
                 console.error(`Task ${editTaskId} not found for editing`);
                 alert(`Error: Task ${editTaskId} not found for editing`);
@@ -1864,7 +2058,9 @@ function saveTaskToSimulation() {
         } else {
             // Add mode: Add new task
             currentJson.simulation.tasks.push(newTask);
-            showNotification(`Added task: ${taskId}`);
+            if (typeof showNotification === 'function') {
+                showNotification(`Added task: ${taskId}`);
+            }
         }
 
         // Use the effective editor (wrapper if in day type mode, otherwise Monaco)
@@ -1876,7 +2072,7 @@ function saveTaskToSimulation() {
         modal.dataset.taskId = '';
 
         // Re-render the simulation to show the new/updated task
-        if (autoRender) {
+        if (typeof autoRender !== 'undefined' && autoRender) {
             if (dayTypeEditor) {
                 // Force a re-render in day type mode
                 setTimeout(() => {
@@ -1890,8 +2086,10 @@ function saveTaskToSimulation() {
                         window.multiPeriodViewController.renderBreadcrumbs();
                     }
                 }, 100);
-            } else {
+            } else if (typeof renderSimulation === 'function') {
                 renderSimulation();
+            } else {
+                console.warn('renderSimulation function not available');
             }
         }
 
@@ -2112,13 +2310,30 @@ function validateTaskEndTime() {
     }
 
     // Check if end time is after start time
-    if (startTime && validateTimeFormat(startTime)) {
-        const startMinutes = parseTimeToMinutes(startTime);
-        const endMinutes = parseTimeToMinutes(endTime);
+    if (startTime && validateTimeFormat(startTime) && typeof parseTimeToMinutes === 'function') {
+        try {
+            const startMinutes = parseTimeToMinutes(startTime);
+            const endMinutes = parseTimeToMinutes(endTime);
 
-        if (endMinutes <= startMinutes) {
+            // Handle midnight-crossing tasks (e.g., 23:00 to 01:00)
+            // If end time appears "earlier" than start time, it means it crosses midnight
+            if (endMinutes < startMinutes) {
+                // This is valid for tasks that cross midnight
+                // Show a note to the user
+                endTimeInput.classList.add('valid');
+                errorElement.textContent = '';
+                errorElement.style.color = '#4CAF50';
+                errorElement.textContent = 'Task crosses midnight';
+                return true;
+            } else if (endMinutes === startMinutes) {
+                endTimeInput.classList.add('invalid');
+                errorElement.textContent = 'End time must be different from start time';
+                return false;
+            }
+        } catch (error) {
+            console.error('Error parsing times:', error);
             endTimeInput.classList.add('invalid');
-            errorElement.textContent = 'End time must be after start time';
+            errorElement.textContent = 'Error validating times';
             return false;
         }
     }
@@ -2146,8 +2361,10 @@ function validateTaskDependencies() {
     // Parse comma-separated task IDs
     const taskIds = dependencies.split(',').map(id => id.trim()).filter(id => id);
 
-    // Check if all dependencies exist
+    // Check if all dependencies exist and no circular dependencies
     try {
+        const modal = document.getElementById('add-task-modal');
+        const currentTaskId = document.getElementById('task-id-input').value.trim();
         const dayTypeEditor = window.activeDayTypeEditor;
         const effectiveEditor = dayTypeEditor || editor;
         const currentJson = JSON.parse(effectiveEditor.getValue());
@@ -2161,6 +2378,26 @@ function validateTaskDependencies() {
                 errorElement.textContent = `Unknown task ID(s): ${invalidDeps.join(', ')}`;
                 return false;
             }
+
+            // Check for circular dependencies
+            if (currentTaskId && taskIds.includes(currentTaskId)) {
+                dependsInput.classList.add('invalid');
+                errorElement.textContent = 'Task cannot depend on itself';
+                return false;
+            }
+
+            // Build dependency graph and check for cycles
+            const hasCircularDep = checkCircularDependency(
+                currentTaskId,
+                taskIds,
+                currentJson.simulation.tasks
+            );
+
+            if (hasCircularDep) {
+                dependsInput.classList.add('invalid');
+                errorElement.textContent = 'Circular dependency detected';
+                return false;
+            }
         }
     } catch (error) {
         console.error('Error validating dependencies:', error);
@@ -2169,6 +2406,47 @@ function validateTaskDependencies() {
     // Valid
     dependsInput.classList.add('valid');
     return true;
+}
+
+// Helper function to check for circular dependencies
+function checkCircularDependency(taskId, newDeps, allTasks) {
+    if (!taskId) return false;
+
+    const visited = new Set();
+    const recursionStack = new Set();
+
+    // Build dependency map
+    const depMap = new Map();
+    allTasks.forEach(task => {
+        depMap.set(task.id, task.depends_on || []);
+    });
+
+    // Add the new dependencies for the current task
+    depMap.set(taskId, newDeps);
+
+    function hasCycle(id) {
+        if (recursionStack.has(id)) {
+            return true; // Cycle detected
+        }
+        if (visited.has(id)) {
+            return false; // Already visited, no cycle from here
+        }
+
+        visited.add(id);
+        recursionStack.add(id);
+
+        const deps = depMap.get(id) || [];
+        for (const depId of deps) {
+            if (hasCycle(depId)) {
+                return true;
+            }
+        }
+
+        recursionStack.delete(id);
+        return false;
+    }
+
+    return hasCycle(taskId);
 }
 
 // Validate entire task form and update submit button state

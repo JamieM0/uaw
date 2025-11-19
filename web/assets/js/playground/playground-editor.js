@@ -2,9 +2,80 @@
 // Universal Automation Wiki - Simulation Playground
 
 // Helper function to strip comments from a JSON string
+// Safely handles comments while preserving strings that might contain // or /*
 function stripJsonComments(jsonString) {
-    // Regular expression to remove single-line and multi-line comments
-    return jsonString.replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, '');
+    let result = '';
+    let inString = false;
+    let inSingleLineComment = false;
+    let inMultiLineComment = false;
+    let escapeNext = false;
+
+    for (let i = 0; i < jsonString.length; i++) {
+        const char = jsonString[i];
+        const nextChar = jsonString[i + 1];
+
+        // Handle escape sequences in strings
+        if (inString && escapeNext) {
+            result += char;
+            escapeNext = false;
+            continue;
+        }
+
+        if (inString && char === '\\') {
+            result += char;
+            escapeNext = true;
+            continue;
+        }
+
+        // Toggle string state
+        if (char === '"' && !inSingleLineComment && !inMultiLineComment && !escapeNext) {
+            inString = !inString;
+            result += char;
+            continue;
+        }
+
+        // If we're in a string, just add the character
+        if (inString) {
+            result += char;
+            continue;
+        }
+
+        // Handle multi-line comment end
+        if (inMultiLineComment) {
+            if (char === '*' && nextChar === '/') {
+                inMultiLineComment = false;
+                i++; // Skip the '/'
+            }
+            continue;
+        }
+
+        // Handle single-line comment end
+        if (inSingleLineComment) {
+            if (char === '\n') {
+                inSingleLineComment = false;
+                result += char; // Keep the newline
+            }
+            continue;
+        }
+
+        // Check for comment starts (only when not in string)
+        if (char === '/' && nextChar === '/') {
+            inSingleLineComment = true;
+            i++; // Skip the second '/'
+            continue;
+        }
+
+        if (char === '/' && nextChar === '*') {
+            inMultiLineComment = true;
+            i++; // Skip the '*'
+            continue;
+        }
+
+        // Regular character outside of comments
+        result += char;
+    }
+
+    return result;
 }
 
 // LocalStorage quota checking utility
@@ -12,19 +83,31 @@ function canStoreInLocalStorage(key, value) {
     try {
         // Check if localStorage is available
         if (!window.localStorage) return false;
-        
-        // Calculate size of the data
+
+        // Calculate size of the new data
         const dataSize = new Blob([JSON.stringify(value)]).size;
         const keySize = new Blob([key]).size;
         const totalSize = dataSize + keySize;
-        
+
+        // Calculate current usage more efficiently without stringifying entire localStorage
+        let currentUsage = 0;
+        for (let i = 0; i < localStorage.length; i++) {
+            const currentKey = localStorage.key(i);
+            if (currentKey) {
+                const item = localStorage.getItem(currentKey);
+                if (item) {
+                    currentUsage += currentKey.length + item.length;
+                }
+            }
+        }
+
         // Rough localStorage quota check (most browsers have 5-10MB)
         // We'll be conservative and warn if storing more than 4MB total
-        const currentUsage = JSON.stringify(localStorage).length;
         const maxSafeSize = 4 * 1024 * 1024; // 4MB
-        
+
         return (currentUsage + totalSize) < maxSafeSize;
     } catch (e) {
+        console.warn('Error checking localStorage capacity:', e.message);
         return false;
     }
 }
@@ -78,6 +161,8 @@ function showStorageQuotaWarning() {
 // Recovery functions for localStorage quota issues
 function clearOldSimulations() {
     const keysToRemove = [];
+
+    // Collect keys to remove (iterate carefully as localStorage.key(i) can return null)
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && (key.startsWith('uaw-') || key.startsWith('simulation-'))) {
@@ -91,8 +176,16 @@ function clearOldSimulations() {
     }
 
     if (confirm(`Found ${keysToRemove.length} saved simulation(s). Clear them to free up space?`)) {
-        keysToRemove.forEach(key => localStorage.removeItem(key));
-        alert(`Cleared ${keysToRemove.length} saved simulation(s). Try saving again.`);
+        let cleared = 0;
+        keysToRemove.forEach(key => {
+            try {
+                localStorage.removeItem(key);
+                cleared++;
+            } catch (e) {
+                console.warn(`Failed to remove key ${key}:`, e.message);
+            }
+        });
+        alert(`Cleared ${cleared} saved simulation(s). Try saving again.`);
         document.getElementById('storage-quota-warning')?.remove();
     }
 }
@@ -100,36 +193,48 @@ function clearOldSimulations() {
 function downloadCurrentWork() {
     try {
         const editor = getMonacoEditor();
-        if (editor) {
-            const content = editor.getValue();
-            const blob = new Blob([content], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `uaw-simulation-${Date.now()}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            alert('Work downloaded successfully. You can now clear storage or continue without auto-save.');
-        } else {
+        if (!editor) {
             alert('No editor content found to download.');
+            return;
         }
+
+        const content = editor.getValue();
+        if (!content || content.trim().length === 0) {
+            alert('Editor is empty - nothing to download.');
+            return;
+        }
+
+        const blob = new Blob([content], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `uaw-simulation-${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert('Work downloaded successfully. You can now clear storage or continue without auto-save.');
     } catch (e) {
+        console.error('Failed to download work:', e.message);
         alert('Failed to download work: ' + e.message);
     }
 }
 
 function showStorageUsage() {
     try {
-        const totalSize = JSON.stringify(localStorage).length;
+        let totalSize = 0;
         const keys = [];
 
+        // Calculate total size more efficiently
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             if (key) {
-                const size = localStorage.getItem(key)?.length || 0;
-                keys.push({ key, size });
+                const item = localStorage.getItem(key);
+                const size = item ? (key.length + item.length) : 0;
+                totalSize += size;
+                if (size > 0) {
+                    keys.push({ key, size });
+                }
             }
         }
 
@@ -143,6 +248,7 @@ function showStorageUsage() {
         message += `\nConsider clearing old simulations or downloading current work.`;
         alert(message);
     } catch (e) {
+        console.error('Failed to calculate storage usage:', e.message);
         alert('Failed to calculate storage usage: ' + e.message);
     }
 }
@@ -494,8 +600,18 @@ require(["vs/editor/editor.main"], function () {
         allowComments: true
     });
 
+    const editorElement = document.getElementById("json-editor");
+    if (!editorElement) {
+        console.error('Critical error: json-editor element not found in DOM');
+        if (typeof initState !== 'undefined') {
+            initState.editorReady = false;
+            initState.monacoLoadFailed = true;
+        }
+        return;
+    }
+
     editor = monaco.editor.create(
-        document.getElementById("json-editor"),
+        editorElement,
         {
             value: initialData,
             language: "json",
@@ -586,7 +702,8 @@ require(["vs/editor/editor.main"], function () {
                     await autoCollapseAssetsObject(false); // Preserve cursor position on programmatic updates
                 }
             } catch (e) {
-                // Ignore errors during typing
+                // Ignore errors during typing - user may be mid-edit
+                console.debug('Auto-collapse skipped due to error:', e.message);
             }
         }, 1000); // 1 second delay to avoid conflicts with user typing
     };
@@ -622,7 +739,10 @@ require(["vs/editor/editor.main"], function () {
             try {
                 const currentJson = JSON.parse(stripJsonComments(editor.getValue()));
                 spaceEditor.loadLayout(currentJson.simulation.layout);
-            } catch(e) { /* Ignore parse errors during typing */ }
+            } catch(e) {
+                // Ignore parse errors during typing - user may be mid-edit
+                console.debug('Space editor sync skipped due to invalid JSON during editing');
+            }
         } else if (spaceEditor) {
             // Mark that sync is needed when interaction prevents update
             spaceEditor.pendingSyncNeeded = true;
@@ -641,7 +761,8 @@ require(["vs/editor/editor.main"], function () {
                 JSON.parse(currentContent); // Validate JSON before saving
                 safeSetItem('uaw-json-editor-content', currentContent);
             } catch (e) {
-                // Don't save invalid JSON
+                // Don't save invalid JSON - user may be mid-edit
+                console.debug('Skipping localStorage save due to invalid JSON');
             }
         }, 1000);
     });
@@ -660,6 +781,9 @@ require(["vs/editor/editor.main"], function () {
 
 // Flag to track programmatic content changes
 let isProgrammaticChange = false;
+
+// Store current highlight decorations to prevent memory leaks
+let currentHighlightDecorations = [];
 
 // Function to automatically collapse the 'assets' object
 async function autoCollapseAssetsObject(moveToTop = false) {
@@ -763,6 +887,11 @@ async function autoCollapseAssetsObject(moveToTop = false) {
 
 // JSON validation function
 function validateJSON() {
+    if (!editor) {
+        console.warn('Cannot validate JSON: editor not initialized');
+        return false;
+    }
+
     const jsonStatus = document.getElementById("json-status");
     const jsonText = editor.getValue();
     const strippedJson = stripJsonComments(jsonText);
@@ -828,16 +957,23 @@ function validateJSON() {
         
         // Show JSON syntax errors in editor
         if (monaco && monaco.editor && editor && editor.getModel) {
-            const errorLine = getErrorLine(e.message);
-            if (errorLine > 0) {
-                monaco.editor.setModelMarkers(editor.getModel(), 'json-syntax', [{
-                    severity: monaco.MarkerSeverity.Error,
-                    message: e.message,
-                    startLineNumber: errorLine,
-                    endLineNumber: errorLine,
-                    startColumn: 1,
-                    endColumn: 1
-                }]);
+            const model = editor.getModel();
+            if (model) {
+                const errorLine = getErrorLine(e.message);
+                // Only add marker if we found a valid line number
+                if (errorLine > 0 && errorLine <= model.getLineCount()) {
+                    monaco.editor.setModelMarkers(model, 'json-syntax', [{
+                        severity: monaco.MarkerSeverity.Error,
+                        message: e.message,
+                        startLineNumber: errorLine,
+                        endLineNumber: errorLine,
+                        startColumn: 1,
+                        endColumn: 1
+                    }]);
+                } else {
+                    // Clear any existing markers if we can't determine the line
+                    monaco.editor.setModelMarkers(model, 'json-syntax', []);
+                }
             }
         }
         
@@ -847,6 +983,11 @@ function validateJSON() {
 
 // Manual validation function for when auto-validation is disabled
 function runManualValidation() {
+    if (!editor) {
+        console.warn('Cannot run manual validation: editor not initialized');
+        return false;
+    }
+
     const jsonText = editor.getValue();
     const strippedJson = stripJsonComments(jsonText);
 
@@ -875,27 +1016,39 @@ function runManualValidation() {
 }
 
 function getErrorLine(errorMessage) {
+    if (!errorMessage || typeof errorMessage !== 'string') {
+        return -1; // Return -1 instead of 0 to indicate no valid line number
+    }
     const match = errorMessage.match(/line (\d+)/i);
-    return match ? parseInt(match[1]) : 0;
+    return match ? parseInt(match[1], 10) : -1; // Return -1 if no match found
 }
 
 // Editor utility functions
-function scrollToTaskInJSON(taskId) {
-    if (!editor) return;
-    
+// Consolidated function to scroll to an item in JSON (task or object)
+function scrollToItemInJSON(itemId, itemType = 'item') {
+    if (!editor) {
+        console.warn(`Cannot scroll to ${itemType}: editor not initialized`);
+        return;
+    }
+
     try {
         const editorValue = editor.getValue();
         const lines = editorValue.split('\n');
-        
-        // Find the line containing the task ID
+
+        // Find the line containing the item ID
         for (let i = 0; i < lines.length; i++) {
-            if (lines[i].includes(`"id": "${taskId}"`)) {
+            if (lines[i].includes(`"id": "${itemId}"`)) {
                 // Navigate to the line and column
                 editor.revealLineInCenter(i + 1);
                 editor.setPosition({ lineNumber: i + 1, column: 1 });
-                
+
+                // Clear any existing highlight decorations to prevent memory leaks
+                if (currentHighlightDecorations.length > 0) {
+                    currentHighlightDecorations = editor.deltaDecorations(currentHighlightDecorations, []);
+                }
+
                 // Highlight the line temporarily
-                const decoration = editor.deltaDecorations([], [
+                currentHighlightDecorations = editor.deltaDecorations([], [
                     {
                         range: new monaco.Range(i + 1, 1, i + 1, lines[i].length + 1),
                         options: {
@@ -904,54 +1057,27 @@ function scrollToTaskInJSON(taskId) {
                         }
                     }
                 ]);
-                
+
                 // Remove highlighting after 2 seconds
                 setTimeout(() => {
-                    editor.deltaDecorations(decoration, []);
+                    if (currentHighlightDecorations.length > 0) {
+                        currentHighlightDecorations = editor.deltaDecorations(currentHighlightDecorations, []);
+                    }
                 }, 2000);
-                
+
                 break;
             }
         }
     } catch (e) {
-        console.warn('Could not scroll to task in JSON:', e);
+        console.warn(`Could not scroll to ${itemType} in JSON:`, e.message);
     }
 }
 
+// Wrapper functions for backward compatibility
+function scrollToTaskInJSON(taskId) {
+    scrollToItemInJSON(taskId, 'task');
+}
+
 function scrollToObjectInJSON(objectId) {
-    if (!editor) return;
-    
-    try {
-        const editorValue = editor.getValue();
-        const lines = editorValue.split('\n');
-        
-        // Find the line containing the object ID
-        for (let i = 0; i < lines.length; i++) {
-            if (lines[i].includes(`"id": "${objectId}"`)) {
-                // Navigate to the line and column
-                editor.revealLineInCenter(i + 1);
-                editor.setPosition({ lineNumber: i + 1, column: 1 });
-                
-                // Highlight the line temporarily
-                const decoration = editor.deltaDecorations([], [
-                    {
-                        range: new monaco.Range(i + 1, 1, i + 1, lines[i].length + 1),
-                        options: {
-                            className: 'highlighted-line',
-                            isWholeLine: true
-                        }
-                    }
-                ]);
-                
-                // Remove highlighting after 2 seconds
-                setTimeout(() => {
-                    editor.deltaDecorations(decoration, []);
-                }, 2000);
-                
-                break;
-            }
-        }
-    } catch (e) {
-        console.warn('Could not scroll to object in JSON:', e);
-    }
+    scrollToItemInJSON(objectId, 'object');
 }

@@ -931,20 +931,17 @@ class DigitalSpaceEditor {
             // For backward compatibility, check both new (nested) and old (root) locations
             const digitalSpace = simulation.digital_space || data.digital_space;
 
+            // Clear all existing data first to prevent stale data from previous simulations
+            const previousLocationCount = this.digitalLocations.length;
+            this.digitalLocations = [];
+            this.digitalObjects = [];
+            this.connections = [];
+            this.dataFlows = [];
+            this.selectedRectId = null;
+
             // Load digital locations
             if (digitalSpace && digitalSpace.digital_locations) {
                 this.digitalLocations = [...digitalSpace.digital_locations];
-                this.renderAllLocations();
-
-                // Reset view and zoom to fit on initial load (like Space Editor)
-                if (this.digitalLocations.length > 0 && !this.hasInitiallyLoaded) {
-                    this.view.scale = 1;
-                    this.view.x = 0;
-                    this.view.y = 0;
-                    this.updateViewTransform();
-                    this.zoomToFit();
-                    this.hasInitiallyLoaded = true;
-                }
             }
 
             // Load digital objects
@@ -955,22 +952,30 @@ class DigitalSpaceEditor {
             // Load connections
             if (digitalSpace && digitalSpace.connections) {
                 this.connections = [...digitalSpace.connections];
-            } else {
-                this.connections = [];
             }
 
             // Load data flows
             if (digitalSpace && digitalSpace.data_flows) {
                 this.dataFlows = [...digitalSpace.data_flows];
-            } else {
-                this.dataFlows = [];
             }
 
-            // Render digital objects in their locations AFTER both locations and objects are loaded
+            // Render all content
+            this.renderAllLocations();
             this.renderDigitalObjectsInLocations();
-
-            // Render connections
             this.renderAllConnections();
+            this.renderPropertiesPanel();
+
+            // Reset view and zoom to fit when loading a different simulation
+            // (detected by change in location count or first load)
+            if (this.digitalLocations.length > 0 &&
+                (!this.hasInitiallyLoaded || previousLocationCount !== this.digitalLocations.length)) {
+                this.view.scale = 1;
+                this.view.x = 0;
+                this.view.y = 0;
+                this.updateViewTransform();
+                this.zoomToFit();
+                this.hasInitiallyLoaded = true;
+            }
         } catch (e) {
             console.log("DIGITAL-SPACE: Could not parse JSON for digital space");
         }

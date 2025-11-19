@@ -11,29 +11,74 @@ class SimulationValidator {
 
   runChecks(metricsCatalog, customValidatorCode = null) {
     this.results = [];
+
+    // Input validation
     if (!this.simulation) {
       this.addResult({ metricId: 'schema.integrity.missing_root', status: 'error', message: "The root 'simulation' object is missing." });
       return this.results;
     }
-    
-    const computationalMetrics = metricsCatalog.filter(m => m.validation_type === 'computational');
+
+    if (!Array.isArray(metricsCatalog)) {
+      this.addResult({ metricId: 'system.error', status: 'error', message: 'Invalid metrics catalog: expected an array.' });
+      return this.results;
+    }
+
+    if (metricsCatalog.length === 0) {
+      this.addResult({ metricId: 'system.info', status: 'info', message: 'No metrics to validate.' });
+      return this.results;
+    }
+
+    const computationalMetrics = metricsCatalog.filter(m => m && m.validation_type === 'computational');
+
     for (const metric of computationalMetrics) {
+      // Validate metric structure
+      if (!metric.id) {
+        console.error('Metric missing ID:', metric);
+        continue;
+      }
+
       const funcName = metric.computation?.function_name || metric.function;
-      
+
+      if (!funcName) {
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: 'Metric configuration error: missing function name.'
+        });
+        continue;
+      }
+
       // Handle built-in validation functions
       if (typeof this[funcName] === 'function') {
-        try { this[funcName](metric); } 
-        catch (e) { this.addResult({ metricId: metric.id, status: 'error', message: `Execution Error in ${funcName}: ${e.message}` }); }
+        try {
+          this[funcName](metric);
+        } catch (e) {
+          console.error(`Error in ${funcName}:`, e);
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Execution Error in ${funcName}: ${e.message}`
+          });
+        }
       }
       // Handle custom validation functions
       else if (metric.source === 'custom' && customValidatorCode) {
         try {
           this.executeCustomValidation(metric, customValidatorCode);
         } catch (e) {
-          this.addResult({ metricId: metric.id, status: 'error', message: `Custom validation error in ${funcName}: ${e.message}` });
+          console.error(`Custom validation error in ${funcName}:`, e);
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Custom validation error in ${funcName}: ${e.message}`
+          });
         }
       } else {
-        this.addResult({ metricId: metric.id, status: 'error', message: `Internal Error: Validation function '${funcName}' not implemented.` });
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: `Internal Error: Validation function '${funcName}' not implemented.`
+        });
       }
     }
     return this.results;
@@ -41,87 +86,111 @@ class SimulationValidator {
   
   executeCustomValidation(metric, customValidatorCode) {
     const funcName = metric.function;
-    
+
+    // Helper function to safely deep copy, handling circular references
+    const safeDeepCopy = (obj, seen = new WeakMap()) => {
+      if (obj === null || typeof obj !== 'object') return obj;
+      if (seen.has(obj)) return seen.get(obj); // Return cached copy for circular refs
+
+      const copy = Array.isArray(obj) ? [] : {};
+      seen.set(obj, copy);
+
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          copy[key] = safeDeepCopy(obj[key], seen);
+        }
+      }
+      return copy;
+    };
+
     // Create a sandboxed context for custom validation
     const sandbox = {
-      simulation: JSON.parse(JSON.stringify(this.simulation)), // Deep copy for safety
+      simulation: safeDeepCopy(this.simulation), // Deep copy with circular reference handling
       addResult: (result) => this.addResult(result),
-      console: { 
-        log: (...args) => console.log('[Custom Validator]', ...args), 
-        warn: (...args) => console.warn('[Custom Validator]', ...args), 
-        error: (...args) => console.error('[Custom Validator]', ...args) 
+      console: {
+        log: (...args) => console.log('[Custom Validator]', ...args),
+        warn: (...args) => console.warn('[Custom Validator]', ...args),
+        error: (...args) => console.error('[Custom Validator]', ...args)
       }, // Allow console but prefix with identifier
       // Utility functions that custom validators can use
-      _timeToMinutes: this._timeToMinutes.bind(this),
-      // Prevent access to dangerous globals
-      window: undefined,
-      document: undefined,
-      localStorage: undefined,
-      sessionStorage: undefined,
-      fetch: undefined,
-      XMLHttpRequest: undefined,
-      eval: undefined,
-      Function: undefined
+      _timeToMinutes: this._timeToMinutes.bind(this)
     };
-    
+
     let timeoutId;
-    
+    let executionAborted = false;
+
     try {
-      // Enhanced timeout protection with proper cleanup
-      let hasTimedOut = false;
+      // Improved timeout handling - set flag and clear timeout
       timeoutId = setTimeout(() => {
-        hasTimedOut = true;
+        executionAborted = true;
       }, 5000);
-      
-      // Create function in sandboxed context without 'with' statement (strict mode compatible)
+
+      // Create function with restricted scope (no access to global variables)
+      // Use strict mode and wrap in IIFE to prevent global access
       const func = new Function('sandbox', 'metric', `
-        try {
-          // Destructure sandbox properties for direct access
-          const { simulation, addResult, console, _timeToMinutes } = sandbox;
-          
-          ${customValidatorCode}
-          if (typeof ${funcName} === 'function') {
-            return ${funcName}.call(sandbox, metric);
-          } else {
-            // Get available function names from the custom code
-            const funcRegex = /function\\s+(\\w+)\\s*\\(/g;
-            const matches = [];
-            let match;
-            while ((match = funcRegex.exec(\`\${customValidatorCode}\`)) !== null) {
-              matches.push(match[1]);
+        'use strict';
+        return (function() {
+          // Block access to global scope by shadowing common globals
+          const window = undefined;
+          const document = undefined;
+          const localStorage = undefined;
+          const sessionStorage = undefined;
+          const fetch = undefined;
+          const XMLHttpRequest = undefined;
+          const eval = undefined;
+          const Function = undefined;
+          const globalThis = undefined;
+          const self = undefined;
+
+          try {
+            // Destructure sandbox properties for direct access
+            const { simulation, addResult, console, _timeToMinutes } = sandbox;
+
+            ${customValidatorCode}
+            if (typeof ${funcName} === 'function') {
+              return ${funcName}.call(sandbox, metric);
+            } else {
+              // Get available function names from the custom code
+              const funcRegex = /function\\s+(\\w+)\\s*\\(/g;
+              const matches = [];
+              let match;
+              while ((match = funcRegex.exec(\`\${customValidatorCode}\`)) !== null) {
+                matches.push(match[1]);
+              }
+              throw new Error('Function "${funcName}" not found in custom validator code. Available functions: ' + matches.join(', '));
             }
-            throw new Error('Function "${funcName}" not found in custom validator code. Available functions: ' + matches.join(', '));
+          } catch (error) {
+            if (error instanceof SyntaxError) {
+              throw new Error('Syntax error in custom validator: ' + error.message);
+            } else if (error instanceof ReferenceError) {
+              throw new Error('Reference error in custom validator: ' + error.message + '. Check that all variables and functions are properly defined.');
+            } else if (error instanceof TypeError) {
+              throw new Error('Type error in custom validator: ' + error.message + '. Check that you are calling methods on the correct object types.');
+            } else {
+              throw error;
+            }
           }
-        } catch (error) {
-          if (error instanceof SyntaxError) {
-            throw new Error('Syntax error in custom validator: ' + error.message);
-          } else if (error instanceof ReferenceError) {
-            throw new Error('Reference error in custom validator: ' + error.message + '. Check that all variables and functions are properly defined.');
-          } else if (error instanceof TypeError) {
-            throw new Error('Type error in custom validator: ' + error.message + '. Check that you are calling methods on the correct object types.');
-          } else {
-            throw error;
-          }
-        }
+        })();
       `);
-      
+
       // Execute with enhanced error handling
       const result = func(sandbox, metric);
-      
-      // Check for timeout after execution
-      if (hasTimedOut) {
+
+      // Clear timeout immediately after execution
+      clearTimeout(timeoutId);
+
+      // Check if execution was aborted due to timeout
+      if (executionAborted) {
         throw new Error('Custom validation function exceeded 5 second time limit');
       }
-      
-      clearTimeout(timeoutId);
-      
+
     } catch (error) {
       if (timeoutId) clearTimeout(timeoutId);
-      
+
       // Enhanced error messages based on error type
       let errorMessage = error.message;
       let errorStatus = 'error';
-      
+
       if (error.message.includes('timeout') || error.message.includes('time limit')) {
         errorMessage = `Validation timeout: Function "${funcName}" took longer than 5 seconds to execute. Consider optimizing your validation logic.`;
       } else if (error.message.includes('Syntax error')) {
@@ -133,21 +202,45 @@ class SimulationValidator {
       } else {
         errorMessage = `Error in custom validation "${funcName}": ${error.message}`;
       }
-      
-      this.addResult({ 
-        metricId: metric.id, 
-        status: errorStatus, 
-        message: errorMessage 
+
+      this.addResult({
+        metricId: metric.id,
+        status: errorStatus,
+        message: errorMessage
       });
     }
   }
 
-  addResult(result) { this.results.push(result); }
+  addResult(result) {
+    // Validate result structure before adding
+    if (result && typeof result === 'object' && result.metricId) {
+      this.results.push(result);
+    } else {
+      console.error('Invalid result object:', result);
+    }
+  }
 
   _timeToMinutes(timeStr) {
-    if (typeof timeStr !== 'string' || !timeStr.match(/^\d{2}:\d{2}$/)) return null;
+    // Enhanced input validation and error handling
+    if (timeStr === null || timeStr === undefined) return null;
+    if (typeof timeStr !== 'string') return null;
+
+    // Check format: HH:MM
+    if (!timeStr.match(/^\d{2}:\d{2}$/)) return null;
+
     const [hours, minutes] = timeStr.split(':').map(Number);
-    return hours * 60 + minutes;
+
+    // Validate ranges
+    if (hours < 0 || hours > 23) return null;
+    if (minutes < 0 || minutes > 59) return null;
+    if (isNaN(hours) || isNaN(minutes)) return null;
+
+    const totalMinutes = hours * 60 + minutes;
+
+    // Sanity check: ensure result is within a day
+    if (totalMinutes < 0 || totalMinutes >= 1440) return null;
+
+    return totalMinutes;
   }
 
   // --- REFACTORED VALIDATION FUNCTIONS (Universal Object Model) ---
@@ -157,20 +250,41 @@ class SimulationValidator {
   }
 
   validateNegativeStock(metric) {
-    const resources = (this.simulation.objects || []).filter(o => o.type === 'resource' || o.type === 'product');
+    const resources = (this.simulation.objects || []).filter(o => o && (o.type === 'resource' || o.type === 'product'));
     const tasks = this.simulation.tasks || [];
     let issueFound = false;
     const stocks = {};
-    resources.forEach(r => { stocks[r.id] = r.properties?.quantity || 0; });
+
+    // Initialize stock levels with validation
+    resources.forEach(r => {
+      if (!r.id) {
+        console.error('Resource missing ID:', r);
+        return;
+      }
+      const quantity = r.properties?.quantity;
+      if (typeof quantity === 'number' && !isNaN(quantity)) {
+        stocks[r.id] = quantity;
+      } else {
+        stocks[r.id] = 0;
+      }
+    });
 
     const sortedTasks = [...tasks].sort((a, b) => (a.start || "00:00").localeCompare(b.start || "00:00"));
 
     for (const task of sortedTasks) {
-      // Handle old-style consumes/produces
+      if (!task.id) continue; // Skip tasks without IDs
+
+      // Handle old-style consumes/produces with validation
       Object.entries(task.consumes || {}).forEach(([resId, amount]) => {
+        if (typeof amount !== 'number' || isNaN(amount)) {
+          this.addResult({ metricId: metric.id, status: 'error', message: `Task '${task.id}' has invalid consume amount for '${resId}': ${amount}` });
+          issueFound = true;
+          return;
+        }
         if (stocks[resId] === undefined) {
           this.addResult({ metricId: metric.id, status: 'error', message: `Task '${task.id}' consumes undefined resource '${resId}'.` });
-          issueFound = true; return;
+          issueFound = true;
+          return;
         }
         stocks[resId] -= amount;
         if (stocks[resId] < -0.0001) {
@@ -178,27 +292,44 @@ class SimulationValidator {
           issueFound = true;
         }
       });
+
       Object.entries(task.produces || {}).forEach(([resId, amount]) => {
+        if (typeof amount !== 'number' || isNaN(amount)) {
+          this.addResult({ metricId: metric.id, status: 'error', message: `Task '${task.id}' has invalid produce amount for '${resId}': ${amount}` });
+          issueFound = true;
+          return;
+        }
         if (stocks[resId] === undefined) stocks[resId] = 0; // Allows creation of new products
         stocks[resId] += amount;
       });
-      
+
       // Handle new-style interactions that modify resource quantities
       for (const interaction of (task.interactions || [])) {
+        if (!interaction.object_id) continue;
+
         const obj = resources.find(r => r.id === interaction.object_id);
         if (obj && (obj.type === 'resource' || obj.type === 'product')) {
           const quantityChanges = interaction.property_changes?.quantity;
           if (quantityChanges) {
-            const deltaAmount = quantityChanges.delta || 0;
+            const deltaAmount = quantityChanges.delta;
+
+            if (deltaAmount === undefined || typeof deltaAmount !== 'number' || isNaN(deltaAmount)) {
+              this.addResult({ metricId: metric.id, status: 'error', message: `Task '${task.id}' has invalid quantity delta for '${obj.id}': ${deltaAmount}` });
+              issueFound = true;
+              continue;
+            }
+
             if (stocks[obj.id] === undefined) {
               if (deltaAmount < 0) {
                 this.addResult({ metricId: metric.id, status: 'error', message: `Task '${task.id}' tries to reduce undefined resource '${obj.id}'.` });
-                issueFound = true; 
+                issueFound = true;
                 continue;
               }
               stocks[obj.id] = 0;
             }
+
             stocks[obj.id] += deltaAmount;
+
             if (stocks[obj.id] < -0.0001) {
               this.addResult({ metricId: metric.id, status: 'error', message: `Resource '${obj.id}' stock became negative (${stocks[obj.id].toFixed(2)}) after task '${task.id}'.` });
               issueFound = true;
@@ -219,7 +350,7 @@ class SimulationValidator {
 
     for (const [eqId, equipmentDef] of equipmentMap.entries()) {
       const capacity = equipmentDef.properties?.capacity || 1;
-      
+
       // Support both old equipment_interactions and new interactions
       const relevantTasks = tasks
         .filter(t => {
@@ -229,18 +360,25 @@ class SimulationValidator {
           const hasNewStyle = (t.interactions || []).some(i => i.object_id === eqId);
           return hasOldStyle || hasNewStyle;
         })
-        .map(t => ({ ...t, startMinutes: this._timeToMinutes(t.start), endMinutes: this._timeToMinutes(t.start) + (t.duration || 0) }))
+        .map(t => {
+          const startMinutes = this._timeToMinutes(t.start);
+          return {
+            ...t,
+            startMinutes,
+            endMinutes: startMinutes !== null ? startMinutes + (t.duration || 0) : null
+          };
+        })
+        .filter(t => t.startMinutes !== null) // Filter out tasks with invalid times
         .sort((a, b) => a.startMinutes - b.startMinutes);
 
       if (relevantTasks.length === 0) continue;
-      
+
       for (let i = 0; i < relevantTasks.length; i++) {
         const currentTask = relevantTasks[i];
-        
+
         // Get interaction for this equipment (try both old and new style)
         let interaction = (currentTask.equipment_interactions || []).find(i => i.id === eqId);
-        let isNewStyle = false;
-        
+
         if (!interaction) {
           // Look for new-style interactions
           const newInteraction = (currentTask.interactions || []).find(i => i.object_id === eqId);
@@ -254,41 +392,54 @@ class SimulationValidator {
                 to_state: stateChanges.to,
                 revert_after: newInteraction.revert_after || false
               };
-              isNewStyle = true;
             }
           }
         }
-        
+
         if (!interaction) continue;
-        
+
+        // Calculate the equipment state at the start of this task
         let stateAtTaskStart = equipmentDef.properties?.state || 'available';
+
+        // Process all prior tasks in chronological order to determine state
         for (let j = 0; j < i; j++) {
-            const priorTask = relevantTasks[j];
-            let priorInteraction = (priorTask.equipment_interactions || []).find(i => i.id === eqId);
-            
-            if (!priorInteraction) {
-              // Handle new-style interactions for prior tasks too
-              const newPriorInteraction = (priorTask.interactions || []).find(i => i.object_id === eqId);
-              if (newPriorInteraction) {
-                const stateChanges = newPriorInteraction.property_changes?.state;
-                if (stateChanges) {
-                  priorInteraction = {
-                    id: eqId,
-                    from_state: stateChanges.from,
-                    to_state: stateChanges.to,
-                    revert_after: newPriorInteraction.revert_after || false
-                  };
-                }
+          const priorTask = relevantTasks[j];
+          let priorInteraction = (priorTask.equipment_interactions || []).find(i => i.id === eqId);
+
+          if (!priorInteraction) {
+            // Handle new-style interactions for prior tasks too
+            const newPriorInteraction = (priorTask.interactions || []).find(i => i.object_id === eqId);
+            if (newPriorInteraction) {
+              const stateChanges = newPriorInteraction.property_changes?.state;
+              if (stateChanges) {
+                priorInteraction = {
+                  id: eqId,
+                  from_state: stateChanges.from,
+                  to_state: stateChanges.to,
+                  revert_after: newPriorInteraction.revert_after || false
+                };
               }
             }
-            
-            if (priorInteraction) {
-              if (priorTask.endMinutes <= currentTask.startMinutes) {
-                  stateAtTaskStart = priorInteraction.revert_after === true ? priorInteraction.from_state : priorInteraction.to_state;
+          }
+
+          if (priorInteraction) {
+            // Determine the state based on whether the prior task has completed
+            // FIXED: Corrected time logic for state tracking
+            if (priorTask.endMinutes <= currentTask.startMinutes) {
+              // Prior task completed before current task starts
+              if (priorInteraction.revert_after === true) {
+                // Equipment reverted to original state after task completed
+                stateAtTaskStart = priorInteraction.from_state;
               } else {
-                  stateAtTaskStart = priorInteraction.to_state;
+                // Equipment remains in the new state
+                stateAtTaskStart = priorInteraction.to_state;
               }
+            } else {
+              // Prior task is still running when current task starts (overlap)
+              // Equipment is in the "to_state" of the overlapping task
+              stateAtTaskStart = priorInteraction.to_state;
             }
+          }
         }
         
         if (stateAtTaskStart !== interaction.from_state) {
@@ -318,26 +469,38 @@ class SimulationValidator {
     for (const actor of actors) {
       const actorTasks = tasks
         .filter(t => t.actor_id === actor.id)
-        .sort((a, b) => (a.start || "00:00").localeCompare(b.start || "00:00"));
+        .map(t => ({
+          ...t,
+          startMinutes: this._timeToMinutes(t.start),
+          endMinutes: this._timeToMinutes(t.start) + (t.duration || 0)
+        }))
+        .filter(t => t.startMinutes !== null) // Filter out tasks with invalid start times
+        .sort((a, b) => a.startMinutes - b.startMinutes);
 
-      for (let i = 0; i < actorTasks.length - 1; i++) {
-        const currentTask = actorTasks[i];
-        const nextTask = actorTasks[i + 1];
+      // Check ALL pairs of tasks for overlap, not just consecutive ones
+      for (let i = 0; i < actorTasks.length; i++) {
+        const task1 = actorTasks[i];
 
-        const currentStart = this._timeToMinutes(currentTask.start);
-        const nextStart = this._timeToMinutes(nextTask.start);
+        for (let j = i + 1; j < actorTasks.length; j++) {
+          const task2 = actorTasks[j];
 
-        if (currentStart === null || nextStart === null) continue;
+          // Check if task1 overlaps with task2
+          // Overlap occurs if task1 ends after task2 starts
+          if (task1.endMinutes > task2.startMinutes) {
+            const task1EndTime = `${Math.floor(task1.endMinutes/60)}:${String(task1.endMinutes%60).padStart(2,'0')}`;
+            this.addResult({
+              metricId: metric.id,
+              status: 'error',
+              message: `Actor '${actor.id}' has an overlap between task '${task1.id}' (ends at ${task1EndTime}) and task '${task2.id}' (starts at ${task2.start}).`
+            });
+            issueFound = true;
+          }
 
-        const currentEnd = currentStart + (currentTask.duration || 0);
-
-        if (currentEnd > nextStart) {
-          this.addResult({
-            metricId: metric.id,
-            status: 'error',
-            message: `Actor '${actor.id}' has an overlap between task '${currentTask.id}' (ends at ${Math.floor(currentEnd/60)}:${String(currentEnd%60).padStart(2,'0')}) and task '${nextTask.id}' (starts at ${nextTask.start}).`
-          });
-          issueFound = true;
+          // Early exit: if task2 starts after task1 ends, no need to check further
+          // (since tasks are sorted by start time)
+          if (task2.startMinutes >= task1.endMinutes) {
+            break;
+          }
         }
       }
     }
@@ -351,22 +514,47 @@ class SimulationValidator {
     const tasks = this.simulation.tasks || [];
     const taskMap = new Map(tasks.map(task => [task.id, task]));
     let issueFound = false;
+
+    // Performance: Cache time conversions
+    const taskTimes = new Map();
     for (const task of tasks) {
-      const taskStart = this._timeToMinutes(task.start);
-      if (taskStart === null) continue;
+      if (!task.id) continue;
+      const startMinutes = this._timeToMinutes(task.start);
+      if (startMinutes !== null) {
+        taskTimes.set(task.id, {
+          start: startMinutes,
+          end: startMinutes + (task.duration || 0)
+        });
+      }
+    }
+
+    for (const task of tasks) {
+      if (!task.id) continue;
+      const taskTiming = taskTimes.get(task.id);
+      if (!taskTiming) continue; // Skip tasks with invalid times
+
       for (const depId of (task.depends_on || [])) {
         const depTask = taskMap.get(depId);
         if (!depTask) continue; // Handled by unreachable dependency check
-        const depStart = this._timeToMinutes(depTask.start);
-        if (depStart === null) continue;
-        const depEnd = depStart + (depTask.duration || 0);
-        if (taskStart < depEnd) {
-          this.addResult({ metricId: metric.id, status: 'error', message: `Timing violation: Task '${task.id}' (starts ${task.start}) begins before its dependency '${depTask.id}' finishes.` });
+
+        const depTiming = taskTimes.get(depId);
+        if (!depTiming) continue; // Skip if dependency has invalid time
+
+        // Check if task starts before dependency ends
+        if (taskTiming.start < depTiming.end) {
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Timing violation: Task '${task.id}' (starts ${task.start}) begins before its dependency '${depTask.id}' finishes.`
+          });
           issueFound = true;
         }
       }
     }
-    if (!issueFound) { this.addResult({ metricId: metric.id, status: 'success', message: 'All task dependencies are temporally respected.' }); }
+
+    if (!issueFound) {
+      this.addResult({ metricId: metric.id, status: 'success', message: 'All task dependencies are temporally respected.' });
+    }
   }
 
   validateRecipeCompliance(metric) {
