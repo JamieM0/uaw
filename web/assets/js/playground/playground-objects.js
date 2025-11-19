@@ -149,9 +149,6 @@ function openAddObjectModal() {
             firstInput.focus();
         }
     }, 100);
-
-    // Initial validation
-    validateObjectForm();
 }
 
 // Preserve common fields when switching object types
@@ -728,9 +725,6 @@ function openAddTaskModal() {
     if (addInteractionBtn) {
         addInteractionBtn.onclick = addInteraction;
     }
-
-    // Validate initial state
-    validateTaskModal();
 }
 
 function setupTimeInputToggle() {

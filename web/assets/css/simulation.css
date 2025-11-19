@@ -155,7 +155,7 @@
 
 .gantt-chart {
     position: relative;
-    background: white;
+    background: var(--bg-light);
     min-height: 300px;
     overflow-x: auto;
     /* Performance optimizations for smooth scrolling */
@@ -241,7 +241,7 @@
 .task-lane {
     flex: 1;
     position: relative;
-    background: white;
+    background: var(--bg-light);
 }
 
 .task-bar {
@@ -322,9 +322,9 @@
 .resource-item {
     margin-bottom: 1rem;
     padding: 0.5rem;
-    border: 1px solid #f0f0f0;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    background: white;
+    background: var(--bg-light);
 }
 
 .resource-header {
@@ -596,8 +596,8 @@
     flex: 1;
     position: relative;
     height: 30px;
-    background: white;
-    border: 1px solid #ddd;
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
 }
 
@@ -742,9 +742,9 @@
 .expanded-tree-content {
     max-height: 600px;
     overflow-y: auto;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    background: white;
+    background: var(--bg-light);
     padding: 0.25rem;
     /* Performance optimizations for smooth scrolling */
     will-change: transform;
