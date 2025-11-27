@@ -435,6 +435,7 @@ function initializePlayground() {
       if (typeof SpaceEditor !== 'undefined') {
         spaceEditor = new SpaceEditor(canvas, propsPanel, editor);
         PlaygroundState.spaceEditor = spaceEditor;
+        window.spaceEditor = spaceEditor; // Make globally accessible for actor animation
         console.log('✓ Space editor initialized');
       } else {
         console.warn('SpaceEditor class not available');

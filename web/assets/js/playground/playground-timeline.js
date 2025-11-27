@@ -739,6 +739,11 @@ function renderSimulation(skipJsonValidation = false) {
             try { player.update(previousPlayhead); } catch (e) { /* noop */ }
         }
         window.player = player; // Make globally accessible for spacebar functionality
+
+        // Dispatch event for actor animation system
+        document.dispatchEvent(new CustomEvent('simulation-rendered', {
+            detail: { simulationData: currentSimulationData }
+        }));
     } catch (e) {
         simulationContent.innerHTML = `<p style="color: var(--error-color); text-align: center; margin-top: 2rem;">Render Error: ${e.message}</p>`;
         console.error("Render error:", e);
