@@ -3,7 +3,7 @@ class SpaceEditor {
         this.canvas = canvasEl;
         this.propsPanel = propsPanelEl;
         this.monacoEditor = editor;
-        
+
         this.pixelsPerMeter = 20;
         this.isDrawing = false;
         this.isDragging = false;
@@ -16,10 +16,11 @@ class SpaceEditor {
         this.dragOffset = { x: 0, y: 0 };
         this.currentDragPosition = { x: 0, y: 0 };
         this.initialMousePosition = { x: 0, y: 0 };
-    this.resizeDirection = null; // 'n','s','e','w','ne','nw','se','sw'
-    this.resizeStartRect = null; // {x,y,width,height}
-    this.resizeLabelEl = null; // DOM element for size indicator
+    this.resizeDirection = null;
+    this.resizeStartRect = null;
+    this.resizeLabelEl = null;
         this.locations = [];
+        this.trackedEventListeners = [];
 
         this.isUpdatingJson = false;
         this.hasInitiallyLoaded = false;
@@ -668,7 +669,7 @@ class SpaceEditor {
             : sanitizeHTML(loc.name || loc.id);
 
         rectEl.innerHTML = `<span class="location-text">${displayText}</span>`;
-    rectEl.addEventListener('mousedown', (e) => this.onRectMouseDown(e, loc.id));
+        this.trackEventListener(rectEl, 'mousedown', (e) => this.onRectMouseDown(e, loc.id));
         
         // Apply 3D transformation
         this.apply3DTransform(rectEl, loc);
@@ -1639,7 +1640,7 @@ class SpaceEditor {
             this.locations.push(newLocation);
             this.activeRectEl.dataset.id = newId;
             this.activeRectEl.textContent = newName;
-            this.activeRectEl.addEventListener('mousedown', (ev) => this.onRectMouseDown(ev, newId));
+            this.trackEventListener(this.activeRectEl, 'mousedown', (ev) => this.onRectMouseDown(ev, newId));
             
             // Adjust text size for the newly created rectangle
             this.adjustTextSize(this.activeRectEl);
@@ -2102,6 +2103,21 @@ class SpaceEditor {
             // Clean up temporary element
             document.body.removeChild(tempEl);
         }, 0);
+    }
+
+    trackEventListener(element, event, handler) {
+        element.addEventListener(event, handler);
+        this.trackedEventListeners.push({ element, event, handler });
+    }
+
+    destroy() {
+        this.trackedEventListeners.forEach(({ element, event, handler }) => {
+            element.removeEventListener(event, handler);
+        });
+        this.trackedEventListeners = [];
+        if (this.world && this.world.parentNode) {
+            this.world.parentNode.removeChild(this.world);
+        }
     }
 
 }

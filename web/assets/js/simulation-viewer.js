@@ -417,60 +417,49 @@ class SimulationViewer {
     getCurrentTimeMinutes() {
         return this.startTimeMinutes + (this.currentTime / 100) * this.totalDurationMinutes;
     }
-      updateSimulation() {
+    updateSimulation() {
         if (!this.simulationData) return;
-        
+
         const totalDuration = this.simulationData.end_time_minutes - this.simulationData.start_time_minutes;
         const progress = this.currentTime / 100;
-        // Round the current time calculation to prevent excessive decimal places
         const currentTime = Math.round(this.simulationData.start_time_minutes + (progress * totalDuration));
-        
-        // Update timeline with playhead
-        this.renderTimeline(currentTime);
-        
-        // Update actors status
+
+        this.updateTimeline(currentTime);
         this.updateActorsStatus(currentTime);
-        
-        // Update resources display
         this.updateResourcesDisplay(currentTime);
-        
-        // Update time display
+
         const timeDisplay = document.getElementById('time-display');
         if (timeDisplay) {
             timeDisplay.textContent = this.formatTime(currentTime);
         }
-        
-        // Update time slider
+
         const timeSlider = document.getElementById('time-slider');
         if (timeSlider && timeSlider.value != this.currentTime) {
             timeSlider.value = this.currentTime;
         }
     }
 
-    renderTimeline(currentTime) {
+    renderTimeline() {
         const container = document.getElementById('timeline-actors-container');
         if (!container) return;
 
         const { actors, tasks, start_time_minutes, end_time_minutes } = this.simulationData;
         const totalDuration = end_time_minutes - start_time_minutes;
 
-        // Clear existing content
         container.innerHTML = '';
 
-        // Create time axis markers
         const timeAxisContainer = document.querySelector('.timeline-time-axis');
         if (timeAxisContainer) {
             timeAxisContainer.innerHTML = '';
             const markersDiv = document.createElement('div');
             markersDiv.className = 'timeline-time-markers';
-            
-            // Add time markers (every 2 hours)
+
             for (let i = 0; i <= totalDuration; i += 120) {
                 const timeMinutes = start_time_minutes + i;
                 const hours = Math.floor(timeMinutes / 60);
                 const minutes = timeMinutes % 60;
                 const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-                
+
                 const marker = document.createElement('span');
                 marker.textContent = timeStr;
                 marker.style.position = 'absolute';
@@ -478,11 +467,10 @@ class SimulationViewer {
                 marker.style.transform = 'translateX(-50%)';
                 markersDiv.appendChild(marker);
             }
-            
+
             timeAxisContainer.appendChild(markersDiv);
         }
 
-        // Group tasks by actor
         const tasksByActor = {};
         actors.forEach(actor => {
             tasksByActor[actor.id] = {
@@ -491,36 +479,32 @@ class SimulationViewer {
             };
         });
 
-        // Create timeline row for each actor
         Object.values(tasksByActor).forEach(({ actor, tasks: actorTasks }) => {
             const rowDiv = document.createElement('div');
             rowDiv.className = 'actor-timeline-row';
             rowDiv.setAttribute('data-actor', actor.id);
 
-            // Actor label
             const labelDiv = document.createElement('div');
             labelDiv.className = 'actor-label';
             labelDiv.textContent = actor.role || actor.id;
             rowDiv.appendChild(labelDiv);
 
-            // Tasks container
             const tasksContainer = document.createElement('div');
             tasksContainer.className = 'actor-tasks-container';
 
-            // Add tasks for this actor
             actorTasks.forEach(task => {
                 const taskDiv = document.createElement('div');
                 taskDiv.className = 'task-block';
                 taskDiv.setAttribute('data-task-id', task.id);
+                taskDiv.dataset.startMinutes = task.start_minutes;
+                taskDiv.dataset.endMinutes = task.end_minutes;
 
-                // Calculate position and width
                 const startPercent = ((task.start_minutes - start_time_minutes) / totalDuration) * 100;
                 const widthPercent = (task.duration / totalDuration) * 100;
 
                 taskDiv.style.left = `${startPercent}%`;
                 taskDiv.style.width = `${widthPercent}%`;
 
-                // Task content - use emoji if available, otherwise formatted task name
                 let taskDisplayContent;
                 if (task.emoji) {
                     taskDisplayContent = task.emoji;
@@ -528,21 +512,14 @@ class SimulationViewer {
                 } else {
                     taskDisplayContent = task.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                 }
-                taskDiv.textContent = taskDisplayContent;                // Set task state based on current time
-                if (currentTime >= task.end_minutes) {
-                    taskDiv.classList.add('completed');
-                } else if (currentTime >= task.start_minutes && currentTime < task.end_minutes) {
-                    taskDiv.classList.add('active');
-                }
+                taskDiv.textContent = taskDisplayContent;
 
-                // Add tooltip on hover
                 taskDiv.addEventListener('mouseenter', (e) => {
                     this.showTaskTooltip(e, task);
                 });
 
                 taskDiv.addEventListener('mouseleave', this.hideTaskTooltip);
 
-                // Add click functionality to jump to task start time
                 taskDiv.addEventListener('click', (e) => {
                     e.preventDefault();
                     this.jumpToTime(task.start_minutes);
@@ -555,34 +532,49 @@ class SimulationViewer {
             container.appendChild(rowDiv);
         });
 
-        // Add the red time indicator line
+        this.updateTimeIndicator(0);
+    }
+
+    updateTimeline(currentTime) {
+        const taskBlocks = document.querySelectorAll('.task-block');
+        taskBlocks.forEach(taskBlock => {
+            const startMinutes = parseInt(taskBlock.dataset.startMinutes);
+            const endMinutes = parseInt(taskBlock.dataset.endMinutes);
+
+            taskBlock.classList.remove('completed', 'active');
+
+            if (currentTime >= endMinutes) {
+                taskBlock.classList.add('completed');
+            } else if (currentTime >= startMinutes && currentTime < endMinutes) {
+                taskBlock.classList.add('active');
+            }
+        });
+
         this.updateTimeIndicator(currentTime);
-    }    updateTimeIndicator(currentTime) {
-        // Remove existing time indicators from all task containers
+    }
+
+    updateTimeIndicator(currentTime) {
         const existingIndicators = document.querySelectorAll('.time-indicator');
         existingIndicators.forEach(indicator => indicator.remove());
 
         const { start_time_minutes, end_time_minutes } = this.simulationData;
         const totalDuration = end_time_minutes - start_time_minutes;
 
-        // Calculate position of current time
         const timePercent = ((currentTime - start_time_minutes) / totalDuration) * 100;
-        
-        // Only show indicator if time is within range
+
         if (timePercent >= 0 && timePercent <= 100) {
-            // Add time indicator to each task container row
             const taskContainers = document.querySelectorAll('.actor-tasks-container');
             taskContainers.forEach(container => {
                 const indicator = document.createElement('div');
                 indicator.className = 'time-indicator';
                 indicator.style.left = `${timePercent}%`;
                 container.appendChild(indicator);
-            });            // Also add to the time axis header
+            });
+
             const timeAxisContainer = document.querySelector('.timeline-time-axis');
             if (timeAxisContainer) {
                 const headerIndicator = document.createElement('div');
                 headerIndicator.className = 'time-indicator';
-                // Position with offset for actor label area (130px) + percentage of remaining width
                 const offsetPosition = 130 + (timePercent / 100) * (timeAxisContainer.offsetWidth - 130);
                 headerIndicator.style.left = `${offsetPosition}px`;
                 headerIndicator.style.height = '100%';

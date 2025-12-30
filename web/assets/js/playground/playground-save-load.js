@@ -290,7 +290,42 @@ async function loadFromZipFile(file) {
 
                     if (validatorFile) {
                         const validatorContent = await validatorFile.async('text');
-                        localStorage.setItem('uaw-metrics-validator-custom', validatorContent);
+
+                        // SECURITY: Double confirmation for custom validators from ZIP files
+                        const firstConfirm = confirm(
+                            '⚠️ WARNING: This ZIP file contains a custom JavaScript validator.\n\n' +
+                            'Custom validators are executed in a sandboxed environment but still pose potential security risks.\n\n' +
+                            'Only proceed if you trust the source of this file.\n\n' +
+                            'Do you want to continue loading the custom validator?'
+                        );
+
+                        if (firstConfirm) {
+                            const secondConfirm = prompt(
+                                '⛔ CRITICAL SECURITY WARNING ⛔\n\n' +
+                                'You are about to execute arbitrary JavaScript code from this ZIP file.\n\n' +
+                                'This code will have access to:\n' +
+                                '  - Your simulation data (read-only)\n' +
+                                '  - Validation results (can add)\n\n' +
+                                'This code CANNOT access:\n' +
+                                '  - The global window object\n' +
+                                '  - Local storage\n' +
+                                '  - Network requests\n\n' +
+                                'By typing "I UNDERSTAND THE RISKS" below, you acknowledge that:\n' +
+                                '  1. You have reviewed the validator code\n' +
+                                '  2. You trust the source completely\n' +
+                                '  3. You accept all responsibility for any consequences\n\n' +
+                                'Type "I UNDERSTAND THE RISKS" to proceed:'
+                            );
+
+                            if (secondConfirm === 'I UNDERSTAND THE RISKS') {
+                                localStorage.setItem('uaw-metrics-validator-custom', validatorContent);
+                                showNotification('✓ Custom validator loaded (user acknowledged security risks)');
+                            } else {
+                                showNotification('Custom validator was not loaded (cancelled by user)');
+                            }
+                        } else {
+                            showNotification('Custom validator was not loaded (cancelled by user)');
+                        }
                     }
 
                     showNotification(`Loaded simulation and custom metrics from ${file.name}`);

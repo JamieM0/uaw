@@ -32,8 +32,30 @@ let tutorialManager,
   displayEditor,
   emojiPicker;
 let tutorialData = null;
-let isPlaygroundInitialized = false;
 let autoRender = true;
+
+// RACE CONDITION FIX: Consolidate initialization state into single source of truth
+// Use getter/setter to maintain backward compatibility while ensuring consistency
+let _isPlaygroundInitialized = false;
+
+// Unified initialization flag accessors
+const getInitializationState = () => {
+    return _isPlaygroundInitialized;
+};
+
+const setInitializationState = (value) => {
+    _isPlaygroundInitialized = value;
+    PlaygroundState.isInitialized = value;
+};
+
+// For backward compatibility, define getter/setter on window
+Object.defineProperty(window, 'isPlaygroundInitialized', {
+    get: () => _isPlaygroundInitialized,
+    set: (value) => {
+        _isPlaygroundInitialized = value;
+        PlaygroundState.isInitialized = value;
+    }
+});
 
 /**
  * Utility functions for performance and safety
@@ -549,15 +571,13 @@ function attemptInitializePlayground() {
   // Check if we can proceed with full initialization
   if (initState.editorReady && initState.dataLoaded) {
     console.log('✓ Full initialization conditions met');
-    isPlaygroundInitialized = true;
-    PlaygroundState.isInitialized = true;
+    setInitializationState(true);
     try {
       initializePlayground();
       return true;
     } catch (error) {
       console.error('Initialization failed:', error);
-      isPlaygroundInitialized = false;
-      PlaygroundState.isInitialized = false;
+      setInitializationState(false);
       showInitializationError('Initialization failed. See console for details.', error);
       return false;
     }
@@ -566,30 +586,26 @@ function attemptInitializePlayground() {
   // Handle partial initialization scenarios
   if (initState.monacoLoadFailed && initState.dataLoaded) {
     console.log('⚠ Monaco failed, using fallback editor');
-    isPlaygroundInitialized = true;
-    PlaygroundState.isInitialized = true;
+    setInitializationState(true);
     try {
       initializeFallbackEditor();
       return true;
     } catch (error) {
       console.error('Fallback initialization failed:', error);
-      isPlaygroundInitialized = false;
-      PlaygroundState.isInitialized = false;
+      setInitializationState(false);
       return false;
     }
   }
 
   if (initState.editorReady && initState.dataLoadFailed) {
     console.log('⚠ Data loading failed, using minimal editor');
-    isPlaygroundInitialized = true;
-    PlaygroundState.isInitialized = true;
+    setInitializationState(true);
     try {
       initializeMinimalEditor();
       return true;
     } catch (error) {
       console.error('Minimal initialization failed:', error);
-      isPlaygroundInitialized = false;
-      PlaygroundState.isInitialized = false;
+      setInitializationState(false);
       return false;
     }
   }

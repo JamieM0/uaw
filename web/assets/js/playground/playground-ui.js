@@ -460,27 +460,57 @@ function initializeResizeHandles() {
         document.querySelector(".playground-main");
     const dragOverlay = document.getElementById('drag-overlay');
 
-    // Clean up existing event handlers to prevent duplicates and memory leaks
-    if (resizeHandlers.verticalHandler && verticalHandle) {
-        verticalHandle.removeEventListener("mousedown", resizeHandlers.verticalHandler);
-        verticalHandle.removeEventListener("touchstart", resizeHandlers.verticalHandler);
+    // MEMORY LEAK FIX: Ensure resizeHandlers is initialized before use
+    if (!resizeHandlers) {
+        resizeHandlers = {
+            verticalHandler: null,
+            metricsHandler: null,
+            horizontalHandler: null,
+            mouseMoveHandler: null,
+            mouseUpHandler: null
+        };
     }
-    if (resizeHandlers.metricsHandler && metricsHandle) {
-        metricsHandle.removeEventListener("mousedown", resizeHandlers.metricsHandler);
-        metricsHandle.removeEventListener("touchstart", resizeHandlers.metricsHandler);
+
+    // MEMORY LEAK FIX: Aggressive cleanup - remove ALL old document-level listeners
+    // This prevents accumulation even if resizeHandlers object is in inconsistent state
+    const oldHandlers = resizeHandlers || {};
+    if (oldHandlers.verticalHandler) {
+        document.removeEventListener("mousemove", oldHandlers.verticalHandler);
+        document.removeEventListener("touchmove", oldHandlers.verticalHandler);
+        document.removeEventListener("mouseup", oldHandlers.verticalHandler);
+        document.removeEventListener("touchend", oldHandlers.verticalHandler);
     }
-    if (resizeHandlers.horizontalHandler && horizontalHandle) {
-        horizontalHandle.removeEventListener("mousedown", resizeHandlers.horizontalHandler);
-        horizontalHandle.removeEventListener("touchstart", resizeHandlers.horizontalHandler);
+    if (oldHandlers.mouseMoveHandler) {
+        document.removeEventListener("mousemove", oldHandlers.mouseMoveHandler);
+        document.removeEventListener("touchmove", oldHandlers.mouseMoveHandler);
     }
-    if (resizeHandlers.mouseMoveHandler) {
-        document.removeEventListener("mousemove", resizeHandlers.mouseMoveHandler);
-        document.removeEventListener("touchmove", resizeHandlers.mouseMoveHandler);
+    if (oldHandlers.mouseUpHandler) {
+        document.removeEventListener("mouseup", oldHandlers.mouseUpHandler);
+        document.removeEventListener("touchend", oldHandlers.mouseUpHandler);
     }
-    if (resizeHandlers.mouseUpHandler) {
-        document.removeEventListener("mouseup", resizeHandlers.mouseUpHandler);
-        document.removeEventListener("touchend", resizeHandlers.mouseUpHandler);
+
+    // Clean up handle-specific listeners
+    if (verticalHandle && oldHandlers.verticalHandler) {
+        verticalHandle.removeEventListener("mousedown", oldHandlers.verticalHandler);
+        verticalHandle.removeEventListener("touchstart", oldHandlers.verticalHandler);
     }
+    if (metricsHandle && oldHandlers.metricsHandler) {
+        metricsHandle.removeEventListener("mousedown", oldHandlers.metricsHandler);
+        metricsHandle.removeEventListener("touchstart", oldHandlers.metricsHandler);
+    }
+    if (horizontalHandle && oldHandlers.horizontalHandler) {
+        horizontalHandle.removeEventListener("mousedown", oldHandlers.horizontalHandler);
+        horizontalHandle.removeEventListener("touchstart", oldHandlers.horizontalHandler);
+    }
+
+    // Reset handlers object to clean state
+    resizeHandlers = {
+        verticalHandler: null,
+        metricsHandler: null,
+        horizontalHandler: null,
+        mouseMoveHandler: null,
+        mouseUpHandler: null
+    };
 
     let isDragging = false;
     let dragType = "";

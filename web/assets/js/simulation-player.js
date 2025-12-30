@@ -8,6 +8,7 @@ class SimulationPlayer {
         this.hasPropertyChanges = false;
         this.isUpdatingEditor = false;
         this.isScrubbing = false;
+        this.trackedEventListeners = [];
 
         // Cache for optimized state calculations
         this.lastStateCalculationTime = -1;
@@ -24,6 +25,29 @@ class SimulationPlayer {
         };
 
         this.init();
+    }
+
+    destroy() {
+        this.isPlaying = false;
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+
+        this.trackedEventListeners.forEach(({ element, event, handler }) => {
+            element.removeEventListener(event, handler);
+        });
+        this.trackedEventListeners = [];
+
+        if (this.ui.playPauseBtn) {
+            this.ui.playPauseBtn.removeEventListener('click', () => this.togglePlay());
+        }
+        if (this.ui.speedSelect) {
+            this.ui.speedSelect.removeEventListener('change', () => this.setSpeed());
+        }
+    }
+
+    trackEventListener(element, event, handler) {
+        element.addEventListener(event, handler);
+        this.trackedEventListeners.push({ element, event, handler });
     }
 
     findLivePanels() {
@@ -43,14 +67,14 @@ class SimulationPlayer {
 
     init() {
         if (this.ui.playPauseBtn) {
-            this.ui.playPauseBtn.addEventListener('click', () => this.togglePlay());
+            this.trackEventListener(this.ui.playPauseBtn, 'click', () => this.togglePlay());
         }
         if (this.ui.speedSelect) {
-            this.ui.speedSelect.addEventListener('change', (e) => this.setSpeed(e.target.value));
+            this.trackEventListener(this.ui.speedSelect, 'change', (e) => this.setSpeed(e.target.value));
         }
         this.initScrubbing();
         this.update(this.playheadTime);
-        
+
         // Initialize spacebar functionality globally (only once)
         SimulationPlayer.initGlobalSpacebarPlayPause();
     }

@@ -90,8 +90,7 @@ class SimulationValidator {
     // Helper function to safely deep copy, handling circular references
     const safeDeepCopy = (obj, seen = new WeakMap()) => {
       if (obj === null || typeof obj !== 'object') return obj;
-      if (seen.has(obj)) return seen.get(obj); // Return cached copy for circular refs
-
+      if (seen.has(obj)) return seen.get(obj);
       const copy = Array.isArray(obj) ? [] : {};
       seen.set(obj, copy);
 
@@ -105,14 +104,13 @@ class SimulationValidator {
 
     // Create a sandboxed context for custom validation
     const sandbox = {
-      simulation: safeDeepCopy(this.simulation), // Deep copy with circular reference handling
+      simulation: safeDeepCopy(this.simulation),
       addResult: (result) => this.addResult(result),
       console: {
         log: (...args) => console.log('[Custom Validator]', ...args),
         warn: (...args) => console.warn('[Custom Validator]', ...args),
         error: (...args) => console.error('[Custom Validator]', ...args)
-      }, // Allow console but prefix with identifier
-      // Utility functions that custom validators can use
+      },
       _timeToMinutes: this._timeToMinutes.bind(this)
     };
 
@@ -120,17 +118,15 @@ class SimulationValidator {
     let executionAborted = false;
 
     try {
-      // Improved timeout handling - set flag and clear timeout
       timeoutId = setTimeout(() => {
         executionAborted = true;
       }, 5000);
 
-      // Create function with restricted scope (no access to global variables)
-      // Use strict mode and wrap in IIFE to prevent global access
-      const func = new Function('sandbox', 'metric', `
+      // SECURITY FIX: Use with() to create isolated scope and shadow globals
+      const func = new Function('sandbox', 'metric', 'code', `
         'use strict';
-        return (function() {
-          // Block access to global scope by shadowing common globals
+        with (sandbox) {
+          // SECURITY: Completely block global scope access
           const window = undefined;
           const document = undefined;
           const localStorage = undefined;
@@ -141,20 +137,23 @@ class SimulationValidator {
           const Function = undefined;
           const globalThis = undefined;
           const self = undefined;
+          const Object = Object.freeze(Object);
+          const Array = Object.freeze(Array);
+          const __proto__ = undefined;
+          const prototype = undefined;
 
           try {
-            // Destructure sandbox properties for direct access
-            const { simulation, addResult, console, _timeToMinutes } = sandbox;
+            // Execute custom validator code
+            eval(code);
 
-            ${customValidatorCode}
             if (typeof ${funcName} === 'function') {
               return ${funcName}.call(sandbox, metric);
             } else {
-              // Get available function names from the custom code
+              // Get available function names from custom code
               const funcRegex = /function\\s+(\\w+)\\s*\\(/g;
               const matches = [];
               let match;
-              while ((match = funcRegex.exec(\`\${customValidatorCode}\`)) !== null) {
+              while ((match = funcRegex.exec(code)) !== null) {
                 matches.push(match[1]);
               }
               throw new Error('Function "${funcName}" not found in custom validator code. Available functions: ' + matches.join(', '));
@@ -170,11 +169,11 @@ class SimulationValidator {
               throw error;
             }
           }
-        })();
+        }
       `);
 
       // Execute with enhanced error handling
-      const result = func(sandbox, metric);
+      const result = func(sandbox, metric, customValidatorCode);
 
       // Clear timeout immediately after execution
       clearTimeout(timeoutId);

@@ -1,6 +1,91 @@
 // Playground Timeline - Timeline rendering and interactions
 // Universal Automation Wiki - Simulation Playground
 
+// Utility functions for JSON parsing and HTML sanitization
+function stripJsonComments(jsonString) {
+    let result = '';
+    let inString = false;
+    let inSingleLineComment = false;
+    let inMultiLineComment = false;
+    let escapeNext = false;
+
+    for (let i = 0; i < jsonString.length; i++) {
+        const char = jsonString[i];
+        const nextChar = jsonString[i + 1];
+
+        if (escapeNext) {
+            result += char;
+            escapeNext = false;
+            continue;
+        }
+
+        if (char === '\\') {
+            escapeNext = true;
+            result += char;
+            continue;
+        }
+
+        if (inString) {
+            result += char;
+            if (char === '"') inString = false;
+            continue;
+        }
+
+        if (char === '"') {
+            inString = true;
+            result += char;
+            continue;
+        }
+
+        if (inSingleLineComment) {
+            if (char === '\n') {
+                inSingleLineComment = false;
+                result += char;
+            }
+            continue;
+        }
+
+        if (inMultiLineComment) {
+            if (char === '*' && nextChar === '/') {
+                inMultiLineComment = false;
+                result += '*/';
+                i++;
+            }
+            continue;
+        }
+
+        if (char === '/' && nextChar === '/') {
+            inSingleLineComment = true;
+            i++;
+            continue;
+        }
+
+        if (char === '/' && nextChar === '*') {
+            inMultiLineComment = true;
+            result += '/*';
+            i++;
+            continue;
+        }
+
+        result += char;
+    }
+    return result;
+}
+
+function sanitizeHTML(unsafe) {
+    if (unsafe === null || unsafe === undefined) {
+        return '';
+    }
+    const safeStr = String(unsafe);
+    return safeStr
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
+        .replace(/\//g, '&#x2F;');
+}
+
 // Constants
 const EDGE_DETECTION_THRESHOLD = 8; // pixels for resize edge detection
 const THROTTLE_DELAY = 16; // ~60fps for mousemove throttling
@@ -9,6 +94,7 @@ const MIN_TASK_DURATION = 1; // minimum task duration in minutes
 // Timeline rendering variables
 let renderTimeout;
 let currentSimulationData = null;
+let alwaysShowTimeIndicators = localStorage.getItem('alwaysShowTimeIndicators') === 'true';
 
 // Multi-period view controller
 let multiPeriodViewController = null;
@@ -279,6 +365,38 @@ function processSimulationData(simulationData) {
     return result;
 }
 
+function toggleAllTimeIndicators(show) {
+    alwaysShowTimeIndicators = show;
+    localStorage.setItem('alwaysShowTimeIndicators', show);
+
+    const taskTracks = document.querySelectorAll('.task-track');
+
+    taskTracks.forEach(track => {
+        if (show) {
+            // Find all task blocks in this track
+            const taskBlocks = track.querySelectorAll('.task-block');
+            taskBlocks.forEach(taskBlock => {
+                const taskId = taskBlock.dataset.taskId;
+                const trackId = `time-indicator-${taskId}`;
+                let indicator = track.querySelector(`#${trackId}`);
+
+                if (!indicator) {
+                    indicator = document.createElement('div');
+                    indicator.id = trackId;
+                    indicator.className = 'task-time-indicator';
+                    indicator.style.cssText = `position: absolute; top: -22px; left: ${taskBlock.style.left}; background: #007bff; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; white-space: nowrap; pointer-events: none; z-index: 1001; box-shadow: 0 2px 4px rgba(0,0,0,0.2);`;
+                    indicator.textContent = taskBlock.dataset.start;
+                    track.appendChild(indicator);
+                }
+            });
+        } else {
+            // Remove all indicators from this track
+            const indicators = track.querySelectorAll('.task-time-indicator');
+            indicators.forEach(indicator => indicator.remove());
+        }
+    });
+}
+
 // Render simulation with resources display
 function renderSimulation(skipJsonValidation = false) {
     // Prevent recursive rendering loops
@@ -421,11 +539,43 @@ function renderSimulation(skipJsonValidation = false) {
                     <input type="checkbox" id="view-toggle-statistics" checked>
                     <span>Statistics</span>
                 </label>
+                <label class="dropdown-checkbox-item">
+                    <input type="checkbox" id="view-toggle-always-show-time" ${alwaysShowTimeIndicators ? 'checked' : ''}>
+                    <span>Always show start time indicators</span>
+                </label>
             </div>
         `;
 
         viewControls.appendChild(viewDropdown);
         header.appendChild(viewControls);
+
+        const toggleBtn = viewDropdown.querySelector('.dropdown-toggle');
+        const content = viewDropdown.querySelector('.dropdown-content');
+
+        function showDropdown() {
+            content.style.display = 'block';
+            toggleBtn.setAttribute('aria-expanded', 'true');
+        }
+
+        function hideDropdown() {
+            content.style.display = 'none';
+            toggleBtn.setAttribute('aria-expanded', 'false');
+        }
+
+        toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isVisible = content.style.display === 'block';
+            isVisible ? hideDropdown() : showDropdown();
+        });
+
+        viewDropdown.addEventListener('mouseenter', () => showDropdown());
+        viewDropdown.addEventListener('mouseleave', () => {
+            setTimeout(() => {
+                if (!viewDropdown.matches(':hover')) {
+                    hideDropdown();
+                }
+            }, 100);
+        });
 
         container.appendChild(header);
 
@@ -459,6 +609,10 @@ function renderSimulation(skipJsonValidation = false) {
                     statsSection.style.display = e.target.checked ? 'flex' : 'none';
                 }
             });
+
+            document.getElementById('view-toggle-always-show-time')?.addEventListener('change', (e) => {
+                toggleAllTimeIndicators(e.target.checked);
+            });
         }, 0);
 
         const timeline = document.createElement("div");
@@ -470,37 +624,7 @@ function renderSimulation(skipJsonValidation = false) {
         timeMarkers.className = "timeline-time-markers";
         timeMarkers.setAttribute('role', 'presentation');
         timeMarkers.setAttribute('aria-label', 'Timeline time markers');
-        timeMarkers.style.cssText =
-            "position: relative; height: 30px; border-bottom: 1px solid var(--border-color); background: #f8f9fa;";
-
-         // Use the same scaling values as tasks (from processSimulationData unified scaling)
-        const visualTotalDuration = currentSimulationData.total_duration_minutes;
-        const visualStartTimeMinutes = currentSimulationData.start_time_minutes;
-
-        const markerInterval = visualTotalDuration <= 120 ? 30 : 60; // use 30m for short sims, 60m for long
-
-        // Use DocumentFragment for efficient DOM batching
-        const markerFragment = document.createDocumentFragment();
-
-        for (
-            let minutes = 0;
-            minutes <= visualTotalDuration;
-            minutes += markerInterval
-        ) {
-            const marker = document.createElement("div");
-            marker.className = "time-marker";
-            marker.setAttribute('role', 'presentation');
-            // Use same scaling logic as tasks: relative position within visual duration
-            marker.style.cssText = `position: absolute; left: ${(minutes / visualTotalDuration) * 100}%; top: 5px; font-size: 0.75rem; color: var(--text-light); transform: translateX(-50%);`;
-
-            const totalMinutesFromStart = visualStartTimeMinutes + minutes;
-            marker.textContent = formatTimeFromMinutes(totalMinutesFromStart);
-
-            markerFragment.appendChild(marker);
-        }
-
-        // Batch append all markers at once
-        timeMarkers.appendChild(markerFragment);
+        timeMarkers.style.cssText = "display: none;";
 
         timeline.appendChild(timeMarkers);
 
@@ -624,6 +748,43 @@ function renderSimulation(skipJsonValidation = false) {
                     }
                 });
 
+                // Add hover indicator for start time
+                taskElement.addEventListener("mouseenter", () => {
+                    if (isDragging || isResizing || alwaysShowTimeIndicators) return;
+
+                    // Check if indicator already exists in track
+                    const trackId = `time-indicator-${task.id}`;
+                    let timeIndicator = taskTrack.querySelector(`#${trackId}`);
+                    if (!timeIndicator) {
+                        timeIndicator = document.createElement('div');
+                        timeIndicator.id = trackId;
+                        timeIndicator.className = 'task-time-indicator';
+                        timeIndicator.style.cssText = `position: absolute; top: -22px; left: ${task.start_percentage}%; background: #007bff; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; white-space: nowrap; pointer-events: none; z-index: 1001; box-shadow: 0 2px 4px rgba(0,0,0,0.2);`;
+                        timeIndicator.textContent = task.start;
+                        taskTrack.appendChild(timeIndicator);
+                    }
+                });
+
+                taskElement.addEventListener("mouseleave", () => {
+                    if (!isDragging && !alwaysShowTimeIndicators) {
+                        const trackId = `time-indicator-${task.id}`;
+                        const timeIndicator = taskTrack.querySelector(`#${trackId}`);
+                        if (timeIndicator) {
+                            timeIndicator.remove();
+                        }
+                    }
+                });
+
+                // Add indicator if always show is enabled
+                if (alwaysShowTimeIndicators) {
+                    const timeIndicator = document.createElement('div');
+                    timeIndicator.id = `time-indicator-${task.id}`;
+                    timeIndicator.className = 'task-time-indicator';
+                    timeIndicator.style.cssText = `position: absolute; top: -22px; left: ${task.start_percentage}%; background: #007bff; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; white-space: nowrap; pointer-events: none; z-index: 1001; box-shadow: 0 2px 4px rgba(0,0,0,0.2);`;
+                    timeIndicator.textContent = task.start;
+                    taskTrack.appendChild(timeIndicator);
+                }
+
                 tasksFragment.appendChild(taskElement);
             }
 
@@ -712,7 +873,7 @@ function renderSimulation(skipJsonValidation = false) {
             "display: flex; gap: 2rem; padding: 1rem; background: var(--bg-light); border-radius: var(--border-radius-md); margin-top: 1rem;";
         // Generate stats dynamically based on available object types
         const objectStats = Object.entries(currentSimulationData)
-            .filter(([key, value]) => Array.isArray(value) && !['tasks'].includes(key) && !['start_time', 'end_time', 'start_time_minutes', 'end_time_minutes', 'total_duration_minutes', 'article_title', 'domain'].includes(key))
+            .filter(([key, value]) => Array.isArray(value) && !['tasks'].includes(key) && !['start_time', 'end_time', 'start_time_minutes', 'end_time_minutes', 'total_duration_minutes', 'article_title', 'domain', '_digitalObjectTypeKeys'].includes(key))
             .map(([type, objects]) => `<div class="stat-item"><strong>${type.charAt(0).toUpperCase() + type.slice(1)}:</strong> ${objects.length}</div>`)
             .join('');
         
@@ -869,27 +1030,24 @@ function handleMouseDown(e) {
 
             taskElement.style.opacity = '0.7';
             taskElement.style.zIndex = '1000';
-            taskElement.style.overflow = 'visible'; // Allow overlay to show above
+            taskElement.style.overflow = 'visible';
 
-            // Create time preview overlay
-            timePreview = document.createElement('div');
-            timePreview.className = 'duration-preview';
-            timePreview.style.cssText = `
-                position: absolute;
-                top: -25px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: var(--primary-color);
-                color: white;
-                padding: 2px 6px;
-                border-radius: 3px;
-                font-size: 0.7rem;
-                white-space: nowrap;
-                z-index: 1001;
-                pointer-events: none;
-            `;
-            timePreview.textContent = originalTaskData.start;
-            taskElement.appendChild(timePreview);
+            const track = taskElement.closest('.task-track');
+            if (track) {
+                const trackId = `time-indicator-${taskElement.dataset.taskId}`;
+                let timeIndicator = track.querySelector(`#${trackId}`);
+
+                if (!timeIndicator) {
+                    timeIndicator = document.createElement('div');
+                    timeIndicator.id = trackId;
+                    timeIndicator.className = 'task-time-indicator';
+                    timeIndicator.style.cssText = `position: absolute; top: -22px; left: ${taskElement.style.left}; background: #007bff; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; white-space: nowrap; pointer-events: none; z-index: 1001; box-shadow: 0 2px 4px rgba(0,0,0,0.2);`;
+                    timeIndicator.textContent = originalTaskData.start;
+                    track.appendChild(timeIndicator);
+                }
+
+                timePreview = timeIndicator;
+            }
 
             e.preventDefault();
         }
@@ -969,7 +1127,11 @@ function handleMouseMove(e) {
                 if (targetTrack !== currentTrack) {
                     // Cross-timeline move - highlight target
                     targetTrack.classList.add('drag-target');
-                    // Update time preview to show the target actor
+                    // Move indicator to target track
+                    if (timePreview.parentNode !== targetTrack) {
+                        targetTrack.appendChild(timePreview);
+                    }
+                    // Update time indicator to show the target actor
                     const targetActorId = targetTrack.dataset.actorId;
                     const newTime = calculateNewTimeFromPosition(e.clientX - dragOffsetX, targetTrack);
                     if (newTime !== null) {
@@ -1004,6 +1166,11 @@ function handleMouseMove(e) {
 
             // Apply the new position directly to the 'left' property
             draggedTask.style.left = `${newStartPercentage}%`;
+
+            // Update indicator position to match task
+            if (timePreview) {
+                timePreview.style.left = `${newStartPercentage}%`;
+            }
         }
     } catch (error) {
         console.error('Error in handleMouseMove:', error);
@@ -1078,12 +1245,19 @@ function handleMouseUp(e) {
                 draggedTask.style.opacity = '';
                 draggedTask.style.zIndex = '';
                 draggedTask.style.transform = '';
-                draggedTask.style.overflow = ''; // Restore original overflow
-            }
+                draggedTask.style.overflow = '';
 
-            // Clean up time preview
-            if (timePreview) {
-                timePreview.remove();
+                // Remove time indicator from track if not always showing
+                if (!alwaysShowTimeIndicators) {
+                    const track = draggedTask.closest('.task-track');
+                    if (track) {
+                        const trackId = `time-indicator-${draggedTask.dataset.taskId}`;
+                        const timeIndicator = track.querySelector(`#${trackId}`);
+                        if (timeIndicator) {
+                            timeIndicator.remove();
+                        }
+                    }
+                }
             }
 
             // Clear timeline highlights
