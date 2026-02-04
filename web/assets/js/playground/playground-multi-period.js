@@ -358,7 +358,8 @@ class MultiDaySimulator {
 
             // New-style interactions
             for (const interaction of (task.interactions || [])) {
-                const obj = objectMap.get(interaction.object_id);
+                const targetId = interaction?.target_id || interaction?.object_id;
+                const obj = targetId ? objectMap.get(targetId) : null;
                 if (!obj) continue;
 
                 // Handle interaction_type format (consume/create/produce)

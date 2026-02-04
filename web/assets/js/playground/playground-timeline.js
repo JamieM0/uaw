@@ -222,7 +222,10 @@ function processSimulationData(simulationData) {
     let actualLastTaskEnd = startTimeMinutes;
     let actualFirstTaskStart = startTimeMinutes; // Track earliest task start
 
-    const allObjects = sim.objects || [];
+    const allObjects = [
+        ...(Array.isArray(sim.world?.objects) ? sim.world.objects : []),
+        ...(Array.isArray(sim.objects) ? sim.objects : [])
+    ];
 
     // Include digital locations from the simulation structure
     // Support both new (nested) and old (root-level) formats for backward compatibility
@@ -241,20 +244,53 @@ function processSimulationData(simulationData) {
         objectsByType[obj.type].push(obj);
     });
 
-    const tasksWithMinutes = (sim.tasks || []).map(task => {
+    const timeUnit = (typeof config.time_unit === 'string') ? config.time_unit : 'minutes';
+    const rawTasks = [
+        ...(Array.isArray(sim.process?.tasks) ? sim.process.tasks : []),
+        ...(Array.isArray(sim.tasks) ? sim.tasks : [])
+    ];
+
+    const tasksWithMinutes = rawTasks.map(task => {
         if (!task) return null;
-        let taskStartMinutes;
+
+        let taskStartMinutes = startTimeMinutes;
         try {
-            const [taskHour, taskMin] = (task.start || "00:00").split(":").map(Number);
-            taskStartMinutes = taskHour * 60 + taskMin;
+            if (window.WorkSpecValidator && typeof window.WorkSpecValidator.parseTaskStart === 'function') {
+                const parsedStart = window.WorkSpecValidator.parseTaskStart(task.start);
+                if (parsedStart && parsedStart.ok) {
+                    if (typeof parsedStart.startMinutes === 'number') {
+                        taskStartMinutes = parsedStart.startMinutes;
+                    } else if (parsedStart.kind === 'datetime' && typeof parsedStart.startMillis === 'number') {
+                        const date = new Date(parsedStart.startMillis);
+                        taskStartMinutes = (date.getHours() * 60) + date.getMinutes();
+                    }
+                }
+            } else if (typeof task.start === 'string') {
+                const [taskHour, taskMin] = (task.start || "00:00").split(":").map(Number);
+                taskStartMinutes = taskHour * 60 + taskMin;
+            }
         } catch {
             taskStartMinutes = startTimeMinutes;
         }
-        const taskDuration = task.duration || 0;
-        const taskEndMinutes = taskStartMinutes + taskDuration;
+
+        let taskDurationMinutes = 0;
+        try {
+            if (window.WorkSpecValidator && typeof window.WorkSpecValidator.parseDurationToMinutes === 'function') {
+                const parsedDuration = window.WorkSpecValidator.parseDurationToMinutes(task.duration, timeUnit);
+                if (parsedDuration && parsedDuration.ok && typeof parsedDuration.minutes === 'number') {
+                    taskDurationMinutes = parsedDuration.minutes;
+                }
+            } else if (typeof task.duration === 'number') {
+                taskDurationMinutes = task.duration;
+            }
+        } catch {
+            taskDurationMinutes = 0;
+        }
+
+        const taskEndMinutes = taskStartMinutes + taskDurationMinutes;
         actualLastTaskEnd = Math.max(actualLastTaskEnd, taskEndMinutes);
         actualFirstTaskStart = Math.min(actualFirstTaskStart, taskStartMinutes); // Track earliest start
-        return { ...task, start_minutes: taskStartMinutes, end_minutes: taskEndMinutes };
+        return { ...task, start_minutes: taskStartMinutes, end_minutes: taskEndMinutes, duration: taskDurationMinutes };
     }).filter(task => task !== null);
     
     // --- START OF THE UNIFIED SCALING FIX ---
@@ -330,7 +366,7 @@ function processSimulationData(simulationData) {
         end_time_minutes: visualEndTimeMinutes, // Use the new visual end time
         total_duration_minutes: visualTotalDuration, // This is now the unified duration
         tasks: processedTasks,
-        article_title: sim.meta?.article_title || "Process Simulation",
+        article_title: sim.meta?.title || sim.meta?.article_title || "Process Simulation",
         domain: sim.meta?.domain || "General",
     };
 
@@ -496,8 +532,9 @@ function renderSimulation(skipJsonValidation = false) {
 
         currentSimulationData = processSimulationData(dataToProcess);
 
-        if (spaceEditor && dataToProcess.simulation && dataToProcess.simulation.layout) {
-            spaceEditor.loadLayout(dataToProcess.simulation.layout);
+        if (spaceEditor && dataToProcess.simulation && (dataToProcess.simulation.world?.layout || dataToProcess.simulation.layout)) {
+            const layout = dataToProcess.simulation.world?.layout || dataToProcess.simulation.layout;
+            spaceEditor.loadLayout(layout);
         }
 
         simulationContent.innerHTML = "";
@@ -839,13 +876,18 @@ function renderSimulation(skipJsonValidation = false) {
         // Also check for objects that will be created during tasks
         (currentSimulationData.tasks || []).forEach(task => {
             (task.interactions || []).forEach(interaction => {
-                if (interaction.add_objects) {
-                    interaction.add_objects.forEach(obj => {
-                        if (obj.type) {
-                            detectedTypes.add(obj.type);
-                        }
-                    });
+                const created = [];
+                if (interaction && interaction.action === 'create' && interaction.object) {
+                    created.push(interaction.object);
                 }
+                if (interaction && interaction.add_objects) {
+                    created.push(...interaction.add_objects);
+                }
+                created.forEach(obj => {
+                    if (obj && obj.type) {
+                        detectedTypes.add(obj.type);
+                    }
+                });
             });
         });
 
@@ -1312,8 +1354,8 @@ function updateTaskInJSON(taskId, newActorId, newTimeMinutes) {
 
         const currentJson = JSON.parse(stripJsonComments(editorToUse.getValue()));
 
-        // Handle both formats: day type wrapper and full multi-period JSON
-        const tasks = currentJson.simulation?.tasks || [];
+        const sim = currentJson.simulation || currentJson;
+        const tasks = Array.isArray(sim?.process?.tasks) ? sim.process.tasks : Array.isArray(sim?.tasks) ? sim.tasks : [];
         const task = tasks.find(t => t.id === taskId);
 
         if (task) {
@@ -1336,7 +1378,9 @@ function updateTaskDurationInJSON(taskId, newDuration, newStartTime) {
         const editorToUse = window.editor || editor;
 
         const currentJson = JSON.parse(stripJsonComments(editorToUse.getValue()));
-        const task = currentJson.simulation.tasks.find(t => t.id === taskId);
+        const sim = currentJson.simulation || currentJson;
+        const tasks = Array.isArray(sim?.process?.tasks) ? sim.process.tasks : Array.isArray(sim?.tasks) ? sim.tasks : [];
+        const task = tasks.find(t => t.id === taskId);
 
         if (task) {
             task.duration = newDuration;
@@ -1390,13 +1434,18 @@ function updateDynamicPanels() {
         // Check for objects that will be created during tasks
         (processedData.tasks || []).forEach(task => {
             (task.interactions || []).forEach(interaction => {
-                if (interaction.add_objects) {
-                    interaction.add_objects.forEach(obj => {
-                        if (obj.type) {
-                            detectedTypes.add(obj.type);
-                        }
-                    });
+                const created = [];
+                if (interaction && interaction.action === 'create' && interaction.object) {
+                    created.push(interaction.object);
                 }
+                if (interaction && interaction.add_objects) {
+                    created.push(...interaction.add_objects);
+                }
+                created.forEach(obj => {
+                    if (obj && obj.type) {
+                        detectedTypes.add(obj.type);
+                    }
+                });
             });
         });
 

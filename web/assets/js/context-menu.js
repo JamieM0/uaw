@@ -163,8 +163,11 @@ class ContextMenuManager {
             const currentJson = JSON.parse(stripJsonComments(editor.getValue()));
 
             // Find the task to edit
-            if (currentJson.simulation && currentJson.simulation.tasks) {
-                const task = currentJson.simulation.tasks.find(t => t.id === taskId);
+            const simulation = currentJson.simulation;
+            const tasks = simulation?.process?.tasks || simulation?.tasks;
+
+            if (simulation && Array.isArray(tasks)) {
+                const task = tasks.find(t => t.id === taskId);
 
                 if (task) {
                     // Call the edit function from playground-objects.js
@@ -177,7 +180,7 @@ class ContextMenuManager {
                     console.error(`ERROR: Task ${taskId} not found in simulation data`);
                 }
             } else {
-                console.error('ERROR: No simulation.tasks found in JSON');
+                console.error('ERROR: No simulation.process.tasks (or legacy simulation.tasks) found in JSON');
             }
         } catch (error) {
             console.error('ERROR editing task:', error);
@@ -214,11 +217,14 @@ class ContextMenuManager {
             const currentJson = JSON.parse(stripJsonComments(editor.getValue()));
             
             // Find and remove the task from the simulation data
-            if (currentJson.simulation && currentJson.simulation.tasks) {
-                const taskIndex = currentJson.simulation.tasks.findIndex(task => task.id === taskId);
+            const simulation = currentJson.simulation;
+            const tasks = simulation?.process?.tasks || simulation?.tasks;
+
+            if (simulation && Array.isArray(tasks)) {
+                const taskIndex = tasks.findIndex(task => task.id === taskId);
                 
                 if (taskIndex !== -1) {
-                    currentJson.simulation.tasks.splice(taskIndex, 1);
+                    tasks.splice(taskIndex, 1);
                     
                     // Update the Monaco editor with the new JSON
                     editor.setValue(JSON.stringify(currentJson, null, 2));
@@ -230,7 +236,7 @@ class ContextMenuManager {
                     console.error(`ERROR: Task ${taskId} not found in simulation data`);
                 }
             } else {
-                console.error('ERROR: No simulation.tasks found in JSON');
+                console.error('ERROR: No simulation.process.tasks (or legacy simulation.tasks) found in JSON');
             }
         } catch (error) {
             console.error('ERROR deleting task:', error);
@@ -262,11 +268,15 @@ class ContextMenuManager {
                     // Update the JSON in Monaco editor
                     const currentJson = JSON.parse(stripJsonComments(editor.getValue()));
                     
-                    if (currentJson.simulation && currentJson.simulation.layout && currentJson.simulation.layout.locations) {
-                        const layoutLocationIndex = currentJson.simulation.layout.locations.findIndex(loc => loc.id === locationId);
+                    const simulation = currentJson.simulation;
+                    const layout = simulation?.world?.layout || simulation?.layout;
+                    const locations = layout?.locations;
+
+                    if (simulation && Array.isArray(locations)) {
+                        const layoutLocationIndex = locations.findIndex(loc => loc.id === locationId);
                         
                         if (layoutLocationIndex !== -1) {
-                            currentJson.simulation.layout.locations.splice(layoutLocationIndex, 1);
+                            locations.splice(layoutLocationIndex, 1);
                             editor.setValue(JSON.stringify(currentJson, null, 2));
                         }
                     }

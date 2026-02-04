@@ -155,12 +155,20 @@ function findObjectStateModifierAtTime(objectId, timeInMinutes) {
         // Check interactions (new style)
         if (Array.isArray(task.interactions)) {
             task.interactions.forEach(interaction => {
-                if (interaction && interaction.object_id === objectId && interaction.state) {
-                    if (isTaskActive) {
-                        currentModifier = task.id;
-                    } else if (isTaskCompleted && !interaction.revert_after) {
-                        currentModifier = task.id;
-                    }
+                if (!interaction || typeof interaction !== 'object') return;
+
+                const targetId = interaction.target_id || interaction.object_id;
+                if (targetId !== objectId) return;
+
+                const hasStateChange = Boolean(interaction.state || (interaction.property_changes && interaction.property_changes.state));
+                if (!hasStateChange) return;
+
+                const isTemporary = Boolean(interaction.temporary || interaction.revert_after);
+
+                if (isTaskActive) {
+                    currentModifier = task.id;
+                } else if (isTaskCompleted && !isTemporary) {
+                    currentModifier = task.id;
                 }
             });
         }
@@ -598,8 +606,16 @@ function validateObjectDeletion(simulation, objectIdToDelete, taskStartTime) {
         return { valid: false, reason: "Invalid simulation structure" };
     }
 
-    const objectsArray = Array.isArray(sim.objects) ? sim.objects : [];
-    const tasksArray = Array.isArray(sim.tasks) ? sim.tasks : [];
+    const objectsArray = Array.isArray(sim.world?.objects)
+        ? sim.world.objects
+        : Array.isArray(sim.objects)
+            ? sim.objects
+            : [];
+    const tasksArray = Array.isArray(sim.process?.tasks)
+        ? sim.process.tasks
+        : Array.isArray(sim.tasks)
+            ? sim.tasks
+            : [];
 
     // Find the object
     const objectIndex = objectsArray.findIndex(obj => obj && obj.id === objectIdToDelete);
@@ -625,7 +641,11 @@ function validateObjectDeletion(simulation, objectIdToDelete, taskStartTime) {
 
         // Check interactions array
         if (Array.isArray(task.interactions)) {
-            if (task.interactions.some(i => i && i.object_id === objectIdToDelete)) {
+            if (task.interactions.some(i => {
+                if (!i || typeof i !== 'object') return false;
+                const targetId = i.target_id || i.object_id;
+                return targetId === objectIdToDelete;
+            })) {
                 return true;
             }
         }

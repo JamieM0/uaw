@@ -759,21 +759,42 @@ function refreshValidationDisplay() {
                 window.validateJSON();
             } else {
                 // Fallback: run validation manually
-                const mergedCatalog = getMergedMetricsCatalog();
-                if (!mergedCatalog || mergedCatalog.length === 0) {
-                    displayValidationError('No validation metrics available. Check metrics catalog.');
-                    return;
-                }
+                if (window.WorkSpecValidator && typeof window.WorkSpecValidator.validate === 'function') {
+                    const result = window.WorkSpecValidator.validate(currentSimulationData);
+                    const problems = Array.isArray(result?.problems) ? result.problems : [];
+                    const mapped = problems.map((problem) => ({
+                        metricId: problem.metric_id || 'system.error',
+                        status: problem.severity === 'warning' ? 'warning' : problem.severity === 'info' ? 'suggestion' : 'error',
+                        message: problem.detail || problem.title || problem.metric_id || 'Validation error',
+                        problem
+                    }));
 
-                if (typeof SimulationValidator !== 'function') {
-                    console.error('SimulationValidator class not available');
-                    displayValidationError('Validation engine not loaded. Please reload the page.');
-                    return;
-                }
+                    if (mapped.length === 0) {
+                        displayValidationResults([{
+                            metricId: 'workspec.validation.ok',
+                            status: 'success',
+                            message: 'No problems found.'
+                        }]);
+                    } else {
+                        displayValidationResults(mapped);
+                    }
+                } else {
+                    const mergedCatalog = getMergedMetricsCatalog();
+                    if (!mergedCatalog || mergedCatalog.length === 0) {
+                        displayValidationError('No validation metrics available. Check metrics catalog.');
+                        return;
+                    }
 
-                const validator = new SimulationValidator(currentSimulationData);
-                const results = validator.runChecks(mergedCatalog);
-                displayValidationResults(results);
+                    if (typeof SimulationValidator !== 'function') {
+                        console.error('SimulationValidator class not available');
+                        displayValidationError('Validation engine not loaded. Please reload the page.');
+                        return;
+                    }
+
+                    const validator = new SimulationValidator(currentSimulationData);
+                    const results = validator.runChecks(mergedCatalog);
+                    displayValidationResults(results);
+                }
             }
         }
     } catch (e) {

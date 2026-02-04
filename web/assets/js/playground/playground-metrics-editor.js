@@ -212,7 +212,11 @@ function switchLeftTab(targetTab) {
         if (targetTab === 'space-editor' && spaceEditor) {
             try {
                 const currentJson = JSON.parse(editor.getValue());
-                spaceEditor.loadLayout(currentJson.simulation.layout, true);
+                const sim = currentJson.simulation || currentJson;
+                const layout = sim?.world?.layout || sim?.layout;
+                if (layout) {
+                    spaceEditor.loadLayout(layout, true);
+                }
             } catch(e) {
                 console.warn('Failed to parse JSON for space editor:', e.message);
                 // Show subtle indicator in UI
@@ -681,7 +685,11 @@ function refreshSpaceEditor() {
     if (spaceEditor) {
         try {
             const currentJson = JSON.parse(editor.getValue());
-            spaceEditor.loadLayout(currentJson.simulation.layout);
+            const sim = currentJson.simulation || currentJson;
+            const layout = sim?.world?.layout || sim?.layout;
+            if (layout) {
+                spaceEditor.loadLayout(layout);
+            }
         } catch(e) {
             console.warn('Cannot refresh space editor - invalid JSON:', e.message);
         }
@@ -691,20 +699,24 @@ function refreshSpaceEditor() {
 function refreshAllEditors() {
     try {
         const currentJson = JSON.parse(editor.getValue());
+        const sim = currentJson.simulation || currentJson;
 
         if (spaceEditor) {
-            spaceEditor.loadLayout(currentJson.simulation.layout);
+            const layout = sim?.world?.layout || sim?.layout;
+            if (layout) {
+                spaceEditor.loadLayout(layout);
+            }
         }
 
         if (digitalSpaceEditor) {
             // Support both new (nested) and old (root-level) formats for backward compatibility
-            const digitalSpace = currentJson.simulation?.digital_space || currentJson.digital_space || {};
+            const digitalSpace = sim?.digital_space || currentJson.digital_space || {};
             digitalSpaceEditor.loadLayout(digitalSpace);
         }
 
         if (displayEditor) {
             // Support both new (nested) and old (root-level) formats for backward compatibility
-            const displays = currentJson.simulation?.displays || currentJson.displays || {};
+            const displays = sim?.displays || currentJson.displays || {};
             displayEditor.loadLayout(displays);
         }
     } catch(e) {

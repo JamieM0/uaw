@@ -166,17 +166,34 @@ async function loadFromJsonFile(file) {
                     return;
                 }
 
-                // Validate simulation structure
-                if (!data.simulation.objects || !Array.isArray(data.simulation.objects)) {
-                    alert('Invalid simulation file: simulation.objects must be an array');
-                    reject(new Error('Invalid objects structure'));
-                    return;
-                }
+                // Validate simulation structure (WorkSpec v2 preferred; support v1 for compatibility)
+                const sim = data.simulation;
+                const isV2 = sim && (sim.schema_version === '2.0' || sim.world || sim.process);
 
-                if (!data.simulation.tasks || !Array.isArray(data.simulation.tasks)) {
-                    alert('Invalid simulation file: simulation.tasks must be an array');
-                    reject(new Error('Invalid tasks structure'));
-                    return;
+                if (isV2) {
+                    if (!sim.world || !Array.isArray(sim.world.objects)) {
+                        alert('Invalid WorkSpec v2 file: simulation.world.objects must be an array');
+                        reject(new Error('Invalid world.objects structure'));
+                        return;
+                    }
+
+                    if (!sim.process || !Array.isArray(sim.process.tasks)) {
+                        alert('Invalid WorkSpec v2 file: simulation.process.tasks must be an array');
+                        reject(new Error('Invalid process.tasks structure'));
+                        return;
+                    }
+                } else {
+                    if (!sim.objects || !Array.isArray(sim.objects)) {
+                        alert('Invalid simulation file: simulation.objects must be an array');
+                        reject(new Error('Invalid objects structure'));
+                        return;
+                    }
+
+                    if (!sim.tasks || !Array.isArray(sim.tasks)) {
+                        alert('Invalid simulation file: simulation.tasks must be an array');
+                        reject(new Error('Invalid tasks structure'));
+                        return;
+                    }
                 }
 
                 // Load into editor
@@ -254,14 +271,30 @@ async function loadFromZipFile(file) {
             return;
         }
 
-        if (!data.simulation.objects || !Array.isArray(data.simulation.objects)) {
-            alert('Invalid simulation file: simulation.objects must be an array');
-            return;
-        }
+        // Validate simulation structure (WorkSpec v2 preferred; support v1 for compatibility)
+        const sim = data.simulation;
+        const isV2 = sim && (sim.schema_version === '2.0' || sim.world || sim.process);
 
-        if (!data.simulation.tasks || !Array.isArray(data.simulation.tasks)) {
-            alert('Invalid simulation file: simulation.tasks must be an array');
-            return;
+        if (isV2) {
+            if (!sim.world || !Array.isArray(sim.world.objects)) {
+                alert('Invalid WorkSpec v2 file: simulation.world.objects must be an array');
+                return;
+            }
+
+            if (!sim.process || !Array.isArray(sim.process.tasks)) {
+                alert('Invalid WorkSpec v2 file: simulation.process.tasks must be an array');
+                return;
+            }
+        } else {
+            if (!sim.objects || !Array.isArray(sim.objects)) {
+                alert('Invalid simulation file: simulation.objects must be an array');
+                return;
+            }
+
+            if (!sim.tasks || !Array.isArray(sim.tasks)) {
+                alert('Invalid simulation file: simulation.tasks must be an array');
+                return;
+            }
         }
 
         // Load into editor
@@ -684,12 +717,26 @@ function openLoadDialog() {
                     throw new Error('Invalid save code: missing simulation data');
                 }
 
-                if (!saveData.simulation.objects || !Array.isArray(saveData.simulation.objects)) {
-                    throw new Error('Invalid save code: simulation.objects must be an array');
-                }
+                // Validate simulation structure (WorkSpec v2 preferred; support v1 for compatibility)
+                const sim = saveData.simulation;
+                const isV2 = sim && (sim.schema_version === '2.0' || sim.world || sim.process);
 
-                if (!saveData.simulation.tasks || !Array.isArray(saveData.simulation.tasks)) {
-                    throw new Error('Invalid save code: simulation.tasks must be an array');
+                if (isV2) {
+                    if (!sim.world || !Array.isArray(sim.world.objects)) {
+                        throw new Error('Invalid WorkSpec v2 save code: simulation.world.objects must be an array');
+                    }
+
+                    if (!sim.process || !Array.isArray(sim.process.tasks)) {
+                        throw new Error('Invalid WorkSpec v2 save code: simulation.process.tasks must be an array');
+                    }
+                } else {
+                    if (!sim.objects || !Array.isArray(sim.objects)) {
+                        throw new Error('Invalid save code: simulation.objects must be an array');
+                    }
+
+                    if (!sim.tasks || !Array.isArray(sim.tasks)) {
+                        throw new Error('Invalid save code: simulation.tasks must be an array');
+                    }
                 }
 
                 // Load into editor

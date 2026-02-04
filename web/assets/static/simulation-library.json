@@ -60,7 +60,8 @@
               "name": "Baker",
               "properties": {
                 "role": "Baker",
-                "cost_per_hour": 25
+                "cost_per_hour": 25,
+                "state": "available"
               },
               "location": "prep_area"
             },
@@ -70,7 +71,8 @@
               "name": "Assistant",
               "properties": {
                 "role": "Assistant Baker",
-                "cost_per_hour": 18
+                "cost_per_hour": 18,
+                "state": "available"
               },
               "location": "prep_area"
             },
@@ -194,7 +196,7 @@
               "properties": {
                 "unit": "loaves",
                 "quantity": 0,
-                "revenue_per_unit": 6
+                "revenue_per_unit": 35
               },
               "emoji": "🍞",
               "location": "oven_area"
@@ -242,16 +244,7 @@
               "duration": 10,
               "location": "prep_area",
               "depends_on": [],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -15
-                    }
-                  },
-                  "target_id": "yeast"
-                }
-              ]
+              "interactions": []
             },
             {
               "id": "mix_dough",
@@ -268,7 +261,7 @@
                 {
                   "property_changes": {
                     "quantity": {
-                      "delta": -1
+                      "delta": -3
                     }
                   },
                   "target_id": "flour"
@@ -276,10 +269,18 @@
                 {
                   "property_changes": {
                     "quantity": {
-                      "delta": -0.7
+                      "delta": -2
                     }
                   },
                   "target_id": "water"
+                },
+                {
+                  "property_changes": {
+                    "quantity": {
+                      "delta": -15
+                    }
+                  },
+                  "target_id": "yeast"
                 },
                 {
                   "property_changes": {
@@ -394,7 +395,7 @@
                 {
                   "property_changes": {
                     "quantity": {
-                      "delta": 1
+                      "delta": 4
                     }
                   },
                   "target_id": "shaped_loaves"
@@ -447,7 +448,7 @@
                 {
                   "property_changes": {
                     "quantity": {
-                      "delta": -1
+                      "delta": -4
                     }
                   },
                   "target_id": "shaped_loaves"
@@ -455,7 +456,7 @@
                 {
                   "property_changes": {
                     "quantity": {
-                      "delta": 1
+                      "delta": 4
                     }
                   },
                   "target_id": "baked_bread"
@@ -1306,7 +1307,8 @@
               "name": "Customer Service Rep",
               "properties": {
                 "role": "Customer Support",
-                "cost_per_hour": 22
+                "cost_per_hour": 22,
+                "state": "available"
               },
               "location": "server_room"
             },
@@ -1316,7 +1318,8 @@
               "name": "Warehouse Worker",
               "properties": {
                 "role": "Fulfillment",
-                "cost_per_hour": 18
+                "cost_per_hour": 18,
+                "state": "available"
               },
               "location": "warehouse"
             },
@@ -1326,7 +1329,8 @@
               "name": "Packing Specialist",
               "properties": {
                 "role": "Packaging",
-                "cost_per_hour": 17
+                "cost_per_hour": 17,
+                "state": "available"
               },
               "location": "packing_station"
             },
@@ -1405,7 +1409,7 @@
               "properties": {
                 "unit": "orders",
                 "quantity": 0,
-                "revenue_per_unit": 45
+                "revenue_per_unit": 55
               },
               "emoji": "📦",
               "location": "packing_station"
@@ -1470,7 +1474,7 @@
               "id": "check_inventory",
               "emoji": "🔍",
               "actor_id": "customer_service_rep",
-              "start": "09:22",
+              "start": "09:25",
               "duration": 8,
               "location": "server_room",
               "depends_on": [
@@ -1527,7 +1531,7 @@
               "id": "update_inventory",
               "emoji": "📊",
               "actor_id": "warehouse_worker",
-              "start": "09:50",
+              "start": "09:53",
               "duration": 6,
               "location": "warehouse",
               "depends_on": [
@@ -1767,7 +1771,8 @@
               "name": "PCB Technician",
               "properties": {
                 "specialization": "PCB Assembly",
-                "cost_per_hour": 35
+                "cost_per_hour": 35,
+                "state": "available"
               },
               "location": "pcb_station"
             },
@@ -1777,7 +1782,8 @@
               "name": "Display Technician",
               "properties": {
                 "specialization": "Display Assembly",
-                "cost_per_hour": 40
+                "cost_per_hour": 40,
+                "state": "available"
               },
               "location": "display_station"
             },
@@ -1787,7 +1793,8 @@
               "name": "Assembly Worker 1",
               "properties": {
                 "role": "Final Assembly",
-                "cost_per_hour": 30
+                "cost_per_hour": 30,
+                "state": "available"
               },
               "location": "final_assembly"
             },
@@ -1797,7 +1804,8 @@
               "name": "Assembly Worker 2",
               "properties": {
                 "role": "Final Assembly",
-                "cost_per_hour": 30
+                "cost_per_hour": 30,
+                "state": "available"
               },
               "location": "final_assembly"
             },
@@ -1807,7 +1815,8 @@
               "name": "QA Engineer",
               "properties": {
                 "certification": "Electronics QA",
-                "cost_per_hour": 45
+                "cost_per_hour": 45,
+                "state": "available"
               },
               "location": "quality_control"
             },
@@ -1817,7 +1826,8 @@
               "name": "Packaging Specialist",
               "properties": {
                 "role": "Packaging",
-                "cost_per_hour": 25
+                "cost_per_hour": 25,
+                "state": "available"
               },
               "location": "packaging"
             },
@@ -2213,7 +2223,7 @@
               "id": "phone_assembly_batch_1",
               "emoji": "🔨",
               "actor_id": "assembler_1",
-              "start": "09:30",
+              "start": "09:40",
               "duration": 60,
               "location": "final_assembly",
               "depends_on": [
@@ -2268,7 +2278,7 @@
               "id": "quality_testing_batch_1",
               "emoji": "✅",
               "actor_id": "qa_engineer",
-              "start": "10:30",
+              "start": "10:40",
               "duration": 45,
               "location": "quality_control",
               "depends_on": [
@@ -2306,7 +2316,7 @@
               "id": "packaging_batch_1",
               "emoji": "📦",
               "actor_id": "packager",
-              "start": "11:15",
+              "start": "11:25",
               "duration": 30,
               "location": "packaging",
               "depends_on": [
@@ -2694,7 +2704,8 @@
               "name": "Production Manager",
               "properties": {
                 "certification": "Pharmaceutical Production",
-                "cost_per_hour": 75
+                "cost_per_hour": 75,
+                "state": "available"
               },
               "location": "synthesis_lab"
             },
@@ -2704,7 +2715,8 @@
               "name": "Senior Chemist",
               "properties": {
                 "certification": "PhD Chemistry",
-                "cost_per_hour": 65
+                "cost_per_hour": 65,
+                "state": "available"
               },
               "location": "synthesis_lab"
             },
@@ -2714,7 +2726,8 @@
               "name": "Junior Chemist",
               "properties": {
                 "degree": "BS Chemistry",
-                "cost_per_hour": 45
+                "cost_per_hour": 45,
+                "state": "available"
               },
               "location": "synthesis_lab"
             },
@@ -2724,7 +2737,8 @@
               "name": "QA Analyst 1",
               "properties": {
                 "certification": "Analytical Chemistry",
-                "cost_per_hour": 55
+                "cost_per_hour": 55,
+                "state": "available"
               },
               "location": "qa_lab"
             },
@@ -2734,7 +2748,8 @@
               "name": "QA Analyst 2",
               "properties": {
                 "certification": "Analytical Chemistry",
-                "cost_per_hour": 55
+                "cost_per_hour": 55,
+                "state": "available"
               },
               "location": "qa_lab"
             },
@@ -2744,7 +2759,8 @@
               "name": "Formulation Technician",
               "properties": {
                 "specialization": "Drug Formulation",
-                "cost_per_hour": 40
+                "cost_per_hour": 40,
+                "state": "available"
               },
               "location": "formulation_suite"
             },
@@ -2754,7 +2770,8 @@
               "name": "Tablet Press Operator",
               "properties": {
                 "certification": "Tablet Manufacturing",
-                "cost_per_hour": 35
+                "cost_per_hour": 35,
+                "state": "available"
               },
               "location": "tablet_press_room"
             },
@@ -2764,7 +2781,8 @@
               "name": "Coating Technician",
               "properties": {
                 "specialization": "Tablet Coating",
-                "cost_per_hour": 38
+                "cost_per_hour": 38,
+                "state": "available"
               },
               "location": "coating_station"
             },
@@ -2774,7 +2792,8 @@
               "name": "Packaging Operator",
               "properties": {
                 "certification": "Cleanroom Operations",
-                "cost_per_hour": 30
+                "cost_per_hour": 30,
+                "state": "available"
               },
               "location": "packaging_cleanroom"
             },
@@ -3305,7 +3324,7 @@
               "id": "api_purity_assay",
               "emoji": "✨",
               "actor_id": "qa_analyst_2",
-              "start": "15:30",
+              "start": "16:15",
               "duration": 45,
               "location": "qa_lab",
               "depends_on": [
@@ -3361,7 +3380,7 @@
               "id": "tablet_blend_preparation",
               "emoji": "🥄",
               "actor_id": "formulation_tech",
-              "start": "16:15",
+              "start": "17:00",
               "duration": 75,
               "location": "formulation_suite",
               "depends_on": [
@@ -3400,7 +3419,7 @@
               "id": "tablet_compression",
               "emoji": "📊",
               "actor_id": "press_operator",
-              "start": "17:30",
+              "start": "18:15",
               "duration": 90,
               "location": "tablet_press_room",
               "depends_on": [
@@ -3438,7 +3457,7 @@
               "id": "tablet_coating",
               "emoji": "🎨",
               "actor_id": "coating_tech",
-              "start": "19:00",
+              "start": "19:45",
               "duration": 120,
               "location": "coating_station",
               "depends_on": [
@@ -3484,7 +3503,7 @@
               "id": "final_product_packaging",
               "emoji": "📦",
               "actor_id": "packaging_operator",
-              "start": "21:00",
+              "start": "21:45",
               "duration": 60,
               "location": "packaging_cleanroom",
               "depends_on": [
@@ -3664,7 +3683,8 @@
               "name": "Executive Chef",
               "properties": {
                 "role": "Kitchen Manager",
-                "cost_per_hour": 45
+                "cost_per_hour": 45,
+                "state": "available"
               },
               "location": "expedite_pass"
             },
@@ -3674,7 +3694,8 @@
               "name": "Sous Chef",
               "properties": {
                 "role": "Line Supervisor",
-                "cost_per_hour": 32
+                "cost_per_hour": 32,
+                "state": "available"
               },
               "location": "saute_station"
             },
@@ -3684,7 +3705,8 @@
               "name": "Grill Cook",
               "properties": {
                 "specialization": "Grill",
-                "cost_per_hour": 26
+                "cost_per_hour": 26,
+                "state": "available"
               },
               "location": "grill_station"
             },
@@ -3694,7 +3716,8 @@
               "name": "Sauté Cook",
               "properties": {
                 "specialization": "Sauté",
-                "cost_per_hour": 26
+                "cost_per_hour": 26,
+                "state": "available"
               },
               "location": "saute_station"
             },
@@ -3704,7 +3727,8 @@
               "name": "Garde Manger Cook",
               "properties": {
                 "specialization": "Cold Kitchen",
-                "cost_per_hour": 24
+                "cost_per_hour": 24,
+                "state": "available"
               },
               "location": "garde_manger"
             },
@@ -3714,7 +3738,8 @@
               "name": "Pastry Chef",
               "properties": {
                 "specialization": "Desserts",
-                "cost_per_hour": 28
+                "cost_per_hour": 28,
+                "state": "available"
               },
               "location": "pastry_station"
             },
@@ -3724,7 +3749,8 @@
               "name": "Prep Cook 1",
               "properties": {
                 "role": "Prep",
-                "cost_per_hour": 18
+                "cost_per_hour": 18,
+                "state": "available"
               },
               "location": "prep_station"
             },
@@ -3734,7 +3760,8 @@
               "name": "Prep Cook 2",
               "properties": {
                 "role": "Prep",
-                "cost_per_hour": 18
+                "cost_per_hour": 18,
+                "state": "available"
               },
               "location": "prep_station"
             },
@@ -3744,7 +3771,8 @@
               "name": "Dishwasher",
               "properties": {
                 "role": "Sanitation",
-                "cost_per_hour": 15
+                "cost_per_hour": 15,
+                "state": "available"
               },
               "location": "dish_pit"
             },
@@ -4432,7 +4460,7 @@
               "id": "expedite_first_course",
               "emoji": "🍽️",
               "actor_id": "executive_chef",
-              "start": "18:30",
+              "start": "18:55",
               "duration": 25,
               "location": "expedite_pass",
               "depends_on": [
@@ -4558,7 +4586,7 @@
               "id": "expedite_main_service",
               "emoji": "🍽️",
               "actor_id": "executive_chef",
-              "start": "20:00",
+              "start": "20:20",
               "duration": 40,
               "location": "expedite_pass",
               "depends_on": [

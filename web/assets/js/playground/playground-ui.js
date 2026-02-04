@@ -151,8 +151,11 @@ async function syncSpaceEditorState() {
             return;
         }
 
-        if (validSimulationData.simulation && validSimulationData.simulation.layout) {
-            spaceEditor.loadLayout(validSimulationData.simulation.layout, true);
+        if (validSimulationData.simulation) {
+            const layout = validSimulationData.simulation.world?.layout || validSimulationData.simulation.layout;
+            if (layout) {
+                spaceEditor.loadLayout(layout, true);
+            }
         }
     } catch (error) {
         console.warn('Failed to sync space editor state:', error.message);

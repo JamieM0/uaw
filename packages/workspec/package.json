@@ -1,0 +1,28 @@
+{
+  "name": "@uaw/workspec",
+  "version": "2.0.0",
+  "description": "WorkSpec v2.0 validator and CLI (workspec validate/migrate/format).",
+  "license": "AGPL-3.0-or-later",
+  "main": "index.js",
+  "bin": {
+    "workspec": "bin/workspec.js"
+  },
+  "scripts": {
+    "check:sync": "node scripts/check-sync.js",
+    "sync:web": "node scripts/sync-web-assets.js"
+  },
+  "files": [
+    "bin/",
+    "index.js",
+    "workspec-validator.js",
+    "workspec-migrate-v1-to-v2.js",
+    "v2.0.schema.json",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
