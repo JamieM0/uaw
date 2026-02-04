@@ -38,7 +38,7 @@ class SimulationValidator {
     this.validateTaskStructure();
 
     // Phase 4: Validate interactions
-    this.validateInteractions();
+    this.validateInteractionsStructure();
 
     // Continue with legacy metric-based validation
     if (!Array.isArray(metricsCatalog)) {
@@ -737,9 +737,9 @@ class SimulationValidator {
   }
 
   /**
-   * Phase 4: Validate Interactions
+   * Phase 4: Validate Interactions Structure
    */
-  validateInteractions() {
+  validateInteractionsStructure() {
     const tasks = this.simulation.tasks || [];
     const objects = this.simulation.objects || [];
     const objectIds = new Set(objects.map(o => o.id));
