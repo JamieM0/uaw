@@ -104,7 +104,7 @@ Here's a sentence with a footnote[^1].
 
 - External link: [Python](https://python.org)
 - Anchor link: [Back to top](#test-document-for-translator-features)
-- Internal link: [Architecture](./architecture-overview.md)
+- Internal link: [Architecture](/docs/architecture-overview)
 
 ## End of Test
 

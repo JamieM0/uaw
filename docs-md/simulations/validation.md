@@ -2,6 +2,8 @@
 
 This document outlines the architecture and standards for the Universal Automation Wiki's simulation and validation engine. This system is designed to be robust, extensible, and community-driven, providing trustworthy, business-ready analysis of automation processes.
 
+**Related pages:** [Validation Rules Reference](/docs/simulations/validation-rules-reference), [Metric & Constraint ID Standardization](/docs/simulations/constraints), [Metrics Editor](/docs/simulations/metrics-editor), [Universal Object Model (Simulation)](/docs/simulations/universal-object-model), [WorkSpec v2.0 Schema](/docs/workspec/specification/v2.0/schema)
+
 ## Core Concepts
 
 The system is built on three pillars: a standardized **Simulation Schema**, a central **Metrics Catalog**, and a client-side **Validation Engine**.

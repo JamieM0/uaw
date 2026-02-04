@@ -132,6 +132,7 @@
         />
 
         <script src="/assets/js/simulation-validator.js" defer></script>
+        <script src="/assets/js/workspec-migrate-v1-to-v2.js" defer></script>
         <script src="/assets/js/space-editor.js" defer></script>
         <script src="/assets/js/emoji-picker.js" defer></script>
 
@@ -346,6 +347,7 @@
                             <button class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="Tools menu">Tools ▼</button>
                             <div class="dropdown-content" role="menu">
                                 <a href="#" id="format-json-btn" role="menuitem">Format JSON</a>
+                                <a href="#" id="migrate-workspec-btn" role="menuitem">Migrate v1 → v2</a>
                                 <a href="#" id="clear-editor-btn" role="menuitem">Clear</a>
                                 <a href="#" id="undo-btn" class="undo-button" disabled title="Undo last change (Ctrl+Z)" role="menuitem">↶ Undo</a>
                                 <a href="#" id="reset-panel-sizes-btn" role="menuitem">Reset Panel Sizes</a>
@@ -1328,6 +1330,8 @@
         <script src="/assets/js/playground/smart-actions-diff.js" defer></script>
         <script src="/assets/js/playground/smart-actions-setup.js" defer></script>
         <script src="/assets/js/playground/smart-actions-ui.js" defer></script>
+
+        <script src="/assets/js/playground/playground-migration.js" defer></script>
 
         <!-- Playground modules in dependency order -->
         <script src="/assets/js/playground/playground-utils.js" defer></script>

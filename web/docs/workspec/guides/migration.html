@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migration Guide: WorkSpec v1.0 → v2.0 - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/">Workspec</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/guides/">Guides</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">Migration Guide: WorkSpec v1.0 → v2.0</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">Migration Guide: WorkSpec v1.0 → v2.0</h1>
+                            
+                            <p class="docs-page-subtitle">WorkSpec v2.0 introduces breaking changes. This guide documents the required transformations.</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>WorkSpec v2.0 introduces breaking changes. This guide documents the required transformations.</p>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="1-add-schema-versioning">1) Add schema versioning<a class="headerlink" href="#1-add-schema-versioning" title="Link to this section">¶</a></h2>
+<p>Add:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"$schema"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://universalautomation.wiki/workspec/v2.0.schema.json"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.0"</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Documents without <code class="docs-inline-code">simulation.schema_version</code> are treated as legacy and should be migrated.</p>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="2-restructure-into-world-and-process">2) Restructure into <code class="docs-inline-code">world</code> and <code class="docs-inline-code">process</code><a class="headerlink" href="#2-restructure-into-world-and-process" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="v10-legacy-shape">v1.0 (legacy shape)<a class="headerlink" href="#v10-legacy-shape" title="Link to this section">¶</a></h3>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">        </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">        </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">        </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">        </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">        </span><span class="nt">"production_recipes"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 class="docs-heading" id="v20-required-shape">v2.0 (required shape)<a class="headerlink" href="#v20-required-shape" title="Link to this section">¶</a></h3>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.0"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">        </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">        </span><span class="nt">"world"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">            </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"process"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">            </span><span class="nt">"recipes"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Mapping:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">simulation.layout</code> → <code class="docs-inline-code">simulation.world.layout</code></li>
+<li><code class="docs-inline-code">simulation.objects</code> → <code class="docs-inline-code">simulation.world.objects</code></li>
+<li><code class="docs-inline-code">simulation.tasks</code> → <code class="docs-inline-code">simulation.process.tasks</code></li>
+<li><code class="docs-inline-code">simulation.production_recipes</code> → <code class="docs-inline-code">simulation.process.recipes</code> (if compatible with v2 recipe schema; otherwise remove/adjust)</li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="3-update-meta-fields">3) Update <code class="docs-inline-code">meta</code> fields<a class="headerlink" href="#3-update-meta-fields" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="rename-fields">Rename fields<a class="headerlink" href="#rename-fields" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li><code class="docs-inline-code">meta.article_title</code> → <code class="docs-inline-code">meta.title</code></li>
+</ul>
+<h3 class="docs-heading" id="required-in-v20">Required in v2.0<a class="headerlink" href="#required-in-v20" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li><code class="docs-inline-code">meta.title</code></li>
+<li><code class="docs-inline-code">meta.description</code></li>
+<li><code class="docs-inline-code">meta.domain</code></li>
+</ul>
+<p>If your legacy document used <code class="docs-inline-code">industry</code>, rename it to <code class="docs-inline-code">domain</code>.</p>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="4-update-interactions">4) Update interactions<a class="headerlink" href="#4-update-interactions" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="replace-consumesproduces">Replace consumes/produces<a class="headerlink" href="#replace-consumesproduces" title="Link to this section">¶</a></h3>
+<p>v1.0:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"consumes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"flour"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p>v2.0:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"flour"</span><span class="p">,</span><span class="w"> </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">-2</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>v1.0:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"produces"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"bread"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p>v2.0:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bread"</span><span class="p">,</span><span class="w"> </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 class="docs-heading" id="replace-equipment_interactions">Replace equipment_interactions<a class="headerlink" href="#replace-equipment_interactions" title="Link to this section">¶</a></h3>
+<p>v1.0:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"equipment_interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixer"</span><span class="p">,</span><span class="w"> </span><span class="nt">"from_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"clean"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dirty"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>v2.0:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixer"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"clean"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dirty"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 class="docs-heading" id="rename-fields_1">Rename fields<a class="headerlink" href="#rename-fields_1" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li><code class="docs-inline-code">object_id</code> → <code class="docs-inline-code">target_id</code></li>
+<li><code class="docs-inline-code">revert_after: true</code> → <code class="docs-inline-code">temporary: true</code></li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="5-task-id-emojis">5) Task ID emojis<a class="headerlink" href="#5-task-id-emojis" title="Link to this section">¶</a></h2>
+<p>Legacy documents sometimes embedded emojis in task IDs. In v2.0:</p>
+<ul class="docs-list">
+<li>Use a plain snake_case <code class="docs-inline-code">id</code></li>
+<li>Put the emoji in the <code class="docs-inline-code">emoji</code> field</li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="6-type-aliases">6) Type aliases<a class="headerlink" href="#6-type-aliases" title="Link to this section">¶</a></h2>
+<p>v2.0 rejects legacy type aliases:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">material</code> → use <code class="docs-inline-code">resource</code></li>
+<li><code class="docs-inline-code">ingredient</code> → use <code class="docs-inline-code">resource</code></li>
+<li><code class="docs-inline-code">tool</code> → use <code class="docs-inline-code">equipment</code></li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="7-document-verification">7) Document verification<a class="headerlink" href="#7-document-verification" title="Link to this section">¶</a></h2>
+<p>After migration, verify:</p>
+<ul class="docs-list">
+<li>v2.0 structure exists (<code class="docs-inline-code">world</code> + <code class="docs-inline-code">process</code>)</li>
+<li>all object IDs and task IDs are valid</li>
+<li>interactions use <code class="docs-inline-code">target_id</code></li>
+<li>times are strict (<code class="docs-inline-code">HH:MM</code> is zero-padded)</li>
+</ul>
+<p>See:</p>
+<ul class="docs-list">
+<li>v2.0 validation: <a href="/docs/workspec/specification/v2.0/validation">/docs/workspec/specification/v2.0/validation</a></li>
+<li>error code reference: <a href="/docs/workspec/reference/errors">/docs/workspec/reference/errors</a></li>
+</ul>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

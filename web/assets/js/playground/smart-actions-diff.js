@@ -31,14 +31,26 @@
             this.onRejectCallback = onReject;
 
             // Wait for Monaco to be available
-            if (typeof monaco === 'undefined' || !window.editor) {
+            if (typeof monaco === 'undefined' || (!window.editor && !window.monacoEditor)) {
                 console.error('SmartActionsDiff: Monaco editor not loaded');
                 alert('Monaco editor not available. Please refresh the page.');
                 return;
             }
 
-            // Store reference to original editor
-            this.originalEditor = window.editor;
+            // Store reference to original editor (prefer the real Monaco editor if a wrapper is active)
+            const candidateEditor = (window.editor && typeof window.editor.getDomNode === 'function')
+                ? window.editor
+                : null;
+            const monacoEditor = (window.monacoEditor && typeof window.monacoEditor.getDomNode === 'function')
+                ? window.monacoEditor
+                : null;
+
+            this.originalEditor = candidateEditor || monacoEditor;
+            if (!this.originalEditor) {
+                console.error('SmartActionsDiff: No compatible editor instance found');
+                alert('Editor not available for diff preview. Please exit any special editor mode and try again.');
+                return;
+            }
 
             // Get the editor container
             const editorContainer = document.getElementById('json-editor');

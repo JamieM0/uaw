@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkSpec v2.0 Cookbook (Common Patterns) - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/">Workspec</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/guides/">Guides</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">WorkSpec v2.0 Cookbook (Common Patterns)</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">WorkSpec v2.0 Cookbook (Common Patterns)</h1>
+                            
+                            <p class="docs-page-subtitle">This cookbook shows common patterns for modeling work activities with WorkSpec v2.0.</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>This cookbook shows common patterns for modeling work activities with WorkSpec v2.0.</p>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="pattern-consume-a-resource-and-produce-a-product">Pattern: Consume a resource and produce a product<a class="headerlink" href="#pattern-consume-a-resource-and-produce-a-product" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"make_item"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="s2">"30m"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"input"</span><span class="p">,</span><span class="w"> </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">-2</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"output"</span><span class="p">,</span><span class="w"> </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="pattern-equipment-state-transition">Pattern: Equipment state transition<a class="headerlink" href="#pattern-equipment-state-transition" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"use_machine"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"operator"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10:00"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"machine"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"available"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"in_use"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="nt">"temporary"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="pattern-or-dependency-depends_onany">Pattern: OR-dependency (<code class="docs-inline-code">depends_on.any</code>)<a class="headerlink" href="#pattern-or-dependency-depends_onany" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ship_order"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"11:00"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"depends_on"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"any"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"auto_approval"</span><span class="p">,</span><span class="w"> </span><span class="s2">"manager_approval"</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="pattern-multi-day-start">Pattern: Multi-day start<a class="headerlink" href="#pattern-multi-day-start" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day_2_task"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"day"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:30"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1h"</span>
+<span class="p">}</span>
+</code></pre></div>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="pattern-create-and-delete-objects-lifecycle">Pattern: Create and delete objects (lifecycle)<a class="headerlink" href="#pattern-create-and-delete-objects-lifecycle" title="Link to this section">¶</a></h2>
+<p>Create:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"create"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"object"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"batch_001"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"product"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Batch #001"</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Delete:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"batch_001"</span>
+<span class="p">}</span>
+</code></pre></div>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="pattern-recipe-compliance-warnings">Pattern: Recipe compliance warnings<a class="headerlink" href="#pattern-recipe-compliance-warnings" title="Link to this section">¶</a></h2>
+<p>Define a recipe:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"process"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"recipes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"bread_loaf"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">"inputs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"flour"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="nt">"water"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.3</span><span class="p">,</span><span class="w"> </span><span class="nt">"yeast"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.01</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>If a task produces <code class="docs-inline-code">bread_loaf</code> but does not consume all required inputs in the same task, recipe validation may produce a <strong>warning</strong>.</p>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="pattern-use-a-service-performer">Pattern: Use a <code class="docs-inline-code">service</code> performer<a class="headerlink" href="#pattern-use-a-service-performer" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"service:timer"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"service"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Timer Service"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"running"</span><span class="p">,</span><span class="w"> </span><span class="nt">"interval"</span><span class="p">:</span><span class="w"> </span><span class="s2">"5m"</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"proof_dough"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"service:timer"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"06:35"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1h"</span>
+<span class="p">}</span>
+</code></pre></div>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

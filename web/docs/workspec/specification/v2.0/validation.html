@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkSpec v2.0 Validation &amp; Errors - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/">Workspec</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/specification/">Specification</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/specification/v2.0/">V2.0</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">WorkSpec v2.0 Validation &amp; Errors</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">WorkSpec v2.0 Validation &amp; Errors</h1>
+                            
+                            <p class="docs-page-subtitle">WorkSpec is designed to be validation-first. Validators should provide precise, actionable feedback before a document is executed or simulated.</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>WorkSpec is designed to be validation-first. Validators should provide precise, actionable feedback before a document is executed or simulated.</p>
+<p>This page defines the error format and the core validation rules required for v2.0.</p>
+<p>See also:</p>
+<ul class="docs-list">
+<li>Error code reference: <a href="/docs/workspec/reference/errors">/docs/workspec/reference/errors</a></li>
+<li>JSON Schema: <a href="/docs/workspec/specification/v2.0/schema">/docs/workspec/specification/v2.0/schema</a></li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="problem-details-rfc-7807">Problem Details (RFC 7807)<a class="headerlink" href="#problem-details-rfc-7807" title="Link to this section">¶</a></h2>
+<p>All validation results are represented using RFC 7807 <strong>Problem Details</strong> with WorkSpec extensions.</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://universalautomation.wiki/workspec/errors/{category}/{specific}"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Human-Readable Title"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"severity"</span><span class="p">:</span><span class="w"> </span><span class="s2">"error"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"detail"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Detailed explanation of what went wrong."</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"instance"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/simulation/path/to/problem"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"metric_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"schema.integrity.missing_version"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"context"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"relevant"</span><span class="p">:</span><span class="w"> </span><span class="s2">"data"</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"suggestions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="s2">"First suggested fix"</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">"Second suggested fix"</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"doc_uri"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://universalautomation.wiki/workspec/docs/errors/{specific}"</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 class="docs-heading" id="required-fields">Required fields<a class="headerlink" href="#required-fields" title="Link to this section">¶</a></h3>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th style="text-align: right;">Required</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">type</code></td>
+<td>URI</td>
+<td style="text-align: right;">Yes</td>
+<td>Error type identifier</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">title</code></td>
+<td>string</td>
+<td style="text-align: right;">Yes</td>
+<td>Short, human-readable title</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">severity</code></td>
+<td>enum</td>
+<td style="text-align: right;">Yes</td>
+<td><code class="docs-inline-code">error</code> | <code class="docs-inline-code">warning</code> | <code class="docs-inline-code">info</code></td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">detail</code></td>
+<td>string</td>
+<td style="text-align: right;">Yes</td>
+<td>Full explanation</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">instance</code></td>
+<td>JSON Pointer</td>
+<td style="text-align: right;">Yes</td>
+<td>Pointer to the exact location in the document</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">metric_id</code></td>
+<td>string</td>
+<td style="text-align: right;">Yes</td>
+<td>Validation metric identifier</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">context</code></td>
+<td>object</td>
+<td style="text-align: right;">Yes</td>
+<td>Structured debugging data</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">suggestions</code></td>
+<td>string[]</td>
+<td style="text-align: right;">Yes</td>
+<td>Fix suggestions</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">doc_uri</code></td>
+<td>URI</td>
+<td style="text-align: right;">No</td>
+<td>Documentation link</td>
+</tr>
+</tbody>
+</table></div>
+<h3 class="docs-heading" id="severity-semantics">Severity semantics<a class="headerlink" href="#severity-semantics" title="Link to this section">¶</a></h3>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Severity</th>
+<th>Meaning</th>
+<th style="text-align: right;">Blocks execution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">error</code></td>
+<td>Invalid document</td>
+<td style="text-align: right;">Yes</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">warning</code></td>
+<td>Suspicious but allowed</td>
+<td style="text-align: right;">No</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">info</code></td>
+<td>Optimization or note</td>
+<td style="text-align: right;">No</td>
+</tr>
+</tbody>
+</table></div>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="example-error-invalid-time">Example error (invalid time)<a class="headerlink" href="#example-error-invalid-time" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://universalautomation.wiki/workspec/errors/invalid-time-format"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Invalid Time Format"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"severity"</span><span class="p">:</span><span class="w"> </span><span class="s2">"error"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"detail"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Task 'proof_dough' has invalid start time '07:60'. Minutes must be 00-59."</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"instance"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/simulation/process/tasks/2/start"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"metric_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"task.integrity.invalid_start_time"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"context"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"task_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"proof_dough"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"start"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="s2">"07:60"</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"suggestions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="s2">"Change to '08:00' if you meant 8:00 AM"</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">"Change to '07:59' if you meant 7:59 AM"</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="metric-ids">Metric IDs<a class="headerlink" href="#metric-ids" title="Link to this section">¶</a></h2>
+<p>Metric IDs are namespaced:</p>
+<div class="codehilite"><pre><span></span><code class="language-text">{domain}.{category}.{specific}
+</code></pre></div>
+<p>Domains used in WorkSpec validation include:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">schema</code> — structural correctness</li>
+<li><code class="docs-inline-code">object</code> — object-level issues</li>
+<li><code class="docs-inline-code">task</code> — task-level issues</li>
+<li><code class="docs-inline-code">resource</code> — resource flow</li>
+<li><code class="docs-inline-code">temporal</code> — scheduling/dependencies</li>
+<li><code class="docs-inline-code">economic</code> — costs/revenue/profitability</li>
+<li><code class="docs-inline-code">spatial</code> — layout/location references</li>
+<li><code class="docs-inline-code">recipe</code> — recipe compliance</li>
+<li><code class="docs-inline-code">custom</code> — user-defined metrics</li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="required-validation-rules-v20">Required validation rules (v2.0)<a class="headerlink" href="#required-validation-rules-v20" title="Link to this section">¶</a></h2>
+<p>This list describes the core rules a v2.0 validator must enforce.</p>
+<h3 class="docs-heading" id="schema-rules">Schema rules<a class="headerlink" href="#schema-rules" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li><code class="docs-inline-code">simulation</code> must exist.</li>
+<li><code class="docs-inline-code">simulation.schema_version</code> must exist and match supported versions (v2.0: <code class="docs-inline-code">"2.0"</code>).</li>
+<li>Document structure must include <code class="docs-inline-code">simulation.world</code> and <code class="docs-inline-code">simulation.process</code>.</li>
+<li><code class="docs-inline-code">simulation.world.objects</code> must be an array.</li>
+<li><code class="docs-inline-code">simulation.process.tasks</code> must be an array.</li>
+<li><code class="docs-inline-code">simulation.meta</code> must exist and include required v2 fields (<code class="docs-inline-code">title</code>, <code class="docs-inline-code">description</code>, <code class="docs-inline-code">domain</code>).</li>
+<li><code class="docs-inline-code">meta.article_title</code> must not be present.</li>
+</ul>
+<h3 class="docs-heading" id="object-rules">Object rules<a class="headerlink" href="#object-rules" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li>Objects must include required fields: <code class="docs-inline-code">id</code>, <code class="docs-inline-code">type</code>, <code class="docs-inline-code">name</code>.</li>
+<li>Object IDs must follow the ID rules (including optional <code class="docs-inline-code">{type}:{id}</code> namespacing).</li>
+<li>Disallowed type aliases (<code class="docs-inline-code">material</code>, <code class="docs-inline-code">ingredient</code>, <code class="docs-inline-code">tool</code>) must be rejected.</li>
+<li>Reserved type names must be rejected.</li>
+<li>Custom types must have corresponding <code class="docs-inline-code">simulation.type_definitions</code> entries and valid <code class="docs-inline-code">extends</code>.</li>
+<li><code class="docs-inline-code">location</code> values must reference a valid location if a layout is present.</li>
+</ul>
+<h3 class="docs-heading" id="task-rules">Task rules<a class="headerlink" href="#task-rules" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li>Tasks must include required fields: <code class="docs-inline-code">id</code>, <code class="docs-inline-code">actor_id</code>, <code class="docs-inline-code">start</code>, <code class="docs-inline-code">duration</code>.</li>
+<li><code class="docs-inline-code">actor_id</code> must reference a valid performer object.</li>
+<li>Task <code class="docs-inline-code">start</code> must be valid and strictly formatted.</li>
+<li>Task <code class="docs-inline-code">duration</code> must be valid (integer, ISO 8601 duration, or shorthand).</li>
+<li><code class="docs-inline-code">depends_on</code> must reference valid task ids and must not contain cycles.</li>
+<li>Dependency timing must be respected (task cannot start before dependency condition is met).</li>
+</ul>
+<h3 class="docs-heading" id="interaction-rules">Interaction rules<a class="headerlink" href="#interaction-rules" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li><code class="docs-inline-code">target_id</code> is required for property-change interactions and delete interactions.</li>
+<li><code class="docs-inline-code">property_changes</code> is required for property-change interactions.</li>
+<li><code class="docs-inline-code">object</code> is required for create interactions.</li>
+<li>Legacy interaction fields <code class="docs-inline-code">object_id</code> and <code class="docs-inline-code">revert_after</code> must be rejected.</li>
+<li>References to deleted objects must be rejected.</li>
+</ul>
+<h3 class="docs-heading" id="recipe-rules-optional-warnings">Recipe rules (optional; warnings)<a class="headerlink" href="#recipe-rules-optional-warnings" title="Link to this section">¶</a></h3>
+<p>If recipes are provided under <code class="docs-inline-code">simulation.process.recipes</code>, a validator may check recipe compliance:</p>
+<ol class="docs-list docs-list-ordered">
+<li>When a task produces a product (positive quantity delta), check for <code class="docs-inline-code">recipes[product_id]</code>.</li>
+<li>If a recipe exists, verify that required inputs are consumed by that task.</li>
+<li>Missing inputs produce a <strong>warning</strong>, not an error.</li>
+</ol>
+<p>Recipe schema details (inputs/equipment/output quantity/process time) live in:</p>
+<ul class="docs-list">
+<li><a href="/docs/workspec/specification/v2.0/">/docs/workspec/specification/v2.0/</a></li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="time-format-validation-strict">Time format validation (strict)<a class="headerlink" href="#time-format-validation-strict" title="Link to this section">¶</a></h2>
+<p>Time strings must be strict and zero-padded:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">HH:MM</code> where <code class="docs-inline-code">HH</code> is <code class="docs-inline-code">00</code>–<code class="docs-inline-code">23</code> and <code class="docs-inline-code">MM</code> is <code class="docs-inline-code">00</code>–<code class="docs-inline-code">59</code></li>
+<li><code class="docs-inline-code">HH:MM:SS</code> where <code class="docs-inline-code">SS</code> is <code class="docs-inline-code">00</code>–<code class="docs-inline-code">59</code></li>
+</ul>
+<p>Invalid times (example: <code class="docs-inline-code">"07:60"</code>, <code class="docs-inline-code">"9:30"</code>) must be rejected (not corrected).</p>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

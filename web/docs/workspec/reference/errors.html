@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkSpec v2.0 Error Reference (All Error Codes) - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/">Workspec</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/reference/">Reference</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">WorkSpec v2.0 Error Reference (All Error Codes)</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">WorkSpec v2.0 Error Reference (All Error Codes)</h1>
+                            
+                            <p class="docs-page-subtitle">This page lists validation error codes (`metric_id`) used for WorkSpec v2.0 validation.</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>This page lists validation error codes (<code class="docs-inline-code">metric_id</code>) used for WorkSpec v2.0 validation.</p>
+<p>If you are looking for the error format and severity semantics, see:</p>
+<ul class="docs-list">
+<li><a href="/docs/workspec/specification/v2.0/validation">/docs/workspec/specification/v2.0/validation</a></li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="error-identifier-fields">Error identifier fields<a class="headerlink" href="#error-identifier-fields" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="metric_id"><code class="docs-inline-code">metric_id</code><a class="headerlink" href="#metric_id" title="Link to this section">¶</a></h3>
+<p>Every problem includes a <code class="docs-inline-code">metric_id</code>:</p>
+<div class="codehilite"><pre><span></span><code class="language-text">{domain}.{category}.{specific}
+</code></pre></div>
+<p>Example: <code class="docs-inline-code">task.integrity.invalid_start_time</code></p>
+<h3 class="docs-heading" id="type"><code class="docs-inline-code">type</code><a class="headerlink" href="#type" title="Link to this section">¶</a></h3>
+<p><code class="docs-inline-code">type</code> is a URI identifier for the kind of problem.</p>
+<p>In the WorkSpec specification, <code class="docs-inline-code">type</code> is expected to be within the WorkSpec namespace, for example:</p>
+<div class="codehilite"><pre><span></span><code class="language-text">https://universalautomation.wiki/workspec/errors/...
+</code></pre></div>
+<p>In the UAW Playground validator implementation, the default is currently:</p>
+<div class="codehilite"><pre><span></span><code class="language-text">https://universalautomation.wiki/workspec/errors/{metric_id}
+</code></pre></div>
+<h3 class="docs-heading" id="instance"><code class="docs-inline-code">instance</code><a class="headerlink" href="#instance" title="Link to this section">¶</a></h3>
+<p><code class="docs-inline-code">instance</code> is a JSON Pointer to the exact location in the document.</p>
+<p>Common pointer shapes in WorkSpec v2.0:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">/simulation/schema_version</code></li>
+<li><code class="docs-inline-code">/simulation/meta</code></li>
+<li><code class="docs-inline-code">/simulation/world/objects/{index}</code></li>
+<li><code class="docs-inline-code">/simulation/process/tasks/{index}</code></li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="error-code-catalog">Error code catalog<a class="headerlink" href="#error-code-catalog" title="Link to this section">¶</a></h2>
+<p>This catalog includes:</p>
+<ul class="docs-list">
+<li>WorkSpec v2.0 schema/versioning errors emitted by the validator</li>
+<li>Built-in UAW validation metrics for WorkSpec documents</li>
+</ul>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>metric_id</th>
+<th>severity</th>
+<th>title</th>
+<th>Description (what it checks)</th>
+<th>Typical fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">schema.integrity.missing_root</code></td>
+<td>error</td>
+<td>Simulation Root Check</td>
+<td>Ensures the top-level <code class="docs-inline-code">simulation</code> object exists.</td>
+<td>Wrap the document in <code class="docs-inline-code">{ "simulation": { ... } }</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">schema.integrity.missing_version</code></td>
+<td>error</td>
+<td>Missing Schema Version</td>
+<td>Missing required <code class="docs-inline-code">simulation.schema_version</code> (WorkSpec v2 requires version declaration).</td>
+<td>Add <code class="docs-inline-code">simulation.schema_version: "2.0"</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">schema.integrity.invalid_version</code></td>
+<td>error</td>
+<td>Invalid Schema Version</td>
+<td><code class="docs-inline-code">simulation.schema_version</code> is not Major.Minor (e.g., <code class="docs-inline-code">"2.0"</code>).</td>
+<td>Use <code class="docs-inline-code">"2.0"</code> and keep Major.Minor format.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">schema.integrity.unsupported_version</code></td>
+<td>error</td>
+<td>Unsupported Schema Version</td>
+<td><code class="docs-inline-code">simulation.schema_version</code> is not supported by the validator.</td>
+<td>Use the supported version (<code class="docs-inline-code">"2.0"</code>).</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">schema.integrity.missing_world</code></td>
+<td>error</td>
+<td>Missing World Section</td>
+<td>Missing required section <code class="docs-inline-code">simulation.world</code>.</td>
+<td>Add <code class="docs-inline-code">simulation.world</code> with <code class="docs-inline-code">objects</code> (required) and optional <code class="docs-inline-code">layout</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">schema.integrity.missing_process</code></td>
+<td>error</td>
+<td>Missing Process Section</td>
+<td>Missing required section <code class="docs-inline-code">simulation.process</code>.</td>
+<td>Add <code class="docs-inline-code">simulation.process</code> with <code class="docs-inline-code">tasks</code> (required) and optional <code class="docs-inline-code">recipes</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">schema.integrity.invalid_world_objects</code></td>
+<td>error</td>
+<td>Invalid World Objects</td>
+<td><code class="docs-inline-code">simulation.world.objects</code> must be an array.</td>
+<td>Set <code class="docs-inline-code">simulation.world.objects</code> to <code class="docs-inline-code">[]</code> or an array of objects.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">schema.integrity.invalid_process_tasks</code></td>
+<td>error</td>
+<td>Invalid Process Tasks</td>
+<td><code class="docs-inline-code">simulation.process.tasks</code> must be an array.</td>
+<td>Set <code class="docs-inline-code">simulation.process.tasks</code> to <code class="docs-inline-code">[]</code> or an array of tasks.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">schema.integrity.missing_meta</code></td>
+<td>error</td>
+<td>Missing Meta Section</td>
+<td>Missing required section <code class="docs-inline-code">simulation.meta</code>.</td>
+<td>Add <code class="docs-inline-code">simulation.meta</code> with required fields.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">schema.integrity.missing_meta_fields</code></td>
+<td>error</td>
+<td>Missing Meta Fields</td>
+<td>Missing required meta fields: <code class="docs-inline-code">title</code>, <code class="docs-inline-code">description</code>, <code class="docs-inline-code">domain</code>.</td>
+<td>Add required fields to <code class="docs-inline-code">simulation.meta</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">schema.integrity.disallowed_meta_field</code></td>
+<td>error</td>
+<td>Disallowed Meta Field</td>
+<td>Legacy field <code class="docs-inline-code">meta.article_title</code> is not allowed in WorkSpec v2.0.</td>
+<td>Remove <code class="docs-inline-code">meta.article_title</code> and use <code class="docs-inline-code">meta.title</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">schema.integrity.disallowed_types</code></td>
+<td>error</td>
+<td>Disallowed Object Types</td>
+<td>Ensures no objects use internally reserved types that could cause system conflicts.</td>
+<td>Use allowed types; avoid reserved names (e.g., <code class="docs-inline-code">_internal</code>, <code class="docs-inline-code">timeline_actors</code>).</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">object.integrity.invalid_object_id</code></td>
+<td>error</td>
+<td>Invalid Object ID</td>
+<td>Ensures object IDs are unique strings and not empty/null.</td>
+<td>Use unique, non-empty snake_case IDs (max 250 chars).</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">object.integrity.missing_required_properties</code></td>
+<td>error</td>
+<td>Missing Required Properties</td>
+<td>Check that objects have required properties based on their type.</td>
+<td>Add the missing properties (e.g., <code class="docs-inline-code">quantity</code> for resources/products).</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">object.integrity.invalid_property_types</code></td>
+<td>error</td>
+<td>Invalid Property Types</td>
+<td>Validate that object properties match expected data types.</td>
+<td>Fix property value types (number vs string vs boolean).</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">object.spatial.location_undefined</code></td>
+<td>error</td>
+<td>Undefined Location</td>
+<td>Ensures every object with a location property references a valid layout location.</td>
+<td>Add the location to <code class="docs-inline-code">world.layout.locations</code> or fix the ID.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">resource.flow.negative_stock</code></td>
+<td>error</td>
+<td>Negative Stock Check</td>
+<td>Verifies that no consumable resource stock level drops below zero.</td>
+<td>Increase starting stock or reduce consumption.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">resource.flow.recipe_violation</code></td>
+<td>warning</td>
+<td>Recipe Ingredients Check</td>
+<td>If a task produces a product with a recipe, checks required inputs are consumed in that task. Missing inputs produce warnings.</td>
+<td>Add missing input consumption interactions or adjust/remove the recipe.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">resource.integrity.invalid_quantity</code></td>
+<td>error</td>
+<td>Invalid Quantity Values</td>
+<td>Ensure resource quantities are non-negative numbers.</td>
+<td>Use numeric <code class="docs-inline-code">quantity &gt;= 0</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">resource.integrity.type_consistency</code></td>
+<td>error</td>
+<td>Resource Type Consistency</td>
+<td>Ensure resources maintain consistent types throughout interactions.</td>
+<td>Keep <code class="docs-inline-code">quantity</code> numeric; avoid switching types across tasks.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">resource.definition.unused</code></td>
+<td>info</td>
+<td>Unused Resource</td>
+<td>Flags resources defined but never consumed or produced.</td>
+<td>Remove unused resources or add tasks that use them.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.integrity.invalid_task_id</code></td>
+<td>error</td>
+<td>Invalid Task ID</td>
+<td>Ensures task IDs are unique strings and not empty/null.</td>
+<td>Use unique snake_case task IDs.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.integrity.unassigned_actor</code></td>
+<td>error</td>
+<td>Unassigned Task Actor</td>
+<td>Ensures every task is assigned to a valid performer object.</td>
+<td>Set <code class="docs-inline-code">actor_id</code> to an existing performer (<code class="docs-inline-code">actor</code>, <code class="docs-inline-code">equipment</code>, <code class="docs-inline-code">service</code>).</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.integrity.invalid_start_time</code></td>
+<td>error</td>
+<td>Invalid Start Time Format</td>
+<td>Ensures task start times follow strict WorkSpec formats (time-of-day, ISO date-time, or <code class="docs-inline-code">{day,time}</code>).</td>
+<td>Use <code class="docs-inline-code">"HH:MM"</code> (zero-padded), <code class="docs-inline-code">"HH:MM:SS"</code>, ISO date-time, or <code class="docs-inline-code">{ "day": N, "time": "HH:MM" }</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.integrity.invalid_duration</code></td>
+<td>error</td>
+<td>Invalid Task Duration</td>
+<td>Ensures task durations are valid (positive integer, ISO 8601 duration, or shorthand).</td>
+<td>Use <code class="docs-inline-code">30</code>, <code class="docs-inline-code">"PT30M"</code>, <code class="docs-inline-code">"30m"</code>, <code class="docs-inline-code">"1h"</code>, etc.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.integrity.invalid_object_reference</code></td>
+<td>error</td>
+<td>Invalid Object Reference</td>
+<td>Ensures tasks and interactions reference valid object IDs.</td>
+<td>Fix IDs; ensure objects are created before use and not deleted before use.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.integrity.end_time_overflow</code></td>
+<td>error</td>
+<td>Task End Time Overflow</td>
+<td>Checks if <code class="docs-inline-code">start + duration</code> causes invalid day boundary handling.</td>
+<td>Use multi-day start objects or adjust times/durations.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.dependency.unreachable</code></td>
+<td>error</td>
+<td>Unreachable Task Dependency</td>
+<td>Ensures every <code class="docs-inline-code">depends_on</code> reference points to an existing task.</td>
+<td>Fix typos; add missing tasks; remove invalid dependencies.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.dependency.self_reference</code></td>
+<td>error</td>
+<td>Self-Referencing Dependencies</td>
+<td>Catches tasks that depend on themselves.</td>
+<td>Remove the self-reference.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.dependency.missing_reference</code></td>
+<td>error</td>
+<td>Missing Task Dependencies</td>
+<td>Validates referenced dependency IDs exist.</td>
+<td>Fix dependency IDs.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.dependency.circular_reference</code></td>
+<td>error</td>
+<td>Circular Dependencies</td>
+<td>Detects cycles in task dependency chains.</td>
+<td>Break cycles by removing/rewriting dependencies.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">temporal.dependency.violation</code></td>
+<td>warning</td>
+<td>Task Dependency Timing</td>
+<td>Ensures no task starts before its dependency condition is met.</td>
+<td>Move task start later or fix dependencies.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">actor.scheduling.overlap</code></td>
+<td>error</td>
+<td>Actor Task Overlap</td>
+<td>Checks if an actor is assigned overlapping tasks.</td>
+<td>Adjust times/durations or assign a different performer.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">equipment.state.logic</code></td>
+<td>error</td>
+<td>Equipment State Logic</td>
+<td>Checks for logical consistency in equipment usage (e.g., using dirty equipment).</td>
+<td>Fix state transitions; add cleaning tasks; adjust <code class="docs-inline-code">from/to</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">equipment.state.invalid_transitions</code></td>
+<td>error</td>
+<td>Invalid State Transitions</td>
+<td>Validates state transitions are logically valid.</td>
+<td>Use sensible <code class="docs-inline-code">from</code>/<code class="docs-inline-code">to</code> sequences or <code class="docs-inline-code">set</code> when appropriate.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">equipment.integrity.invalid_capacity</code></td>
+<td>error</td>
+<td>Equipment Capacity Validation</td>
+<td>Checks equipment <code class="docs-inline-code">capacity</code> values are positive integers.</td>
+<td>Set <code class="docs-inline-code">capacity</code> to a positive integer.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.spatial.unmet_proximity_requirement</code></td>
+<td>error</td>
+<td>Task Proximity Check</td>
+<td>Checks actors and required objects are in the same location as the task.</td>
+<td>Align locations or add movement/location-change tasks/interactions as needed.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">display.spatial.elements_outside_bounds</code></td>
+<td>warning</td>
+<td>Display Elements Outside Bounds</td>
+<td>Checks if display elements extend beyond the display viewport.</td>
+<td>Resize or reposition UI elements.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">scheduling.optimization.missing_buffer</code></td>
+<td>info</td>
+<td>Missing Buffer Time</td>
+<td>Suggests adding buffers between consecutive tasks for realism.</td>
+<td>Add small gaps between tasks (same performer).</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">economic.profitability.negative_margin</code></td>
+<td>warning</td>
+<td>Negative Profitability</td>
+<td>Computes total revenue minus labor and resource costs; warns on negative results.</td>
+<td>Adjust costs/revenue, productivity, or resource consumption.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">system.error</code></td>
+<td>error</td>
+<td>System Error</td>
+<td>Validator internal error (configuration or execution failure).</td>
+<td>Inspect validator logs/config; simplify document and retry.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">system.info</code></td>
+<td>info</td>
+<td>System Info</td>
+<td>Validator informational message.</td>
+<td>No action required.</td>
+</tr>
+</tbody>
+</table></div>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

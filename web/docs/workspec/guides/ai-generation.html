@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Authoring Guide for WorkSpec v2.0 - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/">Workspec</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/guides/">Guides</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">AI Authoring Guide for WorkSpec v2.0</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">AI Authoring Guide for WorkSpec v2.0</h1>
+                            
+                            <p class="docs-page-subtitle">This guide is for AI systems (and humans using AI) generating WorkSpec v2.0 documents.</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>This guide is for AI systems (and humans using AI) generating WorkSpec v2.0 documents.</p>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="output-contract-recommended">Output contract (recommended)<a class="headerlink" href="#output-contract-recommended" title="Link to this section">¶</a></h2>
+<p>When generating WorkSpec:</p>
+<ol class="docs-list docs-list-ordered">
+<li>Output <strong>valid JSON only</strong>.</li>
+<li>Always include:
+   - <code class="docs-inline-code">$schema: "https://universalautomation.wiki/workspec/v2.0.schema.json"</code>
+   - <code class="docs-inline-code">simulation.schema_version: "2.0"</code>
+   - <code class="docs-inline-code">simulation.meta.title</code>, <code class="docs-inline-code">simulation.meta.description</code>, <code class="docs-inline-code">simulation.meta.domain</code>
+   - <code class="docs-inline-code">simulation.world.objects[]</code>
+   - <code class="docs-inline-code">simulation.process.tasks[]</code></li>
+<li>Use strict, predictable IDs:
+   - snake_case
+   - no spaces
+   - max 250 chars</li>
+<li>Put all type-specific object data in <code class="docs-inline-code">properties</code>.</li>
+<li>Use <code class="docs-inline-code">target_id</code> in interactions (never legacy <code class="docs-inline-code">object_id</code>).</li>
+</ol>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="common-failure-modes-to-avoid">Common failure modes to avoid<a class="headerlink" href="#common-failure-modes-to-avoid" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="missing-schema-version">Missing schema version<a class="headerlink" href="#missing-schema-version" title="Link to this section">¶</a></h3>
+<p>Bad:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p>Good:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.0"</span><span class="p">,</span><span class="w"> </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"domain"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="nt">"world"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nt">"process"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<h3 class="docs-heading" id="incorrect-structure-v10-shape">Incorrect structure (v1.0 shape)<a class="headerlink" href="#incorrect-structure-v10-shape" title="Link to this section">¶</a></h3>
+<p>Bad:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p>Good:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"world"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nt">"process"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<h3 class="docs-heading" id="legacy-interaction-fields">Legacy interaction fields<a class="headerlink" href="#legacy-interaction-fields" title="Link to this section">¶</a></h3>
+<p>Bad:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixer"</span><span class="p">,</span><span class="w"> </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dirty"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p>Good:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixer"</span><span class="p">,</span><span class="w"> </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dirty"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="modeling-tips">Modeling tips<a class="headerlink" href="#modeling-tips" title="Link to this section">¶</a></h2>
+<ul class="docs-list">
+<li>Prefer <strong>short tasks</strong> with explicit dependencies over overly long tasks.</li>
+<li>Use <code class="docs-inline-code">depends_on</code> operators (<code class="docs-inline-code">all</code>/<code class="docs-inline-code">any</code>) to express real gating conditions.</li>
+<li>Prefer explicit <code class="docs-inline-code">state</code> transitions with <code class="docs-inline-code">from</code>/<code class="docs-inline-code">to</code> when modeling equipment or actor states.</li>
+<li>When modeling consumption/production, use <code class="docs-inline-code">quantity.delta</code> interactions.</li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="validation-first-generation">Validation-first generation<a class="headerlink" href="#validation-first-generation" title="Link to this section">¶</a></h2>
+<p>Before finalizing output, ensure:</p>
+<ul class="docs-list">
+<li>All referenced <code class="docs-inline-code">actor_id</code>s exist and are performer types.</li>
+<li>All <code class="docs-inline-code">target_id</code>s exist (or are created before use).</li>
+<li>All time strings are strict (<code class="docs-inline-code">"09:30"</code>, not <code class="docs-inline-code">"9:30"</code>).</li>
+<li>Duration strings are valid (integer, ISO 8601, or shorthand).</li>
+</ul>
+<p>Error format details: <a href="/docs/workspec/specification/v2.0/validation">/docs/workspec/specification/v2.0/validation</a><br/>
+Error code catalog: <a href="/docs/workspec/reference/errors">/docs/workspec/reference/errors</a></p>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

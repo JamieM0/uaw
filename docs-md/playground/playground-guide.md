@@ -287,7 +287,7 @@ The core of every simulation is a single JSON object. Understanding its structur
 
 *   `meta`: Contains descriptive information about the simulation.
 *   `config`: Defines the overall timing and units for the simulation.
-*   `layout`: (Optional) Defines the physical spaces for the simulation. See the [Space Editor Guide](./space-editor-guide.md) for details.
+*   `layout`: (Optional) Defines the physical spaces for the simulation. See the [Space Editor Guide](/docs/playground/space-editor-guide) for details.
 *   `objects`: An array of all the people, equipment, and materials involved in the process.
 *   `tasks`: An array of all the actions and steps that make up the process.
 
