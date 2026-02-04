@@ -7,6 +7,8 @@ class SimulationValidator {
     this.simulationData = simulationData;  // Store full data
     this.simulation = simulationData ? simulationData.simulation : null;
     this.results = [];
+    this.SUPPORTED_SCHEMA_VERSIONS = ['2.0'];
+    this.MIGRATION_URL = 'https://universalautomation.wiki/docs/migration';
   }
 
   runChecks(metricsCatalog, customValidatorCode = null) {
@@ -17,6 +19,9 @@ class SimulationValidator {
       this.addResult({ metricId: 'schema.integrity.missing_root', status: 'error', message: "The root 'simulation' object is missing." });
       return this.results;
     }
+
+    // Phase 1.1: Schema version validation
+    this.validateSchemaVersion();
 
     if (!Array.isArray(metricsCatalog)) {
       this.addResult({ metricId: 'system.error', status: 'error', message: 'Invalid metrics catalog: expected an array.' });
