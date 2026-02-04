@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://universalautomation.wiki/workspec/v2.0.schema.json",
+  "title": "WorkSpec v2.0",
+  "description": "WorkSpec is the gold standard specification for AI-native process simulation and automation workflow definition.",
+  "type": "object",
+  "required": ["simulation"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri"
+    },
+    "simulation": {
+      "type": "object",
+      "required": ["schema_version", "meta", "objects", "tasks"],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "meta": { "type": "object" },
+        "config": { "type": "object" },
+        "layout": { "type": "object" },
+        "objects": { "type": "array" },
+        "tasks": { "type": "array" },
+        "production_recipes": { "type": "object" }
+      }
+    }
+  }
+}

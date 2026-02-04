@@ -20,9 +20,27 @@ class SimulationValidator {
       return this.results;
     }
 
-    // Phase 1.1: Schema version validation
-    this.validateSchemaVersion();
+    // Phase 1.1: Schema version validation (v2.0 requirement)
+    const hasValidVersion = this.validateSchemaVersion();
+    
+    // If schema version is missing or invalid, stop validation
+    if (!hasValidVersion) {
+      return this.results;
+    }
 
+    // Phase 1.3: Validate meta section
+    this.validateMetaSection();
+
+    // Phase 2: Validate object structure
+    this.validateObjectStructure();
+
+    // Phase 3: Validate task structure  
+    this.validateTaskStructure();
+
+    // Phase 4: Validate interactions
+    this.validateInteractions();
+
+    // Continue with legacy metric-based validation
     if (!Array.isArray(metricsCatalog)) {
       this.addResult({ metricId: 'system.error', status: 'error', message: 'Invalid metrics catalog: expected an array.' });
       return this.results;
@@ -247,11 +265,706 @@ class SimulationValidator {
     return totalMinutes;
   }
 
-  // --- REFACTORED VALIDATION FUNCTIONS (Universal Object Model) ---
+  // --- WORKSPEC v2.0 VALIDATION FUNCTIONS ---
 
-  validateRootObject(metric) {
-    this.addResult({ metricId: metric.id, status: 'success', message: 'Root "simulation" object is present.' });
+  /**
+   * Phase 1.1: Schema Version Validation
+   * Validates that schema_version is present and supported
+   */
+  validateSchemaVersion() {
+    if (!this.simulation.schema_version) {
+      this.addRFC7807Error({
+        type: 'schema.integrity.missing_version',
+        title: 'Missing Schema Version',
+        severity: 'error',
+        detail: 'WorkSpec v2.0 requires a schema_version field. Documents without schema_version are assumed to be v1.0 and must be migrated.',
+        instance: '/simulation',
+        context: {},
+        suggestions: [
+          'Add "schema_version": "2.0" to your simulation object',
+          `Use the migration tool at ${this.MIGRATION_URL} to upgrade from v1.0`
+        ]
+      });
+      return false;
+    }
+
+    const version = this.simulation.schema_version;
+    if (!this.SUPPORTED_SCHEMA_VERSIONS.includes(version)) {
+      this.addRFC7807Error({
+        type: 'schema.integrity.unsupported_version',
+        title: 'Unsupported Schema Version',
+        severity: 'error',
+        detail: `Schema version "${version}" is not supported. Supported versions: ${this.SUPPORTED_SCHEMA_VERSIONS.join(', ')}`,
+        instance: '/simulation/schema_version',
+        context: {
+          provided_version: version,
+          supported_versions: this.SUPPORTED_SCHEMA_VERSIONS
+        },
+        suggestions: [
+          `Change schema_version to "2.0"`,
+          `Visit ${this.MIGRATION_URL} for migration guidance`
+        ]
+      });
+      return false;
+    }
+
+    return true;
   }
+
+  /**
+   * Add RFC 7807 formatted error
+   */
+  addRFC7807Error(errorDetails) {
+    const {
+      type,
+      title,
+      severity,
+      detail,
+      instance,
+      context = {},
+      suggestions = [],
+      doc_uri = null
+    } = errorDetails;
+
+    const metricId = type.replace(/^https?:\/\/[^\/]+\/workspec\/errors\//, '').replace(/\//g, '.');
+
+    this.addResult({
+      metricId: metricId,
+      status: severity,
+      message: detail,
+      rfc7807: {
+        type: type.startsWith('http') ? type : `https://universalautomation.wiki/workspec/errors/${type}`,
+        title,
+        severity,
+        detail,
+        instance,
+        context,
+        suggestions,
+        doc_uri
+      }
+    });
+  }
+
+  /**
+   * Phase 1.3 & 2.1: Validate Object Structure
+   * Objects must have id, type, name. Validates naming conventions.
+   */
+  validateObjectStructure() {
+    const objects = this.simulation.objects || [];
+    let hasErrors = false;
+
+    for (let i = 0; i < objects.length; i++) {
+      const obj = objects[i];
+      const instancePath = `/simulation/objects/${i}`;
+
+      // Check required fields
+      if (!obj.id) {
+        this.addRFC7807Error({
+          type: 'object.integrity.missing_id',
+          title: 'Missing Object ID',
+          severity: 'error',
+          detail: `Object at index ${i} is missing required 'id' field.`,
+          instance: instancePath,
+          context: { object_index: i, object: obj },
+          suggestions: ['Add a unique snake_case ID like "flour" or "main_oven"']
+        });
+        hasErrors = true;
+        continue;
+      }
+
+      if (!obj.type) {
+        this.addRFC7807Error({
+          type: 'object.integrity.missing_type',
+          title: 'Missing Object Type',
+          severity: 'error',
+          detail: `Object '${obj.id}' is missing required 'type' field.`,
+          instance: `${instancePath}/type`,
+          context: { object_id: obj.id },
+          suggestions: ['Add a type field like "actor", "equipment", "resource", or "product"']
+        });
+        hasErrors = true;
+      }
+
+      if (!obj.name) {
+        this.addRFC7807Error({
+          type: 'object.integrity.missing_name',
+          title: 'Missing Object Name',
+          severity: 'error',
+          detail: `Object '${obj.id}' is missing required 'name' field.`,
+          instance: `${instancePath}/name`,
+          context: { object_id: obj.id },
+          suggestions: ['Add a human-readable name like "Industrial Mixer" or "Bread Flour"']
+        });
+        hasErrors = true;
+      }
+
+      // Validate ID format (snake_case, starts with letter)
+      if (obj.id && !/^[a-z][a-z0-9_]*$/.test(obj.id)) {
+        this.addRFC7807Error({
+          type: 'object.integrity.invalid_id_format',
+          title: 'Invalid Object ID Format',
+          severity: 'error',
+          detail: `Object ID '${obj.id}' must be snake_case (lowercase, start with letter, underscores allowed).`,
+          instance: `${instancePath}/id`,
+          context: { object_id: obj.id },
+          suggestions: [
+            'Use snake_case: "main_mixer" not "MainMixer" or "main-mixer"',
+            'Start with a letter: "mixer_1" not "1_mixer"'
+          ]
+        });
+        hasErrors = true;
+      }
+
+      // Phase 2.2: Validate namespaced IDs
+      if (obj.id && obj.id.includes(':')) {
+        const [namespace, ...rest] = obj.id.split(':');
+        const identifier = rest.join(':');
+        
+        if (namespace !== obj.type) {
+          this.addRFC7807Error({
+            type: 'object.integrity.namespace_mismatch',
+            title: 'Namespaced ID Mismatch',
+            severity: 'error',
+            detail: `Object '${obj.id}' has namespace '${namespace}' but type is '${obj.type}'. Namespace must match type.`,
+            instance: `${instancePath}/id`,
+            context: { object_id: obj.id, namespace, type: obj.type },
+            suggestions: [
+              `Change ID to '${obj.type}:${identifier}'`,
+              `Or remove namespace: '${identifier}'`
+            ]
+          });
+          hasErrors = true;
+        }
+      }
+
+      // Phase 2.3: Check for deprecated type aliases
+      const deprecatedTypes = {
+        'material': 'resource',
+        'ingredient': 'resource',
+        'tool': 'equipment'
+      };
+      
+      if (obj.type && deprecatedTypes[obj.type]) {
+        const strictMode = this.simulation.config?.strict_mode || false;
+        this.addRFC7807Error({
+          type: 'object.type.deprecated_alias',
+          title: 'Deprecated Type Alias',
+          severity: strictMode ? 'error' : 'warning',
+          detail: `Type '${obj.type}' is deprecated in v2.0. Use '${deprecatedTypes[obj.type]}' instead.`,
+          instance: `${instancePath}/type`,
+          context: { 
+            object_id: obj.id, 
+            deprecated_type: obj.type,
+            canonical_type: deprecatedTypes[obj.type]
+          },
+          suggestions: [`Change type to '${deprecatedTypes[obj.type]}'`]
+        });
+        if (strictMode) hasErrors = true;
+      }
+
+      // Check for reserved type names
+      const reservedTypes = ['timeline_actors', '_internal', 'system'];
+      if (obj.type && (reservedTypes.includes(obj.type) || obj.type.startsWith('_'))) {
+        this.addRFC7807Error({
+          type: 'object.type.reserved',
+          title: 'Reserved Type Name',
+          severity: 'error',
+          detail: `Type '${obj.type}' is reserved and cannot be used.`,
+          instance: `${instancePath}/type`,
+          context: { object_id: obj.id, type: obj.type },
+          suggestions: ['Use a different type name']
+        });
+        hasErrors = true;
+      }
+
+      // Phase 2.4: Recognize service type
+      if (obj.type === 'service') {
+        // Service type is valid - just mark it for logging
+        console.log(`[WorkSpec v2.0] Recognized service object: ${obj.id}`);
+      }
+
+      // Validate location reference if present
+      if (obj.location) {
+        const locations = this.simulation.layout?.locations || [];
+        const locationExists = locations.some(loc => loc.id === obj.location);
+        
+        if (!locationExists) {
+          this.addRFC7807Error({
+            type: 'object.reference.invalid_location',
+            title: 'Invalid Location Reference',
+            severity: 'error',
+            detail: `Object '${obj.id}' references location '${obj.location}' which does not exist.`,
+            instance: `${instancePath}/location`,
+            context: { 
+              object_id: obj.id,
+              location_id: obj.location,
+              available_locations: locations.map(l => l.id)
+            },
+            suggestions: [
+              'Add the location to layout.locations',
+              'Fix the location ID reference',
+              'Remove the location field if not needed'
+            ]
+          });
+          hasErrors = true;
+        }
+      }
+
+      // Warn about deprecated properties.location
+      if (obj.properties?.location) {
+        this.addRFC7807Error({
+          type: 'object.structure.deprecated_nested_location',
+          title: 'Deprecated Nested Location',
+          severity: 'warning',
+          detail: `Object '${obj.id}' uses deprecated properties.location. Move to top-level location field.`,
+          instance: `${instancePath}/properties/location`,
+          context: { object_id: obj.id },
+          suggestions: [`Move 'properties.location' to top-level 'location' field`]
+        });
+      }
+    }
+
+    return !hasErrors;
+  }
+
+  /**
+   * Phase 3.1 & 3.2 & 3.3: Validate Task Structure
+   */
+  validateTaskStructure() {
+    const tasks = this.simulation.tasks || [];
+    let hasErrors = false;
+
+    for (let i = 0; i < tasks.length; i++) {
+      const task = tasks[i];
+      const instancePath = `/simulation/tasks/${i}`;
+
+      // Check required fields
+      if (!task.id) {
+        this.addRFC7807Error({
+          type: 'task.integrity.missing_id',
+          title: 'Missing Task ID',
+          severity: 'error',
+          detail: `Task at index ${i} is missing required 'id' field.`,
+          instance: instancePath,
+          context: { task_index: i },
+          suggestions: ['Add a unique snake_case ID like "mix_dough" or "bake_bread"']
+        });
+        hasErrors = true;
+        continue;
+      }
+
+      if (!task.actor_id) {
+        this.addRFC7807Error({
+          type: 'task.integrity.missing_actor',
+          title: 'Missing Actor ID',
+          severity: 'error',
+          detail: `Task '${task.id}' is missing required 'actor_id' field.`,
+          instance: `${instancePath}/actor_id`,
+          context: { task_id: task.id },
+          suggestions: ['Add an actor_id referencing an object that can perform tasks']
+        });
+        hasErrors = true;
+      }
+
+      if (!task.start) {
+        this.addRFC7807Error({
+          type: 'task.integrity.missing_start',
+          title: 'Missing Start Time',
+          severity: 'error',
+          detail: `Task '${task.id}' is missing required 'start' field.`,
+          instance: `${instancePath}/start`,
+          context: { task_id: task.id },
+          suggestions: ['Add a start time in HH:MM format like "06:00"']
+        });
+        hasErrors = true;
+      }
+
+      if (task.duration === undefined || task.duration === null) {
+        this.addRFC7807Error({
+          type: 'task.integrity.missing_duration',
+          title: 'Missing Duration',
+          severity: 'error',
+          detail: `Task '${task.id}' is missing required 'duration' field.`,
+          instance: `${instancePath}/duration`,
+          context: { task_id: task.id },
+          suggestions: ['Add a duration as a positive integer']
+        });
+        hasErrors = true;
+      }
+
+      // Validate ID format
+      if (task.id && !/^[a-z][a-z0-9_]*$/.test(task.id)) {
+        // Check if it contains emoji (deprecated v1.0 pattern)
+        if (/[\u{1F300}-\u{1F9FF}]/u.test(task.id)) {
+          this.addRFC7807Error({
+            type: 'task.integrity.emoji_in_id',
+            title: 'Emoji in Task ID (Deprecated)',
+            severity: 'warning',
+            detail: `Task ID '${task.id}' contains emoji, which is deprecated in v2.0. Use separate 'emoji' field.`,
+            instance: `${instancePath}/id`,
+            context: { task_id: task.id },
+            suggestions: [
+              'Extract emoji to separate emoji field',
+              'Use snake_case ID without emoji'
+            ]
+          });
+        } else {
+          this.addRFC7807Error({
+            type: 'task.integrity.invalid_id_format',
+            title: 'Invalid Task ID Format',
+            severity: 'error',
+            detail: `Task ID '${task.id}' must be snake_case (lowercase, start with letter, underscores allowed).`,
+            instance: `${instancePath}/id`,
+            context: { task_id: task.id },
+            suggestions: ['Use snake_case: "mix_dough" not "MixDough" or "mix-dough"']
+          });
+          hasErrors = true;
+        }
+      }
+
+      // Phase 5.3: Validate strict time format
+      if (task.start && typeof task.start === 'string') {
+        if (!/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(task.start)) {
+          this.addRFC7807Error({
+            type: 'task.temporal.invalid_time_format',
+            title: 'Invalid Time Format',
+            severity: 'error',
+            detail: `Task '${task.id}' has invalid start time '${task.start}'. Must be HH:MM format (zero-padded, 24-hour).`,
+            instance: `${instancePath}/start`,
+            context: { task_id: task.id, start: task.start },
+            suggestions: [
+              'Use zero-padded format: "09:30" not "9:30"',
+              'Hours must be 00-23, minutes 00-59',
+              'Example valid times: "06:00", "14:30", "23:59"'
+            ]
+          });
+          hasErrors = true;
+        }
+      }
+
+      // Validate duration is positive
+      if (typeof task.duration === 'number' && task.duration <= 0) {
+        this.addRFC7807Error({
+          type: 'task.integrity.invalid_duration',
+          title: 'Invalid Duration',
+          severity: 'error',
+          detail: `Task '${task.id}' has duration ${task.duration} which must be positive.`,
+          instance: `${instancePath}/duration`,
+          context: { task_id: task.id, duration: task.duration },
+          suggestions: ['Use a positive number for duration']
+        });
+        hasErrors = true;
+      }
+
+      // Phase 3.1: Validate dependency structure
+      if (task.depends_on) {
+        if (Array.isArray(task.depends_on)) {
+          // Simple array format - OK
+          task.depends_on.forEach((depId, idx) => {
+            if (typeof depId !== 'string') {
+              this.addRFC7807Error({
+                type: 'task.dependencies.invalid_format',
+                title: 'Invalid Dependency Format',
+                severity: 'error',
+                detail: `Task '${task.id}' has invalid dependency at index ${idx}. Must be a string task ID.`,
+                instance: `${instancePath}/depends_on/${idx}`,
+                context: { task_id: task.id, dependency: depId },
+                suggestions: ['Use task ID strings in depends_on array']
+              });
+              hasErrors = true;
+            }
+          });
+        } else if (typeof task.depends_on === 'object') {
+          // Complex format with all/any operators
+          if (!task.depends_on.all && !task.depends_on.any) {
+            this.addRFC7807Error({
+              type: 'task.dependencies.invalid_operators',
+              title: 'Invalid Dependency Operators',
+              severity: 'error',
+              detail: `Task '${task.id}' has depends_on object but missing 'all' and 'any' operators.`,
+              instance: `${instancePath}/depends_on`,
+              context: { task_id: task.id, depends_on: task.depends_on },
+              suggestions: [
+                'Use { "all": ["task1", "task2"] } for AND dependencies',
+                'Use { "any": ["task1", "task2"] } for OR dependencies',
+                'Or use simple array: ["task1", "task2"]'
+              ]
+            });
+            hasErrors = true;
+          }
+        }
+      }
+
+      // Check for deprecated fields in tasks
+      if (task.consumes) {
+        this.addRFC7807Error({
+          type: 'task.interaction.deprecated_consumes',
+          title: 'Deprecated consumes Field',
+          severity: 'warning',
+          detail: `Task '${task.id}' uses deprecated 'consumes' field. Use 'interactions' with negative quantity delta.`,
+          instance: `${instancePath}/consumes`,
+          context: { task_id: task.id },
+          suggestions: ['Convert to interactions with property_changes.quantity.delta (negative values)']
+        });
+      }
+
+      if (task.produces) {
+        this.addRFC7807Error({
+          type: 'task.interaction.deprecated_produces',
+          title: 'Deprecated produces Field',
+          severity: 'warning',
+          detail: `Task '${task.id}' uses deprecated 'produces' field. Use 'interactions' with positive quantity delta.`,
+          instance: `${instancePath}/produces`,
+          context: { task_id: task.id },
+          suggestions: ['Convert to interactions with property_changes.quantity.delta (positive values)']
+        });
+      }
+
+      if (task.equipment_interactions) {
+        this.addRFC7807Error({
+          type: 'task.interaction.deprecated_equipment_interactions',
+          title: 'Deprecated equipment_interactions Field',
+          severity: 'warning',
+          detail: `Task '${task.id}' uses deprecated 'equipment_interactions' field. Use 'interactions' with property_changes.state.`,
+          instance: `${instancePath}/equipment_interactions`,
+          context: { task_id: task.id },
+          suggestions: ['Convert to interactions with property_changes.state.from/to']
+        });
+      }
+    }
+
+    return !hasErrors;
+  }
+
+  /**
+   * Phase 4: Validate Interactions
+   */
+  validateInteractions() {
+    const tasks = this.simulation.tasks || [];
+    const objects = this.simulation.objects || [];
+    const objectIds = new Set(objects.map(o => o.id));
+    let hasErrors = false;
+
+    for (let i = 0; i < tasks.length; i++) {
+      const task = tasks[i];
+      if (!task.interactions) continue;
+
+      for (let j = 0; j < task.interactions.length; j++) {
+        const interaction = task.interactions[j];
+        const instancePath = `/simulation/tasks/${i}/interactions/${j}`;
+
+        // Phase 4.1: Support both target_id and deprecated object_id
+        const targetId = interaction.target_id || interaction.object_id;
+        
+        if (!targetId) {
+          this.addRFC7807Error({
+            type: 'interaction.integrity.missing_target',
+            title: 'Missing Target ID',
+            severity: 'error',
+            detail: `Interaction in task '${task.id}' is missing 'target_id' field.`,
+            instance: instancePath,
+            context: { task_id: task.id, interaction_index: j },
+            suggestions: ['Add target_id field referencing an object ID']
+          });
+          hasErrors = true;
+          continue;
+        }
+
+        if (interaction.object_id && !interaction.target_id) {
+          this.addRFC7807Error({
+            type: 'interaction.field.deprecated_object_id',
+            title: 'Deprecated object_id Field',
+            severity: 'warning',
+            detail: `Interaction in task '${task.id}' uses deprecated 'object_id'. Use 'target_id' instead.`,
+            instance: instancePath,
+            context: { task_id: task.id, object_id: interaction.object_id },
+            suggestions: ['Rename object_id to target_id']
+          });
+        }
+
+        // Validate target exists
+        if (!objectIds.has(targetId)) {
+          this.addRFC7807Error({
+            type: 'interaction.reference.invalid_target',
+            title: 'Invalid Target Reference',
+            severity: 'error',
+            detail: `Interaction in task '${task.id}' references non-existent object '${targetId}'.`,
+            instance: `${instancePath}/target_id`,
+            context: { 
+              task_id: task.id,
+              target_id: targetId,
+              available_objects: Array.from(objectIds)
+            },
+            suggestions: [
+              'Check that the object ID is spelled correctly',
+              'Ensure the object is defined in simulation.objects'
+            ]
+          });
+          hasErrors = true;
+        }
+
+        // Phase 4.2: Check for deprecated revert_after
+        if (interaction.revert_after !== undefined) {
+          this.addRFC7807Error({
+            type: 'interaction.field.deprecated_revert_after',
+            title: 'Deprecated revert_after Field',
+            severity: 'warning',
+            detail: `Interaction in task '${task.id}' uses deprecated 'revert_after'. Use 'temporary' instead.`,
+            instance: `${instancePath}/revert_after`,
+            context: { task_id: task.id },
+            suggestions: ['Rename revert_after to temporary']
+          });
+        }
+
+        // Phase 4.3: Validate property_changes operators
+        if (interaction.property_changes) {
+          for (const [propName, changeOp] of Object.entries(interaction.property_changes)) {
+            if (typeof changeOp !== 'object' || changeOp === null) {
+              this.addRFC7807Error({
+                type: 'interaction.property.invalid_operator',
+                title: 'Invalid Property Change Operator',
+                severity: 'error',
+                detail: `Property change for '${propName}' in task '${task.id}' must be an object with delta/set/from+to/etc.`,
+                instance: `${instancePath}/property_changes/${propName}`,
+                context: { task_id: task.id, property: propName, value: changeOp },
+                suggestions: [
+                  'Use { "delta": -5 } for quantity changes',
+                  'Use { "from": "clean", "to": "dirty" } for state changes',
+                  'Use { "set": value } for direct assignment'
+                ]
+              });
+              hasErrors = true;
+            }
+
+            // Validate operator combinations
+            if (changeOp.from !== undefined || changeOp.to !== undefined) {
+              if (changeOp.from === undefined || changeOp.to === undefined) {
+                this.addRFC7807Error({
+                  type: 'interaction.property.incomplete_transition',
+                  title: 'Incomplete State Transition',
+                  severity: 'error',
+                  detail: `Property '${propName}' in task '${task.id}' has from/to transition but missing one value.`,
+                  instance: `${instancePath}/property_changes/${propName}`,
+                  context: { task_id: task.id, property: propName, change: changeOp },
+                  suggestions: ['State transitions require both from and to values']
+                });
+                hasErrors = true;
+              }
+
+              if (changeOp.delta !== undefined) {
+                this.addRFC7807Error({
+                  type: 'interaction.property.conflicting_operators',
+                  title: 'Conflicting Change Operators',
+                  severity: 'error',
+                  detail: `Property '${propName}' in task '${task.id}' has both from/to and delta, which is invalid.`,
+                  instance: `${instancePath}/property_changes/${propName}`,
+                  context: { task_id: task.id, property: propName },
+                  suggestions: ['Use either from/to OR delta, not both']
+                });
+                hasErrors = true;
+              }
+            }
+          }
+        }
+
+        // Phase 4.4: Validate action-based interactions
+        if (interaction.action) {
+          if (!['create', 'delete'].includes(interaction.action)) {
+            this.addRFC7807Error({
+              type: 'interaction.action.invalid_type',
+              title: 'Invalid Action Type',
+              severity: 'error',
+              detail: `Interaction in task '${task.id}' has invalid action '${interaction.action}'. Must be 'create' or 'delete'.`,
+              instance: `${instancePath}/action`,
+              context: { task_id: task.id, action: interaction.action },
+              suggestions: ['Use action: "create" or action: "delete"']
+            });
+            hasErrors = true;
+          }
+
+          if (interaction.action === 'create' && !interaction.object) {
+            this.addRFC7807Error({
+              type: 'interaction.action.missing_object',
+              title: 'Missing Object Definition',
+              severity: 'error',
+              detail: `Create action in task '${task.id}' is missing 'object' field.`,
+              instance: instancePath,
+              context: { task_id: task.id },
+              suggestions: ['Add object field with complete object definition (id, type, name, properties)']
+            });
+            hasErrors = true;
+          }
+
+          if (interaction.action === 'delete' && !targetId) {
+            this.addRFC7807Error({
+              type: 'interaction.action.missing_target',
+              title: 'Missing Target for Delete',
+              severity: 'error',
+              detail: `Delete action in task '${task.id}' is missing target_id.`,
+              instance: instancePath,
+              context: { task_id: task.id },
+              suggestions: ['Add target_id field with ID of object to delete']
+            });
+            hasErrors = true;
+          }
+        }
+      }
+    }
+
+    return !hasErrors;
+  }
+
+  /**
+   * Phase 1.3: Validate Meta Section
+   */
+  validateMetaSection() {
+    if (!this.simulation.meta) {
+      this.addRFC7807Error({
+        type: 'schema.integrity.missing_meta',
+        title: 'Missing Meta Section',
+        severity: 'error',
+        detail: 'Simulation is missing required meta section.',
+        instance: '/simulation',
+        context: {},
+        suggestions: ['Add a meta object with title, description, and domain fields']
+      });
+      return false;
+    }
+
+    const meta = this.simulation.meta;
+    let hasErrors = false;
+
+    // Check for deprecated article_title
+    if (meta.article_title && !meta.title) {
+      this.addRFC7807Error({
+        type: 'meta.field.deprecated_article_title',
+        title: 'Deprecated article_title Field',
+        severity: 'warning',
+        detail: 'Meta uses deprecated "article_title". Use "title" instead.',
+        instance: '/simulation/meta/article_title',
+        context: { article_title: meta.article_title },
+        suggestions: ['Rename article_title to title']
+      });
+    }
+
+    // In strict mode, article_title is an error
+    if (meta.article_title && this.simulation.config?.strict_mode) {
+      this.addRFC7807Error({
+        type: 'meta.field.deprecated_article_title',
+        title: 'Deprecated article_title Field',
+        severity: 'error',
+        detail: 'Meta uses deprecated "article_title" which is not allowed in strict mode.',
+        instance: '/simulation/meta/article_title',
+        context: { article_title: meta.article_title },
+        suggestions: ['Rename article_title to title']
+      });
+      hasErrors = true;
+    }
+
+    return !hasErrors;
+  }
+
+  // --- LEGACY VALIDATION FUNCTIONS (Universal Object Model) ---
 
   validateNegativeStock(metric) {
     const resources = (this.simulation.objects || []).filter(o => o && (o.type === 'resource' || o.type === 'product'));
