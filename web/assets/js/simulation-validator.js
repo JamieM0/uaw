@@ -752,6 +752,7 @@ class SimulationValidator {
       for (let j = 0; j < task.interactions.length; j++) {
         const interaction = task.interactions[j];
         const instancePath = `/simulation/tasks/${i}/interactions/${j}`;
+        const taskId = task.id || `task_${i}`;  // Fallback ID for error messages
 
         // Phase 4.1: Support both target_id and deprecated object_id
         const targetId = interaction.target_id || interaction.object_id;
@@ -761,9 +762,9 @@ class SimulationValidator {
             type: 'interaction.integrity.missing_target',
             title: 'Missing Target ID',
             severity: 'error',
-            detail: `Interaction in task '${task.id}' is missing 'target_id' field.`,
+            detail: `Interaction in task '${taskId}' is missing 'target_id' field.`,
             instance: instancePath,
-            context: { task_id: task.id, interaction_index: j },
+            context: { task_id: taskId, interaction_index: j },
             suggestions: ['Add target_id field referencing an object ID']
           });
           hasErrors = true;
@@ -775,9 +776,9 @@ class SimulationValidator {
             type: 'interaction.field.deprecated_object_id',
             title: 'Deprecated object_id Field',
             severity: 'warning',
-            detail: `Interaction in task '${task.id}' uses deprecated 'object_id'. Use 'target_id' instead.`,
+            detail: `Interaction in task '${taskId}' uses deprecated 'object_id'. Use 'target_id' instead.`,
             instance: instancePath,
-            context: { task_id: task.id, object_id: interaction.object_id },
+            context: { task_id: taskId, object_id: interaction.object_id },
             suggestions: ['Rename object_id to target_id']
           });
         }
@@ -788,10 +789,10 @@ class SimulationValidator {
             type: 'interaction.reference.invalid_target',
             title: 'Invalid Target Reference',
             severity: 'error',
-            detail: `Interaction in task '${task.id}' references non-existent object '${targetId}'.`,
+            detail: `Interaction in task '${taskId}' references non-existent object '${targetId}'.`,
             instance: `${instancePath}/target_id`,
             context: { 
-              task_id: task.id,
+              task_id: taskId,
               target_id: targetId,
               available_objects: Array.from(objectIds)
             },
@@ -809,9 +810,9 @@ class SimulationValidator {
             type: 'interaction.field.deprecated_revert_after',
             title: 'Deprecated revert_after Field',
             severity: 'warning',
-            detail: `Interaction in task '${task.id}' uses deprecated 'revert_after'. Use 'temporary' instead.`,
+            detail: `Interaction in task '${taskId}' uses deprecated 'revert_after'. Use 'temporary' instead.`,
             instance: `${instancePath}/revert_after`,
-            context: { task_id: task.id },
+            context: { task_id: taskId },
             suggestions: ['Rename revert_after to temporary']
           });
         }
@@ -824,9 +825,9 @@ class SimulationValidator {
                 type: 'interaction.property.invalid_operator',
                 title: 'Invalid Property Change Operator',
                 severity: 'error',
-                detail: `Property change for '${propName}' in task '${task.id}' must be an object with delta/set/from+to/etc.`,
+                detail: `Property change for '${propName}' in task '${taskId}' must be an object with delta/set/from+to/etc.`,
                 instance: `${instancePath}/property_changes/${propName}`,
-                context: { task_id: task.id, property: propName, value: changeOp },
+                context: { task_id: taskId, property: propName, value: changeOp },
                 suggestions: [
                   'Use { "delta": -5 } for quantity changes',
                   'Use { "from": "clean", "to": "dirty" } for state changes',
@@ -843,9 +844,9 @@ class SimulationValidator {
                   type: 'interaction.property.incomplete_transition',
                   title: 'Incomplete State Transition',
                   severity: 'error',
-                  detail: `Property '${propName}' in task '${task.id}' has from/to transition but missing one value.`,
+                  detail: `Property '${propName}' in task '${taskId}' has from/to transition but missing one value.`,
                   instance: `${instancePath}/property_changes/${propName}`,
-                  context: { task_id: task.id, property: propName, change: changeOp },
+                  context: { task_id: taskId, property: propName, change: changeOp },
                   suggestions: ['State transitions require both from and to values']
                 });
                 hasErrors = true;
@@ -856,9 +857,9 @@ class SimulationValidator {
                   type: 'interaction.property.conflicting_operators',
                   title: 'Conflicting Change Operators',
                   severity: 'error',
-                  detail: `Property '${propName}' in task '${task.id}' has both from/to and delta, which is invalid.`,
+                  detail: `Property '${propName}' in task '${taskId}' has both from/to and delta, which is invalid.`,
                   instance: `${instancePath}/property_changes/${propName}`,
-                  context: { task_id: task.id, property: propName },
+                  context: { task_id: taskId, property: propName },
                   suggestions: ['Use either from/to OR delta, not both']
                 });
                 hasErrors = true;
@@ -874,9 +875,9 @@ class SimulationValidator {
               type: 'interaction.action.invalid_type',
               title: 'Invalid Action Type',
               severity: 'error',
-              detail: `Interaction in task '${task.id}' has invalid action '${interaction.action}'. Must be 'create' or 'delete'.`,
+              detail: `Interaction in task '${taskId}' has invalid action '${interaction.action}'. Must be 'create' or 'delete'.`,
               instance: `${instancePath}/action`,
-              context: { task_id: task.id, action: interaction.action },
+              context: { task_id: taskId, action: interaction.action },
               suggestions: ['Use action: "create" or action: "delete"']
             });
             hasErrors = true;
@@ -887,9 +888,9 @@ class SimulationValidator {
               type: 'interaction.action.missing_object',
               title: 'Missing Object Definition',
               severity: 'error',
-              detail: `Create action in task '${task.id}' is missing 'object' field.`,
+              detail: `Create action in task '${taskId}' is missing 'object' field.`,
               instance: instancePath,
-              context: { task_id: task.id },
+              context: { task_id: taskId },
               suggestions: ['Add object field with complete object definition (id, type, name, properties)']
             });
             hasErrors = true;
@@ -900,9 +901,9 @@ class SimulationValidator {
               type: 'interaction.action.missing_target',
               title: 'Missing Target for Delete',
               severity: 'error',
-              detail: `Delete action in task '${task.id}' is missing target_id.`,
+              detail: `Delete action in task '${taskId}' is missing target_id.`,
               instance: instancePath,
-              context: { task_id: task.id },
+              context: { task_id: taskId },
               suggestions: ['Add target_id field with ID of object to delete']
             });
             hasErrors = true;
