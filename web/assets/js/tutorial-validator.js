@@ -16,6 +16,50 @@ const TutorialValidators = {
         return Array.isArray(tasks) ? tasks : [];
     },
 
+    getConfig: function(simulation) {
+        if (!simulation) return {};
+        return simulation.config || {};
+    },
+
+    parseStartMinutes: function(start) {
+        if (!start) return 0;
+
+        if (typeof start === 'object' && start.time) {
+            const day = Number(start.day) > 0 ? Number(start.day) : 1;
+            const dayMinutes = (day - 1) * 24 * 60;
+            return dayMinutes + this.parseTime(start.time);
+        }
+
+        return this.parseTime(start);
+    },
+
+    parseDurationMinutes: function(duration, simulation) {
+        if (typeof duration === 'number' && Number.isFinite(duration)) {
+            return duration;
+        }
+
+        if (typeof duration === 'string') {
+            if (typeof window.WorkSpecValidator?.parseDurationToMinutes === 'function') {
+                const rawUnit = this.getConfig(simulation)?.time_unit || 'minutes';
+                const normalizedUnit = rawUnit === 'minute' ? 'minutes' : rawUnit;
+                const parsed = window.WorkSpecValidator.parseDurationToMinutes(duration, normalizedUnit);
+                if (typeof parsed === 'number' && Number.isFinite(parsed)) {
+                    return parsed;
+                }
+            }
+
+            // Lightweight ISO-8601 duration fallback (PT#H#M)
+            const iso = duration.match(/^PT(?:(\d+)H)?(?:(\d+)M)?$/i);
+            if (iso) {
+                const hours = Number(iso[1] || 0);
+                const minutes = Number(iso[2] || 0);
+                return (hours * 60) + minutes;
+            }
+        }
+
+        return 0;
+    },
+
     /**
      * Advanced space design challenge validation
      * Used in: Step 2
@@ -85,7 +129,7 @@ const TutorialValidators = {
         // Check for Data Analyst actor
         const analyst = objects.find(o => 
             o.type === 'actor' && 
-            (o.name.includes('Data Analyst') || o.properties?.role.includes('Data Analyst'))
+            (o.name?.includes('Data Analyst') || o.properties?.role?.includes('Data Analyst'))
         );
         
         // Check for Server Capacity resource
@@ -111,14 +155,16 @@ const TutorialValidators = {
         if (objects.length === 0 || tasks.length === 0) return false;
         
         // Check 1: No scheduling overlaps for Dr. Chen (triage appointments)
-        const chenTasks = tasks.filter(t => t.actor_id === 'dr_chen').sort((a, b) => this.parseTime(a.start) - this.parseTime(b.start));
+        const chenTasks = tasks
+            .filter(t => t.actor_id === 'dr_chen')
+            .sort((a, b) => this.parseStartMinutes(a.start) - this.parseStartMinutes(b.start));
         for (let i = 0; i < chenTasks.length - 1; i++) {
             const task1 = chenTasks[i];
             const task2 = chenTasks[i + 1];
             
-            const start1 = this.parseTime(task1.start);
-            const end1 = start1 + (task1.duration || 0);
-            const start2 = this.parseTime(task2.start);
+            const start1 = this.parseStartMinutes(task1.start);
+            const end1 = start1 + this.parseDurationMinutes(task1.duration, simulation);
+            const start2 = this.parseStartMinutes(task2.start);
             
             if (start2 < end1) return false; // Overlap detected
         }
@@ -152,14 +198,14 @@ const TutorialValidators = {
         const tasks = this.getTasks(simulation);
         if (tasks.length === 0) return false;
         
-        const spillsTask = tasks.find(t => t.id.includes('clean_up_spills'));
-        const ovenTask = tasks.find(t => t.id.includes('preheat_oven'));
+        const spillsTask = tasks.find(t => t.id?.includes('clean_up_spills'));
+        const ovenTask = tasks.find(t => t.id?.includes('preheat_oven'));
 
         if (!spillsTask || !ovenTask) return false;
 
-        const spillsStart = this.parseTime(spillsTask.start);
-        const spillsEnd = spillsStart + (spillsTask.duration || 0);
-        const ovenStart = this.parseTime(ovenTask.start);
+        const spillsStart = this.parseStartMinutes(spillsTask.start);
+        const spillsEnd = spillsStart + this.parseDurationMinutes(spillsTask.duration, simulation);
+        const ovenStart = this.parseStartMinutes(ovenTask.start);
 
         return ovenStart >= spillsEnd;
     },
@@ -168,7 +214,7 @@ const TutorialValidators = {
      * Helper function to parse time in HH:MM format to minutes
      */
     parseTime: function(timeStr) {
-        if (!timeStr) return 0;
+        if (!timeStr || typeof timeStr !== 'string') return 0;
         const [hours, minutes] = timeStr.split(':').map(Number);
         return hours * 60 + minutes;
     },

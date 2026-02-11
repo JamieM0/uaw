@@ -181,13 +181,48 @@ function updateMetricsMode() {
 }
 
 function setupLeftPanelTabs() {
-    const tabButtons = document.querySelectorAll('[data-left-tab]');
+    const tabButtons = Array.from(document.querySelectorAll('[data-left-tab]'));
     const tabContents = document.querySelectorAll('.left-tab-content');
+
+    tabButtons.forEach(button => {
+        button.setAttribute('role', 'tab');
+        button.setAttribute('aria-selected', button.classList.contains('active') ? 'true' : 'false');
+        button.setAttribute('tabindex', button.classList.contains('active') ? '0' : '-1');
+    });
+    tabContents.forEach(content => {
+        content.setAttribute('role', 'tabpanel');
+        content.setAttribute('aria-hidden', content.classList.contains('active') ? 'false' : 'true');
+    });
     
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
             const targetTab = button.dataset.leftTab;
             switchLeftTab(targetTab);
+        });
+    });
+
+    tabButtons.forEach((button, index) => {
+        button.addEventListener('keydown', (event) => {
+            let targetIndex = index;
+            if (event.key === 'ArrowRight') {
+                targetIndex = (index + 1) % tabButtons.length;
+            } else if (event.key === 'ArrowLeft') {
+                targetIndex = (index - 1 + tabButtons.length) % tabButtons.length;
+            } else if (event.key === 'Home') {
+                targetIndex = 0;
+            } else if (event.key === 'End') {
+                targetIndex = tabButtons.length - 1;
+            } else if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                switchLeftTab(button.dataset.leftTab);
+                return;
+            } else {
+                return;
+            }
+
+            event.preventDefault();
+            tabButtons[targetIndex].focus();
+            switchLeftTab(tabButtons[targetIndex].dataset.leftTab);
         });
     });
 }
@@ -197,8 +232,15 @@ function switchLeftTab(targetTab) {
     const tabButtons = document.querySelectorAll('[data-left-tab]');
     const tabContents = document.querySelectorAll('.left-tab-content');
 
-    tabButtons.forEach(btn => btn.classList.remove('active'));
-    tabContents.forEach(content => content.classList.remove('active'));
+    tabButtons.forEach(btn => {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
+        btn.setAttribute('tabindex', '-1');
+    });
+    tabContents.forEach(content => {
+        content.classList.remove('active');
+        content.setAttribute('aria-hidden', 'true');
+    });
 
     // Activate target button and content
     const targetButton = document.querySelector(`[data-left-tab="${targetTab}"]`);
@@ -206,7 +248,10 @@ function switchLeftTab(targetTab) {
 
     if (targetButton && targetContent) {
         targetButton.classList.add('active');
+        targetButton.setAttribute('aria-selected', 'true');
+        targetButton.setAttribute('tabindex', '0');
         targetContent.classList.add('active');
+        targetContent.setAttribute('aria-hidden', 'false');
 
         // Handle special cases for different tabs
         if (targetTab === 'space-editor' && spaceEditor) {
@@ -256,13 +301,48 @@ function switchLeftTab(targetTab) {
 }
 
 function setupMetricsEditorTabs() {
-    const metricTabButtons = document.querySelectorAll('.metrics-tab-btn');
+    const metricTabButtons = Array.from(document.querySelectorAll('.metrics-tab-btn'));
     const metricTabContents = document.querySelectorAll('.metrics-tab-content');
+
+    metricTabButtons.forEach((button) => {
+        button.setAttribute('role', 'tab');
+        button.setAttribute('aria-selected', button.classList.contains('active') ? 'true' : 'false');
+        button.setAttribute('tabindex', button.classList.contains('active') ? '0' : '-1');
+    });
+    metricTabContents.forEach((content) => {
+        content.setAttribute('role', 'tabpanel');
+        content.setAttribute('aria-hidden', content.classList.contains('active') ? 'false' : 'true');
+    });
     
     metricTabButtons.forEach(button => {
         button.addEventListener('click', () => {
             const targetTab = button.dataset.tab;
             switchMetricsTab(targetTab);
+        });
+    });
+
+    metricTabButtons.forEach((button, index) => {
+        button.addEventListener('keydown', (event) => {
+            let targetIndex = index;
+            if (event.key === 'ArrowRight') {
+                targetIndex = (index + 1) % metricTabButtons.length;
+            } else if (event.key === 'ArrowLeft') {
+                targetIndex = (index - 1 + metricTabButtons.length) % metricTabButtons.length;
+            } else if (event.key === 'Home') {
+                targetIndex = 0;
+            } else if (event.key === 'End') {
+                targetIndex = metricTabButtons.length - 1;
+            } else if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                switchMetricsTab(button.dataset.tab);
+                return;
+            } else {
+                return;
+            }
+
+            event.preventDefault();
+            metricTabButtons[targetIndex].focus();
+            switchMetricsTab(metricTabButtons[targetIndex].dataset.tab);
         });
     });
     
@@ -277,8 +357,15 @@ function switchMetricsTab(targetTab) {
     const tabButtons = document.querySelectorAll('.metrics-tab-btn');
     const tabContents = document.querySelectorAll('.metrics-tab-content');
     
-    tabButtons.forEach(btn => btn.classList.remove('active'));
-    tabContents.forEach(content => content.classList.remove('active'));
+    tabButtons.forEach(btn => {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
+        btn.setAttribute('tabindex', '-1');
+    });
+    tabContents.forEach(content => {
+        content.classList.remove('active');
+        content.setAttribute('aria-hidden', 'true');
+    });
     
     // Activate target button and content
     const targetButton = document.querySelector(`[data-tab="${targetTab}"]`);
@@ -286,7 +373,10 @@ function switchMetricsTab(targetTab) {
     
     if (targetButton && targetContent) {
         targetButton.classList.add('active');
+        targetButton.setAttribute('aria-selected', 'true');
+        targetButton.setAttribute('tabindex', '0');
         targetContent.classList.add('active');
+        targetContent.setAttribute('aria-hidden', 'false');
     }
 }
 

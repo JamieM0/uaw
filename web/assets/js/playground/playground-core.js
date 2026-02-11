@@ -476,6 +476,10 @@ function initializePlayground() {
   try {
     // Setup UI components
     if (typeof setupTabs === 'function') setupTabs();
+    if (typeof setupAccessibleDropdowns === 'function') setupAccessibleDropdowns();
+    if (typeof setupToolsMenuActions === 'function') setupToolsMenuActions();
+    if (typeof setupModalAccessibility === 'function') setupModalAccessibility();
+    if (typeof setupMobileEditorToggle === 'function') setupMobileEditorToggle();
     if (typeof updateAutoRenderUI === 'function') updateAutoRenderUI();
     if (typeof initializeResizeHandles === 'function') initializeResizeHandles();
     if (typeof initializeDragAndDrop === 'function') initializeDragAndDrop();
@@ -488,6 +492,7 @@ function initializePlayground() {
     if (typeof setupFullscreenButton === 'function') setupFullscreenButton();
     if (typeof setupUndoButton === 'function') setupUndoButton();
     if (typeof setupResetPanelSizes === 'function') setupResetPanelSizes();
+    if (typeof setupCollapsibleOptionsPanels === 'function') setupCollapsibleOptionsPanels();
 
     // Initialize Space Editor
     const canvas = PlaygroundUtils.safeGetElement("space-canvas");
@@ -588,6 +593,73 @@ function initializePlayground() {
     console.error('Critical error during playground initialization:', error);
     throw error;
   }
+}
+
+/**
+ * Make all options side panels collapsible.
+ * Applies to Space Editor, Digital Locations, and Display Editor sidebars.
+ * Panels are collapsed by default.
+ */
+function setupCollapsibleOptionsPanels() {
+  const panelContainers = document.querySelectorAll('.options-panel-container');
+  if (!panelContainers.length) return;
+
+  panelContainers.forEach((container) => {
+    if (container.dataset.collapsibleInitialized === 'true') return;
+
+    const header = container.querySelector('.options-panel-header');
+    const panelContent = container.querySelector(
+      '#options-panel-content, #digital-options-panel-content, #display-options-panel-content'
+    );
+
+    if (!header || !panelContent) return;
+
+    let toggleBtn = header.querySelector('.options-panel-toggle');
+    if (!toggleBtn) {
+      toggleBtn = document.createElement('button');
+      toggleBtn.type = 'button';
+      toggleBtn.className = 'options-panel-toggle';
+      toggleBtn.setAttribute('aria-label', 'Toggle options panel');
+      header.appendChild(toggleBtn);
+    }
+
+    const setCollapsedState = (collapsed) => {
+      container.classList.toggle('is-collapsed', collapsed);
+      panelContent.hidden = collapsed;
+      toggleBtn.textContent = collapsed ? '▸' : '▾';
+      toggleBtn.setAttribute('aria-expanded', String(!collapsed));
+      header.setAttribute('aria-expanded', String(!collapsed));
+    };
+
+    const toggleCollapsedState = () => {
+      const isCollapsed = container.classList.contains('is-collapsed');
+      setCollapsedState(!isCollapsed);
+    };
+
+    toggleBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleCollapsedState();
+    });
+
+    header.addEventListener('click', (event) => {
+      if (event.target.closest('.options-panel-toggle')) return;
+      toggleCollapsedState();
+    });
+
+    header.setAttribute('role', 'button');
+    header.setAttribute('tabindex', '0');
+    header.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        toggleCollapsedState();
+      }
+    });
+
+    // Panels are collapsed by default.
+    setCollapsedState(true);
+    container.dataset.collapsibleInitialized = 'true';
+  });
 }
 
 /**
@@ -880,6 +952,10 @@ function initializeFallbackEditor() {
 
   // Initialize core playground features
   setupTabs();
+  if (typeof setupAccessibleDropdowns === 'function') setupAccessibleDropdowns();
+  if (typeof setupToolsMenuActions === 'function') setupToolsMenuActions();
+  if (typeof setupModalAccessibility === 'function') setupModalAccessibility();
+  if (typeof setupMobileEditorToggle === 'function') setupMobileEditorToggle();
   updateAutoRenderUI();
   initializeResizeHandles();
   initializeDragAndDrop();
@@ -933,6 +1009,10 @@ function initializeMinimalEditor() {
 
   // Initialize basic functionality
   setupTabs();
+  if (typeof setupAccessibleDropdowns === 'function') setupAccessibleDropdowns();
+  if (typeof setupToolsMenuActions === 'function') setupToolsMenuActions();
+  if (typeof setupModalAccessibility === 'function') setupModalAccessibility();
+  if (typeof setupMobileEditorToggle === 'function') setupMobileEditorToggle();
   updateAutoRenderUI();
   setupDarkMode();
   setupRenderButton();

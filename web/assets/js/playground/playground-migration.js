@@ -15,8 +15,12 @@
     }
 
     function closeDropdownMenus() {
-        document.querySelectorAll('.dropdown-content').forEach((menu) => {
-            menu.style.display = 'none';
+        if (typeof window.closeAllPlaygroundDropdowns === 'function') {
+            window.closeAllPlaygroundDropdowns();
+            return;
+        }
+        document.querySelectorAll('.dropdown').forEach((dropdown) => {
+            dropdown.classList.remove('open');
         });
     }
 
@@ -109,4 +113,3 @@
         migrateBtn.addEventListener('click', handleMigrateClick);
     });
 })();
-

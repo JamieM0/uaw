@@ -45,6 +45,37 @@ function safeTrim(value) {
     return (typeof value === 'string') ? value.trim() : '';
 }
 
+function normalizeObjectPropertyInputName(rawName, suffix = '') {
+    if (typeof rawName !== 'string' || rawName.length === 0) return '';
+    let name = rawName;
+    if (name.startsWith('new_object_')) {
+        name = name.slice('new_object_'.length);
+    }
+    if (suffix && name.endsWith(`_${suffix}`)) {
+        name = name.slice(0, -(suffix.length + 1));
+    }
+    return name;
+}
+
+function applyCommonWorkSpecDefaults(object, baseType) {
+    if (!object || !isPlainObject(object.properties)) return;
+
+    const statefulTypes = ['actor', 'equipment', 'service', 'display', 'screen_element', 'digital_object'];
+    const quantifiableTypes = ['resource', 'product', 'digital_object'];
+
+    if (statefulTypes.includes(baseType)) {
+        const stateValue = object.properties.state;
+        if (typeof stateValue !== 'string' || stateValue.trim().length === 0) {
+            object.properties.state = (baseType === 'service') ? 'running' : (baseType === 'display') ? 'active' : 'available';
+        }
+    }
+
+    if (quantifiableTypes.includes(baseType)) {
+        const quantity = Number(object.properties.quantity);
+        object.properties.quantity = Number.isFinite(quantity) ? quantity : 0;
+    }
+}
+
 function getSimulationRoot(doc) {
     if (!isPlainObject(doc)) return null;
     if (isPlainObject(doc.simulation)) return doc.simulation;
@@ -1781,6 +1812,8 @@ function addObjectToSimulation() {
         const properties = {};
         let finalObjectType = objectType;
 
+        let objectLocation = '';
+
         if (objectType === 'custom') {
             // Handle custom object type
             const customTypeInput = document.querySelector('input[name^="new_object_custom_type_"]');
@@ -1821,10 +1854,14 @@ function addObjectToSimulation() {
             const fieldsContainer = document.getElementById('object-type-specific-fields');
             const inputs = fieldsContainer.querySelectorAll('input, select, textarea');
             inputs.forEach(input => {
-                const name = input.name.replace('_modal', '');
+                const name = normalizeObjectPropertyInputName(input.name, 'modal');
                 if (input.value && name) {
+                    if (name === 'location') {
+                        objectLocation = input.value;
+                        return;
+                    }
                     if (input.type === 'number') {
-                        properties[name] = parseFloat(input.value) || parseInt(input.value);
+                        properties[name] = Number(input.value);
                     } else {
                         properties[name] = input.value;
                     }
@@ -1842,6 +1879,13 @@ function addObjectToSimulation() {
         if (emoji) {
             newObject.emoji = emoji;
         }
+        if (objectLocation) {
+            newObject.location = objectLocation;
+        }
+
+        // Keep modal-created objects v2-valid with common required defaults.
+        const baseType = objectType === 'custom' ? '' : objectType;
+        applyCommonWorkSpecDefaults(newObject, baseType);
 
         // Add default indicator_property for common types (UI hint; keep in properties for WorkSpec v2)
         if (objectType === 'resource') {
@@ -2000,12 +2044,15 @@ function addTaskToSimulation() {
                     const propInputs = group.querySelectorAll('.type-specific-fields-container input, .type-specific-fields-container select');
                     propInputs.forEach(input => {
                         if (input.value && input.name) {
-                            const propName = input.name.replace(`new_object_`, '').replace(`_${counter}`, '');
+                            const propName = normalizeObjectPropertyInputName(input.name, counter);
                             if (propName === 'location') return;
                             const isNumberInput = input.tagName === 'INPUT' && input.type === 'number';
                             newObject.properties[propName] = isNumberInput ? Number(input.value) : input.value;
                         }
                     });
+
+                    const baseType = newObjectType === 'custom' ? '' : newObjectType;
+                    applyCommonWorkSpecDefaults(newObject, baseType);
                     
                     newTask.interactions.push({ action: 'create', object: newObject });
                 }
@@ -2190,7 +2237,7 @@ function saveTaskToSimulation() {
                         const propInputs = group.querySelectorAll('.type-specific-fields-container input, .type-specific-fields-container select');
                         propInputs.forEach(input => {
                             if (input.value && input.name) {
-                                const propName = input.name.replace(`new_object_`, '').replace(`_${counter}`, '');
+                                const propName = normalizeObjectPropertyInputName(input.name, counter);
                                 if (propName === 'location') return;
                                 const isNumberInput = input.tagName === 'INPUT' && input.type === 'number';
                                 newObjectProperties[propName] = isNumberInput ? Number(input.value) : input.value;
@@ -2210,13 +2257,7 @@ function saveTaskToSimulation() {
 
                     // Fill common defaults so created objects are immediately v2-valid.
                     const baseType = newObjectType === 'custom' ? '' : newObjectType;
-                    if (!newObject.properties.state && ['actor', 'equipment', 'service', 'display', 'screen_element', 'digital_object'].includes(baseType)) {
-                        newObject.properties.state = (baseType === 'service') ? 'running' : (baseType === 'display') ? 'active' : 'available';
-                    }
-                    if (!Number.isFinite(newObject.properties.quantity) && ['resource', 'product', 'digital_object'].includes(baseType)) {
-                        const q = Number(newObject.properties.quantity);
-                        newObject.properties.quantity = Number.isFinite(q) ? q : 0;
-                    }
+                    applyCommonWorkSpecDefaults(newObject, baseType);
 
                     newTask.interactions.push({ action: 'create', object: newObject });
                 }

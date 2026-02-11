@@ -373,16 +373,19 @@ function processSimulationData(simulationData) {
         actorWorkloads[task.actor_id] = (actorWorkloads[task.actor_id] || 0) + (task.duration || 0);
     });
 
-    // Calculate utilization for all objects that have tasks
-    const objectsWithTasks = [];
+    // Build timeline lanes:
+    // - Always include actor objects (even with 0 tasks) so each actor has a row.
+    // - Include non-actor objects only when they have tasks.
+    const timelineActors = [];
     allObjects.forEach(obj => {
         if (!obj) return;
         const workload = actorWorkloads[obj.id] || 0;
-        if (workload > 0) { // Only include objects that have tasks
-            // Utilization should also be based on the visual duration of the workday shown.
-            const utilization = visualTotalDuration > 0 ? (workload / visualTotalDuration) * 100 : 0;
-            objectsWithTasks.push({ ...obj, utilization_percentage: Math.round(utilization * 10) / 10 });
-        }
+        const includeInTimeline = obj.type === 'actor' || workload > 0;
+        if (!includeInTimeline) return;
+
+        // Utilization should also be based on the visual duration of the workday shown.
+        const utilization = visualTotalDuration > 0 ? (workload / visualTotalDuration) * 100 : 0;
+        timelineActors.push({ ...obj, utilization_percentage: Math.round(utilization * 10) / 10 });
     });
 
     const result = {
@@ -396,8 +399,8 @@ function processSimulationData(simulationData) {
         domain: sim.meta?.domain || "General",
     };
 
-    // Add objects with tasks to a special "timeline_actors" group for timeline rendering
-    result.timeline_actors = objectsWithTasks;
+    // Add lane objects to a special "timeline_actors" group for timeline rendering
+    result.timeline_actors = timelineActors;
 
     // Track which object type keys come from digital space
     const digitalObjectTypeKeys = new Set();
@@ -613,32 +616,13 @@ function renderSimulation(skipJsonValidation = false) {
         header.appendChild(viewControls);
 
         const toggleBtn = viewDropdown.querySelector('.dropdown-toggle');
-        const content = viewDropdown.querySelector('.dropdown-content');
-
-        function showDropdown() {
-            content.style.display = 'block';
-            toggleBtn.setAttribute('aria-expanded', 'true');
-        }
-
-        function hideDropdown() {
-            content.style.display = 'none';
+        if (toggleBtn) {
+            toggleBtn.setAttribute('aria-haspopup', 'true');
             toggleBtn.setAttribute('aria-expanded', 'false');
         }
-
-        toggleBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isVisible = content.style.display === 'block';
-            isVisible ? hideDropdown() : showDropdown();
-        });
-
-        viewDropdown.addEventListener('mouseenter', () => showDropdown());
-        viewDropdown.addEventListener('mouseleave', () => {
-            setTimeout(() => {
-                if (!viewDropdown.matches(':hover')) {
-                    hideDropdown();
-                }
-            }, 100);
-        });
+        if (typeof setupAccessibleDropdowns === 'function') {
+            setupAccessibleDropdowns();
+        }
 
         container.appendChild(header);
 

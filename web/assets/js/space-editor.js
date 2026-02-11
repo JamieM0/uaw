@@ -99,7 +99,7 @@ class SpaceEditor {
             const simulation = JSON.parse(stripJsonComments(jsonText));
 
             // Check if we're editing a day_type (multi-period context)
-            const isEditingDayType = window.activeDayTypeEditor !== undefined;
+            const isEditingDayType = !!window.activeDayTypeEditor;
 
             if (isEditingDayType && simulation.simulation) {
                 // Get the current day_type name from the multi-period view controller
@@ -125,8 +125,13 @@ class SpaceEditor {
             // Standard single-day or global layout loading
             this.isDayTypeMode = false;
             this.currentDayTypeName = null;
-            if (simulation.simulation && simulation.simulation.layout) {
-                this.loadLayout(simulation.simulation.layout, false);
+            if (simulation.simulation) {
+                const layoutData =
+                    simulation.simulation.world?.layout ||
+                    simulation.simulation.layout;
+                if (layoutData) {
+                    this.loadLayout(layoutData, false);
+                }
             }
         } catch (e) {
             console.warn("SPACE-EDITOR: Could not parse JSON for space layout", e);
@@ -195,7 +200,7 @@ class SpaceEditor {
                 emoji: loc.emoji || "📍",
                 position: {
                     x: loc.shape.x / this.pixelsPerMeter,
-                    y: loc.shape.depth / this.pixelsPerMeter,  // Vertical height
+                    y: (loc.shape.elevation ?? loc.shape.depth ?? 0) / this.pixelsPerMeter,  // Vertical position
                     z: loc.shape.y / this.pixelsPerMeter       // Z maps to Y in 2D view
                 },
                 width: loc.shape.width / this.pixelsPerMeter,
@@ -638,7 +643,8 @@ class SpaceEditor {
                 y: toFiniteNumber(shapeInput.y, toFiniteNumber(coordinates.z, gridY)),
                 width: Math.max(1, toFiniteNumber(shapeInput.width, fallbackWidth)),
                 height: Math.max(1, toFiniteNumber(shapeInput.height, fallbackHeight)),
-                depth: Math.max(1, toFiniteNumber(shapeInput.depth, toFiniteNumber(coordinates.depth, defaultDepthPx)))
+                depth: Math.max(1, toFiniteNumber(shapeInput.depth, toFiniteNumber(coordinates.depth, defaultDepthPx))),
+                elevation: toFiniteNumber(shapeInput.elevation, toFiniteNumber(coordinates.y, 0))
             };
 
             const id = (typeof input.id === 'string' && input.id.trim())
@@ -728,13 +734,7 @@ class SpaceEditor {
         // Collect all unique layers
         this.availableLayers.clear();
         this.locations.forEach(loc => {
-            if (loc.isTransition && loc.transitionLayers) {
-                // Add all layers from transition zones
-                loc.transitionLayers.forEach(layer => this.availableLayers.add(layer));
-            } else {
-                // Add single layer from regular locations
-                this.availableLayers.add(loc.layer || 0);
-            }
+            this.getVisibleLayersForLocation(loc).forEach(layer => this.availableLayers.add(layer));
         });
 
         // Preserve current selection
@@ -770,18 +770,27 @@ class SpaceEditor {
             if (this.activeLayer === 'all') {
                 shouldShow = true;
             } else {
-                if (loc.isTransition && loc.transitionLayers) {
-                    // For transition zones, show if the active layer is in the transition layers
-                    shouldShow = loc.transitionLayers.includes(this.activeLayer);
-                } else {
-                    // For regular locations, use the single layer
-                    const locationLayer = loc.layer || "ground";
-                    shouldShow = locationLayer === this.activeLayer;
-                }
+                const visibleLayers = this.getVisibleLayersForLocation(loc);
+                shouldShow = visibleLayers.includes(this.activeLayer);
             }
             
             rectEl.style.display = shouldShow ? 'flex' : 'none';
         });
+    }
+
+    getVisibleLayersForLocation(loc) {
+        const baseLayer = (typeof loc.layer === 'string' && loc.layer.trim()) ? loc.layer.trim() : 'ground';
+        if (!loc.isTransition) return [baseLayer];
+
+        if (Array.isArray(loc.transitionLayers)) {
+            const cleaned = loc.transitionLayers
+                .map(layer => (typeof layer === 'string' ? layer.trim() : ''))
+                .filter(Boolean);
+            if (cleaned.length > 0) return cleaned;
+        }
+
+        // Transition zones always need at least one visible layer.
+        return [baseLayer];
     }
 
     populateParentDropdown(currentLocationId) {
@@ -1137,41 +1146,66 @@ class SpaceEditor {
     }
 
     populateTransitionLayersDropdown(loc) {
-        const transitionLayersSelect = document.getElementById('prop-transition-layers');
-        if (!transitionLayersSelect) return;
-        
-        // Clear existing options
-        transitionLayersSelect.innerHTML = '';
-        
-        // Get all available layers from the layer dropdown
-        const sortedLayers = Array.from(this.availableLayers).sort();
-        
-        // Add all layer options
-        sortedLayers.forEach(layer => {
-            const option = document.createElement('option');
-            option.value = layer;
-            option.textContent = layer;
-            
-            // Select if it's in the location's transition layers
-            if (loc.transitionLayers && loc.transitionLayers.includes(layer)) {
-                option.selected = true;
-            }
-            
-            transitionLayersSelect.appendChild(option);
-        });
-        
-        // Remove any existing event listeners by cloning the element
-        const newTransitionLayersSelect = transitionLayersSelect.cloneNode(true);
-        transitionLayersSelect.parentNode.replaceChild(newTransitionLayersSelect, transitionLayersSelect);
-        
-        // Add event listener for changes
-        newTransitionLayersSelect.addEventListener('change', (e) => {
-            const selectedOptions = Array.from(e.target.selectedOptions);
-            loc.transitionLayers = selectedOptions.map(option => option.value);
-            
-            // Update the visual representation
-            this.updateRectElement(loc);
-            this.updateJson();
+        const transitionLayersContainer = document.getElementById('prop-transition-layers');
+        if (!transitionLayersContainer) return;
+
+        transitionLayersContainer.innerHTML = '';
+
+        // Get all available layers and ensure the location's current/base layer exists as an option.
+        const layerSet = new Set(this.availableLayers);
+        const baseLayer = (typeof loc.layer === 'string' && loc.layer.trim()) ? loc.layer.trim() : 'ground';
+        layerSet.add(baseLayer);
+        const sortedLayers = Array.from(layerSet).sort();
+        const selectedLayers = new Set(this.getVisibleLayersForLocation(loc));
+
+        if (sortedLayers.length === 0) {
+            transitionLayersContainer.innerHTML = '<div style="font-size: 12px; color: var(--text-light);">No layers available</div>';
+            return;
+        }
+
+        sortedLayers.forEach((layer) => {
+            const row = document.createElement('label');
+            row.style.display = 'flex';
+            row.style.alignItems = 'center';
+            row.style.gap = '8px';
+            row.style.marginBottom = '6px';
+            row.style.fontSize = '13px';
+            row.style.cursor = 'pointer';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = layer;
+            checkbox.checked = selectedLayers.has(layer);
+            checkbox.style.cursor = 'pointer';
+
+            const text = document.createElement('span');
+            text.textContent = layer;
+
+            row.appendChild(checkbox);
+            row.appendChild(text);
+            transitionLayersContainer.appendChild(row);
+
+            checkbox.addEventListener('change', () => {
+                const checked = Array.from(
+                    transitionLayersContainer.querySelectorAll('input[type="checkbox"]:checked')
+                ).map((input) => input.value).filter(Boolean);
+
+                // Never allow empty transition layer coverage.
+                loc.transitionLayers = checked.length > 0 ? checked : [baseLayer];
+
+                // If none were checked, re-check fallback in UI.
+                if (checked.length === 0) {
+                    const fallbackCheckbox = Array.from(
+                        transitionLayersContainer.querySelectorAll('input[type="checkbox"]')
+                    ).find((input) => input.value === baseLayer);
+                    if (fallbackCheckbox) fallbackCheckbox.checked = true;
+                }
+
+                this.updateLayerDropdown();
+                this.applyLayerFilter();
+                this.updateRectElement(loc);
+                this.updateJson();
+            });
         });
     }
     
@@ -1193,10 +1227,19 @@ class SpaceEditor {
                     this.transformLayoutToDayTypeLocations(this.locations);
             } else {
                 // Standard layout format
-                fullSim.simulation.layout = {
+                const normalizedLayout = {
                     meta: { units: 'meters', pixels_per_unit: this.pixelsPerMeter },
                     locations: this.locations
                 };
+
+                // Canonical path used by WorkSpec v2 / timeline renderer.
+                if (!fullSim.simulation.world || typeof fullSim.simulation.world !== 'object') {
+                    fullSim.simulation.world = {};
+                }
+                fullSim.simulation.world.layout = normalizedLayout;
+
+                // Legacy mirror used by older playground flows.
+                fullSim.simulation.layout = normalizedLayout;
             }
 
             this.monacoEditor.setValue(JSON.stringify(fullSim, null, 2));
@@ -1799,7 +1842,7 @@ class SpaceEditor {
         
         // Convert position pixels to meters
         const posXM = (loc.shape.x / this.pixelsPerMeter).toFixed(2);
-        const posYM = (0 / this.pixelsPerMeter).toFixed(2); // Y position is always 0 in 2D view
+        const posYM = ((loc.shape.elevation || 0) / this.pixelsPerMeter).toFixed(2);
         const posZM = (loc.shape.y / this.pixelsPerMeter).toFixed(2); // Z position maps to CSS top
         
         this.propsPanel.innerHTML = `
@@ -1868,10 +1911,10 @@ class SpaceEditor {
             </div>
             <div class="prop-field" style="display: ${loc.isTransition ? 'block' : 'none'};" id="transition-layers-field">
                 <label for="prop-transition-layers">Layers</label>
-                <select id="prop-transition-layers" multiple style="height: 120px;">
-                    <!-- Layer options will be populated here -->
-                </select>
-                <small>Hold Ctrl/Cmd to select multiple layers</small>
+                <div id="prop-transition-layers" style="max-height: 140px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 4px; padding: 6px; background: var(--bg-light);">
+                    <!-- Layer checkbox options will be populated here -->
+                </div>
+                <small>Select one or more layers</small>
             </div>
             <div class="prop-field" style="display: ${loc.isTransition ? 'block' : 'none'};" id="connected-locations-field">
                 <label for="prop-connected">Connected Locations</label>
@@ -1963,20 +2006,23 @@ class SpaceEditor {
         // Position event listeners
         document.getElementById('prop-pos-x').addEventListener('change', e => {
             const newPosXM = parseFloat(e.target.value);
+            if (!Number.isFinite(newPosXM)) return;
             loc.shape.x = newPosXM * this.pixelsPerMeter;  // X position maps to CSS left
             this.updateRectElement(loc);
             this.updateJson();
         });
 
         document.getElementById('prop-pos-y').addEventListener('change', e => {
-            // Y position is not used in the 2D view but could be stored for 3D compatibility
-            // For now, this doesn't affect the visual representation
             const newPosYM = parseFloat(e.target.value);
-            // Could store in loc.shape.z if needed for 3D compatibility in the future
+            if (!Number.isFinite(newPosYM)) return;
+            // Y is vertical position in world units (not rendered in current 2D plane).
+            loc.shape.elevation = newPosYM * this.pixelsPerMeter;
+            this.updateJson();
         });
 
         document.getElementById('prop-pos-z').addEventListener('change', e => {
             const newPosZM = parseFloat(e.target.value);
+            if (!Number.isFinite(newPosZM)) return;
             loc.shape.y = newPosZM * this.pixelsPerMeter;  // Z position maps to CSS top
             this.updateRectElement(loc);
             this.updateJson();
@@ -1985,37 +2031,49 @@ class SpaceEditor {
         // Dimension event listeners
         document.getElementById('prop-length').addEventListener('change', e => {
             const newLengthM = parseFloat(e.target.value);
+            if (!Number.isFinite(newLengthM) || newLengthM <= 0) return;
             if (this.locations.length === 1) {
                 this.pixelsPerMeter = loc.shape.width / newLengthM;
             }
+            const newWidthM = parseFloat(document.getElementById('prop-width').value);
+            const newHeightM = parseFloat(document.getElementById('prop-height').value);
             loc.shape.width = newLengthM * this.pixelsPerMeter;  // X = length (LEFT-RIGHT) maps to CSS width
-            loc.shape.height = parseFloat(document.getElementById('prop-width').value) * this.pixelsPerMeter;  // Z = width (UP-DOWN) maps to CSS height
-            loc.shape.depth = parseFloat(document.getElementById('prop-height').value) * this.pixelsPerMeter;  // Y = height (vertical space)
+            if (Number.isFinite(newWidthM) && newWidthM > 0) {
+                loc.shape.height = newWidthM * this.pixelsPerMeter;  // Z = width (UP-DOWN) maps to CSS height
+            }
+            if (Number.isFinite(newHeightM) && newHeightM > 0) {
+                loc.shape.depth = newHeightM * this.pixelsPerMeter;  // Y = height (vertical space)
+            }
             this.updateRectElement(loc);
             this.updateJson();
         });
 
         document.getElementById('prop-height').addEventListener('change', e => {
             const newHeightM = parseFloat(e.target.value);
+            if (!Number.isFinite(newHeightM) || newHeightM <= 0) return;
             loc.shape.depth = newHeightM * this.pixelsPerMeter;  // Y = height (vertical space, not rendered)
             this.updateJson();
         });
 
         document.getElementById('prop-width').addEventListener('change', e => {
             const newWidthM = parseFloat(e.target.value);
+            if (!Number.isFinite(newWidthM) || newWidthM <= 0) return;
             loc.shape.height = newWidthM * this.pixelsPerMeter;  // Z = width (UP-DOWN) maps to CSS height
             this.updateRectElement(loc);
             this.updateJson();
         });
 
-        document.getElementById('prop-layer').addEventListener('change', e => {
-            const newLayer = e.target.value.trim() || 'ground';
-            loc.layer = newLayer;
-            this.updateRectElement(loc);
-            this.updateLayerDropdown();
-            this.applyLayerFilter();
-            this.updateJson();
-        });
+        const layerInput = document.getElementById('prop-layer');
+        if (layerInput) {
+            layerInput.addEventListener('change', e => {
+                const newLayer = e.target.value.trim() || 'ground';
+                loc.layer = newLayer;
+                this.updateRectElement(loc);
+                this.updateLayerDropdown();
+                this.applyLayerFilter();
+                this.updateJson();
+            });
+        }
 
         document.getElementById('prop-parent').addEventListener('change', e => {
             const newParentId = e.target.value || null;
@@ -2038,6 +2096,8 @@ class SpaceEditor {
             if (loc.isTransition) {
                 this.populateTransitionLayersDropdown(loc);
             }
+            this.updateLayerDropdown();
+            this.applyLayerFilter();
             this.updateRectElement(loc);
             this.updateJson();
         });

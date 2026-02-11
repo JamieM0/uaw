@@ -289,8 +289,12 @@ function setupValidationInteractions() {
                     applyValidationFilter();
                     
                     // Update visual state
-                    document.querySelectorAll('.stat-item.clickable').forEach(s => s.classList.remove('active'));
+                    document.querySelectorAll('.stat-item.clickable').forEach(s => {
+                        s.classList.remove('active');
+                        s.setAttribute('aria-pressed', 'false');
+                    });
                     statItem.classList.add('active');
+                    statItem.setAttribute('aria-pressed', 'true');
                 }
             }
             
@@ -359,8 +363,12 @@ function setupValidationInteractions() {
                     applyValidationFilter();
 
                     // Update visual state
-                    document.querySelectorAll('.stat-item.clickable').forEach(s => s.classList.remove('active'));
+                    document.querySelectorAll('.stat-item.clickable').forEach(s => {
+                        s.classList.remove('active');
+                        s.setAttribute('aria-pressed', 'false');
+                    });
                     statItem.classList.add('active');
+                    statItem.setAttribute('aria-pressed', 'true');
                 }
             }
         };
@@ -406,11 +414,13 @@ function applyValidationFilter() {
     // Update stat item visual states
     document.querySelectorAll('.stat-item.clickable').forEach(item => {
         item.classList.remove('active');
+        item.setAttribute('aria-pressed', 'false');
     });
     
     const activeStatItem = document.querySelector(`[data-filter="${filterValue}"]`);
     if (activeStatItem) {
         activeStatItem.classList.add('active');
+        activeStatItem.setAttribute('aria-pressed', 'true');
     }
 
     // Apply filter logic
