@@ -43,7 +43,8 @@ If you do not pass a catalog, WorkSpec auto-discovers functions in your JavaScri
 ```bash
 workspec validate \
   --custom ./custom-validation.js \
-  ./my-file.workspec.json
+  ./my-file.workspec.json \
+  -y
 ```
 
 ## 3) Optional: create `metrics-catalog-custom.json`
@@ -71,7 +72,8 @@ Use a catalog only when you want to run selected functions (instead of every dis
 workspec validate \
   --custom ./custom-validation.js \
   --custom-catalog ./metrics-catalog-custom.json \
-  ./my-file.workspec.json
+  ./my-file.workspec.json \
+  -y
 ```
 
 ## What this does
@@ -88,4 +90,6 @@ workspec validate \
 - Use a catalog when you want to run only specific functions.
 - The catalog tells WorkSpec which function(s) to call.
 - The JavaScript file contains the real check logic.
+- Custom validators can be dangerous/malicious. The CLI prompts for `Y` confirmation before running them unless you pass `-y`/`--yes`.
+- Custom validation runs in an isolated subprocess with a hard timeout, and catalog/auto-discovered function names must follow `validate*`.
 - If you do not pass `--custom-catalog`, WorkSpec will try to load `metrics-catalog-custom.json` from the same folder as your `--custom` JavaScript file.

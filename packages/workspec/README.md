@@ -31,13 +31,16 @@ Validate:
 ```bash
 workspec validate path/to/file.workspec.json
 workspec validate path/to/file.workspec.json --json
-workspec validate -custom path/to/simulation-validator-custom.js path/to/file.workspec.json
-workspec validate path/to/file.workspec.json --custom path/to/custom-validator.js --custom-catalog path/to/metrics-catalog-custom.json
+workspec validate -custom path/to/simulation-validator-custom.js path/to/file.workspec.json -y
+workspec validate path/to/file.workspec.json --custom path/to/custom-validator.js --custom-catalog path/to/metrics-catalog-custom.json -y
 ```
 
 `-custom/--custom` supports:
 - Metrics Editor-style `validate*` functions in a plain `.js` file
 - Node-style exports (`module.exports = function (...) { ... }` or `module.exports.validate = ...`)
+
+Custom validators run user-provided JavaScript and may be dangerous/malicious. The CLI now requires an interactive `Y` confirmation before custom validation executes. Use `-y` / `--yes` to skip the confirmation (required in non-interactive runs like CI).
+Custom validation execution is isolated in a subprocess with a hard timeout, and catalog/discovered entry points are restricted to `validate*` function names.
 
 If `--custom-catalog` is omitted, the CLI auto-loads `metrics-catalog-custom.json` from the custom validator file's folder when present.
 

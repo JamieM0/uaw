@@ -101,7 +101,8 @@
 <p>If you do not pass a catalog, WorkSpec auto-discovers functions in your JavaScript file that start with <code class="docs-inline-code">validate</code>.</p>
 <div class="codehilite"><pre><span></span><code class="language-text">workspec<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--custom<span class="w"> </span>./custom-validation.js<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>./my-file.workspec.json
+<span class="w">  </span>./my-file.workspec.json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-y
 </code></pre></div>
 <h2 class="docs-heading" id="3-optional-create-metrics-catalog-customjson">3) Optional: create <code class="docs-inline-code">metrics-catalog-custom.json</code><a class="headerlink" href="#3-optional-create-metrics-catalog-customjson" title="Link to this section">¶</a></h2>
 <p>Use a catalog only when you want to run selected functions (instead of every discovered <code class="docs-inline-code">validate...</code> function).</p>
@@ -122,7 +123,8 @@
 <div class="codehilite"><pre><span></span><code class="language-text">workspec<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--custom<span class="w"> </span>./custom-validation.js<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--custom-catalog<span class="w"> </span>./metrics-catalog-custom.json<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>./my-file.workspec.json
+<span class="w">  </span>./my-file.workspec.json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-y
 </code></pre></div>
 <h2 class="docs-heading" id="what-this-does">What this does<a class="headerlink" href="#what-this-does" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
@@ -138,6 +140,8 @@
 <li>Use a catalog when you want to run only specific functions.</li>
 <li>The catalog tells WorkSpec which function(s) to call.</li>
 <li>The JavaScript file contains the real check logic.</li>
+<li>Custom validators can be dangerous/malicious. The CLI prompts for <code class="docs-inline-code">Y</code> confirmation before running them unless you pass <code class="docs-inline-code">-y</code>/<code class="docs-inline-code">--yes</code>.</li>
+<li>Custom validation runs in an isolated subprocess with a hard timeout, and catalog/auto-discovered function names must follow <code class="docs-inline-code">validate*</code>.</li>
 <li>If you do not pass <code class="docs-inline-code">--custom-catalog</code>, WorkSpec will try to load <code class="docs-inline-code">metrics-catalog-custom.json</code> from the same folder as your <code class="docs-inline-code">--custom</code> JavaScript file.</li>
 </ul>
                     </div>

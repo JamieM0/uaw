@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const readline = require('readline');
 
 const validator = require(path.join(__dirname, '..', 'workspec-validator.js'));
 const migrator = require(path.join(__dirname, '..', 'workspec-migrate-v1-to-v2.js'));
@@ -13,7 +14,7 @@ function printHelp(exitCode = 0) {
         'workspec - WorkSpec v1.1.0 CLI',
         '',
         'Usage:',
-        '  workspec validate <file.workspec.json> [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json]',
+        '  workspec validate <file.workspec.json> [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json] [-y]',
         '  workspec migrate <file.json> --out <output.json> [--schema]',
         '  workspec format <file.json> [--write] [--out <output.json>]',
         '',
@@ -26,6 +27,7 @@ function printHelp(exitCode = 0) {
         '  -custom <path>  Run custom validator code (Metrics Editor compatible).',
         '  --custom <path> Same as -custom.',
         '  --custom-catalog <path> Optional metrics-catalog JSON for custom metrics.',
+        '  -y, --yes      Skip custom validation safety confirmation prompt.',
         '  --json          Print machine-readable problems JSON (validate only).',
         '  --out <path>    Output path (migrate/format).',
         '  --write         Write output (format only; defaults to stdout).',
@@ -69,6 +71,10 @@ function parseArgs(argv) {
         }
         if (arg === '--json') {
             result.flags.json = true;
+            continue;
+        }
+        if (arg === '--yes' || arg === '-y') {
+            result.flags.yes = true;
             continue;
         }
         if (arg === '--custom' || arg === '-custom') {
@@ -119,6 +125,49 @@ function hasErrors(problems) {
     return problems.some((p) => p && p.severity === 'error');
 }
 
+function promptConfirm(message) {
+    return new Promise((resolve) => {
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        });
+        rl.question(message, (answer) => {
+            rl.close();
+            resolve(String(answer || '').trim());
+        });
+    });
+}
+
+async function confirmCustomValidation(flags) {
+    if (!flags.custom || flags.yes) {
+        return true;
+    }
+
+    const warning = [
+        'Custom validation runs JavaScript from the provided script.',
+        'Only continue if you trust the author of this custom validation file.',
+        'Continue custom validation? [Y/N] '
+    ].join('\n');
+
+    if (!process.stdin.isTTY || !process.stdout.isTTY) {
+        process.stderr.write(
+            'Custom validation confirmation is required in interactive mode. ' +
+            'Re-run with -y/--yes to skip confirmation.\n'
+        );
+        process.exitCode = 2;
+        return false;
+    }
+
+    const response = await promptConfirm(warning);
+    if (response.toUpperCase() !== 'Y') {
+        process.stderr.write('Custom validation cancelled.\n');
+        process.exitCode = 2;
+        return false;
+    }
+
+    return true;
+}
+
 async function readInput(filePath) {
     if (!filePath || filePath === '-') {
         return readStdin();
@@ -142,6 +191,10 @@ async function handleValidate(filePath, flags) {
     if (!filePath) {
         process.stderr.write('Missing file path.\n');
         printHelp(2);
+        return;
+    }
+
+    if (!(await confirmCustomValidation(flags))) {
         return;
     }
 

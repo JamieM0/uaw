@@ -142,7 +142,8 @@ function run() {
             '--custom-catalog',
             catalogPath,
             docPath,
-            '--json'
+            '--json',
+            '-y'
         ], { encoding: 'utf8' });
 
         assert.equal(result.status, 1);
@@ -186,7 +187,8 @@ function run() {
             '--custom',
             customPath,
             docPath,
-            '--json'
+            '--json',
+            '-y'
         ], { encoding: 'utf8' });
 
         assert.equal(result.status, 0);
@@ -238,12 +240,157 @@ function run() {
             '--custom',
             customPath,
             docPath,
-            '--json'
+            '--json',
+            '-y'
         ], { encoding: 'utf8' });
 
         assert.equal(result.status, 1);
         const output = JSON.parse(result.stdout);
         assert.equal(output.some((p) => p.metric_id === 'custom.constraint.utc_timezone' && p.severity === 'error'), true);
+    }
+
+    // 7) Security: malicious custom code calling process.exit() must not kill parent process
+    {
+        const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'workspec-selftest-'));
+        const docPath = path.join(fixtureDir, 'sample.workspec.json');
+        const customPath = path.join(fixtureDir, 'malicious-exit.js');
+        const cliPath = path.join(__dirname, '..', 'bin', 'workspec.js');
+
+        const doc = baseDoc();
+        fs.writeFileSync(docPath, JSON.stringify(doc, null, 2), 'utf8');
+        fs.writeFileSync(customPath, [
+            'function validateEvil(metric) {',
+            '    process.exit(42);',
+            '}',
+            ''
+        ].join('\n'), 'utf8');
+
+        const result = spawnSync(process.execPath, [
+            cliPath,
+            'validate',
+            '--custom',
+            customPath,
+            docPath,
+            '--json',
+            '-y'
+        ], { encoding: 'utf8' });
+
+        assert.equal(result.status, 2);
+        assert.equal(result.stderr.includes('Custom validation failed:'), true);
+    }
+
+    // 8) Security: require explicit confirmation for custom validators in non-interactive mode
+    {
+        const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'workspec-selftest-'));
+        const docPath = path.join(fixtureDir, 'sample.workspec.json');
+        const customPath = path.join(fixtureDir, 'safe-custom.js');
+        const cliPath = path.join(__dirname, '..', 'bin', 'workspec.js');
+
+        const doc = baseDoc();
+        fs.writeFileSync(docPath, JSON.stringify(doc, null, 2), 'utf8');
+        fs.writeFileSync(customPath, 'function validateOk(metric) { return []; }\\n', 'utf8');
+
+        const result = spawnSync(process.execPath, [
+            cliPath,
+            'validate',
+            '--custom',
+            customPath,
+            docPath,
+            '--json'
+        ], { encoding: 'utf8' });
+
+        assert.equal(result.status, 2);
+        assert.equal(result.stderr.includes('Re-run with -y/--yes to skip confirmation'), true);
+    }
+
+    // 9) Security: enforce validate* allowlist for catalog function names
+    {
+        const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'workspec-selftest-'));
+        const docPath = path.join(fixtureDir, 'sample.workspec.json');
+        const customPath = path.join(fixtureDir, 'catalog-function-name.js');
+        const catalogPath = path.join(fixtureDir, 'metrics-catalog-custom.json');
+        const cliPath = path.join(__dirname, '..', 'bin', 'workspec.js');
+
+        const doc = baseDoc();
+        fs.writeFileSync(docPath, JSON.stringify(doc, null, 2), 'utf8');
+        fs.writeFileSync(customPath, [
+            'function anythingGoes(metric) {',
+            '    return [];',
+            '}',
+            ''
+        ].join('\n'), 'utf8');
+        fs.writeFileSync(catalogPath, JSON.stringify([
+            {
+                id: 'custom.bad_function_name',
+                function: 'anythingGoes',
+                params: {}
+            }
+        ], null, 2), 'utf8');
+
+        const result = spawnSync(process.execPath, [
+            cliPath,
+            'validate',
+            '--custom',
+            customPath,
+            '--custom-catalog',
+            catalogPath,
+            docPath,
+            '--json',
+            '-y'
+        ], { encoding: 'utf8' });
+
+        assert.equal(result.status, 1);
+        const output = JSON.parse(result.stdout);
+        assert.equal(output.some((p) => p.metric_id === 'custom.bad_function_name' && p.detail.includes('Invalid custom validation function name')), true);
+    }
+
+    // 10) Security: reject relative path traversal in --custom and --custom-catalog
+    {
+        const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'workspec-selftest-'));
+        const subdir = path.join(fixtureDir, 'sandbox');
+        fs.mkdirSync(subdir);
+
+        const docPath = path.join(subdir, 'sample.workspec.json');
+        const customPath = path.join(fixtureDir, 'outside-custom.js');
+        const catalogPath = path.join(fixtureDir, 'outside-catalog.json');
+        const cliPath = path.join(__dirname, '..', 'bin', 'workspec.js');
+
+        const doc = baseDoc();
+        fs.writeFileSync(docPath, JSON.stringify(doc, null, 2), 'utf8');
+        fs.writeFileSync(customPath, 'function validateAllowed() { return []; }\n', 'utf8');
+        fs.writeFileSync(catalogPath, '[]\n', 'utf8');
+
+        const resultCustom = spawnSync(process.execPath, [
+            cliPath,
+            'validate',
+            '--custom',
+            '../outside-custom.js',
+            'sample.workspec.json',
+            '--json',
+            '-y'
+        ], {
+            cwd: subdir,
+            encoding: 'utf8'
+        });
+        assert.equal(resultCustom.status, 2);
+        assert.equal(resultCustom.stderr.includes('path traversal segments'), true);
+
+        const resultCatalog = spawnSync(process.execPath, [
+            cliPath,
+            'validate',
+            '--custom',
+            customPath,
+            '--custom-catalog',
+            '../outside-catalog.json',
+            docPath,
+            '--json',
+            '-y'
+        ], {
+            cwd: subdir,
+            encoding: 'utf8'
+        });
+        assert.equal(resultCatalog.status, 2);
+        assert.equal(resultCatalog.stderr.includes('path traversal segments'), true);
     }
 
     process.stdout.write('✓ workspec-validator self-test passed\n');
