@@ -9,18 +9,23 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const pairs = [
     {
         a: path.join(repoRoot, 'packages', 'workspec', 'workspec-validator.js'),
-        b: path.join(repoRoot, 'web', 'assets', 'js', 'workspec-validator.js'),
+        b: path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-validator.js'),
         label: 'workspec-validator.js'
     },
     {
         a: path.join(repoRoot, 'packages', 'workspec', 'workspec-migrate-v1-to-v2.js'),
-        b: path.join(repoRoot, 'web', 'assets', 'js', 'workspec-migrate-v1-to-v2.js'),
+        b: path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-migrate-v1-to-v2.js'),
         label: 'workspec-migrate-v1-to-v2.js'
     },
     {
         a: path.join(repoRoot, 'packages', 'workspec', 'v2.0.schema.json'),
+        b: path.join(repoRoot, 'web', 'packages', 'workspec', 'v2.0.schema.json'),
+        label: 'packages/workspec/v2.0.schema.json'
+    },
+    {
+        a: path.join(repoRoot, 'packages', 'workspec', 'v2.0.schema.json'),
         b: path.join(repoRoot, 'web', 'workspec', 'v2.0.schema.json'),
-        label: 'v2.0.schema.json'
+        label: 'workspec/v2.0.schema.json'
     }
 ];
 
@@ -49,4 +54,3 @@ function main() {
 }
 
 main();
-

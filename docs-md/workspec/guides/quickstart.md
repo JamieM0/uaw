@@ -76,6 +76,7 @@ Create a minimal valid WorkSpec v2.0 document, validate it, and iterate.
 
 ## Next steps
 
+- Custom validation via CLI: [/docs/workspec/guides/custom-validation-cli](/docs/workspec/guides/custom-validation-cli)
 - Object model: [/docs/workspec/specification/v2.0/objects](/docs/workspec/specification/v2.0/objects)
 - Task model: [/docs/workspec/specification/v2.0/tasks](/docs/workspec/specification/v2.0/tasks)
 - Interaction system: [/docs/workspec/specification/v2.0/interactions](/docs/workspec/specification/v2.0/interactions)

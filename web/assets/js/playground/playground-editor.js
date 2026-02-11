@@ -703,9 +703,28 @@ require(["vs/editor/editor.main"], function () {
     });
 
     // Best-effort: wire WorkSpec v2 JSON Schema for autocomplete + validation.
-    // (Schema lives in this repo at /workspec/v2.0.schema.json for offline use.)
-    fetch('/workspec/v2.0.schema.json')
-        .then((res) => (res && res.ok) ? res.json() : null)
+    // Prefer the package mirror path, with legacy fallback.
+    const schemaCandidates = [
+        '/packages/workspec/v2.0.schema.json',
+        '/workspec/v2.0.schema.json'
+    ];
+
+    function fetchFirstSchema(urls) {
+        if (!Array.isArray(urls) || urls.length === 0) {
+            return Promise.resolve(null);
+        }
+
+        const [first, ...rest] = urls;
+        return fetch(first)
+            .then((res) => (res && res.ok) ? res.json() : null)
+            .then((schema) => {
+                if (schema) return schema;
+                return fetchFirstSchema(rest);
+            })
+            .catch(() => fetchFirstSchema(rest));
+    }
+
+    fetchFirstSchema(schemaCandidates)
         .then((schema) => {
             if (!schema) return;
             monaco.languages.json.jsonDefaults.setDiagnosticsOptions({

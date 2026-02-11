@@ -1258,6 +1258,75 @@ body {
     width: 90%;
 }
 
+#workspec-migration-modal .dialog {
+    max-width: 680px;
+    width: min(92vw, 680px);
+}
+
+.workspec-migration-dialog {
+    position: relative;
+    padding: 2.1rem;
+    border: 1px solid rgba(var(--primary-color-rgb), 0.24);
+    border-radius: 14px;
+    box-shadow: 0 24px 56px rgba(15, 38, 62, 0.22);
+    background:
+        radial-gradient(circle at top right, rgba(var(--primary-color-rgb), 0.08), transparent 48%),
+        #fff;
+}
+
+#workspec-migration-modal {
+    backdrop-filter: blur(2px);
+}
+
+.workspec-migration-dialog h3 {
+    margin: 0 0 0.9rem 0;
+    color: var(--primary-color);
+    font-size: clamp(1.28rem, 1.7vw, 1.5rem);
+    letter-spacing: -0.015em;
+}
+
+.workspec-migration-dialog p {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--text-color);
+}
+
+.workspec-migration-links {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+}
+
+.workspec-migration-links a {
+    display: block;
+    text-decoration: none;
+    background: linear-gradient(180deg, #fbfdff 0%, #f5f9ff 100%);
+    border: 1px solid rgba(var(--primary-color-rgb), 0.26);
+    border-radius: 10px;
+    color: var(--primary-color);
+    font-weight: 600;
+    padding: 0.75rem 0.9rem;
+    transition: background-color var(--transition-normal), border-color var(--transition-normal), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.workspec-migration-links a:hover {
+    background: rgba(var(--primary-color-rgb), 0.12);
+    border-color: rgba(var(--primary-color-rgb), 0.48);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.workspec-migration-actions {
+    margin-top: 1.25rem;
+    justify-content: flex-end;
+}
+
+@media (max-width: 640px) {
+    .workspec-migration-dialog {
+        padding: 1.35rem;
+    }
+}
+
 #add-task-modal .modal-content,
 #add-object-modal .modal-content {
     width: 100%;
@@ -3451,7 +3520,8 @@ body.theme-switching * {
 /* Modal-specific Dark Mode Styles */
 [data-theme="dark"] #add-object-modal .dialog,
 [data-theme="dark"] #add-task-modal .dialog,
-[data-theme="dark"] #feedback-modal .dialog {
+[data-theme="dark"] #feedback-modal .dialog,
+[data-theme="dark"] #workspec-migration-modal .dialog {
     background: var(--bg-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
@@ -3462,6 +3532,24 @@ body.theme-switching * {
 [data-theme="dark"] #feedback-modal .feedback-form {
     background: var(--bg-color);
     color: var(--text-color);
+}
+
+[data-theme="dark"] #workspec-migration-modal .workspec-migration-dialog {
+    border-color: rgba(74, 159, 219, 0.35);
+}
+
+[data-theme="dark"] #workspec-migration-modal .workspec-migration-dialog h3,
+[data-theme="dark"] #workspec-migration-modal .workspec-migration-links a {
+    color: #7bc6ff;
+}
+
+[data-theme="dark"] #workspec-migration-modal .workspec-migration-links a {
+    background: rgba(74, 159, 219, 0.1);
+    border-color: rgba(74, 159, 219, 0.45);
+}
+
+[data-theme="dark"] #workspec-migration-modal .workspec-migration-links a:hover {
+    background: rgba(74, 159, 219, 0.2);
 }
 
 [data-theme="dark"] #add-object-modal .form-group,
@@ -3680,7 +3768,8 @@ body.theme-switching * {
 /* Dialog buttons dark mode for modals */
 [data-theme="dark"] #add-object-modal .dialog-buttons .btn-secondary,
 [data-theme="dark"] #add-task-modal .dialog-buttons .btn-secondary,
-[data-theme="dark"] #feedback-modal .feedback-actions .btn-secondary {
+[data-theme="dark"] #feedback-modal .feedback-actions .btn-secondary,
+[data-theme="dark"] #workspec-migration-modal .dialog-buttons .btn-secondary {
     background: var(--bg-light);
     color: var(--text-color);
     border-color: var(--border-color);
@@ -3688,14 +3777,16 @@ body.theme-switching * {
 
 [data-theme="dark"] #add-object-modal .dialog-buttons .btn-secondary:hover,
 [data-theme="dark"] #add-task-modal .dialog-buttons .btn-secondary:hover,
-[data-theme="dark"] #feedback-modal .feedback-actions .btn-secondary:hover {
+[data-theme="dark"] #feedback-modal .feedback-actions .btn-secondary:hover,
+[data-theme="dark"] #workspec-migration-modal .dialog-buttons .btn-secondary:hover {
     background: var(--bg-hover);
     border-color: var(--primary-color);
 }
 
 [data-theme="dark"] #add-object-modal .dialog-buttons .btn-primary,
 [data-theme="dark"] #add-task-modal .dialog-buttons .btn-primary,
-[data-theme="dark"] #feedback-modal .feedback-actions .btn-primary {
+[data-theme="dark"] #feedback-modal .feedback-actions .btn-primary,
+[data-theme="dark"] #workspec-migration-modal .dialog-buttons .btn-primary {
     background: var(--primary-color);
     color: white;
     border-color: var(--primary-color);
@@ -3703,7 +3794,8 @@ body.theme-switching * {
 
 [data-theme="dark"] #add-object-modal .dialog-buttons .btn-primary:hover,
 [data-theme="dark"] #add-task-modal .dialog-buttons .btn-primary:hover,
-[data-theme="dark"] #feedback-modal .feedback-actions .btn-primary:hover {
+[data-theme="dark"] #feedback-modal .feedback-actions .btn-primary:hover,
+[data-theme="dark"] #workspec-migration-modal .dialog-buttons .btn-primary:hover {
     background: var(--primary-dark);
     border-color: var(--primary-dark);
 }
@@ -3726,4 +3818,3 @@ body.theme-switching * {
     color: var(--error-color);
     border-color: var(--error-color);
 }
-

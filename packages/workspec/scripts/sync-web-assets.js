@@ -9,11 +9,15 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const mappings = [
     {
         source: path.join(repoRoot, 'packages', 'workspec', 'workspec-validator.js'),
-        destination: path.join(repoRoot, 'web', 'assets', 'js', 'workspec-validator.js')
+        destination: path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-validator.js')
     },
     {
         source: path.join(repoRoot, 'packages', 'workspec', 'workspec-migrate-v1-to-v2.js'),
-        destination: path.join(repoRoot, 'web', 'assets', 'js', 'workspec-migrate-v1-to-v2.js')
+        destination: path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-migrate-v1-to-v2.js')
+    },
+    {
+        source: path.join(repoRoot, 'packages', 'workspec', 'v2.0.schema.json'),
+        destination: path.join(repoRoot, 'web', 'packages', 'workspec', 'v2.0.schema.json')
     },
     {
         source: path.join(repoRoot, 'packages', 'workspec', 'v2.0.schema.json'),
@@ -48,4 +52,3 @@ function main() {
 }
 
 main();
-

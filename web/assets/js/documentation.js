@@ -40,6 +40,10 @@ function generateDocsStructure() {
 
             makeSection("Guides", "workspec-guides", [
                 makePage("Quickstart", "/docs/workspec/guides/quickstart"),
+                makePage(
+                    "Custom Validation (CLI)",
+                    "/docs/workspec/guides/custom-validation-cli",
+                ),
                 makePage("Migration", "/docs/workspec/guides/migration"),
                 makePage("AI Generation", "/docs/workspec/guides/ai-generation"),
                 makePage("Cookbook", "/docs/workspec/guides/cookbook"),

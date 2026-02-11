@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkSpec CLI: Custom Validation (Simple Guide) - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/">Workspec</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/guides/">Guides</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">WorkSpec CLI: Custom Validation (Simple Guide)</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">WorkSpec CLI: Custom Validation (Simple Guide)</h1>
+                            
+                            <p class="docs-page-subtitle">Use this when you want to run your own checks on a WorkSpec file.</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>Use this when you want to run your own checks on a WorkSpec file.</p>
+<p>You always need:</p>
+<ol class="docs-list docs-list-ordered">
+<li>A JavaScript file with your check function(s).</li>
+</ol>
+<p>You may also use:</p>
+<ol class="docs-list docs-list-ordered" start="2">
+<li>A small JSON catalog.</li>
+</ol>
+<p>The catalog is optional. Use it only when you want to run specific functions.</p>
+<h2 class="docs-heading" id="1-create-custom-validationjs">1) Create <code class="docs-inline-code">custom-validation.js</code><a class="headerlink" href="#1-create-custom-validationjs" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="kd">function</span><span class="w"> </span><span class="nx">validateMinimumTaskCount</span><span class="p">(</span><span class="nx">metric</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">simulation</span><span class="o">?</span><span class="p">.</span><span class="nx">process</span><span class="o">?</span><span class="p">.</span><span class="nx">tasks</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">[];</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">minCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">metric</span><span class="o">?</span><span class="p">.</span><span class="nx">params</span><span class="o">?</span><span class="p">.</span><span class="nx">min_count</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="mf">1</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">tasks</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nx">minCount</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">addResult</span><span class="p">({</span>
+<span class="w">            </span><span class="nx">metricId</span><span class="o">:</span><span class="w"> </span><span class="nx">metric</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span>
+<span class="w">            </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s2">"error"</span><span class="p">,</span>
+<span class="w">            </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="sb">`Expected at least </span><span class="si">${</span><span class="nx">minCount</span><span class="si">}</span><span class="sb"> task(s), found </span><span class="si">${</span><span class="nx">tasks</span><span class="p">.</span><span class="nx">length</span><span class="si">}</span><span class="sb">.`</span>
+<span class="w">        </span><span class="p">});</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">addResult</span><span class="p">({</span>
+<span class="w">        </span><span class="nx">metricId</span><span class="o">:</span><span class="w"> </span><span class="nx">metric</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s2">"success"</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="s2">"Task count is OK."</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 class="docs-heading" id="2-run-with-auto-discovery-no-catalog">2) Run with auto-discovery (no catalog)<a class="headerlink" href="#2-run-with-auto-discovery-no-catalog" title="Link to this section">¶</a></h2>
+<p>If you do not pass a catalog, WorkSpec auto-discovers functions in your JavaScript file that start with <code class="docs-inline-code">validate</code>.</p>
+<div class="codehilite"><pre><span></span><code class="language-text">workspec<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--custom<span class="w"> </span>./custom-validation.js<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>./my-file.workspec.json
+</code></pre></div>
+<h2 class="docs-heading" id="3-optional-create-metrics-catalog-customjson">3) Optional: create <code class="docs-inline-code">metrics-catalog-custom.json</code><a class="headerlink" href="#3-optional-create-metrics-catalog-customjson" title="Link to this section">¶</a></h2>
+<p>Use a catalog only when you want to run selected functions (instead of every discovered <code class="docs-inline-code">validate...</code> function).</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"custom.minimum_task_count"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Minimum Task Count"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"custom"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"validation_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"computational"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"validateMinimumTaskCount"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"params"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"min_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</code></pre></div>
+<h2 class="docs-heading" id="4-run-validation-with-a-catalog">4) Run validation with a catalog<a class="headerlink" href="#4-run-validation-with-a-catalog" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text">workspec<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--custom<span class="w"> </span>./custom-validation.js<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--custom-catalog<span class="w"> </span>./metrics-catalog-custom.json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>./my-file.workspec.json
+</code></pre></div>
+<h2 class="docs-heading" id="what-this-does">What this does<a class="headerlink" href="#what-this-does" title="Link to this section">¶</a></h2>
+<ul class="docs-list">
+<li>Runs normal WorkSpec validation first.</li>
+<li>Runs your custom check(s) after that.</li>
+<li>Returns exit code <code class="docs-inline-code">0</code> if there are no errors.</li>
+<li>Returns exit code <code class="docs-inline-code">1</code> if there is at least one error.</li>
+</ul>
+<h2 class="docs-heading" id="notes">Notes<a class="headerlink" href="#notes" title="Link to this section">¶</a></h2>
+<ul class="docs-list">
+<li>Auto-discovery finds functions that start with <code class="docs-inline-code">validate</code>.</li>
+<li>The catalog is optional.</li>
+<li>Use a catalog when you want to run only specific functions.</li>
+<li>The catalog tells WorkSpec which function(s) to call.</li>
+<li>The JavaScript file contains the real check logic.</li>
+<li>If you do not pass <code class="docs-inline-code">--custom-catalog</code>, WorkSpec will try to load <code class="docs-inline-code">metrics-catalog-custom.json</code> from the same folder as your <code class="docs-inline-code">--custom</code> JavaScript file.</li>
+</ul>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

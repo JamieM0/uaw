@@ -609,22 +609,62 @@ class SpaceEditor {
             return;
         }
 
-        this.locations = layoutData.locations || [];
         this.pixelsPerMeter = layoutData.meta?.pixels_per_unit || 20;
-        
-        // Ensure all locations have depth property for 3D support
-        this.locations.forEach(loc => {
-            if (!loc.shape.depth) {
-                loc.shape.depth = 50; // Default depth
+
+        const defaultWidthPx = this.pixelsPerMeter * 5;
+        const defaultHeightPx = this.pixelsPerMeter * 3;
+        const defaultDepthPx = 50;
+        const locationGapPx = 20;
+
+        const toFiniteNumber = (value, fallback) => {
+            const numeric = Number(value);
+            return Number.isFinite(numeric) ? numeric : fallback;
+        };
+
+        const normalizeLocation = (loc, index) => {
+            const input = (loc && typeof loc === 'object') ? loc : {};
+            const shapeInput = (input.shape && typeof input.shape === 'object') ? input.shape : {};
+            const coordinates = (input.coordinates && typeof input.coordinates === 'object') ? input.coordinates : {};
+
+            const fallbackWidth = toFiniteNumber(coordinates.width, defaultWidthPx);
+            const fallbackHeight = toFiniteNumber(coordinates.height, defaultHeightPx);
+            const gridX = (index % 4) * (fallbackWidth + locationGapPx);
+            const gridY = Math.floor(index / 4) * (fallbackHeight + locationGapPx);
+
+            const shape = {
+                ...shapeInput,
+                type: (typeof shapeInput.type === 'string' && shapeInput.type.trim()) ? shapeInput.type : 'rect',
+                x: toFiniteNumber(shapeInput.x, toFiniteNumber(coordinates.x, gridX)),
+                y: toFiniteNumber(shapeInput.y, toFiniteNumber(coordinates.z, gridY)),
+                width: Math.max(1, toFiniteNumber(shapeInput.width, fallbackWidth)),
+                height: Math.max(1, toFiniteNumber(shapeInput.height, fallbackHeight)),
+                depth: Math.max(1, toFiniteNumber(shapeInput.depth, toFiniteNumber(coordinates.depth, defaultDepthPx)))
+            };
+
+            const id = (typeof input.id === 'string' && input.id.trim())
+                ? input.id
+                : `location_${index + 1}`;
+
+            const layer = (typeof input.layer === 'string' && input.layer.trim())
+                ? input.layer
+                : 'ground';
+
+            const normalized = {
+                ...input,
+                id,
+                name: (typeof input.name === 'string' && input.name.trim()) ? input.name : id,
+                shape,
+                layer
+            };
+
+            if (normalized.isTransition && !Array.isArray(normalized.transitionLayers)) {
+                normalized.transitionLayers = [layer];
             }
-            if (!loc.layer) {
-                loc.layer = "ground"; // Default layer (string)
-            }
-            // Initialize transition layers for transition zones
-            if (loc.isTransition && !loc.transitionLayers) {
-                loc.transitionLayers = [loc.layer || "ground"];
-            }
-        });
+
+            return normalized;
+        };
+
+        this.locations = (layoutData.locations || []).map((loc, index) => normalizeLocation(loc, index));
 
         this.world.innerHTML = ''; // Clear only the world container
         this.locations.forEach(loc => this.createRectElement(loc));

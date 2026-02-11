@@ -21,3 +21,22 @@ __pycache__/
 web/.gemini-clipboard/
 
 .vscode/
+
+packages/node_modules/
+
+.agents/
+
+marketing/Presentation2/node_modules/
+
+marketing/Presentation1/node_modules/
+
+marketing/Presentation3/node_modules/
+
+# Ignore build/dependency directories anywhere in the repo
+**/node_modules/
+**/dist/
+
+# Local package test fixtures (not for git or npm publish)
+packages/workspec/test/
+
+marketing/

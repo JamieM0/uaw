@@ -1,21 +1,53 @@
 // Playground Validation - Validation display and filtering
 // Universal Automation Wiki - Simulation Playground
 
+function normalizeValidationResults(results) {
+    const arr = Array.isArray(results) ? results.filter((r) => r && typeof r === 'object') : [];
+    if (arr.length === 0) return [];
+
+    const hasAnyIssues = arr.some((r) => r.status !== 'success');
+    if (hasAnyIssues || arr.length > 1) {
+        // "workspec.validation.ok" is a derived summary; never show it alongside any other result.
+        return arr.filter((r) => r.metricId !== 'workspec.validation.ok');
+    }
+
+    return arr;
+}
+
+const loggedUnknownMetricIds = new Set();
+
+function formatMetricIdFallback(metricId) {
+    if (metricId === 'workspec.validation.ok') {
+        return 'WorkSpec Validation';
+    }
+
+    if (typeof metricId !== 'string' || !metricId.trim()) {
+        return 'Unknown Metric';
+    }
+
+    return metricId
+        .split('.')
+        .map((part) => part.replace(/_/g, ' '))
+        .join(' > ');
+}
+
 // Display validation results
 function displayValidationResults(results) {
     // Use the new grouped validation display
+    const normalizedResults = normalizeValidationResults(results);
     try {
         window.__uawValidationResultsCache = {
             timestamp: Date.now(),
-            results: Array.isArray(results) ? [...results] : [],
+            results: [...normalizedResults],
         };
     } catch (error) {
         console.warn('SmartActions: failed to cache validation results.', error);
     }
-    displayGroupedValidationResults(results);
+    displayGroupedValidationResults(normalizedResults);
 }
 
 function displayGroupedValidationResults(results) {
+    results = normalizeValidationResults(results);
     const compactContainer = document.getElementById("validation-compact");
     if (!compactContainer) {
         console.warn('Validation compact container not found in DOM');
@@ -194,6 +226,7 @@ function displayValidationGroup(groupId, results, icon, collapsedByDefault = fal
             contentElement.classList.remove('collapsed');
         }
     } else {
+        contentElement.innerHTML = '';
         groupElement.style.display = 'none';
     }
 }
@@ -208,8 +241,11 @@ function getMetricDisplayName(metricId, mergedCatalog = null) {
     const metric = mergedCatalog.find(m => m.id === metricId);
 
     if (!metric) {
-        console.warn(`Metric not found in catalog: ${metricId}`);
-        return metricId;
+        if (!loggedUnknownMetricIds.has(metricId)) {
+            loggedUnknownMetricIds.add(metricId);
+            console.info(`Metric not found in catalog, using fallback display: ${metricId}`);
+        }
+        return formatMetricIdFallback(metricId);
     }
 
     // For custom metrics, show ID; for built-in, show name

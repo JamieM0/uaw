@@ -626,8 +626,31 @@
         const world = isPlainObject(simulation.world) ? simulation.world : {};
         const process = isPlainObject(simulation.process) ? simulation.process : {};
 
-        const objects = Array.isArray(world.objects) ? world.objects : null;
-        if (!objects) {
+        const legacyLayout = isPlainObject(simulation.layout) ? simulation.layout : null;
+        const legacyObjects = Array.isArray(simulation.objects) ? simulation.objects : null;
+        const legacyTasks = Array.isArray(simulation.tasks) ? simulation.tasks : null;
+        const legacyRecipes = isPlainObject(simulation.recipes) ? simulation.recipes : null;
+
+        const objectsFromWorld = Array.isArray(world.objects) ? world.objects : null;
+        const tasksFromProcess = Array.isArray(process.tasks) ? process.tasks : null;
+        const layoutForLocations = isPlainObject(world.layout) ? world.layout : (legacyLayout || {});
+
+        const objects = (objectsFromWorld && objectsFromWorld.length > 0)
+            ? objectsFromWorld
+            : (legacyObjects || objectsFromWorld);
+        const tasks = (tasksFromProcess && tasksFromProcess.length > 0)
+            ? tasksFromProcess
+            : (legacyTasks || tasksFromProcess);
+
+        const objectsBasePtr = (objects === objectsFromWorld)
+            ? ['simulation', 'world', 'objects']
+            : ['simulation', 'objects'];
+        const tasksBasePtr = (tasks === tasksFromProcess)
+            ? ['simulation', 'process', 'tasks']
+            : ['simulation', 'tasks'];
+        const tasksBaseInstance = toJsonPointer(tasksBasePtr);
+
+        if (!objectsFromWorld) {
             problems.push(buildProblem(
                 'schema.integrity.invalid_world_objects',
                 'error',
@@ -639,8 +662,7 @@
             ));
         }
 
-        const tasks = Array.isArray(process.tasks) ? process.tasks : null;
-        if (!tasks) {
+        if (!tasksFromProcess) {
             problems.push(buildProblem(
                 'schema.integrity.invalid_process_tasks',
                 'error',
@@ -659,7 +681,7 @@
 
         const typeDefinitions = isPlainObject(simulation.type_definitions) ? simulation.type_definitions : null;
         const locationIds = new Set();
-        const locations = world.layout?.locations;
+        const locations = layoutForLocations?.locations;
         if (Array.isArray(locations)) {
             for (let i = 0; i < locations.length; i += 1) {
                 const loc = locations[i];
@@ -675,7 +697,7 @@
 
         for (let i = 0; i < objects.length; i += 1) {
             const obj = objects[i];
-            const objPtr = ['simulation', 'world', 'objects', i];
+            const objPtr = objectsBasePtr.concat([i]);
 
             if (!isPlainObject(obj)) {
                 problems.push(buildProblem(
@@ -854,11 +876,30 @@
         const taskMillis = new Map(); // id -> { startMillis, endMillis } (for datetime tasks)
 
         const referencedObjectIds = new Set();
-        const recipeDefinitions = isPlainObject(process.recipes) ? process.recipes : null;
+        const recipeDefinitions = isPlainObject(process.recipes)
+            ? process.recipes
+            : (legacyRecipes || null);
+
+        // Object lifecycle (create/delete): allow references to objects created via action:create.
+        // Temporal existence checks are performed later using chronological replay.
+        const createdObjectIds = new Set();
+        for (let i = 0; i < tasks.length; i += 1) {
+            const task = tasks[i];
+            if (!isPlainObject(task) || !Array.isArray(task.interactions)) continue;
+            for (let j = 0; j < task.interactions.length; j += 1) {
+                const interaction = task.interactions[j];
+                if (!isPlainObject(interaction)) continue;
+                if (safeTrim(interaction.action) !== 'create') continue;
+                if (!isPlainObject(interaction.object)) continue;
+                const createdId = safeTrim(interaction.object.id);
+                if (createdId) createdObjectIds.add(createdId);
+            }
+        }
+        const knownObjectIds = new Set([...objectIds, ...createdObjectIds]);
 
         for (let i = 0; i < tasks.length; i += 1) {
             const task = tasks[i];
-            const taskPtr = ['simulation', 'process', 'tasks', i];
+            const taskPtr = tasksBasePtr.concat([i]);
 
             if (!isPlainObject(task)) {
                 problems.push(buildProblem(
@@ -928,7 +969,7 @@
                     { task_id: rawId },
                     ['Set actor_id to an existing performer object id (actor, equipment, or service).']
                 ));
-            } else if (!objectIds.has(rawActorId)) {
+            } else if (!knownObjectIds.has(rawActorId)) {
                 problems.push(buildProblem(
                     'task.reference.invalid_actor',
                     'error',
@@ -936,9 +977,9 @@
                     `Task '${rawId}' references unknown actor_id '${rawActorId}'.`,
                     toJsonPointer(taskPtr.concat(['actor_id'])),
                     { task_id: rawId, actor_id: rawActorId },
-                    ['Fix the actor_id to match an object id in simulation.world.objects.', 'Add the missing object to world.objects.']
+                    ['Fix the actor_id to match an object id in simulation.world.objects.', 'Add the missing object to world.objects.', 'Or create the object earlier via action:create.']
                 ));
-            } else if (!isPerformerType(objectTypeById.get(rawActorId), typeDefinitions)) {
+            } else if (objectTypeById.has(rawActorId) && !isPerformerType(objectTypeById.get(rawActorId), typeDefinitions)) {
                 problems.push(buildProblem(
                     'task.reference.invalid_actor',
                     'error',
@@ -1180,7 +1221,7 @@
 
                     if (safeTrim(targetId)) {
                         referencedObjectIds.add(targetId);
-                        if (!objectIds.has(targetId)) {
+                        if (!knownObjectIds.has(targetId)) {
                             problems.push(buildProblem(
                                 'task.integrity.invalid_object_reference',
                                 'error',
@@ -1236,7 +1277,7 @@
                         'error',
                         'Invalid Dependency Reference',
                         `Task '${rawId}' depends_on references unknown task '${depId}'.`,
-                        toJsonPointer(['simulation', 'process', 'tasks', i, 'depends_on']),
+                        toJsonPointer(tasksBasePtr.concat([i, 'depends_on'])),
                         { task_id: rawId, dependency_id: depId },
                         ['Fix the dependency id (typo), or add the missing task.']
                     ));
@@ -1284,7 +1325,7 @@
                         'error',
                         'Circular Dependencies',
                         `Circular dependency detected: ${cycle.join(' -> ')}`,
-                        '/simulation/process/tasks',
+                        tasksBaseInstance,
                         { cycle },
                         ['Break the cycle by removing or rewriting one of the depends_on references.']
                     ));
@@ -1299,6 +1340,159 @@
 
         for (const id of taskIds) {
             if ((visitState.get(id) || 0) === 0) dfs(id);
+        }
+
+        // Object lifecycle semantics (best-effort):
+        // - Objects created via action:create become valid targets after the create interaction runs.
+        // - References to objects after action:delete must error.
+        //
+        // Evaluated by replaying create/delete interactions in chronological order (task start time).
+        try {
+            const tasksInOrderForLifecycle = [...taskTiming.entries()]
+                .map(([taskId, timing]) => ({ taskId, ...timing }))
+                .sort((a, b) => (a.startMinutes - b.startMinutes) || (a.index - b.index));
+
+            const existing = new Set(objectIds); // objects currently "alive" at this point in time
+            const everDefined = new Set(objectIds); // enforce unique IDs across the whole simulation
+            const deletedBy = new Map(); // objectId -> { task_id, start_minutes }
+            let pendingEndEvents = []; // { time, kind: 'create'|'delete', object_id, task_id, order }
+
+            function applyEndEvents(upToTime) {
+                if (pendingEndEvents.length === 0) return;
+                const due = pendingEndEvents.filter((e) => typeof e.time === 'number' && e.time <= upToTime);
+                if (due.length === 0) return;
+                pendingEndEvents = pendingEndEvents.filter((e) => !(typeof e.time === 'number' && e.time <= upToTime));
+
+                due.sort((a, b) => (a.time - b.time) || (a.order - b.order));
+                for (const event of due) {
+                    if (event.kind === 'create') {
+                        existing.add(event.object_id);
+                        deletedBy.delete(event.object_id);
+                    } else if (event.kind === 'delete') {
+                        existing.delete(event.object_id);
+                        deletedBy.set(event.object_id, { task_id: event.task_id, start_minutes: event.time });
+                    }
+                }
+            }
+
+            for (const entry of tasksInOrderForLifecycle) {
+                applyEndEvents(entry.startMinutes);
+
+                const task = taskById.get(entry.taskId);
+                if (!task) continue;
+                const taskIndex = taskIndexById.get(entry.taskId);
+                const taskPtr = tasksBasePtr.concat([typeof taskIndex === 'number' ? taskIndex : entry.index]);
+
+                const actorId = safeTrim(task.actor_id);
+                if (actorId && knownObjectIds.has(actorId) && !existing.has(actorId)) {
+                    const lastDelete = deletedBy.get(actorId);
+                    const detail = lastDelete
+                        ? `Task '${entry.taskId}' references '${actorId}' after it was deleted by task '${lastDelete.task_id}'.`
+                        : `Task '${entry.taskId}' references '${actorId}' before it is created.`;
+
+                    problems.push(buildProblem(
+                        'object.reference.lifecycle_violation',
+                        'error',
+                        'Object Lifecycle Violation',
+                        detail,
+                        toJsonPointer(taskPtr.concat(['actor_id'])),
+                        { task_id: entry.taskId, object_id: actorId, reference: 'actor_id', deleted_by: lastDelete ? lastDelete.task_id : null },
+                        ['Move the reference to after the object is created.', 'Or remove/replace the reference.', 'If this is meant to be permanent, remove temporary from the create/delete interaction.']
+                    ));
+                }
+
+                if (!Array.isArray(task.interactions)) continue;
+                for (let j = 0; j < task.interactions.length; j += 1) {
+                    const interaction = task.interactions[j];
+                    if (!isPlainObject(interaction)) continue;
+                    const interactionPtr = taskPtr.concat(['interactions', j]);
+
+                    const action = safeTrim(interaction.action);
+                    const isTemporary = interaction.temporary === true;
+
+                    if (action === 'create') {
+                        if (!isPlainObject(interaction.object)) continue;
+                        const createdId = safeTrim(interaction.object.id);
+                        if (!createdId) continue;
+
+                        if (everDefined.has(createdId)) {
+                            problems.push(buildProblem(
+                                'object.integrity.duplicate_object_id',
+                                'error',
+                                'Duplicate Object ID',
+                                `Task '${entry.taskId}' creates object id '${createdId}', but that id is already defined.`,
+                                toJsonPointer(interactionPtr.concat(['object', 'id'])),
+                                { task_id: entry.taskId, object_id: createdId },
+                                ['Use a unique id for the created object.', 'If you meant to modify an existing object, remove action:create and use property_changes.']
+                            ));
+                        } else {
+                            everDefined.add(createdId);
+                        }
+
+                        existing.add(createdId);
+                        deletedBy.delete(createdId);
+
+                        if (isTemporary && typeof entry.endMinutes === 'number' && Number.isFinite(entry.endMinutes)) {
+                            pendingEndEvents.push({
+                                time: entry.endMinutes,
+                                kind: 'delete',
+                                object_id: createdId,
+                                task_id: entry.taskId,
+                                order: (entry.index * 1000) + j
+                            });
+                        }
+
+                        continue;
+                    }
+
+                    const targetId = safeTrim(interaction.target_id);
+                    if (!targetId) continue;
+
+                    if (knownObjectIds.has(targetId) && !existing.has(targetId)) {
+                        const lastDelete = deletedBy.get(targetId);
+                        const detail = lastDelete
+                            ? `Task '${entry.taskId}' references '${targetId}' after it was deleted by task '${lastDelete.task_id}'.`
+                            : `Task '${entry.taskId}' references '${targetId}' before it is created.`;
+
+                        problems.push(buildProblem(
+                            'object.reference.lifecycle_violation',
+                            'error',
+                            'Object Lifecycle Violation',
+                            detail,
+                            toJsonPointer(interactionPtr.concat(['target_id'])),
+                            { task_id: entry.taskId, object_id: targetId, reference: 'target_id', deleted_by: lastDelete ? lastDelete.task_id : null },
+                            ['Move the reference to after the object is created.', 'Or remove/replace the reference.', 'If this is meant to be permanent, remove temporary from the create/delete interaction.']
+                        ));
+                    }
+
+                    if (action === 'delete') {
+                        if (existing.has(targetId)) {
+                            existing.delete(targetId);
+                            deletedBy.set(targetId, { task_id: entry.taskId, start_minutes: entry.startMinutes });
+
+                            if (isTemporary && typeof entry.endMinutes === 'number' && Number.isFinite(entry.endMinutes)) {
+                                pendingEndEvents.push({
+                                    time: entry.endMinutes,
+                                    kind: 'create',
+                                    object_id: targetId,
+                                    task_id: entry.taskId,
+                                    order: (entry.index * 1000) + j
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            problems.push(buildProblem(
+                'object.reference.lifecycle_validation_error',
+                'warning',
+                'Lifecycle Validation Error',
+                `Lifecycle validation encountered an internal error: ${error.message}`,
+                tasksBaseInstance,
+                { error: error.message },
+                ['Retry validation.', 'If this persists, simplify create/delete interactions or report a bug.']
+            ));
         }
 
         // Temporal scheduling checks (only for time/daytime tasks where we have minutes)
@@ -1324,7 +1518,7 @@
                         'error',
                         'Actor Overlap',
                         `Actor '${actorId}' has overlapping tasks: '${prev.taskId}' overlaps '${cur.taskId}'.`,
-                        '/simulation/process/tasks',
+                        tasksBaseInstance,
                         { actor_id: actorId, task_a: prev.taskId, task_b: cur.taskId },
                         ['Adjust start times/durations to remove the overlap.', 'Assign one task to a different performer object.']
                     ));
@@ -1369,7 +1563,7 @@
                     'error',
                     'Dependency Violation',
                     `Task '${id}' starts before its dependency condition is satisfied.`,
-                    toJsonPointer(['simulation', 'process', 'tasks', i, 'start']),
+                    toJsonPointer(tasksBasePtr.concat([i, 'start'])),
                     { task_id: id, start_minutes: timing.startMinutes, required_end_minutes: requiredEnd },
                     ['Move the task start time later.', 'Shorten dependency durations or adjust dependencies.']
                 ));
@@ -1420,7 +1614,7 @@
                             'warning',
                             'Recipe Violation',
                             `Task '${taskId}' produces '${productId}' but is missing required recipe inputs: ${missing.join(', ')}.`,
-                            toJsonPointer(['simulation', 'process', 'tasks', i]),
+                            toJsonPointer(tasksBasePtr.concat([i])),
                             { task_id: taskId, product_id: productId, missing_inputs: missing },
                             ['Add consumption interactions for the missing inputs.', 'Or update/remove the recipe if it does not apply.']
                         ));
@@ -1483,7 +1677,7 @@
                         'error',
                         'Negative Stock',
                         `Resource '${targetId}' goes negative (${before} -> ${after}) in task '${entry.taskId}'.`,
-                        '/simulation/process/tasks',
+                        tasksBaseInstance,
                         { task_id: entry.taskId, object_id: targetId, before, delta, after },
                         ['Increase the starting quantity for this resource.', 'Reduce consumption deltas, or add production earlier.']
                     ));
@@ -1588,7 +1782,7 @@
                     'info',
                     'Unused Resource',
                     `Resource '${id}' is defined but never used by any task.`,
-                    toJsonPointer(['simulation', 'world', 'objects', i]),
+                    toJsonPointer(objectsBasePtr.concat([i])),
                     { object_id: id },
                     ['Remove the unused resource, or add tasks/interactions that consume it.']
                 ));

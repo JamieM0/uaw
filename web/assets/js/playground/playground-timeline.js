@@ -112,7 +112,7 @@ let isResizing = false;
 let resizeType = null; // 'left' or 'right'
 let resizeHandle = null;
 let originalDuration = 0;
-let originalStartTime = null;
+let originalStartMinutes = null;
 let durationPreview = null;
 
 // Drag time preview variable
@@ -141,14 +141,43 @@ function throttle(func, delay) {
 }
 
 /**
- * Format time in minutes to HH:MM string
+ * Convert absolute minutes to WorkSpec day + time-of-day.
  * @param {number} minutes - Total minutes
- * @returns {string} Formatted time string
+ * @returns {{day:number,time:string,minutes_in_day:number}}
+ */
+function minutesToDayTime(minutes) {
+    const safeMinutes = (typeof minutes === 'number' && Number.isFinite(minutes)) ? minutes : 0;
+    const day = Math.floor(safeMinutes / 1440) + 1;
+    const minutesInDay = ((safeMinutes % 1440) + 1440) % 1440;
+    const hours = Math.floor(minutesInDay / 60);
+    const mins = Math.floor(minutesInDay % 60);
+    return {
+        day,
+        time: `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`,
+        minutes_in_day: minutesInDay
+    };
+}
+
+/**
+ * Format absolute minutes as a timeline label (avoids "33:00" style hours).
+ * @param {number} minutes - Total minutes
+ * @returns {string} Label like "09:30" or "Day 2 09:30"
  */
 function formatTimeFromMinutes(minutes) {
-    const hours = Math.floor(minutes / 60);
-    const mins = Math.floor(minutes % 60);
-    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+    const { day, time } = minutesToDayTime(minutes);
+    return day > 1 ? `Day ${day} ${time}` : time;
+}
+
+/**
+ * Format absolute minutes as a WorkSpec task.start value.
+ * - Day 1: "HH:MM"
+ * - Day 2+: { day: N, time: "HH:MM" }
+ * @param {number} minutes - Total minutes
+ * @returns {string|{day:number,time:string}}
+ */
+function formatWorkSpecStartFromMinutes(minutes) {
+    const { day, time } = minutesToDayTime(minutes);
+    return day > 1 ? { day, time } : time;
 }
 
 /**
@@ -297,9 +326,7 @@ function processSimulationData(simulationData) {
 
     // 1. Determine the actual visual start time (earliest task or config start)
     const visualStartTimeMinutes = actualFirstTaskStart;
-    const visualStartHour = Math.floor(visualStartTimeMinutes / 60);
-    const visualStartMin = visualStartTimeMinutes % 60;
-    const visualStartTimeStr = `${String(visualStartHour).padStart(2, "0")}:${String(visualStartMin).padStart(2, "0")}`;
+    const visualStartTimeStr = formatTimeFromMinutes(visualStartTimeMinutes);
 
     // 2. Determine the logical end time, including a small buffer for visuals.
     const logicalEndTime = actualLastTaskEnd + 30;
@@ -311,9 +338,7 @@ function processSimulationData(simulationData) {
 
     // 4. Calculate the end time string based on this visual duration.
     const visualEndTimeMinutes = visualStartTimeMinutes + visualTotalDuration;
-    const visualEndHour = Math.floor(visualEndTimeMinutes / 60);
-    const visualEndMin = visualEndTimeMinutes % 60;
-    const visualEndTimeStr = `${String(visualEndHour).padStart(2, "0")}:${String(visualEndMin).padStart(2, "0")}`;
+    const visualEndTimeStr = formatTimeFromMinutes(visualEndTimeMinutes);
 
     // --- END OF THE UNIFIED SCALING FIX ---
 
@@ -336,6 +361,7 @@ function processSimulationData(simulationData) {
             ...task,
             display_name: displayName,
             emoji: emoji,
+            start_display: formatTimeFromMinutes(task.start_minutes),
             // All percentages now use the same, consistent denominator and dynamic start time.
             start_percentage: ((task.start_minutes - visualStartTimeMinutes) / visualTotalDuration) * 100,
             duration_percentage: (task.duration / visualTotalDuration) * 100
@@ -729,10 +755,12 @@ function renderSimulation(skipJsonValidation = false) {
                 taskElement.className = "task-block";
                 taskElement.dataset.taskId = task.id;
                 taskElement.dataset.actorId = task.actor_id;
-                taskElement.dataset.start = task.start;
+                const startDisplay = task.start_display || task.start;
+                taskElement.dataset.start = startDisplay;
+                taskElement.dataset.startMinutes = String(task.start_minutes);
                 taskElement.dataset.duration = task.duration;
                 taskElement.setAttribute('role', 'button');
-                taskElement.setAttribute('aria-label', `Task: ${task.display_name}, ${task.duration} minutes, starts at ${task.start}`);
+                taskElement.setAttribute('aria-label', `Task: ${task.display_name}, ${task.duration} minutes, starts at ${startDisplay}`);
                 taskElement.setAttribute('tabindex', '0');
 
                 taskElement.style.cssText = `position: absolute; left: ${task.start_percentage}%; width: ${task.duration_percentage}%; height: 30px; top: 5px; background: var(--bg-color); color: var(--text-color); border: 2px solid var(--primary-color); border-radius: var(--border-radius-sm); font-size: 0.75rem; overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.5rem; user-select: none;`;
@@ -797,7 +825,7 @@ function renderSimulation(skipJsonValidation = false) {
                         timeIndicator.id = trackId;
                         timeIndicator.className = 'task-time-indicator';
                         timeIndicator.style.cssText = `position: absolute; top: -22px; left: ${task.start_percentage}%; background: #007bff; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; white-space: nowrap; pointer-events: none; z-index: 1001; box-shadow: 0 2px 4px rgba(0,0,0,0.2);`;
-                        timeIndicator.textContent = task.start;
+                        timeIndicator.textContent = task.start_display || task.start;
                         taskTrack.appendChild(timeIndicator);
                     }
                 });
@@ -818,7 +846,7 @@ function renderSimulation(skipJsonValidation = false) {
                     timeIndicator.id = `time-indicator-${task.id}`;
                     timeIndicator.className = 'task-time-indicator';
                     timeIndicator.style.cssText = `position: absolute; top: -22px; left: ${task.start_percentage}%; background: #007bff; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; white-space: nowrap; pointer-events: none; z-index: 1001; box-shadow: 0 2px 4px rgba(0,0,0,0.2);`;
-                    timeIndicator.textContent = task.start;
+                    timeIndicator.textContent = task.start_display || task.start;
                     taskTrack.appendChild(timeIndicator);
                 }
 
@@ -1027,7 +1055,10 @@ function handleMouseDown(e) {
             resizeType = isLeftEdge ? 'left' : 'right';
             resizeHandle = taskElement;
             originalDuration = parseInt(taskElement.dataset.duration);
-            originalStartTime = taskElement.dataset.start;
+            originalStartMinutes = Number.parseInt(taskElement.dataset.startMinutes, 10);
+            if (!Number.isFinite(originalStartMinutes)) {
+                originalStartMinutes = parseTimeToMinutes(taskElement.dataset.start);
+            }
             
             document.body.classList.add('resizing-active');
             resizeHandle.classList.add('resizing');
@@ -1066,7 +1097,11 @@ function handleMouseDown(e) {
             originalTaskData = {
                 taskId: taskElement.dataset.taskId,
                 actorId: taskElement.dataset.actorId,
-                start: taskElement.dataset.start,
+                startLabel: taskElement.dataset.start,
+                startMinutes: (() => {
+                    const parsed = Number.parseInt(taskElement.dataset.startMinutes, 10);
+                    return Number.isFinite(parsed) ? parsed : parseTimeToMinutes(taskElement.dataset.start);
+                })(),
                 duration: parseInt(taskElement.dataset.duration)
             };
 
@@ -1084,7 +1119,7 @@ function handleMouseDown(e) {
                     timeIndicator.id = trackId;
                     timeIndicator.className = 'task-time-indicator';
                     timeIndicator.style.cssText = `position: absolute; top: -22px; left: ${taskElement.style.left}; background: #007bff; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; white-space: nowrap; pointer-events: none; z-index: 1001; box-shadow: 0 2px 4px rgba(0,0,0,0.2);`;
-                    timeIndicator.textContent = originalTaskData.start;
+                    timeIndicator.textContent = originalTaskData.startLabel;
                     track.appendChild(timeIndicator);
                 }
 
@@ -1116,7 +1151,8 @@ function handleMouseMove(e) {
             const trackRect = trackElement.getBoundingClientRect();
             const newPosition = calculateNewTimeFromPosition(e.clientX, trackElement);
             if (newPosition === null) return; // Invalid simulation data
-            const taskStartMinutes = parseTimeToMinutes(originalStartTime);
+            const taskStartMinutes = originalStartMinutes;
+            if (!Number.isFinite(taskStartMinutes)) return;
 
             let newDuration, newStartMinutes = taskStartMinutes;
             if (resizeType === 'left') {
@@ -1229,9 +1265,11 @@ function handleMouseUp(e) {
                 const newPosition = calculateNewTimeFromPosition(e.clientX, trackElement);
                 if (newPosition === null) return; // Invalid simulation data
                 const taskId = resizeHandle.dataset.taskId;
-                const taskStartMinutes = parseTimeToMinutes(originalStartTime);
+                const taskStartMinutes = originalStartMinutes;
+                if (!Number.isFinite(taskStartMinutes)) return;
                 
-                let newDuration, newStartTime = originalStartTime;
+                let newDuration;
+                let newStartValue = null;
 
                 if (resizeType === 'left') {
                     // Resizing from the left edge
@@ -1240,7 +1278,7 @@ function handleMouseUp(e) {
                     newDuration = originalEndMinutes - newStartMinutes;
 
                     // Update start time
-                    newStartTime = formatTimeFromMinutes(newStartMinutes);
+                    newStartValue = formatWorkSpecStartFromMinutes(newStartMinutes);
                 } else {
                     // Resizing from the right edge
                     newDuration = newPosition - taskStartMinutes;
@@ -1249,7 +1287,7 @@ function handleMouseUp(e) {
                 // Minimum duration constraint
                 newDuration = Math.max(MIN_TASK_DURATION, Math.round(newDuration));
                 
-                updateTaskDurationInJSON(taskId, newDuration, newStartTime);
+                updateTaskDurationInJSON(taskId, newDuration, newStartValue);
             }
             
             // Clean up resize state but don't reset styles immediately to avoid visual jump
@@ -1275,7 +1313,7 @@ function handleMouseUp(e) {
 
                 if (newActorId && newTime !== null) {
                     // Check if position actually changed (either different track or different time)
-                    const originalTimeMinutes = parseTimeToMinutes(originalTaskData.start);
+                    const originalTimeMinutes = originalTaskData.startMinutes;
                     if (newTrack !== currentTrack || Math.abs(newTime - originalTimeMinutes) > 1) {
                         updateTaskInJSON(originalTaskData.taskId, newActorId, newTime);
                     }
@@ -1363,7 +1401,7 @@ function updateTaskInJSON(taskId, newActorId, newTimeMinutes) {
             task.actor_id = newActorId;
 
             // Update time
-            task.start = formatTimeFromMinutes(newTimeMinutes);
+            task.start = formatWorkSpecStartFromMinutes(newTimeMinutes);
 
             editorToUse.setValue(JSON.stringify(currentJson, null, 2));
         }
@@ -1372,7 +1410,7 @@ function updateTaskInJSON(taskId, newActorId, newTimeMinutes) {
     }
 }
 
-function updateTaskDurationInJSON(taskId, newDuration, newStartTime) {
+function updateTaskDurationInJSON(taskId, newDuration, newStartValue) {
     try {
         // Use window.editor if available (for custom editor wrappers), otherwise fall back to global editor
         const editorToUse = window.editor || editor;
@@ -1384,8 +1422,8 @@ function updateTaskDurationInJSON(taskId, newDuration, newStartTime) {
 
         if (task) {
             task.duration = newDuration;
-            if (newStartTime !== task.start) {
-                task.start = newStartTime;
+            if (newStartValue !== null && newStartValue !== undefined) {
+                task.start = newStartValue;
             }
 
             editorToUse.setValue(JSON.stringify(currentJson, null, 2));
@@ -1498,7 +1536,32 @@ function hideMultiPeriodUI() {
 
 // Helper function for parseTimeToMinutes (if not already defined)
 function parseTimeToMinutes(timeStr) {
-    if (typeof timeStr !== 'string' || !timeStr.match(/^\d{1,2}:\d{2}$/)) return null;
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    return hours * 60 + minutes;
+    if (timeStr === null || timeStr === undefined) return null;
+
+    // WorkSpec start object: { day: N, time: "HH:MM" }
+    if (typeof timeStr === 'object' && typeof timeStr.day === 'number' && typeof timeStr.time === 'string') {
+        const day = Number.isFinite(timeStr.day) ? timeStr.day : 1;
+        const parsed = parseTimeToMinutes(timeStr.time);
+        if (parsed === null) return null;
+        return ((Math.max(1, Math.floor(day)) - 1) * 1440) + parsed;
+    }
+
+    if (typeof timeStr !== 'string') return null;
+    const trimmed = timeStr.trim();
+    if (!trimmed) return null;
+
+    // Timeline label: "Day N HH:MM"
+    const dayMatch = trimmed.match(/^Day\s+(\d+)\s+(\d{1,2}:\d{2})$/i);
+    if (dayMatch) {
+        const day = parseInt(dayMatch[1], 10);
+        const inner = parseTimeToMinutes(dayMatch[2]);
+        if (inner === null) return null;
+        return ((Math.max(1, day) - 1) * 1440) + inner;
+    }
+
+    // Plain time: "HH:MM"
+    if (!trimmed.match(/^\d{1,2}:\d{2}$/)) return null;
+    const [hours, minutes] = trimmed.split(':').map(Number);
+    if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+    return (hours * 60) + minutes;
 }

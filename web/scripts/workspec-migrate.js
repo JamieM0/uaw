@@ -9,7 +9,7 @@ const os = require('os');
 const path = require('path');
 const childProcess = require('child_process');
 
-const migrator = require('../assets/js/workspec-migrate-v1-to-v2.js');
+const migrator = require('../../packages/workspec/workspec-migrate-v1-to-v2.js');
 
 function printHelp() {
     const lines = [
@@ -188,4 +188,3 @@ function main() {
 }
 
 main();
-

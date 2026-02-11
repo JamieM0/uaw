@@ -139,9 +139,13 @@ class SimulationPlayer {
     }
 
     formatTime(minutes) {
-        const h = Math.floor(minutes / 60);
-        const m = Math.floor(minutes % 60);
-        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        const safeMinutes = (typeof minutes === 'number' && Number.isFinite(minutes)) ? minutes : 0;
+        const day = Math.floor(safeMinutes / 1440) + 1;
+        const minutesInDay = ((safeMinutes % 1440) + 1440) % 1440;
+        const h = Math.floor(minutesInDay / 60);
+        const m = Math.floor(minutesInDay % 60);
+        const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        return day > 1 ? `Day ${day} ${time}` : time;
     }
 
     togglePlay() {
@@ -1068,10 +1072,80 @@ class SimulationPlayer {
                                 ? property
                                 : `properties.${property}`;
                             this.updateObjectProperty(targetObject, objectPropertyPath, newValue, changes.from, isTemporary, isTaskActive);
-                        } else if (changes.delta !== undefined && property === 'quantity') {
-                            // Handle delta changes for quantities (only for completed tasks)
-                            if (task.end_minutes <= this.playheadTime && stocks[targetId] !== undefined) {
-                                stocks[targetId] += changes.delta;
+                        } else {
+                            // Apply non-assignment operators after completion (or during active task if temporary)
+                            const shouldApply = isTemporary ? isTaskActive : (task.end_minutes <= this.playheadTime);
+                            if (!shouldApply) return;
+
+                            const hasDelta = changes.delta !== undefined;
+                            const hasMultiply = changes.multiply !== undefined;
+                            const hasAppend = changes.append !== undefined;
+                            const hasRemove = changes.remove !== undefined;
+                            const hasIncrement = changes.increment === true;
+                            const hasDecrement = changes.decrement === true;
+
+                            const objectPropertyPath = (property === 'location' || property === 'emoji' || property.startsWith('properties.'))
+                                ? property
+                                : `properties.${property}`;
+
+                            const readByPath = (obj, path) => {
+                                if (!obj || typeof obj !== 'object') return undefined;
+                                const parts = String(path).split('.');
+                                let current = obj;
+                                for (const part of parts) {
+                                    if (!current || typeof current !== 'object') return undefined;
+                                    current = current[part];
+                                }
+                                return current;
+                            };
+
+                            if (hasDelta || hasMultiply || hasIncrement || hasDecrement) {
+                                const delta = hasDelta ? Number(changes.delta) : (hasIncrement ? 1 : (hasDecrement ? -1 : null));
+                                const multiplier = hasMultiply ? Number(changes.multiply) : null;
+
+                                if (property === 'quantity' && stocks[targetId] !== undefined) {
+                                    let base = Number(stocks[targetId]);
+                                    if (!Number.isFinite(base)) base = 0;
+                                    let next = base;
+                                    if (delta !== null && Number.isFinite(delta)) next += delta;
+                                    if (multiplier !== null && Number.isFinite(multiplier)) next *= multiplier;
+                                    stocks[targetId] = next;
+                                } else {
+                                    if (!propertyOverrides[targetId]) {
+                                        propertyOverrides[targetId] = {};
+                                    }
+                                    let base = propertyOverrides[targetId][property];
+                                    if (base === undefined) {
+                                        base = readByPath(targetObject, objectPropertyPath);
+                                    }
+                                    base = Number(base);
+                                    if (!Number.isFinite(base)) base = 0;
+                                    let next = base;
+                                    if (delta !== null && Number.isFinite(delta)) next += delta;
+                                    if (multiplier !== null && Number.isFinite(multiplier)) next *= multiplier;
+                                    propertyOverrides[targetId][property] = next;
+                                }
+                            } else if (hasAppend || hasRemove) {
+                                if (!propertyOverrides[targetId]) {
+                                    propertyOverrides[targetId] = {};
+                                }
+                                let base = propertyOverrides[targetId][property];
+                                if (base === undefined) {
+                                    base = readByPath(targetObject, objectPropertyPath);
+                                }
+                                const arr = Array.isArray(base) ? [...base] : [];
+
+                                if (hasAppend) {
+                                    arr.push(changes.append);
+                                }
+                                if (hasRemove) {
+                                    const removeValue = changes.remove;
+                                    for (let idx = arr.length - 1; idx >= 0; idx -= 1) {
+                                        if (arr[idx] === removeValue) arr.splice(idx, 1);
+                                    }
+                                }
+
+                                propertyOverrides[targetId][property] = arr;
                             }
                         }
                     });

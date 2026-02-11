@@ -72,20 +72,20 @@ It intentionally focuses on: **document shape**, **validator correctness**, **pl
   - UI dependency-builder is still “comma list” only (JSON editing required for `{all, any}`)
 - ✅ **3.2 Flexible duration parsing**
   - Validator supports integers, ISO-8601 durations, and shorthand (`30m`, `1h`, `1d`, `1w`, `1M`)
-- ⚠️ **3.3 Multi-day starts** (Partial)
+- ✅ **3.3 Multi-day starts** (`start: { day, time }`)
   - Validator supports `start: { day, time }`
-  - Timeline displays multi-day minutes as extended hours (doesn’t render distinct days cleanly yet)
+  - Timeline displays multi-day boundaries as `Day N HH:MM` (and drag/resize writes `{ day, time }` instead of invalid `"33:00"` times)
 
 ### Phase 4 — Interaction System
 
 - ✅ **4.1 `target_id` rename** (`object_id` rejected)
 - ✅ **4.2 `temporary` rename** (`revert_after` rejected)
 - ⚠️ **4.3 New operators (`multiply`, `append`, `remove`, `increment`, `decrement`)** (Partial)
-  - Validator validates operator shape, but runtime/player application is incomplete (mostly handles `from/to`, `set`, and `quantity.delta`)
-  - Missing: applying `multiply/append/remove/increment/decrement` during simulation playback and type-checking operator validity per target trait
-- ⚠️ **4.4 Action interactions (`create`/`delete`)** (Partial)
+  - Validator validates operator shape; simulation playback now applies the full operator set
+  - Missing: trait-aware enforcement (e.g., restricting numeric ops to numeric properties / quantifiable traits)
+- ✅ **4.4 Action interactions (`create`/`delete`)**
   - Playground emits actions; player applies create/delete
-  - Missing in validator: lifecycle-aware reference checks (allow referencing objects created earlier; error if referenced after delete)
+  - Validator enforces lifecycle semantics (created objects become valid after create; references after delete error)
 
 ### Phase 5 — Validation System
 
@@ -113,7 +113,6 @@ It intentionally focuses on: **document shape**, **validator correctness**, **pl
 
 ## Key Remaining Gaps (to be truly “complete” v2.0)
 
-- **Validator lifecycle semantics**: created objects should become valid targets after `action:create`, and references after `action:delete` should error.
-- **Simulation runtime parity**: implement full operator set (`multiply/append/remove/increment/decrement`) in `web/assets/js/simulation-player.js`.
-- **Multi-day UX**: timeline rendering and time markers should present day boundaries (not “33:00” style hours).
+- **Trait-aware operator validation**: enforce operator compatibility based on object type traits (beyond operand shape checks).
+- **Custom type definitions**: deeper validation of `additional_properties` (types/units) and enforcement on objects.
 - **Tooling roadmap**: LSP + VS Code extension are still missing if you want first-class IDE integration beyond CLI/tasks.

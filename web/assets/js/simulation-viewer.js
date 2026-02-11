@@ -158,9 +158,12 @@ class SimulationViewer {
             // Add time markers (every 2 hours)
             for (let i = 0; i <= totalDuration; i += 120) {
                 const timeMinutes = start_time_minutes + i;
-                const hours = Math.floor(timeMinutes / 60);
-                const minutes = timeMinutes % 60;
-                const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                const day = Math.floor(timeMinutes / 1440) + 1;
+                const minutesInDay = ((timeMinutes % 1440) + 1440) % 1440;
+                const hours = Math.floor(minutesInDay / 60);
+                const minutes = minutesInDay % 60;
+                const hhmm = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                const timeStr = (day > 1 && minutesInDay === 0) ? `Day ${day}` : hhmm;
                 
                 const marker = document.createElement('span');
                 marker.textContent = timeStr;
@@ -456,9 +459,12 @@ class SimulationViewer {
 
             for (let i = 0; i <= totalDuration; i += 120) {
                 const timeMinutes = start_time_minutes + i;
-                const hours = Math.floor(timeMinutes / 60);
-                const minutes = timeMinutes % 60;
-                const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                const day = Math.floor(timeMinutes / 1440) + 1;
+                const minutesInDay = ((timeMinutes % 1440) + 1440) % 1440;
+                const hours = Math.floor(minutesInDay / 60);
+                const minutes = minutesInDay % 60;
+                const hhmm = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                const timeStr = (day > 1 && minutesInDay === 0) ? `Day ${day}` : hhmm;
 
                 const marker = document.createElement('span');
                 marker.textContent = timeStr;

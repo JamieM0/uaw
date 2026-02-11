@@ -6,22 +6,26 @@ const path = require('path');
 
 const validator = require(path.join(__dirname, '..', 'workspec-validator.js'));
 const migrator = require(path.join(__dirname, '..', 'workspec-migrate-v1-to-v2.js'));
+const customValidationRunner = require(path.join(__dirname, '..', 'custom-validation-runner.js'));
 
 function printHelp(exitCode = 0) {
     const lines = [
-        'workspec - WorkSpec v2.0 CLI',
+        'workspec - WorkSpec v1.1.0 CLI',
         '',
         'Usage:',
-        '  workspec validate <file.workspec.json> [--json]',
+        '  workspec validate <file.workspec.json> [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json]',
         '  workspec migrate <file.json> --out <output.json> [--schema]',
         '  workspec format <file.json> [--write] [--out <output.json>]',
         '',
         'Commands:',
         '  validate   Validate a WorkSpec document (RFC 7807 output model).',
-        '  migrate    Migrate WorkSpec v1.0 -> v2.0.',
+        '  migrate    Previous UAW Syntax -> WorkSpec v1.0.0.',
         '  format     Pretty-print JSON (2-space).',
         '',
         'Flags:',
+        '  -custom <path>  Run custom validator code (Metrics Editor compatible).',
+        '  --custom <path> Same as -custom.',
+        '  --custom-catalog <path> Optional metrics-catalog JSON for custom metrics.',
         '  --json          Print machine-readable problems JSON (validate only).',
         '  --out <path>    Output path (migrate/format).',
         '  --write         Write output (format only; defaults to stdout).',
@@ -67,6 +71,14 @@ function parseArgs(argv) {
             result.flags.json = true;
             continue;
         }
+        if (arg === '--custom' || arg === '-custom') {
+            result.flags.custom = args.shift() || '';
+            continue;
+        }
+        if (arg === '--custom-catalog') {
+            result.flags.customCatalog = args.shift() || '';
+            continue;
+        }
         if (arg === '--write') {
             result.flags.write = true;
             continue;
@@ -79,7 +91,11 @@ function parseArgs(argv) {
             result.flags.out = args.shift() || '';
             continue;
         }
-        if (arg.startsWith('--')) {
+        if (arg === '-') {
+            result.positionals.push(arg);
+            continue;
+        }
+        if (arg.startsWith('-')) {
             result.flags.unknown = (result.flags.unknown || []).concat([arg]);
             continue;
         }
@@ -111,6 +127,18 @@ async function readInput(filePath) {
 }
 
 async function handleValidate(filePath, flags) {
+    if (Object.prototype.hasOwnProperty.call(flags, 'custom') && !flags.custom) {
+        process.stderr.write('Missing custom validator path after -custom/--custom.\n');
+        printHelp(2);
+        return;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(flags, 'customCatalog') && !flags.customCatalog) {
+        process.stderr.write('Missing path after --custom-catalog.\n');
+        printHelp(2);
+        return;
+    }
+
     if (!filePath) {
         process.stderr.write('Missing file path.\n');
         printHelp(2);
@@ -136,7 +164,23 @@ async function handleValidate(filePath, flags) {
     }
 
     const result = validator.validate(parsed);
-    const problems = Array.isArray(result?.problems) ? result.problems : [];
+    const builtinProblems = Array.isArray(result?.problems) ? result.problems : [];
+
+    let customProblems = [];
+    if (flags.custom) {
+        try {
+            customProblems = await customValidationRunner.runCustomValidation(parsed, {
+                customValidatorPath: flags.custom,
+                customCatalogPath: flags.customCatalog
+            });
+        } catch (error) {
+            process.stderr.write(`Custom validation failed: ${error.message}\n`);
+            process.exitCode = 2;
+            return;
+        }
+    }
+
+    const problems = [...builtinProblems, ...customProblems];
 
     if (flags.json) {
         process.stdout.write(toPrettyJson(problems));

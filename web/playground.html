@@ -132,8 +132,8 @@
         />
 
         <script src="/assets/js/simulation-validator.js" defer></script>
-        <script src="/assets/js/workspec-validator.js" defer></script>
-        <script src="/assets/js/workspec-migrate-v1-to-v2.js" defer></script>
+        <script src="/packages/workspec/workspec-validator.js" defer></script>
+        <script src="/packages/workspec/workspec-migrate-v1-to-v2.js" defer></script>
         <script src="/assets/js/space-editor.js" defer></script>
         <script src="/assets/js/emoji-picker.js" defer></script>
 
@@ -312,6 +312,22 @@
                 </div>
             </div>
         </div>
+        <div id="workspec-migration-modal" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="workspec-migration-title">
+            <div class="dialog workspec-migration-dialog">
+                <h3 id="workspec-migration-title">UAW Syntax is now WorkSpec</h3>
+                <p>
+                    Simulations are moving from legacy UAW Syntax to WorkSpec for a clearer, more consistent structure.
+                    You can migrate any simulation from <strong>Tools-&gt;Migrate to WorkSpec</strong>.
+                </p>
+                <div class="workspec-migration-links">
+                    <a href="/docs/workspec/cheatsheet">WorkSpec Cheatsheet</a>
+                    <a href="/assets/static/introducing-workspec.pdf" target="_blank" rel="noopener noreferrer">More Info Slides (PDF)</a>
+                </div>
+                <div class="dialog-buttons workspec-migration-actions">
+                    <button type="button" class="btn-primary" id="workspec-migration-continue-btn">Got It</button>
+                </div>
+            </div>
+        </div>
         <header class="playground-header" role="banner">
             <div class="container header-container">
                 <div class="logo">
@@ -348,7 +364,7 @@
                             <button class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="Tools menu">Tools ▼</button>
                             <div class="dropdown-content" role="menu">
                                 <a href="#" id="format-json-btn" role="menuitem">Format JSON</a>
-                                <a href="#" id="migrate-workspec-btn" role="menuitem">Migrate v1 → v2</a>
+                                <a href="#" id="migrate-workspec-btn" role="menuitem">Migrate to WorkSpec</a>
                                 <a href="#" id="clear-editor-btn" role="menuitem">Clear</a>
                                 <a href="#" id="undo-btn" class="undo-button" disabled title="Undo last change (Ctrl+Z)" role="menuitem">↶ Undo</a>
                                 <a href="#" id="reset-panel-sizes-btn" role="menuitem">Reset Panel Sizes</a>

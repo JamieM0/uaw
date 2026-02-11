@@ -311,27 +311,67 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!welcomeOverlay || !continueBtn || !dontShowAgainCheckbox) {
       console.warn("Welcome overlay elements not found - feature disabled");
-      return;
-    }
-
-    try {
-      if (localStorage.getItem("uaw-playground-welcome-seen")) {
-        welcomeOverlay.style.display = "none";
-      }
-    } catch (e) {
-      console.warn("Could not check welcome preference:", e.message);
-    }
-
-    continueBtn.addEventListener("click", () => {
-      welcomeOverlay.style.display = "none";
-      if (dontShowAgainCheckbox.checked) {
-        try {
-          localStorage.setItem("uaw-playground-welcome-seen", "true");
-        } catch (e) {
-          console.warn("Could not save welcome preference:", e.message);
+    } else {
+      try {
+        if (localStorage.getItem("uaw-playground-welcome-seen")) {
+          welcomeOverlay.style.display = "none";
         }
+      } catch (e) {
+        console.warn("Could not check welcome preference:", e.message);
       }
-    });
+
+      continueBtn.addEventListener("click", () => {
+        welcomeOverlay.style.display = "none";
+        if (dontShowAgainCheckbox.checked) {
+          try {
+            localStorage.setItem("uaw-playground-welcome-seen", "true");
+          } catch (e) {
+            console.warn("Could not save welcome preference:", e.message);
+          }
+        }
+      });
+    }
+
+    const WORKSPEC_MIGRATION_SEEN_KEY = "uaw-playground-workspec-migration-seen";
+    const workspecMigrationModal = PlaygroundUtils.safeGetElement("workspec-migration-modal");
+    const workspecMigrationContinueBtn = PlaygroundUtils.safeGetElement("workspec-migration-continue-btn");
+
+    if (!workspecMigrationModal || !workspecMigrationContinueBtn) {
+      console.warn("WorkSpec migration modal elements not found - feature disabled");
+    } else {
+      const closeWorkspecMigrationModal = () => {
+        workspecMigrationModal.style.display = "none";
+        try {
+          localStorage.setItem(WORKSPEC_MIGRATION_SEEN_KEY, "true");
+        } catch (e) {
+          console.warn("Could not save WorkSpec migration preference:", e.message);
+        }
+      };
+
+      let hasSeenWorkspecMigration = false;
+      try {
+        hasSeenWorkspecMigration = localStorage.getItem(WORKSPEC_MIGRATION_SEEN_KEY) === "true";
+      } catch (e) {
+        console.warn("Could not check WorkSpec migration preference:", e.message);
+      }
+
+      if (!hasSeenWorkspecMigration) {
+        workspecMigrationModal.style.display = "flex";
+      }
+
+      workspecMigrationContinueBtn.addEventListener("click", closeWorkspecMigrationModal);
+      workspecMigrationModal.addEventListener("click", (event) => {
+        if (event.target === workspecMigrationModal) {
+          closeWorkspecMigrationModal();
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && workspecMigrationModal.style.display !== "none") {
+          closeWorkspecMigrationModal();
+        }
+      });
+    }
   } catch (error) {
     console.error("Error in DOMContentLoaded handler:", error);
   }
