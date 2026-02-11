@@ -780,10 +780,15 @@ class SimulationPlayer {
                     if (propertyPath.length > 1) {
                         let current = obj;
                         for (let i = 0; i < propertyPath.length - 1; i++) {
-                            if (!current[propertyPath[i]]) {
-                                current[propertyPath[i]] = {};
+                            const key = propertyPath[i];
+                            if (key === "__proto__" || key === "prototype" || key === "constructor") {
+                                // Skip dangerous keys to prevent prototype pollution
+                                break;
                             }
-                            current = current[propertyPath[i]];
+                            if (!current[key]) {
+                                current[key] = {};
+                            }
+                            current = current[key];
                         }
                         current[propertyPath[propertyPath.length - 1]] = newValue;
                     } else {
@@ -801,10 +806,15 @@ class SimulationPlayer {
                     if (propertyPath.length > 1) {
                         let current = obj;
                         for (let i = 0; i < propertyPath.length - 1; i++) {
-                            if (!current[propertyPath[i]]) {
-                                current[propertyPath[i]] = {};
+                            const key = propertyPath[i];
+                            if (key === "__proto__" || key === "prototype" || key === "constructor") {
+                                // Skip dangerous keys to prevent prototype pollution
+                                break;
                             }
-                            current = current[propertyPath[i]];
+                            if (!current[key]) {
+                                current[key] = {};
+                            }
+                            current = current[key];
                         }
                         current[propertyPath[propertyPath.length - 1]] = newValue;
                     } else {
@@ -822,10 +832,15 @@ class SimulationPlayer {
                     if (propertyPath.length > 1) {
                         let current = obj;
                         for (let i = 0; i < propertyPath.length - 1; i++) {
-                            if (!current[propertyPath[i]]) {
-                                current[propertyPath[i]] = {};
+                            const key = propertyPath[i];
+                            if (key === "__proto__" || key === "prototype" || key === "constructor") {
+                                // Skip dangerous keys to prevent prototype pollution
+                                break;
                             }
-                            current = current[propertyPath[i]];
+                            if (!current[key]) {
+                                current[key] = {};
+                            }
+                            current = current[key];
                         }
                         current[propertyPath[propertyPath.length - 1]] = newValue;
                     } else {
@@ -846,10 +861,15 @@ class SimulationPlayer {
                             if (propertyPath.length > 1) {
                                 let current = element;
                                 for (let i = 0; i < propertyPath.length - 1; i++) {
-                                    if (!current[propertyPath[i]]) {
-                                        current[propertyPath[i]] = {};
+                                    const key = propertyPath[i];
+                                    if (key === "__proto__" || key === "prototype" || key === "constructor") {
+                                        // Skip dangerous keys to prevent prototype pollution
+                                        break;
                                     }
-                                    current = current[propertyPath[i]];
+                                    if (!current[key]) {
+                                        current[key] = {};
+                                    }
+                                    current = current[key];
                                 }
                                 current[propertyPath[propertyPath.length - 1]] = newValue;
                             } else {
