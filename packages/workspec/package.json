@@ -1,0 +1,33 @@
+{
+  "name": "workspec",
+  "private": false,
+  "version": "1.1.1",
+  "description": "WorkSpec v1.1.0 validator and CLI (validate/migrate/format + custom validation).",
+  "license": "AGPL-3.0",
+  "main": "index.js",
+  "bin": {
+    "workspec": "bin/workspec.js"
+  },
+  "scripts": {
+    "check:sync": "node scripts/check-sync.js",
+    "sync:web": "node scripts/sync-web-assets.js",
+    "test:integration": "node scripts/sync-web-assets.js && node scripts/test-playground-integration.js",
+    "test": "node scripts/self-test.js && npm run test:integration"
+  },
+  "files": [
+    "bin/",
+    "index.js",
+    "custom-validation-runner.js",
+    "custom-validation-worker.js",
+    "workspec-validator.js",
+    "workspec-migrate-v1-to-v2.js",
+    "v2.0.schema.json",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

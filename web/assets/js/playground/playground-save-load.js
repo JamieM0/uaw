@@ -4,6 +4,10 @@
 // Constants
 const MAX_FILE_SIZE_MB = 10;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+const WORKSPEC_FILE_EXTENSION = '.workspec.json';
+const WORKSPEC_ZIP_EXTENSION = '.workspec.zip';
+const SAVE_CODE_STORAGE_PREFIX = 'uaw-save-code-v1:';
+const SAVE_CODE_LENGTH = 16;
 
 // Setup save/load buttons
 function setupSaveLoadButtons() {
@@ -74,7 +78,7 @@ function setupSaveLoadButtons() {
 
 // Simple file download function
 function downloadSimulationFile(data, filename) {
-    const blob = new Blob([data], { type: 'application/json' });
+    const blob = data instanceof Blob ? data : new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -113,11 +117,60 @@ function hasCustomMetrics() {
     }
 }
 
+function normalizeSimulationFileBaseName(rawName) {
+    const fallbackName = 'simulation';
+    let base = (rawName || fallbackName).trim();
+    base = base
+        .replace(/\.workspec\.json$/i, '')
+        .replace(/\.json$/i, '')
+        .replace(/\.workspec$/i, '')
+        .trim();
+    return base || fallbackName;
+}
+
+function generateSaveCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < SAVE_CODE_LENGTH; i += 1) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+}
+
+function storeSaveCodePayload(saveCode, payload) {
+    try {
+        const storageKey = `${SAVE_CODE_STORAGE_PREFIX}${saveCode}`;
+        const record = {
+            version: 1,
+            createdAt: new Date().toISOString(),
+            payload
+        };
+        localStorage.setItem(storageKey, JSON.stringify(record));
+        return true;
+    } catch (error) {
+        console.error('Failed to store save code payload:', error);
+        return false;
+    }
+}
+
+function getSaveCodePayload(saveCode) {
+    try {
+        const storageKey = `${SAVE_CODE_STORAGE_PREFIX}${saveCode}`;
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed?.payload || null;
+    } catch (error) {
+        console.error('Failed to read save code payload:', error);
+        return null;
+    }
+}
+
 // Load simulation from file input
 function loadSimulationFromFileInput() {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.json,.zip';
+    input.accept = '.json,.workspec.json,.zip';
 
     input.addEventListener('change', async function(event) {
         const file = event.target.files[0];
@@ -130,12 +183,13 @@ function loadSimulationFromFileInput() {
         }
 
         // Check if it's a ZIP file
-        if (file.name.endsWith('.zip')) {
+        const fileNameLower = file.name.toLowerCase();
+        if (fileNameLower.endsWith('.zip')) {
             await loadFromZipFile(file);
-        } else if (file.name.endsWith('.json')) {
+        } else if (fileNameLower.endsWith('.workspec.json') || fileNameLower.endsWith('.json')) {
             await loadFromJsonFile(file);
         } else {
-            alert('Invalid file type. Please select a .json or .zip file.');
+            alert('Invalid file type. Please select a .workspec.json, .json, or .zip file.');
         }
     });
 
@@ -166,17 +220,34 @@ async function loadFromJsonFile(file) {
                     return;
                 }
 
-                // Validate simulation structure
-                if (!data.simulation.objects || !Array.isArray(data.simulation.objects)) {
-                    alert('Invalid simulation file: simulation.objects must be an array');
-                    reject(new Error('Invalid objects structure'));
-                    return;
-                }
+                // Validate simulation structure (WorkSpec v2 preferred; support v1 for compatibility)
+                const sim = data.simulation;
+                const isV2 = sim && (sim.schema_version === '2.0' || sim.world || sim.process);
 
-                if (!data.simulation.tasks || !Array.isArray(data.simulation.tasks)) {
-                    alert('Invalid simulation file: simulation.tasks must be an array');
-                    reject(new Error('Invalid tasks structure'));
-                    return;
+                if (isV2) {
+                    if (!sim.world || !Array.isArray(sim.world.objects)) {
+                        alert('Invalid WorkSpec v2 file: simulation.world.objects must be an array');
+                        reject(new Error('Invalid world.objects structure'));
+                        return;
+                    }
+
+                    if (!sim.process || !Array.isArray(sim.process.tasks)) {
+                        alert('Invalid WorkSpec v2 file: simulation.process.tasks must be an array');
+                        reject(new Error('Invalid process.tasks structure'));
+                        return;
+                    }
+                } else {
+                    if (!sim.objects || !Array.isArray(sim.objects)) {
+                        alert('Invalid simulation file: simulation.objects must be an array');
+                        reject(new Error('Invalid objects structure'));
+                        return;
+                    }
+
+                    if (!sim.tasks || !Array.isArray(sim.tasks)) {
+                        alert('Invalid simulation file: simulation.tasks must be an array');
+                        reject(new Error('Invalid tasks structure'));
+                        return;
+                    }
                 }
 
                 // Load into editor
@@ -254,14 +325,30 @@ async function loadFromZipFile(file) {
             return;
         }
 
-        if (!data.simulation.objects || !Array.isArray(data.simulation.objects)) {
-            alert('Invalid simulation file: simulation.objects must be an array');
-            return;
-        }
+        // Validate simulation structure (WorkSpec v2 preferred; support v1 for compatibility)
+        const sim = data.simulation;
+        const isV2 = sim && (sim.schema_version === '2.0' || sim.world || sim.process);
 
-        if (!data.simulation.tasks || !Array.isArray(data.simulation.tasks)) {
-            alert('Invalid simulation file: simulation.tasks must be an array');
-            return;
+        if (isV2) {
+            if (!sim.world || !Array.isArray(sim.world.objects)) {
+                alert('Invalid WorkSpec v2 file: simulation.world.objects must be an array');
+                return;
+            }
+
+            if (!sim.process || !Array.isArray(sim.process.tasks)) {
+                alert('Invalid WorkSpec v2 file: simulation.process.tasks must be an array');
+                return;
+            }
+        } else {
+            if (!sim.objects || !Array.isArray(sim.objects)) {
+                alert('Invalid simulation file: simulation.objects must be an array');
+                return;
+            }
+
+            if (!sim.tasks || !Array.isArray(sim.tasks)) {
+                alert('Invalid simulation file: simulation.tasks must be an array');
+                return;
+            }
         }
 
         // Load into editor
@@ -500,31 +587,45 @@ function openSaveDialog() {
                 throw new Error("Simulation content is empty or invalid.");
             }
 
-            if (saveCloudRadio.checked) {
-                // Cloud save: encode simulation data as base64
-                await new Promise(resolve => setTimeout(resolve, 1000));
+            // Parse simulation to ensure it's valid
+            let simulationData;
+            try {
+                simulationData = JSON.parse(simulationContent);
+                if (!simulationData.simulation) {
+                    throw new Error('Invalid simulation format');
+                }
+            } catch (error) {
+                throw new Error('Cannot save: Invalid simulation data - ' + error.message);
+            }
 
-                // Parse simulation to ensure it's valid
-                let simulationData;
-                try {
-                    simulationData = JSON.parse(simulationContent);
-                    if (!simulationData.simulation) {
-                        throw new Error('Invalid simulation format');
+            if (saveCloudRadio.checked) {
+                // Save code mode: persist simulation in local storage with a 16-char code
+                const saveData = { simulation: simulationData.simulation };
+                let saveCode = null;
+                let attempts = 0;
+                while (attempts < 5 && !saveCode) {
+                    attempts += 1;
+                    const candidate = generateSaveCode();
+                    if (!localStorage.getItem(`${SAVE_CODE_STORAGE_PREFIX}${candidate}`)) {
+                        saveCode = candidate;
                     }
-                } catch (error) {
-                    throw new Error('Cannot save: Invalid simulation data - ' + error.message);
                 }
 
-                // Create save data object with just the simulation
-                const saveData = { simulation: simulationData.simulation };
-                const saveCode = btoa(JSON.stringify(saveData));
+                if (!saveCode) {
+                    throw new Error('Unable to generate a unique save code. Please try again.');
+                }
+
+                const stored = storeSaveCodePayload(saveCode, saveData);
+                if (!stored) {
+                    throw new Error('Could not store save code data in this browser.');
+                }
 
                 saveCodeResult.value = saveCode;
                 cloudSaveResultDiv.style.display = 'block';
                 localSaveResultDiv.style.display = 'none';
             } else {
                 // Local save to file
-                const fileNameBase = localFileNameInput.value.trim() || 'simulation';
+                const fileNameBase = normalizeSimulationFileBaseName(localFileNameInput.value);
 
                 // Validate filename
                 const invalidChars = /[<>:"/\\|?*]/g;
@@ -533,17 +634,6 @@ function openSaveDialog() {
                 }
 
                 const includeMetrics = includeCustomMetricsCheckbox.checked;
-
-                // Validate simulation data before saving
-                let simulationData;
-                try {
-                    simulationData = JSON.parse(simulationContent);
-                    if (!simulationData.simulation) {
-                        throw new Error('Invalid simulation format');
-                    }
-                } catch (error) {
-                    throw new Error('Cannot save: Invalid simulation data - ' + error.message);
-                }
 
                 if (includeMetrics) {
                     // Check JSZip availability early
@@ -570,22 +660,22 @@ function openSaveDialog() {
                         if (validator) { zip.file("simulation-validator-custom.js", validator); }
 
                         const blob = await zip.generateAsync({ type: "blob" });
-                        const fileName = `${fileNameBase}.zip`;
+                        const fileName = `${fileNameBase}${WORKSPEC_ZIP_EXTENSION}`;
                         downloadSimulationFile(blob, fileName);
                         savedFileNameSpan.textContent = fileName;
                     } catch (zipError) {
                         console.error('ZIP creation failed:', zipError);
                         // Fallback to JSON save
                         const blob = new Blob([simulationContent], { type: 'application/json' });
-                        const fileName = `${fileNameBase}.json`;
+                        const fileName = `${fileNameBase}${WORKSPEC_FILE_EXTENSION}`;
                         downloadSimulationFile(blob, fileName);
                         savedFileNameSpan.textContent = fileName;
-                        showNotification('ZIP creation failed, saved as JSON instead', 'warning');
+                        showNotification('ZIP creation failed, saved as WorkSpec JSON instead', 'warning');
                     }
 
                 } else {
                     const blob = new Blob([simulationContent], { type: 'application/json' });
-                    const fileName = `${fileNameBase}.json`;
+                    const fileName = `${fileNameBase}${WORKSPEC_FILE_EXTENSION}`;
                     downloadSimulationFile(blob, fileName);
                     savedFileNameSpan.textContent = fileName;
                 }
@@ -628,6 +718,11 @@ function openLoadDialog() {
     const cancelBtn = document.getElementById('load-cancel-btn');
     const loadBtn = document.getElementById('load-confirm-btn');
     const browseBtn = document.getElementById('browse-local-file-btn');
+    const errorDiv = document.getElementById('load-error');
+    const errorMessage = document.getElementById('load-error-message');
+
+    if (errorDiv) errorDiv.style.display = 'none';
+    if (errorMessage) errorMessage.textContent = '';
 
     // Set local as default
     localRadio.checked = true;
@@ -660,7 +755,7 @@ function openLoadDialog() {
     loadBtn.onclick = async () => {
         // This needs to be implemented based on which radio is selected
         const saveCodeInput = document.getElementById('load-code-input');
-        const saveCode = saveCodeInput ? saveCodeInput.value.trim() : '';
+        const saveCode = saveCodeInput ? saveCodeInput.value.trim().toUpperCase() : '';
 
         if (cloudRadio.checked) {
             if (!saveCode) {
@@ -669,27 +764,42 @@ function openLoadDialog() {
             }
 
             // Validate save code format (basic check)
-            if (saveCode.length < 10) {
-                showLoadError('Save code appears to be too short. Please check and try again.');
+            if (saveCode.length !== SAVE_CODE_LENGTH) {
+                showLoadError(`Save code must be ${SAVE_CODE_LENGTH} characters.`);
                 return;
             }
 
             try {
-                // Decode base64
-                const decoded = atob(saveCode);
-                const saveData = JSON.parse(decoded);
+                const saveData = getSaveCodePayload(saveCode);
+                if (!saveData) {
+                    throw new Error('Save code not found in this browser');
+                }
 
                 // Validate structure
                 if (!saveData.simulation) {
                     throw new Error('Invalid save code: missing simulation data');
                 }
 
-                if (!saveData.simulation.objects || !Array.isArray(saveData.simulation.objects)) {
-                    throw new Error('Invalid save code: simulation.objects must be an array');
-                }
+                // Validate simulation structure (WorkSpec v2 preferred; support v1 for compatibility)
+                const sim = saveData.simulation;
+                const isV2 = sim && (sim.schema_version === '2.0' || sim.world || sim.process);
 
-                if (!saveData.simulation.tasks || !Array.isArray(saveData.simulation.tasks)) {
-                    throw new Error('Invalid save code: simulation.tasks must be an array');
+                if (isV2) {
+                    if (!sim.world || !Array.isArray(sim.world.objects)) {
+                        throw new Error('Invalid WorkSpec v2 save code: simulation.world.objects must be an array');
+                    }
+
+                    if (!sim.process || !Array.isArray(sim.process.tasks)) {
+                        throw new Error('Invalid WorkSpec v2 save code: simulation.process.tasks must be an array');
+                    }
+                } else {
+                    if (!sim.objects || !Array.isArray(sim.objects)) {
+                        throw new Error('Invalid save code: simulation.objects must be an array');
+                    }
+
+                    if (!sim.tasks || !Array.isArray(sim.tasks)) {
+                        throw new Error('Invalid save code: simulation.tasks must be an array');
+                    }
                 }
 
                 // Load into editor
@@ -708,17 +818,13 @@ function openLoadDialog() {
                     }
 
                     dialog.style.display = 'none';
-                    showNotification('Simulation loaded successfully from cloud save!');
+                    showNotification('Simulation loaded successfully from save code');
                 } else {
                     throw new Error('Editor not initialized');
                 }
             } catch (error) {
-                console.error('Error loading from cloud:', error);
-                if (error.name === 'InvalidCharacterError') {
-                    showLoadError('Invalid save code format. Please check and try again.');
-                } else {
-                    showLoadError(`Error loading simulation: ${error.message}`);
-                }
+                console.error('Error loading from save code:', error);
+                showLoadError(`Error loading simulation: ${error.message}`);
             }
         } else {
             // Local file is handled by loadSimulationFromFileInput, but we can close the dialog
@@ -738,6 +844,13 @@ function openFeedbackDialog() {
     const form = document.getElementById('feedback-form');
     const cancelBtn = document.getElementById('cancel-feedback');
     const messageDiv = document.getElementById('feedback-message');
+
+    if (form) {
+        const firstField = form.querySelector('input, textarea, select');
+        if (firstField) {
+            setTimeout(() => firstField.focus(), 50);
+        }
+    }
 
     form.onsubmit = async (e) => {
         e.preventDefault();
@@ -769,8 +882,13 @@ function openFeedbackDialog() {
 // Show load error
 function showLoadError(message) {
     const errorDiv = document.getElementById('load-error');
+    const errorMessage = document.getElementById('load-error-message');
     if (errorDiv) {
-        errorDiv.textContent = message;
+        if (errorMessage) {
+            errorMessage.textContent = message;
+        } else {
+            errorDiv.textContent = message;
+        }
         errorDiv.style.display = 'block';
         
         // Hide after 5 seconds

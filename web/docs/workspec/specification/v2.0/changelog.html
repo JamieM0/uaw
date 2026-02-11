@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkSpec v2.0 Changelog - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/">Workspec</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/specification/">Specification</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/specification/v2.0/">V2.0</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">WorkSpec v2.0 Changelog</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">WorkSpec v2.0 Changelog</h1>
+                            
+                            <p class="docs-page-subtitle">This page tracks WorkSpec v2.0 changes and the breaking changes relative to legacy v1.0 documents.</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>This page tracks WorkSpec v2.0 changes and the breaking changes relative to legacy v1.0 documents.</p>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="20-final-draft">2.0 (Final Draft)<a class="headerlink" href="#20-final-draft" title="Link to this section">¶</a></h2>
+<p>Last updated in the v2.0 specification: <code class="docs-inline-code">2026-02-03</code>.</p>
+<h3 class="docs-heading" id="breaking-changes">Breaking changes<a class="headerlink" href="#breaking-changes" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li>Added required <code class="docs-inline-code">simulation.schema_version</code> (Major.Minor format, v2.0 is <code class="docs-inline-code">"2.0"</code>).</li>
+<li>Restructured document into <code class="docs-inline-code">simulation.world</code> and <code class="docs-inline-code">simulation.process</code>.</li>
+<li>Updated meta fields:</li>
+<li><code class="docs-inline-code">meta.title</code> (required)</li>
+<li><code class="docs-inline-code">meta.description</code> (required)</li>
+<li><code class="docs-inline-code">meta.domain</code> (required)</li>
+<li>removed <code class="docs-inline-code">meta.article_title</code></li>
+<li>Standardized object shape with top-level fields (<code class="docs-inline-code">id</code>, <code class="docs-inline-code">type</code>, <code class="docs-inline-code">name</code>, <code class="docs-inline-code">emoji</code>, <code class="docs-inline-code">location</code>, <code class="docs-inline-code">properties</code>).</li>
+<li>Added namespaced IDs (<code class="docs-inline-code">{type}:{identifier}</code>) with namespace/type validation.</li>
+<li>Removed type aliases (<code class="docs-inline-code">material</code>, <code class="docs-inline-code">ingredient</code>, <code class="docs-inline-code">tool</code>).</li>
+<li>Added <code class="docs-inline-code">service</code> object type (performer).</li>
+<li>Added custom type definitions (<code class="docs-inline-code">simulation.type_definitions</code> with <code class="docs-inline-code">extends</code>).</li>
+<li>Expanded task model:</li>
+<li><code class="docs-inline-code">depends_on</code> supports <code class="docs-inline-code">{all, any}</code></li>
+<li><code class="docs-inline-code">duration</code> supports integer, ISO 8601, and shorthand</li>
+<li><code class="docs-inline-code">start</code> supports <code class="docs-inline-code">{day,time}</code> for multi-day simulations</li>
+<li>Expanded interaction model:</li>
+<li><code class="docs-inline-code">target_id</code> replaces legacy <code class="docs-inline-code">object_id</code></li>
+<li><code class="docs-inline-code">temporary</code> replaces legacy <code class="docs-inline-code">revert_after</code></li>
+<li>new operators: <code class="docs-inline-code">append</code>, <code class="docs-inline-code">remove</code>, <code class="docs-inline-code">increment</code>, <code class="docs-inline-code">decrement</code></li>
+<li>new actions: <code class="docs-inline-code">create</code>, <code class="docs-inline-code">delete</code></li>
+<li>Validation and errors use RFC 7807 Problem Details format with WorkSpec extensions.</li>
+</ul>
+<h3 class="docs-heading" id="migration">Migration<a class="headerlink" href="#migration" title="Link to this section">¶</a></h3>
+<p>See <a href="/docs/workspec/guides/migration">/docs/workspec/guides/migration</a>.</p>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

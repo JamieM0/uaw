@@ -28,12 +28,13 @@ function initializeTutorial() {
             status: document.getElementById('tutorial-status'),
             nextBtn: document.getElementById('tutorial-next-btn'),
             prevBtn: document.getElementById('tutorial-prev-btn'),
+            skipBtn: document.getElementById('tutorial-skip-btn'),
             exitBtn: document.getElementById('tutorial-exit-btn')
         };
 
         // Check if all required elements exist
         const missingElements = Object.entries(playgroundElements)
-            .filter(([key, element]) => !element)
+            .filter(([key, element]) => key !== 'skipBtn' && !element)
             .map(([key]) => key);
 
         if (missingElements.length > 0) {
@@ -41,20 +42,30 @@ function initializeTutorial() {
             return false;
         }
 
+        const startTutorialFlow = () => {
+            if (typeof closeAllPlaygroundDropdowns === 'function') {
+                closeAllPlaygroundDropdowns();
+            }
+            tutorialManager.start();
+        };
+
         // Initialize tutorial manager
         tutorialManager = new TutorialManager(tutorialData, editor, playgroundElements);
+        window.startTutorial = startTutorialFlow;
 
         // Set up event listener
         const startBtn = document.getElementById('start-tutorial-btn');
         if (startBtn) {
             startBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                const dropdown = document.querySelector('.dropdown-content');
-                if (dropdown) {
-                    dropdown.style.display = 'none';
-                }
-                tutorialManager.start();
+                startTutorialFlow();
             });
+
+            // Handle early "Start Tutorial" clicks from welcome modal before init completed.
+            if (window.__startTutorialOnReady) {
+                window.__startTutorialOnReady = false;
+                startTutorialFlow();
+            }
 
             console.log('Tutorial system initialized successfully');
             return true;
@@ -384,10 +395,8 @@ function initializeAutoValidationToggle() {
         // Handle toggle button click
         toggleBtn.addEventListener('click', (e) => {
             e.preventDefault();
-
-            const dropdown = document.querySelector('.dropdown-content');
-            if (dropdown) {
-                dropdown.style.display = 'none';
+            if (typeof closeAllPlaygroundDropdowns === 'function') {
+                closeAllPlaygroundDropdowns();
             }
 
             window.autoValidationEnabled = !window.autoValidationEnabled;

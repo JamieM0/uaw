@@ -155,12 +155,20 @@ function findObjectStateModifierAtTime(objectId, timeInMinutes) {
         // Check interactions (new style)
         if (Array.isArray(task.interactions)) {
             task.interactions.forEach(interaction => {
-                if (interaction && interaction.object_id === objectId && interaction.state) {
-                    if (isTaskActive) {
-                        currentModifier = task.id;
-                    } else if (isTaskCompleted && !interaction.revert_after) {
-                        currentModifier = task.id;
-                    }
+                if (!interaction || typeof interaction !== 'object') return;
+
+                const targetId = interaction.target_id || interaction.object_id;
+                if (targetId !== objectId) return;
+
+                const hasStateChange = Boolean(interaction.state || (interaction.property_changes && interaction.property_changes.state));
+                if (!hasStateChange) return;
+
+                const isTemporary = Boolean(interaction.temporary || interaction.revert_after);
+
+                if (isTaskActive) {
+                    currentModifier = task.id;
+                } else if (isTaskCompleted && !isTemporary) {
+                    currentModifier = task.id;
                 }
             });
         }
@@ -489,16 +497,20 @@ function getCurrentTimelineContext() {
             throw new Error('Simulation data is not an object');
         }
 
-        // Extract locations for dropdown (from current context only)
-        const locations = Array.isArray(sim.layout?.locations)
-            ? sim.layout.locations.map(loc => ({
+        // Extract locations for dropdown (support WorkSpec v2 world.layout and legacy layout)
+        const layout = sim.world?.layout || sim.layout || simulation.layout;
+        const locations = Array.isArray(layout?.locations)
+            ? layout.locations.map(loc => ({
                 id: loc?.id || '',
                 name: loc?.name || loc?.id || ''
             })).filter(loc => loc.id) // Remove invalid entries
             : [];
 
-        // Extract existing objects by type for reference (from current context only)
-        const objects = Array.isArray(sim.objects) ? sim.objects : [];
+        // Extract existing objects by type for reference
+        // Support WorkSpec v2 world.objects and legacy sim.objects.
+        const objects = Array.isArray(sim.world?.objects)
+            ? sim.world.objects
+            : (Array.isArray(sim.objects) ? sim.objects : []);
         const objectsByType = {};
         objects.forEach(obj => {
             if (obj && typeof obj === 'object' && obj.type) {
@@ -598,8 +610,16 @@ function validateObjectDeletion(simulation, objectIdToDelete, taskStartTime) {
         return { valid: false, reason: "Invalid simulation structure" };
     }
 
-    const objectsArray = Array.isArray(sim.objects) ? sim.objects : [];
-    const tasksArray = Array.isArray(sim.tasks) ? sim.tasks : [];
+    const objectsArray = Array.isArray(sim.world?.objects)
+        ? sim.world.objects
+        : Array.isArray(sim.objects)
+            ? sim.objects
+            : [];
+    const tasksArray = Array.isArray(sim.process?.tasks)
+        ? sim.process.tasks
+        : Array.isArray(sim.tasks)
+            ? sim.tasks
+            : [];
 
     // Find the object
     const objectIndex = objectsArray.findIndex(obj => obj && obj.id === objectIdToDelete);
@@ -625,7 +645,11 @@ function validateObjectDeletion(simulation, objectIdToDelete, taskStartTime) {
 
         // Check interactions array
         if (Array.isArray(task.interactions)) {
-            if (task.interactions.some(i => i && i.object_id === objectIdToDelete)) {
+            if (task.interactions.some(i => {
+                if (!i || typeof i !== 'object') return false;
+                const targetId = i.target_id || i.object_id;
+                return targetId === objectIdToDelete;
+            })) {
                 return true;
             }
         }

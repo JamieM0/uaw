@@ -132,6 +132,8 @@
         />
 
         <script src="/assets/js/simulation-validator.js" defer></script>
+        <script src="/packages/workspec/workspec-validator.js" defer></script>
+        <script src="/packages/workspec/workspec-migrate-v1-to-v2.js" defer></script>
         <script src="/assets/js/space-editor.js" defer></script>
         <script src="/assets/js/emoji-picker.js" defer></script>
 
@@ -284,17 +286,13 @@
         <div id="welcome-overlay" class="dialog-overlay" style="display: flex;" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
             <div class="dialog">
                 <h2 id="welcome-title" class="special-subtitle">Welcome to the Simulation Playground!</h2>
-                <p>This playground is an interactive tool for testing and visualising automation workflows.</p>
-                <p>You can create, edit, and simulate complex processes to understand how they work and identify potential improvements.</p>
-                <p>The Universal Automation Wiki (UAW) project, including this playground, is open source. We welcome contributions and feedback from the community. You can find the project on <a href="https://github.com/JamieM0/uaw" target="_blank">GitHub</a>.</p>
-                <p>Please save your work regularly. The simulation playground is in early development, and we recommend keeping backups of your work. Remember some work may be stored in separate files ('metrics-catalog-custom.json' and 'simulation-validator-custom.js').</p>
-                <p><strong>Tip:</strong> You can use emojis in any text field!
+                <p>Build and validate WorkSpec simulations with live feedback in the editor and timeline.</p>
+                <p>UAW is open source. Project and issues: <a href="https://github.com/JamieM0/uaw" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+                <p><strong>Before you start:</strong> save regularly, especially when editing custom metrics and validators.</p>
                 <ul>
-                    <li>Press <strong>Ctrl + .</strong> or <strong>Cmd + .</strong> to open the emoji selector.</li>
-                    <li>In the JSON editor, right-click and choose 'Insert Emoji'.</li>
+                    <li><strong>Emoji picker:</strong> <strong>Ctrl + .</strong> or <strong>Cmd + .</strong></li>
+                    <li><strong>Space editors:</strong> tap <strong>Space</strong> to fit, hold <strong>Space</strong> to pan</li>
                 </ul>
-                </p>
-                <p><strong>Tip:</strong> In space editors, you can quickly <strong>tap space</strong> to zoom to fit, or you can <strong>hold space</strong> to pan around.</p>
                 <div class="dialog-buttons" style="margin-top: 1rem; justify-content: center; flex-direction: column;">
                     <div style="margin-bottom: 1rem;">
                         <label>
@@ -307,6 +305,22 @@
                         <button type="button" class="btn-secondary" id="skip-tutorial-btn">Skip Tutorial</button>
                         <button type="button" class="btn-primary" id="start-tutorial-welcome-btn">Start Tutorial</button>
                     </div>
+                </div>
+            </div>
+        </div>
+        <div id="workspec-migration-modal" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="workspec-migration-title">
+            <div class="dialog workspec-migration-dialog">
+                <h3 id="workspec-migration-title">UAW Syntax is now WorkSpec</h3>
+                <p>
+                    Simulations are moving from legacy UAW Syntax to WorkSpec for a clearer, more consistent structure.
+                    You can migrate any simulation from <strong>Tools-&gt;Migrate to WorkSpec</strong>.
+                </p>
+                <div class="workspec-migration-links">
+                    <a href="/docs/workspec/cheatsheet">WorkSpec Cheatsheet</a>
+                    <a href="/assets/static/introducing-workspec.pdf" target="_blank" rel="noopener noreferrer">More Info Slides (PDF)</a>
+                </div>
+                <div class="dialog-buttons workspec-migration-actions">
+                    <button type="button" class="btn-primary" id="workspec-migration-continue-btn">Got It</button>
                 </div>
             </div>
         </div>
@@ -343,23 +357,21 @@
                     <!-- View Options Group -->
                     <div class="view-options-group">
                         <div class="dropdown">
-                            <button class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="Tools menu">Tools ▼</button>
+                            <button id="tools-menu-btn" class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="Tools menu">Tools ▼</button>
                             <div class="dropdown-content" role="menu">
-                                <a href="#" id="format-json-btn" role="menuitem">Format JSON</a>
-                                <a href="#" id="clear-editor-btn" role="menuitem">Clear</a>
-                                <a href="#" id="undo-btn" class="undo-button" disabled title="Undo last change (Ctrl+Z)" role="menuitem">↶ Undo</a>
-                                <a href="#" id="reset-panel-sizes-btn" role="menuitem">Reset Panel Sizes</a>
-                                <a href="#" id="render-simulation-btn" class="hidden" role="menuitem">Render Simulation</a>
-                                <a href="#" id="auto-render-toggle" class="hidden" role="menuitem">Toggle Auto-render</a>
-                                <a href="#" id="toggle-auto-validate-btn" role="menuitem">Disable Auto-Validate</a>
+                                <button type="button" id="format-json-btn" class="dropdown-item-button" role="menuitem">Format JSON</button>
+                                <button type="button" id="migrate-workspec-btn" class="dropdown-item-button" role="menuitem">Migrate to WorkSpec</button>
+                                <button type="button" id="clear-editor-btn" class="dropdown-item-button" role="menuitem">Clear</button>
+                                <button type="button" id="undo-btn" class="dropdown-item-button undo-button" disabled title="Undo last change (Ctrl+Z)" role="menuitem">↶ Undo</button>
+                                <button type="button" id="reset-panel-sizes-btn" class="dropdown-item-button" role="menuitem">Reset Panel Sizes</button>
+                                <button type="button" id="render-simulation-btn" class="dropdown-item-button hidden" role="menuitem">Render Simulation</button>
+                                <button type="button" id="auto-render-toggle" class="dropdown-item-button hidden" role="menuitem">Toggle Auto-render</button>
+                                <button type="button" id="toggle-auto-validate-btn" class="dropdown-item-button" role="menuitem">Disable Auto-Validate</button>
+                                <button type="button" id="metrics-mode-toggle" class="dropdown-item-button" role="menuitem">Metrics Editor</button>
                             </div>
                         </div>
-                        <button id="dark-mode-toggle" class="mode-toggle-btn" title="Toggle Dark Mode">
-                            ☾ Dark
-                        </button>
-                        <button id="metrics-mode-toggle" class="mode-toggle-btn" title="Toggle Metrics Editor Mode">
-                            Metrics Editor
-                        </button>
+                        <button id="dark-mode-toggle" class="mode-toggle-btn" title="Toggle Dark Mode">☾ Dark</button>
+                        <button id="mobile-editor-toggle" class="mode-toggle-btn mobile-only" title="Toggle mobile editor visibility" aria-pressed="false">Show Editor</button>
                         <button id="add-metric-btn" class="btn btn-secondary" style="display: none;" title="Add Custom Metric">
                             + Add Metric
                         </button>
@@ -395,19 +407,19 @@
                         <div class="dropdown" id="smart-actions-dropdown">
                             <button class="action-btn" id="smart-actions-menu-btn" aria-haspopup="true" aria-expanded="false">Smart Actions ▼</button>
                             <div class="dropdown-content" role="menu">
-                                <a href="#" id="smart-action-chat" role="menuitem">Chat</a>
-                                <a href="#" id="smart-action-setup" role="menuitem">Setup</a>
+                                <button type="button" id="smart-action-chat" class="dropdown-item-button" role="menuitem">Chat</button>
+                                <button type="button" id="smart-action-setup" class="dropdown-item-button" role="menuitem">Setup</button>
                             </div>
                         </div>
                         <div class="dropdown">
-                            <button class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="Help menu">Help ▼</button>
+                            <button id="help-menu-btn" class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="Help menu">Help ▼</button>
                             <div class="dropdown-content" role="menu">
-                                <a href="#" id="start-tutorial-btn" role="menuitem">Start Tutorial</a>
-                                <a href="#" id="start-llm-btn" role="menuitem">Experimental LLM</a>
+                                <button type="button" id="start-tutorial-btn" class="dropdown-item-button" role="menuitem">Start Tutorial</button>
+                                <button type="button" id="start-llm-btn" class="dropdown-item-button" role="menuitem">Experimental LLM</button>
+                                <button type="button" id="feedback-btn" class="dropdown-item-button" title="Send feedback about the playground" role="menuitem">Feedback</button>
                             </div>
                         </div>
                         <button id="submit-btn" class="action-btn" title="Submit simulation to page" style="display: none;">Submit</button>
-                        <button id="feedback-btn" class="action-btn" title="Send feedback about the playground">Feedback</button>
                     </div>
                 </nav>
             </div>
@@ -425,6 +437,7 @@
                 </div>
                 <div class="tutorial-footer">
                     <button id="tutorial-prev-btn">Back</button>
+                    <button id="tutorial-skip-btn" type="button">Skip</button>
                     <button id="tutorial-next-btn" disabled>Next</button>
                 </div>
             </div>
@@ -451,7 +464,7 @@
                                 </div>
 
                                 <div class="tab-content-wrapper">
-                                    <div id="simulation-tab" class="tab-content active" role="tabpanel" aria-labelledby="simulation-render-tab">
+                                    <div id="simulation-tab" class="tab-content active" role="tabpanel" aria-labelledby="timeline-tab-button">
                                         <div id="simulation-content" class="simulation-content">
                                             <!-- Existing simulation content -->
                                         </div>
@@ -462,7 +475,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div id="space-editor-tab" class="tab-content" role="tabpanel" aria-labelledby="space-editor-tab-btn">
+                                    <div id="space-editor-tab" class="tab-content" role="tabpanel" aria-labelledby="space-editor-tab-button">
                                         <div class="space-editor-container">
                                             <div class="space-canvas" id="space-canvas">
                                                 <div class="zoom-controls">
@@ -493,7 +506,7 @@
                                                 <div id="properties-panel-content">
                                                     <p class="placeholder">Select a location, or click '+ Add' to draw a new one.</p>
                                                 </div>
-                                                <div class="options-panel-container">
+                                                <div class="options-panel-container is-collapsed">
                                                     <div class="options-panel-header">
                                                         <h4>Options</h4>
                                                     </div>
@@ -527,7 +540,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div id="digital-space-tab" class="tab-content" role="tabpanel" aria-labelledby="digital-space-tab-btn">
+                                    <div id="digital-space-tab" class="tab-content" role="tabpanel" aria-labelledby="digital-space-tab-button">
                                         <div class="space-editor-container">
                                             <div class="space-canvas" id="digital-space-canvas">
                                                 <div class="zoom-controls">
@@ -562,7 +575,7 @@
                                                 <div id="digital-properties-panel-content">
                                                     <p style="color: var(--text-lighter); font-style: italic; font-size: 13px; text-align: center; padding: 16px;">Select a digital location, or click '+ Add Location' to create a new storage area.</p>
                                                 </div>
-                                                <div class="options-panel-container">
+                                                <div class="options-panel-container is-collapsed">
                                                     <div class="options-panel-header">
                                                         <h4>Tools & Objects</h4>
                                                     </div>
@@ -584,7 +597,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div id="display-editor-tab" class="tab-content" role="tabpanel" aria-labelledby="display-editor-tab-btn">
+                                    <div id="display-editor-tab" class="tab-content" role="tabpanel" aria-labelledby="display-editor-tab-button">
                                         <div class="space-editor-container">
                                             <div class="space-canvas" id="display-canvas">
                                                 <div class="zoom-controls">
@@ -615,7 +628,7 @@
                                                 <div id="display-properties-panel-content">
                                                     <p class="placeholder">Select a display or create a new one to start designing interface elements.</p>
                                                 </div>
-                                                <div class="options-panel-container">
+                                                <div class="options-panel-container is-collapsed">
                                                     <div class="options-panel-header">
                                                         <h4>UI Elements</h4>
                                                     </div>
@@ -768,23 +781,23 @@
                                 
                                 <!-- Inline Statistics -->
                                 <div class="validation-stats-inline">
-                                    <span class="stat-item clickable" data-filter="all" id="total-stat">
+                                    <span class="stat-item clickable" data-filter="all" id="total-stat" role="button" tabindex="0" aria-label="Filter validation to all metrics">
                                         <span class="stat-count" id="total-metrics-count">0</span>
                                         <span class="stat-label">Total</span>
                                     </span>
-                                    <span class="stat-item clickable" data-filter="errors" id="error-stat">
+                                    <span class="stat-item clickable" data-filter="errors" id="error-stat" role="button" tabindex="0" aria-label="Filter validation to errors">
                                         <span class="stat-count error" id="error-metrics-count">0</span>
                                         <span class="stat-label">Errors</span>
                                     </span>
-                                    <span class="stat-item clickable" data-filter="warnings" id="warning-stat">
+                                    <span class="stat-item clickable" data-filter="warnings" id="warning-stat" role="button" tabindex="0" aria-label="Filter validation to warnings">
                                         <span class="stat-count warning" id="warning-metrics-count">0</span>
                                         <span class="stat-label">Warnings</span>
                                     </span>
-                                    <span class="stat-item clickable" data-filter="suggestions" id="suggestion-stat">
+                                    <span class="stat-item clickable" data-filter="suggestions" id="suggestion-stat" role="button" tabindex="0" aria-label="Filter validation to suggestions">
                                         <span class="stat-count suggestion" id="suggestion-metrics-count">0</span>
                                         <span class="stat-label">Suggestions</span>
                                     </span>
-                                    <span class="stat-item clickable" data-filter="passed" id="passed-stat">
+                                    <span class="stat-item clickable" data-filter="passed" id="passed-stat" role="button" tabindex="0" aria-label="Filter validation to passed checks">
                                         <span class="stat-count success" id="success-metrics-count">0</span>
                                         <span class="stat-label">Passed</span>
                                     </span>
@@ -858,24 +871,24 @@
                         <label class="save-method-option">
                             <input type="radio" name="save-method" value="cloud" id="save-cloud-radio" checked>
                             <span class="save-method-content">
-                                <strong>☁️ Save to Cloud</strong>
-                                <small>Get a shareable save code to load from any device</small>
+                                <strong>🔑 Save Code (This Browser)</strong>
+                                <small>Generate a 16-character code stored in this browser for quick reload</small>
                             </span>
                         </label>
                     </div>
                 </div>
                 <div class="save-warning" id="cloud-privacy-warning">
-                    <p><strong>⚠️ Privacy Notice</strong></p>
-                    <p>Your simulation is currently private and locally stored in your browser. By continuing, you agree that your simulation will be stored on a server so it can later be retrieved. Do not store confidential information in simulations, as anyone who guesses your save code will be able to see your simulation in full.</p>
+                    <p><strong>⚠️ Storage Notice</strong></p>
+                    <p>Save codes are stored in this browser's local storage. They are not uploaded to a server. Clearing browser storage will remove saved codes and their simulations.</p>
                     <label>
                         <input type="checkbox" id="privacy-consent-checkbox">
-                        I understand and agree to the privacy terms above
+                        I understand how save code storage works
                     </label>
                 </div>
                 <div class="local-save-name" id="local-save-name" style="display: none;">
                     <label for="local-file-name">File Name:</label>
                     <input type="text" id="local-file-name" placeholder="Enter simulation name..." maxlength="50">
-                    <small>A descriptive name for your simulation (e.g., "Restaurant Kitchen Process"). Do not include file extension.</small>
+                    <small>A descriptive name for your simulation (e.g., "Restaurant Kitchen Process"). File saves as <code>.workspec.json</code>.</small>
                     
                     <div class="custom-metrics-save-option" id="custom-metrics-save-option" style="margin-top: 1rem;">
                         <label>
@@ -895,7 +908,7 @@
                             <input type="text" id="save-code-result" readonly>
                             <button id="copy-save-code-btn" class="btn-secondary">Copy</button>
                         </div>
-                        <p><small>Keep this code safe - you'll need it to load your simulation later.</small></p>
+                        <p><small>Keep this code safe. It can be loaded later on this browser.</small></p>
                     </div>
                     <div id="local-save-result" style="display: none;">
                         <p>File saved successfully to your computer!</p>
@@ -1096,20 +1109,20 @@
                         <label class="load-method-option">
                             <input type="radio" name="load-method" value="cloud" id="load-cloud-radio" checked>
                             <span class="load-method-content">
-                                <strong>☁️ Load from Cloud</strong>
-                                <small>Use a save code to load from the cloud</small>
+                                <strong>🔑 Load from Save Code</strong>
+                                <small>Load a simulation previously saved with a 16-character code</small>
                             </span>
                         </label>
                     </div>
                 </div>
                 <div id="cloud-load-section">
-                    <p>Enter your 16-character save code to load a previously saved simulation:</p>
+                    <p>Enter your 16-character save code to load a simulation stored in this browser:</p>
                     <div class="load-input-container">
                         <input type="text" id="load-code-input" placeholder="Enter save code..." maxlength="16">
                     </div>
                 </div>
                 <div id="local-load-section" style="display: none;">
-                    <p>Click the button below to browse and select a simulation file from your computer:</p>
+                    <p>Click below to browse and select a <code>.workspec.json</code>, <code>.json</code>, or <code>.zip</code> simulation file:</p>
                     <div class="local-load-container">
                         <button type="button" id="browse-local-file-btn" class="btn-secondary">Browse Files</button>
                         <div id="selected-file-info" style="display: none; margin-top: 1rem;">
@@ -1329,6 +1342,8 @@
         <script src="/assets/js/playground/smart-actions-setup.js" defer></script>
         <script src="/assets/js/playground/smart-actions-ui.js" defer></script>
 
+        <script src="/assets/js/playground/playground-migration.js" defer></script>
+
         <!-- Playground modules in dependency order -->
         <script src="/assets/js/playground/playground-utils.js" defer></script>
         <script src="/assets/js/playground/playground-ui.js" defer></script>
@@ -1367,7 +1382,12 @@
                 if (startBtn && continueBtn && realStartBtn) {
                     startBtn.addEventListener('click', () => {
                         continueBtn.click();
-                        realStartBtn.click();
+                        if (typeof window.startTutorial === 'function') {
+                            window.startTutorial();
+                        } else {
+                            window.__startTutorialOnReady = true;
+                            realStartBtn.click();
+                        }
                     });
                 }
             });

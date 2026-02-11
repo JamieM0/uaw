@@ -1,0 +1,516 @@
+{
+  "simulation": {
+    "meta": {
+      "id": "sim_breadmaking_v3_full",
+      "domain": "Bakery Operations",
+      "title": "Artisan Bread Making Process",
+      "description": "A simple bakery process showing basic resource transformation and timing dependencies"
+    },
+    "config": {
+      "time_unit": "minutes",
+      "start_time": "06:00",
+      "end_time": "18:00",
+      "currency": "USD",
+      "locale": "en-US",
+      "timezone": "UTC"
+    },
+    "schema_version": "2.0",
+    "world": {
+      "layout": {
+        "meta": {
+          "units": "meters",
+          "pixels_per_unit": 20
+        },
+        "locations": [
+          {
+            "id": "prep_area",
+            "name": "Prep Area",
+            "shape": {
+              "type": "rect",
+              "x": 50,
+              "y": 50,
+              "width": 300,
+              "height": 150
+            }
+          },
+          {
+            "id": "oven_area",
+            "name": "Oven Area",
+            "shape": {
+              "type": "rect",
+              "x": 400,
+              "y": 50,
+              "width": 150,
+              "height": 150
+            }
+          }
+        ]
+      },
+      "objects": [
+        {
+          "id": "baker",
+          "type": "actor",
+          "name": "Baker",
+          "properties": {
+            "role": "Baker",
+            "cost_per_hour": 25,
+            "state": "available"
+          },
+          "location": "prep_area"
+        },
+        {
+          "id": "assistant",
+          "type": "actor",
+          "name": "Assistant",
+          "properties": {
+            "role": "Assistant Baker",
+            "cost_per_hour": 18,
+            "state": "available"
+          },
+          "location": "prep_area"
+        },
+        {
+          "id": "mixer",
+          "type": "equipment",
+          "name": "Stand Mixer",
+          "properties": {
+            "state": "clean",
+            "capacity": 1
+          },
+          "emoji": "🌀",
+          "location": "prep_area"
+        },
+        {
+          "id": "oven",
+          "type": "equipment",
+          "name": "Commercial Oven",
+          "properties": {
+            "state": "available",
+            "capacity": 4
+          },
+          "emoji": "🔥",
+          "location": "oven_area"
+        },
+        {
+          "id": "workspace",
+          "type": "equipment",
+          "name": "Prep Counter",
+          "properties": {
+            "state": "clean",
+            "capacity": 2
+          },
+          "emoji": "🏢",
+          "location": "prep_area"
+        },
+        {
+          "id": "mixing_bowl",
+          "type": "equipment",
+          "name": "Mixing Bowl",
+          "properties": {
+            "state": "clean",
+            "capacity": 1
+          },
+          "emoji": "🥣",
+          "location": "prep_area"
+        },
+        {
+          "id": "flour",
+          "type": "resource",
+          "name": "Flour",
+          "properties": {
+            "unit": "kg",
+            "quantity": 50,
+            "cost_per_unit": 2.5
+          },
+          "emoji": "🌾",
+          "location": "prep_area"
+        },
+        {
+          "id": "water",
+          "type": "resource",
+          "name": "Water",
+          "properties": {
+            "unit": "liter",
+            "quantity": 20,
+            "cost_per_unit": 0.01
+          },
+          "emoji": "💧",
+          "location": "prep_area"
+        },
+        {
+          "id": "yeast",
+          "type": "resource",
+          "name": "Yeast",
+          "properties": {
+            "unit": "g",
+            "quantity": 500,
+            "cost_per_unit": 0.02
+          },
+          "emoji": "🦠",
+          "location": "prep_area"
+        },
+        {
+          "id": "mixed_dough",
+          "type": "product",
+          "name": "Mixed Dough",
+          "properties": {
+            "unit": "batch",
+            "quantity": 0
+          },
+          "emoji": "🥖",
+          "location": "prep_area"
+        },
+        {
+          "id": "risen_dough",
+          "type": "product",
+          "name": "Risen Dough",
+          "properties": {
+            "unit": "batch",
+            "quantity": 0
+          },
+          "emoji": "🍞",
+          "location": "prep_area"
+        },
+        {
+          "id": "shaped_loaves",
+          "type": "product",
+          "name": "Shaped Loaves",
+          "properties": {
+            "unit": "loaves",
+            "quantity": 0
+          },
+          "emoji": "🥖",
+          "location": "oven_area"
+        },
+        {
+          "id": "baked_bread",
+          "type": "product",
+          "name": "Baked Bread",
+          "properties": {
+            "unit": "loaves",
+            "quantity": 0,
+            "revenue_per_unit": 35
+          },
+          "emoji": "🍞",
+          "location": "oven_area"
+        }
+      ]
+    },
+    "process": {
+      "tasks": [
+        {
+          "id": "prepare_ingredients",
+          "emoji": "🔧",
+          "actor_id": "baker",
+          "start": "06:00",
+          "duration": 30,
+          "location": "prep_area",
+          "depends_on": [],
+          "interactions": [
+            {
+              "property_changes": {
+                "state": {
+                  "from": "clean",
+                  "to": "in-use"
+                }
+              },
+              "target_id": "workspace"
+            }
+          ]
+        },
+        {
+          "id": "measure_flour",
+          "emoji": "⚖️",
+          "actor_id": "baker",
+          "start": "06:45",
+          "duration": 10,
+          "location": "prep_area",
+          "depends_on": [
+            "prepare_ingredients"
+          ]
+        },
+        {
+          "id": "activate_yeast",
+          "emoji": "🦠",
+          "actor_id": "assistant",
+          "start": "06:45",
+          "duration": 10,
+          "location": "prep_area",
+          "depends_on": [],
+          "interactions": []
+        },
+        {
+          "id": "mix_dough",
+          "emoji": "🌀",
+          "actor_id": "baker",
+          "start": "06:55",
+          "duration": 20,
+          "location": "prep_area",
+          "depends_on": [
+            "measure_flour",
+            "activate_yeast"
+          ],
+          "interactions": [
+            {
+              "property_changes": {
+                "quantity": {
+                  "delta": -3
+                }
+              },
+              "target_id": "flour"
+            },
+            {
+              "property_changes": {
+                "quantity": {
+                  "delta": -2
+                }
+              },
+              "target_id": "water"
+            },
+            {
+              "property_changes": {
+                "quantity": {
+                  "delta": -15
+                }
+              },
+              "target_id": "yeast"
+            },
+            {
+              "property_changes": {
+                "quantity": {
+                  "delta": 1
+                }
+              },
+              "target_id": "mixed_dough"
+            },
+            {
+              "property_changes": {
+                "state": {
+                  "from": "clean",
+                  "to": "dirty"
+                }
+              },
+              "target_id": "mixer"
+            }
+          ]
+        },
+        {
+          "id": "knead_dough",
+          "emoji": "👋",
+          "actor_id": "baker",
+          "start": "07:15",
+          "duration": 15,
+          "location": "prep_area",
+          "depends_on": [
+            "mix_dough"
+          ],
+          "interactions": [
+            {
+              "property_changes": {
+                "quantity": {
+                  "delta": -1
+                }
+              },
+              "target_id": "mixed_dough"
+            },
+            {
+              "property_changes": {
+                "quantity": {
+                  "delta": 1
+                }
+              },
+              "target_id": "risen_dough"
+            }
+          ]
+        },
+        {
+          "id": "first_rise",
+          "emoji": "⏰",
+          "actor_id": "baker",
+          "start": "07:30",
+          "duration": 90,
+          "location": "prep_area",
+          "depends_on": [
+            "knead_dough"
+          ],
+          "interactions": [
+            {
+              "property_changes": {
+                "state": {
+                  "from": "in-use",
+                  "to": "occupied"
+                }
+              },
+              "target_id": "workspace",
+              "temporary": true
+            }
+          ]
+        },
+        {
+          "id": "clean_equipment",
+          "emoji": "🧼",
+          "actor_id": "assistant",
+          "start": "07:30",
+          "duration": 20,
+          "location": "prep_area",
+          "depends_on": [],
+          "interactions": [
+            {
+              "property_changes": {
+                "state": {
+                  "from": "dirty",
+                  "to": "clean"
+                }
+              },
+              "target_id": "mixer"
+            }
+          ]
+        },
+        {
+          "id": "shape_loaves",
+          "emoji": "👐",
+          "actor_id": "baker",
+          "start": "09:00",
+          "duration": 25,
+          "location": "prep_area",
+          "depends_on": [
+            "first_rise"
+          ],
+          "interactions": [
+            {
+              "property_changes": {
+                "quantity": {
+                  "delta": -1
+                }
+              },
+              "target_id": "risen_dough"
+            },
+            {
+              "property_changes": {
+                "quantity": {
+                  "delta": 4
+                }
+              },
+              "target_id": "shaped_loaves"
+            }
+          ]
+        },
+        {
+          "id": "preheat_oven",
+          "emoji": "🔥",
+          "actor_id": "assistant",
+          "start": "09:05",
+          "duration": 15,
+          "location": "oven_area",
+          "depends_on": [],
+          "interactions": [
+            {
+              "property_changes": {
+                "state": {
+                  "from": "available",
+                  "to": "preheating"
+                }
+              },
+              "target_id": "oven"
+            }
+          ]
+        },
+        {
+          "id": "second_rise",
+          "emoji": "⏳",
+          "actor_id": "baker",
+          "start": "09:25",
+          "duration": 45,
+          "location": "prep_area",
+          "depends_on": [
+            "shape_loaves"
+          ]
+        },
+        {
+          "id": "bake_bread",
+          "emoji": "🍞",
+          "actor_id": "baker",
+          "start": "10:10",
+          "duration": 35,
+          "location": "oven_area",
+          "depends_on": [
+            "second_rise",
+            "preheat_oven"
+          ],
+          "interactions": [
+            {
+              "property_changes": {
+                "quantity": {
+                  "delta": -4
+                }
+              },
+              "target_id": "shaped_loaves"
+            },
+            {
+              "property_changes": {
+                "quantity": {
+                  "delta": 4
+                }
+              },
+              "target_id": "baked_bread"
+            },
+            {
+              "property_changes": {
+                "state": {
+                  "from": "preheating",
+                  "to": "available"
+                }
+              },
+              "target_id": "oven"
+            }
+          ]
+        }
+      ],
+      "recipes": {
+        "mixed_dough": {
+          "inputs": {
+            "flour": 3,
+            "water": 2,
+            "yeast": 15
+          },
+          "equipment": [
+            "mixer",
+            "mixing_bowl"
+          ],
+          "output_quantity": 1,
+          "process_time": 20
+        },
+        "risen_dough": {
+          "inputs": {
+            "mixed_dough": 1
+          },
+          "equipment": [
+            "workspace"
+          ],
+          "output_quantity": 1,
+          "process_time": 120
+        },
+        "shaped_loaves": {
+          "inputs": {
+            "risen_dough": 1
+          },
+          "equipment": [
+            "workspace"
+          ],
+          "output_quantity": 4,
+          "process_time": 20
+        },
+        "baked_bread": {
+          "inputs": {
+            "shaped_loaves": 4
+          },
+          "equipment": [
+            "oven"
+          ],
+          "output_quantity": 4,
+          "process_time": 25
+        }
+      }
+    }
+  }
+}

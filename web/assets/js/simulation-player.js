@@ -139,9 +139,13 @@ class SimulationPlayer {
     }
 
     formatTime(minutes) {
-        const h = Math.floor(minutes / 60);
-        const m = Math.floor(minutes % 60);
-        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        const safeMinutes = (typeof minutes === 'number' && Number.isFinite(minutes)) ? minutes : 0;
+        const day = Math.floor(safeMinutes / 1440) + 1;
+        const minutesInDay = ((safeMinutes % 1440) + 1440) % 1440;
+        const h = Math.floor(minutesInDay / 60);
+        const m = Math.floor(minutesInDay % 60);
+        const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        return day > 1 ? `Day ${day} ${time}` : time;
     }
 
     togglePlay() {
@@ -308,10 +312,20 @@ class SimulationPlayer {
             const isTaskCompleted = this.playheadTime >= task.end_minutes;
             
             (task.interactions || []).forEach(interaction => {
+                const isTemporary = interaction?.temporary === true || interaction?.revert_after === true;
+
                 // Handle object creation
-                if (interaction.add_objects) {
-                    interaction.add_objects.forEach(newObj => {
-                        const shouldCreate = isTaskActive || (isTaskCompleted && !interaction.revert_after);
+                const createdObjects = [];
+                if (interaction && interaction.action === 'create' && interaction.object) {
+                    createdObjects.push(interaction.object);
+                } else if (interaction && Array.isArray(interaction.add_objects)) {
+                    createdObjects.push(...interaction.add_objects);
+                }
+
+                if (createdObjects.length > 0) {
+                    createdObjects.forEach(newObj => {
+                        if (!newObj || !newObj.id) return;
+                        const shouldCreate = isTaskActive || (isTaskCompleted && !isTemporary);
                         
                         if (shouldCreate && !this.liveObjects.created.find(obj => obj.id === newObj.id)) {
                             // Create the object
@@ -319,12 +333,15 @@ class SimulationPlayer {
                                 ...newObj,
                                 createdAt: task.start_minutes,
                                 createdBy: task.id,
-                                emoji: newObj.properties?.emoji || this.getDefaultEmojiForType(newObj.type)
+                                emoji: newObj.emoji || newObj.properties?.emoji || this.getDefaultEmojiForType(newObj.type)
                             };
                             this.liveObjects.created.push(createdObject);
                             
                             // Add to appropriate category dynamically
-                            if (newObj.type && this.liveObjects[newObj.type]) {
+                            if (newObj.type) {
+                                if (!Array.isArray(this.liveObjects[newObj.type])) {
+                                    this.liveObjects[newObj.type] = [];
+                                }
                                 this.liveObjects[newObj.type].push(createdObject);
                             }
                         } else if (!shouldCreate && this.liveObjects.created.find(obj => obj.id === newObj.id)) {
@@ -342,9 +359,17 @@ class SimulationPlayer {
                 }
                 
                 // Handle object deletion
-                if (interaction.remove_objects) {
-                    interaction.remove_objects.forEach(objectId => {
-                        const shouldDelete = isTaskActive || (isTaskCompleted && !interaction.revert_after);
+                const deletedIds = [];
+                if (interaction && interaction.action === 'delete' && (interaction.target_id || interaction.object_id)) {
+                    deletedIds.push(interaction.target_id || interaction.object_id);
+                } else if (interaction && Array.isArray(interaction.remove_objects)) {
+                    deletedIds.push(...interaction.remove_objects);
+                }
+
+                if (deletedIds.length > 0) {
+                    deletedIds.forEach(objectId => {
+                        if (!objectId) return;
+                        const shouldDelete = isTaskActive || (isTaskCompleted && !isTemporary);
                         
                         if (shouldDelete && !this.liveObjects.deleted.find(obj => obj.id === objectId)) {
                             // Find and store the object before deletion
@@ -370,7 +395,10 @@ class SimulationPlayer {
                                 this.liveObjects.deleted = this.liveObjects.deleted.filter(obj => obj.id !== objectId);
                                 
                                 // Restore to appropriate category dynamically
-                                if (deletedObj.type && this.liveObjects[deletedObj.type]) {
+                                if (deletedObj.type) {
+                                    if (!Array.isArray(this.liveObjects[deletedObj.type])) {
+                                        this.liveObjects[deletedObj.type] = [];
+                                    }
                                     this.liveObjects[deletedObj.type].push(deletedObj);
                                 }
                             }
@@ -662,20 +690,23 @@ class SimulationPlayer {
         }
         
         // Apply the property change
+        let appliedValue = newValue;
         if (revertAfter && !isTaskActive) {
             // Revert to original value
             if (current[originalPropertyKey] !== undefined) {
                 current[finalProperty] = current[originalPropertyKey];
                 delete current[originalPropertyKey]; // Clean up tracking property
+                appliedValue = current[finalProperty];
             }
         } else {
             // Apply new value
             current[finalProperty] = newValue;
+            appliedValue = newValue;
         }
         
         
         // Instead of marking for Monaco overwrite, apply changes directly to Monaco editor
-        this.updateMonacoProperty(targetObject.id, property, newValue);
+        this.updateMonacoProperty(targetObject.id, property, appliedValue);
     }
 
     updateMonacoProperty(objectId, property, newValue) {
@@ -740,6 +771,33 @@ class SimulationPlayer {
                 });
             }
 
+            // WorkSpec v2: search in simulation.world.objects
+            if (!objectFound && Array.isArray(currentJson.simulation?.world?.objects)) {
+                const obj = currentJson.simulation.world.objects.find(obj => obj && obj.id === objectId);
+                if (obj) {
+                    // Handle nested properties like "properties.emoji"
+                    const propertyPath = property.split('.');
+                    if (propertyPath.length > 1) {
+                        let current = obj;
+                        for (let i = 0; i < propertyPath.length - 1; i++) {
+                            const key = propertyPath[i];
+                            if (key === "__proto__" || key === "prototype" || key === "constructor") {
+                                // Skip dangerous keys to prevent prototype pollution
+                                break;
+                            }
+                            if (!current[key]) {
+                                current[key] = {};
+                            }
+                            current = current[key];
+                        }
+                        current[propertyPath[propertyPath.length - 1]] = newValue;
+                    } else {
+                        obj[property] = newValue;
+                    }
+                    objectFound = true;
+                }
+            }
+
             // Search in layout.locations
             if (!objectFound && currentJson.simulation?.layout?.locations) {
                 const obj = currentJson.simulation.layout.locations.find(obj => obj.id === objectId);
@@ -748,10 +806,41 @@ class SimulationPlayer {
                     if (propertyPath.length > 1) {
                         let current = obj;
                         for (let i = 0; i < propertyPath.length - 1; i++) {
-                            if (!current[propertyPath[i]]) {
-                                current[propertyPath[i]] = {};
+                            const key = propertyPath[i];
+                            if (key === "__proto__" || key === "prototype" || key === "constructor") {
+                                // Skip dangerous keys to prevent prototype pollution
+                                break;
                             }
-                            current = current[propertyPath[i]];
+                            if (!current[key]) {
+                                current[key] = {};
+                            }
+                            current = current[key];
+                        }
+                        current[propertyPath[propertyPath.length - 1]] = newValue;
+                    } else {
+                        obj[property] = newValue;
+                    }
+                    objectFound = true;
+                }
+            }
+
+            // WorkSpec v2: search in simulation.world.layout.locations
+            if (!objectFound && currentJson.simulation?.world?.layout?.locations) {
+                const obj = currentJson.simulation.world.layout.locations.find(obj => obj.id === objectId);
+                if (obj) {
+                    const propertyPath = property.split('.');
+                    if (propertyPath.length > 1) {
+                        let current = obj;
+                        for (let i = 0; i < propertyPath.length - 1; i++) {
+                            const key = propertyPath[i];
+                            if (key === "__proto__" || key === "prototype" || key === "constructor") {
+                                // Skip dangerous keys to prevent prototype pollution
+                                break;
+                            }
+                            if (!current[key]) {
+                                current[key] = {};
+                            }
+                            current = current[key];
                         }
                         current[propertyPath[propertyPath.length - 1]] = newValue;
                     } else {
@@ -772,10 +861,15 @@ class SimulationPlayer {
                             if (propertyPath.length > 1) {
                                 let current = element;
                                 for (let i = 0; i < propertyPath.length - 1; i++) {
-                                    if (!current[propertyPath[i]]) {
-                                        current[propertyPath[i]] = {};
+                                    const key = propertyPath[i];
+                                    if (key === "__proto__" || key === "prototype" || key === "constructor") {
+                                        // Skip dangerous keys to prevent prototype pollution
+                                        break;
                                     }
-                                    current = current[propertyPath[i]];
+                                    if (!current[key]) {
+                                        current[key] = {};
+                                    }
+                                    current = current[key];
                                 }
                                 current[propertyPath[propertyPath.length - 1]] = newValue;
                             } else {
@@ -923,13 +1017,21 @@ class SimulationPlayer {
             
             // Handle new-style interactions for all object types
             (task.interactions || []).forEach(interaction => {
+                if (!interaction || typeof interaction !== 'object') return;
+
+                // v2 field name, with legacy fallback
+                const targetId = interaction.target_id || interaction.object_id;
+                if (!targetId) return;
+
+                const isTemporary = interaction.temporary === true || interaction.revert_after === true;
+
                 // Search for the target object in ALL live object arrays, not just the current objectType
                 let targetObject = null;
                 
                 // Search through all object type arrays in liveObjects
                 for (const [objType, objArray] of Object.entries(this.liveObjects)) {
                     if (Array.isArray(objArray)) {
-                        const found = objArray.find(obj => obj && obj.id === interaction.object_id);
+                        const found = objArray.find(obj => obj && obj.id === targetId);
                         if (found) {
                             targetObject = found;
                             break;
@@ -940,7 +1042,7 @@ class SimulationPlayer {
                 
                 // If not found in liveObjects, search in the raw simulation data
                 if (!targetObject) {
-                    targetObject = this.findObjectById(interaction.object_id);
+                    targetObject = this.findObjectById(targetId);
                 }
                 
                 
@@ -949,30 +1051,121 @@ class SimulationPlayer {
                     
                     // Process all property changes
                     Object.entries(interaction.property_changes).forEach(([property, changes]) => {
-                        if (changes.to !== undefined) {
+                        if (!changes || typeof changes !== 'object') return;
+
+                        const hasTo = changes.to !== undefined;
+                        const hasSet = changes.set !== undefined;
+
+                        if (hasTo || hasSet) {
+                            const toValue = hasTo ? changes.to : changes.set;
                             let newValue;
                             if (isTaskActive) {
-                                newValue = changes.to;
+                                newValue = toValue;
                             } else { // Task is finished
-                                newValue = interaction.revert_after === true ? changes.from : changes.to;
+                                if (isTemporary) {
+                                    if (changes.from !== undefined) {
+                                        newValue = changes.from;
+                                    } else if (property === 'state') {
+                                        newValue = states[targetId];
+                                    } else if (propertyOverrides[targetId] && propertyOverrides[targetId][property] !== undefined) {
+                                        newValue = propertyOverrides[targetId][property];
+                                    } else {
+                                        newValue = targetObject?.properties?.[property];
+                                    }
+                                } else {
+                                    newValue = toValue;
+                                }
                             }
                             
                             if (property === 'state') {
-                                states[interaction.object_id] = newValue;
+                                states[targetId] = newValue;
                             } else {
                                 // Initialize propertyOverrides for this object if it doesn't exist
-                                if (!propertyOverrides[interaction.object_id]) {
-                                    propertyOverrides[interaction.object_id] = {};
+                                if (!propertyOverrides[targetId]) {
+                                    propertyOverrides[targetId] = {};
                                 }
-                                propertyOverrides[interaction.object_id][property] = newValue;
+                                propertyOverrides[targetId][property] = newValue;
                             }
                             
                             // Also update the actual object data for persistence
-                            this.updateObjectProperty(targetObject, property, newValue, changes.from, interaction.revert_after, isTaskActive);
-                        } else if (changes.delta !== undefined && property === 'quantity') {
-                            // Handle delta changes for quantities (only for completed tasks)
-                            if (task.end_minutes <= this.playheadTime && stocks[interaction.object_id] !== undefined) {
-                                stocks[interaction.object_id] += changes.delta;
+                            const objectPropertyPath = (property === 'location' || property === 'emoji' || property.startsWith('properties.'))
+                                ? property
+                                : `properties.${property}`;
+                            this.updateObjectProperty(targetObject, objectPropertyPath, newValue, changes.from, isTemporary, isTaskActive);
+                        } else {
+                            // Apply non-assignment operators after completion (or during active task if temporary)
+                            const shouldApply = isTemporary ? isTaskActive : (task.end_minutes <= this.playheadTime);
+                            if (!shouldApply) return;
+
+                            const hasDelta = changes.delta !== undefined;
+                            const hasMultiply = changes.multiply !== undefined;
+                            const hasAppend = changes.append !== undefined;
+                            const hasRemove = changes.remove !== undefined;
+                            const hasIncrement = changes.increment === true;
+                            const hasDecrement = changes.decrement === true;
+
+                            const objectPropertyPath = (property === 'location' || property === 'emoji' || property.startsWith('properties.'))
+                                ? property
+                                : `properties.${property}`;
+
+                            const readByPath = (obj, path) => {
+                                if (!obj || typeof obj !== 'object') return undefined;
+                                const parts = String(path).split('.');
+                                let current = obj;
+                                for (const part of parts) {
+                                    if (!current || typeof current !== 'object') return undefined;
+                                    current = current[part];
+                                }
+                                return current;
+                            };
+
+                            if (hasDelta || hasMultiply || hasIncrement || hasDecrement) {
+                                const delta = hasDelta ? Number(changes.delta) : (hasIncrement ? 1 : (hasDecrement ? -1 : null));
+                                const multiplier = hasMultiply ? Number(changes.multiply) : null;
+
+                                if (property === 'quantity' && stocks[targetId] !== undefined) {
+                                    let base = Number(stocks[targetId]);
+                                    if (!Number.isFinite(base)) base = 0;
+                                    let next = base;
+                                    if (delta !== null && Number.isFinite(delta)) next += delta;
+                                    if (multiplier !== null && Number.isFinite(multiplier)) next *= multiplier;
+                                    stocks[targetId] = next;
+                                } else {
+                                    if (!propertyOverrides[targetId]) {
+                                        propertyOverrides[targetId] = {};
+                                    }
+                                    let base = propertyOverrides[targetId][property];
+                                    if (base === undefined) {
+                                        base = readByPath(targetObject, objectPropertyPath);
+                                    }
+                                    base = Number(base);
+                                    if (!Number.isFinite(base)) base = 0;
+                                    let next = base;
+                                    if (delta !== null && Number.isFinite(delta)) next += delta;
+                                    if (multiplier !== null && Number.isFinite(multiplier)) next *= multiplier;
+                                    propertyOverrides[targetId][property] = next;
+                                }
+                            } else if (hasAppend || hasRemove) {
+                                if (!propertyOverrides[targetId]) {
+                                    propertyOverrides[targetId] = {};
+                                }
+                                let base = propertyOverrides[targetId][property];
+                                if (base === undefined) {
+                                    base = readByPath(targetObject, objectPropertyPath);
+                                }
+                                const arr = Array.isArray(base) ? [...base] : [];
+
+                                if (hasAppend) {
+                                    arr.push(changes.append);
+                                }
+                                if (hasRemove) {
+                                    const removeValue = changes.remove;
+                                    for (let idx = arr.length - 1; idx >= 0; idx -= 1) {
+                                        if (arr[idx] === removeValue) arr.splice(idx, 1);
+                                    }
+                                }
+
+                                propertyOverrides[targetId][property] = arr;
                             }
                         }
                     });
@@ -981,18 +1174,23 @@ class SimulationPlayer {
                     const isTaskActive = this.playheadTime >= task.start_minutes && this.playheadTime < task.end_minutes;
 
                     Object.entries(interaction.property_changes).forEach(([property, changes]) => {
-                        if (changes.to !== undefined) {
+                        if (!changes || typeof changes !== 'object') return;
+
+                        const hasTo = changes.to !== undefined;
+                        const hasSet = changes.set !== undefined;
+                        if (hasTo || hasSet) {
+                            const toValue = hasTo ? changes.to : changes.set;
                             let newValue;
                             if (isTaskActive) {
-                                newValue = changes.to;
+                                newValue = toValue;
                             } else { // Task is finished
-                                newValue = interaction.revert_after === true ? changes.from : changes.to;
+                                newValue = isTemporary ? changes.from : toValue;
                             }
 
                             // Try to update display element property directly via Monaco
                             // For display elements, properties like "border" should be nested under "properties"
                             const displayProperty = property.startsWith('properties.') ? property : `properties.${property}`;
-                            this.updateMonacoProperty(interaction.object_id, displayProperty, newValue);
+                            this.updateMonacoProperty(targetId, displayProperty, newValue);
                         }
                     });
                 }

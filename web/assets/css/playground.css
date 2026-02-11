@@ -33,7 +33,8 @@ body {
     background: var(--bg-color);
     box-shadow: var(--shadow-sm);
     padding: 0.5rem 0;
-    height: 50px;
+    min-height: 50px;
+    height: auto;
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -85,6 +86,10 @@ body {
     margin-left: auto;
     /* Firefox flexbox shrink fix */
     flex-shrink: 0;
+}
+
+.mobile-only {
+    display: none !important;
 }
 
 /* New grouped button styles */
@@ -751,6 +756,12 @@ body {
     border-color: var(--primary-color);
 }
 
+.dropdown-item-button.metrics-active {
+    background: rgba(var(--primary-color-rgb, 18, 108, 168), 0.12);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
 /* Validation Controls */
 .validation-controls {
     display: flex;
@@ -1234,8 +1245,8 @@ body {
     background: white;
     border-radius: var(--border-radius-md);
     padding: 2rem;
-    max-width: none;
-    width: 100%;
+    width: min(92vw, 760px);
+    max-width: 760px;
     max-height: 80vh;
     overflow-y: auto;
     box-shadow: var(--shadow-lg);
@@ -1248,9 +1259,15 @@ body {
 
 #add-object-modal .dialog,
 #add-task-modal .dialog {
-    width: 100%;
+    width: min(92vw, 720px);
     max-width: 720px;
     box-shadow: none !important;
+}
+
+#save-modal .dialog,
+#load-modal .dialog {
+    width: min(92vw, 680px);
+    max-width: 680px;
 }
 
 #welcome-overlay .dialog {
@@ -1258,10 +1275,81 @@ body {
     width: 90%;
 }
 
+#workspec-migration-modal .dialog {
+    max-width: 680px;
+    width: min(92vw, 680px);
+}
+
+.workspec-migration-dialog {
+    position: relative;
+    padding: 2.1rem;
+    border: 1px solid rgba(var(--primary-color-rgb), 0.24);
+    border-radius: 14px;
+    box-shadow: 0 24px 56px rgba(15, 38, 62, 0.22);
+    background:
+        radial-gradient(circle at top right, rgba(var(--primary-color-rgb), 0.08), transparent 48%),
+        #fff;
+}
+
+#workspec-migration-modal {
+    backdrop-filter: blur(2px);
+}
+
+.workspec-migration-dialog h3 {
+    margin: 0 0 0.9rem 0;
+    color: var(--primary-color);
+    font-size: clamp(1.28rem, 1.7vw, 1.5rem);
+    letter-spacing: -0.015em;
+}
+
+.workspec-migration-dialog p {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--text-color);
+}
+
+.workspec-migration-links {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+}
+
+.workspec-migration-links a {
+    display: block;
+    text-decoration: none;
+    background: linear-gradient(180deg, #fbfdff 0%, #f5f9ff 100%);
+    border: 1px solid rgba(var(--primary-color-rgb), 0.26);
+    border-radius: 10px;
+    color: var(--primary-color);
+    font-weight: 600;
+    padding: 0.75rem 0.9rem;
+    transition: background-color var(--transition-normal), border-color var(--transition-normal), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.workspec-migration-links a:hover {
+    background: rgba(var(--primary-color-rgb), 0.12);
+    border-color: rgba(var(--primary-color-rgb), 0.48);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.workspec-migration-actions {
+    margin-top: 1.25rem;
+    justify-content: flex-end;
+}
+
+@media (max-width: 640px) {
+    .workspec-migration-dialog {
+        padding: 1.35rem;
+    }
+}
+
 #add-task-modal .modal-content,
 #add-object-modal .modal-content {
     width: 100%;
     max-width: none;
+    max-height: none;
+    overflow: visible;
     box-shadow: none !important;
 }
 
@@ -1916,13 +2004,20 @@ body {
 /* Tutorial & Gamification Styles */
 .tutorial-panel {
     display: none; /* Hidden by default */
-    width: 350px;
+    width: 370px;
+    max-width: min(92vw, 420px);
     flex-shrink: 0; /* Prevent the panel from shrinking */
-    background: #fff;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(255, 184, 108, 0.28), transparent 38%),
+        radial-gradient(circle at 0% 100%, rgba(62, 122, 94, 0.18), transparent 42%),
+        linear-gradient(165deg, #f7f4ee 0%, #ffffff 50%, #f4f7f0 100%);
     z-index: 1500;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 18px 46px rgba(24, 28, 33, 0.18);
     flex-direction: column;
-    border-right: 1px solid var(--border-color);
+    border-right: 1px solid rgba(37, 44, 52, 0.16);
+    position: relative;
+    overflow: hidden;
+    --tutorial-progress: 0%;
 }
 
 .tutorial-panel.visible {
@@ -1930,78 +2025,169 @@ body {
 }
 
 .tutorial-header {
-    padding: 1rem;
-    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.1rem;
+    border-bottom: 1px solid rgba(47, 61, 73, 0.16);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 0.75rem;
+    background:
+        linear-gradient(140deg, rgba(244, 247, 240, 0.86), rgba(255, 255, 255, 0.6));
+    position: relative;
 }
 
 .tutorial-header h3 {
     margin: 0;
+    font-family: "Avenir Next", "Gill Sans", "Trebuchet MS", sans-serif;
+    font-size: 1.06rem;
+    letter-spacing: 0.01em;
+    color: #142a38;
+}
+
+.tutorial-header::before {
+    content: attr(data-step);
+    position: absolute;
+    left: 1.1rem;
+    bottom: 0.35rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: rgba(20, 42, 56, 0.68);
+}
+
+.tutorial-header::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: var(--tutorial-progress, 0%);
+    height: 3px;
+    background: linear-gradient(90deg, #2b5e4b 0%, #f09a3e 100%);
+    transition: width 220ms ease;
 }
 
 .tutorial-exit-btn {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(31, 45, 62, 0.2);
+    font-size: 1.3rem;
     cursor: pointer;
-    color: var(--text-light);
+    color: #244154;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    line-height: 1;
+    transition: transform 120ms ease, background-color 120ms ease, border-color 120ms ease;
 }
 
 .tutorial-exit-btn:hover {
-    color: var(--text-color);
+    color: #0f2230;
+    background-color: #ffffff;
+    border-color: rgba(31, 45, 62, 0.35);
+    transform: translateY(-1px);
 }
 
 .tutorial-content {
     flex: 1;
-    padding: 1rem;
+    padding: 1rem 1.1rem 1.2rem;
     overflow-y: auto;
-    line-height: 1.6;
+    line-height: 1.58;
     /* Performance optimizations for smooth scrolling */
     will-change: transform;
     transform: translateZ(0);
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
+    color: #1f2b36;
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    font-size: 0.93rem;
+}
+
+.tutorial-content strong {
+    color: #143142;
+}
+
+.tutorial-content p {
+    margin: 0 0 0.72rem 0;
+}
+
+.tutorial-content ul,
+.tutorial-content ol {
+    margin: 0.35rem 0 0.8rem 1.15rem;
+    padding-left: 0.55rem;
+}
+
+.tutorial-content li {
+    margin: 0.38rem 0;
+    color: #2a3844;
 }
 
 .tutorial-content code {
-    background: var(--bg-light);
-    padding: 2px 5px;
-    border-radius: 4px;
-    font-family: monospace;
+    background: #e7f1ee;
+    color: #123748;
+    padding: 2px 6px;
+    border-radius: 5px;
+    border: 1px solid rgba(18, 55, 72, 0.16);
+    font-family: "Menlo", "Consolas", monospace;
 }
 
 .tutorial-footer {
-    padding: 1rem;
-    border-top: 1px solid var(--border-color);
+    padding: 0.9rem 1.1rem 1rem;
+    border-top: 1px solid rgba(47, 61, 73, 0.16);
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    gap: 0.6rem;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(242, 246, 237, 0.85));
 }
 
 .tutorial-footer button {
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--border-color);
-    background: var(--bg-light);
+    padding: 0.5rem 0.96rem;
+    border: 1px solid rgba(33, 47, 59, 0.22);
+    background: rgba(255, 255, 255, 0.84);
     cursor: pointer;
-    border-radius: var(--border-radius-sm);
+    border-radius: 999px;
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    font-weight: 600;
+    color: #1c3341;
+    min-width: 84px;
+    transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+.tutorial-footer button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(12, 26, 37, 0.12);
+    background: #ffffff;
 }
 
 .tutorial-footer button:disabled {
-    background: var(--border-color);
-    color: var(--text-light);
+    background: rgba(201, 208, 214, 0.55);
+    color: rgba(43, 53, 63, 0.5);
+    border-color: rgba(33, 47, 59, 0.1);
     cursor: not-allowed;
+    box-shadow: none;
 }
 
 .tutorial-footer button#tutorial-next-btn {
-    background: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
+    background: linear-gradient(130deg, #2f634f 0%, #1d4c3a 52%, #133a2e 100%);
+    color: #f4faf8;
+    border-color: rgba(11, 38, 29, 0.55);
 }
 
 .tutorial-footer button#tutorial-next-btn:disabled {
-    background: var(--primary-light);
-    border-color: var(--primary-light);
+    background: linear-gradient(130deg, rgba(129, 150, 137, 0.88), rgba(118, 141, 130, 0.72));
+    border-color: rgba(112, 132, 122, 0.5);
+}
+
+#tutorial-status .validation-success {
+    border: 1px solid rgba(24, 82, 59, 0.24);
+    background: linear-gradient(160deg, rgba(229, 248, 237, 0.9), rgba(239, 252, 246, 0.82));
+    color: #1b513b;
+    padding: 0.55rem 0.65rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    line-height: 1.38;
 }
 
 /* Hide buttons when tutorial is active */
@@ -2010,6 +2196,92 @@ body.tutorial-active #render-simulation-btn,
 body.tutorial-active #submit-btn,
 body.tutorial-active #auto-render-toggle {
     display: none;
+}
+
+[data-theme="dark"] .tutorial-panel {
+    background:
+        radial-gradient(circle at 100% 0%, rgba(245, 164, 85, 0.18), transparent 36%),
+        radial-gradient(circle at 0% 100%, rgba(79, 143, 113, 0.16), transparent 40%),
+        linear-gradient(165deg, #182029 0%, #111a22 46%, #162127 100%);
+    border-right-color: rgba(160, 193, 214, 0.28);
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.44);
+}
+
+[data-theme="dark"] .tutorial-header {
+    border-bottom-color: rgba(165, 195, 214, 0.21);
+    background: linear-gradient(140deg, rgba(32, 44, 56, 0.86), rgba(20, 31, 40, 0.8));
+}
+
+[data-theme="dark"] .tutorial-header h3 {
+    color: #d8e8f3;
+}
+
+[data-theme="dark"] .tutorial-header::before {
+    color: rgba(203, 225, 240, 0.74);
+}
+
+[data-theme="dark"] .tutorial-content {
+    color: #d1d9e0;
+}
+
+[data-theme="dark"] .tutorial-content strong {
+    color: #e8f5ff;
+}
+
+[data-theme="dark"] .tutorial-content li {
+    color: #c9d4df;
+}
+
+[data-theme="dark"] .tutorial-content code {
+    background: rgba(38, 62, 77, 0.86);
+    color: #d8f0ff;
+    border-color: rgba(178, 222, 247, 0.22);
+}
+
+[data-theme="dark"] .tutorial-exit-btn {
+    background: rgba(24, 37, 47, 0.92);
+    color: #bdd6e5;
+    border-color: rgba(169, 206, 226, 0.3);
+}
+
+[data-theme="dark"] .tutorial-exit-btn:hover {
+    background: rgba(35, 53, 66, 0.96);
+    color: #ebf6ff;
+    border-color: rgba(189, 222, 240, 0.42);
+}
+
+[data-theme="dark"] .tutorial-footer {
+    border-top-color: rgba(165, 195, 214, 0.21);
+    background: linear-gradient(180deg, rgba(17, 26, 34, 0.9), rgba(20, 30, 39, 0.96));
+}
+
+[data-theme="dark"] .tutorial-footer button {
+    background: rgba(31, 47, 59, 0.92);
+    color: #d6e5f0;
+    border-color: rgba(169, 204, 223, 0.32);
+}
+
+[data-theme="dark"] .tutorial-footer button:hover:not(:disabled) {
+    background: rgba(44, 62, 76, 0.96);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.34);
+}
+
+[data-theme="dark"] .tutorial-footer button:disabled {
+    background: rgba(82, 98, 110, 0.52);
+    color: rgba(205, 217, 226, 0.46);
+    border-color: rgba(167, 198, 214, 0.15);
+}
+
+[data-theme="dark"] .tutorial-footer button#tutorial-next-btn {
+    background: linear-gradient(130deg, #2e7d56 0%, #1f5e40 55%, #164632 100%);
+    color: #ebf8f2;
+    border-color: rgba(74, 160, 117, 0.58);
+}
+
+[data-theme="dark"] #tutorial-status .validation-success {
+    border-color: rgba(114, 208, 163, 0.35);
+    background: linear-gradient(160deg, rgba(27, 69, 52, 0.78), rgba(24, 54, 45, 0.68));
+    color: #baf7d7;
 }
 
 /* Help Dropdown Styles */
@@ -2030,23 +2302,42 @@ body.tutorial-active #auto-render-toggle {
     right: 0;
 }
 
-.dropdown-content a {
+.dropdown-content a,
+.dropdown-content button,
+.dropdown-item-button {
     color: black;
     padding: 12px 16px;
     text-decoration: none;
     display: block;
     border-bottom: 1px solid #eee;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    cursor: pointer;
+    font-size: 0.875rem;
 }
 
-.dropdown-content a:last-child {
+.dropdown-content a:last-child,
+.dropdown-content button:last-child {
     border-bottom: none;
 }
 
-.dropdown-content a:hover {
+.dropdown-content a:hover,
+.dropdown-content button:hover,
+.dropdown-item-button:hover {
     background-color: #f1f1f1;
 }
 
-.dropdown:hover .dropdown-content {
+.dropdown-content button:focus-visible,
+.dropdown-content a:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: -2px;
+}
+
+.dropdown.open .dropdown-content {
     display: block;
 }
 
@@ -2333,7 +2624,8 @@ body.tutorial-active #auto-render-toggle {
 
 .form-group input:focus,
 .form-group select:focus {
-    outline: none;
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
 }
@@ -2402,7 +2694,8 @@ input[style*="background-color: #e8f4f8"] {
 
 .form-group input.required-missing:focus,
 .form-group select.required-missing:focus {
-    outline: none;
+    outline: 2px solid var(--error-color);
+    outline-offset: 2px;
     border-color: var(--error-color);
     box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
 }
@@ -2744,7 +3037,8 @@ optgroup[label*="Products"] {
 
 .feedback-form-field input:focus,
 .feedback-form-field textarea:focus {
-    outline: none;
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(18, 108, 168, 0.1);
 }
@@ -2992,7 +3286,8 @@ optgroup[label*="Products"] {
 }
 
 .local-save-name input:focus {
-    outline: none;
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
 }
@@ -3052,6 +3347,80 @@ optgroup[label*="Products"] {
     font-family: monospace;
     font-weight: 600;
     color: var(--primary-color);
+}
+
+/* Mobile fallback mode: validation-first, optional editor */
+@media (max-width: 900px) {
+    .mobile-only {
+        display: inline-flex !important;
+    }
+
+    .playground-header .logo,
+    .playground-header .file-operations-group,
+    .playground-header .edit-operations-group,
+    .playground-header .playback-controls-group,
+    .playground-header .advanced-tools-group,
+    .playground-header #tools-menu-btn,
+    .playground-header #dark-mode-toggle,
+    .playground-header #metrics-mode-toggle,
+    .playground-header #add-metric-btn,
+    .playground-header #fullscreen-btn {
+        display: none !important;
+    }
+
+    .playground-header .header-container {
+        gap: 0.5rem;
+    }
+
+    .playground-header h1 {
+        font-size: 1rem;
+    }
+
+    .playground-top {
+        height: 0 !important;
+        min-height: 0 !important;
+        border-bottom: none;
+        overflow: hidden;
+    }
+
+    .playground-left,
+    .standard-mode-layout,
+    .metrics-mode-layout,
+    .simulation-panel,
+    .tutorial-panel,
+    .metrics-editor-panel,
+    .resize-handle-horizontal {
+        display: none !important;
+    }
+
+    .playground-bottom {
+        height: calc(100vh - 56px);
+        border-top: none;
+    }
+
+    body.mobile-editor-open .playground-top {
+        display: flex !important;
+        height: 48vh !important;
+        border-bottom: 1px solid var(--border-color);
+        overflow: visible;
+    }
+
+    body.mobile-editor-open .playground-left,
+    body.mobile-editor-open .standard-mode-layout,
+    body.mobile-editor-open .json-editor-panel {
+        display: flex !important;
+        width: 100% !important;
+        border-right: none;
+    }
+
+    body.mobile-editor-open .resize-handle-vertical {
+        display: none !important;
+    }
+
+    body.mobile-editor-open .playground-bottom {
+        height: calc(52vh - 56px);
+        border-top: 1px solid var(--border-color);
+    }
 }
 
 /* Disable animations during resize */
@@ -3334,12 +3703,14 @@ body.theme-switching * {
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.5);
 }
 
-[data-theme="dark"] .dropdown-content a {
+[data-theme="dark"] .dropdown-content a,
+[data-theme="dark"] .dropdown-content button {
     color: var(--text-color);
     border-color: var(--border-color);
 }
 
-[data-theme="dark"] .dropdown-content a:hover {
+[data-theme="dark"] .dropdown-content a:hover,
+[data-theme="dark"] .dropdown-content button:hover {
     background: var(--bg-hover);
 }
 
@@ -3451,7 +3822,8 @@ body.theme-switching * {
 /* Modal-specific Dark Mode Styles */
 [data-theme="dark"] #add-object-modal .dialog,
 [data-theme="dark"] #add-task-modal .dialog,
-[data-theme="dark"] #feedback-modal .dialog {
+[data-theme="dark"] #feedback-modal .dialog,
+[data-theme="dark"] #workspec-migration-modal .dialog {
     background: var(--bg-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
@@ -3462,6 +3834,24 @@ body.theme-switching * {
 [data-theme="dark"] #feedback-modal .feedback-form {
     background: var(--bg-color);
     color: var(--text-color);
+}
+
+[data-theme="dark"] #workspec-migration-modal .workspec-migration-dialog {
+    border-color: rgba(74, 159, 219, 0.35);
+}
+
+[data-theme="dark"] #workspec-migration-modal .workspec-migration-dialog h3,
+[data-theme="dark"] #workspec-migration-modal .workspec-migration-links a {
+    color: #7bc6ff;
+}
+
+[data-theme="dark"] #workspec-migration-modal .workspec-migration-links a {
+    background: rgba(74, 159, 219, 0.1);
+    border-color: rgba(74, 159, 219, 0.45);
+}
+
+[data-theme="dark"] #workspec-migration-modal .workspec-migration-links a:hover {
+    background: rgba(74, 159, 219, 0.2);
 }
 
 [data-theme="dark"] #add-object-modal .form-group,
@@ -3680,7 +4070,8 @@ body.theme-switching * {
 /* Dialog buttons dark mode for modals */
 [data-theme="dark"] #add-object-modal .dialog-buttons .btn-secondary,
 [data-theme="dark"] #add-task-modal .dialog-buttons .btn-secondary,
-[data-theme="dark"] #feedback-modal .feedback-actions .btn-secondary {
+[data-theme="dark"] #feedback-modal .feedback-actions .btn-secondary,
+[data-theme="dark"] #workspec-migration-modal .dialog-buttons .btn-secondary {
     background: var(--bg-light);
     color: var(--text-color);
     border-color: var(--border-color);
@@ -3688,14 +4079,16 @@ body.theme-switching * {
 
 [data-theme="dark"] #add-object-modal .dialog-buttons .btn-secondary:hover,
 [data-theme="dark"] #add-task-modal .dialog-buttons .btn-secondary:hover,
-[data-theme="dark"] #feedback-modal .feedback-actions .btn-secondary:hover {
+[data-theme="dark"] #feedback-modal .feedback-actions .btn-secondary:hover,
+[data-theme="dark"] #workspec-migration-modal .dialog-buttons .btn-secondary:hover {
     background: var(--bg-hover);
     border-color: var(--primary-color);
 }
 
 [data-theme="dark"] #add-object-modal .dialog-buttons .btn-primary,
 [data-theme="dark"] #add-task-modal .dialog-buttons .btn-primary,
-[data-theme="dark"] #feedback-modal .feedback-actions .btn-primary {
+[data-theme="dark"] #feedback-modal .feedback-actions .btn-primary,
+[data-theme="dark"] #workspec-migration-modal .dialog-buttons .btn-primary {
     background: var(--primary-color);
     color: white;
     border-color: var(--primary-color);
@@ -3703,7 +4096,8 @@ body.theme-switching * {
 
 [data-theme="dark"] #add-object-modal .dialog-buttons .btn-primary:hover,
 [data-theme="dark"] #add-task-modal .dialog-buttons .btn-primary:hover,
-[data-theme="dark"] #feedback-modal .feedback-actions .btn-primary:hover {
+[data-theme="dark"] #feedback-modal .feedback-actions .btn-primary:hover,
+[data-theme="dark"] #workspec-migration-modal .dialog-buttons .btn-primary:hover {
     background: var(--primary-dark);
     border-color: var(--primary-dark);
 }
@@ -3726,4 +4120,3 @@ body.theme-switching * {
     color: var(--error-color);
     border-color: var(--error-color);
 }
-

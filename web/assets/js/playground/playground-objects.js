@@ -37,6 +37,94 @@ function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
+function isPlainObject(value) {
+    return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function safeTrim(value) {
+    return (typeof value === 'string') ? value.trim() : '';
+}
+
+function normalizeObjectPropertyInputName(rawName, suffix = '') {
+    if (typeof rawName !== 'string' || rawName.length === 0) return '';
+    let name = rawName;
+    if (name.startsWith('new_object_')) {
+        name = name.slice('new_object_'.length);
+    }
+    if (suffix && name.endsWith(`_${suffix}`)) {
+        name = name.slice(0, -(suffix.length + 1));
+    }
+    return name;
+}
+
+function applyCommonWorkSpecDefaults(object, baseType) {
+    if (!object || !isPlainObject(object.properties)) return;
+
+    const statefulTypes = ['actor', 'equipment', 'service', 'display', 'screen_element', 'digital_object'];
+    const quantifiableTypes = ['resource', 'product', 'digital_object'];
+
+    if (statefulTypes.includes(baseType)) {
+        const stateValue = object.properties.state;
+        if (typeof stateValue !== 'string' || stateValue.trim().length === 0) {
+            object.properties.state = (baseType === 'service') ? 'running' : (baseType === 'display') ? 'active' : 'available';
+        }
+    }
+
+    if (quantifiableTypes.includes(baseType)) {
+        const quantity = Number(object.properties.quantity);
+        object.properties.quantity = Number.isFinite(quantity) ? quantity : 0;
+    }
+}
+
+function getSimulationRoot(doc) {
+    if (!isPlainObject(doc)) return null;
+    if (isPlainObject(doc.simulation)) return doc.simulation;
+    return null;
+}
+
+function isWorkSpecV2Simulation(simulation) {
+    if (!isPlainObject(simulation)) return false;
+    if (safeTrim(simulation.schema_version) === '2.0') return true;
+    return isPlainObject(simulation.world) || isPlainObject(simulation.process);
+}
+
+function ensureWorkSpecV2Shape(simulation) {
+    if (!isPlainObject(simulation)) return;
+    if (!isPlainObject(simulation.world)) simulation.world = {};
+    if (!isPlainObject(simulation.process)) simulation.process = {};
+    if (!Array.isArray(simulation.world.objects)) simulation.world.objects = [];
+    if (!Array.isArray(simulation.process.tasks)) simulation.process.tasks = [];
+}
+
+function getSimulationObjects(simulation) {
+    if (!isPlainObject(simulation)) return [];
+    if (isWorkSpecV2Simulation(simulation)) {
+        ensureWorkSpecV2Shape(simulation);
+        return simulation.world.objects;
+    }
+    if (!Array.isArray(simulation.objects)) simulation.objects = [];
+    return simulation.objects;
+}
+
+function getSimulationTasks(simulation) {
+    if (!isPlainObject(simulation)) return [];
+    if (isWorkSpecV2Simulation(simulation)) {
+        ensureWorkSpecV2Shape(simulation);
+        return simulation.process.tasks;
+    }
+    if (!Array.isArray(simulation.tasks)) simulation.tasks = [];
+    return simulation.tasks;
+}
+
+function getSimulationLayout(simulation) {
+    if (!isPlainObject(simulation)) return null;
+    if (isWorkSpecV2Simulation(simulation)) {
+        ensureWorkSpecV2Shape(simulation);
+        return simulation.world.layout || null;
+    }
+    return simulation.layout || null;
+}
+
 // Clean up event listeners for a modal
 function cleanupModalListeners(modalType) {
     if (eventListenerCleanup[modalType]) {
@@ -284,6 +372,8 @@ function validateObjectId() {
     const errorElement = document.getElementById('object-id-error');
     const validationIcon = idInput.parentElement.querySelector('.validation-icon');
     const id = idInput.value.trim();
+    const typeSelect = document.getElementById('object-type-select');
+    const objectType = typeSelect ? safeTrim(typeSelect.value) : '';
 
     // Clear previous validation
     idInput.classList.remove('valid', 'invalid');
@@ -297,13 +387,41 @@ function validateObjectId() {
         return false;
     }
 
-    // Check format (lowercase, underscores, numbers)
-    const validIdPattern = /^[a-z][a-z0-9_]*$/;
-    if (!validIdPattern.test(id)) {
+    if (id.length > 250) {
         idInput.classList.add('invalid');
         validationIcon.classList.add('invalid');
-        errorElement.textContent = 'ID must start with lowercase letter and contain only lowercase letters, numbers, and underscores';
+        errorElement.textContent = 'ID must be 250 characters or fewer';
         return false;
+    }
+
+    // Check format (snake_case, optionally namespaced as {type}:{id})
+    const plainIdPattern = /^[a-z][a-z0-9_]{0,249}$/;
+    const namespacedIdPattern = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]{0,249}$/;
+
+    const hasNamespace = id.includes(':');
+    if (!plainIdPattern.test(id) && !namespacedIdPattern.test(id)) {
+        idInput.classList.add('invalid');
+        validationIcon.classList.add('invalid');
+        errorElement.textContent = 'ID must be snake_case (optionally namespaced like actor:head_baker)';
+        return false;
+    }
+
+    if (hasNamespace) {
+        const parts = id.split(':');
+        if (parts.length !== 2) {
+            idInput.classList.add('invalid');
+            validationIcon.classList.add('invalid');
+            errorElement.textContent = 'Namespaced IDs must be in the form {type}:{id} (single colon)';
+            return false;
+        }
+
+        const namespace = parts[0];
+        if (objectType && namespace !== objectType) {
+            idInput.classList.add('invalid');
+            validationIcon.classList.add('invalid');
+            errorElement.textContent = `Namespace '${namespace}' must match object type '${objectType}'`;
+            return false;
+        }
     }
 
     // Check for duplicates
@@ -326,12 +444,14 @@ function isObjectIdDuplicate(id) {
         const dayTypeEditor = window.activeDayTypeEditor;
         const effectiveEditor = dayTypeEditor || editor;
         const currentJson = JSON.parse(effectiveEditor.getValue());
+        const simulation = getSimulationRoot(currentJson);
 
-        if (!currentJson.simulation || !currentJson.simulation.objects) {
+        if (!simulation) {
             return false;
         }
 
-        return currentJson.simulation.objects.some(obj => obj.id === id);
+        const objects = getSimulationObjects(simulation);
+        return objects.some(obj => obj && obj.id === id);
     } catch (error) {
         console.error('Error checking for duplicate ID:', error);
         return false;
@@ -459,6 +579,10 @@ function getObjectTypeFieldsHTML(type, context, counter) {
                     <input type="text" name="new_object_role_${safeCounter}" placeholder="e.g., Baker, Assistant">
                 </div>
                 <div class="form-group">
+                    <label>Initial State</label>
+                    <input type="text" name="new_object_state_${safeCounter}" placeholder="e.g., available, busy, break">
+                </div>
+                <div class="form-group">
                     <label>Cost per Hour ($)</label>
                     <input type="number" name="new_object_cost_per_hour_${safeCounter}" min="0" step="0.01" placeholder="25.00">
                 </div>
@@ -473,6 +597,26 @@ function getObjectTypeFieldsHTML(type, context, counter) {
                 <div class="form-group">
                     <label>Capacity</label>
                     <input type="number" name="new_object_capacity_${safeCounter}" min="1" placeholder="1">
+                </div>
+            `;
+            break;
+        case 'service':
+            fieldsHTML = `
+                <div class="form-group">
+                    <label>Initial State</label>
+                    <input type="text" name="new_object_state_${safeCounter}" placeholder="e.g., running, stopped, error">
+                </div>
+                <div class="form-group">
+                    <label>Interval</label>
+                    <input type="text" name="new_object_interval_${safeCounter}" placeholder="e.g., 5m or PT5M">
+                </div>
+                <div class="form-group">
+                    <label>Last Run (ISO 8601)</label>
+                    <input type="text" name="new_object_last_run_${safeCounter}" placeholder="e.g., 2026-02-03T08:00:00Z">
+                </div>
+                <div class="form-group">
+                    <label>Cost per Hour ($)</label>
+                    <input type="number" name="new_object_cost_per_hour_${safeCounter}" min="0" step="0.01" placeholder="0.00">
                 </div>
             `;
             break;
@@ -497,6 +641,46 @@ function getObjectTypeFieldsHTML(type, context, counter) {
                 <div class="form-group">
                     <label>Initial Quantity</label>
                     <input type="number" name="new_object_quantity_${safeCounter}" min="0" step="0.1" placeholder="0">
+                </div>
+            `;
+            break;
+        case 'display':
+            fieldsHTML = `
+                <div class="form-group">
+                    <label>Initial State</label>
+                    <input type="text" name="new_object_state_${safeCounter}" placeholder="e.g., active, inactive">
+                </div>
+                <div class="form-group">
+                    <label>Resolution</label>
+                    <input type="text" name="new_object_resolution_${safeCounter}" placeholder="e.g., 1920x1080">
+                </div>
+            `;
+            break;
+        case 'screen_element':
+            fieldsHTML = `
+                <div class="form-group">
+                    <label>Initial State</label>
+                    <input type="text" name="new_object_state_${safeCounter}" placeholder="e.g., visible, hidden">
+                </div>
+                <div class="form-group">
+                    <label>Display ID</label>
+                    <input type="text" name="new_object_display_id_${safeCounter}" placeholder="e.g., kiosk_display">
+                </div>
+            `;
+            break;
+        case 'digital_object':
+            fieldsHTML = `
+                <div class="form-group">
+                    <label>Initial State</label>
+                    <input type="text" name="new_object_state_${safeCounter}" placeholder="e.g., running, stopped, error">
+                </div>
+                <div class="form-group">
+                    <label>Initial Quantity</label>
+                    <input type="number" name="new_object_quantity_${safeCounter}" min="0" step="0.1" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label>Capacity</label>
+                    <input type="number" name="new_object_capacity_${safeCounter}" min="0" step="0.1" placeholder="100">
                 </div>
             `;
             break;
@@ -852,7 +1036,7 @@ function openEditTaskModal(task) {
 
                         if (changeTypeSelect) changeTypeSelect.value = 'from_to';
                         if (objectSelect) {
-                            objectSelect.value = interaction.object_id || '';
+                            objectSelect.value = interaction.target_id || interaction.object_id || '';
                             // Trigger property dropdown update
                             updateInteractionPropertyOptions(objectSelect);
                         }
@@ -876,30 +1060,32 @@ function openEditTaskModal(task) {
                         const deltaInput = lastInteractionGroup.querySelector(`input[name="interaction_delta_${counter}"]`);
 
                         if (changeTypeSelect) changeTypeSelect.value = 'delta';
-                        if (objectSelect) objectSelect.value = interaction.object_id || '';
+                        if (objectSelect) objectSelect.value = interaction.target_id || interaction.object_id || '';
                         if (propertyInput) propertyInput.value = propertyName;
                         if (deltaInput) deltaInput.value = changeData.delta || '';
 
                         toggleInteractionFields(changeTypeSelect);
                     }
-                } else if (interaction.add_objects) {
-                    // Add object interaction
+                } else if ((interaction.action === 'create' && interaction.object) || interaction.add_objects) {
+                    // Create object interaction
                     const changeTypeSelect = lastInteractionGroup.querySelector(`select[name="interaction_change_type_${counter}"]`);
                     if (changeTypeSelect) {
                         changeTypeSelect.value = 'add_object';
                         toggleInteractionFields(changeTypeSelect);
 
-                        const addedObject = interaction.add_objects[0];
+                        const addedObject = interaction.object || interaction.add_objects[0];
                         if (addedObject) {
                             const newObjectTypeSelect = lastInteractionGroup.querySelector(`select[name="new_object_type_${counter}"]`);
                             const newObjectIdInput = lastInteractionGroup.querySelector(`input[name="new_object_id_${counter}"]`);
                             const newObjectNameInput = lastInteractionGroup.querySelector(`input[name="new_object_name_${counter}"]`);
                             const newObjectEmojiInput = lastInteractionGroup.querySelector(`input[name="new_object_emoji_${counter}"]`);
+                            const newObjectLocationSelect = lastInteractionGroup.querySelector(`select[name="new_object_location_${counter}"]`);
 
                             if (newObjectTypeSelect) newObjectTypeSelect.value = addedObject.type || '';
                             if (newObjectIdInput) newObjectIdInput.value = addedObject.id || '';
                             if (newObjectNameInput) newObjectNameInput.value = addedObject.name || '';
-                            if (newObjectEmojiInput) newObjectEmojiInput.value = addedObject.properties?.emoji || '';
+                            if (newObjectEmojiInput) newObjectEmojiInput.value = addedObject.emoji || addedObject.properties?.emoji || '';
+                            if (newObjectLocationSelect) newObjectLocationSelect.value = addedObject.location || '';
 
                             // Trigger type-specific fields update
                             if (newObjectTypeSelect) {
@@ -917,20 +1103,20 @@ function openEditTaskModal(task) {
                             }
                         }
                     }
-                } else if (interaction.remove_objects) {
-                    // Remove object interaction
+                } else if (interaction.action === 'delete' || interaction.remove_objects) {
+                    // Delete object interaction
                     const changeTypeSelect = lastInteractionGroup.querySelector(`select[name="interaction_change_type_${counter}"]`);
                     const objectSelect = lastInteractionGroup.querySelector(`select[name="interaction_object_${counter}"]`);
 
                     if (changeTypeSelect) changeTypeSelect.value = 'remove_object';
-                    if (objectSelect) objectSelect.value = interaction.remove_objects[0] || '';
+                    if (objectSelect) objectSelect.value = interaction.target_id || interaction.object_id || (interaction.remove_objects ? interaction.remove_objects[0] : '') || '';
 
                     toggleInteractionFields(changeTypeSelect);
                 }
 
-                // Set revert after checkbox
-                const revertCheckbox = lastInteractionGroup.querySelector(`input[name="revert_after_${counter}"]`);
-                if (revertCheckbox) revertCheckbox.checked = !!interaction.revert_after;
+                // Set temporary checkbox
+                const temporaryCheckbox = lastInteractionGroup.querySelector(`input[name="temporary_${counter}"]`);
+                if (temporaryCheckbox) temporaryCheckbox.checked = Boolean(interaction.temporary || interaction.revert_after);
             }
         });
     }
@@ -1146,8 +1332,12 @@ function addInteraction() {
                                 <option value="">Select type...</option>
                                 <option value="actor">Actor</option>
                                 <option value="equipment">Equipment</option>
+                                <option value="service">Service</option>
                                 <option value="resource">Resource</option>
                                 <option value="product">Product</option>
+                                <option value="display">Display</option>
+                                <option value="screen_element">Screen Element</option>
+                                <option value="digital_object">Digital Object</option>
                                 <option value="custom">Custom</option>
                             </select>
                         </div>
@@ -1172,8 +1362,8 @@ function addInteraction() {
 
             <div class="form-group revert-checkbox-group">
                 <label class="inline-checkbox">
-                    <input type="checkbox" id="revert_after_${safeCounter}" name="revert_after_${safeCounter}">
-                    Revert After Task
+                    <input type="checkbox" id="temporary_${safeCounter}" name="temporary_${safeCounter}">
+                    Temporary (revert after task)
                 </label>
             </div>
         </div>
@@ -1273,9 +1463,10 @@ function toggleInteractionFields(selectElement) {
         delta.style.display = 'flex';
     } else if (selectElement.value === 'add_object') {
         addObject.style.display = 'block';
-        revertCheckbox.style.display = 'none'; // Cannot revert adding an object
+        revertCheckbox.style.display = 'none'; // Object creation isn't reversible via temporary
     } else if (selectElement.value === 'remove_object') {
         objectSelection.style.display = 'block';
+        revertCheckbox.style.display = 'none'; // Object deletion isn't reversible via temporary
     } else if (selectElement.value === 'move_digital_object') {
         objectSelection.style.display = 'block';
         if (moveDigitalFields) {
@@ -1458,24 +1649,51 @@ function getPropertyValueAtTaskTime(objectId, propertyName) {
         let currentValue = targetObject.properties[propertyName];
 
         // Check if any tasks that start before this task time modify this property
-        const simulation = getCurrentSimulationData();
-        if (simulation && simulation.simulation && simulation.simulation.tasks) {
+        const simulationDoc = getCurrentSimulationData();
+        const simulation = simulationDoc ? getSimulationRoot(simulationDoc) : null;
+        if (simulation) {
             const taskStartMinutes = parseTimeToMinutes(taskStartTime);
+            const tasks = getSimulationTasks(simulation);
 
             // Get tasks that complete before our task starts, sorted by time
-            const earlierTasks = simulation.simulation.tasks
+            const earlierTasks = tasks
                 .filter(task => {
-                    const taskStart = parseTimeToMinutes(task.start);
-                    const taskEnd = taskStart + (task.duration || 0);
+                    let taskStart = 0;
+                    if (window.WorkSpecValidator && typeof window.WorkSpecValidator.parseTaskStart === 'function') {
+                        const parsedStart = window.WorkSpecValidator.parseTaskStart(task.start);
+                        if (parsedStart && parsedStart.ok && typeof parsedStart.startMinutes === 'number') {
+                            taskStart = parsedStart.startMinutes;
+                        }
+                    } else if (typeof task.start === 'string') {
+                        taskStart = parseTimeToMinutes(task.start);
+                    }
+
+                    let taskDuration = 0;
+                    if (window.WorkSpecValidator && typeof window.WorkSpecValidator.parseDurationToMinutes === 'function') {
+                        const unit = safeTrim(simulation?.config?.time_unit) || 'minutes';
+                        const parsedDuration = window.WorkSpecValidator.parseDurationToMinutes(task.duration, unit);
+                        if (parsedDuration && parsedDuration.ok && typeof parsedDuration.minutes === 'number') {
+                            taskDuration = parsedDuration.minutes;
+                        }
+                    } else if (typeof task.duration === 'number') {
+                        taskDuration = task.duration;
+                    }
+
+                    const taskEnd = taskStart + taskDuration;
                     return taskEnd <= taskStartMinutes;
                 })
-                .sort((a, b) => parseTimeToMinutes(a.start) - parseTimeToMinutes(b.start));
+                .sort((a, b) => {
+                    const aStart = (typeof a.start === 'string') ? parseTimeToMinutes(a.start) : 0;
+                    const bStart = (typeof b.start === 'string') ? parseTimeToMinutes(b.start) : 0;
+                    return aStart - bStart;
+                });
 
             // Apply property changes from earlier tasks
             for (const task of earlierTasks) {
                 if (task.interactions) {
                     for (const interaction of task.interactions) {
-                        if (interaction.object_id === objectId &&
+                        const targetId = interaction.target_id || interaction.object_id;
+                        if (targetId === objectId &&
                             interaction.property_changes &&
                             interaction.property_changes[propertyName]) {
 
@@ -1580,11 +1798,21 @@ function addObjectToSimulation() {
         const effectiveEditor = dayTypeEditor || editor;
 
         const currentJson = JSON.parse(effectiveEditor.getValue());
+        const simulation = getSimulationRoot(currentJson);
 
-        const finalObjectId = objectId || getNextAvailableId(objectType, currentJson.simulation.objects || []);
+        if (!simulation) {
+            alert('Invalid document: missing simulation root');
+            return;
+        }
+
+        const objects = getSimulationObjects(simulation);
+
+        const finalObjectId = objectId || getNextAvailableId(objectType, objects);
 
         const properties = {};
         let finalObjectType = objectType;
+
+        let objectLocation = '';
 
         if (objectType === 'custom') {
             // Handle custom object type
@@ -1626,10 +1854,14 @@ function addObjectToSimulation() {
             const fieldsContainer = document.getElementById('object-type-specific-fields');
             const inputs = fieldsContainer.querySelectorAll('input, select, textarea');
             inputs.forEach(input => {
-                const name = input.name.replace('_modal', '');
+                const name = normalizeObjectPropertyInputName(input.name, 'modal');
                 if (input.value && name) {
+                    if (name === 'location') {
+                        objectLocation = input.value;
+                        return;
+                    }
                     if (input.type === 'number') {
-                        properties[name] = parseFloat(input.value) || parseInt(input.value);
+                        properties[name] = Number(input.value);
                     } else {
                         properties[name] = input.value;
                     }
@@ -1645,20 +1877,24 @@ function addObjectToSimulation() {
         };
 
         if (emoji) {
-            newObject.properties.emoji = emoji;
+            newObject.emoji = emoji;
+        }
+        if (objectLocation) {
+            newObject.location = objectLocation;
         }
 
-        // Add default indicator_property for common types
+        // Keep modal-created objects v2-valid with common required defaults.
+        const baseType = objectType === 'custom' ? '' : objectType;
+        applyCommonWorkSpecDefaults(newObject, baseType);
+
+        // Add default indicator_property for common types (UI hint; keep in properties for WorkSpec v2)
         if (objectType === 'resource') {
-            newObject.indicator_property = ['quantity'];
+            newObject.properties.indicator_property = ['quantity'];
         } else if (objectType === 'equipment') {
-            newObject.indicator_property = ['state'];
+            newObject.properties.indicator_property = ['state'];
         }
 
-        if (!currentJson.simulation.objects) {
-            currentJson.simulation.objects = [];
-        }
-        currentJson.simulation.objects.push(newObject);
+        objects.push(newObject);
 
         // Use the effective editor (wrapper if in day type mode, otherwise Monaco)
         effectiveEditor.setValue(JSON.stringify(currentJson, null, 2));
@@ -1762,29 +1998,29 @@ function addTaskToSimulation() {
             const counter = group.id.split('-')[1];
             const changeType = group.querySelector(`select[name="interaction_change_type_${counter}"]`).value;
             const objectId = group.querySelector(`select[name="interaction_object_${counter}"]`).value;
-            const revertAfter = group.querySelector(`input[name="revert_after_${counter}"]`).checked;
+            const isTemporary = Boolean(group.querySelector(`input[name="temporary_${counter}"]`)?.checked);
 
-            const interaction = {
-                revert_after: revertAfter
-            };
-
-            if (changeType === 'from_to' || changeType === 'delta' || changeType === 'remove_object') {
-                if (!objectId) return;
-                interaction.object_id = objectId;
-            }
+            const interaction = {};
+            if (isTemporary) interaction.temporary = true;
 
             if (changeType === 'from_to') {
                 const property = group.querySelector(`select[name="interaction_property_${counter}"]`).value;
                 const from = group.querySelector(`input[name="interaction_from_${counter}"]`).value;
                 const to = group.querySelector(`input[name="interaction_to_${counter}"]`).value;
                 if (property && to) {
-                    interaction.property_changes = { [property]: { from: from || undefined, to: to } };
+                    if (!objectId) return;
+                    interaction.target_id = objectId;
+                    interaction.property_changes = from
+                        ? { [property]: { from: from, to: to } }
+                        : { [property]: { set: to } };
                     newTask.interactions.push(interaction);
                 }
             } else if (changeType === 'delta') {
                 const property = group.querySelector(`input[name="interaction_property_delta_${counter}"]`).value;
                 const delta = group.querySelector(`input[name="interaction_delta_${counter}"]`).value;
                 if (property && delta) {
+                    if (!objectId) return;
+                    interaction.target_id = objectId;
                     interaction.property_changes = { [property]: { delta: parseFloat(delta) } };
                     newTask.interactions.push(interaction);
                 }
@@ -1793,6 +2029,7 @@ function addTaskToSimulation() {
                 const newObjectId = group.querySelector(`input[name="new_object_id_${counter}"]`).value;
                 const newObjectName = group.querySelector(`input[name="new_object_name_${counter}"]`).value;
                 const newObjectEmoji = group.querySelector(`input[name="new_object_emoji_${counter}"]`).value;
+                const newObjectLocation = group.querySelector(`select[name="new_object_location_${counter}"]`)?.value;
 
                 if (newObjectType && newObjectId && newObjectName) {
                     const newObject = {
@@ -1801,30 +2038,34 @@ function addTaskToSimulation() {
                         name: newObjectName,
                         properties: {}
                     };
-                    if (newObjectEmoji) newObject.properties.emoji = newObjectEmoji;
+                    if (newObjectEmoji) newObject.emoji = newObjectEmoji;
+                    if (newObjectLocation) newObject.location = newObjectLocation;
 
                     const propInputs = group.querySelectorAll('.type-specific-fields-container input, .type-specific-fields-container select');
                     propInputs.forEach(input => {
                         if (input.value && input.name) {
-                            const propName = input.name.replace(`new_object_`, '').replace(`_${counter}`, '');
-                            newObject.properties[propName] = input.value;
+                            const propName = normalizeObjectPropertyInputName(input.name, counter);
+                            if (propName === 'location') return;
+                            const isNumberInput = input.tagName === 'INPUT' && input.type === 'number';
+                            newObject.properties[propName] = isNumberInput ? Number(input.value) : input.value;
                         }
                     });
+
+                    const baseType = newObjectType === 'custom' ? '' : newObjectType;
+                    applyCommonWorkSpecDefaults(newObject, baseType);
                     
-                    interaction.add_objects = [newObject];
-                    newTask.interactions.push(interaction);
+                    newTask.interactions.push({ action: 'create', object: newObject });
                 }
             } else if (changeType === 'remove_object') {
-                interaction.remove_objects = [objectId];
-                newTask.interactions.push(interaction);
+                if (!objectId) return;
+                newTask.interactions.push({ action: 'delete', target_id: objectId });
             } else if (changeType === 'move_digital_object') {
                 const fromLocationId = group.querySelector(`select[name="from_digital_location_${counter}"]`).value;
                 const toLocationId = group.querySelector(`select[name="to_digital_location_${counter}"]`).value;
                 if (objectId && fromLocationId && toLocationId) {
-                    interaction.move_digital_object = {
-                        object_id: objectId,
-                        from_location_id: fromLocationId,
-                        to_location_id: toLocationId
+                    interaction.target_id = objectId;
+                    interaction.property_changes = {
+                        location: { from: fromLocationId, to: toLocationId }
                     };
                     newTask.interactions.push(interaction);
                 }
@@ -1832,20 +2073,23 @@ function addTaskToSimulation() {
                 const fromDisplayId = group.querySelector(`select[name="from_display_${counter}"]`).value;
                 const toDisplayId = group.querySelector(`select[name="to_display_${counter}"]`).value;
                 if (objectId && fromDisplayId && toDisplayId) {
-                    interaction.move_display_element = {
-                        element_id: objectId,
-                        from_display_id: fromDisplayId,
-                        to_display_id: toDisplayId
+                    interaction.target_id = objectId;
+                    interaction.property_changes = {
+                        display_id: { from: fromDisplayId, to: toDisplayId }
                     };
                     newTask.interactions.push(interaction);
                 }
             }
         });
         
-        if (!currentJson.simulation.tasks) {
-            currentJson.simulation.tasks = [];
+        const simulation = getSimulationRoot(currentJson);
+        if (!simulation) {
+            alert('Invalid document: missing simulation root');
+            return;
         }
-        currentJson.simulation.tasks.push(newTask);
+
+        const tasks = getSimulationTasks(simulation);
+        tasks.push(newTask);
         
         editor.setValue(JSON.stringify(currentJson, null, 2));
         document.getElementById('add-task-modal').style.display = 'none';
@@ -1919,29 +2163,29 @@ function saveTaskToSimulation() {
             const counter = group.id.split('-')[1];
             const changeType = group.querySelector(`select[name="interaction_change_type_${counter}"]`).value;
             const objectId = group.querySelector(`select[name="interaction_object_${counter}"]`).value;
-            const revertAfter = group.querySelector(`input[name="revert_after_${counter}"]`).checked;
+            const isTemporary = Boolean(group.querySelector(`input[name="temporary_${counter}"]`)?.checked);
 
-            const interaction = {
-                revert_after: revertAfter
-            };
-
-            if (changeType === 'from_to' || changeType === 'delta' || changeType === 'remove_object') {
-                if (!objectId) return;
-                interaction.object_id = objectId;
-            }
+            const interaction = {};
+            if (isTemporary) interaction.temporary = true;
 
             if (changeType === 'from_to') {
                 const property = group.querySelector(`select[name="interaction_property_${counter}"]`).value;
                 const from = group.querySelector(`input[name="interaction_from_${counter}"]`).value;
                 const to = group.querySelector(`input[name="interaction_to_${counter}"]`).value;
                 if (property && to) {
-                    interaction.property_changes = { [property]: { from: from || undefined, to: to } };
+                    if (!objectId) return;
+                    interaction.target_id = objectId;
+                    interaction.property_changes = from
+                        ? { [property]: { from: from, to: to } }
+                        : { [property]: { set: to } };
                     newTask.interactions.push(interaction);
                 }
             } else if (changeType === 'delta') {
                 const property = group.querySelector(`input[name="interaction_property_delta_${counter}"]`).value;
                 const delta = group.querySelector(`input[name="interaction_delta_${counter}"]`).value;
                 if (property && delta) {
+                    if (!objectId) return;
+                    interaction.target_id = objectId;
                     interaction.property_changes = { [property]: { delta: parseFloat(delta) } };
                     newTask.interactions.push(interaction);
                 }
@@ -1950,12 +2194,11 @@ function saveTaskToSimulation() {
                 const newObjectId = group.querySelector(`input[name="new_object_id_${counter}"]`).value;
                 const newObjectName = group.querySelector(`input[name="new_object_name_${counter}"]`).value;
                 const newObjectEmoji = group.querySelector(`input[name="new_object_emoji_${counter}"]`).value;
+                const newObjectLocation = group.querySelector(`select[name="new_object_location_${counter}"]`)?.value;
 
                 if (newObjectType && newObjectId && newObjectName) {
                     let finalInteractionObjectType = newObjectType;
                     const newObjectProperties = {};
-
-                    if (newObjectEmoji) newObjectProperties.emoji = newObjectEmoji;
 
                     if (newObjectType === 'custom') {
                         // Handle custom object type in interactions
@@ -1994,8 +2237,10 @@ function saveTaskToSimulation() {
                         const propInputs = group.querySelectorAll('.type-specific-fields-container input, .type-specific-fields-container select');
                         propInputs.forEach(input => {
                             if (input.value && input.name) {
-                                const propName = input.name.replace(`new_object_`, '').replace(`_${counter}`, '');
-                                newObjectProperties[propName] = input.value;
+                                const propName = normalizeObjectPropertyInputName(input.name, counter);
+                                if (propName === 'location') return;
+                                const isNumberInput = input.tagName === 'INPUT' && input.type === 'number';
+                                newObjectProperties[propName] = isNumberInput ? Number(input.value) : input.value;
                             }
                         });
                     }
@@ -2007,20 +2252,25 @@ function saveTaskToSimulation() {
                         properties: newObjectProperties
                     };
 
-                    interaction.add_objects = [newObject];
-                    newTask.interactions.push(interaction);
+                    if (newObjectEmoji) newObject.emoji = newObjectEmoji;
+                    if (newObjectLocation) newObject.location = newObjectLocation;
+
+                    // Fill common defaults so created objects are immediately v2-valid.
+                    const baseType = newObjectType === 'custom' ? '' : newObjectType;
+                    applyCommonWorkSpecDefaults(newObject, baseType);
+
+                    newTask.interactions.push({ action: 'create', object: newObject });
                 }
             } else if (changeType === 'remove_object') {
-                interaction.remove_objects = [objectId];
-                newTask.interactions.push(interaction);
+                if (!objectId) return;
+                newTask.interactions.push({ action: 'delete', target_id: objectId });
             } else if (changeType === 'move_digital_object') {
                 const fromLocationId = group.querySelector(`select[name="from_digital_location_${counter}"]`).value;
                 const toLocationId = group.querySelector(`select[name="to_digital_location_${counter}"]`).value;
                 if (objectId && fromLocationId && toLocationId) {
-                    interaction.move_digital_object = {
-                        object_id: objectId,
-                        from_location_id: fromLocationId,
-                        to_location_id: toLocationId
+                    interaction.target_id = objectId;
+                    interaction.property_changes = {
+                        location: { from: fromLocationId, to: toLocationId }
                     };
                     newTask.interactions.push(interaction);
                 }
@@ -2028,25 +2278,28 @@ function saveTaskToSimulation() {
                 const fromDisplayId = group.querySelector(`select[name="from_display_${counter}"]`).value;
                 const toDisplayId = group.querySelector(`select[name="to_display_${counter}"]`).value;
                 if (objectId && fromDisplayId && toDisplayId) {
-                    interaction.move_display_element = {
-                        element_id: objectId,
-                        from_display_id: fromDisplayId,
-                        to_display_id: toDisplayId
+                    interaction.target_id = objectId;
+                    interaction.property_changes = {
+                        display_id: { from: fromDisplayId, to: toDisplayId }
                     };
                     newTask.interactions.push(interaction);
                 }
             }
         });
 
-        if (!currentJson.simulation.tasks) {
-            currentJson.simulation.tasks = [];
+        const simulation = getSimulationRoot(currentJson);
+        if (!simulation) {
+            alert('Invalid document: missing simulation root');
+            return;
         }
+
+        const tasks = getSimulationTasks(simulation);
 
         if (isEditMode && editTaskId) {
             // Edit mode: Find and replace existing task
-            const taskIndex = currentJson.simulation.tasks.findIndex(t => t.id === editTaskId);
+            const taskIndex = tasks.findIndex(t => t.id === editTaskId);
             if (taskIndex !== -1) {
-                currentJson.simulation.tasks[taskIndex] = newTask;
+                tasks[taskIndex] = newTask;
                 if (typeof showNotification === 'function') {
                     showNotification(`Updated task: ${taskId}`);
                 }
@@ -2057,7 +2310,7 @@ function saveTaskToSimulation() {
             }
         } else {
             // Add mode: Add new task
-            currentJson.simulation.tasks.push(newTask);
+            tasks.push(newTask);
             if (typeof showNotification === 'function') {
                 showNotification(`Added task: ${taskId}`);
             }
@@ -2128,11 +2381,17 @@ function validateTaskId() {
         return false;
     }
 
-    // Check format (lowercase, underscores, numbers)
-    const validIdPattern = /^[a-z][a-z0-9_]*$/;
+    if (id.length > 250) {
+        taskIdInput.classList.add('invalid');
+        errorElement.textContent = 'Task ID must be 250 characters or fewer';
+        return false;
+    }
+
+    // Check format (snake_case; tasks cannot be namespaced)
+    const validIdPattern = /^[a-z][a-z0-9_]{0,249}$/;
     if (!validIdPattern.test(id)) {
         taskIdInput.classList.add('invalid');
-        errorElement.textContent = 'ID must start with lowercase letter and contain only lowercase letters, numbers, and underscores';
+        errorElement.textContent = 'Task ID must be snake_case (lowercase letters, numbers, underscores) and start with a letter';
         return false;
     }
 
@@ -2160,12 +2419,14 @@ function isTaskIdDuplicate(id) {
         const dayTypeEditor = window.activeDayTypeEditor;
         const effectiveEditor = dayTypeEditor || editor;
         const currentJson = JSON.parse(effectiveEditor.getValue());
+        const simulation = getSimulationRoot(currentJson);
 
-        if (!currentJson.simulation || !currentJson.simulation.tasks) {
+        if (!simulation) {
             return false;
         }
 
-        return currentJson.simulation.tasks.some(task => task.id === id);
+        const tasks = getSimulationTasks(simulation);
+        return tasks.some(task => task && task.id === id);
     } catch (error) {
         console.error('Error checking for duplicate task ID:', error);
         return false;
@@ -2368,9 +2629,11 @@ function validateTaskDependencies() {
         const dayTypeEditor = window.activeDayTypeEditor;
         const effectiveEditor = dayTypeEditor || editor;
         const currentJson = JSON.parse(effectiveEditor.getValue());
+        const simulation = getSimulationRoot(currentJson);
 
-        if (currentJson.simulation && currentJson.simulation.tasks) {
-            const existingTaskIds = currentJson.simulation.tasks.map(t => t.id);
+        if (simulation) {
+            const existingTasks = getSimulationTasks(simulation);
+            const existingTaskIds = existingTasks.map(t => t.id);
             const invalidDeps = taskIds.filter(id => !existingTaskIds.includes(id));
 
             if (invalidDeps.length > 0) {
@@ -2390,7 +2653,7 @@ function validateTaskDependencies() {
             const hasCircularDep = checkCircularDependency(
                 currentTaskId,
                 taskIds,
-                currentJson.simulation.tasks
+                existingTasks
             );
 
             if (hasCircularDep) {
@@ -2598,11 +2861,13 @@ function populateTaskDependenciesDatalist() {
         const dayTypeEditor = window.activeDayTypeEditor;
         const effectiveEditor = dayTypeEditor || editor;
         const currentJson = JSON.parse(effectiveEditor.getValue());
+        const simulation = getSimulationRoot(currentJson);
 
         datalist.innerHTML = '';
 
-        if (currentJson.simulation && currentJson.simulation.tasks) {
-            currentJson.simulation.tasks.forEach(task => {
+        if (simulation) {
+            const tasks = getSimulationTasks(simulation);
+            tasks.forEach(task => {
                 const option = document.createElement('option');
                 option.value = task.id;
                 datalist.appendChild(option);

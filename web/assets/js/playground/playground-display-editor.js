@@ -2541,16 +2541,46 @@ class DisplayEditor {
 
         try {
             const jsonText = this.monacoEditor.getValue();
-            const simulation = JSON.parse(stripJsonComments(jsonText));
+            const cleaned = (typeof stripJsonComments === 'function') ? stripJsonComments(jsonText) : jsonText;
+            const doc = JSON.parse(cleaned);
+            const simulation = doc?.simulation || doc;
+            const tasks = simulation?.process?.tasks || simulation?.tasks;
 
-            if (!simulation.tasks) return false;
+            if (!Array.isArray(tasks)) return false;
 
-            const task = simulation.tasks.find(t => t.id === taskId);
+            const task = tasks.find(t => t && t.id === taskId);
             if (!task) return false;
 
-            // Parse task timing
-            const startTime = this.parseTime(task.start);
-            const endTime = this.parseTime(task.end);
+            const timeUnit = simulation?.config?.time_unit || 'minutes';
+
+            let startTime = null;
+            if (window.WorkSpecValidator && typeof window.WorkSpecValidator.parseTaskStart === 'function') {
+                const parsedStart = window.WorkSpecValidator.parseTaskStart(task.start);
+                if (parsedStart?.ok && (parsedStart.kind === 'time' || parsedStart.kind === 'daytime')) {
+                    startTime = parsedStart.startMinutes;
+                }
+            }
+            if (startTime === null) {
+                if (typeof task.start !== 'string') return false;
+                startTime = this.parseTime(task.start);
+            }
+
+            let endTime = null;
+            if (typeof task.end === 'string') {
+                endTime = this.parseTime(task.end);
+            } else {
+                let durationMinutes = null;
+                if (window.WorkSpecValidator && typeof window.WorkSpecValidator.parseDurationToMinutes === 'function') {
+                    const parsedDuration = window.WorkSpecValidator.parseDurationToMinutes(task.duration, timeUnit);
+                    if (parsedDuration?.ok) {
+                        durationMinutes = parsedDuration.minutes;
+                    }
+                }
+                if (durationMinutes === null) {
+                    durationMinutes = (typeof task.duration === 'number' && Number.isFinite(task.duration)) ? task.duration : 0;
+                }
+                endTime = startTime + durationMinutes;
+            }
 
             return time >= startTime && time <= endTime;
         } catch (e) {

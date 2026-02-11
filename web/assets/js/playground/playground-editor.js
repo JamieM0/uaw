@@ -259,7 +259,7 @@ function getMonacoEditor() {
 }
 
 // Sample simulation data with resources
-const sampleSimulation = {
+const legacySampleSimulation = {
     simulation: {
         meta: {
             id: "sim_breadmaking_v3_full",
@@ -534,6 +534,108 @@ const sampleSimulation = {
     }
 };
 
+// Sample WorkSpec v2.0 document (fallback when library isn't loaded)
+const sampleSimulation = {
+    "$schema": "https://universalautomation.wiki/workspec/v2.0.schema.json",
+    "simulation": {
+        "schema_version": "2.0",
+        "meta": {
+            "title": "WorkSpec v2.0 Sample",
+            "description": "A minimal WorkSpec v2.0 simulation used as a Playground fallback.",
+            "domain": "Example"
+        },
+        "config": {
+            "time_unit": "minutes",
+            "start_time": "06:00",
+            "end_time": "18:00",
+            "timezone": "UTC",
+            "currency": "USD",
+            "locale": "en-US"
+        },
+        "world": {
+            "layout": {
+                "meta": {
+                    "units": "meters",
+                    "pixels_per_unit": 20
+                },
+                "locations": [
+                    {
+                        "id": "work_area",
+                        "name": "Work Area",
+                        "shape": { "type": "rect", "x": 0, "y": 0, "width": 10, "height": 5 }
+                    }
+                ]
+            },
+            "objects": [
+                {
+                    "id": "worker",
+                    "type": "actor",
+                    "name": "Worker",
+                    "emoji": "🧑‍🏭",
+                    "location": "work_area",
+                    "properties": {
+                        "role": "Operator",
+                        "cost_per_hour": 25,
+                        "state": "available"
+                    }
+                },
+                {
+                    "id": "material",
+                    "type": "resource",
+                    "name": "Material",
+                    "emoji": "📦",
+                    "location": "work_area",
+                    "properties": {
+                        "unit": "units",
+                        "quantity": 10,
+                        "cost_per_unit": 1
+                    }
+                },
+                {
+                    "id": "output",
+                    "type": "product",
+                    "name": "Output",
+                    "emoji": "✅",
+                    "location": "work_area",
+                    "properties": {
+                        "unit": "units",
+                        "quantity": 0,
+                        "revenue_per_unit": 5
+                    }
+                }
+            ]
+        },
+        "process": {
+            "tasks": [
+                {
+                    "id": "do_work",
+                    "emoji": "🛠️",
+                    "actor_id": "worker",
+                    "start": "06:00",
+                    "duration": 30,
+                    "location": "work_area",
+                    "depends_on": [],
+                    "interactions": [
+                        {
+                            "target_id": "material",
+                            "property_changes": { "quantity": { "delta": -1 } }
+                        },
+                        {
+                            "target_id": "output",
+                            "property_changes": { "quantity": { "delta": 1 } }
+                        }
+                    ]
+                }
+            ],
+            "recipes": {}
+        }
+    },
+    "assets": {
+        "image1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        "document1": "data:text/plain;base64,SGVsbG8gV29ybGQ="
+    }
+};
+
 // Monaco editor initialization with timeout and error handling
 require.config({
     paths: { vs: "https://unpkg.com/monaco-editor@0.44.0/min/vs" },
@@ -599,6 +701,47 @@ require(["vs/editor/editor.main"], function () {
         validate: true,
         allowComments: true
     });
+
+    // Best-effort: wire WorkSpec v2 JSON Schema for autocomplete + validation.
+    // Prefer the package mirror path, with legacy fallback.
+    const schemaCandidates = [
+        '/packages/workspec/v2.0.schema.json',
+        '/workspec/v2.0.schema.json'
+    ];
+
+    function fetchFirstSchema(urls) {
+        if (!Array.isArray(urls) || urls.length === 0) {
+            return Promise.resolve(null);
+        }
+
+        const [first, ...rest] = urls;
+        return fetch(first)
+            .then((res) => (res && res.ok) ? res.json() : null)
+            .then((schema) => {
+                if (schema) return schema;
+                return fetchFirstSchema(rest);
+            })
+            .catch(() => fetchFirstSchema(rest));
+    }
+
+    fetchFirstSchema(schemaCandidates)
+        .then((schema) => {
+            if (!schema) return;
+            monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+                validate: true,
+                allowComments: true,
+                schemas: [
+                    {
+                        uri: 'https://universalautomation.wiki/workspec/v2.0.schema.json',
+                        fileMatch: ['*'],
+                        schema: schema
+                    }
+                ]
+            });
+        })
+        .catch((error) => {
+            console.warn('Failed to load WorkSpec v2 schema:', error);
+        });
 
     const editorElement = document.getElementById("json-editor");
     if (!editorElement) {
@@ -738,7 +881,11 @@ require(["vs/editor/editor.main"], function () {
         if (spaceEditor && !spaceEditor.isDrawing && !spaceEditor.isDragging && !spaceEditor.isUpdatingJson) {
             try {
                 const currentJson = JSON.parse(stripJsonComments(editor.getValue()));
-                spaceEditor.loadLayout(currentJson.simulation.layout);
+                const sim = currentJson.simulation || currentJson;
+                const layout = sim?.world?.layout || sim?.layout;
+                if (layout) {
+                    spaceEditor.loadLayout(layout);
+                }
             } catch(e) {
                 // Ignore parse errors during typing - user may be mid-edit
                 console.debug('Space editor sync skipped due to invalid JSON during editing');
@@ -931,13 +1078,38 @@ function validateJSON() {
         // Get merged catalog (built-in + custom metrics)
         const mergedCatalog = getMergedMetricsCatalog();
 
-        // Only run simulation metrics validation if auto-validation is enabled
-        if (window.autoValidationEnabled !== false && mergedCatalog && mergedCatalog.length > 0 && window.SimulationValidator) {
-            const validator = new window.SimulationValidator(parsed);
-            const customValidator = getCustomValidatorCode();
-            const validationResults = validator.runChecks(mergedCatalog, customValidator);
-            displayValidationResults(validationResults);
-        } else if (window.autoValidationEnabled === false) {
+        // Only run validation if auto-validation is enabled
+        if (window.autoValidationEnabled !== false) {
+            // Prefer WorkSpec v2 validator (RFC 7807 Problem Details)
+            if (window.WorkSpecValidator && typeof window.WorkSpecValidator.validate === 'function') {
+                const result = window.WorkSpecValidator.validate(parsed);
+                const problems = Array.isArray(result?.problems) ? result.problems : [];
+                const mapped = problems.map((problem) => ({
+                    metricId: problem.metric_id || 'system.error',
+                    status: problem.severity === 'warning' ? 'warning' : problem.severity === 'info' ? 'suggestion' : 'error',
+                    message: problem.detail || problem.title || problem.metric_id || 'Validation error',
+                    problem
+                }));
+
+                if (mapped.length === 0) {
+                    displayValidationResults([{
+                        metricId: 'workspec.validation.ok',
+                        status: 'success',
+                        message: 'No problems found.'
+                    }]);
+                } else {
+                    displayValidationResults(mapped);
+                }
+            } else if (mergedCatalog && mergedCatalog.length > 0 && window.SimulationValidator) {
+                // Fallback: legacy metrics validator
+                const validator = new window.SimulationValidator(parsed);
+                const customValidator = getCustomValidatorCode();
+                const validationResults = validator.runChecks(mergedCatalog, customValidator);
+                displayValidationResults(validationResults);
+            } else {
+                displayValidationResults([]);
+            }
+        } else {
             // Clear validation results when auto-validation is disabled
             displayValidationResults([]);
         }
@@ -998,14 +1170,35 @@ function runManualValidation() {
     try {
         const parsed = JSON.parse(strippedJson);
         
-        // Get merged catalog (built-in + custom metrics)
-        const mergedCatalog = getMergedMetricsCatalog();
-        
-        if (mergedCatalog && mergedCatalog.length > 0 && window.SimulationValidator) {
-            const validator = new window.SimulationValidator(parsed);
-            const customValidator = getCustomValidatorCode();
-            const validationResults = validator.runChecks(mergedCatalog, customValidator);
-            displayValidationResults(validationResults);
+        // Prefer WorkSpec v2 validator (RFC 7807 Problem Details)
+        if (window.WorkSpecValidator && typeof window.WorkSpecValidator.validate === 'function') {
+            const result = window.WorkSpecValidator.validate(parsed);
+            const problems = Array.isArray(result?.problems) ? result.problems : [];
+            const mapped = problems.map((problem) => ({
+                metricId: problem.metric_id || 'system.error',
+                status: problem.severity === 'warning' ? 'warning' : problem.severity === 'info' ? 'suggestion' : 'error',
+                message: problem.detail || problem.title || problem.metric_id || 'Validation error',
+                problem
+            }));
+
+            if (mapped.length === 0) {
+                displayValidationResults([{
+                    metricId: 'workspec.validation.ok',
+                    status: 'success',
+                    message: 'No problems found.'
+                }]);
+            } else {
+                displayValidationResults(mapped);
+            }
+        } else {
+            // Fallback: legacy metrics validator
+            const mergedCatalog = getMergedMetricsCatalog();
+            if (mergedCatalog && mergedCatalog.length > 0 && window.SimulationValidator) {
+                const validator = new window.SimulationValidator(parsed);
+                const customValidator = getCustomValidatorCode();
+                const validationResults = validator.runChecks(mergedCatalog, customValidator);
+                displayValidationResults(validationResults);
+            }
         }
         
         return true;

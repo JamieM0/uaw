@@ -1,175 +1,208 @@
 /**
  * @module documentation
  * Provides functionality to render the documentation sidebar navigation.
- * Auto-generates navigation structure from actual HTML files in the docs directory.
+ *
+ * Note: This is a static structure that maps to generated HTML in `web/docs/`.
+ * If you move/add docs, update `generateDocsStructure()`.
  */
 
 // Auto-generated documentation structure based on file system
 // This will be populated dynamically by the generateDocsStructure function
 let docsTree = [];
 
-// Static mapping for known documentation files with their proper titles
-// This helps provide clean titles without having to fetch each HTML file
-const docTitles = {
-  // Root level
-  "architecture-overview": "Architecture Overview",
+function makePage(title, path) {
+    return {
+        title,
+        path,
+        type: "page",
+    };
+}
 
-  // Playground section
-  "playground-guide": "Playground Guide",
-  "save-load": "Save & Load System",
-  "space-editor-guide": "Space Editor Guide",
-  "smart-actions": "Smart Actions",
-  "multi-day-simulations": "Multi-Day Simulations",
-
-  // Routines section
-  assemble: "Assemble",
-  "automation-adoption": "Automation Adoption",
-  "basic-english": "Basic English",
-  "current-implementations": "Current Implementations",
-  "docs-translator": "Docs Translator",
-  "expand-node": "Expand Node",
-  "extract-steps": "Extract Steps",
-  "flow-maker": "Flow Maker",
-  "future-technology": "Future Technology",
-  "generate-automation-challenges": "Generate Automation Challenges",
-  "generate-automation-timeline": "Generate Automation Timeline",
-  "generate-metadata": "Generate Metadata",
-  "hallucinate-tree": "Hallucinate Tree",
-  "merge-duplicate-facts": "Merge Duplicate Facts",
-  prompt: "Prompt",
-  reconstructor: "Reconstructor",
-  "return-analysis": "Return Analysis",
-  "search-queries": "Search Queries",
-  "simplified-technical-english": "Simplified Technical English",
-  "specifications-industrial": "Specifications Industrial",
-  summary: "Summary",
-  utils: "Utils",
-
-  // Simulations section
-  constraints: "Constraints",
-  "metrics-editor": "Metrics Editor",
-  validation: "Validation",
-
-  // Standards section
-  "automation-status": "Automation Status",
-};
-
-// Section display names for better presentation
-const sectionNames = {
-  playground: "Playground",
-  routines: "Routines",
-  simulations: "Simulations",
-  standards: "Standards",
-};
-
-/**
- * Converts filename to a clean display title
- * @param {string} filename - The filename without extension
- * @returns {string} - Clean display title
- */
-function getDocTitle(filename) {
-  // Use static mapping if available
-  if (docTitles[filename]) {
-    return docTitles[filename];
-  }
-
-  // Otherwise, convert kebab-case to Title Case
-  return filename
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+function makeSection(title, key, children) {
+    return {
+        title,
+        path: `#${key}`,
+        type: "section",
+        children,
+    };
 }
 
 /**
- * Generates the documentation structure from the known file structure
- * This simulates auto-discovery but uses the known structure for performance
+ * Generates the documentation structure for the left navigation.
  */
 function generateDocsStructure() {
-  const structure = [];
+    return [
+        makePage("Documentation Home", "/docs/"),
+        makePage("Architecture Overview", "/docs/architecture-overview"),
 
-  // Define the known structure based on the file system
-  const fileStructure = {
-    // Root level files (excluding index.html)
-    root: ["architecture-overview"],
+        makeSection("WorkSpec", "workspec", [
+            makePage("Cheatsheet", "/docs/workspec/cheatsheet"),
 
-    // Sections with their files
-    sections: {
-      playground: [
-        "playground-guide",
-        "save-load",
-        "space-editor-guide",
-        "display-editor-guide",
-        "smart-actions",
-        "multi-day-simulations",
-      ],
-      routines: [
-        "assemble",
-        "automation-adoption",
-        "basic-english",
-        "current-implementations",
-        "docs-translator",
-        "expand-node",
-        "extract-steps",
-        "flow-maker",
-        "future-technology",
-        "generate-automation-challenges",
-        "generate-automation-timeline",
-        "generate-metadata",
-        "hallucinate-tree",
-        "merge-duplicate-facts",
-        "prompt",
-        "reconstructor",
-        "return-analysis",
-        "search-queries",
-        "simplified-technical-english",
-        "specifications-industrial",
-        "summary",
-        "utils",
-      ],
-      simulations: [
-        "constraints",
-        "metrics-editor",
-        "universal-object-model",
-        "validation-rules-reference",
-        "validation",
-      ],
-      standards: ["automation-status"],
-    },
-  };
+            makeSection("Guides", "workspec-guides", [
+                makePage("Quickstart", "/docs/workspec/guides/quickstart"),
+                makePage(
+                    "Custom Validation (CLI)",
+                    "/docs/workspec/guides/custom-validation-cli",
+                ),
+                makePage("Migration", "/docs/workspec/guides/migration"),
+                makePage("AI Generation", "/docs/workspec/guides/ai-generation"),
+                makePage("Cookbook", "/docs/workspec/guides/cookbook"),
+            ]),
 
-  // Add Documentation Home first
-  structure.push({
-    title: "Documentation Home",
-    path: "/docs/",
-    type: "page",
-  });
+            makeSection("Reference", "workspec-reference", [
+                makePage("Types", "/docs/workspec/reference/types"),
+                makePage("Properties", "/docs/workspec/reference/properties"),
+                makePage("Errors", "/docs/workspec/reference/errors"),
+            ]),
 
-  // Add root level items
-  fileStructure.root.forEach((filename) => {
-    structure.push({
-      title: getDocTitle(filename),
-      path: `/docs/${filename}.html`,
-      type: "page",
-    });
-  });
+            makeSection("Specification", "workspec-specification", [
+                makeSection("v2.0", "workspec-specification-v2", [
+                    makePage(
+                        "Overview",
+                        "/docs/workspec/specification/v2.0/",
+                    ),
+                    makePage("Schema", "/docs/workspec/specification/v2.0/schema"),
+                    makePage(
+                        "Objects",
+                        "/docs/workspec/specification/v2.0/objects",
+                    ),
+                    makePage("Tasks", "/docs/workspec/specification/v2.0/tasks"),
+                    makePage(
+                        "Interactions",
+                        "/docs/workspec/specification/v2.0/interactions",
+                    ),
+                    makePage(
+                        "Validation",
+                        "/docs/workspec/specification/v2.0/validation",
+                    ),
+                    makePage(
+                        "Changelog",
+                        "/docs/workspec/specification/v2.0/changelog",
+                    ),
+                ]),
 
-  // Add sections with their pages
-  Object.entries(fileStructure.sections).forEach(([sectionKey, files]) => {
-    const section = {
-      title: sectionNames[sectionKey] || getDocTitle(sectionKey),
-      path: `#${sectionKey}`, // No actual page, just a section
-      type: "section",
-      children: files.map((filename) => ({
-        title: getDocTitle(filename),
-        path: `/docs/${sectionKey}/${filename}.html`,
-        type: "page",
-      })),
-    };
+                makeSection("v1.0", "workspec-specification-v1", [
+                    makePage(
+                        "Overview",
+                        "/docs/workspec/specification/v1.0/",
+                    ),
+                    makePage(
+                        "Universal Object Model",
+                        "/docs/workspec/specification/v1.0/universal-object-model",
+                    ),
+                ]),
+            ]),
+        ]),
 
-    structure.push(section);
-  });
+        makeSection("Playground", "playground", [
+            makeSection("Guides", "playground-guides", [
+                makePage("Playground Guide", "/docs/playground/playground-guide"),
+                makePage(
+                    "Space Editor Guide",
+                    "/docs/playground/space-editor-guide",
+                ),
+                makePage(
+                    "Display Editor Guide",
+                    "/docs/playground/display-editor-guide",
+                ),
+                makePage("Smart Actions", "/docs/playground/smart-actions"),
+                makePage("Save & Load", "/docs/playground/save-load"),
+                makePage(
+                    "Multi-Day Simulations",
+                    "/docs/playground/multi-day-simulations",
+                ),
+            ]),
 
-  return structure;
+            makeSection("Simulation & Validation", "playground-simulation", [
+                makePage(
+                    "Universal Object Model (Simulation)",
+                    "/docs/simulations/universal-object-model",
+                ),
+                makePage("Actor Movement", "/docs/simulations/actor-movement"),
+                makePage(
+                    "Simulation & Validation System",
+                    "/docs/simulations/validation",
+                ),
+                makePage(
+                    "Validation Rules Reference",
+                    "/docs/simulations/validation-rules-reference",
+                ),
+                makePage(
+                    "Metric & Constraint ID Standardization",
+                    "/docs/simulations/constraints",
+                ),
+                makePage("Metrics Editor", "/docs/simulations/metrics-editor"),
+            ]),
+        ]),
+
+        makeSection("Developer", "developer", [
+            makeSection("Routines", "developer-routines", [
+                makePage("Flow Maker", "/docs/routines/flow-maker"),
+                makePage("Assemble", "/docs/routines/assemble"),
+                makePage(
+                    "Generate Metadata",
+                    "/docs/routines/generate-metadata",
+                ),
+                makePage("Hallucinate Tree", "/docs/routines/hallucinate-tree"),
+                makePage(
+                    "Generate Automation Timeline",
+                    "/docs/routines/generate-automation-timeline",
+                ),
+                makePage(
+                    "Generate Automation Challenges",
+                    "/docs/routines/generate-automation-challenges",
+                ),
+                makePage(
+                    "Automation Adoption",
+                    "/docs/routines/automation-adoption",
+                ),
+                makePage(
+                    "Current Implementations",
+                    "/docs/routines/current-implementations",
+                ),
+                makePage("Return Analysis", "/docs/routines/return-analysis"),
+                makePage("Future Technology", "/docs/routines/future-technology"),
+                makePage(
+                    "Specifications Industrial",
+                    "/docs/routines/specifications-industrial",
+                ),
+                makePage("Docs Translator", "/docs/routines/docs-translator"),
+                makePage("Expand Node", "/docs/routines/expand-node"),
+                makePage("Extract Steps", "/docs/routines/extract-steps"),
+                makePage("Merge Duplicate Facts", "/docs/routines/merge-duplicate-facts"),
+                makePage("Prompt", "/docs/routines/prompt"),
+                makePage("Reconstructor", "/docs/routines/reconstructor"),
+                makePage("Search Queries", "/docs/routines/search-queries"),
+                makePage("Summary", "/docs/routines/summary"),
+                makePage("Utils", "/docs/routines/utils"),
+                makePage("Basic English", "/docs/routines/basic-english"),
+                makePage(
+                    "Simplified Technical English",
+                    "/docs/routines/simplified-technical-english",
+                ),
+            ]),
+
+            makeSection("Standards", "developer-standards", [
+                makePage(
+                    "Automation Status Taxonomy",
+                    "/docs/standards/automation-status",
+                ),
+            ]),
+        ]),
+    ];
+}
+
+function normalizeDocPath(path) {
+    let normalized = path.split("?")[0].split("#")[0];
+
+    normalized = normalized.replace(/\.html$/, "");
+    normalized = normalized.replace(/\/index$/, "");
+
+    if (normalized.length > 1) {
+        normalized = normalized.replace(/\/$/, "");
+    }
+
+    return normalized;
 }
 
 /**
@@ -179,21 +212,19 @@ function generateDocsStructure() {
  * @returns {boolean} - True if the item or a descendant is the current page.
  */
 function isCurrentOrAncestor(item, currentPath) {
-  // Normalize paths for comparison (remove trailing .html, handle both with/without)
-  const normalizedItemPath = item.path.replace(/\.html$/, "");
-  const normalizedCurrentPath = currentPath.replace(/\.html$/, "");
+    // Normalize paths for comparison (handle .html, /index, and trailing slashes)
+    const normalizedItemPath = normalizeDocPath(item.path);
+    const normalizedCurrentPath = normalizeDocPath(currentPath);
 
-  if (normalizedItemPath === normalizedCurrentPath) {
-    return true;
-  }
+    if (normalizedItemPath === normalizedCurrentPath) {
+        return true;
+    }
 
-  if (item.children) {
-    return item.children.some((child) =>
-      isCurrentOrAncestor(child, currentPath),
-    );
-  }
+    if (item.children) {
+        return item.children.some((child) => isCurrentOrAncestor(child, currentPath));
+    }
 
-  return false;
+    return false;
 }
 
 /**
@@ -203,99 +234,99 @@ function isCurrentOrAncestor(item, currentPath) {
  * @returns {HTMLUListElement} - The generated UL element.
  */
 function buildList(items, currentPath, isSubmenu = false) {
-  const ul = document.createElement("ul");
-  if (isSubmenu) {
-    ul.classList.add("docs-submenu");
-  } else {
-    ul.classList.add("docs-nav-list");
-  }
-
-  items.forEach((item) => {
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-
-    // Set up the link
-    if (item.type === "section") {
-      // Section headers are not clickable but expand/collapse
-      a.href = "javascript:void(0)";
-      a.setAttribute("role", "button");
-      a.setAttribute("aria-expanded", "false");
-      li.classList.add("docs-section");
+    const ul = document.createElement("ul");
+    if (isSubmenu) {
+        ul.classList.add("docs-submenu");
     } else {
-      // Regular page links
-      a.href = item.path;
-      li.classList.add("docs-page");
+        ul.classList.add("docs-nav-list");
     }
 
-    a.textContent = item.title;
+    items.forEach((item) => {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
 
-    // Handle sections with children
-    if (item.children && item.children.length > 0) {
-      li.classList.add("has-children");
-
-      // Add expand/collapse functionality for sections
-      a.addEventListener("click", (e) => {
-        e.preventDefault();
-        const isOpen = li.classList.toggle("open");
-        a.setAttribute("aria-expanded", isOpen.toString());
-
-        // Smooth animation for the submenu
-        const submenu = li.querySelector(".docs-submenu");
-        if (submenu) {
-          if (isOpen) {
-            submenu.style.maxHeight = submenu.scrollHeight + "px";
-          } else {
-            submenu.style.maxHeight = "0";
-          }
+        // Set up the link
+        if (item.type === "section") {
+            // Section headers are not clickable but expand/collapse
+            a.href = "javascript:void(0)";
+            a.setAttribute("role", "button");
+            a.setAttribute("aria-expanded", "false");
+            li.classList.add("docs-section");
+        } else {
+            // Regular page links
+            a.href = item.path;
+            li.classList.add("docs-page");
         }
-      });
-    }
 
-    // Check if current or ancestor
-    const isCurrent =
-      isCurrentOrAncestor(item, currentPath) && item.type === "page";
-    const isAncestor =
-      !isCurrent &&
-      item.children &&
-      item.children.some((child) => isCurrentOrAncestor(child, currentPath));
+        a.textContent = item.title;
 
-    // Add active states
-    if (isCurrent) {
-      a.classList.add("active");
-      li.classList.add("current-page");
-    }
+        // Handle sections with children
+        if (item.children && item.children.length > 0) {
+            li.classList.add("has-children");
 
-    if (isAncestor) {
-      li.classList.add("open", "active-section");
-      a.classList.add("active-ancestor");
-      a.setAttribute("aria-expanded", "true");
-    }
+            // Add expand/collapse functionality for sections
+            a.addEventListener("click", (e) => {
+                e.preventDefault();
+                const isOpen = li.classList.toggle("open");
+                a.setAttribute("aria-expanded", isOpen.toString());
 
-    // Create the list item structure
-    li.appendChild(a);
+                // Smooth animation for the submenu
+                const submenu = li.querySelector(".docs-submenu");
+                if (submenu) {
+                    if (isOpen) {
+                        submenu.style.maxHeight = submenu.scrollHeight + "px";
+                    } else {
+                        submenu.style.maxHeight = "0";
+                    }
+                }
+            });
+        }
 
-    // Add children if they exist
-    if (item.children && item.children.length > 0) {
-      const childrenUl = buildList(item.children, currentPath, true);
-      childrenUl.classList.add("docs-submenu");
+        // Check if current or ancestor
+        const isCurrent =
+            isCurrentOrAncestor(item, currentPath) && item.type === "page";
+        const isAncestor =
+            !isCurrent &&
+            item.children &&
+            item.children.some((child) => isCurrentOrAncestor(child, currentPath));
 
-      // Set initial state for submenu
-      if (isAncestor) {
-        // Use setTimeout to ensure DOM is rendered and scrollHeight is accurate
-        setTimeout(() => {
-          childrenUl.style.maxHeight = childrenUl.scrollHeight + "px";
-        }, 0);
-      } else {
-        childrenUl.style.maxHeight = "0";
-      }
+        // Add active states
+        if (isCurrent) {
+            a.classList.add("active");
+            li.classList.add("current-page");
+        }
 
-      li.appendChild(childrenUl);
-    }
+        if (isAncestor) {
+            li.classList.add("open", "active-section");
+            a.classList.add("active-ancestor");
+            a.setAttribute("aria-expanded", "true");
+        }
 
-    ul.appendChild(li);
-  });
+        // Create the list item structure
+        li.appendChild(a);
 
-  return ul;
+        // Add children if they exist
+        if (item.children && item.children.length > 0) {
+            const childrenUl = buildList(item.children, currentPath, true);
+            childrenUl.classList.add("docs-submenu");
+
+            // Set initial state for submenu
+            if (isAncestor) {
+                // Use setTimeout to ensure DOM is rendered and scrollHeight is accurate
+                setTimeout(() => {
+                    childrenUl.style.maxHeight = childrenUl.scrollHeight + "px";
+                }, 0);
+            } else {
+                childrenUl.style.maxHeight = "0";
+            }
+
+            li.appendChild(childrenUl);
+        }
+
+        ul.appendChild(li);
+    });
+
+    return ul;
 }
 
 /**
@@ -303,56 +334,56 @@ function buildList(items, currentPath, isSubmenu = false) {
  * @param {string} containerSelector - CSS selector for the container element.
  */
 function renderDocumentationSidebar(containerSelector) {
-  const container = document.querySelector(containerSelector);
-  if (!container) {
-    console.error(
-      `Documentation sidebar container not found: ${containerSelector}`,
-    );
-    return;
-  }
-
-  // Generate the docs structure dynamically
-  docsTree = generateDocsStructure();
-
-  // Clear existing content
-  container.innerHTML = "";
-
-  // Create the aside wrapper with improved structure
-  const aside = document.createElement("aside");
-  aside.classList.add("sidebar");
-
-  // Create the nav element
-  const nav = document.createElement("nav");
-  nav.setAttribute("aria-label", "Documentation navigation");
-  nav.classList.add("docs-nav");
-
-  // Add the 'Documentation' header with modern styling
-  const header = document.createElement("h3");
-  header.textContent = "Documentation";
-  header.classList.add("docs-nav-header");
-  nav.appendChild(header);
-
-  // Build the navigation list
-  const currentPath = window.location.pathname;
-  const rootUl = buildList(docsTree, currentPath);
-  nav.appendChild(rootUl);
-
-  // Append nav to aside, and aside to container
-  aside.appendChild(nav);
-  container.appendChild(aside);
-
-  // Add smooth scroll behavior for internal navigation
-  nav.addEventListener("click", (e) => {
-    if (
-      e.target.tagName === "A" &&
-      e.target.href &&
-      !e.target.href.includes("javascript:")
-    ) {
-      // Add a subtle loading state for better UX
-      e.target.style.opacity = "0.7";
-      setTimeout(() => {
-        e.target.style.opacity = "1";
-      }, 150);
+    const container = document.querySelector(containerSelector);
+    if (!container) {
+        console.error(
+            `Documentation sidebar container not found: ${containerSelector}`,
+        );
+        return;
     }
-  });
+
+    // Generate the docs structure dynamically
+    docsTree = generateDocsStructure();
+
+    // Clear existing content
+    container.innerHTML = "";
+
+    // Create the aside wrapper with improved structure
+    const aside = document.createElement("aside");
+    aside.classList.add("sidebar");
+
+    // Create the nav element
+    const nav = document.createElement("nav");
+    nav.setAttribute("aria-label", "Documentation navigation");
+    nav.classList.add("docs-nav");
+
+    // Add the 'Documentation' header with modern styling
+    const header = document.createElement("h3");
+    header.textContent = "Documentation";
+    header.classList.add("docs-nav-header");
+    nav.appendChild(header);
+
+    // Build the navigation list
+    const currentPath = window.location.pathname;
+    const rootUl = buildList(docsTree, currentPath);
+    nav.appendChild(rootUl);
+
+    // Append nav to aside, and aside to container
+    aside.appendChild(nav);
+    container.appendChild(aside);
+
+    // Add smooth scroll behavior for internal navigation
+    nav.addEventListener("click", (e) => {
+        if (
+            e.target.tagName === "A" &&
+            e.target.href &&
+            !e.target.href.includes("javascript:")
+        ) {
+            // Add a subtle loading state for better UX
+            e.target.style.opacity = "0.7";
+            setTimeout(() => {
+                e.target.style.opacity = "1";
+            }, 150);
+        }
+    });
 }

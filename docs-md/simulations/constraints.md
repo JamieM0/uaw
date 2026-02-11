@@ -37,3 +37,8 @@ To ensure the system remains organized and scalable, all metric IDs will follow 
 - **dependency**: Checks the logical links between tasks.
 - **profitability**: Analyzes financial outcomes.
 - **efficiency**: Identifies opportunities for improvement (e.g., reducing idle time).
+
+## See Also
+
+- [Simulation & Validation System](/docs/simulations/validation)
+- [Validation Rules Reference](/docs/simulations/validation-rules-reference)

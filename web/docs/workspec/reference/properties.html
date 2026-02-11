@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkSpec v2.0 Standard Properties Reference - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/">Workspec</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/reference/">Reference</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">WorkSpec v2.0 Standard Properties Reference</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">WorkSpec v2.0 Standard Properties Reference</h1>
+                            
+                            <p class="docs-page-subtitle">WorkSpec allows arbitrary custom properties under an object’s `properties` bag. This page documents commonly-used standard properties and their typical meaning.</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>WorkSpec allows arbitrary custom properties under an object’s <code class="docs-inline-code">properties</code> bag. This page documents commonly-used standard properties and their typical meaning.</p>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="general-conventions">General conventions<a class="headerlink" href="#general-conventions" title="Link to this section">¶</a></h2>
+<ul class="docs-list">
+<li>Type-specific properties live under <code class="docs-inline-code">object.properties</code>.</li>
+<li>Some properties have conventional meaning for validators/simulators (not all consumers implement all semantics).</li>
+<li><code class="docs-inline-code">location</code> is a top-level object field (<code class="docs-inline-code">object.location</code>) in WorkSpec v2.0.</li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="actor-properties-common">Actor properties (common)<a class="headerlink" href="#actor-properties-common" title="Link to this section">¶</a></h2>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">role</code></td>
+<td>string</td>
+<td>Job title/function</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">skill_level</code></td>
+<td>enum</td>
+<td><code class="docs-inline-code">beginner</code> | <code class="docs-inline-code">intermediate</code> | <code class="docs-inline-code">advanced</code> | <code class="docs-inline-code">expert</code></td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">cost_per_hour</code></td>
+<td>number</td>
+<td>Labor cost</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">state</code></td>
+<td>string</td>
+<td>Current state (available, busy, break, etc.)</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">shift_start</code></td>
+<td>time string</td>
+<td>Start of availability window</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">shift_end</code></td>
+<td>time string</td>
+<td>End of availability window</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">overhead_rate</code></td>
+<td>number</td>
+<td>Overhead percentage (0.0–1.0)</td>
+</tr>
+</tbody>
+</table></div>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="equipment-properties-common">Equipment properties (common)<a class="headerlink" href="#equipment-properties-common" title="Link to this section">¶</a></h2>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">state</code></td>
+<td>string</td>
+<td>Current state (clean, dirty, in_use, maintenance, etc.)</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">capacity</code></td>
+<td>number/integer</td>
+<td>Throughput or concurrent capacity</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">capacity_unit</code></td>
+<td>string</td>
+<td>Unit for <code class="docs-inline-code">capacity</code></td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">cost_per_hour</code></td>
+<td>number</td>
+<td>Operating cost</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">depreciation_per_hour</code></td>
+<td>number</td>
+<td>Depreciation rate</td>
+</tr>
+</tbody>
+</table></div>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="resource-properties-common">Resource properties (common)<a class="headerlink" href="#resource-properties-common" title="Link to this section">¶</a></h2>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">quantity</code></td>
+<td>number</td>
+<td>Current stock</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">unit</code></td>
+<td>string</td>
+<td>Unit of measure</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">cost_per_unit</code></td>
+<td>number</td>
+<td>Cost per unit</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">expiration_date</code></td>
+<td>ISO 8601 date</td>
+<td>Optional shelf-life modeling</td>
+</tr>
+</tbody>
+</table></div>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="product-properties-common">Product properties (common)<a class="headerlink" href="#product-properties-common" title="Link to this section">¶</a></h2>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">quantity</code></td>
+<td>number</td>
+<td>Current inventory</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">unit</code></td>
+<td>string</td>
+<td>Unit of measure</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">cost_per_unit</code></td>
+<td>number</td>
+<td>Cost per produced unit</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">revenue_per_unit</code></td>
+<td>number</td>
+<td>Revenue per sold unit</td>
+</tr>
+</tbody>
+</table></div>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="service-properties-standard">Service properties (standard)<a class="headerlink" href="#service-properties-standard" title="Link to this section">¶</a></h2>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">state</code></td>
+<td>enum</td>
+<td><code class="docs-inline-code">running</code> | <code class="docs-inline-code">stopped</code> | <code class="docs-inline-code">error</code></td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">interval</code></td>
+<td>duration</td>
+<td>Execution interval</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">last_run</code></td>
+<td>ISO 8601 date-time string</td>
+<td>Last execution time</td>
+</tr>
+</tbody>
+</table></div>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="digital-object-properties-common">Digital object properties (common)<a class="headerlink" href="#digital-object-properties-common" title="Link to this section">¶</a></h2>
+<p>Digital objects vary; common properties include:</p>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">state</code></td>
+<td>string</td>
+<td>Operational state</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">capacity</code></td>
+<td>number</td>
+<td>Maximum capacity</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">utilization</code></td>
+<td>number</td>
+<td>0.0–1.0 utilization</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">ip_address</code></td>
+<td>string</td>
+<td>Optional network address</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">storage_gb</code></td>
+<td>number</td>
+<td>Optional storage capacity</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">cpu_cores</code></td>
+<td>integer</td>
+<td>Optional compute cores</td>
+</tr>
+</tbody>
+</table></div>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="economic-properties-cross-cutting">Economic properties (cross-cutting)<a class="headerlink" href="#economic-properties-cross-cutting" title="Link to this section">¶</a></h2>
+<p>These properties may be used by validators and analysis tools:</p>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Property</th>
+<th>Applies to</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">cost_per_hour</code></td>
+<td>actors, equipment</td>
+<td>number</td>
+<td>Hourly labor/operating cost</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">cost_per_unit</code></td>
+<td>resources, products</td>
+<td>number</td>
+<td>Per-unit cost</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">revenue_per_unit</code></td>
+<td>products</td>
+<td>number</td>
+<td>Per-unit revenue</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">fixed_cost</code></td>
+<td>any</td>
+<td>number</td>
+<td>One-time cost</td>
+</tr>
+</tbody>
+</table></div>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="interaction-related-properties">Interaction-related properties<a class="headerlink" href="#interaction-related-properties" title="Link to this section">¶</a></h2>
+<p>Some properties have conventional semantics for validators/simulators:</p>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Property</th>
+<th>Typical operator</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">quantity</code></td>
+<td><code class="docs-inline-code">delta</code> / <code class="docs-inline-code">set</code></td>
+<td>For resources/products</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">state</code></td>
+<td><code class="docs-inline-code">from/to</code> / <code class="docs-inline-code">set</code></td>
+<td>For actors/equipment/services</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">location</code></td>
+<td><code class="docs-inline-code">from/to</code> / <code class="docs-inline-code">set</code></td>
+<td>Used by simulators that track locations</td>
+</tr>
+</tbody>
+</table></div>
+<p>See interaction operators: <a href="/docs/workspec/specification/v2.0/interactions">/docs/workspec/specification/v2.0/interactions</a>.</p>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

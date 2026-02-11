@@ -5,10 +5,191 @@
 let history = [];
 let historyIndex = -1;
 const MAX_HISTORY = 50;
+let dropdownControllerInitialized = false;
+let dropdownMutationObserver = null;
+
+function closeAllPlaygroundDropdowns(exceptDropdown = null) {
+    document.querySelectorAll('.dropdown.open').forEach(dropdown => {
+        if (exceptDropdown && dropdown === exceptDropdown) return;
+        dropdown.classList.remove('open');
+        const toggle = dropdown.querySelector('button, .dropdown-toggle');
+        if (toggle) {
+            toggle.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
+function initializeDropdownAria(root = document) {
+    root.querySelectorAll('.dropdown').forEach((dropdown, index) => {
+        const toggle = dropdown.querySelector('button, .dropdown-toggle');
+        const menu = dropdown.querySelector('.dropdown-content');
+        if (!toggle || !menu) return;
+
+        if (!menu.id) {
+            menu.id = `playground-dropdown-menu-${index + 1}`;
+        }
+        toggle.setAttribute('aria-haspopup', 'menu');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.setAttribute('aria-controls', menu.id);
+
+        menu.querySelectorAll('button, a, [role="menuitem"]').forEach(item => {
+            item.setAttribute('role', 'menuitem');
+            if (!item.hasAttribute('tabindex')) {
+                item.setAttribute('tabindex', '-1');
+            }
+        });
+    });
+}
+
+function setupAccessibleDropdowns() {
+    initializeDropdownAria();
+    if (dropdownControllerInitialized) return;
+    dropdownControllerInitialized = true;
+
+    const focusMenuItem = (dropdown, nextIndex) => {
+        const menu = dropdown?.querySelector('.dropdown-content');
+        if (!menu) return;
+        const items = Array.from(menu.querySelectorAll('button, a, [role="menuitem"]'))
+            .filter(item => !item.disabled);
+        if (items.length === 0) return;
+        const safeIndex = Math.max(0, Math.min(nextIndex, items.length - 1));
+        items.forEach(item => item.setAttribute('tabindex', '-1'));
+        items[safeIndex].setAttribute('tabindex', '0');
+        items[safeIndex].focus();
+    };
+
+    const openDropdown = (dropdown, focusFirst = false) => {
+        const toggle = dropdown?.querySelector('button, .dropdown-toggle');
+        if (!dropdown || !toggle) return;
+        closeAllPlaygroundDropdowns(dropdown);
+        dropdown.classList.add('open');
+        toggle.setAttribute('aria-expanded', 'true');
+        if (focusFirst) {
+            focusMenuItem(dropdown, 0);
+        }
+    };
+
+    const closeDropdown = (dropdown, focusToggle = false) => {
+        const toggle = dropdown?.querySelector('button, .dropdown-toggle');
+        if (!dropdown || !toggle) return;
+        dropdown.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+        if (focusToggle) toggle.focus();
+    };
+
+    document.addEventListener('click', (event) => {
+        const toggle = event.target.closest('.dropdown > button, .dropdown > .dropdown-toggle');
+        if (toggle) {
+            event.preventDefault();
+            const dropdown = toggle.closest('.dropdown');
+            if (!dropdown) return;
+            const isOpen = dropdown.classList.contains('open');
+            if (isOpen) {
+                closeDropdown(dropdown);
+            } else {
+                openDropdown(dropdown);
+            }
+            return;
+        }
+
+        const menuItem = event.target.closest('.dropdown-content button, .dropdown-content a');
+        if (menuItem) {
+            closeAllPlaygroundDropdowns();
+            return;
+        }
+
+        if (!event.target.closest('.dropdown')) {
+            closeAllPlaygroundDropdowns();
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        const focusedToggle = document.activeElement?.closest('.dropdown > button, .dropdown > .dropdown-toggle');
+        const focusedMenuItem = document.activeElement?.closest('.dropdown-content button, .dropdown-content a, .dropdown-content [role="menuitem"]');
+
+        if (event.key === 'Escape') {
+            const openDropdown = document.querySelector('.dropdown.open');
+            if (openDropdown) {
+                event.preventDefault();
+                closeDropdown(openDropdown, true);
+            }
+            return;
+        }
+
+        if (focusedToggle && (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ')) {
+            event.preventDefault();
+            const dropdown = focusedToggle.closest('.dropdown');
+            if (!dropdown) return;
+            openDropdown(dropdown, true);
+            return;
+        }
+
+        if (!focusedMenuItem) return;
+        const dropdown = focusedMenuItem.closest('.dropdown');
+        if (!dropdown) return;
+
+        const menuItems = Array.from(dropdown.querySelectorAll('.dropdown-content button, .dropdown-content a, .dropdown-content [role="menuitem"]'))
+            .filter(item => !item.disabled);
+        const currentIndex = menuItems.indexOf(focusedMenuItem);
+
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            const nextIndex = currentIndex >= menuItems.length - 1 ? 0 : currentIndex + 1;
+            focusMenuItem(dropdown, nextIndex);
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            const nextIndex = currentIndex <= 0 ? menuItems.length - 1 : currentIndex - 1;
+            focusMenuItem(dropdown, nextIndex);
+        } else if (event.key === 'Home') {
+            event.preventDefault();
+            focusMenuItem(dropdown, 0);
+        } else if (event.key === 'End') {
+            event.preventDefault();
+            focusMenuItem(dropdown, menuItems.length - 1);
+        } else if (event.key === 'Tab') {
+            closeDropdown(dropdown);
+        }
+    });
+
+    dropdownMutationObserver = new MutationObserver(() => {
+        initializeDropdownAria();
+    });
+    dropdownMutationObserver.observe(document.body, { childList: true, subtree: true });
+}
+
+window.closeAllPlaygroundDropdowns = closeAllPlaygroundDropdowns;
+
+function setupHorizontalTabKeyboardNavigation(buttons, activateFn) {
+    const buttonList = Array.from(buttons);
+    buttonList.forEach((button, index) => {
+        button.addEventListener('keydown', (event) => {
+            let targetIndex = index;
+            if (event.key === 'ArrowRight') {
+                targetIndex = (index + 1) % buttonList.length;
+            } else if (event.key === 'ArrowLeft') {
+                targetIndex = (index - 1 + buttonList.length) % buttonList.length;
+            } else if (event.key === 'Home') {
+                targetIndex = 0;
+            } else if (event.key === 'End') {
+                targetIndex = buttonList.length - 1;
+            } else if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                activateFn(button);
+                return;
+            } else {
+                return;
+            }
+
+            event.preventDefault();
+            buttonList[targetIndex].focus();
+            activateFn(buttonList[targetIndex]);
+        });
+    });
+}
 
 // Tab setup
 function setupTabs() {
-    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabButtons = Array.from(document.querySelectorAll('.tab-btn'));
     const tabContents = document.querySelectorAll('.tab-content');
 
     // Initialize ARIA attributes for tabs
@@ -41,59 +222,64 @@ function setupTabs() {
         activeContent.setAttribute('aria-hidden', 'false');
     }
 
+    const activateTab = async (button) => {
+        const targetTab = button.dataset.tab;
+
+        // Update ARIA states
+        tabButtons.forEach(btn => {
+            btn.classList.remove('active');
+            btn.setAttribute('aria-selected', 'false');
+            btn.setAttribute('tabindex', '-1');
+        });
+        button.classList.add('active');
+        button.setAttribute('aria-selected', 'true');
+        button.setAttribute('tabindex', '0');
+
+        tabContents.forEach(content => {
+            content.classList.remove('active');
+            content.setAttribute('aria-hidden', 'true');
+        });
+
+        // Map tab names to content IDs correctly
+        if (targetTab === 'timeline') {
+            const tab = document.getElementById('simulation-tab');
+            if (tab) {
+                tab.classList.add('active');
+                tab.setAttribute('aria-hidden', 'false');
+            }
+        } else if (targetTab === 'space-editor') {
+            const tab = document.getElementById('space-editor-tab');
+            if (tab) {
+                tab.classList.add('active');
+                tab.setAttribute('aria-hidden', 'false');
+            }
+            // Load current simulation data into space editor when tab is opened
+            await syncSpaceEditorState();
+        } else if (targetTab === 'digital-space') {
+            const tab = document.getElementById('digital-space-tab');
+            if (tab) {
+                tab.classList.add('active');
+                tab.setAttribute('aria-hidden', 'false');
+            }
+            // Initialize digital space editor when tab is first opened
+            await syncDigitalSpaceState();
+        } else if (targetTab === 'display-editor') {
+            const tab = document.getElementById('display-editor-tab');
+            if (tab) {
+                tab.classList.add('active');
+                tab.setAttribute('aria-hidden', 'false');
+            }
+            // Initialize display editor when tab is first opened
+            await syncDisplayEditorState();
+        }
+    };
+
     tabButtons.forEach(button => {
         button.addEventListener('click', async () => {
-            const targetTab = button.dataset.tab;
-
-            // Update ARIA states
-            tabButtons.forEach(btn => {
-                btn.classList.remove('active');
-                btn.setAttribute('aria-selected', 'false');
-                btn.setAttribute('tabindex', '-1');
-            });
-            button.classList.add('active');
-            button.setAttribute('aria-selected', 'true');
-            button.setAttribute('tabindex', '0');
-
-            tabContents.forEach(content => {
-                content.classList.remove('active');
-                content.setAttribute('aria-hidden', 'true');
-            });
-
-            // Map tab names to content IDs correctly
-            if (targetTab === 'timeline') {
-                const tab = document.getElementById('simulation-tab');
-                if (tab) {
-                    tab.classList.add('active');
-                    tab.setAttribute('aria-hidden', 'false');
-                }
-            } else if (targetTab === 'space-editor') {
-                const tab = document.getElementById('space-editor-tab');
-                if (tab) {
-                    tab.classList.add('active');
-                    tab.setAttribute('aria-hidden', 'false');
-                }
-                // Load current simulation data into space editor when tab is opened
-                await syncSpaceEditorState();
-            } else if (targetTab === 'digital-space') {
-                const tab = document.getElementById('digital-space-tab');
-                if (tab) {
-                    tab.classList.add('active');
-                    tab.setAttribute('aria-hidden', 'false');
-                }
-                // Initialize digital space editor when tab is first opened
-                await syncDigitalSpaceState();
-            } else if (targetTab === 'display-editor') {
-                const tab = document.getElementById('display-editor-tab');
-                if (tab) {
-                    tab.classList.add('active');
-                    tab.setAttribute('aria-hidden', 'false');
-                }
-                // Initialize display editor when tab is first opened
-                await syncDisplayEditorState();
-            }
+            await activateTab(button);
         });
     });
+    setupHorizontalTabKeyboardNavigation(tabButtons, activateTab);
 }
 
 // State synchronization helper functions
@@ -151,8 +337,11 @@ async function syncSpaceEditorState() {
             return;
         }
 
-        if (validSimulationData.simulation && validSimulationData.simulation.layout) {
-            spaceEditor.loadLayout(validSimulationData.simulation.layout, true);
+        if (validSimulationData.simulation) {
+            const layout = validSimulationData.simulation.world?.layout || validSimulationData.simulation.layout;
+            if (layout) {
+                spaceEditor.loadLayout(layout, true);
+            }
         }
     } catch (error) {
         console.warn('Failed to sync space editor state:', error.message);
@@ -435,6 +624,9 @@ let resizeHandlers = {
     verticalHandler: null,
     metricsHandler: null,
     horizontalHandler: null,
+    verticalKeyHandler: null,
+    metricsKeyHandler: null,
+    horizontalKeyHandler: null,
     mouseMoveHandler: null,
     mouseUpHandler: null
 };
@@ -466,6 +658,9 @@ function initializeResizeHandles() {
             verticalHandler: null,
             metricsHandler: null,
             horizontalHandler: null,
+            verticalKeyHandler: null,
+            metricsKeyHandler: null,
+            horizontalKeyHandler: null,
             mouseMoveHandler: null,
             mouseUpHandler: null
         };
@@ -494,13 +689,22 @@ function initializeResizeHandles() {
         verticalHandle.removeEventListener("mousedown", oldHandlers.verticalHandler);
         verticalHandle.removeEventListener("touchstart", oldHandlers.verticalHandler);
     }
+    if (verticalHandle && oldHandlers.verticalKeyHandler) {
+        verticalHandle.removeEventListener("keydown", oldHandlers.verticalKeyHandler);
+    }
     if (metricsHandle && oldHandlers.metricsHandler) {
         metricsHandle.removeEventListener("mousedown", oldHandlers.metricsHandler);
         metricsHandle.removeEventListener("touchstart", oldHandlers.metricsHandler);
     }
+    if (metricsHandle && oldHandlers.metricsKeyHandler) {
+        metricsHandle.removeEventListener("keydown", oldHandlers.metricsKeyHandler);
+    }
     if (horizontalHandle && oldHandlers.horizontalHandler) {
         horizontalHandle.removeEventListener("mousedown", oldHandlers.horizontalHandler);
         horizontalHandle.removeEventListener("touchstart", oldHandlers.horizontalHandler);
+    }
+    if (horizontalHandle && oldHandlers.horizontalKeyHandler) {
+        horizontalHandle.removeEventListener("keydown", oldHandlers.horizontalKeyHandler);
     }
 
     // Reset handlers object to clean state
@@ -508,6 +712,9 @@ function initializeResizeHandles() {
         verticalHandler: null,
         metricsHandler: null,
         horizontalHandler: null,
+        verticalKeyHandler: null,
+        metricsKeyHandler: null,
+        horizontalKeyHandler: null,
         mouseMoveHandler: null,
         mouseUpHandler: null
     };
@@ -528,17 +735,54 @@ function initializeResizeHandles() {
         verticalHandle.setAttribute('role', 'separator');
         verticalHandle.setAttribute('aria-label', 'Resize editor and simulation panels');
         verticalHandle.setAttribute('aria-orientation', 'vertical');
+        verticalHandle.setAttribute('tabindex', '0');
     }
     if (metricsHandle) {
         metricsHandle.setAttribute('role', 'separator');
         metricsHandle.setAttribute('aria-label', 'Resize metrics editor panel');
         metricsHandle.setAttribute('aria-orientation', 'vertical');
+        metricsHandle.setAttribute('tabindex', '0');
     }
     if (horizontalHandle) {
         horizontalHandle.setAttribute('role', 'separator');
         horizontalHandle.setAttribute('aria-label', 'Resize top and bottom panels');
         horizontalHandle.setAttribute('aria-orientation', 'horizontal');
+        horizontalHandle.setAttribute('tabindex', '0');
     }
+
+    const applyStandardVerticalResize = (deltaPercent) => {
+        if (!playgroundTop || !jsonPanel || !simulationPanel) return;
+        const containerRect = playgroundTop.getBoundingClientRect();
+        const currentWidth = (jsonPanel.getBoundingClientRect().width / containerRect.width) * 100;
+        const newWidth = Math.min(80, Math.max(20, currentWidth + deltaPercent));
+        jsonPanel.style.width = `${newWidth}%`;
+        simulationPanel.style.width = `${100 - newWidth}%`;
+    };
+
+    const applyMetricsVerticalResize = (deltaPercent) => {
+        const playgroundLeft = document.querySelector(".playground-left");
+        const metricsPanel = document.querySelector(".metrics-editor-panel");
+        if (!playgroundTop || !playgroundLeft || !metricsPanel) return;
+        const containerRect = playgroundTop.getBoundingClientRect();
+        const currentWidth = (playgroundLeft.getBoundingClientRect().width / containerRect.width) * 100;
+        const newWidth = Math.min(80, Math.max(20, currentWidth + deltaPercent));
+        playgroundLeft.style.setProperty('width', `${newWidth}%`, 'important');
+        metricsPanel.style.setProperty('width', `${100 - newWidth}%`, 'important');
+        if (window.metricsJsonEditor) {
+            requestAnimationFrame(() => window.metricsJsonEditor.layout());
+        }
+    };
+
+    const applyHorizontalResize = (deltaPixels) => {
+        if (!playgroundMain || !playgroundTop || !playgroundBottom) return;
+        const mainRect = playgroundMain.getBoundingClientRect();
+        const currentTopHeight = playgroundTop.getBoundingClientRect().height;
+        const minHeight = Math.max(180, mainRect.height * 0.2);
+        const maxHeight = Math.max(minHeight + 1, mainRect.height * 0.8);
+        const newTopHeight = Math.min(maxHeight, Math.max(minHeight, currentTopHeight + deltaPixels));
+        playgroundTop.style.height = `${newTopHeight}px`;
+        playgroundBottom.style.height = `${mainRect.height - newTopHeight}px`;
+    };
 
     // Standard mode vertical resize handle
     if (verticalHandle) {
@@ -551,6 +795,16 @@ function initializeResizeHandles() {
         };
         verticalHandle.addEventListener("mousedown", resizeHandlers.verticalHandler);
         verticalHandle.addEventListener("touchstart", resizeHandlers.verticalHandler);
+        resizeHandlers.verticalKeyHandler = (e) => {
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                applyStandardVerticalResize(-5);
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                applyStandardVerticalResize(5);
+            }
+        };
+        verticalHandle.addEventListener("keydown", resizeHandlers.verticalKeyHandler);
     }
 
     // Metrics mode vertical resize handle
@@ -564,6 +818,16 @@ function initializeResizeHandles() {
         };
         metricsHandle.addEventListener("mousedown", resizeHandlers.metricsHandler);
         metricsHandle.addEventListener("touchstart", resizeHandlers.metricsHandler);
+        resizeHandlers.metricsKeyHandler = (e) => {
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                applyMetricsVerticalResize(-5);
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                applyMetricsVerticalResize(5);
+            }
+        };
+        metricsHandle.addEventListener("keydown", resizeHandlers.metricsKeyHandler);
     }
 
     if (horizontalHandle) {
@@ -576,6 +840,16 @@ function initializeResizeHandles() {
         };
         horizontalHandle.addEventListener("mousedown", resizeHandlers.horizontalHandler);
         horizontalHandle.addEventListener("touchstart", resizeHandlers.horizontalHandler);
+        resizeHandlers.horizontalKeyHandler = (e) => {
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                applyHorizontalResize(-24);
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                applyHorizontalResize(24);
+            }
+        };
+        horizontalHandle.addEventListener("keydown", resizeHandlers.horizontalKeyHandler);
     }
 
     // Store mousemove handler for proper cleanup
@@ -752,9 +1026,228 @@ function dismissNotification(notification) {
     }, 300);
 }
 
+function buildDefaultWorkspecDocument() {
+    return {
+        simulation: {
+            schema_version: "2.0",
+            meta: {
+                title: "New Simulation",
+                description: "",
+                domain: "generic"
+            },
+            world: {
+                objects: [],
+                layout: {
+                    locations: []
+                }
+            },
+            process: {
+                tasks: []
+            }
+        }
+    };
+}
+
+function setupToolsMenuActions() {
+    const formatBtn = document.getElementById('format-json-btn');
+    const clearBtn = document.getElementById('clear-editor-btn');
+    const jsonStatus = document.getElementById('json-status');
+
+    if (formatBtn && !formatBtn.dataset.listenerAttached) {
+        formatBtn.dataset.listenerAttached = 'true';
+        formatBtn.addEventListener('click', () => {
+            if (!editor || typeof editor.getValue !== 'function' || typeof editor.setValue !== 'function') {
+                showNotification('Editor is not ready yet', 'warning');
+                return;
+            }
+            try {
+                const jsonText = editor.getValue();
+                const parsed = JSON.parse(typeof stripJsonComments === 'function' ? stripJsonComments(jsonText) : jsonText);
+                editor.setValue(JSON.stringify(parsed, null, 2));
+                if (typeof validateJSON === 'function') validateJSON();
+                showNotification('JSON formatted');
+            } catch (error) {
+                showNotification(`Cannot format invalid JSON: ${error.message}`, 'error');
+            }
+        });
+    }
+
+    if (clearBtn && !clearBtn.dataset.listenerAttached) {
+        clearBtn.dataset.listenerAttached = 'true';
+        clearBtn.addEventListener('click', () => {
+            if (!editor || typeof editor.setValue !== 'function') {
+                showNotification('Editor is not ready yet', 'warning');
+                return;
+            }
+            const shouldClear = window.confirm('Replace the current content with a new empty WorkSpec document?');
+            if (!shouldClear) return;
+            editor.setValue(JSON.stringify(buildDefaultWorkspecDocument(), null, 2));
+            if (typeof renderSimulation === 'function' && typeof autoRender !== 'undefined' && autoRender) {
+                renderSimulation();
+            }
+            if (typeof validateJSON === 'function') validateJSON();
+            showNotification('Editor reset to a new WorkSpec document');
+        });
+    }
+
+    if (jsonStatus && !jsonStatus.dataset.listenerAttached) {
+        jsonStatus.dataset.listenerAttached = 'true';
+        jsonStatus.style.cursor = 'pointer';
+        jsonStatus.addEventListener('click', () => {
+            const validationFilter = document.getElementById('validation-filter');
+            if (!validationFilter) return;
+            validationFilter.value = 'errors';
+            if (typeof applyValidationFilter === 'function') applyValidationFilter();
+            const validationPanel = document.querySelector('.playground-bottom');
+            if (validationPanel) {
+                validationPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    }
+}
+
+const modalReturnFocusMap = new WeakMap();
+let modalAccessibilityInitialized = false;
+let modalObserver = null;
+
+function getVisibleDialogOverlays() {
+    return Array.from(document.querySelectorAll('.dialog-overlay')).filter((overlay) => {
+        const computed = window.getComputedStyle(overlay);
+        return computed.display !== 'none' && computed.visibility !== 'hidden';
+    });
+}
+
+function getTopDialogOverlay() {
+    const overlays = getVisibleDialogOverlays();
+    return overlays.length > 0 ? overlays[overlays.length - 1] : null;
+}
+
+function getFocusableElements(container) {
+    return Array.from(
+        container.querySelectorAll(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+    ).filter((element) => element.offsetParent !== null);
+}
+
+function closeDialogOverlay(overlay) {
+    if (!overlay) return;
+    overlay.style.display = 'none';
+    overlay.setAttribute('aria-hidden', 'true');
+    const returnFocusTarget = modalReturnFocusMap.get(overlay);
+    if (returnFocusTarget && document.contains(returnFocusTarget)) {
+        returnFocusTarget.focus();
+    }
+}
+
+function setupModalAccessibility() {
+    if (modalAccessibilityInitialized) return;
+    modalAccessibilityInitialized = true;
+
+    modalObserver = new MutationObserver(() => {
+        getVisibleDialogOverlays().forEach((overlay) => {
+            if (!modalReturnFocusMap.has(overlay)) {
+                const activeElement = document.activeElement;
+                if (activeElement && !overlay.contains(activeElement)) {
+                    modalReturnFocusMap.set(overlay, activeElement);
+                } else {
+                    modalReturnFocusMap.set(overlay, null);
+                }
+            }
+            overlay.setAttribute('aria-hidden', 'false');
+            const focusables = getFocusableElements(overlay);
+            if (focusables.length > 0 && !overlay.contains(document.activeElement)) {
+                focusables[0].focus();
+            }
+        });
+    });
+    modalObserver.observe(document.body, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+        attributeFilter: ['style', 'class']
+    });
+
+    document.addEventListener('click', (event) => {
+        const overlay = event.target.closest('.dialog-overlay');
+        if (overlay && event.target === overlay) {
+            closeDialogOverlay(overlay);
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        const activeOverlay = getTopDialogOverlay();
+        if (!activeOverlay) return;
+
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            closeDialogOverlay(activeOverlay);
+            return;
+        }
+
+        if (event.key !== 'Tab') return;
+
+        const focusableElements = getFocusableElements(activeOverlay);
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+        const activeElement = document.activeElement;
+
+        if (event.shiftKey && activeElement === firstElement) {
+            event.preventDefault();
+            lastElement.focus();
+        } else if (!event.shiftKey && activeElement === lastElement) {
+            event.preventDefault();
+            firstElement.focus();
+        }
+    });
+}
+
+function setupMobileEditorToggle() {
+    const toggleBtn = document.getElementById('mobile-editor-toggle');
+    if (!toggleBtn) return;
+
+    const mediaQuery = window.matchMedia('(max-width: 900px)');
+
+    const applyState = (isOpen) => {
+        document.body.classList.toggle('mobile-editor-open', isOpen);
+        toggleBtn.textContent = isOpen ? 'Hide Editor' : 'Show Editor';
+        toggleBtn.setAttribute('aria-pressed', isOpen ? 'true' : 'false');
+        if (isOpen && editor && typeof editor.layout === 'function') {
+            setTimeout(() => editor.layout(), 80);
+        }
+    };
+
+    const syncForViewport = () => {
+        if (!mediaQuery.matches) {
+            document.body.classList.remove('mobile-editor-open');
+            toggleBtn.setAttribute('aria-pressed', 'false');
+            toggleBtn.textContent = 'Show Editor';
+            return;
+        }
+        applyState(false);
+    };
+
+    if (!toggleBtn.dataset.listenerAttached) {
+        toggleBtn.dataset.listenerAttached = 'true';
+        toggleBtn.addEventListener('click', () => {
+            const next = !document.body.classList.contains('mobile-editor-open');
+            applyState(next);
+        });
+    }
+
+    if (!toggleBtn.dataset.viewportListenerAttached) {
+        toggleBtn.dataset.viewportListenerAttached = 'true';
+        mediaQuery.addEventListener('change', syncForViewport);
+    }
+
+    syncForViewport();
+}
+
 // Left panel tabs setup
 function setupLeftPanelTabs() {
-    const tabButtons = document.querySelectorAll('[data-left-tab]');
+    const tabButtons = Array.from(document.querySelectorAll('[data-left-tab]'));
     const tabContents = document.querySelectorAll('.left-tab-content');
 
     // Initialize ARIA attributes for left panel tabs
@@ -791,6 +1284,10 @@ function setupLeftPanelTabs() {
             switchLeftTab(targetTab);
         });
     });
+
+    setupHorizontalTabKeyboardNavigation(tabButtons, (button) => {
+        switchLeftTab(button.dataset.leftTab);
+    });
 }
 
 function switchLeftTab(targetTab) {
@@ -825,7 +1322,7 @@ function switchLeftTab(targetTab) {
 function initializeFeedbackModal() {
     const feedbackBtn = document.getElementById('feedback-btn');
     const feedbackModal = document.getElementById('feedback-modal');
-    const closeFeedbackModal = document.getElementById('close-feedback-modal');
+    const closeFeedbackModal = document.getElementById('close-feedback-modal') || document.getElementById('cancel-feedback');
     const feedbackForm = document.getElementById('feedback-form');
 
     if (!feedbackBtn || !feedbackModal || !closeFeedbackModal || !feedbackForm) {
@@ -875,9 +1372,10 @@ function initializeFeedbackModal() {
         try {
             const formData = new FormData(feedbackForm);
             const feedbackData = {
-                category: formData.get('feedback-category'),
-                message: formData.get('feedback-message'),
-                email: formData.get('feedback-email'),
+                name: formData.get('name'),
+                subject: formData.get('subject'),
+                message: formData.get('message'),
+                email: formData.get('email'),
                 timestamp: new Date().toISOString(),
                 userAgent: navigator.userAgent
             };

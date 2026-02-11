@@ -1,13 +1,75 @@
 const TutorialValidators = {
+    getLayout: function(simulation) {
+        if (!simulation) return null;
+        return simulation.world?.layout || simulation.layout || null;
+    },
+
+    getObjects: function(simulation) {
+        if (!simulation) return [];
+        const objects = simulation.world?.objects || simulation.objects;
+        return Array.isArray(objects) ? objects : [];
+    },
+
+    getTasks: function(simulation) {
+        if (!simulation) return [];
+        const tasks = simulation.process?.tasks || simulation.tasks;
+        return Array.isArray(tasks) ? tasks : [];
+    },
+
+    getConfig: function(simulation) {
+        if (!simulation) return {};
+        return simulation.config || {};
+    },
+
+    parseStartMinutes: function(start) {
+        if (!start) return 0;
+
+        if (typeof start === 'object' && start.time) {
+            const day = Number(start.day) > 0 ? Number(start.day) : 1;
+            const dayMinutes = (day - 1) * 24 * 60;
+            return dayMinutes + this.parseTime(start.time);
+        }
+
+        return this.parseTime(start);
+    },
+
+    parseDurationMinutes: function(duration, simulation) {
+        if (typeof duration === 'number' && Number.isFinite(duration)) {
+            return duration;
+        }
+
+        if (typeof duration === 'string') {
+            if (typeof window.WorkSpecValidator?.parseDurationToMinutes === 'function') {
+                const rawUnit = this.getConfig(simulation)?.time_unit || 'minutes';
+                const normalizedUnit = rawUnit === 'minute' ? 'minutes' : rawUnit;
+                const parsed = window.WorkSpecValidator.parseDurationToMinutes(duration, normalizedUnit);
+                if (typeof parsed === 'number' && Number.isFinite(parsed)) {
+                    return parsed;
+                }
+            }
+
+            // Lightweight ISO-8601 duration fallback (PT#H#M)
+            const iso = duration.match(/^PT(?:(\d+)H)?(?:(\d+)M)?$/i);
+            if (iso) {
+                const hours = Number(iso[1] || 0);
+                const minutes = Number(iso[2] || 0);
+                return (hours * 60) + minutes;
+            }
+        }
+
+        return 0;
+    },
+
     /**
      * Advanced space design challenge validation
      * Used in: Step 2
      */
     validateAdvancedSpaceDesign: function(simulation) {
-        if (!simulation || !simulation.layout || !simulation.layout.locations) return false;
+        const layout = this.getLayout(simulation);
+        if (!layout || !layout.locations) return false;
         
-        const locations = simulation.layout.locations;
-        const pixelsPerMeter = simulation.layout.meta?.pixels_per_unit || 20;
+        const locations = layout.locations;
+        const pixelsPerMeter = layout.meta?.pixels_per_unit || 20;
         
         // Check for Prep Station with 5 meter length
         const prepStation = locations.find(loc => 
@@ -35,11 +97,9 @@ const TutorialValidators = {
         // This is more of a behavioral validation - in a real implementation,
         // we could track user interactions with playback controls.
         // For now, we'll validate that the simulation has the required structure.
-        return simulation && 
-               simulation.objects && 
-               simulation.objects.length >= 3 &&
-               simulation.tasks && 
-               simulation.tasks.length >= 3;
+        const objects = this.getObjects(simulation);
+        const tasks = this.getTasks(simulation);
+        return objects.length >= 3 && tasks.length >= 3;
     },
 
     /**
@@ -47,8 +107,10 @@ const TutorialValidators = {
      * Used in: Step 5
      */
     validateResourceEconomics: function(simulation) {
-        if (!simulation || !simulation.objects) return false;
-        const minerals = simulation.objects.find(o => 
+        const objects = this.getObjects(simulation);
+        if (objects.length === 0) return false;
+
+        const minerals = objects.find(o => 
             o.id === 'rare_minerals' && 
             o.type === 'resource'
         );
@@ -60,21 +122,23 @@ const TutorialValidators = {
      * Used in: Step 6
      */
     validateJsonEditingMastery: function(simulation) {
-        if (!simulation || !simulation.objects || !simulation.tasks) return false;
+        const objects = this.getObjects(simulation);
+        const tasks = this.getTasks(simulation);
+        if (objects.length === 0 || tasks.length === 0) return false;
         
         // Check for Data Analyst actor
-        const analyst = simulation.objects.find(o => 
+        const analyst = objects.find(o => 
             o.type === 'actor' && 
-            (o.name.includes('Data Analyst') || o.properties?.role.includes('Data Analyst'))
+            (o.name?.includes('Data Analyst') || o.properties?.role?.includes('Data Analyst'))
         );
         
         // Check for Server Capacity resource
-        const serverCapacity = simulation.objects.find(o => 
+        const serverCapacity = objects.find(o => 
             o.name && o.name.includes('Server Capacity')
         );
         
         // Check for data processing task
-        const dataTask = simulation.tasks.find(t => 
+        const dataTask = tasks.find(t => 
             t.id && t.id.includes('data_processing')
         );
         
@@ -86,35 +150,39 @@ const TutorialValidators = {
      * Used in: Step 7
      */
     validateEmergencyRoomCapstone: function(simulation) {
-        if (!simulation || !simulation.tasks || !simulation.objects) return false;
+        const objects = this.getObjects(simulation);
+        const tasks = this.getTasks(simulation);
+        if (objects.length === 0 || tasks.length === 0) return false;
         
         // Check 1: No scheduling overlaps for Dr. Chen (triage appointments)
-        const chenTasks = simulation.tasks.filter(t => t.actor_id === 'dr_chen').sort((a, b) => this.parseTime(a.start) - this.parseTime(b.start));
+        const chenTasks = tasks
+            .filter(t => t.actor_id === 'dr_chen')
+            .sort((a, b) => this.parseStartMinutes(a.start) - this.parseStartMinutes(b.start));
         for (let i = 0; i < chenTasks.length - 1; i++) {
             const task1 = chenTasks[i];
             const task2 = chenTasks[i + 1];
             
-            const start1 = this.parseTime(task1.start);
-            const end1 = start1 + (task1.duration || 0);
-            const start2 = this.parseTime(task2.start);
+            const start1 = this.parseStartMinutes(task1.start);
+            const end1 = start1 + this.parseDurationMinutes(task1.duration, simulation);
+            const start2 = this.parseStartMinutes(task2.start);
             
             if (start2 < end1) return false; // Overlap detected
         }
         
         // Check 2: MRI machine state is ready
-        const mriMachine = simulation.objects.find(o => o.id === 'mri_machine');
+        const mriMachine = objects.find(o => o.id === 'mri_machine');
         if (!mriMachine || mriMachine.properties?.state !== 'ready') {
             return false;
         }
         
         // Check 3: Sufficient blood units for surgery (need at least 3)
-        const bloodUnits = simulation.objects.find(o => o.id === 'blood_units');
+        const bloodUnits = objects.find(o => o.id === 'blood_units');
         if (!bloodUnits || bloodUnits.properties?.quantity < 3) {
             return false;
         }
         
         // Check 4: Sufficient contrast dye for MRI (need at least 2)
-        const contrastDye = simulation.objects.find(o => o.id === 'contrast_dye');
+        const contrastDye = objects.find(o => o.id === 'contrast_dye');
         if (!contrastDye || contrastDye.properties?.quantity < 2) {
             return false;
         }
@@ -127,16 +195,17 @@ const TutorialValidators = {
      * Used in: Step 3 
      */
     validateNoAssistantOverlap: function(simulation) {
-        if (!simulation || !simulation.tasks) return false;
+        const tasks = this.getTasks(simulation);
+        if (tasks.length === 0) return false;
         
-        const spillsTask = simulation.tasks.find(t => t.id.includes('clean_up_spills'));
-        const ovenTask = simulation.tasks.find(t => t.id.includes('preheat_oven'));
+        const spillsTask = tasks.find(t => t.id?.includes('clean_up_spills'));
+        const ovenTask = tasks.find(t => t.id?.includes('preheat_oven'));
 
         if (!spillsTask || !ovenTask) return false;
 
-        const spillsStart = this.parseTime(spillsTask.start);
-        const spillsEnd = spillsStart + (spillsTask.duration || 0);
-        const ovenStart = this.parseTime(ovenTask.start);
+        const spillsStart = this.parseStartMinutes(spillsTask.start);
+        const spillsEnd = spillsStart + this.parseDurationMinutes(spillsTask.duration, simulation);
+        const ovenStart = this.parseStartMinutes(ovenTask.start);
 
         return ovenStart >= spillsEnd;
     },
@@ -145,7 +214,7 @@ const TutorialValidators = {
      * Helper function to parse time in HH:MM format to minutes
      */
     parseTime: function(timeStr) {
-        if (!timeStr) return 0;
+        if (!timeStr || typeof timeStr !== 'string') return 0;
         const [hours, minutes] = timeStr.split(':').map(Number);
         return hours * 60 + minutes;
     },

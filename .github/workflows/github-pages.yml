@@ -15,6 +15,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Node (WorkSpec checks)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Sync WorkSpec web assets from package
+        run: node packages/workspec/scripts/sync-web-assets.js
+      - name: Verify WorkSpec package/playground integration
+        run: node packages/workspec/scripts/test-playground-integration.js
+      - name: Verify WorkSpec web assets in sync
+        run: node packages/workspec/scripts/check-sync.js
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload web folder

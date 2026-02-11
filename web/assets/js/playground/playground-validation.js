@@ -1,21 +1,53 @@
 // Playground Validation - Validation display and filtering
 // Universal Automation Wiki - Simulation Playground
 
+function normalizeValidationResults(results) {
+    const arr = Array.isArray(results) ? results.filter((r) => r && typeof r === 'object') : [];
+    if (arr.length === 0) return [];
+
+    const hasAnyIssues = arr.some((r) => r.status !== 'success');
+    if (hasAnyIssues || arr.length > 1) {
+        // "workspec.validation.ok" is a derived summary; never show it alongside any other result.
+        return arr.filter((r) => r.metricId !== 'workspec.validation.ok');
+    }
+
+    return arr;
+}
+
+const loggedUnknownMetricIds = new Set();
+
+function formatMetricIdFallback(metricId) {
+    if (metricId === 'workspec.validation.ok') {
+        return 'WorkSpec Validation';
+    }
+
+    if (typeof metricId !== 'string' || !metricId.trim()) {
+        return 'Unknown Metric';
+    }
+
+    return metricId
+        .split('.')
+        .map((part) => part.replace(/_/g, ' '))
+        .join(' > ');
+}
+
 // Display validation results
 function displayValidationResults(results) {
     // Use the new grouped validation display
+    const normalizedResults = normalizeValidationResults(results);
     try {
         window.__uawValidationResultsCache = {
             timestamp: Date.now(),
-            results: Array.isArray(results) ? [...results] : [],
+            results: [...normalizedResults],
         };
     } catch (error) {
         console.warn('SmartActions: failed to cache validation results.', error);
     }
-    displayGroupedValidationResults(results);
+    displayGroupedValidationResults(normalizedResults);
 }
 
 function displayGroupedValidationResults(results) {
+    results = normalizeValidationResults(results);
     const compactContainer = document.getElementById("validation-compact");
     if (!compactContainer) {
         console.warn('Validation compact container not found in DOM');
@@ -194,6 +226,7 @@ function displayValidationGroup(groupId, results, icon, collapsedByDefault = fal
             contentElement.classList.remove('collapsed');
         }
     } else {
+        contentElement.innerHTML = '';
         groupElement.style.display = 'none';
     }
 }
@@ -208,8 +241,11 @@ function getMetricDisplayName(metricId, mergedCatalog = null) {
     const metric = mergedCatalog.find(m => m.id === metricId);
 
     if (!metric) {
-        console.warn(`Metric not found in catalog: ${metricId}`);
-        return metricId;
+        if (!loggedUnknownMetricIds.has(metricId)) {
+            loggedUnknownMetricIds.add(metricId);
+            console.info(`Metric not found in catalog, using fallback display: ${metricId}`);
+        }
+        return formatMetricIdFallback(metricId);
     }
 
     // For custom metrics, show ID; for built-in, show name
@@ -253,8 +289,12 @@ function setupValidationInteractions() {
                     applyValidationFilter();
                     
                     // Update visual state
-                    document.querySelectorAll('.stat-item.clickable').forEach(s => s.classList.remove('active'));
+                    document.querySelectorAll('.stat-item.clickable').forEach(s => {
+                        s.classList.remove('active');
+                        s.setAttribute('aria-pressed', 'false');
+                    });
                     statItem.classList.add('active');
+                    statItem.setAttribute('aria-pressed', 'true');
                 }
             }
             
@@ -323,8 +363,12 @@ function setupValidationInteractions() {
                     applyValidationFilter();
 
                     // Update visual state
-                    document.querySelectorAll('.stat-item.clickable').forEach(s => s.classList.remove('active'));
+                    document.querySelectorAll('.stat-item.clickable').forEach(s => {
+                        s.classList.remove('active');
+                        s.setAttribute('aria-pressed', 'false');
+                    });
                     statItem.classList.add('active');
+                    statItem.setAttribute('aria-pressed', 'true');
                 }
             }
         };
@@ -370,11 +414,13 @@ function applyValidationFilter() {
     // Update stat item visual states
     document.querySelectorAll('.stat-item.clickable').forEach(item => {
         item.classList.remove('active');
+        item.setAttribute('aria-pressed', 'false');
     });
     
     const activeStatItem = document.querySelector(`[data-filter="${filterValue}"]`);
     if (activeStatItem) {
         activeStatItem.classList.add('active');
+        activeStatItem.setAttribute('aria-pressed', 'true');
     }
 
     // Apply filter logic
@@ -759,21 +805,42 @@ function refreshValidationDisplay() {
                 window.validateJSON();
             } else {
                 // Fallback: run validation manually
-                const mergedCatalog = getMergedMetricsCatalog();
-                if (!mergedCatalog || mergedCatalog.length === 0) {
-                    displayValidationError('No validation metrics available. Check metrics catalog.');
-                    return;
-                }
+                if (window.WorkSpecValidator && typeof window.WorkSpecValidator.validate === 'function') {
+                    const result = window.WorkSpecValidator.validate(currentSimulationData);
+                    const problems = Array.isArray(result?.problems) ? result.problems : [];
+                    const mapped = problems.map((problem) => ({
+                        metricId: problem.metric_id || 'system.error',
+                        status: problem.severity === 'warning' ? 'warning' : problem.severity === 'info' ? 'suggestion' : 'error',
+                        message: problem.detail || problem.title || problem.metric_id || 'Validation error',
+                        problem
+                    }));
 
-                if (typeof SimulationValidator !== 'function') {
-                    console.error('SimulationValidator class not available');
-                    displayValidationError('Validation engine not loaded. Please reload the page.');
-                    return;
-                }
+                    if (mapped.length === 0) {
+                        displayValidationResults([{
+                            metricId: 'workspec.validation.ok',
+                            status: 'success',
+                            message: 'No problems found.'
+                        }]);
+                    } else {
+                        displayValidationResults(mapped);
+                    }
+                } else {
+                    const mergedCatalog = getMergedMetricsCatalog();
+                    if (!mergedCatalog || mergedCatalog.length === 0) {
+                        displayValidationError('No validation metrics available. Check metrics catalog.');
+                        return;
+                    }
 
-                const validator = new SimulationValidator(currentSimulationData);
-                const results = validator.runChecks(mergedCatalog);
-                displayValidationResults(results);
+                    if (typeof SimulationValidator !== 'function') {
+                        console.error('SimulationValidator class not available');
+                        displayValidationError('Validation engine not loaded. Please reload the page.');
+                        return;
+                    }
+
+                    const validator = new SimulationValidator(currentSimulationData);
+                    const results = validator.runChecks(mergedCatalog);
+                    displayValidationResults(results);
+                }
             }
         }
     } catch (e) {

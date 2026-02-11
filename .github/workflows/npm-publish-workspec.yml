@@ -1,0 +1,42 @@
+name: Publish WorkSpec CLI (npm)
+
+on:
+  push:
+    tags:
+      - "workspec-v*"
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Sync WorkSpec web assets from package
+        run: node packages/workspec/scripts/sync-web-assets.js
+
+      - name: Verify web assets in sync
+        run: node packages/workspec/scripts/check-sync.js
+
+      - name: Verify WorkSpec package/playground integration
+        run: node packages/workspec/scripts/test-playground-integration.js
+
+      - name: Smoke test CLI
+        run: node packages/workspec/bin/workspec.js --help
+
+      - name: Publish
+        working-directory: packages/workspec
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

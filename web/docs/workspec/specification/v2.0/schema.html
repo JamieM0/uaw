@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkSpec v2.0 JSON Schema Reference - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/">Workspec</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/specification/">Specification</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/specification/v2.0/">V2.0</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">WorkSpec v2.0 JSON Schema Reference</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">WorkSpec v2.0 JSON Schema Reference</h1>
+                            
+                            <p class="docs-page-subtitle">This page describes the WorkSpec v2.0 JSON Schema and how to use it for autocomplete and validation.</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>This page describes the WorkSpec v2.0 JSON Schema and how to use it for autocomplete and validation.</p>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="canonical-schema-uri">Canonical schema URI<a class="headerlink" href="#canonical-schema-uri" title="Link to this section">¶</a></h2>
+<p>Use this <code class="docs-inline-code">$schema</code> value in WorkSpec documents:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"$schema"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://universalautomation.wiki/workspec/v2.0.schema.json"</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Schema identity:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">$id</code>: <code class="docs-inline-code">https://universalautomation.wiki/workspec/v2.0.schema.json</code></li>
+<li>Draft: <code class="docs-inline-code">http://json-schema.org/draft-07/schema#</code></li>
+</ul>
+<p>The UAW Playground ships a local copy of this schema at:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">/workspec/v2.0.schema.json</code></li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="what-the-schema-validates">What the schema validates<a class="headerlink" href="#what-the-schema-validates" title="Link to this section">¶</a></h2>
+<p>At a high level, the schema validates:</p>
+<ul class="docs-list">
+<li>WorkSpec root structure (<code class="docs-inline-code">simulation</code> object)</li>
+<li>v2.0 structure (<code class="docs-inline-code">simulation.world</code> and <code class="docs-inline-code">simulation.process</code>)</li>
+<li>required meta fields (<code class="docs-inline-code">title</code>, <code class="docs-inline-code">description</code>, <code class="docs-inline-code">domain</code>)</li>
+<li>time formats (strict <code class="docs-inline-code">HH:MM</code>, <code class="docs-inline-code">HH:MM:SS</code>, or ISO 8601 date-time)</li>
+<li>duration formats (integer, ISO 8601 duration, or shorthand)</li>
+<li>object/task required fields and ID patterns</li>
+<li>interaction shapes (property-change vs create vs delete)</li>
+</ul>
+<p>For additional validation rules beyond JSON Schema (like cross-reference checks and lifecycle checks), see:</p>
+<ul class="docs-list">
+<li><a href="/docs/workspec/specification/v2.0/validation">/docs/workspec/specification/v2.0/validation</a></li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="key-schema-fragments-v20">Key schema fragments (v2.0)<a class="headerlink" href="#key-schema-fragments-v20" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="document-root">Document root<a class="headerlink" href="#document-root" title="Link to this section">¶</a></h3>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"$schema"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://universalautomation.wiki/workspec/v2.0.schema.json"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 class="docs-heading" id="simulation-required-fields">Simulation required fields<a class="headerlink" href="#simulation-required-fields" title="Link to this section">¶</a></h3>
+<p><code class="docs-inline-code">simulation</code> requires:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">schema_version</code> (must be <code class="docs-inline-code">"2.0"</code>)</li>
+<li><code class="docs-inline-code">meta</code></li>
+<li><code class="docs-inline-code">config</code></li>
+<li><code class="docs-inline-code">world</code></li>
+<li><code class="docs-inline-code">process</code></li>
+</ul>
+<h3 class="docs-heading" id="meta-required-fields">Meta required fields<a class="headerlink" href="#meta-required-fields" title="Link to this section">¶</a></h3>
+<p><code class="docs-inline-code">meta</code> requires:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">title</code></li>
+<li><code class="docs-inline-code">description</code></li>
+<li><code class="docs-inline-code">domain</code></li>
+</ul>
+<h3 class="docs-heading" id="worldprocess-split">World/Process split<a class="headerlink" href="#worldprocess-split" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li><code class="docs-inline-code">simulation.world.objects</code> is an array of objects</li>
+<li><code class="docs-inline-code">simulation.process.tasks</code> is an array of tasks</li>
+<li><code class="docs-inline-code">simulation.process.recipes</code> is optional</li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="id-patterns">ID patterns<a class="headerlink" href="#id-patterns" title="Link to this section">¶</a></h2>
+<p>The schema validates:</p>
+<ul class="docs-list">
+<li>Plain IDs: <code class="docs-inline-code">^[a-z][a-z0-9_]{0,249}$</code></li>
+<li>Object IDs may optionally be namespaced: <code class="docs-inline-code">{type}:{identifier}</code> (max length 250)</li>
+</ul>
+<p>Namespaced IDs are additionally validated by WorkSpec validators (namespace must match <code class="docs-inline-code">type</code>).</p>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="time-and-duration-patterns">Time and duration patterns<a class="headerlink" href="#time-and-duration-patterns" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="time-strings">Time strings<a class="headerlink" href="#time-strings" title="Link to this section">¶</a></h3>
+<p><code class="docs-inline-code">TimeOrDateTime</code> is any of:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">HH:MM</code> (strict, zero-padded)</li>
+<li><code class="docs-inline-code">HH:MM:SS</code> (strict, zero-padded)</li>
+<li>ISO 8601 date-time (<code class="docs-inline-code">format: "date-time"</code>)</li>
+</ul>
+<h3 class="docs-heading" id="duration">Duration<a class="headerlink" href="#duration" title="Link to this section">¶</a></h3>
+<p><code class="docs-inline-code">Duration</code> supports:</p>
+<ul class="docs-list">
+<li>integer &gt;= 1</li>
+<li>shorthand: <code class="docs-inline-code">^\d+[smhdwWM]$</code></li>
+<li>ISO 8601 durations: <code class="docs-inline-code">^P(?!$)(?:\d+Y)?(?:\d+M)?(?:\d+W)?(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+S)?)?$</code></li>
+</ul>
+<p>For the semantics of months/years, see <a href="/docs/workspec/specification/v2.0/tasks">/docs/workspec/specification/v2.0/tasks</a>.</p>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="authoritative-schema-file">Authoritative schema file<a class="headerlink" href="#authoritative-schema-file" title="Link to this section">¶</a></h2>
+<p>The authoritative JSON Schema shipped in this repository is:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">web/workspec/v2.0.schema.json</code></li>
+</ul>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

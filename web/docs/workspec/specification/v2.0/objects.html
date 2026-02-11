@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkSpec v2.0 Object Model - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/">Workspec</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/specification/">Specification</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/specification/v2.0/">V2.0</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">WorkSpec v2.0 Object Model</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">WorkSpec v2.0 Object Model</h1>
+                            
+                            <p class="docs-page-subtitle">Objects are the entities that exist in the simulation world: people, machines, resources, products, and digital entities.</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>Objects are the entities that exist in the simulation world: people, machines, resources, products, and digital entities.</p>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="where-objects-live-v20">Where objects live (v2.0)<a class="headerlink" href="#where-objects-live-v20" title="Link to this section">¶</a></h2>
+<p>Objects are defined under:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">simulation.world.objects[]</code></li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="object-structure">Object structure<a class="headerlink" href="#object-structure" title="Link to this section">¶</a></h2>
+<p>All objects share a standardized top-level shape.</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"head_baker"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Head Baker"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"emoji"</span><span class="p">:</span><span class="w"> </span><span class="s2">"👨‍🍳"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_area"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Lead Baker"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"cost_per_hour"</span><span class="p">:</span><span class="w"> </span><span class="mf">25.0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"available"</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 class="docs-heading" id="top-level-fields">Top-level fields<a class="headerlink" href="#top-level-fields" title="Link to this section">¶</a></h3>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Field</th>
+<th style="text-align: right;">Required</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">id</code></td>
+<td style="text-align: right;">Yes</td>
+<td>string</td>
+<td>Unique identifier</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">type</code></td>
+<td style="text-align: right;">Yes</td>
+<td>string</td>
+<td>Object type</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">name</code></td>
+<td style="text-align: right;">Yes</td>
+<td>string</td>
+<td>Display name</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">emoji</code></td>
+<td style="text-align: right;">No</td>
+<td>string</td>
+<td>Visual icon (single emoji / short emoji sequence)</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">location</code></td>
+<td style="text-align: right;">No</td>
+<td>string</td>
+<td>Location ID from <code class="docs-inline-code">simulation.world.layout.locations[]</code></td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">properties</code></td>
+<td style="text-align: right;">No</td>
+<td>object</td>
+<td>Type-specific and custom properties</td>
+</tr>
+</tbody>
+</table></div>
+<p>All type-specific fields belong in the <code class="docs-inline-code">properties</code> bag.</p>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="object-id-rules">Object ID rules<a class="headerlink" href="#object-id-rules" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="plain-ids-recommended-default">Plain IDs (recommended default)<a class="headerlink" href="#plain-ids-recommended-default" title="Link to this section">¶</a></h3>
+<p>Plain IDs are snake_case:</p>
+<ul class="docs-list">
+<li>Regex: <code class="docs-inline-code">^[a-z][a-z0-9_]{0,249}$</code></li>
+<li>Max length: 250 characters</li>
+</ul>
+<p>Examples:</p>
+<ul class="docs-list">
+<li>Valid: <code class="docs-inline-code">head_baker</code>, <code class="docs-inline-code">oven_1</code>, <code class="docs-inline-code">prep_area</code></li>
+<li>Invalid: <code class="docs-inline-code">HeadBaker</code>, <code class="docs-inline-code">prep-area</code>, <code class="docs-inline-code">1_baker</code>, <code class="docs-inline-code">prep area</code></li>
+</ul>
+<h3 class="docs-heading" id="optional-namespaced-ids">Optional namespaced IDs<a class="headerlink" href="#optional-namespaced-ids" title="Link to this section">¶</a></h3>
+<p>IDs may include a namespace prefix:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor:head_baker"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="w"> </span><span class="p">}</span>
+<span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equipment:industrial_mixer"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equipment"</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p>Rules:</p>
+<ul class="docs-list">
+<li>Format: <code class="docs-inline-code">{type}:{identifier}</code></li>
+<li>If a namespace is present, it <strong>MUST</strong> match the <code class="docs-inline-code">type</code> field exactly</li>
+<li>Plain IDs (without namespace) remain valid</li>
+<li>Max ID length remains 250 characters</li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="built-in-types-v20">Built-in types (v2.0)<a class="headerlink" href="#built-in-types-v20" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="core-types">Core types<a class="headerlink" href="#core-types" title="Link to this section">¶</a></h3>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+<th style="text-align: right;">Can perform tasks</th>
+<th>Key properties</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">actor</code></td>
+<td>Human workers</td>
+<td style="text-align: right;">Yes</td>
+<td><code class="docs-inline-code">state</code>, <code class="docs-inline-code">role</code>, <code class="docs-inline-code">cost_per_hour</code>, shifts</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">equipment</code></td>
+<td>Machines/tools</td>
+<td style="text-align: right;">Yes</td>
+<td><code class="docs-inline-code">state</code>, <code class="docs-inline-code">capacity</code>, <code class="docs-inline-code">cost_per_hour</code></td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">resource</code></td>
+<td>Consumables</td>
+<td style="text-align: right;">No</td>
+<td><code class="docs-inline-code">quantity</code>, <code class="docs-inline-code">unit</code>, <code class="docs-inline-code">cost_per_unit</code></td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">product</code></td>
+<td>Outputs</td>
+<td style="text-align: right;">No</td>
+<td><code class="docs-inline-code">quantity</code>, <code class="docs-inline-code">unit</code>, <code class="docs-inline-code">revenue_per_unit</code></td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">service</code></td>
+<td>Automated/background process</td>
+<td style="text-align: right;">Yes</td>
+<td><code class="docs-inline-code">state</code>, <code class="docs-inline-code">interval</code>, <code class="docs-inline-code">last_run</code></td>
+</tr>
+</tbody>
+</table></div>
+<h3 class="docs-heading" id="digital-types">Digital types<a class="headerlink" href="#digital-types" title="Link to this section">¶</a></h3>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">display</code></td>
+<td>Screen device</td>
+<td>Typically stateful</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">screen_element</code></td>
+<td>UI element</td>
+<td>Typically stateful</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">digital_object</code></td>
+<td>Virtual entity</td>
+<td>Can be stateful and/or quantifiable</td>
+</tr>
+</tbody>
+</table></div>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="type-aliases-removed-in-v20">Type aliases (removed in v2.0)<a class="headerlink" href="#type-aliases-removed-in-v20" title="Link to this section">¶</a></h2>
+<p>The following are not valid in v2.0:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">material</code></li>
+<li><code class="docs-inline-code">ingredient</code></li>
+<li><code class="docs-inline-code">tool</code></li>
+</ul>
+<p>Use canonical types instead:</p>
+<ul class="docs-list">
+<li>Use <code class="docs-inline-code">resource</code> instead of <code class="docs-inline-code">material</code>/<code class="docs-inline-code">ingredient</code></li>
+<li>Use <code class="docs-inline-code">equipment</code> instead of <code class="docs-inline-code">tool</code></li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="reserved-type-names">Reserved type names<a class="headerlink" href="#reserved-type-names" title="Link to this section">¶</a></h2>
+<p>The following type names are reserved and cannot be used:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">timeline_actors</code> (internal)</li>
+<li><code class="docs-inline-code">_internal</code> (and any type starting with <code class="docs-inline-code">_</code>)</li>
+<li><code class="docs-inline-code">any</code> (reserved wildcard)</li>
+<li><code class="docs-inline-code">unknown</code> (reserved untyped placeholder)</li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="custom-types-v20">Custom types (v2.0)<a class="headerlink" href="#custom-types-v20" title="Link to this section">¶</a></h2>
+<p>Custom types are declared in:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">simulation.type_definitions</code></li>
+</ul>
+<p>Schema:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">    </span><span class="nt">"type_definitions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"vehicle"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"extends"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equipment"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Motorized transport equipment"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"additional_properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">"speed"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"number"</span><span class="p">,</span><span class="w"> </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"km/h"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">                </span><span class="nt">"fuel_capacity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"number"</span><span class="p">,</span><span class="w"> </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"liters"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Rules:</p>
+<ul class="docs-list">
+<li>Custom types <strong>MUST</strong> declare <code class="docs-inline-code">extends</code> pointing to a built-in base type.</li>
+<li>Objects using a custom <code class="docs-inline-code">type</code> <strong>MUST</strong> have a corresponding definition in <code class="docs-inline-code">simulation.type_definitions</code>.</li>
+<li>Custom types inherit the traits/capabilities of their base type (for example, a type extending <code class="docs-inline-code">equipment</code> can act as a task performer).</li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="standard-properties-quick-reference">Standard properties (quick reference)<a class="headerlink" href="#standard-properties-quick-reference" title="Link to this section">¶</a></h2>
+<p>For a full standard property list, see <a href="/docs/workspec/reference/properties">/docs/workspec/reference/properties</a>.</p>
+<p>Common patterns:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">resource</code> / <code class="docs-inline-code">product</code> should use numeric <code class="docs-inline-code">properties.quantity</code> and string <code class="docs-inline-code">properties.unit</code>.</li>
+<li><code class="docs-inline-code">actor</code> / <code class="docs-inline-code">equipment</code> / <code class="docs-inline-code">service</code> typically use <code class="docs-inline-code">properties.state</code> to model discrete states.</li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="location-references">Location references<a class="headerlink" href="#location-references" title="Link to this section">¶</a></h2>
+<p>If an object has a top-level <code class="docs-inline-code">location</code>, it must reference a valid location id from:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">simulation.world.layout.locations[]</code></li>
+</ul>
+<p>Location format is defined under the Spatial Model in <a href="/docs/workspec/specification/v2.0/validation">/docs/workspec/specification/v2.0/validation</a> and the JSON Schema.</p>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>
