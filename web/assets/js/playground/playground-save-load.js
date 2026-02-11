@@ -855,23 +855,71 @@ function openFeedbackDialog() {
     form.onsubmit = async (e) => {
         e.preventDefault();
         const sendButton = document.getElementById('send-feedback');
+        const nameInput = document.getElementById('feedback-name');
+        const emailInput = document.getElementById('feedback-email');
+        const subjectInput = document.getElementById('feedback-subject');
+        const bodyInput = document.getElementById('feedback-body');
+
+        const subject = (subjectInput?.value || '').trim();
+        const body = (bodyInput?.value || '').trim();
+
+        if (!subject || !body) {
+            messageDiv.textContent = 'Please fill in both Subject and Feedback Details.';
+            messageDiv.style.display = 'block';
+            messageDiv.style.color = 'crimson';
+            return;
+        }
+
         sendButton.disabled = true;
         sendButton.textContent = 'Sending...';
 
-        // Mock sending feedback
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const apiUrl = 'https://4hmwnax7r1.execute-api.us-east-1.amazonaws.com/default/uaw-feedback-handler';
+        const payload = {
+            name: (nameInput?.value || 'Anonymous').trim() || 'Anonymous',
+            email: (emailInput?.value || '').trim(),
+            message: `${subject}\n\n${body}`,
+            pageUrl: window.location.href
+        };
 
-        messageDiv.textContent = '✅ Thank you for your feedback!';
-        messageDiv.style.display = 'block';
-        messageDiv.style.color = 'green';
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload),
+                mode: 'cors'
+            });
 
-        setTimeout(() => {
-            dialog.style.display = 'none';
-            messageDiv.style.display = 'none';
+            let result = {};
+            try {
+                result = await response.json();
+            } catch (parseError) {
+                console.warn('Feedback response was not JSON:', parseError);
+            }
+
+            if (!response.ok) {
+                throw new Error(result.message || `Request failed (${response.status})`);
+            }
+
+            messageDiv.textContent = 'Thank you for your feedback!';
+            messageDiv.style.display = 'block';
+            messageDiv.style.color = 'green';
+
+            setTimeout(() => {
+                dialog.style.display = 'none';
+                messageDiv.style.display = 'none';
+                form.reset();
+            }, 2000);
+        } catch (error) {
+            console.error('Error submitting feedback:', error);
+            messageDiv.textContent = `Error submitting feedback: ${error.message}`;
+            messageDiv.style.display = 'block';
+            messageDiv.style.color = 'crimson';
+        } finally {
             sendButton.disabled = false;
             sendButton.textContent = 'Send Feedback';
-            form.reset();
-        }, 2000);
+        }
     };
 
     cancelBtn.onclick = () => {
