@@ -12,33 +12,25 @@ document.addEventListener("DOMContentLoaded", function () {
   // Define the header content directly in the script to avoid network request delay
   const headerHTML = `
         <header class="site-header">
-            <div class="container header-container">
-                <div class="logo">
-                    <a href="/">
-                        <img src="/assets/images/logo-primary-stacked.png" alt="Universal Automation Wiki Logo" class="logo-desktop">
-                        <img src="/assets/images/logo-abbrev-stacked.png" alt="Universal Automation Wiki Logo" class="logo-mobile">
-                    </a>
+            <div class="container header-inner">
+                <a href="/" class="logo-link">
+                    <img src="/assets/images/logo-primary-inline.svg" alt="Universal Automation Wiki" class="logo-desktop">
+                    <img src="/assets/images/logo-abbrev-inline.svg" alt="UAW" class="logo-mobile" style="display:none">
+                </a>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="/about.html">About</a></li>
+                    <li><a href="/docs/">Documentation</a></li>
+                    <li><a href="https://github.com/JamieM0/uaw" target="_blank" rel="noopener">GitHub</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+                        <span class="theme-icon">&#9789;</span>
+                    </button>
+                    <a href="/playground.html" class="btn btn-primary">Playground</a>
+                    <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu" aria-expanded="false">
+                        <span></span><span></span><span></span>
+                    </button>
                 </div>
-                <nav class="main-nav">
-                    <ul>
-                        <li><a href="/playground.html">Playground</a></li>
-                        <li><a href="/#categories">Examples</a></li>
-                        <li><a href="/docs">Documentation</a></li>
-                        <li><a href="/about.html">About</a></li>
-                        <li><a href="https://github.com/JamieM0/uaw" target="_blank">GitHub</a></li>
-                    </ul>
-                </nav>
-                <div class="header-persona-selector">
-                    <label for="persona-selector-header">View as:</label>
-                    <select id="persona-selector-header" name="persona-header">
-                        <!-- Options will be populated by main.js -->
-                    </select>
-                </div>
-                <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
             </div>
         </header>
     `;
@@ -124,31 +116,58 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Re-initialize header functionality after dynamically loading the header
 function initializeHeaderFunctionality() {
+  // Theme toggle
+  const themeToggle = document.getElementById("themeToggle");
+  if (themeToggle) {
+    const icon = themeToggle.querySelector(".theme-icon");
+    const html = document.documentElement;
+
+    // Apply saved preference
+    const saved = localStorage.getItem("uaw-theme");
+    if (saved) {
+      html.setAttribute("data-theme", saved);
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      html.setAttribute("data-theme", "dark");
+    }
+
+    function updateIcon() {
+      const isDark = html.getAttribute("data-theme") === "dark";
+      if (icon) icon.textContent = isDark ? "\u2600" : "\u263D";
+    }
+    updateIcon();
+
+    themeToggle.addEventListener("click", function () {
+      const current = html.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      html.setAttribute("data-theme", next);
+      localStorage.setItem("uaw-theme", next);
+      updateIcon();
+    });
+  }
+
   // Mobile menu toggle
-  const menuToggle = document.querySelector(".mobile-menu-toggle");
-  const mainNav = document.querySelector(".main-nav");
+  const mobileToggle = document.getElementById("mobileToggle");
+  const navLinks = document.getElementById("navLinks");
 
-  if (menuToggle && mainNav) {
-    menuToggle.addEventListener("click", function () {
-      mainNav.classList.toggle("active");
-
-      // Update aria-expanded attribute for accessibility
-      const isExpanded = mainNav.classList.contains("active");
-      menuToggle.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+  if (mobileToggle && navLinks) {
+    mobileToggle.addEventListener("click", function () {
+      const expanded = mobileToggle.getAttribute("aria-expanded") === "true";
+      mobileToggle.setAttribute("aria-expanded", String(!expanded));
+      navLinks.classList.toggle("open");
     });
   }
 
   // Close mobile menu when clicking outside
   document.addEventListener("click", function (event) {
     if (
-      mainNav &&
-      mainNav.classList.contains("active") &&
-      !event.target.closest(".main-nav") &&
-      !event.target.closest(".mobile-menu-toggle")
+      navLinks &&
+      navLinks.classList.contains("open") &&
+      !event.target.closest(".nav-links") &&
+      !event.target.closest(".mobile-toggle")
     ) {
-      mainNav.classList.remove("active");
-      if (menuToggle) {
-        menuToggle.setAttribute("aria-expanded", "false");
+      navLinks.classList.remove("open");
+      if (mobileToggle) {
+        mobileToggle.setAttribute("aria-expanded", "false");
       }
     }
   });
