@@ -63,16 +63,11 @@ class SimulationValidator {
       }
       // Handle custom validation functions
       else if (metric.source === 'custom' && customValidatorCode) {
-        try {
-          this.executeCustomValidation(metric, customValidatorCode);
-        } catch (e) {
-          console.error(`Custom validation error in ${funcName}:`, e);
-          this.addResult({
-            metricId: metric.id,
-            status: 'error',
-            message: `Custom validation error in ${funcName}: ${e.message}`
-          });
-        }
+        this.addResult({
+          metricId: metric.id,
+          status: 'error',
+          message: 'Custom validators require asynchronous validation. Use runChecksAsync().'
+        });
       } else {
         this.addResult({
           metricId: metric.id,
@@ -83,131 +78,138 @@ class SimulationValidator {
     }
     return this.results;
   }
-  
-  executeCustomValidation(metric, customValidatorCode) {
-    const funcName = metric.function;
 
-    // Helper function to safely deep copy, handling circular references
-    const safeDeepCopy = (obj, seen = new WeakMap()) => {
-      if (obj === null || typeof obj !== 'object') return obj;
-      if (seen.has(obj)) return seen.get(obj);
-      const copy = Array.isArray(obj) ? [] : {};
-      seen.set(obj, copy);
+  async runChecksAsync(metricsCatalog, customValidatorCode = null) {
+    this.results = [];
 
-      for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          copy[key] = safeDeepCopy(obj[key], seen);
+    if (!this.simulation) {
+      this.addResult({ metricId: 'schema.integrity.missing_root', status: 'error', message: "The root 'simulation' object is missing." });
+      return this.results;
+    }
+
+    if (!Array.isArray(metricsCatalog)) {
+      this.addResult({ metricId: 'system.error', status: 'error', message: 'Invalid metrics catalog: expected an array.' });
+      return this.results;
+    }
+
+    const computationalMetrics = metricsCatalog.filter(m => m && m.validation_type === 'computational');
+    for (const metric of computationalMetrics) {
+      const funcName = metric.computation?.function_name || metric.function;
+      if (!metric.id || !funcName) {
+        if (metric.id) {
+          this.addResult({ metricId: metric.id, status: 'error', message: 'Metric configuration error: missing function name.' });
         }
+        continue;
       }
-      return copy;
-    };
 
-    // Create a sandboxed context for custom validation
-    const sandbox = {
-      simulation: safeDeepCopy(this.simulation),
-      addResult: (result) => this.addResult(result),
-      console: {
-        log: (...args) => console.log('[Custom Validator]', ...args),
-        warn: (...args) => console.warn('[Custom Validator]', ...args),
-        error: (...args) => console.error('[Custom Validator]', ...args)
-      },
-      _timeToMinutes: this._timeToMinutes.bind(this)
-    };
+      if (typeof this[funcName] === 'function') {
+        try {
+          this[funcName](metric);
+        } catch (error) {
+          this.addResult({ metricId: metric.id, status: 'error', message: `Execution Error in ${funcName}: ${error.message}` });
+        }
+      } else if (metric.source === 'custom' && customValidatorCode) {
+        try {
+          const customResults = await this.executeCustomValidationInWorker(metric, customValidatorCode);
+          customResults.forEach(result => this.addResult(result));
+        } catch (error) {
+          this.addResult({ metricId: metric.id, status: 'error', message: `Error in custom validation "${funcName}": ${error.message}` });
+        }
+      } else {
+        this.addResult({ metricId: metric.id, status: 'error', message: `Internal Error: Validation function '${funcName}' not implemented.` });
+      }
+    }
 
-    let timeoutId;
-    let executionAborted = false;
+    return this.results;
+  }
 
-    try {
-      timeoutId = setTimeout(() => {
-        executionAborted = true;
+  executeCustomValidationInWorker(metric, customValidatorCode) {
+    const funcName = metric.function;
+    if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(funcName || '')) {
+      return Promise.reject(new Error('Invalid custom validation function name.'));
+    }
+
+    const workerSource = `
+      self.fetch = undefined;
+      self.XMLHttpRequest = undefined;
+      self.WebSocket = undefined;
+      self.EventSource = undefined;
+      self.importScripts = undefined;
+      self.indexedDB = undefined;
+      self.caches = undefined;
+
+      self.onmessage = (event) => {
+        const { simulation, metric, code, functionName } = event.data;
+        const results = [];
+        const sandbox = {
+          simulation,
+          addResult: (result) => results.push(result),
+          console: { log: () => {}, warn: () => {}, error: () => {} },
+          _timeToMinutes: (timeStr) => {
+            if (typeof timeStr !== 'string' || !/^\\d{2}:\\d{2}$/.test(timeStr)) return null;
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+            return (hours * 60) + minutes;
+          }
+        };
+
+        try {
+          const runner = new Function('sandbox', 'metric',
+            '"use strict";\\n' + code + '\\n' +
+            'if (typeof ' + functionName + ' !== "function") {' +
+              'throw new Error("Function " + ' + JSON.stringify(functionName) + ' + " not found");' +
+            '}' +
+            'return ' + functionName + '.call(sandbox, metric);'
+          );
+          const returned = runner(sandbox, metric);
+          if (returned && typeof returned.then === 'function') {
+            returned.then((value) => {
+              if (value) results.push(...(Array.isArray(value) ? value : [value]));
+              self.postMessage({ ok: true, results });
+            }).catch((error) => self.postMessage({ ok: false, error: error.message }));
+          } else {
+            if (returned) results.push(...(Array.isArray(returned) ? returned : [returned]));
+            self.postMessage({ ok: true, results });
+          }
+        } catch (error) {
+          self.postMessage({ ok: false, error: error.message });
+        }
+      };
+    `;
+
+    return new Promise((resolve, reject) => {
+      const blobUrl = URL.createObjectURL(new Blob([workerSource], { type: 'text/javascript' }));
+      const worker = new Worker(blobUrl);
+      const cleanup = () => {
+        worker.terminate();
+        URL.revokeObjectURL(blobUrl);
+      };
+      const timeoutId = setTimeout(() => {
+        cleanup();
+        reject(new Error('Validation exceeded the 5 second execution limit.'));
       }, 5000);
 
-      // SECURITY FIX: Use with() to create isolated scope and shadow globals
-      const func = new Function('sandbox', 'metric', 'code', `
-        'use strict';
-        with (sandbox) {
-          // SECURITY: Completely block global scope access
-          const window = undefined;
-          const document = undefined;
-          const localStorage = undefined;
-          const sessionStorage = undefined;
-          const fetch = undefined;
-          const XMLHttpRequest = undefined;
-          const eval = undefined;
-          const Function = undefined;
-          const globalThis = undefined;
-          const self = undefined;
-          const Object = Object.freeze(Object);
-          const Array = Object.freeze(Array);
-          const __proto__ = undefined;
-          const prototype = undefined;
-
-          try {
-            // Execute custom validator code
-            eval(code);
-
-            if (typeof ${funcName} === 'function') {
-              return ${funcName}.call(sandbox, metric);
-            } else {
-              // Get available function names from custom code
-              const funcRegex = /function\\s+(\\w+)\\s*\\(/g;
-              const matches = [];
-              let match;
-              while ((match = funcRegex.exec(code)) !== null) {
-                matches.push(match[1]);
-              }
-              throw new Error('Function "${funcName}" not found in custom validator code. Available functions: ' + matches.join(', '));
-            }
-          } catch (error) {
-            if (error instanceof SyntaxError) {
-              throw new Error('Syntax error in custom validator: ' + error.message);
-            } else if (error instanceof ReferenceError) {
-              throw new Error('Reference error in custom validator: ' + error.message + '. Check that all variables and functions are properly defined.');
-            } else if (error instanceof TypeError) {
-              throw new Error('Type error in custom validator: ' + error.message + '. Check that you are calling methods on the correct object types.');
-            } else {
-              throw error;
-            }
-          }
+      worker.onmessage = (event) => {
+        clearTimeout(timeoutId);
+        cleanup();
+        if (event.data?.ok) {
+          resolve(Array.isArray(event.data.results) ? event.data.results : []);
+        } else {
+          reject(new Error(event.data?.error || 'Custom validation worker failed.'));
         }
-      `);
-
-      // Execute with enhanced error handling
-      const result = func(sandbox, metric, customValidatorCode);
-
-      // Clear timeout immediately after execution
-      clearTimeout(timeoutId);
-
-      // Check if execution was aborted due to timeout
-      if (executionAborted) {
-        throw new Error('Custom validation function exceeded 5 second time limit');
-      }
-
-    } catch (error) {
-      if (timeoutId) clearTimeout(timeoutId);
-
-      // Enhanced error messages based on error type
-      let errorMessage = error.message;
-      let errorStatus = 'error';
-
-      if (error.message.includes('timeout') || error.message.includes('time limit')) {
-        errorMessage = `Validation timeout: Function "${funcName}" took longer than 5 seconds to execute. Consider optimizing your validation logic.`;
-      } else if (error.message.includes('Syntax error')) {
-        errorMessage = `Syntax error in "${funcName}": ${error.message}. Check your JavaScript syntax in the validator editor.`;
-      } else if (error.message.includes('not found')) {
-        errorMessage = `Function "${funcName}" not found. Make sure the function is defined in your validator code with the exact same name.`;
-      } else if (error.message.includes('Reference error')) {
-        errorMessage = `Reference error in "${funcName}": ${error.message}`;
-      } else {
-        errorMessage = `Error in custom validation "${funcName}": ${error.message}`;
-      }
-
-      this.addResult({
-        metricId: metric.id,
-        status: errorStatus,
-        message: errorMessage
+      };
+      worker.onerror = (event) => {
+        clearTimeout(timeoutId);
+        cleanup();
+        reject(new Error(event.message || 'Custom validation worker failed.'));
+      };
+      worker.postMessage({
+        simulation: this.simulation,
+        metric,
+        code: customValidatorCode,
+        functionName: funcName
       });
-    }
+    });
   }
 
   addResult(result) {

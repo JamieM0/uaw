@@ -1,5 +1,41 @@
 // Context Menu for Playground - Universal Automation Wiki
 
+// All context-menu mutations must use the same editor and document shape as the
+// rest of the Playground. WorkSpec documents may be either wrapped in
+// { simulation: ... } or be the simulation itself, and multi-period editing
+// writes through a day-type editor rather than the global Monaco instance.
+function getContextMenuEditor() {
+    return window.activeDayTypeEditor || window.editor || (typeof editor !== 'undefined' ? editor : null);
+}
+
+function getContextMenuDocument(editorToUse) {
+    if (!editorToUse || typeof editorToUse.getValue !== 'function') {
+        throw new Error('Editor is not available');
+    }
+    return JSON.parse(stripJsonComments(editorToUse.getValue()));
+}
+
+function getContextMenuSimulation(documentData) {
+    if (!documentData || typeof documentData !== 'object') return null;
+    return documentData.simulation && typeof documentData.simulation === 'object'
+        ? documentData.simulation
+        : documentData;
+}
+
+function getContextMenuTasks(simulation) {
+    if (!simulation || typeof simulation !== 'object') return [];
+    if (Array.isArray(simulation.process?.tasks)) return simulation.process.tasks;
+    if (Array.isArray(simulation.tasks)) return simulation.tasks;
+    return [];
+}
+
+function saveContextMenuDocument(editorToUse, documentData) {
+    if (!editorToUse || typeof editorToUse.setValue !== 'function') {
+        throw new Error('Editor cannot save changes');
+    }
+    editorToUse.setValue(JSON.stringify(documentData, null, 2));
+}
+
 class ContextMenuManager {
     constructor() {
         this.contextMenu = document.getElementById('context-menu');
@@ -36,6 +72,24 @@ class ContextMenuManager {
         this.deleteMenuItem.addEventListener('click', () => {
             this.handleDelete();
             this.hideContextMenu();
+        });
+
+        this.contextMenu.addEventListener('keydown', (e) => {
+            const items = [this.editMenuItem, this.deleteMenuItem];
+            const currentIndex = items.indexOf(document.activeElement);
+
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                const direction = e.key === 'ArrowDown' ? 1 : -1;
+                const nextIndex = (currentIndex + direction + items.length) % items.length;
+                items[nextIndex].focus();
+            } else if (e.key === 'Home' || e.key === 'End') {
+                e.preventDefault();
+                items[e.key === 'Home' ? 0 : items.length - 1].focus();
+            } else if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                document.activeElement.click();
+            }
         });
 
         // Add right-click listeners to simulation content and space editor
@@ -122,6 +176,7 @@ class ContextMenuManager {
         this.contextMenu.style.left = adjustedX + 'px';
         this.contextMenu.style.top = adjustedY + 'px';
         this.contextMenu.style.visibility = 'visible';
+        this.editMenuItem.focus();
     }
 
     hideContextMenu() {
@@ -138,14 +193,11 @@ class ContextMenuManager {
         if (this.currentTargetType === 'task') {
             this.editTask();
         } else if (this.currentTargetType === 'location') {
-            // TODO: Implement location editing if needed
-            console.log('Location editing not yet implemented');
+            this.editLocation();
         } else if (this.currentTargetType === 'digital-location') {
-            // TODO: Implement digital location editing if needed
-            console.log('Digital location editing not yet implemented');
+            this.editDigitalLocation();
         } else if (this.currentTargetType === 'display-element') {
-            // TODO: Implement display element editing if needed
-            console.log('Display element editing not yet implemented');
+            this.editDisplayElement();
         }
     }
 
@@ -159,18 +211,14 @@ class ContextMenuManager {
         }
 
         try {
-            // Get current simulation data from Monaco editor
-            const currentJson = JSON.parse(stripJsonComments(editor.getValue()));
+            const editorToUse = getContextMenuEditor();
+            const currentJson = getContextMenuDocument(editorToUse);
+            const simulation = getContextMenuSimulation(currentJson);
+            const tasks = getContextMenuTasks(simulation);
 
-            // Find the task to edit
-            const simulation = currentJson.simulation;
-            const tasks = simulation?.process?.tasks || simulation?.tasks;
-
-            if (simulation && Array.isArray(tasks)) {
+            if (Array.isArray(tasks)) {
                 const task = tasks.find(t => t.id === taskId);
-
                 if (task) {
-                    // Call the edit function from playground-objects.js
                     if (typeof openEditTaskModal === 'function') {
                         openEditTaskModal(task);
                     } else {
@@ -184,6 +232,84 @@ class ContextMenuManager {
             }
         } catch (error) {
             console.error('ERROR editing task:', error);
+        }
+    }
+
+    async editLocation() {
+        const rectElement = this.currentTarget;
+        const locationId = rectElement.dataset.id;
+
+        if (!locationId) {
+            console.error('ERROR: No location ID found for editing');
+            return;
+        }
+
+        try {
+            const tabButton = document.querySelector('[data-tab="space-editor"]');
+            if (tabButton) {
+                tabButton.click();
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            if (typeof spaceEditor !== 'undefined' && spaceEditor) {
+                spaceEditor.selectRect(locationId);
+            } else {
+                console.error('ERROR: spaceEditor is not available');
+            }
+        } catch (error) {
+            console.error('ERROR editing location:', error);
+        }
+    }
+
+    async editDigitalLocation() {
+        const rectElement = this.currentTarget;
+        const locationId = rectElement.dataset.locationId;
+
+        if (!locationId) {
+            console.error('ERROR: No digital location ID found for editing');
+            return;
+        }
+
+        try {
+            const tabButton = document.querySelector('[data-tab="digital-space"]');
+            if (tabButton) {
+                tabButton.click();
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            if (typeof digitalSpaceEditor !== 'undefined' && digitalSpaceEditor) {
+                digitalSpaceEditor.selectLocation(locationId);
+            } else {
+                console.error('ERROR: digitalSpaceEditor is not available');
+            }
+        } catch (error) {
+            console.error('ERROR editing digital location:', error);
+        }
+    }
+
+    async editDisplayElement() {
+        const rectElement = this.currentTarget;
+        const elementId = rectElement.dataset.elementId;
+
+        if (!elementId) {
+            console.error('ERROR: No display element ID found for editing');
+            return;
+        }
+
+        try {
+            const tabButton = document.querySelector('[data-tab="display-editor"]');
+            if (tabButton) {
+                tabButton.click();
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            if (typeof displayEditor !== 'undefined' && displayEditor) {
+                displayEditor.selectElement(elementId);
+            } else {
+                console.error('ERROR: displayEditor is not available');
+            }
+        } catch (error) {
+            console.error('ERROR editing display element:', error);
         }
     }
 
@@ -213,21 +339,18 @@ class ContextMenuManager {
         }
 
         try {
-            // Get current simulation data from Monaco editor
-            const currentJson = JSON.parse(stripJsonComments(editor.getValue()));
-            
-            // Find and remove the task from the simulation data
-            const simulation = currentJson.simulation;
-            const tasks = simulation?.process?.tasks || simulation?.tasks;
+            const editorToUse = getContextMenuEditor();
+            const currentJson = getContextMenuDocument(editorToUse);
+            const simulation = getContextMenuSimulation(currentJson);
+            const tasks = getContextMenuTasks(simulation);
 
-            if (simulation && Array.isArray(tasks)) {
+            if (Array.isArray(tasks)) {
                 const taskIndex = tasks.findIndex(task => task.id === taskId);
                 
                 if (taskIndex !== -1) {
                     tasks.splice(taskIndex, 1);
                     
-                    // Update the Monaco editor with the new JSON
-                    editor.setValue(JSON.stringify(currentJson, null, 2));
+                    saveContextMenuDocument(editorToUse, currentJson);
                     
                     // Trigger re-validation and re-rendering
                     validateJSON();
@@ -266,9 +389,9 @@ class ContextMenuManager {
                     rectElement.remove();
                     
                     // Update the JSON in Monaco editor
-                    const currentJson = JSON.parse(stripJsonComments(editor.getValue()));
-                    
-                    const simulation = currentJson.simulation;
+                    const editorToUse = getContextMenuEditor();
+                    const currentJson = getContextMenuDocument(editorToUse);
+                    const simulation = getContextMenuSimulation(currentJson);
                     const layout = simulation?.world?.layout || simulation?.layout;
                     const locations = layout?.locations;
 
@@ -277,7 +400,7 @@ class ContextMenuManager {
                         
                         if (layoutLocationIndex !== -1) {
                             locations.splice(layoutLocationIndex, 1);
-                            editor.setValue(JSON.stringify(currentJson, null, 2));
+                            saveContextMenuDocument(editorToUse, currentJson);
                         }
                     }
                     
@@ -347,17 +470,24 @@ class ContextMenuManager {
                         rectElement.remove();
                         
                         // Update the JSON in Monaco editor
-                        const currentJson = JSON.parse(stripJsonComments(editor.getValue()));
+                        const editorToUse = getContextMenuEditor();
+                        const currentJson = getContextMenuDocument(editorToUse);
+                        const simulation = getContextMenuSimulation(currentJson);
+                        const displays = Array.isArray(simulation?.displays)
+                            ? simulation.displays
+                            : Array.isArray(currentJson.displays)
+                                ? currentJson.displays
+                                : [];
 
-                        if (currentJson.displays) {
-                            const displayIndex = currentJson.displays.findIndex(disp => disp.id === activeDisplay.id);
+                        if (Array.isArray(displays)) {
+                            const displayIndex = displays.findIndex(disp => disp.id === activeDisplay.id);
 
-                            if (displayIndex !== -1 && currentJson.displays[displayIndex].rectangles) {
-                                const jsonElementIndex = currentJson.displays[displayIndex].rectangles.findIndex(element => element.id === elementId);
+                            if (displayIndex !== -1 && displays[displayIndex].rectangles) {
+                                const jsonElementIndex = displays[displayIndex].rectangles.findIndex(element => element.id === elementId);
 
                                 if (jsonElementIndex !== -1) {
-                                    currentJson.displays[displayIndex].rectangles.splice(jsonElementIndex, 1);
-                                    editor.setValue(JSON.stringify(currentJson, null, 2));
+                                    displays[displayIndex].rectangles.splice(jsonElementIndex, 1);
+                                    saveContextMenuDocument(editorToUse, currentJson);
                                 }
                             }
                         }

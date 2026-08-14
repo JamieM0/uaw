@@ -52,6 +52,7 @@ function renderCalendarView(simulator, viewController, currentMonthOffset = 0) {
 
     // Get color mapping
     const colorMap = simulator.getDayTypeColors();
+    const totalSimulationDays = simulator.getTotalDays();
 
     // Build calendar by actual months
     const startDate = simulator.startDate;
@@ -132,10 +133,15 @@ function renderCalendarView(simulator, viewController, currentMonthOffset = 0) {
         // Calculate day number relative to start date
         const dayNumber = simulator.getDayNumberFromDate(date);
 
-        // Get day type and simulate
-        const dayType = simulator.getDayTypeForDay(dayNumber);
-        const dayDefinition = simulator.getDayTypeDefinition(dayType);
-        const metrics = simulator.simulateDay(dayDefinition);
+        const isWithinSimulation = dayNumber >= 1 && dayNumber <= totalSimulationDays;
+
+        // Dates outside the configured simulation range remain visible for calendar
+        // context, but must not be presented as unknown zero-activity simulation days.
+        const dayType = isWithinSimulation ? simulator.getDayTypeForDay(dayNumber) : null;
+        const dayDefinition = isWithinSimulation ? simulator.getDayTypeDefinition(dayType) : null;
+        const metrics = isWithinSimulation
+            ? simulator.simulateDay(dayDefinition)
+            : { revenue: 0, costs: 0, profit: 0, tasks: 0 };
 
         daysInMonth.push({
             day: dayNumber,
@@ -143,7 +149,8 @@ function renderCalendarView(simulator, viewController, currentMonthOffset = 0) {
             dayOfWeek: dayOfWeek,
             dayType: dayType,
             dayTypeName: simulator.getDayTypeName(dayType),
-            metrics: metrics
+            metrics: metrics,
+            isWithinSimulation: isWithinSimulation
         });
     }
 
@@ -179,10 +186,14 @@ function renderCalendarView(simulator, viewController, currentMonthOffset = 0) {
                 const dayCell = document.createElement('div');
                 dayCell.className = 'calendar-day-cell';
                 dayCell.dataset.day = dayData.day;
-                dayCell.dataset.dayType = dayData.dayType;
+                if (dayData.dayType) {
+                    dayCell.dataset.dayType = dayData.dayType;
+                }
 
                 // Apply color
-                const bgColor = colorMap[dayData.dayType] || '#ccc';
+                const bgColor = dayData.isWithinSimulation
+                    ? (colorMap[dayData.dayType] || '#ccc')
+                    : 'var(--background-light, #f3f4f6)';
                 dayCell.style.backgroundColor = bgColor;
 
                 // Determine text color based on background brightness
@@ -197,24 +208,31 @@ function renderCalendarView(simulator, viewController, currentMonthOffset = 0) {
                 });
 
                 // Content
-                dayCell.innerHTML = `
-                    <div class="day-number">${dateStr}</div>
-                    <div class="day-metrics">
-                        <span class="metric-value ${dayData.metrics.profit >= 0 ? 'positive' : 'negative'}">
-                            $${dayData.metrics.profit.toFixed(0)}
-                        </span>
-                        <span class="metric-value">
-                            ${dayData.metrics.tasks}
-                        </span>
-                    </div>
-                `;
+                dayCell.innerHTML = dayData.isWithinSimulation
+                    ? `
+                        <div class="day-number">${dateStr}</div>
+                        <div class="day-metrics">
+                            <span class="metric-value ${dayData.metrics.profit >= 0 ? 'positive' : 'negative'}">
+                                $${dayData.metrics.profit.toFixed(0)}
+                            </span>
+                            <span class="metric-value">
+                                ${dayData.metrics.tasks}
+                            </span>
+                        </div>
+                    `
+                    : `<div class="day-number">${dateStr}</div>`;
 
                 // Add click handlers
-                dayCell.addEventListener('click', () => {
-                    viewController.goToDay(dayData.day);
-                });
-
-                dayCell.title = `${dayData.dayTypeName}\nClick to view details`;
+                if (dayData.isWithinSimulation) {
+                    dayCell.addEventListener('click', () => {
+                        viewController.goToDay(dayData.day);
+                    });
+                    dayCell.title = `${dayData.dayTypeName}\nClick to view details`;
+                } else {
+                    dayCell.classList.add('outside-simulation');
+                    dayCell.setAttribute('aria-disabled', 'true');
+                    dayCell.title = 'Outside simulation range';
+                }
 
                 weekRow.appendChild(dayCell);
             } else {
@@ -235,7 +253,8 @@ function renderCalendarView(simulator, viewController, currentMonthOffset = 0) {
     summary.className = 'calendar-summary';
 
     // Calculate overall totals
-    const overallMetrics = daysInMonth.reduce((acc, day) => ({
+    const simulatedDaysInMonth = daysInMonth.filter(day => day.isWithinSimulation);
+    const overallMetrics = simulatedDaysInMonth.reduce((acc, day) => ({
         revenue: acc.revenue + day.metrics.revenue,
         costs: acc.costs + day.metrics.costs,
         profit: acc.profit + day.metrics.profit,
@@ -244,7 +263,7 @@ function renderCalendarView(simulator, viewController, currentMonthOffset = 0) {
 
     // Calculate day type breakdown
     const dayTypeBreakdown = {};
-    daysInMonth.forEach(day => {
+    simulatedDaysInMonth.forEach(day => {
         if (!dayTypeBreakdown[day.dayType]) {
             dayTypeBreakdown[day.dayType] = {
                 count: 0,

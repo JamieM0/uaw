@@ -979,7 +979,7 @@ class SimulationPlayer {
         const stocks = {}; // For resource quantity tracking
         
         liveObjects.forEach(obj => { 
-            states[obj.id] = obj.properties?.state || (objectType === 'equipment' ? 'undefined' : 'available');
+            states[obj.id] = obj.properties?.state || 'available';
             propertyOverrides[obj.id] = {};
             // Initialize quantities for resource-like objects
             if (obj.properties?.quantity !== undefined) {

@@ -108,7 +108,7 @@
                                 autocomplete="off"
                             />
                             <small style="color: var(--text-color-secondary); font-size: 0.8rem; display: block; margin-top: 0.25rem;">
-                                Keys are stored locally in your browser only
+                                Keys stay in this tab's session storage and are cleared when the tab session ends
                             </small>
                         </div>
 
@@ -361,19 +361,39 @@
         }
 
         /**
-         * Load configuration from cookies
+         * Load non-secret configuration from local storage and session-only keys.
          */
         loadConfig() {
             try {
-                // Load current active config
-                const configData = this.getCookie('smart-actions-config');
+                let configData = localStorage.getItem('smart-actions-config');
+
+                // One-time migration away from cookies, which are sent with same-origin requests.
+                const legacyConfigData = this.getCookie('smart-actions-config');
+                if (!configData && legacyConfigData) {
+                    const legacyConfig = JSON.parse(legacyConfigData);
+                    if (legacyConfig.apiKey && legacyConfig.provider) {
+                        sessionStorage.setItem('smart-actions-api-keys', JSON.stringify({
+                            [legacyConfig.provider]: legacyConfig.apiKey
+                        }));
+                    }
+                    delete legacyConfig.apiKey;
+                    configData = JSON.stringify(legacyConfig);
+                    localStorage.setItem('smart-actions-config', configData);
+                }
+
+                this.deleteCookie('smart-actions-config');
+                this.deleteCookie('smart-actions-api-keys');
+                this.deleteCookie('smart-actions-model-names');
+
                 if (configData) {
                     this.currentConfig = JSON.parse(configData);
                 }
 
-                // Load saved API keys and model names for all providers
                 this.savedApiKeys = this.loadSavedApiKeys();
                 this.savedModelNames = this.loadSavedModelNames();
+                if (this.currentConfig?.provider) {
+                    this.currentConfig.apiKey = this.savedApiKeys[this.currentConfig.provider] || '';
+                }
             } catch (error) {
                 console.warn('SmartActionsSetup: Could not load config:', error);
             }
@@ -384,7 +404,7 @@
          */
         loadSavedApiKeys() {
             try {
-                const keysData = this.getCookie('smart-actions-api-keys');
+                const keysData = sessionStorage.getItem('smart-actions-api-keys');
                 return keysData ? JSON.parse(keysData) : {};
             } catch (error) {
                 console.warn('SmartActionsSetup: Could not load API keys:', error);
@@ -397,7 +417,7 @@
          */
         loadSavedModelNames() {
             try {
-                const modelsData = this.getCookie('smart-actions-model-names');
+                const modelsData = localStorage.getItem('smart-actions-model-names');
                 return modelsData ? JSON.parse(modelsData) : {};
             } catch (error) {
                 console.warn('SmartActionsSetup: Could not load model names:', error);
@@ -406,12 +426,13 @@
         }
 
         /**
-         * Save configuration to secure cookies
+         * Persist non-secret preferences only; keep credentials session-scoped.
          */
         saveConfig(config) {
             try {
-                // Save the main config
-                this.setCookie('smart-actions-config', JSON.stringify(config), 365);
+                const nonSecretConfig = { ...config };
+                delete nonSecretConfig.apiKey;
+                localStorage.setItem('smart-actions-config', JSON.stringify(nonSecretConfig));
 
                 // Save API key for this provider (if provided)
                 if (config.apiKey && config.provider) {
@@ -423,7 +444,7 @@
                     this.saveModelName(config.provider, config.model);
                 }
             } catch (error) {
-                throw new Error('Could not save configuration to cookies');
+                throw new Error('Could not save configuration to browser storage');
             }
         }
 
@@ -440,15 +461,14 @@
 
                 const serialized = JSON.stringify(this.savedApiKeys);
 
-                // Check cookie size limit (4KB)
+                // Keep an accidental oversized credential set from growing without bound.
                 if (serialized.length > 4000) {
-                    console.warn('SmartActionsSetup: API keys data exceeds recommended cookie size, storing only current provider');
+                    console.warn('SmartActionsSetup: API keys data exceeds the storage safety limit, storing only the current provider');
                     // If too large, only store current provider's key
                     this.savedApiKeys = { [provider]: apiKey };
                 }
 
-                // Save all provider keys in a single cookie
-                this.setCookie('smart-actions-api-keys', JSON.stringify(this.savedApiKeys), 365);
+                sessionStorage.setItem('smart-actions-api-keys', JSON.stringify(this.savedApiKeys));
             } catch (error) {
                 console.error('SmartActionsSetup: Could not save API key:', error);
                 throw error; // Propagate error so caller knows save failed
@@ -468,15 +488,14 @@
 
                 const serialized = JSON.stringify(this.savedModelNames);
 
-                // Check cookie size limit (4KB)
+                // Keep an accidental oversized preference set from growing without bound.
                 if (serialized.length > 4000) {
-                    console.warn('SmartActionsSetup: Model names data exceeds recommended cookie size, storing only current provider');
+                    console.warn('SmartActionsSetup: Model names data exceeds the storage safety limit, storing only the current provider');
                     // If too large, only store current provider's model name
                     this.savedModelNames = { [provider]: modelName };
                 }
 
-                // Save all provider model names in a single cookie
-                this.setCookie('smart-actions-model-names', JSON.stringify(this.savedModelNames), 365);
+                localStorage.setItem('smart-actions-model-names', JSON.stringify(this.savedModelNames));
             } catch (error) {
                 console.error('SmartActionsSetup: Could not save model name:', error);
                 throw error; // Propagate error so caller knows save failed
@@ -577,25 +596,6 @@
          */
         getConfig() {
             return this.currentConfig;
-        }
-
-        /**
-         * Set a secure cookie
-         * @param {string} name - Cookie name
-         * @param {string} value - Cookie value
-         * @param {number} days - Expiration in days (default 365)
-         */
-        setCookie(name, value, days = 365) {
-            const date = new Date();
-            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-            const expires = `expires=${date.toUTCString()}`;
-
-            // Set secure cookie with SameSite=Strict for security
-            // Note: Secure flag requires HTTPS, omit for localhost development
-            const isSecure = window.location.protocol === 'https:';
-            const secureFlag = isSecure ? '; Secure' : '';
-
-            document.cookie = `${name}=${encodeURIComponent(value)}; ${expires}; path=/; SameSite=Strict${secureFlag}`;
         }
 
         /**

@@ -111,6 +111,9 @@ let originalTaskData = null;
 let isResizing = false;
 let resizeType = null; // 'left' or 'right'
 let resizeHandle = null;
+let dragGestureMoved = false;
+let suppressTaskClickId = null;
+let suppressTaskClickTimer = null;
 let originalDuration = 0;
 let originalStartMinutes = null;
 let durationPreview = null;
@@ -765,7 +768,21 @@ function renderSimulation(skipJsonValidation = false) {
 
                 // Add click event listener as backup for jump functionality
                 taskElement.addEventListener("click", (e) => {
-                    // Only handle click if no drag occurred
+                    // Browsers dispatch a click after mouseup. Consume the trailing click
+                    // from a drag or resize so it is not mistaken for a request to jump to
+                    // this task in the JSON editor.
+                    if (suppressTaskClickId === task.id) {
+                        suppressTaskClickId = null;
+                        if (suppressTaskClickTimer) {
+                            clearTimeout(suppressTaskClickTimer);
+                            suppressTaskClickTimer = null;
+                        }
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
+
+                    // Only handle ordinary clicks; drag and resize gestures edit in place.
                     if (!isDragging) {
                         e.stopPropagation(); // Prevent bubbling to track scrubbing handler
                         scrollToTaskInJSON(task.id);
@@ -1025,6 +1042,9 @@ function handleMouseDown(e) {
         const taskElement = e.target.closest('.task-block');
         if (!taskElement) return;
 
+        // Context-menu clicks must not begin a drag or resize operation.
+        if (e.button !== 0) return;
+
         // Stop the event from bubbling up to the track, which would trigger scrubbing
         e.stopPropagation();
 
@@ -1070,6 +1090,7 @@ function handleMouseDown(e) {
             // Start dragging
             document.body.classList.add('dragging-active');
             isDragging = true;
+            dragGestureMoved = false;
             draggedTask = taskElement;
             dragStartX = e.clientX;
             dragStartY = e.clientY;
@@ -1121,6 +1142,12 @@ function handleMouseDown(e) {
 
 function handleMouseMove(e) {
     try {
+        if (isDragging && !dragGestureMoved) {
+            const movedX = Math.abs(e.clientX - dragStartX);
+            const movedY = Math.abs(e.clientY - dragStartY);
+            dragGestureMoved = movedX >= 4 || movedY >= 4;
+        }
+
         if (isResizing && resizeHandle && durationPreview) {
             // Check if simulation data is available
             if (!currentSimulationData || typeof currentSimulationData.total_duration_minutes === 'undefined' ||
@@ -1244,6 +1271,7 @@ function handleMouseMove(e) {
 function handleMouseUp(e) {
     try {
         if (isResizing && resizeHandle) {
+            suppressNextTaskClick(resizeHandle.dataset.taskId);
             const trackElement = resizeHandle.closest('.task-track');
             if (trackElement && currentSimulationData) {
                 const newPosition = calculateNewTimeFromPosition(e.clientX, trackElement);
@@ -1286,6 +1314,9 @@ function handleMouseUp(e) {
             durationPreview = null;
             
         } else if (isDragging && draggedTask) {
+            if (dragGestureMoved) {
+                suppressNextTaskClick(draggedTask.dataset.taskId);
+            }
             const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
             const newTrack = elementBelow?.closest('.task-track');
             const currentTrack = draggedTask.closest('.task-track');
@@ -1332,6 +1363,7 @@ function handleMouseUp(e) {
             // Clean up drag state immediately
             document.body.classList.remove('dragging-active');
             isDragging = false;
+            dragGestureMoved = false;
             draggedTask = null;
             timePreview = null;
             originalTaskData = null;
@@ -1341,6 +1373,19 @@ function handleMouseUp(e) {
         // Clean up all drag/resize state
         cleanupDragResizeState();
     }
+}
+
+function suppressNextTaskClick(taskId) {
+    if (!taskId) return;
+
+    suppressTaskClickId = taskId;
+    if (suppressTaskClickTimer) clearTimeout(suppressTaskClickTimer);
+    // Clear stale suppression if the browser does not emit a click (for example,
+    // when the timeline re-renders after the edit).
+    suppressTaskClickTimer = setTimeout(() => {
+        suppressTaskClickId = null;
+        suppressTaskClickTimer = null;
+    }, 100);
 }
 
 function calculateNewTimeFromPosition(clientX, trackElement) {

@@ -332,46 +332,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    const WORKSPEC_MIGRATION_SEEN_KEY = "uaw-playground-workspec-migration-seen";
-    const workspecMigrationModal = PlaygroundUtils.safeGetElement("workspec-migration-modal");
-    const workspecMigrationContinueBtn = PlaygroundUtils.safeGetElement("workspec-migration-continue-btn");
-
-    if (!workspecMigrationModal || !workspecMigrationContinueBtn) {
-      console.warn("WorkSpec migration modal elements not found - feature disabled");
-    } else {
-      const closeWorkspecMigrationModal = () => {
-        workspecMigrationModal.style.display = "none";
-        try {
-          localStorage.setItem(WORKSPEC_MIGRATION_SEEN_KEY, "true");
-        } catch (e) {
-          console.warn("Could not save WorkSpec migration preference:", e.message);
-        }
-      };
-
-      let hasSeenWorkspecMigration = false;
-      try {
-        hasSeenWorkspecMigration = localStorage.getItem(WORKSPEC_MIGRATION_SEEN_KEY) === "true";
-      } catch (e) {
-        console.warn("Could not check WorkSpec migration preference:", e.message);
-      }
-
-      if (!hasSeenWorkspecMigration) {
-        workspecMigrationModal.style.display = "flex";
-      }
-
-      workspecMigrationContinueBtn.addEventListener("click", closeWorkspecMigrationModal);
-      workspecMigrationModal.addEventListener("click", (event) => {
-        if (event.target === workspecMigrationModal) {
-          closeWorkspecMigrationModal();
-        }
-      });
-
-      document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && workspecMigrationModal.style.display !== "none") {
-          closeWorkspecMigrationModal();
-        }
-      });
-    }
   } catch (error) {
     console.error("Error in DOMContentLoaded handler:", error);
   }
@@ -746,46 +706,136 @@ function attemptInitializePlayground() {
  * @returns {boolean} True if successful, false if failed
  */
 function populateSimulationLibrary() {
-  const dropdown = PlaygroundUtils.safeGetElement("simulation-library-dropdown");
-  if (!dropdown) {
-    console.warn('Simulation library dropdown not found');
-    return false;
-  }
-
   if (!window.simulationLibrary || !window.simulationLibrary.simulations) {
     console.warn('Simulation library data not available');
     return false;
   }
 
-  try {
-    dropdown.innerHTML = ""; // Clear existing options
+  const btn = PlaygroundUtils.safeGetElement("simulation-library-btn");
+  const modal = PlaygroundUtils.safeGetElement("simulation-library-modal");
+  const closeBtn = PlaygroundUtils.safeGetElement("simulation-library-close");
+  const grid = PlaygroundUtils.safeGetElement("simulation-library-grid");
+  const filtersContainer = PlaygroundUtils.safeGetElement("simulation-library-filters");
 
-    window.simulationLibrary.simulations.forEach((simulation) => {
-      if (!simulation || !simulation.id || !simulation.name) {
-        console.warn('Skipping invalid simulation entry:', simulation);
-        return;
-      }
-
-      const option = document.createElement("a");
-      option.href = "#";
-      option.textContent = `${simulation.name} (${simulation.complexity || 'Unknown'})`;
-      option.title = simulation.description || simulation.name;
-      option.dataset.simulationId = simulation.id;
-
-      option.addEventListener("click", (e) => {
-        e.preventDefault();
-        loadSimulationFromLibrary(simulation.id);
-      });
-
-      dropdown.appendChild(option);
-    });
-
-    console.log(`✓ Loaded ${window.simulationLibrary.simulations.length} simulations`);
-    return true;
-  } catch (error) {
-    console.error('Failed to populate simulation library:', error);
+  if (!btn || !modal || !grid || !filtersContainer) {
+    console.warn('Simulation library UI elements not found');
     return false;
   }
+
+  const simulations = window.simulationLibrary.simulations;
+  const domains = [...new Set(simulations.map(s => s.domain).filter(Boolean))];
+
+  filtersContainer.innerHTML = '<button class="filter-btn active" data-filter="all">All</button>';
+  domains.sort().forEach(domain => {
+    const filterBtn = document.createElement("button");
+    filterBtn.className = "filter-btn";
+    filterBtn.dataset.filter = domain;
+    filterBtn.textContent = domain;
+    filtersContainer.appendChild(filterBtn);
+  });
+
+  const iconMap = {
+    "Food Production": "\uD83C\uDF5E",
+    "Food Service": "\u2615",
+    "Online Retail": "\uD83D\uDED2",
+    "Electronics Manufacturing": "\uD83D\uDCF1",
+    "Pharmaceutical Manufacturing": "\uD83D\uDC8A",
+    "Healthcare": "\uD83C\uDFE5",
+    "Transportation": "\uD83D\uDE9A",
+    "Logistics": "\uD83D\uDCE6",
+    "Technology": "\uD83D\uDCBB",
+    "Energy": "\u2600\uFE0F",
+    "Construction": "\uD83C\uDFD7\uFE0F",
+    "Entertainment": "\uD83C\uDFAC",
+    "Agriculture": "\uD83C\uDF3E",
+    "Manufacturing": "\uD83D\uDD27",
+    "Education": "\uD83C\uDF93",
+    "Service": "\uD83E\uDDF9",
+  };
+
+  const featureIcons = {
+    digital_space: "\uD83D\uDDA5\uFE0F",
+    displays: "\uD83D\uDDA5\uFE0F",
+    recipes: "\uD83D\uDCD6",
+    multi_period: "\uD83D\uDCC5",
+  };
+
+  function getFeatures(sim) {
+    const s = sim.simulation;
+    const features = [];
+    if (s.digital_space) features.push("digital_space");
+    if (s.displays) features.push("displays");
+    if (s.process?.recipes) features.push("recipes");
+    if (s.calendar || s.day_types) features.push("multi_period");
+    return features;
+  }
+
+  function renderGrid(filter) {
+    grid.innerHTML = "";
+    const filtered = filter === "all"
+      ? simulations
+      : simulations.filter(s => s.domain === filter);
+
+    filtered.forEach(sim => {
+      if (!sim || !sim.id || !sim.name) return;
+
+      const card = document.createElement("div");
+      card.className = "sim-lib-card";
+      card.dataset.simulationId = sim.id;
+
+      const icon = sim.icon || iconMap[sim.domain] || "\uD83D\uDCC1";
+      const features = getFeatures(sim);
+      const featureHTML = features.map(f => featureIcons[f] || "").join("");
+
+      card.innerHTML = `
+        <div class="sim-lib-card-icon">${icon}</div>
+        <div class="sim-lib-card-title">${sim.name}</div>
+        <div class="sim-lib-card-domain">${sim.domain || "General"}</div>
+        <div class="sim-lib-card-description">${sim.description || ""}</div>
+        <div class="sim-lib-card-footer">
+          <span class="sim-lib-card-badge ${(sim.complexity || "basic").toLowerCase()}">${sim.complexity || "Basic"}</span>
+          ${featureHTML ? `<span class="sim-lib-card-features">${featureHTML}</span>` : ""}
+        </div>
+      `;
+
+      card.addEventListener("click", () => {
+        loadSimulationFromLibrary(sim.id);
+        modal.style.display = "none";
+      });
+
+      grid.appendChild(card);
+    });
+  }
+
+  filtersContainer.addEventListener("click", (e) => {
+    const filterBtn = e.target.closest(".filter-btn");
+    if (!filterBtn) return;
+    filtersContainer.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    filterBtn.classList.add("active");
+    renderGrid(filterBtn.dataset.filter);
+  });
+
+  btn.addEventListener("click", () => {
+    modal.style.display = "flex";
+  });
+
+  closeBtn.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) modal.style.display = "none";
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.style.display !== "none") {
+      modal.style.display = "none";
+    }
+  });
+
+  renderGrid("all");
+  console.log(`✓ Loaded ${simulations.length} simulations`);
+  return true;
 }
 
 /**

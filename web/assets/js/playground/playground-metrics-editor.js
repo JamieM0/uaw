@@ -272,10 +272,7 @@ function switchLeftTab(targetTab) {
             }
         } else if (targetTab === 'digital-space' && digitalSpaceEditor) {
             try {
-                const currentJson = JSON.parse(editor.getValue());
-                // Support both new (nested) and old (root-level) formats for backward compatibility
-                const digitalSpace = currentJson.simulation?.digital_space || currentJson.digital_space || {};
-                digitalSpaceEditor.loadLayout(digitalSpace, true);
+                digitalSpaceEditor.loadFromSimulation();
             } catch(e) {
                 console.warn('Failed to parse JSON for digital space editor:', e.message);
                 if (targetButton) {
@@ -285,10 +282,7 @@ function switchLeftTab(targetTab) {
             }
         } else if (targetTab === 'display-editor' && displayEditor) {
             try {
-                const currentJson = JSON.parse(editor.getValue());
-                // Support both new (nested) and old (root-level) formats for backward compatibility
-                const displays = currentJson.simulation?.displays || currentJson.displays || {};
-                displayEditor.loadLayout(displays, true);
+                displayEditor.loadFromSimulation();
             } catch(e) {
                 console.warn('Failed to parse JSON for display editor:', e.message);
                 if (targetButton) {
@@ -563,8 +557,8 @@ function initializeMetricsValidatorEditor() {
 function validateSampleCheck(metric) {
     // Access simulation data
     const simulation = this.simulation;
-    const tasks = simulation.tasks || [];
-    const objects = simulation.objects || [];
+    const tasks = simulation.process?.tasks || simulation.tasks || [];
+    const objects = simulation.world?.objects || simulation.objects || [];
 
     // Get parameters from metric definition
     const exampleParam = metric.params?.example_parameter || "default_value";
@@ -799,15 +793,11 @@ function refreshAllEditors() {
         }
 
         if (digitalSpaceEditor) {
-            // Support both new (nested) and old (root-level) formats for backward compatibility
-            const digitalSpace = sim?.digital_space || currentJson.digital_space || {};
-            digitalSpaceEditor.loadLayout(digitalSpace);
+            digitalSpaceEditor.loadFromSimulation();
         }
 
         if (displayEditor) {
-            // Support both new (nested) and old (root-level) formats for backward compatibility
-            const displays = sim?.displays || currentJson.displays || {};
-            displayEditor.loadLayout(displays);
+            displayEditor.loadFromSimulation();
         }
     } catch(e) {
         console.warn('Cannot refresh editors - invalid JSON:', e.message);
@@ -859,17 +849,23 @@ function runCustomValidation() {
     }
 
     const validationContent = document.querySelector('.validation-content');
+    let loadingState = null;
     if (validationContent) {
-        validationContent.innerHTML = `
+        validationContent.setAttribute('aria-busy', 'true');
+        loadingState = document.createElement('div');
+        loadingState.className = 'custom-validation-loading';
+        loadingState.setAttribute('role', 'status');
+        loadingState.innerHTML = `
             <div style="text-align: center; padding: 2rem;">
                 <div class="spinner"></div>
                 <p>Running custom validation...</p>
             </div>
         `;
+        validationContent.prepend(loadingState);
     }
 
     // Use setTimeout to allow UI to update
-    setTimeout(() => {
+    setTimeout(async () => {
         try {
             const simulationData = getCurrentSimulationData();
             if (!simulationData) {
@@ -883,7 +879,7 @@ function runCustomValidation() {
             if (mergedCatalog && mergedCatalog.length > 0) {
                 const startTime = performance.now();
                 const validator = new SimulationValidator(simulationData);
-                const results = validator.runChecks(mergedCatalog, customValidator);
+                const results = await validator.runChecksAsync(mergedCatalog, customValidator);
                 const duration = Math.round(performance.now() - startTime);
 
                 displayCompactValidationResults(results);
@@ -897,6 +893,12 @@ function runCustomValidation() {
             console.error('Custom validation error:', error);
             displayValidationError(`Validation error: ${error.message}\n\nCheck browser console for details.`);
         } finally {
+            if (loadingState) {
+                loadingState.remove();
+            }
+            if (validationContent) {
+                validationContent.setAttribute('aria-busy', 'false');
+            }
             // Restore button state
             if (runBtn) {
                 runBtn.disabled = false;

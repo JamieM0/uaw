@@ -776,6 +776,16 @@ require(["vs/editor/editor.main"], function () {
         }
     );
 
+    // Reassert the model language and theme after construction.  Monaco can
+    // retain a plain-text model when another integration replaces or restores
+    // editor content during startup, which removes JSON token colours while
+    // leaving the editor otherwise usable.
+    const editorModel = editor.getModel();
+    if (editorModel && monaco.editor.setModelLanguage) {
+        monaco.editor.setModelLanguage(editorModel, "json");
+    }
+    monaco.editor.setTheme(isDarkMode ? "vs-dark" : "vs");
+
     // Add word wrap toggle to context menu
     editor.addAction({
         id: 'toggle-word-wrap',
@@ -1103,8 +1113,11 @@ function validateJSON() {
             } else if (mergedCatalog && mergedCatalog.length > 0 && window.SimulationValidator) {
                 // Fallback: legacy metrics validator
                 const validator = new window.SimulationValidator(parsed);
-                const customValidator = getCustomValidatorCode();
-                const validationResults = validator.runChecks(mergedCatalog, customValidator);
+                // Custom validators run asynchronously from the Metrics Editor.
+                // Auto-validation must remain synchronous, so only execute
+                // built-in checks here instead of reporting a false error for
+                // every custom metric.
+                const validationResults = validator.runChecks(mergedCatalog);
                 displayValidationResults(validationResults);
             } else {
                 displayValidationResults([]);
@@ -1125,6 +1138,14 @@ function validateJSON() {
             jsonStatus.className = "validation-indicator error";
             jsonStatus.textContent = `✗ Invalid JSON: ${e.message}`;
             jsonStatus.title = `JSON Parse Error: ${e.message}`;
+        }
+
+        if (typeof displayValidationResults === 'function') {
+            displayValidationResults([{
+                metricId: 'json.syntax',
+                status: 'error',
+                message: e.message
+            }]);
         }
         
         // Show JSON syntax errors in editor
@@ -1195,8 +1216,9 @@ function runManualValidation() {
             const mergedCatalog = getMergedMetricsCatalog();
             if (mergedCatalog && mergedCatalog.length > 0 && window.SimulationValidator) {
                 const validator = new window.SimulationValidator(parsed);
-                const customValidator = getCustomValidatorCode();
-                const validationResults = validator.runChecks(mergedCatalog, customValidator);
+                // See the auto-validation fallback above: custom checks use
+                // the asynchronous Metrics Editor workflow.
+                const validationResults = validator.runChecks(mergedCatalog);
                 displayValidationResults(validationResults);
             }
         }

@@ -79,6 +79,15 @@ function applyCommonWorkSpecDefaults(object, baseType) {
 function getSimulationRoot(doc) {
     if (!isPlainObject(doc)) return null;
     if (isPlainObject(doc.simulation)) return doc.simulation;
+    // The Playground accepts both the usual { simulation: ... } document and
+    // a simulation object supplied directly (for example by a day-type editor).
+    // Treat either as the editable root so opening a modal and saving it cannot
+    // target different document shapes.
+    if (isPlainObject(doc.world) || isPlainObject(doc.process) ||
+        Array.isArray(doc.tasks) || Array.isArray(doc.objects) ||
+        typeof doc.schema_version === 'string') {
+        return doc;
+    }
     return null;
 }
 
@@ -142,6 +151,11 @@ let preservedObjectFields = {};
 
 // Open add object modal
 function openAddObjectModal() {
+    if (window.multiPeriodViewController?.isMultiPeriod() && window.multiPeriodViewController.currentView !== 'day') {
+        showNotification('Open a simulation day before adding an object so the target day type is explicit.', 'warning');
+        return;
+    }
+
     const modal = document.getElementById('add-object-modal');
     if (!modal) {
         console.error('Add object modal not found');
@@ -794,6 +808,11 @@ function removeCustomProperty(button) {
 
 // Open add task modal  
 function openAddTaskModal() {
+    if (window.multiPeriodViewController?.isMultiPeriod() && window.multiPeriodViewController.currentView !== 'day') {
+        showNotification('Open a simulation day before adding a task so the target day type is explicit.', 'warning');
+        return;
+    }
+
     const modal = document.getElementById('add-task-modal');
     const actorSelect = document.getElementById('task-actor-select');
     const locationSelect = document.getElementById('task-location-select');
@@ -1013,20 +1032,26 @@ function openEditTaskModal(task) {
         }
     }
 
-    // Populate interactions if they exist
+    // Populate interactions if they exist. A valid WorkSpec property_changes
+    // object can contain more than one property, so represent every property
+    // operation as its own editable form group.
     if (task.interactions && task.interactions.length > 0) {
         task.interactions.forEach(interaction => {
-            addInteraction();
-            const lastInteractionGroup = document.querySelector('.interaction-group:last-child');
+            const propertyChanges = interaction?.property_changes;
+            const propertyEntries = propertyChanges && typeof propertyChanges === 'object'
+                ? Object.entries(propertyChanges)
+                : [[null, null]];
+
+            propertyEntries.forEach(([propertyName, changeData]) => {
+                addInteraction();
+                const lastInteractionGroup = document.querySelector('.interaction-group:last-child');
             if (lastInteractionGroup) {
                 const counter = lastInteractionGroup.id.split('-')[1];
 
                 // Determine interaction type and populate fields
-                if (interaction.property_changes) {
-                    const propertyName = Object.keys(interaction.property_changes)[0];
-                    const changeData = interaction.property_changes[propertyName];
+                if (propertyName) {
 
-                    if (changeData.hasOwnProperty('from') && changeData.hasOwnProperty('to')) {
+                    if (changeData && (Object.prototype.hasOwnProperty.call(changeData, 'to') || Object.prototype.hasOwnProperty.call(changeData, 'set'))) {
                         // From/To interaction
                         const changeTypeSelect = lastInteractionGroup.querySelector(`select[name="interaction_change_type_${counter}"]`);
                         const objectSelect = lastInteractionGroup.querySelector(`select[name="interaction_object_${counter}"]`);
@@ -1041,18 +1066,21 @@ function openEditTaskModal(task) {
                             updateInteractionPropertyOptions(objectSelect);
                         }
                         if (propertySelect) {
-                            // Wait for property options to be populated, then set value
-                            setTimeout(() => {
-                                propertySelect.value = propertyName;
-                                // Trigger from value update
-                                updatePropertyFromValue(propertySelect);
-                            }, 50);
+                            // Interactions may modify a property that does not exist yet.
+                            // Preserve it as an editable option instead of dropping it.
+                            if (!Array.from(propertySelect.options).some(option => option.value === propertyName)) {
+                                const option = document.createElement('option');
+                                option.value = propertyName;
+                                option.textContent = propertyName;
+                                propertySelect.appendChild(option);
+                            }
+                            propertySelect.value = propertyName;
                         }
-                        if (fromInput) fromInput.value = changeData.from || '';
-                        if (toInput) toInput.value = changeData.to || '';
+                        if (fromInput) fromInput.value = Object.prototype.hasOwnProperty.call(changeData, 'from') ? String(changeData.from) : '';
+                        if (toInput) toInput.value = Object.prototype.hasOwnProperty.call(changeData, 'to') ? String(changeData.to) : String(changeData.set);
 
                         toggleInteractionFields(changeTypeSelect);
-                    } else if (changeData.hasOwnProperty('delta')) {
+                    } else if (changeData && Object.prototype.hasOwnProperty.call(changeData, 'delta')) {
                         // Delta interaction
                         const changeTypeSelect = lastInteractionGroup.querySelector(`select[name="interaction_change_type_${counter}"]`);
                         const objectSelect = lastInteractionGroup.querySelector(`select[name="interaction_object_${counter}"]`);
@@ -1062,7 +1090,7 @@ function openEditTaskModal(task) {
                         if (changeTypeSelect) changeTypeSelect.value = 'delta';
                         if (objectSelect) objectSelect.value = interaction.target_id || interaction.object_id || '';
                         if (propertyInput) propertyInput.value = propertyName;
-                        if (deltaInput) deltaInput.value = changeData.delta || '';
+                        if (deltaInput) deltaInput.value = String(changeData.delta);
 
                         toggleInteractionFields(changeTypeSelect);
                     }
@@ -1118,6 +1146,7 @@ function openEditTaskModal(task) {
                 const temporaryCheckbox = lastInteractionGroup.querySelector(`input[name="temporary_${counter}"]`);
                 if (temporaryCheckbox) temporaryCheckbox.checked = Boolean(interaction.temporary || interaction.revert_after);
             }
+            });
         });
     }
 
@@ -2146,14 +2175,20 @@ function saveTaskToSimulation() {
             return;
         }
 
+        // Retain task fields that are not represented by this modal (for
+        // example, description, tags, priority and dependency expressions).
+        const existingTask = isEditMode
+            ? getSimulationTasks(getSimulationRoot(currentJson)).find(task => task.id === editTaskId)
+            : null;
         const newTask = {
+            ...(existingTask || {}),
             id: taskId,
             emoji: emoji,
             actor_id: actorId,
             start: startTime,
             duration: duration,
             location: location,
-            depends_on: [],
+            depends_on: existingTask?.depends_on || [],
             interactions: []
         };
 

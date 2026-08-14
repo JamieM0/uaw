@@ -308,22 +308,6 @@
                 </div>
             </div>
         </div>
-        <div id="workspec-migration-modal" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="workspec-migration-title">
-            <div class="dialog workspec-migration-dialog">
-                <h3 id="workspec-migration-title">UAW Syntax is now WorkSpec</h3>
-                <p>
-                    Simulations are moving from legacy UAW Syntax to WorkSpec for a clearer, more consistent structure.
-                    You can migrate any simulation from <strong>Tools-&gt;Migrate to WorkSpec</strong>.
-                </p>
-                <div class="workspec-migration-links">
-                    <a href="/docs/workspec/cheatsheet">WorkSpec Cheatsheet</a>
-                    <a href="/assets/static/introducing-workspec.pdf" target="_blank" rel="noopener noreferrer">More Info Slides (PDF)</a>
-                </div>
-                <div class="dialog-buttons workspec-migration-actions">
-                    <button type="button" class="btn-primary" id="workspec-migration-continue-btn">Got It</button>
-                </div>
-            </div>
-        </div>
         <header class="playground-header" role="banner">
             <div class="container header-container">
                 <div class="logo">
@@ -338,12 +322,7 @@
                 <nav class="header-actions" role="navigation" aria-label="Playground controls">
                     <!-- File Operations Group -->
                     <div class="file-operations-group">
-                        <div class="dropdown">
-                            <button id="simulation-library-btn" class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">Simulation Library ▼</button>
-                            <div id="simulation-library-dropdown" class="dropdown-content" role="menu">
-                                <!-- Simulation options will be populated here -->
-                            </div>
-                        </div>
+                        <button id="simulation-library-btn" class="action-btn" title="Browse simulation templates" aria-label="Simulation Library">Simulation Library</button>
                         <button id="load-simulation-btn" class="action-btn" title="Load simulation from save code" aria-label="Load simulation">Load</button>
                         <button id="save-simulation-btn" class="action-btn" title="Save simulation and get save code" aria-label="Save simulation">Save</button>
                     </div>
@@ -457,10 +436,10 @@
 
                             <div class="simulation-panel">
                                 <div class="tab-bar" role="tablist" aria-label="Simulation view tabs">
-                                    <button class="tab-btn active" data-tab="timeline" role="tab" aria-selected="true" aria-controls="simulation-tab">Simulation Render</button>
-                                    <button class="tab-btn" data-tab="space-editor" role="tab" aria-selected="false" aria-controls="space-editor-tab">Space Editor</button>
-                                    <button class="tab-btn" data-tab="digital-space" role="tab" aria-selected="false" aria-controls="digital-space-tab">Digital Locations</button>
-                                    <button class="tab-btn" data-tab="display-editor" role="tab" aria-selected="false" aria-controls="display-editor-tab">Display Editor</button>
+                                    <button id="timeline-tab-button" class="tab-btn active" data-tab="timeline" role="tab" aria-selected="true" aria-controls="simulation-tab">Simulation Render</button>
+                                    <button id="space-editor-tab-button" class="tab-btn" data-tab="space-editor" role="tab" aria-selected="false" aria-controls="space-editor-tab">Space Editor</button>
+                                    <button id="digital-space-tab-button" class="tab-btn" data-tab="digital-space" role="tab" aria-selected="false" aria-controls="digital-space-tab">Digital Locations</button>
+                                    <button id="display-editor-tab-button" class="tab-btn" data-tab="display-editor" role="tab" aria-selected="false" aria-controls="display-editor-tab">Display Editor</button>
                                 </div>
 
                                 <div class="tab-content-wrapper">
@@ -1319,12 +1298,28 @@
             </div>
         </div>
 
+        <!-- Simulation Library Modal -->
+        <div id="simulation-library-modal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="simulation-library-title">
+            <div class="modal-content simulation-library-modal-content">
+                <div class="modal-header">
+                    <h3 id="simulation-library-title">Simulation Library</h3>
+                    <p class="modal-subtitle">Choose a template to get started</p>
+                    <button class="modal-close" id="simulation-library-close" aria-label="Close">&times;</button>
+                </div>
+                <div id="simulation-library-filters" class="simulation-library-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                </div>
+                <div id="simulation-library-grid" class="simulation-library-grid">
+                </div>
+            </div>
+        </div>
+
         <!-- Context Menu -->
-        <div id="context-menu" class="context-menu" style="display: none;">
-            <div class="context-menu-item" id="context-menu-edit">
+        <div id="context-menu" class="context-menu" style="display: none;" role="menu" aria-label="Item actions">
+            <div class="context-menu-item" id="context-menu-edit" role="menuitem" tabindex="-1">
                 Edit
             </div>
-            <div class="context-menu-item" id="context-menu-delete">
+            <div class="context-menu-item" id="context-menu-delete" role="menuitem" tabindex="-1">
                 Delete
             </div>
         </div>

@@ -78,14 +78,17 @@
         }
 
         /**
-         * Load Smart Actions configuration from cookies (matches setup.js storage)
+         * Load non-secret preferences and combine them with the session-only key.
          */
         async loadConfig() {
             try {
-                const configData = this.getCookie('smart-actions-config');
+                const configData = localStorage.getItem('smart-actions-config');
                 if (configData) {
                     this.config = JSON.parse(configData);
-                    console.log('SmartActionsUI: Config loaded from cookies:', {
+                    const keysData = sessionStorage.getItem('smart-actions-api-keys');
+                    const savedKeys = keysData ? JSON.parse(keysData) : {};
+                    this.config.apiKey = savedKeys[this.config.provider] || '';
+                    console.log('SmartActionsUI: Config loaded from browser storage:', {
                         provider: this.config.provider,
                         model: this.config.model
                     });
@@ -97,36 +100,23 @@
         }
 
         /**
-         * Save configuration to cookies (matches setup.js storage)
+         * Persist non-secret preferences and keep the key session-scoped.
          */
         saveConfig(config) {
             try {
-                this.setCookie('smart-actions-config', JSON.stringify(config), 365);
+                const nonSecretConfig = { ...config };
+                delete nonSecretConfig.apiKey;
+                localStorage.setItem('smart-actions-config', JSON.stringify(nonSecretConfig));
+                if (config.apiKey && config.provider) {
+                    const keysData = sessionStorage.getItem('smart-actions-api-keys');
+                    const savedKeys = keysData ? JSON.parse(keysData) : {};
+                    savedKeys[config.provider] = config.apiKey;
+                    sessionStorage.setItem('smart-actions-api-keys', JSON.stringify(savedKeys));
+                }
                 this.config = config;
             } catch (error) {
                 console.error('SmartActionsUI: Could not save config:', error);
             }
-        }
-
-        /**
-         * Get cookie value by name
-         */
-        getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) {
-                return decodeURIComponent(parts.pop().split(';').shift());
-            }
-            return null;
-        }
-
-        /**
-         * Set cookie with expiration
-         */
-        setCookie(name, value, days) {
-            const expires = new Date();
-            expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-            document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires.toUTCString()}; path=/; SameSite=Strict`;
         }
 
         /**
