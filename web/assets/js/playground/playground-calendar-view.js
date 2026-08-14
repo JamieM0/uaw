@@ -2,42 +2,6 @@
 // Universal Automation Wiki - Simulation Playground
 
 /**
- * Get brightness of a color (0-255)
- */
-function getColorBrightness(color) {
-    // Handle hex colors
-    if (color.startsWith('#')) {
-        const hex = color.substring(1);
-        const r = parseInt(hex.substr(0, 2), 16);
-        const g = parseInt(hex.substr(2, 2), 16);
-        const b = parseInt(hex.substr(4, 2), 16);
-        return (r * 299 + g * 587 + b * 114) / 1000;
-    }
-
-    // Handle HSL colors
-    if (color.startsWith('hsl')) {
-        const match = color.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
-        if (match) {
-            const l = parseInt(match[3]);
-            return l * 2.55; // Convert lightness (0-100) to brightness (0-255)
-        }
-    }
-
-    // Handle rgb colors
-    if (color.startsWith('rgb')) {
-        const match = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-        if (match) {
-            const r = parseInt(match[1]);
-            const g = parseInt(match[2]);
-            const b = parseInt(match[3]);
-            return (r * 299 + g * 587 + b * 114) / 1000;
-        }
-    }
-
-    return 128; // Default to medium brightness
-}
-
-/**
  * Render calendar view showing all simulation days in a grid
  * currentMonthOffset: 0 = start month, 1 = next month, -1 = prev month, etc.
  */
@@ -81,11 +45,12 @@ function renderCalendarView(simulator, viewController, currentMonthOffset = 0) {
     const monthName = displayMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
 
     monthHeader.innerHTML = `
-        <button class="month-nav-btn" id="prev-month-btn">◀ ${prevMonth.toLocaleDateString('en-GB', { month: 'short' })}</button>
+        <button class="month-nav-btn" id="prev-month-btn"><span aria-hidden="true">‹</span> ${prevMonth.toLocaleDateString('en-GB', { month: 'short' })}</button>
         <div class="month-title">
             <h3>${monthName}</h3>
+            <span>${simulator.getTotalDays()} configured days</span>
         </div>
-        <button class="month-nav-btn" id="next-month-btn">${nextMonth.toLocaleDateString('en-GB', { month: 'short' })} ▶</button>
+        <button class="month-nav-btn" id="next-month-btn">${nextMonth.toLocaleDateString('en-GB', { month: 'short' })} <span aria-hidden="true">›</span></button>
     `;
     container.appendChild(monthHeader);
 
@@ -190,16 +155,11 @@ function renderCalendarView(simulator, viewController, currentMonthOffset = 0) {
                     dayCell.dataset.dayType = dayData.dayType;
                 }
 
-                // Apply color
-                const bgColor = dayData.isWithinSimulation
-                    ? (colorMap[dayData.dayType] || '#ccc')
-                    : 'var(--background-light, #f3f4f6)';
-                dayCell.style.backgroundColor = bgColor;
-
-                // Determine text color based on background brightness
-                const brightness = getColorBrightness(bgColor);
-                const textColor = brightness < 128 ? 'white' : 'black';
-                dayCell.style.color = textColor;
+                // Day types are semantic accents, not saturated tile backgrounds.
+                const dayTypeColor = dayData.isWithinSimulation
+                    ? (colorMap[dayData.dayType] || '#607d8b')
+                    : '#c8d0d5';
+                dayCell.style.setProperty('--day-type-color', dayTypeColor);
 
                 // Format date nicely (14 Oct format)
                 const dateStr = dayData.date.toLocaleDateString('en-GB', {
@@ -210,22 +170,29 @@ function renderCalendarView(simulator, viewController, currentMonthOffset = 0) {
                 // Content
                 dayCell.innerHTML = dayData.isWithinSimulation
                     ? `
-                        <div class="day-number">${dateStr}</div>
+                        <div class="day-cell-heading">
+                            <div class="day-number">${dateStr}</div>
+                            <span class="day-type-label">${sanitizeHTML(dayData.dayTypeName)}</span>
+                        </div>
                         <div class="day-metrics">
-                            <span class="metric-value ${dayData.metrics.profit >= 0 ? 'positive' : 'negative'}">
-                                $${dayData.metrics.profit.toFixed(0)}
-                            </span>
-                            <span class="metric-value">
-                                ${dayData.metrics.tasks}
-                            </span>
+                            <span><small>Profit</small><strong class="metric-value ${dayData.metrics.profit >= 0 ? 'positive' : 'negative'}">$${dayData.metrics.profit.toFixed(0)}</strong></span>
+                            <span><small>Tasks</small><strong class="metric-value">${dayData.metrics.tasks}</strong></span>
                         </div>
                     `
                     : `<div class="day-number">${dateStr}</div>`;
 
                 // Add click handlers
                 if (dayData.isWithinSimulation) {
-                    dayCell.addEventListener('click', () => {
-                        viewController.goToDay(dayData.day);
+                    const openDay = () => viewController.goToDay(dayData.day);
+                    dayCell.setAttribute('role', 'button');
+                    dayCell.setAttribute('tabindex', '0');
+                    dayCell.setAttribute('aria-label', `${dateStr}, ${dayData.dayTypeName}, ${dayData.metrics.tasks} tasks`);
+                    dayCell.addEventListener('click', openDay);
+                    dayCell.addEventListener('keydown', event => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            openDay();
+                        }
                     });
                     dayCell.title = `${dayData.dayTypeName}\nClick to view details`;
                 } else {
@@ -281,32 +248,30 @@ function renderCalendarView(simulator, viewController, currentMonthOffset = 0) {
     });
 
     summary.innerHTML = `
-        <h5>Simulation Summary</h5>
+        <h5>Month summary</h5>
         <div class="summary-metrics">
             <div class="summary-item">
-                <strong>Total Revenue:</strong> $${overallMetrics.revenue.toFixed(2)}
+                <span>Revenue</span><strong>$${overallMetrics.revenue.toFixed(2)}</strong>
             </div>
             <div class="summary-item">
-                <strong>Total Costs:</strong> $${overallMetrics.costs.toFixed(2)}
+                <span>Costs</span><strong>$${overallMetrics.costs.toFixed(2)}</strong>
             </div>
             <div class="summary-item ${overallMetrics.profit >= 0 ? 'positive' : 'negative'}">
-                <strong>Total Profit:</strong> $${overallMetrics.profit.toFixed(2)}
-                ${overallMetrics.revenue > 0 ? `(${((overallMetrics.profit / overallMetrics.revenue) * 100).toFixed(1)}%)` : ''}
+                <span>Profit</span><strong>$${overallMetrics.profit.toFixed(2)}</strong>
+                <small>${overallMetrics.revenue > 0 ? `${((overallMetrics.profit / overallMetrics.revenue) * 100).toFixed(1)}% margin` : 'No revenue'}</small>
             </div>
             <div class="summary-item">
-                <strong>Total Tasks:</strong> ${overallMetrics.tasks}
+                <span>Tasks</span><strong>${overallMetrics.tasks}</strong>
             </div>
         </div>
 
-        <h5 style="margin-top: 1rem;">Day Type Breakdown</h5>
+        <h5 class="summary-subheading">Day type breakdown</h5>
         <div class="day-type-breakdown">
             ${Object.entries(dayTypeBreakdown).map(([dayType, breakdown]) => {
                 const color = colorMap[dayType] || '#ccc';
-                const brightness = getColorBrightness(color);
-                const textColor = brightness < 128 ? 'white' : 'black';
                 const dayTypeName = simulator.getDayTypeName(dayType);
                 return `
-                    <div class="breakdown-item" style="background-color: ${color}; color: ${textColor};">
+                    <div class="breakdown-item" style="--day-type-color: ${color};">
                         <div class="breakdown-content">
                             <strong>${sanitizeHTML(dayTypeName)}</strong>
                             <span class="breakdown-count">${breakdown.count}</span>

@@ -1975,15 +1975,24 @@ class DisplayEditor {
 
         const canvasRect = this.canvas.getBoundingClientRect();
         const padding = 50;
-        const displayWidth = activeDisplay.viewport.width;
-        const displayHeight = activeDisplay.viewport.height;
+        const selectedElement = this.selectedRectId
+            ? activeDisplay.rectangles.find((element) => element.id === this.selectedRectId)
+            : null;
+        const targetBounds = selectedElement?.bounds || {
+            x: 0,
+            y: 0,
+            width: activeDisplay.viewport.width,
+            height: activeDisplay.viewport.height
+        };
+        const displayWidth = targetBounds.width;
+        const displayHeight = targetBounds.height;
 
         const scaleX = (canvasRect.width - padding * 2) / displayWidth;
         const scaleY = (canvasRect.height - padding * 2) / displayHeight;
-        this.view.scale = Math.min(scaleX, scaleY, 2);
+        this.view.scale = Math.min(scaleX, scaleY, selectedElement ? 3 : 2);
 
-        this.view.x = (canvasRect.width - displayWidth * this.view.scale) / 2;
-        this.view.y = (canvasRect.height - displayHeight * this.view.scale) / 2;
+        this.view.x = (canvasRect.width - displayWidth * this.view.scale) / 2 - targetBounds.x * this.view.scale;
+        this.view.y = (canvasRect.height - displayHeight * this.view.scale) / 2 - targetBounds.y * this.view.scale;
 
         this.updateViewTransform();
     }

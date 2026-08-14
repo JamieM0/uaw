@@ -1376,9 +1376,15 @@ class DigitalSpaceEditor {
             return;
         }
 
+        // Fit the selected location when present. A quick Space tap therefore
+        // behaves consistently across every canvas.
+        const locationsToFit = this.selectedRectId
+            ? this.digitalLocations.filter((location) => location.id === this.selectedRectId)
+            : this.digitalLocations;
+
         // Calculate bounds
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        this.digitalLocations.forEach(location => {
+        locationsToFit.forEach(location => {
             minX = Math.min(minX, location.x * this.pixelsPerMeter);
             minY = Math.min(minY, location.y * this.pixelsPerMeter);
             maxX = Math.max(maxX, (location.x + location.width) * this.pixelsPerMeter);
@@ -1392,7 +1398,7 @@ class DigitalSpaceEditor {
 
         const scaleX = (canvasRect.width - padding * 2) / contentWidth;
         const scaleY = (canvasRect.height - padding * 2) / contentHeight;
-        this.view.scale = Math.min(scaleX, scaleY, 2);
+        this.view.scale = Math.min(scaleX, scaleY, this.selectedRectId ? 3 : 2);
 
         this.view.x = (canvasRect.width - contentWidth * this.view.scale) / 2 - minX * this.view.scale;
         this.view.y = (canvasRect.height - contentHeight * this.view.scale) / 2 - minY * this.view.scale;

@@ -933,6 +933,9 @@ require(["vs/editor/editor.main"], function () {
     if (typeof initState !== 'undefined') {
         initState.editorReady = true;
     }
+    window.dispatchEvent(new CustomEvent('uaw:editor-ready', {
+        detail: { editor }
+    }));
     attemptInitializePlayground();
 });
 

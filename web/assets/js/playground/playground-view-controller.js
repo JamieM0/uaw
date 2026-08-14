@@ -204,7 +204,12 @@ class MultiPeriodViewController {
         }
 
         container.style.display = 'flex';
-        container.innerHTML = breadcrumbs.map((bc, index) => {
+        const viewOptions = [
+            { id: 'calendar', label: 'Month' },
+            { id: 'week', label: 'Week' },
+            { id: 'day', label: 'Day' }
+        ];
+        const trail = breadcrumbs.map((bc, index) => {
             const isLast = index === breadcrumbs.length - 1;
             const separator = isLast ? '' : '<span class="breadcrumb-separator">›</span>';
 
@@ -214,6 +219,21 @@ class MultiPeriodViewController {
                 return `<a href="#" class="breadcrumb-item" data-view="${bc.view}" data-day="${bc.day || ''}" data-week="${bc.week || ''}">${sanitizeHTML(bc.label)}</a>${separator}`;
             }
         }).join('');
+        container.innerHTML = `
+            <div class="schedule-view-switcher" role="group" aria-label="Schedule view">
+                ${viewOptions.map(option => `<button type="button" data-schedule-view="${option.id}" class="${this.currentView === option.id ? 'active' : ''}" aria-pressed="${this.currentView === option.id}">${option.label}</button>`).join('')}
+            </div>
+            <div class="schedule-breadcrumb-trail">${trail}</div>
+        `;
+
+        container.querySelectorAll('[data-schedule-view]').forEach(button => {
+            button.addEventListener('click', () => {
+                const view = button.dataset.scheduleView;
+                if (view === 'day') this.switchToView('day', { day: this.currentDay || 1 });
+                else if (view === 'week') this.switchToView('week', { week: this.currentWeek || 1 });
+                else this.switchToView('calendar');
+            });
+        });
 
         // Add click handlers to breadcrumb links
         container.querySelectorAll('a.breadcrumb-item').forEach(link => {

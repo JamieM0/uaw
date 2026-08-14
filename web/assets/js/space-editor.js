@@ -385,8 +385,14 @@ class SpaceEditor {
 
         const padding = 50; // 50px padding around the content
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        
-        this.locations.forEach(loc => {
+
+        // A quick Space tap means "fit selection" when a location is selected,
+        // and falls back to fitting the complete canvas when nothing is selected.
+        const locationsToFit = this.selectedRectId
+            ? this.locations.filter((location) => location.id === this.selectedRectId)
+            : this.locations;
+
+        locationsToFit.forEach(loc => {
             minX = Math.min(minX, loc.shape.x);
             minY = Math.min(minY, loc.shape.y);
             maxX = Math.max(maxX, loc.shape.x + loc.shape.width);
@@ -400,7 +406,7 @@ class SpaceEditor {
 
         const scaleX = canvasWidth / (contentWidth + padding * 2);
         const scaleY = canvasHeight / (contentHeight + padding * 2);
-        this.view.scale = Math.min(scaleX, scaleY, 1); // Cap max zoom at 1x
+        this.view.scale = Math.min(scaleX, scaleY, this.selectedRectId ? 2.5 : 1);
 
         this.view.x = (canvasWidth / 2) - (contentWidth / 2 + minX) * this.view.scale;
         this.view.y = (canvasHeight / 2) - (contentHeight / 2 + minY) * this.view.scale;

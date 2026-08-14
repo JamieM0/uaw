@@ -1,0 +1,17 @@
+{
+  "name": "@uaw/playground-agent-bridge",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Optional localhost Codex bridge for the static UAW Playground",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "check": "node --check server.mjs"
+  },
+  "dependencies": {
+    "@openai/codex-sdk": "latest"
+  }
+}

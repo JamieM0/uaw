@@ -93,6 +93,8 @@ function setupMetricsMode() {
         }
         updateMetricsMode();
     });
+    toggleBtn.dataset.metricsReady = 'true';
+    window.dispatchEvent(new CustomEvent('uaw:metrics-ready'));
 }
 
 function updateMetricsMode() {

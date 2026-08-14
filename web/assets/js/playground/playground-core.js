@@ -549,6 +549,7 @@ function initializePlayground() {
     debouncedSetup();
 
     console.log('✓ Playground initialization complete');
+    window.dispatchEvent(new CustomEvent('uaw:playground-ready'));
   } catch (error) {
     console.error('Critical error during playground initialization:', error);
     throw error;
@@ -779,9 +780,11 @@ function populateSimulationLibrary() {
     filtered.forEach(sim => {
       if (!sim || !sim.id || !sim.name) return;
 
-      const card = document.createElement("div");
+      const card = document.createElement("button");
+      card.type = "button";
       card.className = "sim-lib-card";
       card.dataset.simulationId = sim.id;
+      card.setAttribute('aria-label', `Load ${sim.name}`);
 
       const icon = sim.icon || iconMap[sim.domain] || "\uD83D\uDCC1";
       const features = getFeatures(sim);
@@ -843,7 +846,7 @@ function populateSimulationLibrary() {
  * @param {string} simulationId - ID of simulation to load
  * @returns {boolean} True if successful, false if failed
  */
-function loadSimulationFromLibrary(simulationId) {
+async function loadSimulationFromLibrary(simulationId) {
   if (!simulationId || typeof simulationId !== 'string') {
     console.error('Invalid simulation ID provided');
     return false;
@@ -879,9 +882,20 @@ function loadSimulationFromLibrary(simulationId) {
       spaceEditor.hasInitiallyLoaded = false;
     }
 
-    // Load the simulation data into the editor
-    const simulationData = { simulation: simulation.simulation };
-    editor.setValue(JSON.stringify(simulationData, null, 2));
+    // A template always creates a distinct project. Replacing the current
+    // draft from a command labelled "new from template" is destructive and
+    // violates the project model.
+    const simulationData = {
+      simulation: simulation.simulation,
+      ...(simulation.assets ? { assets: simulation.assets } : {})
+    };
+    const content = JSON.stringify(simulationData, null, 2);
+    if (window.UAWProjectStore?.createFromTemplate) {
+      await window.UAWProjectStore.createFromTemplate(simulation.name, content);
+      window.UAWPlaygroundShell?.setWorkspace('build');
+    } else {
+      editor.setValue(content);
+    }
 
     // Auto-collapse assets object (debounced)
     AssetManager._scheduleAutoCollapse(true);

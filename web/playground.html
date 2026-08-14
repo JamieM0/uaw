@@ -55,6 +55,7 @@
         <link rel="stylesheet" href="/assets/css/emoji-picker.css" />
         <link rel="stylesheet" href="/assets/css/smart-actions.css" />
         <link rel="stylesheet" href="/assets/css/multi-period.css" />
+        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260814g" />
 
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
@@ -127,14 +128,14 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link rel="preconnect" href="https://unpkg.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap"
             rel="stylesheet"
         />
 
         <script src="/assets/js/simulation-validator.js" defer></script>
         <script src="/packages/workspec/workspec-validator.js" defer></script>
         <script src="/packages/workspec/workspec-migrate-v1-to-v2.js" defer></script>
-        <script src="/assets/js/space-editor.js" defer></script>
+        <script src="/assets/js/space-editor.js?v=20260814g" defer></script>
         <script src="/assets/js/emoji-picker.js" defer></script>
 
         <script src="/assets/js/tutorial.js" defer></script>
@@ -283,7 +284,7 @@
 
     </head>
     <body>
-        <div id="welcome-overlay" class="dialog-overlay" style="display: flex;" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+        <div id="welcome-overlay" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
             <div class="dialog">
                 <h2 id="welcome-title" class="special-subtitle">Welcome to the Simulation Playground!</h2>
                 <p>Build and validate WorkSpec simulations with live feedback in the editor and timeline.</p>
@@ -1327,6 +1328,13 @@
         <!-- Drag Overlay for Resizing -->
         <div id="drag-overlay" class="drag-overlay"></div>
 
+        <!-- Playground v2 application shell. These modules preserve the legacy
+             component IDs while providing the project workspace around them. -->
+        <script src="/assets/js/playground/playground-projects-v2.js?v=20260814g" defer></script>
+        <script src="/assets/js/playground/playground-shell-v2.js?v=20260814g" defer></script>
+        <script src="/assets/js/playground/playground-agent-v2.js?v=20260814g" defer></script>
+        <script type="module" src="/assets/js/playground/playground-motion-v2.js?v=20260814g"></script>
+
         <script src="/assets/js/context-menu.js" defer></script>
         <script src="/assets/js/html-sanitizer.js" defer></script>
         <!-- Smart Actions modules -->
@@ -1346,21 +1354,22 @@
 
         <!-- Multi-period simulation modules -->
         <script src="/assets/js/playground/playground-multi-period.js" defer></script>
-        <script src="/assets/js/playground/playground-view-controller.js" defer></script>
-        <script src="/assets/js/playground/playground-calendar-view.js" defer></script>
-        <script src="/assets/js/playground/playground-week-view.js" defer></script>
+        <script src="/assets/js/playground/playground-view-controller.js?v=20260814g" defer></script>
+        <script src="/assets/js/playground/playground-calendar-view.js?v=20260814g" defer></script>
+        <script src="/assets/js/playground/playground-week-view.js?v=20260814g" defer></script>
 
         <script src="/assets/js/playground/playground-timeline.js" defer></script>
         <script src="/assets/js/playground/playground-timeline-extensions.js" defer></script>
-        <script src="/assets/js/playground/playground-digital-space.js" defer></script>
-        <script src="/assets/js/playground/playground-display-editor.js" defer></script>
+        <script src="/assets/js/playground/playground-digital-space.js?v=20260814g" defer></script>
+        <script src="/assets/js/playground/playground-display-editor.js?v=20260814g" defer></script>
         <script src="/assets/js/playground/playground-save-load.js" defer></script>
-        <script src="/assets/js/playground/playground-metrics-editor.js" defer></script>
+        <script src="/assets/js/playground/playground-metrics-editor.js?v=20260814g" defer></script>
         <script src="/assets/js/playground/playground-objects.js" defer></script>
         <script src="/assets/js/playground/playground-features.js" defer></script>
-        <script src="/assets/js/playground/playground-editor.js" defer></script>
+        <script src="/assets/js/playground/playground-editor.js?v=20260814g" defer></script>
         <script src="/assets/js/space-editor-actor-animation.js" defer></script>
-        <script src="/assets/js/playground/playground-core.js" defer></script>
+        <script src="/assets/js/playground/playground-core.js?v=20260814g" defer></script>
+        <script src="/assets/js/playground/playground-canvas-v2.js?v=20260814g" defer></script>
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 const continueBtn = document.getElementById('welcome-continue-btn');

@@ -34,12 +34,12 @@ function renderWeekView(simulator, viewController, weekNumber) {
     const endDateStr = endDate ? endDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : `Day ${endDay}`;
 
     header.innerHTML = `
-        <button class="week-nav-btn" id="prev-week-btn" ${prevDisabled ? 'disabled' : ''}>◀ Previous Week</button>
+        <button class="week-nav-btn" id="prev-week-btn" ${prevDisabled ? 'disabled' : ''}><span aria-hidden="true">‹</span> Previous</button>
         <div class="week-title">
             <h4>Week ${weekNumber}</h4>
-            <p>${startDateStr} - ${endDateStr}</p>
+            <p>${startDateStr}–${endDateStr} · ${daysInWeek} configured days</p>
         </div>
-        <button class="week-nav-btn" id="next-week-btn" ${nextDisabled ? 'disabled' : ''}>Next Week ▶</button>
+        <button class="week-nav-btn" id="next-week-btn" ${nextDisabled ? 'disabled' : ''}>Next <span aria-hidden="true">›</span></button>
     `;
     container.appendChild(header);
 
@@ -99,8 +99,7 @@ function renderWeekView(simulator, viewController, weekNumber) {
         dayHeader.dataset.day = dayResult.day;
 
         const bgColor = colorMap[dayResult.dayType] || '#ccc';
-        dayHeader.style.backgroundColor = bgColor;
-        dayHeader.style.color = getContrastColor(bgColor);
+        dayHeader.style.setProperty('--day-type-color', bgColor);
 
         // Get actual date for this day
         const dayDate = simulator.getDateForDay(dayResult.day);
@@ -111,8 +110,16 @@ function renderWeekView(simulator, viewController, weekNumber) {
             <div class="day-type-badge">${sanitizeHTML(dayResult.dayTypeName)}</div>
         `;
 
-        dayHeader.addEventListener('click', () => {
-            viewController.goToDay(dayResult.day);
+        const openDay = () => viewController.goToDay(dayResult.day);
+        dayHeader.setAttribute('role', 'button');
+        dayHeader.setAttribute('tabindex', '0');
+        dayHeader.setAttribute('aria-label', `Open ${dayDateStr}, ${dayResult.dayTypeName}`);
+        dayHeader.addEventListener('click', openDay);
+        dayHeader.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                openDay();
+            }
         });
 
         dayHeader.style.cursor = 'pointer';
@@ -174,8 +181,9 @@ function renderWeekView(simulator, viewController, weekNumber) {
                 const utilizationPercent = dayDuration > 0 ? (totalTaskDuration / dayDuration) * 100 : 0;
 
                 dayColumn.innerHTML = `
-                    <div class="activity-bar" style="height: ${Math.min(utilizationPercent, 100)}%;" title="${tasks.length} tasks (${totalTaskDuration} min)">
-                        <span class="activity-count">${tasks.length}</span>
+                    <div class="activity-track" title="${tasks.length} tasks (${totalTaskDuration} min)">
+                        <div class="activity-bar" style="width: ${Math.min(utilizationPercent, 100)}%;"></div>
+                        <span class="activity-count">${tasks.length} task${tasks.length === 1 ? '' : 's'}</span>
                     </div>
                 `;
             }
@@ -207,31 +215,27 @@ function renderWeekView(simulator, viewController, weekNumber) {
     }), { revenue: 0, costs: 0, profit: 0, tasks: 0 });
 
     summary.innerHTML = `
-        <h5>Week ${weekNumber} Summary</h5>
+        <h5>Week ${weekNumber} summary</h5>
         <div class="week-summary-metrics">
             <div class="summary-metric">
-                <span class="metric-icon">💰</span>
                 <div class="metric-content">
                     <div class="metric-label">Revenue</div>
                     <div class="metric-value">$${weekMetrics.revenue.toFixed(2)}</div>
                 </div>
             </div>
             <div class="summary-metric">
-                <span class="metric-icon">💸</span>
                 <div class="metric-content">
                     <div class="metric-label">Costs</div>
                     <div class="metric-value">$${weekMetrics.costs.toFixed(2)}</div>
                 </div>
             </div>
             <div class="summary-metric ${weekMetrics.profit >= 0 ? 'positive' : 'negative'}">
-                <span class="metric-icon">${weekMetrics.profit >= 0 ? '📈' : '📉'}</span>
                 <div class="metric-content">
                     <div class="metric-label">Profit</div>
                     <div class="metric-value">$${weekMetrics.profit.toFixed(2)}</div>
                 </div>
             </div>
             <div class="summary-metric">
-                <span class="metric-icon">📋</span>
                 <div class="metric-content">
                     <div class="metric-label">Tasks</div>
                     <div class="metric-value">${weekMetrics.tasks}</div>
@@ -264,38 +268,6 @@ function renderWeekView(simulator, viewController, weekNumber) {
     container.appendChild(legend);
 
     simulationContent.appendChild(container);
-}
-
-/**
- * Calculate contrast color (black or white) for a background color
- */
-function getContrastColor(bgColor) {
-    // Convert color to RGB
-    let r, g, b;
-
-    if (bgColor.startsWith('#')) {
-        const hex = bgColor.replace('#', '');
-        r = parseInt(hex.substr(0, 2), 16);
-        g = parseInt(hex.substr(2, 2), 16);
-        b = parseInt(hex.substr(4, 2), 16);
-    } else if (bgColor.startsWith('rgb')) {
-        const match = bgColor.match(/\d+/g);
-        r = parseInt(match[0]);
-        g = parseInt(match[1]);
-        b = parseInt(match[2]);
-    } else if (bgColor.startsWith('hsl')) {
-        // For HSL, we'll use a simple approximation
-        const match = bgColor.match(/\d+/g);
-        const l = parseInt(match[2]);
-        return l > 50 ? '#000000' : '#ffffff';
-    } else {
-        return '#000000';
-    }
-
-    // Calculate relative luminance
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-    return luminance > 0.5 ? '#000000' : '#ffffff';
 }
 
 // Export to global scope
