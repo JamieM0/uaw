@@ -146,6 +146,20 @@ function cleanupModalListeners(modalType) {
     }
 }
 
+function prepareEntityDialogForInput(modal) {
+    if (!modal) return;
+
+    modal.querySelectorAll('.form-group').forEach(group => group.classList.add('uaw-pristine'));
+    if (modal.dataset.touchTracking === 'true') return;
+
+    const revealFieldFeedback = (event) => {
+        event.target.closest('.form-group')?.classList.remove('uaw-pristine');
+    };
+    modal.addEventListener('input', revealFieldFeedback);
+    modal.addEventListener('change', revealFieldFeedback);
+    modal.dataset.touchTracking = 'true';
+}
+
 // Store preserved field values when switching types
 let preservedObjectFields = {};
 
@@ -214,6 +228,7 @@ function openAddObjectModal(presetType = '', customTypeLabel = '') {
 
     // Setup validation listeners
     setupObjectValidation();
+    prepareEntityDialogForInput(modal);
 
     // Setup keyboard shortcuts
     setupObjectModalKeyboardShortcuts(modal);
@@ -845,6 +860,8 @@ function openAddTaskModal() {
     // Clear interactions
     document.getElementById('interactions-container').innerHTML = '';
     interactionCounter = 0;
+    const advancedDetails = document.getElementById('task-advanced-details');
+    if (advancedDetails) advancedDetails.open = false;
 
     // Populate dropdowns from current simulation
     const context = getCurrentTimelineContext();
@@ -892,6 +909,7 @@ function openAddTaskModal() {
 
     // Setup real-time validation
     setupTaskModalValidation();
+    prepareEntityDialogForInput(modal);
 
     // Setup keyboard shortcuts
     setupTaskModalKeyboardShortcuts();
@@ -918,7 +936,7 @@ function openAddTaskModal() {
 
     if (addBtn) {
         // Reset button text to "Add" for add mode
-        addBtn.textContent = 'Add Task';
+        addBtn.textContent = 'Create task';
         // Clear any existing mode data
         modal.dataset.mode = 'add';
         modal.dataset.taskId = '';
@@ -971,6 +989,7 @@ function openEditTaskModal(task) {
     const taskEmojiInput = document.getElementById('task-emoji-input');
     const taskDurationInput = document.getElementById('task-duration-input');
     const taskEndTimeInput = document.getElementById('task-end-time-input');
+    const taskDependsInput = document.getElementById('task-depends-input');
 
     // Clear form first
     modal.querySelectorAll('input, select, textarea').forEach(input => {
@@ -1027,6 +1046,7 @@ function openEditTaskModal(task) {
     if (locationSelect) locationSelect.value = task.location || '';
     if (startTimeInput) startTimeInput.value = task.start || '';
     if (taskDurationInput) taskDurationInput.value = task.duration || '';
+    if (taskDependsInput) taskDependsInput.value = Array.isArray(task.depends_on) ? task.depends_on.join(', ') : '';
 
     // Calculate end time if needed
     if (task.start && task.duration && typeof parseTimeToMinutes === 'function' && typeof minutesToTimeString === 'function') {
@@ -1161,6 +1181,12 @@ function openEditTaskModal(task) {
     // Setup time input toggle
     setupTimeInputToggle();
 
+    const advancedDetails = document.getElementById('task-advanced-details');
+    if (advancedDetails) {
+        advancedDetails.open = Boolean(taskDependsInput?.value || task.interactions?.length);
+    }
+    prepareEntityDialogForInput(modal);
+
     // Setup task time change listener for interaction 'from' values
     setupTaskTimeChangeListener();
 
@@ -1184,7 +1210,7 @@ function openEditTaskModal(task) {
 
     if (addBtn) {
         // Change button text to "Save" for edit mode
-        addBtn.textContent = 'Save';
+        addBtn.textContent = 'Save changes';
         addBtn.onclick = (e) => {
             e.preventDefault();
             saveTaskToSimulation(); // Use a new function that handles both add and edit

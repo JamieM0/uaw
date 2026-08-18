@@ -55,7 +55,7 @@
         <link rel="stylesheet" href="/assets/css/emoji-picker.css" />
         <link rel="stylesheet" href="/assets/css/smart-actions.css" />
         <link rel="stylesheet" href="/assets/css/multi-period.css" />
-        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260818g" />
+        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260818k" />
 
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
@@ -875,107 +875,115 @@
         <!-- Add Task Modal -->
         <div id="add-task-modal" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="add-task-modal-title">
             <div class="dialog uaw-entity-dialog uaw-task-dialog">
-                <header class="uaw-dialog-header"><p class="uaw-eyebrow">PROCESS ENTITY</p><h3 id="add-task-modal-title">Create task</h3><p>Define when the work happens, who owns it and what it depends on.</p></header>
+                <header class="uaw-dialog-header"><h3 id="add-task-modal-title">Create task</h3><p>Schedule a unit of work and assign its owner.</p></header>
                 <div class="modal-content">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="task-id-input">Task ID: <span class="required-indicator">*</span></label>
-                            <input type="text" id="task-id-input" placeholder="task_name" required>
-                            <div class="field-error" id="task-id-error"></div>
-                            <small class="field-help">Use lowercase letters, numbers, and underscores</small>
+                    <section class="uaw-form-section" aria-labelledby="task-basics-heading">
+                        <div class="uaw-form-section__heading">
+                            <h4 id="task-basics-heading">Task</h4>
+                            <p>Give this step a stable ID and visual marker.</p>
                         </div>
-                        <div class="form-group">
-                            <label for="task-emoji-input">Emoji: <span class="required-indicator">*</span></label>
-                            <input type="text" id="task-emoji-input" placeholder="🔧" maxlength="2" required>
-                            <div class="field-error" id="task-emoji-error"></div>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="task-actor-select">Actor: <span class="required-indicator">*</span></label>
-                            <select id="task-actor-select" required>
-                                <option value="">Select actor...</option>
-                            </select>
-                            <small class="field-help">
-                                Any object can act as an actor (e.g., equipment self-maintenance, product self-processing)
-                            </small>
-                            <div class="field-error" id="task-actor-error"></div>
-                        </div>
-                        <div class="form-group">
-                            <label for="task-location-select">Location:</label>
-                            <select id="task-location-select">
-                                <option value="">Select location...</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="task-start-input">Start Time: <span class="required-indicator">*</span></label>
-                            <input type="text" id="task-start-input" placeholder="HH:MM" required pattern="[0-2][0-9]:[0-5][0-9]">
-                            <div class="field-error" id="task-start-error"></div>
-                        </div>
-                        <div class="form-group">
-                            <div class="time-input-toggle">
-                                <label>
-                                    <input type="radio" name="time-input-mode" value="duration" checked> Duration
-                                </label>
-                                <label>
-                                    <input type="radio" name="time-input-mode" value="end-time"> End Time
-                                </label>
+                        <div class="form-row uaw-task-identity-row">
+                            <div class="form-group">
+                                <label for="task-id-input">Task ID <span class="required-indicator">*</span></label>
+                                <input type="text" id="task-id-input" placeholder="prepare_order" required>
+                                <div class="field-error" id="task-id-error"></div>
+                                <small class="field-help">Lowercase letters, numbers and underscores</small>
+                            </div>
+                            <div class="form-group uaw-emoji-field">
+                                <label for="task-emoji-input">Emoji <span class="required-indicator">*</span></label>
+                                <input type="text" id="task-emoji-input" placeholder="✓" maxlength="2" required>
+                                <div class="field-error" id="task-emoji-error"></div>
                             </div>
                         </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <div id="duration-input-group">
-                                <label for="task-duration-input">Duration (minutes): <span class="required-indicator">*</span></label>
-                                <input type="number" id="task-duration-input" placeholder="30" min="1" required>
-                                <div class="field-error" id="task-duration-error"></div>
-                            </div>
-                            <div id="end-time-input-group" style="display: none;">
-                                <label for="task-end-time-input">End Time: <span class="required-indicator">*</span></label>
-                                <input type="text" id="task-end-time-input" placeholder="HH:MM" pattern="[0-2][0-9]:[0-5][0-9]">
-                                <div class="field-error" id="task-end-time-error"></div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="task-schedule-preview">
-                                <label>Schedule Preview:</label>
-                                <div id="task-schedule-text">-</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="task-depends-input">Dependencies (comma-separated task IDs):</label>
-                        <input type="text" id="task-depends-input" placeholder="task1, task2" list="task-depends-datalist">
-                        <datalist id="task-depends-datalist">
-                            <!-- Task IDs will be populated here -->
-                        </datalist>
-                        <div class="field-error" id="task-depends-error"></div>
-                        <small class="field-help">Optional: Enter task IDs that must complete before this task</small>
-                    </div>
+                    </section>
 
-                    <div class="interactions-section">
-                        <div class="section-header">
-                            <h4>Interactions
-                                <a href="https://universalautomation.wiki/docs/simulations/universal-object-model.html#task-interactions" target="_blank" class="help-icon" title="Interactions define how this task modifies objects, such as changing properties, adding/removing objects, or moving digital items">ⓘ</a>
-                            </h4>
-                            <button type="button" class="btn-secondary" id="add-interaction-btn">+ Add Interaction</button>
+                    <section class="uaw-form-section" aria-labelledby="task-assignment-heading">
+                        <div class="uaw-form-section__heading">
+                            <h4 id="task-assignment-heading">Assignment</h4>
+                            <p>Choose who performs the work and where.</p>
                         </div>
-                        <div class="interaction-templates" id="interaction-templates">
-                            <small>Quick templates:</small>
-                            <button type="button" class="btn-template" data-template="change-state">Change State</button>
-                            <button type="button" class="btn-template" data-template="modify-quantity">Modify Quantity</button>
-                            <button type="button" class="btn-template" data-template="create-object">Create Object</button>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="task-actor-select">Owner <span class="required-indicator">*</span></label>
+                                <select id="task-actor-select" required>
+                                    <option value="">Select actor...</option>
+                                </select>
+                                <div class="field-error" id="task-actor-error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="task-location-select">Location <span class="uaw-optional-label">Optional</span></label>
+                                <select id="task-location-select">
+                                    <option value="">Select location...</option>
+                                </select>
+                            </div>
                         </div>
-                        <div id="interactions-container">
-                            <!-- Interactions will be dynamically added here -->
+                    </section>
+
+                    <section class="uaw-form-section" aria-labelledby="task-schedule-heading">
+                        <div class="uaw-form-section__heading">
+                            <h4 id="task-schedule-heading">Schedule</h4>
+                            <div class="time-input-toggle" aria-label="Choose schedule input">
+                                <label><input type="radio" name="time-input-mode" value="duration" checked> Duration</label>
+                                <label><input type="radio" name="time-input-mode" value="end-time"> End time</label>
+                            </div>
                         </div>
-                    </div>
+                        <div class="uaw-schedule-grid">
+                            <div class="form-group">
+                                <label for="task-start-input">Starts <span class="required-indicator">*</span></label>
+                                <input type="text" id="task-start-input" placeholder="09:00" required pattern="[0-2][0-9]:[0-5][0-9]">
+                                <div class="field-error" id="task-start-error"></div>
+                            </div>
+                            <div class="form-group">
+                                <div id="duration-input-group">
+                                    <label for="task-duration-input">Minutes <span class="required-indicator">*</span></label>
+                                    <input type="number" id="task-duration-input" placeholder="30" min="1" required>
+                                    <div class="field-error" id="task-duration-error"></div>
+                                </div>
+                                <div id="end-time-input-group" style="display: none;">
+                                    <label for="task-end-time-input">Ends <span class="required-indicator">*</span></label>
+                                    <input type="text" id="task-end-time-input" placeholder="09:30" pattern="[0-2][0-9]:[0-5][0-9]">
+                                    <div class="field-error" id="task-end-time-error"></div>
+                                </div>
+                            </div>
+                            <div class="task-schedule-preview" aria-live="polite">
+                                <span>Scheduled</span>
+                                <strong id="task-schedule-text">—</strong>
+                            </div>
+                        </div>
+                    </section>
+
+                    <details class="uaw-dialog-disclosure" id="task-advanced-details">
+                        <summary>
+                            <span><strong>Dependencies &amp; interactions</strong><small>Add prerequisites or describe changes caused by this task.</small></span>
+                            <span class="uaw-disclosure-action">Optional</span>
+                        </summary>
+                        <div class="uaw-dialog-disclosure__body">
+                            <div class="form-group">
+                                <label for="task-depends-input">Runs after</label>
+                                <input type="text" id="task-depends-input" placeholder="task_one, task_two" list="task-depends-datalist">
+                                <datalist id="task-depends-datalist"><!-- Task IDs will be populated here --></datalist>
+                                <div class="field-error" id="task-depends-error"></div>
+                                <small class="field-help">Comma-separated task IDs</small>
+                            </div>
+                            <div class="interactions-section">
+                                <div class="section-header">
+                                    <div><h4>Interactions</h4><p>Change object state, quantity or location when the task runs.</p></div>
+                                    <button type="button" class="btn-secondary" id="add-interaction-btn">Add interaction</button>
+                                </div>
+                                <div class="interaction-templates" id="interaction-templates">
+                                    <small>Start with</small>
+                                    <button type="button" class="btn-template" data-template="change-state">State change</button>
+                                    <button type="button" class="btn-template" data-template="modify-quantity">Quantity</button>
+                                    <button type="button" class="btn-template" data-template="create-object">New object</button>
+                                </div>
+                                <div id="interactions-container"><!-- Interactions will be dynamically added here --></div>
+                            </div>
+                        </div>
+                    </details>
                 </div>
                 <div class="dialog-buttons">
                     <button type="button" class="btn-secondary" id="task-cancel-btn">Cancel</button>
-                    <button type="button" class="btn-primary" id="task-add-btn" disabled>Add Task</button>
+                    <button type="button" class="btn-primary" id="task-add-btn" disabled>Create task</button>
                 </div>
             </div>
         </div>
@@ -983,54 +991,65 @@
         <!-- Add Object Modal -->
         <div id="add-object-modal" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="add-object-modal-title">
             <div class="dialog uaw-entity-dialog uaw-object-dialog">
-                <header class="uaw-dialog-header"><p class="uaw-eyebrow">MODEL ENTITY</p><h3 id="add-object-modal-title">Create object</h3><p>Add an entity tasks can assign, consume, transform or produce.</p></header>
+                <header class="uaw-dialog-header"><h3 id="add-object-modal-title">Create object</h3><p>Add something the process uses, changes or produces.</p></header>
                 <div class="modal-content">
-                    <div class="form-group">
-                        <label for="object-type-select">Object type <span class="required-indicator">*</span></label>
-                        <select id="object-type-select">
-                            <option value="">Select type...</option>
-                            <option value="actor">Actor (People, AI agents)</option>
-                            <option value="equipment">Equipment (Tools, machines)</option>
-                            <option value="resource">Resource (Materials, consumables)</option>
-                            <option value="product">Product (Outputs, deliverables)</option>
-                            <option value="custom">Custom (Define your own)</option>
-                        </select>
-                        <div class="field-error" id="object-type-error"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="object-id-input">ID: <span class="required-indicator">*</span></label>
-                        <div class="input-with-validation">
-                            <input type="text" id="object-id-input" placeholder="unique_identifier">
-                            <span class="validation-icon"></span>
+                    <section class="uaw-form-section" aria-labelledby="object-basics-heading">
+                        <div class="uaw-form-section__heading">
+                            <h4 id="object-basics-heading">Object</h4>
+                            <p>Choose the kind of entity, then name it.</p>
                         </div>
-                        <div class="field-error" id="object-id-error"></div>
-                        <div class="field-hint">Use lowercase with underscores (e.g., my_object_1)</div>
-                    </div>
-                    <div class="form-group">
-                        <label for="object-name-input">Name: <span class="required-indicator">*</span></label>
-                        <div class="input-with-validation">
-                            <input type="text" id="object-name-input" placeholder="Display Name">
-                            <span class="validation-icon"></span>
+                        <div class="form-group uaw-object-type-field">
+                            <label for="object-type-select">Type <span class="required-indicator">*</span></label>
+                            <select id="object-type-select">
+                                <option value="">Select type...</option>
+                                <option value="actor">Actor · people and agents</option>
+                                <option value="equipment">Equipment · tools and machines</option>
+                                <option value="resource">Resource · materials and consumables</option>
+                                <option value="product">Product · outputs and deliverables</option>
+                                <option value="custom">Custom · define your own</option>
+                            </select>
+                            <div class="field-error" id="object-type-error"></div>
                         </div>
-                        <div class="field-error" id="object-name-error"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="object-emoji-input">Emoji:</label>
-                        <div class="input-with-validation">
-                            <input type="text" id="object-emoji-input" placeholder="🔧" maxlength="2">
-                            <span class="validation-icon"></span>
+                        <div class="uaw-object-identity-grid">
+                            <div class="form-group">
+                                <label for="object-name-input">Name <span class="required-indicator">*</span></label>
+                                <div class="input-with-validation">
+                                    <input type="text" id="object-name-input" placeholder="Display name">
+                                    <span class="validation-icon"></span>
+                                </div>
+                                <div class="field-error" id="object-name-error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="object-id-input">ID <span class="required-indicator">*</span></label>
+                                <div class="input-with-validation">
+                                    <input type="text" id="object-id-input" placeholder="unique_id">
+                                    <span class="validation-icon"></span>
+                                </div>
+                                <div class="field-error" id="object-id-error"></div>
+                                <div class="field-hint">Lowercase with underscores</div>
+                            </div>
+                            <div class="form-group uaw-emoji-field">
+                                <label for="object-emoji-input">Emoji <span class="uaw-optional-label">Optional</span></label>
+                                <div class="input-with-validation">
+                                    <input type="text" id="object-emoji-input" placeholder="○" maxlength="2">
+                                    <span class="validation-icon"></span>
+                                </div>
+                                <div class="field-error" id="object-emoji-error"></div>
+                            </div>
                         </div>
-                        <div class="field-error" id="object-emoji-error"></div>
-                        <div class="field-hint">Optional: Add a single emoji character</div>
-                    </div>
-                    <div id="object-type-specific-fields">
-                        <!-- Type-specific fields will be dynamically inserted here -->
-                    </div>
+                    </section>
+                    <section class="uaw-form-section uaw-object-details-section" aria-labelledby="object-details-heading">
+                        <div class="uaw-form-section__heading">
+                            <h4 id="object-details-heading">Details</h4>
+                            <p>Optional starting values for this type.</p>
+                        </div>
+                        <div id="object-type-specific-fields"><!-- Type-specific fields will be dynamically inserted here --></div>
+                    </section>
                 </div>
                 <div class="dialog-buttons">
                     <button type="button" class="btn-secondary" id="object-cancel-btn">Cancel</button>
                     <button type="button" class="btn-primary" id="object-add-btn" disabled>
-                        <span class="btn-text">Add Object</span>
+                        <span class="btn-text">Create object</span>
                         <span class="btn-spinner" style="display: none;">Adding...</span>
                     </button>
                 </div>
@@ -1241,7 +1260,7 @@
         <!-- Playground v2 application shell. These modules preserve the legacy
              component IDs while providing the project workspace around them. -->
         <script src="/assets/js/playground/playground-projects-v2.js?v=20260818f" defer></script>
-        <script src="/assets/js/playground/playground-shell-v2.js?v=20260818i" defer></script>
+        <script src="/assets/js/playground/playground-shell-v2.js?v=20260818m" defer></script>
         <script src="/assets/js/playground/playground-agent-v2.js?v=20260818c" defer></script>
         <script type="module" src="/assets/js/playground/playground-motion-v2.js?v=20260818a"></script>
 
@@ -1274,7 +1293,7 @@
         <script src="/assets/js/playground/playground-display-editor.js?v=20260814g" defer></script>
         <script src="/assets/js/playground/playground-save-load.js?v=20260818c" defer></script>
         <script src="/assets/js/playground/playground-metrics-editor.js?v=20260818c" defer></script>
-        <script src="/assets/js/playground/playground-objects.js?v=20260814h" defer></script>
+        <script src="/assets/js/playground/playground-objects.js?v=20260818a" defer></script>
         <script src="/assets/js/playground/playground-features.js" defer></script>
         <script src="/assets/js/playground/playground-editor.js?v=20260818c" defer></script>
         <script src="/assets/js/space-editor-actor-animation.js?v=20260818c" defer></script>

@@ -24,6 +24,8 @@
         source: { title: 'Source', description: 'Edit the WorkSpec document directly' }
     };
 
+    const PERSISTENT_INSPECTOR_MODEL_VIEWS = new Set(['physical', 'digital', 'displays']);
+
     const ICONS = {
         projects: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6.5h6l1.7 2H20.5v10H3.5z"/><path d="M3.5 6.5v-2h6l1.7 2"/></svg>',
         build: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h5v5H5zM14 14h5v5h-5zM14 5h5v5h-5zM10 7.5h4M16.5 10v4M10 8v8h4"/></svg>',
@@ -502,16 +504,20 @@
                 ['product', 'Product', 'Outputs, deliverables and work in progress']
             ];
             const custom = this.getCustomObjectTypes();
-            menu.innerHTML = `${presets.map(([id, label, help]) => `<button role="menuitem" type="button" data-add-object-type="${id}"><span class="uaw-object-type-mark">${label.slice(0, 2).toUpperCase()}</span><span><strong>Add ${label}</strong><small>${help}</small></span></button>`).join('')}${custom.length ? `<div class="uaw-menu-separator"><span>Custom object types</span></div>${custom.map(type => `<button role="menuitem" type="button" data-add-object-type="custom" data-custom-object-label="${escapeHTML(type.label)}"><span class="uaw-object-type-mark">${escapeHTML(type.label.slice(0, 2).toUpperCase())}</span><span><strong>Add ${escapeHTML(type.label)}</strong><small>Custom type based on ${escapeHTML(type.baseType || 'object')}</small></span></button>`).join('')}` : ''}<div class="uaw-menu-separator"></div><button role="menuitem" type="button" data-create-object-type><span class="uaw-object-type-mark">+</span><span><strong>Define custom type…</strong><small>Create a reusable project preset</small></span></button>`;
+            menu.innerHTML = `${presets.map(([id, label, help]) => `<button role="menuitem" type="button" data-add-object-type="${id}"><span><strong>Add ${label}</strong><small>${help}</small></span></button>`).join('')}${custom.length ? `<div class="uaw-menu-separator"><span>Custom object types</span></div>${custom.map(type => `<button role="menuitem" type="button" data-add-object-type="custom" data-custom-object-label="${escapeHTML(type.label)}"><span><strong>Add ${escapeHTML(type.label)}</strong><small>Custom type based on ${escapeHTML(type.baseType || 'object')}</small></span></button>`).join('')}` : ''}<div class="uaw-menu-separator"></div><button role="menuitem" type="button" data-create-object-type><span><strong>Define custom type…</strong><small>Create a reusable project preset</small></span></button>`;
             menu.hidden = false;
+            // The register clips its rounded table edges; an active menu must be
+            // allowed to extend outside that container.
+            menu.closest('.uaw-process-register')?.classList.add('uaw-object-menu-open');
             toggle.setAttribute('aria-expanded', 'true');
             menu.querySelector('[data-create-object-type]')?.addEventListener('click', () => this.defineCustomObjectType());
-            window.UAWMotion?.dialogEnter?.(menu);
+            window.UAWMotion?.dialogEnter?.('.uaw-object-add-menu:not([hidden])');
         }
 
         closeObjectMenu() {
             document.querySelectorAll('.uaw-object-add-menu').forEach(menu => { menu.hidden = true; });
             document.querySelectorAll('[data-object-menu-toggle]').forEach(toggle => toggle.setAttribute('aria-expanded', 'false'));
+            document.querySelectorAll('.uaw-process-register.uaw-object-menu-open').forEach(register => register.classList.remove('uaw-object-menu-open'));
         }
 
         defineCustomObjectType() {
@@ -651,6 +657,11 @@
             if (workspace === 'build' && !options.fromSubview && this.modelView === 'source') workspace = 'source';
             this.workspace = workspace;
             document.body.dataset.uawWorkspace = workspace;
+            // Environment editors always need their properties panel available.
+            // Keep the preference toggle for other views, but never allow it to
+            // hide the panel while modelling a physical, digital, or display
+            // environment.
+            if (this.hasPersistentInspector()) this.toggleInspector(true, { persist: false });
             this.shell.querySelectorAll('.uaw-rail-button').forEach((button) => {
                 const selected = button.dataset.workspace === workspace || (workspace === 'source' && button.dataset.workspace === 'build');
                 button.classList.toggle('active', selected);
@@ -766,8 +777,13 @@
             this.layoutEditors();
         }
 
+        hasPersistentInspector() {
+            return this.workspace === 'build' && PERSISTENT_INSPECTOR_MODEL_VIEWS.has(this.modelView);
+        }
+
         toggleInspector(force, options = {}) {
-            const open = typeof force === 'boolean' ? force : !document.body.classList.contains('uaw-inspector-open');
+            const requestedOpen = typeof force === 'boolean' ? force : !document.body.classList.contains('uaw-inspector-open');
+            const open = this.hasPersistentInspector() || requestedOpen;
             document.body.classList.toggle('uaw-inspector-open', open);
             this.settings.inspectorOpen = open;
             if (options.persist !== false) this.saveSettings();
@@ -955,7 +971,7 @@
                 const type = object?.type || 'custom';
                 const details = object?.properties || {};
                 const state = details.state ?? details.quantity ?? details.role ?? '—';
-                return `<tr data-object-row data-object-search="${escapeHTML(`${object?.name || ''} ${object?.id || ''} ${type}`.toLowerCase())}" data-object-type="${escapeHTML(type)}"><td><div class="uaw-object-name"><span class="uaw-object-type-mark">${escapeHTML(type.slice(0, 2).toUpperCase())}</span><span><strong>${escapeHTML(object?.name || object?.id || `Object ${index + 1}`)}</strong><code>${escapeHTML(object?.id || 'No ID')}</code></span></div></td><td><span class="uaw-type-pill">${escapeHTML(type)}</span></td><td>${escapeHTML(state)}</td><td>${escapeHTML(object?.__period || 'Global')}</td><td><button class="uaw-row-action" type="button" data-edit-object-index="${index}">${object?.__period ? 'View source' : 'Edit'}</button></td></tr>`;
+                return `<tr data-object-row data-object-search="${escapeHTML(`${object?.name || ''} ${object?.id || ''} ${type}`.toLowerCase())}" data-object-type="${escapeHTML(type)}"><td><div class="uaw-object-name"><span><strong>${escapeHTML(object?.name || object?.id || `Object ${index + 1}`)}</strong><code>${escapeHTML(object?.id || 'No ID')}</code></span></div></td><td><span class="uaw-type-pill">${escapeHTML(type)}</span></td><td>${escapeHTML(state)}</td><td>${escapeHTML(object?.__period || 'Global')}</td><td><button class="uaw-row-action" type="button" data-edit-object-index="${index}">${object?.__period ? 'View source' : 'Edit'}</button></td></tr>`;
             }).join('');
             view.innerHTML = `<header class="uaw-process-heading uaw-objects-heading"><div><h1>Objects</h1><p>Actors, resources, equipment and outputs available to this process.</p></div><dl><div><dt>Objects</dt><dd>${objects.length}</dd></div><div><dt>Types</dt><dd>${groups.length}</dd></div></dl></header><section class="uaw-process-register"><div class="uaw-process-section-heading"><div><h2>Object register</h2><p>Reusable entities referenced by tasks and environment layouts.</p></div>${this.objectAddMenuButton()}</div><div class="uaw-object-toolbar"><label><span class="sr-only">Search objects</span><input type="search" data-object-search-input placeholder="Search objects…"></label><select data-object-filter aria-label="Filter object type"><option value="">All types</option>${groups.map(type => `<option value="${escapeHTML(type)}">${escapeHTML(type)}</option>`).join('')}</select></div>${rows ? `<div class="uaw-process-table-wrap"><table class="uaw-process-table uaw-object-table"><thead><tr><th>Object</th><th>Type</th><th>State / quantity</th><th>Scope</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="uaw-process-empty"><strong>No objects yet</strong><p>Choose a preset to create an actor, resource, equipment item or product.</p>${this.objectAddMenuButton()}</div>`}</section>`;
             const filter = () => {
@@ -1184,26 +1200,28 @@
             const view = this.shell?.querySelector('#uaw-settings-view');
             if (!view) return;
             view.innerHTML = `
-                <div class="uaw-view-heading"><div><p class="uaw-eyebrow">PLAYGROUND</p><h1>Settings</h1><p>Preferences are stored locally in this browser.</p></div></div>
+                <header class="uaw-settings-heading"><div><h1>Settings</h1><p>Preferences for this browser and local workspace.</p></div></header>
                 <div class="uaw-settings-layout">
-                    <section class="uaw-settings-section">
-                        <div><h2>Source layout</h2><p>Choose where the WorkSpec source appears while modelling. Source also remains available as its own Model view.</p></div>
-                        <fieldset class="uaw-choice-grid" id="uaw-source-dock-choices">
-                            ${this.sourceChoice('split-left', 'Split left', 'Source beside the canvas')}
-                            ${this.sourceChoice('split-right', 'Split right', 'Canvas before Source')}
-                            ${this.sourceChoice('split-bottom', 'Split below', 'Source below the canvas')}
-                            ${this.sourceChoice('dedicated', 'Dedicated pane', 'Source uses the full stage')}
-                            ${this.sourceChoice('hidden', 'Hidden in Model', 'Open Source only when needed')}
-                        </fieldset>
-                    </section>
-                    <section class="uaw-settings-section">
-                        <div><h2>Workspace panes</h2><p>Inspector visibility is remembered between sessions.</p></div>
-                        <label class="uaw-switch-row"><span><strong>Inspector</strong><small>Show contextual properties on the right.</small></span><input type="checkbox" id="uaw-setting-inspector" ${this.settings.inspectorOpen ? 'checked' : ''}></label>
-                    </section>
-                    <section class="uaw-settings-section">
-                        <div><h2>Codex Agent</h2><p>The optional agent connects to a local bridge. The static Playground remains fully usable without it.</p></div>
-                        <div class="uaw-connection-card"><span class="uaw-connection-indicator"></span><div><strong id="uaw-settings-agent-state">Checking local bridge…</strong><small>Default: http://127.0.0.1:4317</small></div><button type="button" data-uaw-command="agent.open">Configure</button></div>
-                    </section>
+                    <div class="uaw-settings-surface">
+                        <section class="uaw-settings-section" aria-labelledby="uaw-source-layout-heading">
+                            <div><h2 id="uaw-source-layout-heading">Source layout</h2><p>Choose where WorkSpec source appears while modelling. Source remains available as its own Model view.</p></div>
+                            <fieldset class="uaw-choice-grid" id="uaw-source-dock-choices" aria-label="Source layout">
+                                ${this.sourceChoice('split-left', 'Split left', 'Source beside the canvas')}
+                                ${this.sourceChoice('split-right', 'Split right', 'Canvas before source')}
+                                ${this.sourceChoice('split-bottom', 'Split below', 'Source below the canvas')}
+                                ${this.sourceChoice('dedicated', 'Dedicated pane', 'Source uses the full stage')}
+                                ${this.sourceChoice('hidden', 'Hidden in Model', 'Open source only when needed')}
+                            </fieldset>
+                        </section>
+                        <section class="uaw-settings-section" aria-labelledby="uaw-workspace-panes-heading">
+                            <div><h2 id="uaw-workspace-panes-heading">Workspace panes</h2><p>Pane visibility is remembered between sessions.</p></div>
+                            <label class="uaw-switch-row"><span><strong>Inspector</strong><small>Show contextual properties on the right.</small></span><input type="checkbox" id="uaw-setting-inspector" ${this.settings.inspectorOpen ? 'checked' : ''}></label>
+                        </section>
+                        <section class="uaw-settings-section" aria-labelledby="uaw-agent-heading">
+                            <div><h2 id="uaw-agent-heading">Codex Agent</h2><p>Connect the optional Agent to a bridge running on this machine.</p></div>
+                            <div class="uaw-connection-card"><div><strong>Local bridge</strong><small>http://127.0.0.1:4317</small></div><button type="button" data-uaw-command="agent.open">Configure</button></div>
+                        </section>
+                    </div>
                 </div>
             `;
             view.querySelectorAll('input[name="source-dock"]').forEach((input) => input.addEventListener('change', () => this.setSourceDock(input.value)));
