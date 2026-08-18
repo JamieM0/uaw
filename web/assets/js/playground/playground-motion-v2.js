@@ -18,7 +18,9 @@ window.UAWMotion = noopMotion;
 try {
     const { animate, stagger } = await import('https://cdn.jsdelivr.net/npm/motion@12.29.2/+esm');
 
-    const canAnimate = () => !reduceMotion.matches;
+    // Product state changes are intentionally immediate. Keep the motion API in
+    // place for compatibility, but do not animate workspace, dialog or list UI.
+    const canAnimate = () => false;
     const safeAnimate = (target, keyframes, options) => {
         if (!canAnimate() || !target) return null;
         try {

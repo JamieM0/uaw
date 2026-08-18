@@ -110,6 +110,8 @@ const PlaygroundUtils = {
 
 // Asset Management System
 const AssetManager = {
+  cache: new Map(),
+
   // Generate a UUID v4 for asset references
   generateUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -125,64 +127,22 @@ const AssetManager = {
    * @returns {string|null} Asset reference or null on error
    */
   storeAsset(dataUrl) {
-    if (!editor) {
-      console.warn('AssetManager: Editor not available');
-      return null;
-    }
-
     if (!dataUrl || typeof dataUrl !== 'string') {
       console.error('AssetManager: Invalid dataUrl provided');
       return null;
     }
-
-    try {
-      const editorValue = editor.getValue();
-      if (!editorValue) {
-        console.error('AssetManager: Editor has no content');
-        return null;
-      }
-
-      const simulationData = JSON.parse(editorValue);
-
-      // Initialize assets object if it doesn't exist
-      if (!simulationData.assets) {
-        simulationData.assets = {};
-      }
-
-      // Generate unique ID
-      const assetId = this.generateUUID();
-      const assetReference = `asset:${assetId}`;
-
-      // Store the asset data
-      simulationData.assets[assetId] = dataUrl;
-
-      // Update the editor with the new simulation data
-      editor.setValue(JSON.stringify(simulationData, null, 2));
-
-      // Auto-collapse assets object (debounced to prevent race conditions)
-      this._scheduleAutoCollapse(false);
-
-      return assetReference;
-    } catch (e) {
-      console.error('Failed to store asset:', e);
-      return null;
-    }
+    const assetId = this.generateUUID();
+    const assetReference = `asset:${assetId}`;
+    this.cache.set(assetId, dataUrl);
+    window.UAWProjectStore?.putAsset?.({ id: assetId, data: dataUrl, mimeType: dataUrl.slice(5, dataUrl.indexOf(';')) || 'application/octet-stream' })
+      .catch(error => console.error('Failed to persist asset:', error));
+    return assetReference;
   },
 
   // Retrieve an asset by reference
   getAsset(assetReference) {
-    if (!editor || !assetReference || !assetReference.startsWith('asset:')) {
-      return null;
-    }
-
-    try {
-      const simulationData = JSON.parse(editor.getValue());
-      const assetId = assetReference.replace('asset:', '');
-      return simulationData.assets?.[assetId] || null;
-    } catch (e) {
-      console.error('Failed to retrieve asset:', e);
-      return null;
-    }
+    if (!assetReference || !assetReference.startsWith('asset:')) return null;
+    return this.cache.get(assetReference.replace('asset:', '')) || null;
   },
 
   // Check if a value is an asset reference
@@ -200,44 +160,33 @@ const AssetManager = {
 
   // Remove unused assets (cleanup)
   cleanupUnusedAssets() {
+    // Asset deletion is explicit in the Assets workspace. Automatic cleanup can
+    // destroy a file while the user is temporarily editing its reference.
+  },
+
+  async loadProjectAssets() {
+    const records = await window.UAWProjectStore?.listAssets?.() || [];
+    this.cache.clear();
+    records.forEach(record => this.cache.set(record.id, record.data));
+    window.dispatchEvent(new CustomEvent('uaw:asset-cache-ready'));
+  },
+
+  async migrateEmbeddedAssets() {
     if (!editor) return;
-
     try {
-      const simulationData = JSON.parse(editor.getValue());
-      if (!simulationData.assets) return;
-
-      const usedAssets = new Set();
-
-      // Scan simulation for asset references
-      const scanForAssets = (obj) => {
-        if (typeof obj === 'string' && this.isAssetReference(obj)) {
-          const assetId = obj.replace('asset:', '');
-          usedAssets.add(assetId);
-        } else if (typeof obj === 'object' && obj !== null) {
-          Object.values(obj).forEach(scanForAssets);
-        }
-      };
-
-      scanForAssets(simulationData.simulation);
-
-      // Remove unused assets
-      const allAssets = Object.keys(simulationData.assets);
-      const unusedAssets = allAssets.filter(id => !usedAssets.has(id));
-
-      unusedAssets.forEach(id => {
-        delete simulationData.assets[id];
-      });
-
-      if (unusedAssets.length > 0) {
-        editor.setValue(JSON.stringify(simulationData, null, 2));
-
-        // Auto-collapse assets object (debounced)
-        this._scheduleAutoCollapse(false);
-
-        console.log(`Cleaned up ${unusedAssets.length} unused assets`);
-      }
-    } catch (e) {
-      console.error('Failed to cleanup assets:', e);
+      const root = JSON.parse(editor.getValue());
+      const embedded = root.assets;
+      if (!embedded || typeof embedded !== 'object' || Array.isArray(embedded)) return;
+      await Promise.all(Object.entries(embedded).map(([id, data]) => {
+        if (typeof data !== 'string') return Promise.resolve();
+        this.cache.set(id, data);
+        return window.UAWProjectStore?.putAsset?.({ id, data, mimeType: data.slice(5, data.indexOf(';')) || 'application/octet-stream' });
+      }));
+      delete root.assets;
+      editor.setValue(JSON.stringify(root, null, 2));
+      if (Object.keys(embedded).length) showNotification?.(`${Object.keys(embedded).length} embedded asset${Object.keys(embedded).length === 1 ? '' : 's'} moved to the Assets workspace`, 'info');
+    } catch (error) {
+      console.warn('Unable to migrate embedded assets:', error);
     }
   },
 
@@ -265,6 +214,11 @@ const AssetManager = {
   }
 };
 
+window.AssetManager = AssetManager;
+window.addEventListener('uaw:project-opened', () => {
+  AssetManager.loadProjectAssets().then(() => AssetManager.migrateEmbeddedAssets());
+});
+
 // Initialization state tracking
 const initState = {
   dataLoaded: false,
@@ -290,17 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const urlParams = new URLSearchParams(window.location.search);
     const isEmbeddedCheck = urlParams.get('embedded') === 'true' || window.self !== window.top;
 
-    if (!isEmbeddedCheck) {
-      // Only apply saved dark mode preference if not embedded
-      try {
-        const savedDarkMode = localStorage.getItem("uaw-playground-dark-mode");
-        if (savedDarkMode === "true") {
-          document.documentElement.setAttribute("data-theme", "dark");
-        }
-      } catch (e) {
-        console.warn("Could not load dark mode preference:", e.message);
-      }
-    } else {
+    if (isEmbeddedCheck) {
       console.log("Embedded mode detected, skipping early theme application");
     }
 
@@ -312,21 +256,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!welcomeOverlay || !continueBtn || !dontShowAgainCheckbox) {
       console.warn("Welcome overlay elements not found - feature disabled");
     } else {
-      try {
-        if (localStorage.getItem("uaw-playground-welcome-seen")) {
-          welcomeOverlay.style.display = "none";
-        }
-      } catch (e) {
-        console.warn("Could not check welcome preference:", e.message);
-      }
+      if (window.UAWProjectStore?.getCurrent?.()?.settings?.welcomeSeen) welcomeOverlay.style.display = "none";
 
       continueBtn.addEventListener("click", () => {
         welcomeOverlay.style.display = "none";
         if (dontShowAgainCheckbox.checked) {
-          try {
-            localStorage.setItem("uaw-playground-welcome-seen", "true");
-          } catch (e) {
-            console.warn("Could not save welcome preference:", e.message);
+          const project = window.UAWProjectStore?.getCurrent?.();
+          if (project) {
+            project.settings = { ...(project.settings || {}), welcomeSeen: true };
+            window.UAWProjectStore.put(project).catch(error => console.warn('Could not save welcome preference:', error));
           }
         }
       });
@@ -891,7 +829,8 @@ async function loadSimulationFromLibrary(simulationId) {
     };
     const content = JSON.stringify(simulationData, null, 2);
     if (window.UAWProjectStore?.createFromTemplate) {
-      await window.UAWProjectStore.createFromTemplate(simulation.name, content);
+      const project = await window.UAWProjectStore.createFromTemplate(simulation.name, content);
+      if (!project) return false;
       window.UAWPlaygroundShell?.setWorkspace('build');
     } else {
       editor.setValue(content);
@@ -1226,16 +1165,8 @@ function setupDarkMode() {
         darkModeToggle.style.display = "none";
       }
     } else {
-      // Standard mode: Load saved dark mode preference
-      try {
-        const savedDarkMode = localStorage.getItem("uaw-playground-dark-mode");
-        isDarkMode = savedDarkMode === "true";
-        PlaygroundState.isDarkMode = isDarkMode;
-      } catch (e) {
-        console.warn("Could not load dark mode preference:", e.message);
-        isDarkMode = false;
-        PlaygroundState.isDarkMode = false;
-      }
+      isDarkMode = Boolean(window.UAWProjectStore?.getCurrent?.()?.settings?.darkMode);
+      PlaygroundState.isDarkMode = isDarkMode;
 
       // Apply initial theme
       applyDarkMode();
@@ -1268,11 +1199,10 @@ function toggleDarkMode() {
     applyDarkMode();
     updateDarkModeButton();
 
-    // Save preference
-    try {
-      localStorage.setItem("uaw-playground-dark-mode", isDarkMode.toString());
-    } catch (e) {
-      console.warn("Could not save dark mode preference:", e.message);
+    const project = window.UAWProjectStore?.getCurrent?.();
+    if (project) {
+      project.settings = { ...(project.settings || {}), darkMode: isDarkMode };
+      window.UAWProjectStore.put(project).catch(error => console.warn('Could not save dark mode preference:', error));
     }
 
     // Re-enable transitions after a brief delay

@@ -431,49 +431,24 @@ class MultiPeriodViewController {
         // Note: DO NOT restore window.editor here - keep it active until view switches
     }
 
-    /**
-     * Save state to localStorage
-     */
+    /** Save navigation state with the folder-backed project. */
     saveState() {
-        try {
-            localStorage.setItem('uaw-multi-period-view', this.currentView);
-            localStorage.setItem('uaw-multi-period-day', this.currentDay.toString());
-            localStorage.setItem('uaw-multi-period-week', this.currentWeek.toString());
-            if (this.currentDayType) {
-                localStorage.setItem('uaw-multi-period-daytype', this.currentDayType);
-            } else {
-                localStorage.removeItem('uaw-multi-period-daytype');
-            }
-        } catch (e) {
-            console.warn('Could not save multi-period state:', e.message);
-        }
+        const project = window.UAWProjectStore?.getCurrent?.();
+        if (!project) return;
+        project.settings = { ...(project.settings || {}), multiPeriod: {
+            view: this.currentView, day: this.currentDay, week: this.currentWeek, dayType: this.currentDayType || null
+        } };
+        window.UAWProjectStore.put(project).catch(error => console.warn('Could not save multi-period state:', error));
     }
 
-    /**
-     * Load state from localStorage
-     */
+    /** Load navigation state from the current project folder. */
     loadState() {
-        try {
-            const savedView = localStorage.getItem('uaw-multi-period-view');
-            const savedDay = localStorage.getItem('uaw-multi-period-day');
-            const savedWeek = localStorage.getItem('uaw-multi-period-week');
-            const savedDayType = localStorage.getItem('uaw-multi-period-daytype');
-
-            if (savedView) {
-                this.currentView = savedView;
-            }
-            if (savedDay) {
-                this.currentDay = parseInt(savedDay) || 1;
-            }
-            if (savedWeek) {
-                this.currentWeek = parseInt(savedWeek) || 1;
-            }
-            if (savedDayType) {
-                this.currentDayType = savedDayType;
-            }
-        } catch (e) {
-            console.warn('Could not load multi-period state:', e.message);
-        }
+        const saved = window.UAWProjectStore?.getCurrent?.()?.settings?.multiPeriod;
+        if (!saved) return;
+        if (saved.view) this.currentView = saved.view;
+        this.currentDay = parseInt(saved.day) || 1;
+        this.currentWeek = parseInt(saved.week) || 1;
+        this.currentDayType = saved.dayType || null;
     }
 }
 

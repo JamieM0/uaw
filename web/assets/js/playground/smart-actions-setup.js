@@ -365,20 +365,19 @@
          */
         loadConfig() {
             try {
-                let configData = localStorage.getItem('smart-actions-config');
+                const runtime = window.UAWSmartActionsRuntime ||= { apiKeys: {}, modelNames: {} };
+                const projectSettings = window.UAWProjectStore?.getCurrent?.()?.settings?.smartActions;
+                let configData = projectSettings ? JSON.stringify(projectSettings.config || {}) : localStorage.getItem('smart-actions-config');
 
                 // One-time migration away from cookies, which are sent with same-origin requests.
                 const legacyConfigData = this.getCookie('smart-actions-config');
                 if (!configData && legacyConfigData) {
                     const legacyConfig = JSON.parse(legacyConfigData);
                     if (legacyConfig.apiKey && legacyConfig.provider) {
-                        sessionStorage.setItem('smart-actions-api-keys', JSON.stringify({
-                            [legacyConfig.provider]: legacyConfig.apiKey
-                        }));
+                        runtime.apiKeys[legacyConfig.provider] = legacyConfig.apiKey;
                     }
                     delete legacyConfig.apiKey;
                     configData = JSON.stringify(legacyConfig);
-                    localStorage.setItem('smart-actions-config', configData);
                 }
 
                 this.deleteCookie('smart-actions-config');
@@ -403,26 +402,14 @@
          * Load saved API keys for all providers
          */
         loadSavedApiKeys() {
-            try {
-                const keysData = sessionStorage.getItem('smart-actions-api-keys');
-                return keysData ? JSON.parse(keysData) : {};
-            } catch (error) {
-                console.warn('SmartActionsSetup: Could not load API keys:', error);
-                return {};
-            }
+            return window.UAWSmartActionsRuntime?.apiKeys || {};
         }
 
         /**
          * Load saved model names for all providers
          */
         loadSavedModelNames() {
-            try {
-                const modelsData = localStorage.getItem('smart-actions-model-names');
-                return modelsData ? JSON.parse(modelsData) : {};
-            } catch (error) {
-                console.warn('SmartActionsSetup: Could not load model names:', error);
-                return {};
-            }
+            return window.UAWProjectStore?.getCurrent?.()?.settings?.smartActions?.modelNames || {};
         }
 
         /**
@@ -432,7 +419,13 @@
             try {
                 const nonSecretConfig = { ...config };
                 delete nonSecretConfig.apiKey;
-                localStorage.setItem('smart-actions-config', JSON.stringify(nonSecretConfig));
+                const project = window.UAWProjectStore?.getCurrent?.();
+                if (project) {
+                    project.settings = { ...(project.settings || {}), smartActions: {
+                        ...(project.settings?.smartActions || {}), config: nonSecretConfig
+                    } };
+                    window.UAWProjectStore.put(project).catch(error => console.error('Could not save Smart Actions config:', error));
+                }
 
                 // Save API key for this provider (if provided)
                 if (config.apiKey && config.provider) {
@@ -468,7 +461,7 @@
                     this.savedApiKeys = { [provider]: apiKey };
                 }
 
-                sessionStorage.setItem('smart-actions-api-keys', JSON.stringify(this.savedApiKeys));
+                (window.UAWSmartActionsRuntime ||= { apiKeys: {}, modelNames: {} }).apiKeys = this.savedApiKeys;
             } catch (error) {
                 console.error('SmartActionsSetup: Could not save API key:', error);
                 throw error; // Propagate error so caller knows save failed
@@ -495,7 +488,12 @@
                     this.savedModelNames = { [provider]: modelName };
                 }
 
-                localStorage.setItem('smart-actions-model-names', JSON.stringify(this.savedModelNames));
+                const project = window.UAWProjectStore?.getCurrent?.();
+                if (project) {
+                    const smartActions = { ...(project.settings?.smartActions || {}), modelNames: this.savedModelNames };
+                    project.settings = { ...(project.settings || {}), smartActions };
+                    window.UAWProjectStore.put(project).catch(error => console.error('Could not save model name:', error));
+                }
             } catch (error) {
                 console.error('SmartActionsSetup: Could not save model name:', error);
                 throw error; // Propagate error so caller knows save failed

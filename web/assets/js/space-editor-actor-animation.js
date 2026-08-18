@@ -33,9 +33,8 @@ class ActorAnimationManager {
         // Listen to checkbox state
         const checkbox = document.getElementById('show-actors-during-playback');
         if (checkbox) {
-            // Restore saved state from localStorage
-            const savedState = localStorage.getItem('showActorsDuringPlayback');
-            if (savedState === 'true') {
+            const savedState = window.UAWProjectStore?.getCurrent?.()?.settings?.showActorsDuringPlayback;
+            if (savedState === true) {
                 checkbox.checked = true;
                 this.enabled = true;
                 // Delay enabling to ensure everything is loaded
@@ -44,8 +43,11 @@ class ActorAnimationManager {
 
             checkbox.addEventListener('change', (e) => {
                 this.enabled = e.target.checked;
-                // Save state to localStorage
-                localStorage.setItem('showActorsDuringPlayback', this.enabled);
+                const project = window.UAWProjectStore?.getCurrent?.();
+                if (project) {
+                    project.settings = { ...(project.settings || {}), showActorsDuringPlayback: this.enabled };
+                    window.UAWProjectStore.put(project).catch(error => console.warn('Could not save actor preference:', error));
+                }
 
                 if (this.enabled) {
                     this.onEnable();

@@ -2,8 +2,6 @@
 (function () {
     'use strict';
 
-    const CONFIG_KEY = 'uaw-agent-v2-config';
-    const CONVERSATION_KEY = 'uaw-agent-v2-conversations';
     const DEFAULT_ENDPOINT = 'http://127.0.0.1:4317';
 
     const escapeHTML = (value) => String(value ?? '')
@@ -24,27 +22,25 @@
         }
 
         loadConfig() {
-            try {
-                return JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}');
-            } catch (_error) {
-                return {};
-            }
+            return { endpoint: window.UAWProjectStore?.getCurrent?.()?.settings?.agentEndpoint };
         }
 
         saveConfig() {
-            localStorage.setItem(CONFIG_KEY, JSON.stringify({ endpoint: this.endpoint }));
+            const project = this.project;
+            if (!project) return;
+            project.settings = { ...(project.settings || {}), agentEndpoint: this.endpoint };
+            window.UAWProjectStore.put(project).catch((error) => console.error('Failed to save agent endpoint:', error));
         }
 
         loadConversations() {
-            try {
-                return JSON.parse(localStorage.getItem(CONVERSATION_KEY) || '{}');
-            } catch (_error) {
-                return {};
-            }
+            return {};
         }
 
         saveConversations() {
-            localStorage.setItem(CONVERSATION_KEY, JSON.stringify(this.conversations));
+            const project = this.project;
+            if (!project) return;
+            project.settings = { ...(project.settings || {}), agentConversation: this.conversation };
+            window.UAWProjectStore.put(project).catch((error) => console.error('Failed to save agent conversation:', error));
         }
 
         get project() {
@@ -57,7 +53,7 @@
 
         get conversation() {
             if (!this.conversations[this.projectId]) {
-                this.conversations[this.projectId] = { threadId: null, messages: [] };
+                this.conversations[this.projectId] = this.project?.settings?.agentConversation || { threadId: null, messages: [] };
             }
             return this.conversations[this.projectId];
         }

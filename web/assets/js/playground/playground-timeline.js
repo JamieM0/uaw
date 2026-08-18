@@ -94,7 +94,7 @@ const MIN_TASK_DURATION = 1; // minimum task duration in minutes
 // Timeline rendering variables
 let renderTimeout;
 let currentSimulationData = null;
-let alwaysShowTimeIndicators = localStorage.getItem('alwaysShowTimeIndicators') === 'true';
+let alwaysShowTimeIndicators = false;
 
 // Multi-period view controller
 let multiPeriodViewController = null;
@@ -435,7 +435,11 @@ function processSimulationData(simulationData) {
 
 function toggleAllTimeIndicators(show) {
     alwaysShowTimeIndicators = show;
-    localStorage.setItem('alwaysShowTimeIndicators', show);
+    const project = window.UAWProjectStore?.getCurrent?.();
+    if (project) {
+        project.settings = { ...(project.settings || {}), alwaysShowTimeIndicators: show };
+        window.UAWProjectStore.put(project).catch(error => console.warn('Could not save timeline preference:', error));
+    }
 
     const taskTracks = document.querySelectorAll('.task-track');
 
@@ -578,7 +582,7 @@ function renderSimulation(skipJsonValidation = false) {
         header.innerHTML = `
             <div class="simulation-header-content">
                 <h4>${sanitizeHTML(currentSimulationData.article_title)}</h4>
-                <p>${sanitizeHTML(currentSimulationData.domain)} • ${sanitizeHTML(currentSimulationData.start_time)} - ${sanitizeHTML(currentSimulationData.end_time)} (${sanitizeHTML(currentSimulationData.total_duration_minutes)} minutes)</p>
+                <p><span>${sanitizeHTML(currentSimulationData.domain)}</span><span>${sanitizeHTML(currentSimulationData.start_time)}—${sanitizeHTML(currentSimulationData.end_time)}</span><span>${sanitizeHTML(currentSimulationData.total_duration_minutes)} minutes</span></p>
             </div>
         `;
 
@@ -590,7 +594,7 @@ function renderSimulation(skipJsonValidation = false) {
         const viewDropdown = document.createElement('div');
         viewDropdown.className = 'dropdown';
         viewDropdown.innerHTML = `
-            <button class="action-btn dropdown-toggle">View ▼</button>
+            <button class="action-btn dropdown-toggle">Display <span aria-hidden="true">⌄</span></button>
             <div class="dropdown-content" style="right: 0; left: auto; min-width: 180px;">
                 <label class="dropdown-checkbox-item">
                     <input type="checkbox" id="view-toggle-timeline" checked>
@@ -674,7 +678,13 @@ function renderSimulation(skipJsonValidation = false) {
         timeMarkers.className = "timeline-time-markers";
         timeMarkers.setAttribute('role', 'presentation');
         timeMarkers.setAttribute('aria-label', 'Timeline time markers');
-        timeMarkers.style.cssText = "display: none;";
+        const startMinutes = currentSimulationData.start_time_minutes;
+        const durationMinutes = currentSimulationData.total_duration_minutes;
+        const formatAxisTime = (minutes) => {
+            const value = Math.round(minutes);
+            return `${String(Math.floor(value / 60) % 24).padStart(2, '0')}:${String(value % 60).padStart(2, '0')}`;
+        };
+        timeMarkers.innerHTML = [0, .25, .5, .75, 1].map((ratio) => `<span style="left:${ratio * 100}%">${sanitizeHTML(formatAxisTime(startMinutes + durationMinutes * ratio))}</span>`).join('');
 
         timeline.appendChild(timeMarkers);
 
@@ -716,9 +726,10 @@ function renderSimulation(skipJsonValidation = false) {
                 displayRole = `${actor.name} (${actor.type})`;
             }
 
+            const actorMarker = Array.from(String(actor.emoji || displayRole || '?').trim())[0] || '?';
             actorLabel.innerHTML = `
-                <strong>${sanitizeHTML(displayRole)}</strong><br>
-                <small>Utilization: ${sanitizeHTML(actor.utilization_percentage)}%</small>
+                <span class="actor-avatar" aria-hidden="true">${sanitizeHTML(actorMarker.toUpperCase())}</span>
+                <span class="actor-label-copy"><strong>${sanitizeHTML(displayRole)}</strong><small>${sanitizeHTML(actor.utilization_percentage)}% utilized</small></span>
             `;
             lane.appendChild(actorLabel);
 
@@ -763,7 +774,7 @@ function renderSimulation(skipJsonValidation = false) {
                     emojiStyle = `style="font-size: ${emojiSize}px; line-height: 1;"`;
                 }
 
-                taskElement.innerHTML = `<span class="task-emoji" ${emojiStyle}>${sanitizeHTML(task.emoji)}</span>`;
+                taskElement.innerHTML = `<span class="task-emoji" ${emojiStyle}>${sanitizeHTML(task.emoji)}</span><span class="task-block__label">${sanitizeHTML(task.display_name || task.id)}</span><span class="task-block__duration">${sanitizeHTML(task.duration)}m</span>`;
                 taskElement.title = `${sanitizeHTML(task.display_name)} (${sanitizeHTML(task.duration)} minutes)`;
 
                 // Add click event listener as backup for jump functionality
@@ -945,12 +956,12 @@ function renderSimulation(skipJsonValidation = false) {
         // Generate stats dynamically based on available object types
         const objectStats = Object.entries(currentSimulationData)
             .filter(([key, value]) => Array.isArray(value) && !['tasks'].includes(key) && !['start_time', 'end_time', 'start_time_minutes', 'end_time_minutes', 'total_duration_minutes', 'article_title', 'domain', '_digitalObjectTypeKeys'].includes(key))
-            .map(([type, objects]) => `<div class="stat-item"><strong>${type.charAt(0).toUpperCase() + type.slice(1)}:</strong> ${objects.length}</div>`)
+            .map(([type, objects]) => `<div class="stat-item"><span>${sanitizeHTML(type.charAt(0).toUpperCase() + type.slice(1))}</span><strong>${sanitizeHTML(objects.length)}</strong></div>`)
             .join('');
         
         stats.innerHTML = `
-            <div class="stat-item"><strong>Total Duration:</strong> ${currentSimulationData.total_duration_minutes} minutes</div>
-            <div class="stat-item"><strong>Tasks:</strong> ${currentSimulationData.tasks.length}</div>
+            <div class="stat-item"><span>Total duration</span><strong>${currentSimulationData.total_duration_minutes} min</strong></div>
+            <div class="stat-item"><span>Tasks</span><strong>${currentSimulationData.tasks.length}</strong></div>
             ${objectStats}
         `;
         container.appendChild(stats);

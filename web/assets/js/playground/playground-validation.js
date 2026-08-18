@@ -701,13 +701,9 @@ function disableBuiltinMetric(metricId) {
             disabledMetricsEntry.disabled_metrics.push(metricId);
         }
         
-        // Update the catalog in localStorage and editor
+        // Persist the catalogue with the current folder-backed project.
         const catalogJson = JSON.stringify(customCatalog, null, 2);
-        try {
-            localStorage.setItem('uaw-metrics-catalog-custom', catalogJson);
-        } catch (e) {
-            console.error('Error saving custom metrics catalog:', e.message);
-        }
+        safeSetItem('uaw-metrics-catalog-custom', catalogJson);
         
         if (window.metricsCatalogEditor) {
             window.metricsCatalogEditor.setValue(catalogJson);
@@ -750,13 +746,9 @@ function enableBuiltinMetric(metricId) {
             }
         }
         
-        // Update the catalog in localStorage and editor
+        // Persist the catalogue with the current folder-backed project.
         const catalogJson = JSON.stringify(customCatalog, null, 2);
-        try {
-            localStorage.setItem('uaw-metrics-catalog-custom', catalogJson);
-        } catch (e) {
-            console.error('Error saving custom metrics catalog:', e.message);
-        }
+        safeSetItem('uaw-metrics-catalog-custom', catalogJson);
         
         if (window.metricsCatalogEditor) {
             window.metricsCatalogEditor.setValue(catalogJson);

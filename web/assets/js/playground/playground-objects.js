@@ -150,7 +150,7 @@ function cleanupModalListeners(modalType) {
 let preservedObjectFields = {};
 
 // Open add object modal
-function openAddObjectModal() {
+function openAddObjectModal(presetType = '', customTypeLabel = '') {
     if (window.multiPeriodViewController?.isMultiPeriod() && window.multiPeriodViewController.currentView !== 'day') {
         showNotification('Open a simulation day before adding an object so the target day type is explicit.', 'warning');
         return;
@@ -203,8 +203,14 @@ function openAddObjectModal() {
         });
     }
 
+    if (typeSelect && presetType) typeSelect.value = presetType;
+
     // Trigger initial update
     updateObjectTypeFields(typeSelect.value, fieldsContainer);
+    if (presetType === 'custom' && customTypeLabel) {
+        const customInput = fieldsContainer?.querySelector('input[name^="new_object_custom_type_"]');
+        if (customInput) customInput.value = customTypeLabel.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    }
 
     // Setup validation listeners
     setupObjectValidation();
@@ -252,6 +258,8 @@ function openAddObjectModal() {
         }
     }, 100);
 }
+
+window.openAddObjectModalWithType = openAddObjectModal;
 
 // Preserve common fields when switching object types
 function preserveCommonObjectFields() {

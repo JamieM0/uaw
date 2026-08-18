@@ -6,8 +6,6 @@ const MAX_FILE_SIZE_MB = 10;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 const WORKSPEC_FILE_EXTENSION = '.workspec.json';
 const WORKSPEC_ZIP_EXTENSION = '.workspec.zip';
-const SAVE_CODE_STORAGE_PREFIX = 'uaw-save-code-v1:';
-const SAVE_CODE_LENGTH = 16;
 
 // Setup save/load buttons
 function setupSaveLoadButtons() {
@@ -17,11 +15,11 @@ function setupSaveLoadButtons() {
     const feedbackBtn = document.getElementById("feedback-btn");
     
     if (saveBtn) {
-        saveBtn.addEventListener("click", openSaveDialog);
+        saveBtn.addEventListener("click", openProjectExportDialog);
     }
     
     if (loadBtn) {
-        loadBtn.addEventListener("click", openLoadDialog);
+        loadBtn.addEventListener("click", openProjectImportDialog);
     }
 
     if (feedbackBtn) {
@@ -91,8 +89,9 @@ function downloadSimulationFile(data, filename) {
 
 // Get custom metrics content for export
 function getCustomMetricsContent() {
-    const catalog = localStorage.getItem('uaw-metrics-catalog-custom');
-    const validator = localStorage.getItem('uaw-metrics-validator-custom');
+    const saved = window.UAWProjectStore?.getCurrent?.()?.settings?.customMetrics || {};
+    const catalog = window.metricsCatalogEditor?.getValue?.() || saved.catalog || null;
+    const validator = window.metricsValidatorEditor?.getValue?.() || saved.validator || null;
 
     return {
         catalog: catalog || null,
@@ -102,9 +101,9 @@ function getCustomMetricsContent() {
 
 // Check if there are custom metrics
 function hasCustomMetrics() {
-    // Check if there are any custom metrics in localStorage
-    const customCatalog = localStorage.getItem('uaw-metrics-catalog-custom');
-    const customValidator = localStorage.getItem('uaw-metrics-validator-custom');
+    const custom = getCustomMetricsContent();
+    const customCatalog = custom.catalog;
+    const customValidator = custom.validator;
 
     if (!customCatalog || !customValidator) return false;
 
@@ -128,44 +127,6 @@ function normalizeSimulationFileBaseName(rawName) {
     return base || fallbackName;
 }
 
-function generateSaveCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let code = '';
-    for (let i = 0; i < SAVE_CODE_LENGTH; i += 1) {
-        code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
-}
-
-function storeSaveCodePayload(saveCode, payload) {
-    try {
-        const storageKey = `${SAVE_CODE_STORAGE_PREFIX}${saveCode}`;
-        const record = {
-            version: 1,
-            createdAt: new Date().toISOString(),
-            payload
-        };
-        localStorage.setItem(storageKey, JSON.stringify(record));
-        return true;
-    } catch (error) {
-        console.error('Failed to store save code payload:', error);
-        return false;
-    }
-}
-
-function getSaveCodePayload(saveCode) {
-    try {
-        const storageKey = `${SAVE_CODE_STORAGE_PREFIX}${saveCode}`;
-        const raw = localStorage.getItem(storageKey);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        return parsed?.payload || null;
-    } catch (error) {
-        console.error('Failed to read save code payload:', error);
-        return null;
-    }
-}
-
 // Load simulation from file input
 function loadSimulationFromFileInput() {
     const input = document.createElement('input');
@@ -182,14 +143,16 @@ function loadSimulationFromFileInput() {
             return;
         }
 
-        // Check if it's a ZIP file
-        const fileNameLower = file.name.toLowerCase();
-        if (fileNameLower.endsWith('.zip')) {
-            await loadFromZipFile(file);
-        } else if (fileNameLower.endsWith('.workspec.json') || fileNameLower.endsWith('.json')) {
-            await loadFromJsonFile(file);
-        } else {
-            alert('Invalid file type. Please select a .workspec.json, .json, or .zip file.');
+        try {
+            // Choose the destination while the file-selection gesture is active.
+            const directoryHandle = await window.UAWProjectStore?.chooseProjectDirectory?.('uaw-import-project');
+            if (!directoryHandle) return;
+            const fileNameLower = file.name.toLowerCase();
+            if (fileNameLower.endsWith('.zip')) await loadFromZipFile(file, directoryHandle);
+            else if (fileNameLower.endsWith('.workspec.json') || fileNameLower.endsWith('.json')) await loadFromJsonFile(file, directoryHandle);
+            else alert('Invalid file type. Please select a .workspec.json, .json, or .zip file.');
+        } catch (error) {
+            if (error?.name !== 'AbortError') alert(`Import failed: ${error.message}`);
         }
     });
 
@@ -197,10 +160,10 @@ function loadSimulationFromFileInput() {
 }
 
 // Load simulation from JSON file
-async function loadFromJsonFile(file) {
+async function loadFromJsonFile(file, directoryHandle = null) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = async function(e) {
             try {
                 const content = e.target.result;
 
@@ -252,7 +215,12 @@ async function loadFromJsonFile(file) {
 
                 // Load into editor
                 if (typeof editor !== 'undefined' && editor) {
-                    editor.setValue(JSON.stringify(data, null, 2));
+                    const projectName = data.simulation?.meta?.title || file.name.replace(/\.workspec\.json$|\.json$/i, '');
+                    if (window.UAWProjectStore?.createFromTemplate) {
+                        await window.UAWProjectStore.createFromTemplate(projectName, JSON.stringify(data, null, 2), directoryHandle);
+                    } else {
+                        editor.setValue(JSON.stringify(data, null, 2));
+                    }
 
                     // Auto-collapse assets object
                     setTimeout(async () => {
@@ -290,7 +258,7 @@ async function loadFromJsonFile(file) {
 }
 
 // Load simulation from ZIP file (with custom metrics)
-async function loadFromZipFile(file) {
+async function loadFromZipFile(file, directoryHandle = null) {
     // Check if JSZip is available
     if (typeof JSZip === 'undefined') {
         alert('ZIP file support is not available. JSZip library not loaded.');
@@ -301,10 +269,10 @@ async function loadFromZipFile(file) {
         const zip = new JSZip();
         const zipContents = await zip.loadAsync(file);
 
-        // Extract simulation.json
-        const simulationFile = zipContents.file('simulation.json');
+        // Accept current and legacy package entry names.
+        const simulationFile = zipContents.file('simulation.workspec.json') || zipContents.file('simulation.json');
         if (!simulationFile) {
-            alert('Invalid ZIP file: missing simulation.json');
+            alert('Invalid ZIP file: missing simulation.workspec.json');
             return;
         }
 
@@ -353,7 +321,26 @@ async function loadFromZipFile(file) {
 
         // Load into editor
         if (typeof editor !== 'undefined' && editor) {
-            editor.setValue(JSON.stringify(data, null, 2));
+            const projectName = data.simulation?.meta?.title || file.name.replace(/\.workspec\.zip$|\.zip$/i, '');
+            if (window.UAWProjectStore?.createFromTemplate) {
+                await window.UAWProjectStore.createFromTemplate(projectName, JSON.stringify(data, null, 2), directoryHandle);
+            } else {
+                editor.setValue(JSON.stringify(data, null, 2));
+            }
+
+            const assetEntries = [];
+            zipContents.forEach((path, entry) => {
+                if (!entry.dir && path.startsWith('assets/')) assetEntries.push([path, entry]);
+            });
+            for (const [path, entry] of assetEntries) {
+                const fileName = path.split('/').pop();
+                const id = fileName.replace(/\.[^.]+$/, '');
+                const extension = (fileName.split('.').pop() || '').toLowerCase();
+                const mime = extension === 'png' ? 'image/png' : extension === 'jpg' || extension === 'jpeg' ? 'image/jpeg' : extension === 'svg' ? 'image/svg+xml' : extension === 'mp3' ? 'audio/mpeg' : 'application/octet-stream';
+                const base64 = await entry.async('base64');
+                await window.UAWProjectStore?.putAsset?.({ id, data: `data:${mime};base64,${base64}`, mimeType: mime, name: fileName });
+            }
+            await window.AssetManager?.loadProjectAssets?.();
 
             // Check for custom metrics files
             const catalogFile = zipContents.file('metrics-catalog-custom.json');
@@ -363,12 +350,14 @@ async function loadFromZipFile(file) {
                 const loadMetrics = confirm('This ZIP file contains custom metrics. Do you want to load them? (This will replace your current custom metrics)');
 
                 if (loadMetrics) {
+                    const project = window.UAWProjectStore?.getCurrent?.();
+                    const customMetrics = { ...(project?.settings?.customMetrics || {}) };
                     if (catalogFile) {
                         const catalogContent = await catalogFile.async('text');
                         try {
-                            // Validate JSON before storing
                             JSON.parse(catalogContent);
-                            localStorage.setItem('uaw-metrics-catalog-custom', catalogContent);
+                            customMetrics.catalog = catalogContent;
+                            window.metricsCatalogEditor?.setValue?.(catalogContent);
                         } catch (error) {
                             console.error('Invalid metrics catalog in ZIP:', error);
                             alert('Warning: Custom metrics catalog is invalid and was not loaded.');
@@ -405,7 +394,8 @@ async function loadFromZipFile(file) {
                             );
 
                             if (secondConfirm === 'I UNDERSTAND THE RISKS') {
-                                localStorage.setItem('uaw-metrics-validator-custom', validatorContent);
+                                customMetrics.validator = validatorContent;
+                                window.metricsValidatorEditor?.setValue?.(validatorContent);
                                 showNotification('✓ Custom validator loaded (user acknowledged security risks)');
                             } else {
                                 showNotification('Custom validator was not loaded (cancelled by user)');
@@ -413,6 +403,11 @@ async function loadFromZipFile(file) {
                         } else {
                             showNotification('Custom validator was not loaded (cancelled by user)');
                         }
+                    }
+
+                    if (project) {
+                        project.settings = { ...(project.settings || {}), customMetrics };
+                        await window.UAWProjectStore.put(project);
                     }
 
                     showNotification(`Loaded simulation and custom metrics from ${file.name}`);
@@ -443,21 +438,69 @@ async function loadFromZipFile(file) {
     }
 }
 
-// Disclaimer functions (kept for backward compatibility)
-function hasAcceptedDisclaimer() {
-    return localStorage.getItem('uaw-privacy-disclaimer-accepted') === 'true';
+// Project-system import/export surfaces. These intentionally replace the old
+// browser save-code workflow; projects already provide local persistence.
+function openProjectImportDialog() {
+    loadSimulationFromFileInput();
 }
 
-function setDisclaimerAccepted() {
-    try {
-        localStorage.setItem('uaw-privacy-disclaimer-accepted', 'true');
-    } catch (e) {
-        console.warn('Could not save privacy disclaimer acceptance:', e.message);
-    }
+function openProjectExportDialog() {
+    const dialog = document.getElementById('save-modal');
+    if (!dialog) return;
+    const nameInput = document.getElementById('local-file-name');
+    const includeExtras = document.getElementById('include-custom-metrics-checkbox');
+    const confirm = document.getElementById('save-confirm-btn');
+    const cancel = document.getElementById('save-cancel-btn');
+    const result = document.getElementById('local-save-result');
+    const savedName = document.getElementById('saved-filename');
+    result.style.display = 'none';
+    confirm.style.display = '';
+    confirm.disabled = false;
+    cancel.textContent = 'Cancel';
+    nameInput.value = window.UAWProjectStore?.getCurrent?.()?.name || '';
+    cancel.onclick = () => { dialog.style.display = 'none'; };
+    confirm.onclick = async () => {
+        try {
+            const parsed = JSON.parse(editor.getValue());
+            delete parsed.assets;
+            const content = JSON.stringify(parsed, null, 2);
+            const base = normalizeSimulationFileBaseName(nameInput.value);
+            const assets = await window.UAWProjectStore?.listAssets?.() || [];
+            const custom = Boolean(includeExtras.checked && hasCustomMetrics());
+            if ((assets.length || custom) && window.JSZip) {
+                const zip = new JSZip();
+                zip.file('simulation.workspec.json', content);
+                assets.forEach(asset => zip.file(`assets/${asset.id}.${(asset.mimeType || '').split('/')[1] || 'bin'}`, asset.data.split(',')[1] || asset.data, { base64: asset.data.startsWith('data:') }));
+                if (custom) {
+                    const metrics = getCustomMetricsContent();
+                    if (metrics.catalog) zip.file('metrics-catalog-custom.json', metrics.catalog);
+                    if (metrics.validator) zip.file('simulation-validator-custom.js', metrics.validator);
+                }
+                const fileName = `${base}${WORKSPEC_ZIP_EXTENSION}`;
+                downloadSimulationFile(await zip.generateAsync({ type: 'blob' }), fileName);
+                savedName.textContent = fileName;
+            } else {
+                const fileName = `${base}${WORKSPEC_FILE_EXTENSION}`;
+                downloadSimulationFile(new Blob([content], { type: 'application/json' }), fileName);
+                savedName.textContent = fileName;
+            }
+            result.style.display = 'block';
+            confirm.style.display = 'none';
+            cancel.textContent = 'Close';
+        } catch (error) {
+            showNotification(`Export failed: ${error.message}`, 'error');
+        }
+    };
+    dialog.style.display = 'flex';
+    requestAnimationFrame(() => nameInput.focus());
 }
 
+// Legacy dialog implementation retained only for backwards-compatible direct
+// integrations. Product UI routes to the project import/export functions above.
 // Open save dialog
 function openSaveDialog() {
+    openProjectExportDialog();
+    return;
     const dialog = document.getElementById('save-modal');
     if (!dialog) {
         console.error('Save dialog not found');
@@ -606,7 +649,7 @@ function openSaveDialog() {
                 while (attempts < 5 && !saveCode) {
                     attempts += 1;
                     const candidate = generateSaveCode();
-                    if (!localStorage.getItem(`${SAVE_CODE_STORAGE_PREFIX}${candidate}`)) {
+                    if (candidate) {
                         saveCode = candidate;
                     }
                 }
@@ -703,6 +746,8 @@ function openSaveDialog() {
 
 // Open load dialog  
 function openLoadDialog() {
+    openProjectImportDialog();
+    return;
     const dialog = document.getElementById('load-modal');
     if (!dialog) {
         console.error('Load dialog not found');

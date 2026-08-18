@@ -82,13 +82,12 @@
          */
         async loadConfig() {
             try {
-                const configData = localStorage.getItem('smart-actions-config');
-                if (configData) {
-                    this.config = JSON.parse(configData);
-                    const keysData = sessionStorage.getItem('smart-actions-api-keys');
-                    const savedKeys = keysData ? JSON.parse(keysData) : {};
+                const savedConfig = window.UAWProjectStore?.getCurrent?.()?.settings?.smartActions?.config;
+                if (savedConfig) {
+                    this.config = { ...savedConfig };
+                    const savedKeys = window.UAWSmartActionsRuntime?.apiKeys || {};
                     this.config.apiKey = savedKeys[this.config.provider] || '';
-                    console.log('SmartActionsUI: Config loaded from browser storage:', {
+                    console.log('SmartActionsUI: Config loaded from project folder:', {
                         provider: this.config.provider,
                         model: this.config.model
                     });
@@ -106,12 +105,16 @@
             try {
                 const nonSecretConfig = { ...config };
                 delete nonSecretConfig.apiKey;
-                localStorage.setItem('smart-actions-config', JSON.stringify(nonSecretConfig));
+                const project = window.UAWProjectStore?.getCurrent?.();
+                if (project) {
+                    project.settings = { ...(project.settings || {}), smartActions: {
+                        ...(project.settings?.smartActions || {}), config: nonSecretConfig
+                    } };
+                    window.UAWProjectStore.put(project).catch(error => console.error('Could not save Smart Actions config:', error));
+                }
                 if (config.apiKey && config.provider) {
-                    const keysData = sessionStorage.getItem('smart-actions-api-keys');
-                    const savedKeys = keysData ? JSON.parse(keysData) : {};
-                    savedKeys[config.provider] = config.apiKey;
-                    sessionStorage.setItem('smart-actions-api-keys', JSON.stringify(savedKeys));
+                    const runtime = window.UAWSmartActionsRuntime ||= { apiKeys: {}, modelNames: {} };
+                    runtime.apiKeys[config.provider] = config.apiKey;
                 }
                 this.config = config;
             } catch (error) {
@@ -295,6 +298,14 @@
             document.addEventListener('mousemove', (e) => this.handleResize(e));
             document.addEventListener('mouseup', () => this.stopResize());
             window.addEventListener('resize', () => this.updateMaxWidth());
+            window.addEventListener('uaw:project-opened', async () => {
+                this.config = null;
+                this.messages = [];
+                this.currentConversationId = null;
+                this.conversations = new Map();
+                await this.loadConfig();
+                this.loadConversations();
+            });
 
             // Smart Actions configuration events
             document.addEventListener('smart-actions-configured', (e) => {
@@ -921,14 +932,11 @@ ${responseGuidelines}`
             document.dispatchEvent(event);
         }
 
-        /**
-         * Load conversations from localStorage
-         */
+        /** Load conversations from the current project folder. */
         loadConversations() {
             try {
-                const conversationsData = localStorage.getItem('smart-actions-conversations');
-                if (conversationsData) {
-                    const data = JSON.parse(conversationsData);
+                const data = window.UAWProjectStore?.getCurrent?.()?.settings?.smartActionsConversations;
+                if (data) {
                     this.conversations = new Map(Object.entries(data.conversations || {}));
                     this.currentConversationId = data.currentConversationId || null;
                 }
@@ -960,16 +968,18 @@ ${responseGuidelines}`
             this.enableInput();
         }
 
-        /**
-         * Save conversations to localStorage
-         */
+        /** Save conversations with the current project. */
         saveConversations() {
             try {
                 const data = {
                     conversations: Object.fromEntries(this.conversations),
                     currentConversationId: this.currentConversationId
                 };
-                localStorage.setItem('smart-actions-conversations', JSON.stringify(data));
+                const project = window.UAWProjectStore?.getCurrent?.();
+                if (project) {
+                    project.settings = { ...(project.settings || {}), smartActionsConversations: data };
+                    window.UAWProjectStore.put(project).catch(error => console.error('Could not save conversations:', error));
+                }
             } catch (error) {
                 console.error('SmartActionsUI: Could not save conversations:', error);
             }

@@ -78,118 +78,6 @@ function stripJsonComments(jsonString) {
     return result;
 }
 
-// LocalStorage quota checking utility
-function canStoreInLocalStorage(key, value) {
-    try {
-        // Check if localStorage is available
-        if (!window.localStorage) return false;
-
-        // Calculate size of the new data
-        const dataSize = new Blob([JSON.stringify(value)]).size;
-        const keySize = new Blob([key]).size;
-        const totalSize = dataSize + keySize;
-
-        // Calculate current usage more efficiently without stringifying entire localStorage
-        let currentUsage = 0;
-        for (let i = 0; i < localStorage.length; i++) {
-            const currentKey = localStorage.key(i);
-            if (currentKey) {
-                const item = localStorage.getItem(currentKey);
-                if (item) {
-                    currentUsage += currentKey.length + item.length;
-                }
-            }
-        }
-
-        // Rough localStorage quota check (most browsers have 5-10MB)
-        // We'll be conservative and warn if storing more than 4MB total
-        const maxSafeSize = 4 * 1024 * 1024; // 4MB
-
-        return (currentUsage + totalSize) < maxSafeSize;
-    } catch (e) {
-        console.warn('Error checking localStorage capacity:', e.message);
-        return false;
-    }
-}
-
-// Safe localStorage wrapper with error handling
-function safeSetItem(key, value) {
-    try {
-        if (!canStoreInLocalStorage(key, value)) {
-            console.warn(`Cannot save to localStorage: quota would be exceeded for key "${key}"`);
-            showStorageQuotaWarning();
-            return false;
-        }
-        localStorage.setItem(key, value);
-        return true;
-    } catch (e) {
-        if (e.name === 'QuotaExceededError') {
-            console.error('LocalStorage quota exceeded when saving key:', key);
-            showStorageQuotaWarning();
-        } else {
-            console.error('Error saving to localStorage:', e.message);
-        }
-        return false;
-    }
-}
-
-// Show visual warning to user about storage issues with recovery options
-function showStorageQuotaWarning() {
-    // Create or show a warning banner
-    let warningBanner = document.getElementById('storage-quota-warning');
-    if (!warningBanner) {
-        warningBanner = document.createElement('div');
-        warningBanner.id = 'storage-quota-warning';
-        warningBanner.innerHTML = `
-            <div style="background: #ff6b35; color: white; padding: 15px; text-align: center; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-                <div style="margin-bottom: 10px;">⚠️ Storage Full: Your work cannot be automatically saved.</div>
-                <div style="font-weight: normal; margin-bottom: 10px;">Recovery Options:</div>
-                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                    <button onclick="clearOldSimulations()" style="background: white; color: #ff6b35; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">Clear Old Saves</button>
-                    <button onclick="downloadCurrentWork()" style="background: white; color: #ff6b35; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">Download Work</button>
-                    <button onclick="showStorageUsage()" style="background: white; color: #ff6b35; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">View Usage</button>
-                    <button onclick="document.getElementById('storage-quota-warning').remove()" style="background: rgba(255,255,255,0.3); color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">Dismiss</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(warningBanner);
-
-        // Don't auto-dismiss since users need time to choose recovery options
-    }
-}
-
-// Recovery functions for localStorage quota issues
-function clearOldSimulations() {
-    const keysToRemove = [];
-
-    // Collect keys to remove (iterate carefully as localStorage.key(i) can return null)
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (key.startsWith('uaw-') || key.startsWith('simulation-'))) {
-            keysToRemove.push(key);
-        }
-    }
-
-    if (keysToRemove.length === 0) {
-        alert('No old simulations found to clear.');
-        return;
-    }
-
-    if (confirm(`Found ${keysToRemove.length} saved simulation(s). Clear them to free up space?`)) {
-        let cleared = 0;
-        keysToRemove.forEach(key => {
-            try {
-                localStorage.removeItem(key);
-                cleared++;
-            } catch (e) {
-                console.warn(`Failed to remove key ${key}:`, e.message);
-            }
-        });
-        alert(`Cleared ${cleared} saved simulation(s). Try saving again.`);
-        document.getElementById('storage-quota-warning')?.remove();
-    }
-}
-
 function downloadCurrentWork() {
     try {
         const editor = getMonacoEditor();
@@ -213,43 +101,10 @@ function downloadCurrentWork() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        alert('Work downloaded successfully. You can now clear storage or continue without auto-save.');
+        alert('Work downloaded successfully.');
     } catch (e) {
         console.error('Failed to download work:', e.message);
         alert('Failed to download work: ' + e.message);
-    }
-}
-
-function showStorageUsage() {
-    try {
-        let totalSize = 0;
-        const keys = [];
-
-        // Calculate total size more efficiently
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key) {
-                const item = localStorage.getItem(key);
-                const size = item ? (key.length + item.length) : 0;
-                totalSize += size;
-                if (size > 0) {
-                    keys.push({ key, size });
-                }
-            }
-        }
-
-        keys.sort((a, b) => b.size - a.size);
-
-        let message = `Total localStorage usage: ${Math.round(totalSize / 1024)}KB\n\nLargest items:\n`;
-        keys.slice(0, 5).forEach(item => {
-            message += `• ${item.key}: ${Math.round(item.size / 1024)}KB\n`;
-        });
-
-        message += `\nConsider clearing old simulations or downloading current work.`;
-        alert(message);
-    } catch (e) {
-        console.error('Failed to calculate storage usage:', e.message);
-        alert('Failed to calculate storage usage: ' + e.message);
     }
 }
 
@@ -670,32 +525,9 @@ require(["vs/editor/editor.main"], function () {
     // Clear the timeout since Monaco loaded successfully
     clearTimeout(monacoTimeout);
     
-    // Try to load saved content from localStorage first
-    const savedContent = localStorage.getItem('uaw-json-editor-content');
-    let initialData;
-    
-    if (savedContent) {
-        try {
-            // Validate that saved content is valid JSON
-            JSON.parse(savedContent);
-            initialData = savedContent;
-        } catch (e) {
-            console.warn('Corrupted localStorage data detected, clearing:', e.message);
-            localStorage.removeItem('uaw-json-editor-content');
-            initialData = null;
-        }
-    }
-    
-    // If no saved content or invalid, use default
-    if (!initialData) {
-        const defaultSimulation = window.simulationLibrary ? 
-            window.simulationLibrary.simulations.find(s => s.id === 'breadmaking') : 
-            null;
-        const defaultSimulationData = defaultSimulation ? 
-            { simulation: defaultSimulation.simulation } : 
-            sampleSimulation;
-        initialData = JSON.stringify(defaultSimulationData, null, 2);
-    }
+    // Folder-backed ProjectStore replaces this placeholder as soon as a project
+    // is opened. Legacy browser drafts are handled by its explicit migration UI.
+    const initialData = JSON.stringify(sampleSimulation, null, 2);
 
     monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
         validate: true,
@@ -908,19 +740,10 @@ require(["vs/editor/editor.main"], function () {
         // Auto-collapse assets object after content changes (debounced)
         debounceAutoCollapse();
 
-        // Handle history and localStorage saving
+        // Editor history is in-memory. Durable writes are owned by ProjectStore.
         clearTimeout(changeTimeout);
         changeTimeout = setTimeout(() => {
             saveToHistory();
-            // Save current content to localStorage
-            try {
-                const currentContent = editor.getValue();
-                JSON.parse(currentContent); // Validate JSON before saving
-                safeSetItem('uaw-json-editor-content', currentContent);
-            } catch (e) {
-                // Don't save invalid JSON - user may be mid-edit
-                console.debug('Skipping localStorage save due to invalid JSON');
-            }
         }, 1000);
     });
 

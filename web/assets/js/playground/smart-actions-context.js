@@ -194,7 +194,7 @@
 
                 // Get custom metrics information
                 try {
-                    const customCatalogText = localStorage.getItem('uaw-metrics-catalog-custom');
+                    const customCatalogText = window.UAWProjectStore?.getCurrent?.()?.settings?.customMetrics?.catalog;
                     if (customCatalogText) {
                         const customCatalog = JSON.parse(customCatalogText);
                         if (Array.isArray(customCatalog)) {
@@ -213,7 +213,7 @@
 
                 // Get validation functions from custom validator
                 try {
-                    const validatorCode = localStorage.getItem('uaw-metrics-validator-custom');
+                    const validatorCode = window.UAWProjectStore?.getCurrent?.()?.settings?.customMetrics?.validator;
                     if (validatorCode) {
                         const functionMatches = validatorCode.match(/function\s+(\w+)\s*\(/g);
                         if (functionMatches) {

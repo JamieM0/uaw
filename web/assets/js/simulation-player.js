@@ -155,7 +155,10 @@ class SimulationPlayer {
         window.simulationPlayerActive = this.isPlaying;
         
         if (this.ui.playPauseBtn) {
-            this.ui.playPauseBtn.textContent = this.isPlaying ? '⏸️' : '▶️';
+            this.ui.playPauseBtn.innerHTML = this.isPlaying
+                ? '<span class="player-control-icon" aria-hidden="true">Ⅱ</span><span class="player-control-label">Pause</span>'
+                : '<span class="player-control-icon" aria-hidden="true">▶</span><span class="player-control-label">Play</span>';
+            this.ui.playPauseBtn.setAttribute('aria-label', this.isPlaying ? 'Pause simulation' : 'Play simulation');
         }
 
         if (this.isPlaying) {
@@ -172,6 +175,7 @@ class SimulationPlayer {
         } else {
             cancelAnimationFrame(this.animationFrameId);
         }
+
     }
 
     setSpeed(speed) {
@@ -253,6 +257,21 @@ class SimulationPlayer {
             this.ui.liveTimeSpans.forEach(span => span.textContent = formattedTime);
         }
 
+        // Keep the visual timeline legible as a player: past, current and future
+        // tasks should be obvious without opening a detail panel.
+        taskTracks.forEach(track => {
+            track.querySelectorAll('.task-block').forEach(taskBlock => {
+                const start = Number(taskBlock.dataset.startMinutes);
+                const duration = Number(taskBlock.dataset.duration);
+                const end = start + duration;
+                const active = Number.isFinite(start) && Number.isFinite(end) && this.playheadTime >= start && this.playheadTime < end;
+                const completed = Number.isFinite(end) && this.playheadTime >= end;
+                taskBlock.classList.toggle('active', active);
+                taskBlock.classList.toggle('completed', completed);
+                taskBlock.setAttribute('aria-current', active ? 'step' : 'false');
+            });
+        });
+
         // 3-5. Optimize expensive state calculations - only recalculate if significant movement
         const timeDelta = Math.abs(this.playheadTime - this.lastStateCalculationTime);
         const shouldRecalculateStates = (
@@ -275,6 +294,7 @@ class SimulationPlayer {
             // Cache this calculation time
             this.lastStateCalculationTime = this.playheadTime;
         }
+
     }
 
     updateLiveObjectState() {

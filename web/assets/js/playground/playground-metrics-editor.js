@@ -1,7 +1,7 @@
 // Playground Metrics Editor - Custom metrics creation and management
 // Universal Automation Wiki - Simulation Playground
 
-// Constants for localStorage keys
+// Project-scoped keys stored in the selected project folder.
 const STORAGE_KEYS = {
     METRICS_MODE: 'uaw-metrics-mode',
     METRICS_CATALOG: 'uaw-metrics-catalog-custom',
@@ -9,7 +9,6 @@ const STORAGE_KEYS = {
 };
 
 // Constants for timeouts and delays
-const STORAGE_WARNING_DISMISS_DELAY_MS = 10000;
 const MONACO_LOAD_TIMEOUT_MS = 5000;
 const VALIDATION_DEBOUNCE_MS = 100;
 
@@ -28,44 +27,26 @@ function showUserSuccess(message) {
     }
 }
 
-// Safe localStorage wrapper with user notification
-function safeSetItem(key, value) {
-    try {
-        localStorage.setItem(key, value);
-        return true;
-    } catch (e) {
-        if (e.name === 'QuotaExceededError') {
-            showStorageQuotaWarning();
-            console.error('LocalStorage quota exceeded when saving key:', key);
-        } else {
-            console.error('Error saving to localStorage:', e.message);
-        }
-        return false;
-    }
+function getProjectStoredValue(key) {
+    const settings = window.UAWProjectStore?.getCurrent?.()?.settings || {};
+    if (key === STORAGE_KEYS.METRICS_MODE) return String(Boolean(settings.metricsMode));
+    if (key === STORAGE_KEYS.METRICS_CATALOG) return settings.customMetrics?.catalog || null;
+    if (key === STORAGE_KEYS.METRICS_VALIDATOR) return settings.customMetrics?.validator || null;
+    return null;
 }
 
-// Show visual warning to user about storage issues
-function showStorageQuotaWarning() {
-    // Create or show a warning banner
-    let warningBanner = document.getElementById('storage-quota-warning');
-    if (!warningBanner) {
-        warningBanner = document.createElement('div');
-        warningBanner.id = 'storage-quota-warning';
-        warningBanner.innerHTML = `
-            <div style="background: #ff6b35; color: white; padding: 10px; text-align: center; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-                ⚠️ Storage Full: Your work cannot be automatically saved. Consider clearing browser data or reducing file size.
-                <button onclick="document.getElementById('storage-quota-warning').remove()" style="margin-left: 15px; background: white; color: #ff6b35; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Dismiss</button>
-            </div>
-        `;
-        document.body.appendChild(warningBanner);
-
-        // Auto-dismiss after configured delay
-        setTimeout(() => {
-            if (warningBanner.parentNode) {
-                warningBanner.remove();
-            }
-        }, STORAGE_WARNING_DISMISS_DELAY_MS);
+function safeSetItem(key, value) {
+    const project = window.UAWProjectStore?.getCurrent?.();
+    if (!project) return false;
+    project.settings = { ...(project.settings || {}) };
+    if (key === STORAGE_KEYS.METRICS_MODE) project.settings.metricsMode = value === 'true';
+    if (key === STORAGE_KEYS.METRICS_CATALOG || key === STORAGE_KEYS.METRICS_VALIDATOR) {
+        project.settings.customMetrics = { ...(project.settings.customMetrics || {}) };
+        if (key === STORAGE_KEYS.METRICS_CATALOG) project.settings.customMetrics.catalog = value;
+        if (key === STORAGE_KEYS.METRICS_VALIDATOR) project.settings.customMetrics.validator = value;
     }
+    window.UAWProjectStore.put(project).catch((error) => showUserError(`Could not save project rules: ${error.message}`));
+    return true;
 }
 
 // Setup metrics mode toggle functionality
@@ -78,8 +59,7 @@ function setupMetricsMode() {
         return;
     }
 
-    // Load saved mode preference
-    const savedMode = localStorage.getItem(STORAGE_KEYS.METRICS_MODE);
+    const savedMode = getProjectStoredValue(STORAGE_KEYS.METRICS_MODE);
     isMetricsMode = savedMode === 'true';
     
     // Apply initial mode
@@ -448,7 +428,7 @@ function initializeMetricsCatalogEditor() {
 
     if (window.metricsCatalogEditor) return;
 
-    const customCatalog = localStorage.getItem(STORAGE_KEYS.METRICS_CATALOG) || JSON.stringify([
+    const customCatalog = getProjectStoredValue(STORAGE_KEYS.METRICS_CATALOG) || JSON.stringify([
         {
             "id": "custom.example.sample_check",
             "name": "Sample Custom Metric",
@@ -539,7 +519,7 @@ function initializeMetricsValidatorEditor() {
 
     if (window.metricsValidatorEditor) return;
 
-    const customValidator = localStorage.getItem(STORAGE_KEYS.METRICS_VALIDATOR) || `/**
+    const customValidator = getProjectStoredValue(STORAGE_KEYS.METRICS_VALIDATOR) || `/**
  * Custom Validation Functions for Metrics Editor
  *
  * Available context:
@@ -953,7 +933,7 @@ function validateMetricsCatalog(catalog) {
 }
 
 /**
- * Gets custom metrics catalog from localStorage or editor.
+ * Gets the custom metrics catalog from the project folder or editor.
  * Returns empty array on error.
  *
  * @returns {Array} The custom metrics catalog
@@ -964,7 +944,7 @@ function getCustomMetricsCatalog() {
         if (window.metricsCatalogEditor) {
             customCatalogText = window.metricsCatalogEditor.getValue();
         } else {
-            customCatalogText = localStorage.getItem(STORAGE_KEYS.METRICS_CATALOG);
+            customCatalogText = getProjectStoredValue(STORAGE_KEYS.METRICS_CATALOG);
         }
 
         if (!customCatalogText) {
@@ -1028,7 +1008,7 @@ function getMergedMetricsCatalog() {
 }
 
 /**
- * Gets custom validator code from editor or localStorage.
+ * Gets custom validator code from the editor or current project folder.
  *
  * @returns {string} The custom validator code
  */
@@ -1036,7 +1016,7 @@ function getCustomValidatorCode() {
     if (window.metricsValidatorEditor) {
         return window.metricsValidatorEditor.getValue();
     }
-    return localStorage.getItem(STORAGE_KEYS.METRICS_VALIDATOR) || '';
+    return getProjectStoredValue(STORAGE_KEYS.METRICS_VALIDATOR) || '';
 }
 
 /**
@@ -1249,7 +1229,7 @@ function checkForDuplicates(generatedId, generatedFunction, idStatus, functionSt
 
 /**
  * Adds a custom metric to the catalog based on form data.
- * Validates inputs, generates catalog entry and validator function, and saves to localStorage.
+ * Validates inputs, generates a catalog entry and validator function, and saves them with the project.
  *
  * @param {Event} e - The form submit event
  */
@@ -1346,13 +1326,13 @@ function addCustomMetric(e) {
         // Reload editors to show changes
         if (window.metricsCatalogEditor) {
             window.metricsCatalogEditor.setValue(
-                localStorage.getItem(STORAGE_KEYS.METRICS_CATALOG)
+                getProjectStoredValue(STORAGE_KEYS.METRICS_CATALOG)
             );
         }
 
         if (window.metricsValidatorEditor) {
             window.metricsValidatorEditor.setValue(
-                localStorage.getItem(STORAGE_KEYS.METRICS_VALIDATOR)
+                getProjectStoredValue(STORAGE_KEYS.METRICS_VALIDATOR)
             );
         }
 
@@ -1493,3 +1473,13 @@ function insertFunctionIntoValidator(functionCode) {
 
     return true;
 }
+
+window.addEventListener('uaw:project-opened', (event) => {
+    const customMetrics = event.detail.project?.settings?.customMetrics || {};
+    if (customMetrics.catalog && window.metricsCatalogEditor?.getValue?.() !== customMetrics.catalog) {
+        window.metricsCatalogEditor.setValue(customMetrics.catalog);
+    }
+    if (customMetrics.validator && window.metricsValidatorEditor?.getValue?.() !== customMetrics.validator) {
+        window.metricsValidatorEditor.setValue(customMetrics.validator);
+    }
+});
