@@ -4950,20 +4950,6 @@ body.uaw-v2[data-uaw-workspace="projects"] #uaw-projects-view {
     padding: 0 3px;
 }
 
-.uaw-project-count {
-    display: grid;
-    place-items: center;
-    min-width: 22px;
-    height: 22px;
-    margin: 0 0 -1px auto;
-    padding: 0 7px;
-    color: #667085;
-    background: #e9edf3;
-    border: 1px solid #dce2eb;
-    border-radius: 999px;
-    font: 650 9px var(--uaw-font-code);
-}
-
 .uaw-project-actions {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -5911,4 +5897,106 @@ body.uaw-v2 .uaw-live-inspector-panel .digital-objects-list {
 @media (max-width: 760px) {
     body.uaw-v2 .uaw-object-identity-grid,
     body.uaw-v2 #object-type-specific-fields { grid-column: auto; }
+}
+
+/* Approved reconciliation: one action system, contextual source, and docked tools. */
+.uaw-project-setup-card {
+    position: relative;
+    z-index: 1;
+    width: min(520px, calc(100vw - 40px));
+    overflow: hidden;
+    color: #253046;
+    background: #fff;
+    border: 1px solid #cfd6e1;
+    border-radius: 9px;
+    box-shadow: 0 18px 55px rgba(25, 36, 54, .22);
+}
+.uaw-project-setup-card header { padding: 22px 24px 17px; border-bottom: 1px solid #e3e8ef; }
+.uaw-project-setup-card h2 { margin: 4px 0 6px; color: #172033; font: 650 21px/1.2 "Geologica", "Source Sans 3", sans-serif; }
+.uaw-project-setup-card header > p:last-child { margin: 0; color: #68758a; font-size: 12px; }
+.uaw-project-setup-name { display: grid; gap: 7px; padding: 20px 24px 12px; color: #4d5b70; font-size: 10px; font-weight: 650; }
+.uaw-project-setup-name input { height: 38px; padding: 0 11px; color: #172033; background: #fff; border: 1px solid #bfc8d5; border-radius: 6px; font-size: 13px; }
+.uaw-project-setup-name input:focus { border-color: #6790df; outline: 3px solid rgba(36, 95, 214, .12); }
+.uaw-project-setup-summary { display: grid; grid-template-columns: 110px 1fr; gap: 4px 12px; margin: 4px 24px 20px; padding: 13px 14px; background: #f7f9fc; border: 1px solid #e0e5ed; border-radius: 7px; }
+.uaw-project-setup-summary span { color: #7a879a; font: 650 9px var(--uaw-font-code); letter-spacing: .04em; text-transform: uppercase; }
+.uaw-project-setup-summary strong { color: #344054; font-size: 11px; }
+.uaw-project-setup-summary small { grid-column: 2; color: #7a879a; font-size: 10px; line-height: 1.4; }
+.uaw-project-setup-card footer { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 16px; background: #f8fafc; border-top: 1px solid #e3e8ef; }
+.uaw-project-setup-card footer > button { min-height: 32px; padding: 0 12px; border-radius: 6px; }
+
+.uaw-object-type-summary { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 46px; padding: 6px 8px; background: #f7f9fc; border: 1px solid #dce2eb; border-radius: 6px; }
+.uaw-object-type-summary__mark { display: grid; place-items: center; width: 30px; height: 30px; color: #315f9f; background: #e9f0fb; border: 1px solid #cfdbed; border-radius: 6px; font: 650 11px var(--uaw-font-code); }
+.uaw-object-type-summary > span:nth-child(2) { display: grid; gap: 2px; min-width: 0; }
+.uaw-object-type-summary strong { color: #344054; font-size: 11px; }
+.uaw-object-type-summary small { color: #7a879a; font-size: 9px; }
+.uaw-object-type-summary button { min-height: 27px; padding: 0 8px; color: #496789; background: #fff; border: 1px solid #cbd3df; border-radius: 5px; font-size: 9px; }
+.uaw-object-type-select-secondary { display: none; margin-top: 7px; }
+.uaw-object-type-changing .uaw-object-type-select-secondary { display: block; }
+.uaw-object-editing #object-change-type { display: none; }
+.uaw-object-editing #object-id-input[readonly] { color: #68758a; background: #f3f5f8; cursor: not-allowed; }
+
+.uaw-settings-fact { display: grid; gap: 3px; align-content: center; min-height: 48px; padding: 8px 0; }
+.uaw-settings-fact strong { color: #344054; font-size: 11px; }
+.uaw-settings-fact small { color: #7a879a; font-size: 10px; }
+
+.uaw-agent-resizer {
+    position: fixed;
+    z-index: 520;
+    top: var(--uaw-titlebar-height);
+    right: calc(var(--uaw-agent-width) - 4px);
+    bottom: 0;
+    display: none;
+    width: 8px;
+    cursor: col-resize;
+    touch-action: none;
+}
+.uaw-agent-resizer::after { position: absolute; inset: 0 3px; background: transparent; content: ""; }
+body.uaw-agent-open .uaw-agent-resizer { display: block; }
+.uaw-agent-resizer:hover::after,
+.uaw-agent-resizer:focus-visible::after,
+body.uaw-resizing-agent .uaw-agent-resizer::after { background: #6790df; }
+body.uaw-resizing-agent { cursor: col-resize; user-select: none; }
+
+/* A source split is useful beside data registers, not beside canvases that own an inspector. */
+body.uaw-v2 .uaw-source-resizer { display: none !important; }
+body.uaw-v2[data-uaw-workspace="build"][data-model-view="process"][data-source-dock^="split-"] .uaw-source-resizer,
+body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock^="split-"] .uaw-source-resizer { display: block !important; }
+body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock^="split-"] .uaw-legacy-host { display: block !important; }
+body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock^="split-"] .uaw-legacy-host .simulation-panel,
+body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock^="split-"] .uaw-legacy-host .playground-bottom { display: none !important; }
+body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock^="split-"] .uaw-legacy-host .json-editor-panel,
+body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock^="split-"] .uaw-legacy-host .standard-mode-layout { display: flex !important; width: 100% !important; height: 100% !important; }
+body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock="split-left"] .uaw-legacy-host { left: 0 !important; right: calc(100% - var(--uaw-source-split, 52%)) !important; }
+body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock="split-left"] #uaw-objects-view { left: var(--uaw-source-split, 52%) !important; right: 0 !important; }
+body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock="split-right"] .uaw-legacy-host { left: var(--uaw-source-split, 52%) !important; right: 0 !important; }
+body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock="split-right"] #uaw-objects-view { left: 0 !important; right: calc(100% - var(--uaw-source-split, 52%)) !important; }
+body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock="split-bottom"] .uaw-legacy-host { top: var(--uaw-source-split, 62%) !important; bottom: 0 !important; border-top: 1px solid #d8dee8; }
+body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock="split-bottom"] #uaw-objects-view { top: 0 !important; bottom: calc(100% - var(--uaw-source-split, 62%)) !important; }
+
+/* Rules owns its editors. The unrelated WorkSpec/preview half is removed. */
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] .metrics-mode-layout { display: none !important; }
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] #metrics-editor-panel { display: flex !important; flex: 1 1 100% !important; width: 100% !important; min-width: 0 !important; border-left: 0 !important; }
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] #metrics-editor-panel > .panel-content { display: flex; flex-direction: column; width: 100%; min-width: 0; background: #f4f6fa; }
+.uaw-rules-overview,
+.uaw-problems-overview { display: flex; align-items: center; gap: 24px; min-height: 92px; padding: 18px clamp(20px, 2.4vw, 34px); background: #f4f6fa; border-bottom: 1px solid #d8dee8; }
+.uaw-rules-overview div,
+.uaw-problems-overview div { min-width: 0; }
+.uaw-rules-overview h1,
+.uaw-problems-overview h1 { margin: 0; color: #111827; font: 650 clamp(24px, 2vw, 30px)/1.1 "Geologica", "Source Sans 3", sans-serif; letter-spacing: -.04em; }
+.uaw-rules-overview p,
+.uaw-problems-overview p { margin: 8px 0 0; color: #68758a; font-size: 12px; }
+.uaw-rules-overview > span,
+.uaw-problems-overview > span { margin-left: auto; color: #68758a; font: 650 9px var(--uaw-font-code); letter-spacing: .06em; text-transform: uppercase; }
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] .metrics-tab-bar { flex: 0 0 42px; padding: 6px 18px 0; background: #fff; border-bottom: 1px solid #d8dee8; }
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] .metrics-tab-btn { min-height: 35px; padding: 0 12px; color: #68758a; background: transparent; border: 0; border-bottom: 2px solid transparent; font-size: 10px; }
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] .metrics-tab-btn.active { color: #245fd6; border-bottom-color: #245fd6; }
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] .metrics-tab-content-wrapper { flex: 1 1 auto; min-height: 0; margin: 14px 18px 18px; overflow: hidden; background: #fff; border: 1px solid #dfe4ec; border-radius: 8px; }
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] .metrics-resize { display: none !important; }
+
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="problems"] .validation-panel { display: flex; flex-direction: column; height: 100%; background: #f4f6fa; }
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="problems"] .validation-header { flex: 0 0 44px; padding: 0 clamp(20px, 2.4vw, 34px); background: #fff; border-bottom: 1px solid #d8dee8; }
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="problems"] .validation-content { flex: 1 1 auto; height: auto !important; min-height: 0; margin: 14px clamp(20px, 2.4vw, 34px) 20px; overflow: auto; background: #fff; border: 1px solid #dfe4ec; border-radius: 8px; }
+
+@media (max-width: 1050px) {
+    :root { --uaw-agent-width: 288px; }
 }

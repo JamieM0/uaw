@@ -17,7 +17,7 @@
     const AUTOSAVE_DELAY = 700;
     const LEGACY_DOCUMENT_KEY = 'uaw-json-editor-content';
     const LEGACY_PROJECTS_KEY = 'uaw-v2-projects';
-    const LEGACY_SAVE_CODE_PREFIX = 'uaw-save-code-v1:';
+    const LEGACY_SHARE_PREFIX = 'uaw-save-code-v1:';
 
     const blankWorkSpec = () => JSON.stringify({
         simulation: {
@@ -560,10 +560,10 @@
                 if (draft) results.push({ id: 'legacy-editor-draft', name: 'Recovered editor draft', workSpecDraft: draft, settings: legacySettings, legacySource: 'editor-draft' });
                 for (let index = 0; index < localStorage.length; index += 1) {
                     const key = localStorage.key(index);
-                    if (!key?.startsWith(LEGACY_SAVE_CODE_PREFIX)) continue;
+                    if (!key?.startsWith(LEGACY_SHARE_PREFIX)) continue;
                     try {
                         const record = JSON.parse(localStorage.getItem(key));
-                        if (record?.payload) results.push({ id: `legacy-save-code-${key.slice(LEGACY_SAVE_CODE_PREFIX.length)}`, name: `Recovered save ${key.slice(LEGACY_SAVE_CODE_PREFIX.length)}`, workSpecDraft: JSON.stringify(record.payload, null, 2), settings: legacySettings, legacySource: 'save-code', legacyKey: key });
+                        if (record?.payload) results.push({ id: `legacy-share-${key.slice(LEGACY_SHARE_PREFIX.length)}`, name: 'Recovered browser snapshot', workSpecDraft: JSON.stringify(record.payload, null, 2), settings: legacySettings, legacySource: 'browser-snapshot', legacyKey: key });
                     } catch (_error) { /* Preserve malformed data for manual recovery. */ }
                 }
             } catch (error) { console.warn('Unable to inspect legacy project data:', error); }
@@ -615,7 +615,7 @@
                 } catch (_error) { /* Preserve malformed legacy data for manual recovery. */ }
             }
             if (legacy.legacySource === 'editor-draft') localStorage.removeItem(LEGACY_DOCUMENT_KEY);
-            if (legacy.legacySource === 'save-code' && legacy.legacyKey) localStorage.removeItem(legacy.legacyKey);
+            if (legacy.legacySource === 'browser-snapshot' && legacy.legacyKey) localStorage.removeItem(legacy.legacyKey);
             if (!this.legacyProjects.some((item) => item !== legacy)) {
                 localStorage.removeItem('uaw-metrics-catalog-custom');
                 localStorage.removeItem('uaw-metrics-validator-custom');

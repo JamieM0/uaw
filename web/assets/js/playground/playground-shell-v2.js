@@ -11,6 +11,7 @@
         modelView: 'process',
         runView: 'timeline',
         sourceSplit: 52,
+        agentWidth: 312,
         layoutVersion: 4
     };
 
@@ -64,10 +65,15 @@
         }
 
         loadSettings() {
-            return { ...DEFAULT_SETTINGS };
+            let onboardingDismissed = false;
+            try { onboardingDismissed = localStorage.getItem('uaw:onboarding-dismissed') === 'true'; }
+            catch (_error) { /* Browser privacy settings may disable local storage. */ }
+            return { ...DEFAULT_SETTINGS, onboardingDismissed };
         }
 
         saveSettings() {
+            try { localStorage.setItem('uaw:onboarding-dismissed', String(Boolean(this.settings.onboardingDismissed))); }
+            catch (_error) { /* Project settings remain the durable fallback. */ }
             const project = this.projectStore?.getCurrent();
             if (!project) return;
             project.settings = { ...(project.settings || {}), workspace: { ...this.settings } };
@@ -119,9 +125,6 @@
                     <button class="uaw-quiet-button uaw-command-trigger" id="uaw-command-trigger" type="button">
                         ${this.icon('search')}<span>Search commands</span><kbd>⌘ K</kbd>
                     </button>
-                    <button class="uaw-icon-button" id="uaw-toggle-inspector" type="button" title="Toggle inspector">
-                        ${this.icon('panel')}<span class="sr-only">Toggle inspector</span>
-                    </button>
                     <button class="uaw-agent-button" id="uaw-agent-button" type="button">
                         ${this.icon('agent')}<span>Agent</span><span class="uaw-agent-dot" aria-hidden="true"></span>
                     </button>
@@ -167,7 +170,6 @@
                             <aside class="uaw-inspector" id="uaw-inspector" aria-label="Inspector">
                                 <div class="uaw-pane-header">
                                     <span id="uaw-inspector-title">Inspector</span>
-                                    <button class="uaw-icon-button uaw-icon-button--small" id="uaw-close-inspector" type="button" title="Close inspector">${this.icon('close')}</button>
                                 </div>
                                 <div class="uaw-inspector__content" id="uaw-inspector-content">
                                     <div id="uaw-inspector-context" class="uaw-inspector-context"></div>
@@ -202,8 +204,8 @@
                 <div class="uaw-confirm-dialog" id="uaw-confirm-dialog" hidden>
                     <div class="uaw-command-palette__backdrop" data-cancel-confirm></div>
                     <section class="uaw-confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="uaw-confirm-title" aria-describedby="uaw-confirm-copy">
-                        <p class="uaw-eyebrow">PROJECT REGISTRY</p><h2 id="uaw-confirm-title">Forget project?</h2><p id="uaw-confirm-copy"></p>
-                        <div><button type="button" data-cancel-confirm>Cancel</button><button class="uaw-danger-button" type="button" data-confirm-delete>Forget project</button></div>
+                        <p class="uaw-eyebrow">PROJECT REGISTRY</p><h2 id="uaw-confirm-title">Remove from Projects?</h2><p id="uaw-confirm-copy"></p>
+                        <div><button type="button" data-cancel-confirm>Cancel</button><button class="uaw-danger-button" type="button" data-confirm-delete>Remove Project</button></div>
                     </section>
                 </div>
 
@@ -217,6 +219,19 @@
                     </form>
                 </div>
 
+                <div class="uaw-confirm-dialog" id="uaw-project-setup-dialog" hidden>
+                    <div class="uaw-command-palette__backdrop" data-cancel-project-setup></div>
+                    <form class="uaw-project-setup-card" id="uaw-project-setup-form" role="dialog" aria-modal="true" aria-labelledby="uaw-project-setup-title">
+                        <header><p class="uaw-eyebrow">NEW PROJECT</p><h2 id="uaw-project-setup-title">Set up project</h2><p>Name the project now. You will choose its parent folder in the next step.</p></header>
+                        <label class="uaw-project-setup-name">Project name<input id="uaw-project-setup-name" type="text" required maxlength="120" autocomplete="off" placeholder="Untitled project"></label>
+                        <div class="uaw-project-setup-summary">
+                            <span>Starting point</span><strong id="uaw-project-setup-source">Blank WorkSpec</strong><small>A dedicated project folder will be created inside the location you choose.</small>
+                        </div>
+                        <footer><button type="button" data-cancel-project-setup>Cancel</button><button class="uaw-product-command primary" type="submit">Choose location…</button></footer>
+                    </form>
+                </div>
+
+                <div class="uaw-agent-resizer" id="uaw-agent-resizer" role="separator" tabindex="0" aria-label="Resize Agent pane" aria-orientation="vertical"></div>
                 <div class="uaw-agent-drawer" id="uaw-agent-drawer" aria-hidden="true"></div>
                 <div class="uaw-toast-region" id="uaw-toast-region" aria-live="polite" aria-atomic="true"></div>
             `;
@@ -351,7 +366,6 @@
                 { id: 'view.source-bottom', label: 'Dock Source below the canvas', run: () => { this.setSourceDock('split-bottom'); this.setModelView('process'); } },
                 { id: 'view.source-dedicated', label: 'Open Source in a dedicated pane', run: () => { this.setSourceDock('dedicated'); this.setModelView('source'); } },
                 { id: 'view.source-hidden', label: 'Hide Source while modelling', run: () => { this.setSourceDock('hidden'); this.setModelView('process'); } },
-                { id: 'view.inspector', label: 'Toggle inspector', run: () => this.toggleInspector() },
                 { id: 'run.toggle', label: 'Play or pause simulation', shortcut: 'Space', run: () => click('player-play-pause-btn') },
                 { id: 'validate.run', label: 'Validate WorkSpec', shortcut: '⌘ Enter', run: () => window.runManualValidation?.() || window.validateJSON?.() },
                 { id: 'run.timeline', label: 'Open simulation timeline', run: () => this.setRunView('timeline') },
@@ -377,15 +391,19 @@
             this.shell.querySelectorAll('[data-cancel-confirm]').forEach((button) => button.addEventListener('click', () => this.closeDeleteConfirmation()));
             this.shell.querySelectorAll('[data-cancel-object-type]').forEach((button) => button.addEventListener('click', () => this.closeCustomObjectTypeDialog()));
             this.shell.querySelector('#uaw-object-type-form')?.addEventListener('submit', (event) => this.saveCustomObjectType(event));
+            this.shell.querySelectorAll('[data-cancel-project-setup]').forEach((button) => button.addEventListener('click', () => this.closeProjectSetup()));
+            this.shell.querySelector('#uaw-project-setup-form')?.addEventListener('submit', (event) => this.submitProjectSetup(event));
             this.shell.querySelector('#uaw-toggle-inspector')?.addEventListener('click', () => this.toggleInspector());
             this.shell.querySelector('#uaw-close-inspector')?.addEventListener('click', () => this.toggleInspector(false));
             this.shell.querySelector('#uaw-agent-button')?.addEventListener('click', () => this.toggleAgent());
             this.shell.querySelector('#uaw-project-title')?.addEventListener('click', () => this.toggleProjectMenu());
+            this.bindAgentResizer();
 
             window.addEventListener('uaw:project-opened', (event) => {
                 const projectSettings = event.detail.project?.settings?.workspace;
                 if (projectSettings?.layoutVersion === DEFAULT_SETTINGS.layoutVersion) {
-                    this.settings = { ...DEFAULT_SETTINGS, ...projectSettings };
+                    const globalOnboardingDismissed = this.settings.onboardingDismissed;
+                    this.settings = { ...DEFAULT_SETTINGS, ...projectSettings, onboardingDismissed: globalOnboardingDismissed || Boolean(projectSettings.onboardingDismissed) };
                     this.workspace = this.settings.lastWorkspace;
                     this.modelView = this.settings.modelView;
                     this.runView = this.settings.runView;
@@ -454,7 +472,7 @@
                 const objectType = event.target.closest('[data-add-object-type]');
                 if (objectType) {
                     this.closeObjectMenu();
-                    window.openAddObjectModalWithType?.(objectType.dataset.addObjectType, objectType.dataset.customObjectLabel || '');
+                    window.openAddObjectModalWithType?.(objectType.dataset.addObjectType, objectType.dataset.customObjectLabel || '', objectType.dataset.customObjectId || '');
                 }
                 const menuToggle = event.target.closest('[data-object-menu-toggle]');
                 if (menuToggle) {
@@ -475,6 +493,7 @@
             document.body.dataset.modelView = this.modelView;
             document.body.dataset.runView = this.runView;
             document.documentElement.style.setProperty('--uaw-source-split', `${this.settings.sourceSplit || 52}%`);
+            document.documentElement.style.setProperty('--uaw-agent-width', `${this.settings.agentWidth || 312}px`);
         }
 
         commandButton(command, label, options = {}) {
@@ -504,7 +523,7 @@
                 ['product', 'Product', 'Outputs, deliverables and work in progress']
             ];
             const custom = this.getCustomObjectTypes();
-            menu.innerHTML = `${presets.map(([id, label, help]) => `<button role="menuitem" type="button" data-add-object-type="${id}"><span><strong>Add ${label}</strong><small>${help}</small></span></button>`).join('')}${custom.length ? `<div class="uaw-menu-separator"><span>Custom object types</span></div>${custom.map(type => `<button role="menuitem" type="button" data-add-object-type="custom" data-custom-object-label="${escapeHTML(type.label)}"><span><strong>Add ${escapeHTML(type.label)}</strong><small>Custom type based on ${escapeHTML(type.baseType || 'object')}</small></span></button>`).join('')}` : ''}<div class="uaw-menu-separator"></div><button role="menuitem" type="button" data-create-object-type><span><strong>Define custom type…</strong><small>Create a reusable project preset</small></span></button>`;
+            menu.innerHTML = `${presets.map(([id, label, help]) => `<button role="menuitem" type="button" data-add-object-type="${id}"><span><strong>Add ${label}</strong><small>${help}</small></span></button>`).join('')}${custom.length ? `<div class="uaw-menu-separator"><span>Custom object types</span></div>${custom.map(type => `<button role="menuitem" type="button" data-add-object-type="${escapeHTML(type.baseType || 'custom')}" data-custom-object-id="${escapeHTML(type.id)}" data-custom-object-label="${escapeHTML(type.label)}"><span><strong>Add ${escapeHTML(type.label)}</strong><small>Custom type based on ${escapeHTML(type.baseType || 'object')}</small></span></button>`).join('')}` : ''}<div class="uaw-menu-separator"></div><button role="menuitem" type="button" data-create-object-type><span><strong>Define custom type…</strong><small>Create a reusable project preset</small></span></button>`;
             menu.hidden = false;
             // The register clips its rounded table edges; an active menu must be
             // allowed to extend outside that container.
@@ -596,7 +615,7 @@
             }
 
             if (this.workspace === 'run') {
-                primary.innerHTML = `<div class="uaw-segmented" role="tablist" aria-label="Simulation views">${this.commandButton('run.timeline', 'Player', { active: this.runView === 'timeline', pressed: this.runView === 'timeline' })}${this.commandButton('review.problems', 'Findings', { active: this.runView === 'problems', pressed: this.runView === 'problems' })}${this.commandButton('review.rules', 'Rules', { active: this.runView === 'rules', pressed: this.runView === 'rules' })}</div>`;
+                primary.innerHTML = `<div class="uaw-segmented" role="tablist" aria-label="Simulation views">${this.commandButton('run.timeline', 'Timeline', { active: this.runView === 'timeline', pressed: this.runView === 'timeline' })}${this.commandButton('review.problems', 'Problems', { active: this.runView === 'problems', pressed: this.runView === 'problems' })}${this.commandButton('review.rules', 'Rules', { active: this.runView === 'rules', pressed: this.runView === 'rules' })}</div>`;
                 context.innerHTML = this.runView === 'rules'
                     ? this.commandButton('review.add-rule', 'New rule', { primary: true }) + this.commandButton('review.run-custom', 'Run rules')
                     : this.runView === 'problems' ? this.commandButton('validate.run', 'Run validation', { primary: true }) : '';
@@ -661,7 +680,7 @@
             // Keep the preference toggle for other views, but never allow it to
             // hide the panel while modelling a physical, digital, or display
             // environment.
-            if (this.hasPersistentInspector()) this.toggleInspector(true, { persist: false });
+            this.toggleInspector(this.hasPersistentInspector(), { persist: false });
             this.shell.querySelectorAll('.uaw-rail-button').forEach((button) => {
                 const selected = button.dataset.workspace === workspace || (workspace === 'source' && button.dataset.workspace === 'build');
                 button.classList.toggle('active', selected);
@@ -681,7 +700,11 @@
                 const rules = this.runView === 'rules';
                 this.ensureMetricsMode(rules);
                 if (!rules) document.querySelector('.simulation-panel .tab-btn[data-tab="timeline"]')?.click();
-                if (rules) requestAnimationFrame(() => this.ensureMetricsMode(true));
+                if (rules) requestAnimationFrame(() => {
+                    this.ensureMetricsMode(true);
+                    this.prepareRulesWorkspace();
+                });
+                if (this.runView === 'problems') requestAnimationFrame(() => this.prepareProblemsWorkspace());
             }
             if (workspace === 'build' || workspace === 'source' || workspace === 'projects' || workspace === 'assets' || workspace === 'settings') {
                 this.ensureMetricsMode(false);
@@ -699,6 +722,23 @@
             if (options.animate !== false) window.UAWMotion?.workspaceChange?.();
             this.layoutEditors();
             window.dispatchEvent(new CustomEvent('uaw:workspace-changed', { detail: { workspace } }));
+        }
+
+        prepareProblemsWorkspace() {
+            const panel = document.querySelector('.validation-panel');
+            if (!panel || panel.querySelector('.uaw-problems-overview')) return;
+            panel.insertAdjacentHTML('afterbegin', `<header class="uaw-problems-overview"><div><h1>Problems</h1><p>Validation errors, warnings, suggestions and passed checks for the current WorkSpec.</p></div><span>Model health</span></header>`);
+        }
+
+        prepareRulesWorkspace() {
+            const content = document.querySelector('#metrics-editor-panel > .panel-content');
+            if (!content) return;
+            if (!content.querySelector('.uaw-rules-overview')) {
+                content.insertAdjacentHTML('afterbegin', `<header class="uaw-rules-overview"><div><h1>Rules</h1><p>Define project-specific checks without exposing unrelated WorkSpec source.</p></div><span>Custom validation</span></header>`);
+            }
+            const tabs = content.querySelectorAll('.metrics-tab-btn');
+            if (tabs[0]) tabs[0].textContent = 'Rule catalogue';
+            if (tabs[1]) tabs[1].textContent = 'Rule logic';
         }
 
         layoutEditors() {
@@ -782,11 +822,8 @@
         }
 
         toggleInspector(force, options = {}) {
-            const requestedOpen = typeof force === 'boolean' ? force : !document.body.classList.contains('uaw-inspector-open');
-            const open = this.hasPersistentInspector() || requestedOpen;
+            const open = this.hasPersistentInspector();
             document.body.classList.toggle('uaw-inspector-open', open);
-            this.settings.inspectorOpen = open;
-            if (options.persist !== false) this.saveSettings();
             window.UAWMotion?.panelChange?.('#uaw-inspector', open);
             this.layoutEditors();
         }
@@ -796,8 +833,41 @@
             const open = typeof force === 'boolean' ? force : !document.body.classList.contains('uaw-agent-open');
             document.body.classList.toggle('uaw-agent-open', open);
             drawer?.setAttribute('aria-hidden', String(!open));
+            document.documentElement.style.setProperty('--uaw-agent-width', `${this.settings.agentWidth || 312}px`);
             window.UAWMotion?.panelChange?.('#uaw-agent-drawer', open);
             if (open) window.dispatchEvent(new CustomEvent('uaw:agent-opened'));
+        }
+
+        bindAgentResizer() {
+            const handle = this.shell?.querySelector('#uaw-agent-resizer');
+            if (!handle) return;
+            const applyWidth = (value, persist = false) => {
+                const maximum = Math.max(280, Math.min(520, window.innerWidth - 760));
+                this.settings.agentWidth = Math.round(Math.min(maximum, Math.max(280, value)));
+                document.documentElement.style.setProperty('--uaw-agent-width', `${this.settings.agentWidth}px`);
+                if (persist) this.saveSettings();
+                this.layoutEditors();
+            };
+            handle.addEventListener('pointerdown', (event) => {
+                event.preventDefault();
+                handle.setPointerCapture(event.pointerId);
+                document.body.classList.add('uaw-resizing-agent');
+            });
+            handle.addEventListener('pointermove', (event) => {
+                if (handle.hasPointerCapture(event.pointerId)) applyWidth(window.innerWidth - event.clientX);
+            });
+            const finish = (event) => {
+                if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
+                document.body.classList.remove('uaw-resizing-agent');
+                applyWidth(this.settings.agentWidth, true);
+            };
+            handle.addEventListener('pointerup', finish);
+            handle.addEventListener('pointercancel', finish);
+            handle.addEventListener('keydown', (event) => {
+                if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+                event.preventDefault();
+                applyWidth((this.settings.agentWidth || 312) + (event.key === 'ArrowLeft' ? 16 : -16), true);
+            });
         }
 
         renderProjectOutline() {
@@ -940,7 +1010,7 @@
                     <dl><div><dt>Tasks</dt><dd>${tasks.length}</dd></div><div><dt>Actors</dt><dd>${actors.length}</dd></div><div><dt>Objects</dt><dd>${objects.length}</dd></div></dl>
                 </header>
                 <section class="uaw-process-register" aria-labelledby="uaw-task-register-heading">
-                    <div class="uaw-process-section-heading"><div><h2 id="uaw-task-register-heading">Task register</h2><p>The authored sequence, assignments and dependencies. Run it from Simulate.</p></div><button type="button" data-uaw-command="edit.task">New task</button></div>
+                    <div class="uaw-process-section-heading"><div><h2 id="uaw-task-register-heading">Task register</h2><p>The authored sequence, assignments and dependencies. Run it from Simulate.</p></div></div>
                     ${rows ? `<div class="uaw-process-table-wrap"><table class="uaw-process-table"><thead><tr><th>Task</th><th>Actor</th><th>Start</th><th>Duration</th><th>Location</th><th>Depends on</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="uaw-process-empty"><strong>No tasks yet</strong><p>Add the first task to establish this process.</p><button type="button" data-uaw-command="edit.task">Create first task</button></div>`}
                 </section>
             `;
@@ -973,7 +1043,7 @@
                 const state = details.state ?? details.quantity ?? details.role ?? '—';
                 return `<tr data-object-row data-object-search="${escapeHTML(`${object?.name || ''} ${object?.id || ''} ${type}`.toLowerCase())}" data-object-type="${escapeHTML(type)}"><td><div class="uaw-object-name"><span><strong>${escapeHTML(object?.name || object?.id || `Object ${index + 1}`)}</strong><code>${escapeHTML(object?.id || 'No ID')}</code></span></div></td><td><span class="uaw-type-pill">${escapeHTML(type)}</span></td><td>${escapeHTML(state)}</td><td>${escapeHTML(object?.__period || 'Global')}</td><td><button class="uaw-row-action" type="button" data-edit-object-index="${index}">${object?.__period ? 'View source' : 'Edit'}</button></td></tr>`;
             }).join('');
-            view.innerHTML = `<header class="uaw-process-heading uaw-objects-heading"><div><h1>Objects</h1><p>Actors, resources, equipment and outputs available to this process.</p></div><dl><div><dt>Objects</dt><dd>${objects.length}</dd></div><div><dt>Types</dt><dd>${groups.length}</dd></div></dl></header><section class="uaw-process-register"><div class="uaw-process-section-heading"><div><h2>Object register</h2><p>Reusable entities referenced by tasks and environment layouts.</p></div>${this.objectAddMenuButton()}</div><div class="uaw-object-toolbar"><label><span class="sr-only">Search objects</span><input type="search" data-object-search-input placeholder="Search objects…"></label><select data-object-filter aria-label="Filter object type"><option value="">All types</option>${groups.map(type => `<option value="${escapeHTML(type)}">${escapeHTML(type)}</option>`).join('')}</select></div>${rows ? `<div class="uaw-process-table-wrap"><table class="uaw-process-table uaw-object-table"><thead><tr><th>Object</th><th>Type</th><th>State / quantity</th><th>Scope</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="uaw-process-empty"><strong>No objects yet</strong><p>Choose a preset to create an actor, resource, equipment item or product.</p>${this.objectAddMenuButton()}</div>`}</section>`;
+            view.innerHTML = `<header class="uaw-process-heading uaw-objects-heading"><div><h1>Objects</h1><p>Actors, resources, equipment and outputs available to this process.</p></div><dl><div><dt>Objects</dt><dd>${objects.length}</dd></div><div><dt>Types</dt><dd>${groups.length}</dd></div></dl></header><section class="uaw-process-register"><div class="uaw-process-section-heading"><div><h2>Object register</h2><p>Reusable entities referenced by tasks and environment layouts.</p></div></div><div class="uaw-object-toolbar"><label><span class="sr-only">Search objects</span><input type="search" data-object-search-input placeholder="Search objects…"></label><select data-object-filter aria-label="Filter object type"><option value="">All types</option>${groups.map(type => `<option value="${escapeHTML(type)}">${escapeHTML(type)}</option>`).join('')}</select></div>${rows ? `<div class="uaw-process-table-wrap"><table class="uaw-process-table uaw-object-table"><thead><tr><th>Object</th><th>Type</th><th>State / quantity</th><th>Scope</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="uaw-process-empty"><strong>No objects yet</strong><p>Use Add object in the command bar to create an actor, resource, equipment item or product.</p></div>`}</section>`;
             const filter = () => {
                 const query = view.querySelector('[data-object-search-input]')?.value.trim().toLowerCase() || '';
                 const type = view.querySelector('[data-object-filter]')?.value || '';
@@ -1014,10 +1084,8 @@
                     ${projects.map(project => `<button type="button" role="menuitem" data-switch-project="${escapeHTML(project.id)}" class="${project.id === current?.id ? 'active' : ''}"><span class="uaw-project-menu__mark">WS</span><span><strong>${escapeHTML(project.name)}</strong><small>${project.id === current?.id ? 'Current project' : 'Open project'}</small></span>${project.id === current?.id ? '<span class="uaw-project-menu__check">✓</span>' : ''}</button>`).join('')}
                 </div>
                 <div class="uaw-project-menu__actions">
-                    <button type="button" data-project-menu-action="new">New blank project</button>
-                    <button type="button" data-project-menu-action="open-folder">Open project folder…</button>
-                    <button type="button" data-project-menu-action="template">New from template…</button>
-                    <button type="button" data-project-menu-action="rename">Rename current project</button>
+                    <button type="button" data-project-menu-action="manage">Manage projects</button>
+                    ${current ? '<button type="button" data-project-menu-action="rename">Rename current project</button>' : ''}
                 </div>
             `;
             menu.querySelectorAll('[data-switch-project]').forEach(button => button.addEventListener('click', async () => {
@@ -1025,17 +1093,9 @@
                 this.toggleProjectMenu(false);
                 this.setWorkspace('build');
             }));
-            menu.querySelector('[data-project-menu-action="new"]')?.addEventListener('click', async () => {
+            menu.querySelector('[data-project-menu-action="manage"]')?.addEventListener('click', () => {
                 this.toggleProjectMenu(false);
-                await this.createProject();
-            });
-            menu.querySelector('[data-project-menu-action="open-folder"]')?.addEventListener('click', async () => {
-                this.toggleProjectMenu(false);
-                await this.openProjectFolder();
-            });
-            menu.querySelector('[data-project-menu-action="template"]')?.addEventListener('click', () => {
-                this.toggleProjectMenu(false);
-                document.getElementById('simulation-library-btn')?.click();
+                this.setWorkspace('projects');
             });
             menu.querySelector('[data-project-menu-action="rename"]')?.addEventListener('click', () => {
                 this.toggleProjectMenu(false);
@@ -1075,7 +1135,7 @@
                     </button>
                     <div class="uaw-project-card__actions">
                         <button type="button" data-duplicate-project="${escapeHTML(project.id)}">Duplicate</button>
-                        <button type="button" data-delete-project="${escapeHTML(project.id)}" class="uaw-project-delete">Forget</button>
+                        <button type="button" data-delete-project="${escapeHTML(project.id)}" class="uaw-project-delete">Remove Project</button>
                     </div>
                 </article>`;
             }).join('');
@@ -1094,22 +1154,12 @@
                         <h1>Projects</h1>
                         <p>Create, reconnect and manage folder-backed WorkSpec projects. Your project files stay in locations you choose.</p>
                     </div>
-                    <button class="uaw-projects-new" type="button" data-uaw-command="project.new"><span aria-hidden="true">+</span>New project</button>
                 </header>
                 ${migration}
-                ${!this.settings.onboardingDismissed ? this.onboardingMarkup() : ''}
-                <section class="uaw-projects-section" aria-labelledby="uaw-project-start-title">
-                    <div class="uaw-projects-section__heading"><div><p>Start a project</p><h2 id="uaw-project-start-title">Choose a starting point</h2></div></div>
-                    <div class="uaw-project-actions">
-                        <button type="button" data-uaw-command="project.templates"><span class="uaw-project-action__icon">${projectIcons.template}</span><span class="uaw-project-action__copy"><strong>Start from a template</strong><small>Adapt a ready-made process</small></span><span class="uaw-project-action__arrow">${projectIcons.arrow}</span></button>
-                        <button type="button" data-uaw-command="project.import"><span class="uaw-project-action__icon">${projectIcons.import}</span><span class="uaw-project-action__copy"><strong>Import WorkSpec</strong><small>Open JSON or a project archive</small></span><span class="uaw-project-action__arrow">${projectIcons.arrow}</span></button>
-                        <button type="button" data-uaw-command="project.open-folder"><span class="uaw-project-action__icon">${projectIcons.folder}</span><span class="uaw-project-action__copy"><strong>Open project folder</strong><small>Reconnect an existing workspace</small></span><span class="uaw-project-action__arrow">${projectIcons.arrow}</span></button>
-                        <button type="button" data-uaw-command="agent.open"><span class="uaw-project-action__icon">${projectIcons.agent}</span><span class="uaw-project-action__copy"><strong>Draft with Agent</strong><small>Describe the process you need</small></span><span class="uaw-project-action__arrow">${projectIcons.arrow}</span></button>
-                    </div>
-                </section>
+                ${!projects.length && !this.settings.onboardingDismissed ? this.onboardingMarkup() : ''}
                 <section class="uaw-projects-section uaw-projects-section--recent" aria-labelledby="uaw-recent-projects-title">
-                    <div class="uaw-projects-section__heading"><div><p>Your workspace</p><h2 id="uaw-recent-projects-title">Recent projects</h2></div><span class="uaw-project-count">${projects.length}</span></div>
-                    <div class="uaw-project-grid">${cards || `<div class="uaw-empty-state"><span class="uaw-empty-state__mark">${projectIcons.document}</span><span><strong>No projects yet</strong><p>Create a blank project or choose a starting point above.</p></span><button type="button" data-uaw-command="project.new">Create project</button></div>`}</div>
+                    <div class="uaw-projects-section__heading"><div><p>Your workspace</p><h2 id="uaw-recent-projects-title">Recent projects</h2></div></div>
+                    <div class="uaw-project-grid">${cards || `<div class="uaw-empty-state"><span class="uaw-empty-state__mark">${projectIcons.document}</span><span><strong>No projects yet</strong><p>Use the command bar to create, import or reconnect a project.</p></span></div>`}</div>
                 </section>
             </div>`;
 
@@ -1127,17 +1177,9 @@
                 } catch (error) { this.toast(`Migration failed: ${error.message}`); }
                 finally { button.disabled = false; }
             }));
-            view.querySelectorAll('[data-delete-legacy-project]').forEach((button) => button.addEventListener('click', async () => {
+            view.querySelectorAll('[data-delete-legacy-project]').forEach((button) => button.addEventListener('click', () => {
                 const project = legacyProjects.find((item) => item.id === button.dataset.deleteLegacyProject);
-                if (!project || !window.confirm(`Delete “${project.name || 'Recovered project'}” from browser storage? This cannot be undone.`)) return;
-                button.disabled = true;
-                try {
-                    const deleted = await this.projectStore.deleteLegacyProject(button.dataset.deleteLegacyProject);
-                    if (deleted) this.toast(`${project.name || 'Project'} deleted from browser storage`);
-                } catch (error) {
-                    this.toast(`Delete failed: ${error.message}`);
-                    button.disabled = false;
-                }
+                if (project) this.confirmLegacyDelete(project);
             }));
             view.querySelector('[data-dismiss-onboarding]')?.addEventListener('click', () => {
                 this.settings.onboardingDismissed = true;
@@ -1158,15 +1200,38 @@
             const project = await this.projectStore?.getRegistryRecord?.(projectId);
             const dialog = this.shell?.querySelector('#uaw-confirm-dialog');
             if (!project || !dialog) return;
-            dialog.querySelector('#uaw-confirm-copy').textContent = `Forget “${project.name}” in this browser? Its folder and files will not be deleted, and can be opened again later.`;
+            dialog.querySelector('#uaw-confirm-title').textContent = 'Remove from Projects?';
+            dialog.querySelector('#uaw-confirm-copy').textContent = `Remove “${project.name}” from this browser’s project list? Its folder and files will stay on disk and can be opened again later.`;
             dialog.hidden = false;
             const confirm = dialog.querySelector('[data-confirm-delete]');
+            confirm.textContent = 'Remove Project';
             confirm.onclick = async () => {
                 confirm.disabled = true;
                 await this.projectStore.delete(projectId);
                 confirm.disabled = false;
                 this.closeDeleteConfirmation();
-                this.toast('Project forgotten; local files were kept');
+                this.toast('Project removed from this browser; local files were kept');
+            };
+            requestAnimationFrame(() => confirm.focus());
+            window.UAWMotion?.dialogEnter?.('.uaw-confirm-card');
+        }
+
+        confirmLegacyDelete(project) {
+            const dialog = this.shell?.querySelector('#uaw-confirm-dialog');
+            if (!dialog || !project) return;
+            dialog.querySelector('#uaw-confirm-title').textContent = 'Delete browser copy?';
+            dialog.querySelector('#uaw-confirm-copy').textContent = `Delete “${project.name || 'Recovered project'}” from legacy browser storage? This copy cannot be restored unless it was exported elsewhere.`;
+            const confirm = dialog.querySelector('[data-confirm-delete]');
+            confirm.textContent = 'Delete browser copy';
+            dialog.hidden = false;
+            confirm.onclick = async () => {
+                confirm.disabled = true;
+                try {
+                    const deleted = await this.projectStore.deleteLegacyProject(project.id);
+                    if (deleted) this.toast(`${project.name || 'Project'} deleted from browser storage`);
+                    this.closeDeleteConfirmation();
+                } catch (error) { this.toast(`Delete failed: ${error.message}`); }
+                finally { confirm.disabled = false; }
             };
             requestAnimationFrame(() => confirm.focus());
             window.UAWMotion?.dialogEnter?.('.uaw-confirm-card');
@@ -1204,7 +1269,7 @@
                 <div class="uaw-settings-layout">
                     <div class="uaw-settings-surface">
                         <section class="uaw-settings-section" aria-labelledby="uaw-source-layout-heading">
-                            <div><h2 id="uaw-source-layout-heading">Source layout</h2><p>Choose where WorkSpec source appears while modelling. Source remains available as its own Model view.</p></div>
+                            <div><h2 id="uaw-source-layout-heading">Source layout</h2><p>Choose how WorkSpec source appears beside Process and Objects. Source remains available as its own Model view.</p></div>
                             <fieldset class="uaw-choice-grid" id="uaw-source-dock-choices" aria-label="Source layout">
                                 ${this.sourceChoice('split-left', 'Split left', 'Source beside the canvas')}
                                 ${this.sourceChoice('split-right', 'Split right', 'Canvas before source')}
@@ -1214,8 +1279,8 @@
                             </fieldset>
                         </section>
                         <section class="uaw-settings-section" aria-labelledby="uaw-workspace-panes-heading">
-                            <div><h2 id="uaw-workspace-panes-heading">Workspace panes</h2><p>Pane visibility is remembered between sessions.</p></div>
-                            <label class="uaw-switch-row"><span><strong>Inspector</strong><small>Show contextual properties on the right.</small></span><input type="checkbox" id="uaw-setting-inspector" ${this.settings.inspectorOpen ? 'checked' : ''}></label>
+                            <div><h2 id="uaw-workspace-panes-heading">Environment inspector</h2><p>Physical, Digital and Displays always reserve a properties pane so selections and edits stay visible.</p></div>
+                            <div class="uaw-settings-fact"><strong>Always visible on canvas views</strong><small>Source and table views use the full workspace.</small></div>
                         </section>
                         <section class="uaw-settings-section" aria-labelledby="uaw-agent-heading">
                             <div><h2 id="uaw-agent-heading">Codex Agent</h2><p>Connect the optional Agent to a bridge running on this machine.</p></div>
@@ -1225,7 +1290,6 @@
                 </div>
             `;
             view.querySelectorAll('input[name="source-dock"]').forEach((input) => input.addEventListener('change', () => this.setSourceDock(input.value)));
-            view.querySelector('#uaw-setting-inspector')?.addEventListener('change', (event) => this.toggleInspector(event.target.checked));
             this.syncSourceDockInputs();
             window.dispatchEvent(new CustomEvent('uaw:settings-rendered'));
         }
@@ -1254,17 +1318,62 @@
         }
 
         async createProject() {
+            this.requestProjectCreation({ kind: 'blank', name: 'Untitled project', sourceLabel: 'Blank WorkSpec' });
+        }
+
+        requestProjectCreation(options = {}) {
+            const dialog = this.shell?.querySelector('#uaw-project-setup-dialog');
+            if (!dialog) return false;
+            this.closeProjectSetup();
+            return new Promise((resolve) => {
+                this.pendingProjectSetup = {
+                    kind: options.kind === 'template' ? 'template' : 'blank',
+                    name: String(options.name || 'Untitled project'),
+                    workSpec: options.workSpec || '',
+                    resolve
+                };
+                dialog.querySelector('#uaw-project-setup-name').value = this.pendingProjectSetup.name;
+                dialog.querySelector('#uaw-project-setup-source').textContent = options.sourceLabel || (this.pendingProjectSetup.kind === 'template' ? 'Template' : 'Blank WorkSpec');
+                dialog.hidden = false;
+                requestAnimationFrame(() => {
+                    const input = dialog.querySelector('#uaw-project-setup-name');
+                    input.focus();
+                    input.select();
+                    window.UAWMotion?.dialogEnter?.('.uaw-project-setup-card');
+                });
+            });
+        }
+
+        closeProjectSetup() {
+            const dialog = this.shell?.querySelector('#uaw-project-setup-dialog');
+            if (dialog) dialog.hidden = true;
+            this.pendingProjectSetup?.resolve?.(null);
+            this.pendingProjectSetup = null;
+        }
+
+        async submitProjectSetup(event) {
+            event.preventDefault();
+            const pending = this.pendingProjectSetup;
+            const name = this.shell?.querySelector('#uaw-project-setup-name')?.value.trim();
+            if (!pending || !name) return;
+            const submit = event.submitter || event.currentTarget.querySelector('[type="submit"]');
+            submit.disabled = true;
+            submit.textContent = 'Choose location…';
             try {
-                const requestedName = window.prompt('Name your new project', 'Untitled project');
-                if (requestedName === null) return;
-                const projectName = requestedName.trim();
-                if (!projectName) {
-                    this.toast('Enter a project name before choosing its location');
-                    return;
-                }
-                const project = await this.projectStore?.createBlank(projectName);
-                if (project) this.setWorkspace('build');
-            } catch (error) { this.toast(`Could not create project: ${error.message}`); }
+                const project = pending.kind === 'template'
+                    ? await this.projectStore?.createFromTemplate(name, pending.workSpec)
+                    : await this.projectStore?.createBlank(name);
+                if (!project) return;
+                this.shell.querySelector('#uaw-project-setup-dialog').hidden = true;
+                this.pendingProjectSetup = null;
+                pending.resolve?.(project);
+                this.setWorkspace('build');
+            } catch (error) {
+                this.toast(`Could not create project: ${error.message}`);
+            } finally {
+                submit.disabled = false;
+                submit.textContent = 'Choose location…';
+            }
         }
 
         async openProjectFolder() {
@@ -1412,6 +1521,7 @@
                 this.closeObjectMenu();
                 this.closeDeleteConfirmation();
                 this.closeCustomObjectTypeDialog();
+                this.closeProjectSetup();
                 return;
             }
             if (typing) return;

@@ -828,7 +828,15 @@ async function loadSimulationFromLibrary(simulationId) {
       ...(simulation.assets ? { assets: simulation.assets } : {})
     };
     const content = JSON.stringify(simulationData, null, 2);
-    if (window.UAWProjectStore?.createFromTemplate) {
+    if (window.UAWPlaygroundShell?.requestProjectCreation) {
+      window.UAWPlaygroundShell.requestProjectCreation({
+        kind: 'template',
+        name: simulation.name,
+        sourceLabel: `Template · ${simulation.name}`,
+        workSpec: content
+      });
+      return true;
+    } else if (window.UAWProjectStore?.createFromTemplate) {
       const project = await window.UAWProjectStore.createFromTemplate(simulation.name, content);
       if (!project) return false;
       window.UAWPlaygroundShell?.setWorkspace('build');

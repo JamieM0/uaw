@@ -25,53 +25,6 @@ function setupSaveLoadButtons() {
     if (feedbackBtn) {
         feedbackBtn.addEventListener("click", openFeedbackDialog);
     }
-    
-    // Setup copy save code button
-    const copyBtn = document.getElementById("copy-save-code-btn");
-    if (copyBtn) {
-        copyBtn.addEventListener("click", function() {
-            const input = document.getElementById('save-code-result');
-            if (input && input.value) {
-                input.select();
-                input.setSelectionRange(0, 99999);
-                
-                // Try modern clipboard API first, fall back to execCommand
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(input.value).then(() => {
-                        this.textContent = 'Copied!';
-                        setTimeout(() => {
-                            this.textContent = 'Copy';
-                        }, 2000);
-                    }).catch(err => {
-                        console.error('Clipboard API failed:', err);
-                        // Fallback to execCommand
-                        try {
-                            document.execCommand('copy');
-                            this.textContent = 'Copied!';
-                            setTimeout(() => {
-                                this.textContent = 'Copy';
-                            }, 2000);
-                        } catch (e) {
-                            console.error('Copy fallback failed:', e);
-                            alert('Copy failed - please select and copy manually');
-                        }
-                    });
-                } else {
-                    // Fallback for older browsers
-                    try {
-                        document.execCommand('copy');
-                        this.textContent = 'Copied!';
-                        setTimeout(() => {
-                            this.textContent = 'Copy';
-                        }, 2000);
-                    } catch (e) {
-                        console.error('Copy fallback failed:', e);
-                        alert('Copy failed - please select and copy manually');
-                    }
-                }
-            }
-        });
-    }
 }
 
 // Simple file download function
@@ -127,6 +80,23 @@ function normalizeSimulationFileBaseName(rawName) {
     return base || fallbackName;
 }
 
+async function createImportedProject(projectName, data, fileName, directoryHandle = null) {
+    const workSpec = JSON.stringify(data, null, 2);
+    if (window.UAWPlaygroundShell?.requestProjectCreation) {
+        return window.UAWPlaygroundShell.requestProjectCreation({
+            kind: 'template',
+            name: projectName,
+            sourceLabel: `Import · ${fileName}`,
+            workSpec
+        });
+    }
+    if (window.UAWProjectStore?.createFromTemplate) {
+        return window.UAWProjectStore.createFromTemplate(projectName, workSpec, directoryHandle);
+    }
+    editor?.setValue?.(workSpec);
+    return true;
+}
+
 // Load simulation from file input
 function loadSimulationFromFileInput() {
     const input = document.createElement('input');
@@ -144,12 +114,9 @@ function loadSimulationFromFileInput() {
         }
 
         try {
-            // Choose the destination while the file-selection gesture is active.
-            const directoryHandle = await window.UAWProjectStore?.chooseProjectDirectory?.('uaw-import-project');
-            if (!directoryHandle) return;
             const fileNameLower = file.name.toLowerCase();
-            if (fileNameLower.endsWith('.zip')) await loadFromZipFile(file, directoryHandle);
-            else if (fileNameLower.endsWith('.workspec.json') || fileNameLower.endsWith('.json')) await loadFromJsonFile(file, directoryHandle);
+            if (fileNameLower.endsWith('.zip')) await loadFromZipFile(file);
+            else if (fileNameLower.endsWith('.workspec.json') || fileNameLower.endsWith('.json')) await loadFromJsonFile(file);
             else alert('Invalid file type. Please select a .workspec.json, .json, or .zip file.');
         } catch (error) {
             if (error?.name !== 'AbortError') alert(`Import failed: ${error.message}`);
@@ -216,10 +183,10 @@ async function loadFromJsonFile(file, directoryHandle = null) {
                 // Load into editor
                 if (typeof editor !== 'undefined' && editor) {
                     const projectName = data.simulation?.meta?.title || file.name.replace(/\.workspec\.json$|\.json$/i, '');
-                    if (window.UAWProjectStore?.createFromTemplate) {
-                        await window.UAWProjectStore.createFromTemplate(projectName, JSON.stringify(data, null, 2), directoryHandle);
-                    } else {
-                        editor.setValue(JSON.stringify(data, null, 2));
+                    const project = await createImportedProject(projectName, data, file.name, directoryHandle);
+                    if (!project) {
+                        resolve(null);
+                        return;
                     }
 
                     // Auto-collapse assets object
@@ -322,11 +289,8 @@ async function loadFromZipFile(file, directoryHandle = null) {
         // Load into editor
         if (typeof editor !== 'undefined' && editor) {
             const projectName = data.simulation?.meta?.title || file.name.replace(/\.workspec\.zip$|\.zip$/i, '');
-            if (window.UAWProjectStore?.createFromTemplate) {
-                await window.UAWProjectStore.createFromTemplate(projectName, JSON.stringify(data, null, 2), directoryHandle);
-            } else {
-                editor.setValue(JSON.stringify(data, null, 2));
-            }
+            const importedProject = await createImportedProject(projectName, data, file.name, directoryHandle);
+            if (!importedProject) return;
 
             const assetEntries = [];
             zipContents.forEach((path, entry) => {
@@ -438,8 +402,8 @@ async function loadFromZipFile(file, directoryHandle = null) {
     }
 }
 
-// Project-system import/export surfaces. These intentionally replace the old
-// browser save-code workflow; projects already provide local persistence.
+// Project-system import/export surfaces. Projects provide local persistence;
+// portable JSON and ZIP files are reserved for interchange and backup.
 function openProjectImportDialog() {
     loadSimulationFromFileInput();
 }
@@ -449,6 +413,7 @@ function openProjectExportDialog() {
     if (!dialog) return;
     const nameInput = document.getElementById('local-file-name');
     const includeExtras = document.getElementById('include-custom-metrics-checkbox');
+    const extrasOption = document.getElementById('custom-metrics-save-option');
     const confirm = document.getElementById('save-confirm-btn');
     const cancel = document.getElementById('save-cancel-btn');
     const result = document.getElementById('local-save-result');
@@ -458,6 +423,8 @@ function openProjectExportDialog() {
     confirm.disabled = false;
     cancel.textContent = 'Cancel';
     nameInput.value = window.UAWProjectStore?.getCurrent?.()?.name || '';
+    includeExtras.checked = false;
+    if (extrasOption) extrasOption.style.display = hasCustomMetrics() ? 'block' : 'none';
     cancel.onclick = () => { dialog.style.display = 'none'; };
     confirm.onclick = async () => {
         try {
@@ -495,388 +462,9 @@ function openProjectExportDialog() {
     requestAnimationFrame(() => nameInput.focus());
 }
 
-// Legacy dialog implementation retained only for backwards-compatible direct
-// integrations. Product UI routes to the project import/export functions above.
-// Open save dialog
-function openSaveDialog() {
-    openProjectExportDialog();
-    return;
-    const dialog = document.getElementById('save-modal');
-    if (!dialog) {
-        console.error('Save dialog not found');
-        return;
-    }
-
-    // Get all relevant elements within the save modal
-    const saveLocalRadio = document.getElementById('save-local-radio');
-    const saveCloudRadio = document.getElementById('save-cloud-radio');
-    const cloudPrivacyWarning = document.getElementById('cloud-privacy-warning');
-    const privacyConsentCheckbox = document.getElementById('privacy-consent-checkbox');
-    const localSaveNameDiv = document.getElementById('local-save-name');
-    const saveConfirmBtn = document.getElementById('save-confirm-btn');
-    const saveCancelBtn = document.getElementById('save-cancel-btn');
-    const saveSuccessDiv = document.getElementById('save-success');
-    const saveLoadingDiv = document.getElementById('save-loading');
-    const cloudSaveResultDiv = document.getElementById('cloud-save-result');
-    const localSaveResultDiv = document.getElementById('local-save-result');
-    const saveCodeResult = document.getElementById('save-code-result');
-    const copySaveCodeBtn = document.getElementById('copy-save-code-btn');
-    const savedFileNameSpan = document.getElementById('saved-filename');
-    const includeCustomMetricsCheckbox = document.getElementById('include-custom-metrics-checkbox');
-    const customMetricsSaveOption = document.getElementById('custom-metrics-save-option');
-    const localFileNameInput = document.getElementById('local-file-name');
-
-    // Helper to update save button state
-    const updateSaveButtonState = () => {
-        if (saveCloudRadio.checked) {
-            saveConfirmBtn.disabled = !privacyConsentCheckbox.checked;
-        } else if (saveLocalRadio.checked) {
-            saveConfirmBtn.disabled = false; // Local save doesn't require consent
-        }
-    };
-
-    // Reset modal to initial state
-    const resetSaveDialog = () => {
-        saveSuccessDiv.style.display = 'none';
-        saveLoadingDiv.style.display = 'none';
-        saveConfirmBtn.style.display = 'inline-block';
-        saveCancelBtn.textContent = 'Cancel';
-
-        cloudSaveResultDiv.style.display = 'none';
-        localSaveResultDiv.style.display = 'none';
-
-        // Check if we should hide cloud save option
-        const shouldHideCloudSave = isMetricsMode || hasCustomMetrics();
-        const cloudSaveOption = saveCloudRadio.closest('.save-method-option');
-
-        if (shouldHideCloudSave) {
-            // Hide cloud save option entirely
-            if (cloudSaveOption) {
-                cloudSaveOption.style.display = 'none';
-            }
-            // Force local save selection
-            saveLocalRadio.checked = true;
-            saveCloudRadio.checked = false;
-        } else {
-            // Show cloud save option
-            if (cloudSaveOption) {
-                cloudSaveOption.style.display = '';
-            }
-            // Default to local save
-            saveLocalRadio.checked = true;
-            saveCloudRadio.checked = false;
-        }
-
-        cloudPrivacyWarning.style.display = 'none'; // Hide for local default
-        localSaveNameDiv.style.display = 'block'; // Show for local default
-
-        privacyConsentCheckbox.checked = false;
-        updateSaveButtonState(); // Set initial button state
-
-        localFileNameInput.value = '';
-        includeCustomMetricsCheckbox.checked = false;
-
-        // Check if custom metrics are present and show the option
-        if (hasCustomMetrics()) {
-            customMetricsSaveOption.style.display = 'block';
-        } else {
-            customMetricsSaveOption.style.display = 'none';
-            includeCustomMetricsCheckbox.checked = false;
-        }
-    };
-
-    // Event Listeners
-    saveLocalRadio.onchange = () => {
-        if (saveLocalRadio.checked) {
-            cloudPrivacyWarning.style.display = 'none';
-            localSaveNameDiv.style.display = 'block';
-            updateSaveButtonState();
-        }
-    };
-
-    saveCloudRadio.onchange = () => {
-        // Prevent cloud save selection if in metrics mode or has custom metrics
-        const shouldHideCloudSave = isMetricsMode || hasCustomMetrics();
-        if (shouldHideCloudSave && saveCloudRadio.checked) {
-            // Force back to local save
-            saveLocalRadio.checked = true;
-            saveCloudRadio.checked = false;
-            cloudPrivacyWarning.style.display = 'none';
-            localSaveNameDiv.style.display = 'block';
-            updateSaveButtonState();
-            return;
-        }
-
-        if (saveCloudRadio.checked) {
-            cloudPrivacyWarning.style.display = 'block';
-            localSaveNameDiv.style.display = 'none';
-            updateSaveButtonState();
-        }
-    };
-
-    privacyConsentCheckbox.onchange = updateSaveButtonState;
-
-    saveCancelBtn.onclick = () => {
-        dialog.style.display = 'none';
-    };
-
-    saveConfirmBtn.onclick = async () => {
-        saveLoadingDiv.style.display = 'flex';
-        saveConfirmBtn.disabled = true;
-        
-        try {
-            const simulationContent = editor.getValue(); // Assuming 'editor' is globally available
-            if (!simulationContent) {
-                throw new Error("Simulation content is empty or invalid.");
-            }
-
-            // Parse simulation to ensure it's valid
-            let simulationData;
-            try {
-                simulationData = JSON.parse(simulationContent);
-                if (!simulationData.simulation) {
-                    throw new Error('Invalid simulation format');
-                }
-            } catch (error) {
-                throw new Error('Cannot save: Invalid simulation data - ' + error.message);
-            }
-
-            if (saveCloudRadio.checked) {
-                // Save code mode: persist simulation in local storage with a 16-char code
-                const saveData = { simulation: simulationData.simulation };
-                let saveCode = null;
-                let attempts = 0;
-                while (attempts < 5 && !saveCode) {
-                    attempts += 1;
-                    const candidate = generateSaveCode();
-                    if (candidate) {
-                        saveCode = candidate;
-                    }
-                }
-
-                if (!saveCode) {
-                    throw new Error('Unable to generate a unique save code. Please try again.');
-                }
-
-                const stored = storeSaveCodePayload(saveCode, saveData);
-                if (!stored) {
-                    throw new Error('Could not store save code data in this browser.');
-                }
-
-                saveCodeResult.value = saveCode;
-                cloudSaveResultDiv.style.display = 'block';
-                localSaveResultDiv.style.display = 'none';
-            } else {
-                // Local save to file
-                const fileNameBase = normalizeSimulationFileBaseName(localFileNameInput.value);
-
-                // Validate filename
-                const invalidChars = /[<>:"/\\|?*]/g;
-                if (invalidChars.test(fileNameBase)) {
-                    throw new Error('Filename contains invalid characters. Please use only letters, numbers, and basic punctuation.');
-                }
-
-                const includeMetrics = includeCustomMetricsCheckbox.checked;
-
-                if (includeMetrics) {
-                    // Check JSZip availability early
-                    if (!window.JSZip) {
-                        throw new Error("JSZip library is not loaded. Cannot create a zip file with custom metrics.");
-                    }
-
-                    try {
-                        const zip = new JSZip();
-                        zip.file("simulation.json", simulationContent);
-
-                        // Get custom metrics content with error handling
-                        let catalog, validator;
-                        try {
-                            const customContent = getCustomMetricsContent();
-                            catalog = customContent.catalog;
-                            validator = customContent.validator;
-                        } catch (metricsError) {
-                            console.warn('Error getting custom metrics content:', metricsError);
-                            // Continue with just simulation file
-                        }
-
-                        if (catalog) { zip.file("metrics-catalog-custom.json", catalog); }
-                        if (validator) { zip.file("simulation-validator-custom.js", validator); }
-
-                        const blob = await zip.generateAsync({ type: "blob" });
-                        const fileName = `${fileNameBase}${WORKSPEC_ZIP_EXTENSION}`;
-                        downloadSimulationFile(blob, fileName);
-                        savedFileNameSpan.textContent = fileName;
-                    } catch (zipError) {
-                        console.error('ZIP creation failed:', zipError);
-                        // Fallback to JSON save
-                        const blob = new Blob([simulationContent], { type: 'application/json' });
-                        const fileName = `${fileNameBase}${WORKSPEC_FILE_EXTENSION}`;
-                        downloadSimulationFile(blob, fileName);
-                        savedFileNameSpan.textContent = fileName;
-                        showNotification('ZIP creation failed, saved as WorkSpec JSON instead', 'warning');
-                    }
-
-                } else {
-                    const blob = new Blob([simulationContent], { type: 'application/json' });
-                    const fileName = `${fileNameBase}${WORKSPEC_FILE_EXTENSION}`;
-                    downloadSimulationFile(blob, fileName);
-                    savedFileNameSpan.textContent = fileName;
-                }
-                localSaveResultDiv.style.display = 'block';
-                cloudSaveResultDiv.style.display = 'none';
-            }
-            
-            saveLoadingDiv.style.display = 'none';
-            saveSuccessDiv.style.display = 'block';
-            saveConfirmBtn.style.display = 'none';
-            saveCancelBtn.textContent = 'Close';
-
-        } catch (error) {
-            console.error('Save failed:', error);
-            alert(`Error saving simulation: ${error.message}`);
-            saveLoadingDiv.style.display = 'none';
-            saveConfirmBtn.disabled = false;
-        }
-    };
-
-    // Initial reset when dialog opens
-    resetSaveDialog();
-    dialog.style.display = 'flex';
-}
-
-// Open load dialog  
-function openLoadDialog() {
-    openProjectImportDialog();
-    return;
-    const dialog = document.getElementById('load-modal');
-    if (!dialog) {
-        console.error('Load dialog not found');
-        return;
-    }
-    
-    dialog.style.display = 'flex';
-
-    const localRadio = document.getElementById('load-local-radio');
-    const cloudRadio = document.getElementById('load-cloud-radio');
-    const localSection = document.getElementById('local-load-section');
-    const cloudSection = document.getElementById('cloud-load-section');
-    const cancelBtn = document.getElementById('load-cancel-btn');
-    const loadBtn = document.getElementById('load-confirm-btn');
-    const browseBtn = document.getElementById('browse-local-file-btn');
-    const errorDiv = document.getElementById('load-error');
-    const errorMessage = document.getElementById('load-error-message');
-
-    if (errorDiv) errorDiv.style.display = 'none';
-    if (errorMessage) errorMessage.textContent = '';
-
-    // Set local as default
-    localRadio.checked = true;
-    cloudRadio.checked = false;
-    localSection.style.display = 'block';
-    cloudSection.style.display = 'none';
-
-    localRadio.onchange = () => {
-        if (localRadio.checked) {
-            localSection.style.display = 'block';
-            cloudSection.style.display = 'none';
-        }
-    };
-
-    cloudRadio.onchange = () => {
-        if (cloudRadio.checked) {
-            localSection.style.display = 'none';
-            cloudSection.style.display = 'block';
-        }
-    };
-
-    cancelBtn.onclick = () => {
-        dialog.style.display = 'none';
-    };
-
-    browseBtn.onclick = () => {
-        loadSimulationFromFileInput();
-    };
-
-    loadBtn.onclick = async () => {
-        // This needs to be implemented based on which radio is selected
-        const saveCodeInput = document.getElementById('load-code-input');
-        const saveCode = saveCodeInput ? saveCodeInput.value.trim().toUpperCase() : '';
-
-        if (cloudRadio.checked) {
-            if (!saveCode) {
-                showLoadError('Please enter a save code');
-                return;
-            }
-
-            // Validate save code format (basic check)
-            if (saveCode.length !== SAVE_CODE_LENGTH) {
-                showLoadError(`Save code must be ${SAVE_CODE_LENGTH} characters.`);
-                return;
-            }
-
-            try {
-                const saveData = getSaveCodePayload(saveCode);
-                if (!saveData) {
-                    throw new Error('Save code not found in this browser');
-                }
-
-                // Validate structure
-                if (!saveData.simulation) {
-                    throw new Error('Invalid save code: missing simulation data');
-                }
-
-                // Validate simulation structure (WorkSpec v2 preferred; support v1 for compatibility)
-                const sim = saveData.simulation;
-                const isV2 = sim && (sim.schema_version === '2.0' || sim.world || sim.process);
-
-                if (isV2) {
-                    if (!sim.world || !Array.isArray(sim.world.objects)) {
-                        throw new Error('Invalid WorkSpec v2 save code: simulation.world.objects must be an array');
-                    }
-
-                    if (!sim.process || !Array.isArray(sim.process.tasks)) {
-                        throw new Error('Invalid WorkSpec v2 save code: simulation.process.tasks must be an array');
-                    }
-                } else {
-                    if (!sim.objects || !Array.isArray(sim.objects)) {
-                        throw new Error('Invalid save code: simulation.objects must be an array');
-                    }
-
-                    if (!sim.tasks || !Array.isArray(sim.tasks)) {
-                        throw new Error('Invalid save code: simulation.tasks must be an array');
-                    }
-                }
-
-                // Load into editor
-                if (typeof editor !== 'undefined' && editor) {
-                    editor.setValue(JSON.stringify({ simulation: saveData.simulation }, null, 2));
-
-                    // Auto-collapse assets object
-                    setTimeout(async () => {
-                        if (typeof autoCollapseAssetsObject === 'function') {
-                            await autoCollapseAssetsObject(true);
-                        }
-                    }, 100);
-
-                    if (typeof autoRender !== 'undefined' && autoRender) {
-                        renderSimulation();
-                    }
-
-                    dialog.style.display = 'none';
-                    showNotification('Simulation loaded successfully from save code');
-                } else {
-                    throw new Error('Editor not initialized');
-                }
-            } catch (error) {
-                console.error('Error loading from save code:', error);
-                showLoadError(`Error loading simulation: ${error.message}`);
-            }
-        } else {
-            // Local file is handled by loadSimulationFromFileInput, but we can close the dialog
-            dialog.style.display = 'none';
-        }
-    };
-}
+// Backwards-compatible aliases for integrations that still call the old entry points.
+function openSaveDialog() { openProjectExportDialog(); }
+function openLoadDialog() { openProjectImportDialog(); }
 
 function openFeedbackDialog() {
     const dialog = document.getElementById('feedback-modal');
@@ -970,25 +558,4 @@ function openFeedbackDialog() {
     cancelBtn.onclick = () => {
         dialog.style.display = 'none';
     };
-}
-
-// Show load error
-function showLoadError(message) {
-    const errorDiv = document.getElementById('load-error');
-    const errorMessage = document.getElementById('load-error-message');
-    if (errorDiv) {
-        if (errorMessage) {
-            errorMessage.textContent = message;
-        } else {
-            errorDiv.textContent = message;
-        }
-        errorDiv.style.display = 'block';
-        
-        // Hide after 5 seconds
-        setTimeout(() => {
-            errorDiv.style.display = 'none';
-        }, 5000);
-    } else {
-        alert(message);
-    }
 }

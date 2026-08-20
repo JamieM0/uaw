@@ -162,9 +162,28 @@ function prepareEntityDialogForInput(modal) {
 
 // Store preserved field values when switching types
 let preservedObjectFields = {};
+let editingObjectSnapshot = null;
+
+const OBJECT_TYPE_COPY = {
+    actor: ['Actor', 'People, agents and responsible roles'],
+    equipment: ['Equipment', 'Machines, tools and durable systems'],
+    resource: ['Resource', 'Materials, capacity and consumables'],
+    product: ['Product', 'Outputs, deliverables and work in progress'],
+    custom: ['Custom object', 'A project-specific object type']
+};
+
+function syncObjectTypeSummary(type, customTypeLabel = '') {
+    const [label, help] = OBJECT_TYPE_COPY[type] || [customTypeLabel || type || 'Choose an object preset', 'The preset configures the relevant fields.'];
+    const summaryLabel = document.getElementById('object-type-summary-label');
+    const summaryHelp = document.getElementById('object-type-summary-help');
+    const mark = document.querySelector('.uaw-object-type-summary__mark');
+    if (summaryLabel) summaryLabel.textContent = customTypeLabel || label;
+    if (summaryHelp) summaryHelp.textContent = help;
+    if (mark) mark.textContent = (customTypeLabel || label || 'O').slice(0, 1).toUpperCase();
+}
 
 // Open add object modal
-function openAddObjectModal(presetType = '', customTypeLabel = '') {
+function openAddObjectModal(presetType = '', customTypeLabel = '', customTypeId = '') {
     if (window.multiPeriodViewController?.isMultiPeriod() && window.multiPeriodViewController.currentView !== 'day') {
         showNotification('Open a simulation day before adding an object so the target day type is explicit.', 'warning');
         return;
@@ -178,6 +197,9 @@ function openAddObjectModal(presetType = '', customTypeLabel = '') {
 
     const typeSelect = document.getElementById('object-type-select');
     const fieldsContainer = document.getElementById('object-type-specific-fields');
+    const changeTypeButton = document.getElementById('object-change-type');
+    const dialogTitle = document.getElementById('add-object-modal-title');
+    const dialogCopy = dialogTitle?.nextElementSibling;
 
     // Clean up previous event listeners to prevent memory leaks
     cleanupModalListeners('objectModal');
@@ -196,6 +218,18 @@ function openAddObjectModal(presetType = '', customTypeLabel = '') {
 
     // Reset preserved fields
     preservedObjectFields = {};
+    editingObjectSnapshot = null;
+    delete modal.dataset.editObjectId;
+    if (customTypeId) modal.dataset.customObjectType = customTypeId;
+    else delete modal.dataset.customObjectType;
+    modal.classList.remove('uaw-object-editing');
+    if (dialogTitle) dialogTitle.textContent = 'Create object';
+    if (dialogCopy) dialogCopy.textContent = 'Add something the process uses, changes or produces.';
+    const idInput = document.getElementById('object-id-input');
+    if (idInput) {
+        idInput.readOnly = false;
+        idInput.removeAttribute('title');
+    }
 
     // Show modal
     modal.style.display = 'flex';
@@ -203,8 +237,11 @@ function openAddObjectModal(presetType = '', customTypeLabel = '') {
     // Setup type change handler
     const typeChangeHandler = function() {
         preserveCommonObjectFields();
+        delete modal.dataset.customObjectType;
         updateObjectTypeFields(this.value, fieldsContainer);
         restoreCommonObjectFields();
+        syncObjectTypeSummary(this.value);
+        modal.classList.remove('uaw-object-type-changing');
         validateObjectForm();
     };
 
@@ -217,7 +254,16 @@ function openAddObjectModal(presetType = '', customTypeLabel = '') {
         });
     }
 
-    if (typeSelect && presetType) typeSelect.value = presetType;
+    if (typeSelect) typeSelect.value = presetType || 'actor';
+    syncObjectTypeSummary(typeSelect?.value || '', customTypeLabel);
+
+    const changeTypeHandler = () => {
+        if (modal.classList.contains('uaw-object-editing')) return;
+        modal.classList.toggle('uaw-object-type-changing');
+        if (modal.classList.contains('uaw-object-type-changing')) typeSelect?.focus();
+    };
+    changeTypeButton?.addEventListener('click', changeTypeHandler);
+    if (changeTypeButton) eventListenerCleanup.objectModal.push({ element: changeTypeButton, event: 'click', handler: changeTypeHandler });
 
     // Trigger initial update
     updateObjectTypeFields(typeSelect.value, fieldsContainer);
@@ -236,6 +282,10 @@ function openAddObjectModal(presetType = '', customTypeLabel = '') {
     // Setup close button and form submission for object modal
     const cancelBtn = document.getElementById('object-cancel-btn');
     const addBtn = document.getElementById('object-add-btn');
+    if (addBtn) {
+        addBtn.querySelector('.btn-text').textContent = 'Create object';
+        addBtn.querySelector('.btn-spinner').textContent = 'Adding...';
+    }
 
     const cancelHandler = () => {
         modal.style.display = 'none';
@@ -267,7 +317,7 @@ function openAddObjectModal(presetType = '', customTypeLabel = '') {
 
     // Autofocus on first field
     setTimeout(() => {
-        const firstInput = typeSelect;
+        const firstInput = document.getElementById('object-name-input');
         if (firstInput) {
             firstInput.focus();
         }
@@ -275,6 +325,57 @@ function openAddObjectModal(presetType = '', customTypeLabel = '') {
 }
 
 window.openAddObjectModalWithType = openAddObjectModal;
+
+function openEditObjectModal(object) {
+    if (!object?.id) return;
+    const standardType = OBJECT_TYPE_COPY[object.type] ? object.type : 'custom';
+    openAddObjectModal(standardType, standardType === 'custom' ? object.type : '');
+    const modal = document.getElementById('add-object-modal');
+    const fieldsContainer = document.getElementById('object-type-specific-fields');
+    editingObjectSnapshot = JSON.parse(JSON.stringify(object));
+    modal.dataset.editObjectId = object.id;
+    modal.classList.add('uaw-object-editing');
+    document.getElementById('add-object-modal-title').textContent = 'Edit object';
+    document.getElementById('add-object-modal-title').nextElementSibling.textContent = `Update ${object.name || object.id} without leaving the object catalogue.`;
+    document.getElementById('object-name-input').value = object.name || '';
+    document.getElementById('object-id-input').value = object.id || '';
+    document.getElementById('object-id-input').readOnly = true;
+    document.getElementById('object-id-input').title = 'Stable IDs cannot be changed after creation because tasks and environments may reference them.';
+    document.getElementById('object-emoji-input').value = object.emoji || '';
+    const typeSelect = document.getElementById('object-type-select');
+    typeSelect.value = standardType;
+    updateObjectTypeFields(standardType, fieldsContainer);
+    syncObjectTypeSummary(standardType, standardType === 'custom' ? object.type : '');
+    if (standardType === 'custom') {
+        const customType = fieldsContainer.querySelector('input[name^="new_object_custom_type_"]');
+        if (customType) customType.value = object.type;
+        Object.entries(object.properties || {}).forEach(([name, value]) => {
+            if (Array.isArray(value) || value == null) return;
+            addCustomProperty('modal');
+            const group = fieldsContainer.querySelector('.custom-properties-container')?.lastElementChild;
+            if (!group) return;
+            group.querySelector('input[name^="custom_property_name_"]').value = name;
+            group.querySelector('select[name^="custom_property_type_"]').value = typeof value === 'number' ? 'number' : typeof value === 'boolean' ? 'boolean' : 'text';
+            group.querySelector('input[name^="custom_property_value_"]').value = String(value);
+        });
+    } else {
+        Object.entries(object.properties || {}).forEach(([name, value]) => {
+            const input = Array.from(fieldsContainer.querySelectorAll('input, select, textarea'))
+                .find(candidate => normalizeObjectPropertyInputName(candidate.name, 'modal') === name);
+            if (input && !Array.isArray(value) && value != null) input.value = String(value);
+        });
+    }
+    const locationInput = Array.from(fieldsContainer.querySelectorAll('select'))
+        .find(candidate => normalizeObjectPropertyInputName(candidate.name, 'modal') === 'location');
+    if (locationInput) locationInput.value = object.location || '';
+    const addButton = document.getElementById('object-add-btn');
+    addButton.querySelector('.btn-text').textContent = 'Save changes';
+    addButton.querySelector('.btn-spinner').textContent = 'Saving...';
+    validateObjectForm();
+    prepareEntityDialogForInput(modal);
+}
+
+window.openEditObjectModal = openEditObjectModal;
 
 // Preserve common fields when switching object types
 function preserveCommonObjectFields() {
@@ -410,7 +511,10 @@ function validateObjectId() {
     const validationIcon = idInput.parentElement.querySelector('.validation-icon');
     const id = idInput.value.trim();
     const typeSelect = document.getElementById('object-type-select');
-    const objectType = typeSelect ? safeTrim(typeSelect.value) : '';
+    const modal = document.getElementById('add-object-modal');
+    const customTypeInput = document.querySelector('input[name^="new_object_custom_type_"]');
+    const objectType = safeTrim(modal?.dataset.customObjectType)
+        || (typeSelect?.value === 'custom' ? safeTrim(customTypeInput?.value) : safeTrim(typeSelect?.value));
 
     // Clear previous validation
     idInput.classList.remove('valid', 'invalid');
@@ -488,7 +592,8 @@ function isObjectIdDuplicate(id) {
         }
 
         const objects = getSimulationObjects(simulation);
-        return objects.some(obj => obj && obj.id === id);
+        const editingId = document.getElementById('add-object-modal')?.dataset.editObjectId;
+        return objects.some(obj => obj && obj.id === id && obj.id !== editingId);
     } catch (error) {
         console.error('Error checking for duplicate ID:', error);
         return false;
@@ -1872,8 +1977,10 @@ function addObjectToSimulation() {
 
         const finalObjectId = objectId || getNextAvailableId(objectType, objects);
 
-        const properties = {};
-        let finalObjectType = objectType;
+        const editingId = modal.dataset.editObjectId || '';
+        const editingIndex = editingId ? objects.findIndex(object => object?.id === editingId) : -1;
+        const properties = editingIndex >= 0 ? { ...(editingObjectSnapshot?.properties || objects[editingIndex]?.properties || {}) } : {};
+        let finalObjectType = modal.dataset.customObjectType || objectType;
 
         let objectLocation = '';
 
@@ -1887,7 +1994,9 @@ function addObjectToSimulation() {
                 return;
             }
 
-            // Process custom properties
+            // Process custom properties. In edit mode the visible property rows
+            // are the source of truth, so removed rows remove their properties.
+            Object.keys(properties).forEach(name => delete properties[name]);
             const customPropertiesContainer = document.querySelector('.custom-properties-container');
             if (customPropertiesContainer) {
                 const propertyGroups = customPropertiesContainer.querySelectorAll('.custom-property-group');
@@ -1918,9 +2027,13 @@ function addObjectToSimulation() {
             const inputs = fieldsContainer.querySelectorAll('input, select, textarea');
             inputs.forEach(input => {
                 const name = normalizeObjectPropertyInputName(input.name, 'modal');
-                if (input.value && name) {
+                if (name) {
                     if (name === 'location') {
                         objectLocation = input.value;
+                        return;
+                    }
+                    if (!input.value) {
+                        delete properties[name];
                         return;
                     }
                     if (input.type === 'number') {
@@ -1933,6 +2046,7 @@ function addObjectToSimulation() {
         }
 
         const newObject = {
+            ...(editingIndex >= 0 ? (editingObjectSnapshot || objects[editingIndex]) : {}),
             id: finalObjectId,
             type: finalObjectType,
             name: objectName,
@@ -1941,10 +2055,9 @@ function addObjectToSimulation() {
 
         if (emoji) {
             newObject.emoji = emoji;
-        }
-        if (objectLocation) {
-            newObject.location = objectLocation;
-        }
+        } else delete newObject.emoji;
+        if (objectLocation) newObject.location = objectLocation;
+        else delete newObject.location;
 
         // Keep modal-created objects v2-valid with common required defaults.
         const baseType = objectType === 'custom' ? '' : objectType;
@@ -1957,7 +2070,8 @@ function addObjectToSimulation() {
             newObject.properties.indicator_property = ['state'];
         }
 
-        objects.push(newObject);
+        if (editingIndex >= 0) objects[editingIndex] = newObject;
+        else objects.push(newObject);
 
         // Use the effective editor (wrapper if in day type mode, otherwise Monaco)
         effectiveEditor.setValue(JSON.stringify(currentJson, null, 2));
@@ -1988,7 +2102,7 @@ function addObjectToSimulation() {
         }
 
         if (typeof showNotification === 'function') {
-            showNotification(`Added ${objectType}: ${objectName}`);
+            showNotification(editingIndex >= 0 ? `Updated ${objectName}` : `Added ${objectType}: ${objectName}`);
         }
 
         // Reset button state

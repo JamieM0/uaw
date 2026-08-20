@@ -55,7 +55,7 @@
         <link rel="stylesheet" href="/assets/css/emoji-picker.css" />
         <link rel="stylesheet" href="/assets/css/smart-actions.css" />
         <link rel="stylesheet" href="/assets/css/multi-period.css" />
-        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260818k" />
+        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260820a" />
 
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
@@ -1000,7 +1000,12 @@
                         </div>
                         <div class="form-group uaw-object-type-field">
                             <label for="object-type-select">Type <span class="required-indicator">*</span></label>
-                            <select id="object-type-select">
+                            <div class="uaw-object-type-summary" id="object-type-summary">
+                                <span class="uaw-object-type-summary__mark" aria-hidden="true"></span>
+                                <span><strong id="object-type-summary-label">Choose an object preset</strong><small id="object-type-summary-help">The preset configures the relevant fields.</small></span>
+                                <button type="button" id="object-change-type">Change</button>
+                            </div>
+                            <select id="object-type-select" class="uaw-object-type-select-secondary" aria-label="Change object type">
                                 <option value="">Select type...</option>
                                 <option value="actor">Actor · people and agents</option>
                                 <option value="equipment">Equipment · tools and machines</option>
@@ -1259,8 +1264,8 @@
 
         <!-- Playground v2 application shell. These modules preserve the legacy
              component IDs while providing the project workspace around them. -->
-        <script src="/assets/js/playground/playground-projects-v2.js?v=20260818f" defer></script>
-        <script src="/assets/js/playground/playground-shell-v2.js?v=20260818m" defer></script>
+        <script src="/assets/js/playground/playground-projects-v2.js?v=20260820a" defer></script>
+        <script src="/assets/js/playground/playground-shell-v2.js?v=20260820a" defer></script>
         <script src="/assets/js/playground/playground-agent-v2.js?v=20260818c" defer></script>
         <script type="module" src="/assets/js/playground/playground-motion-v2.js?v=20260818a"></script>
 
@@ -1291,13 +1296,13 @@
         <script src="/assets/js/playground/playground-timeline-extensions.js" defer></script>
         <script src="/assets/js/playground/playground-digital-space.js?v=20260814g" defer></script>
         <script src="/assets/js/playground/playground-display-editor.js?v=20260814g" defer></script>
-        <script src="/assets/js/playground/playground-save-load.js?v=20260818c" defer></script>
+        <script src="/assets/js/playground/playground-save-load.js?v=20260820a" defer></script>
         <script src="/assets/js/playground/playground-metrics-editor.js?v=20260818c" defer></script>
-        <script src="/assets/js/playground/playground-objects.js?v=20260818a" defer></script>
+        <script src="/assets/js/playground/playground-objects.js?v=20260820a" defer></script>
         <script src="/assets/js/playground/playground-features.js" defer></script>
         <script src="/assets/js/playground/playground-editor.js?v=20260818c" defer></script>
         <script src="/assets/js/space-editor-actor-animation.js?v=20260818c" defer></script>
-        <script src="/assets/js/playground/playground-core.js?v=20260818c" defer></script>
+        <script src="/assets/js/playground/playground-core.js?v=20260820a" defer></script>
         <script src="/assets/js/playground/playground-canvas-v2.js?v=20260814h" defer></script>
         <script>
             document.addEventListener('DOMContentLoaded', () => {
