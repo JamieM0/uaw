@@ -6539,3 +6539,404 @@ body.uaw-v2 #uaw-playback-commands[hidden] { display: none; }
     body.uaw-v2 .uaw-commandbar__identity { min-width: 96px !important; }
     body.uaw-v2 .uaw-commandbar__identity span { display: none; }
 }
+
+/* Shared WorkSpec time -----------------------------------------------------
+   Time is navigation state: the transport stays in the top-right while any
+   model or simulation surface is open, and every renderer uses the same four
+   temporal states. */
+body.uaw-v2[data-uaw-workspace="build"] #uaw-playback-commands:not([hidden]),
+body.uaw-v2[data-uaw-workspace="source"] #uaw-playback-commands:not([hidden]),
+body.uaw-v2[data-uaw-workspace="run"] #uaw-playback-commands:not([hidden]) {
+    display: flex !important;
+    align-items: center;
+    order: 20;
+    margin-left: auto;
+    padding: 3px 4px;
+    background: #f2f5fa;
+    border: 1px solid #dce2eb;
+    border-radius: 8px;
+}
+
+body.uaw-v2[data-uaw-workspace="run"][data-run-view] #uaw-playback-commands:not([hidden]) { display: flex !important; }
+
+body.uaw-v2[data-uaw-workspace="build"] #uaw-context-commands,
+body.uaw-v2[data-uaw-workspace="source"] #uaw-context-commands,
+body.uaw-v2[data-uaw-workspace="run"] #uaw-context-commands {
+    order: 10;
+    margin-left: 0;
+}
+
+body.uaw-v2 #uaw-playback-commands .playback-controls-group { gap: 5px; }
+body.uaw-v2 #uaw-playback-commands #player-play-pause-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 62px;
+    height: 32px !important;
+    padding: 0 9px !important;
+    color: #fff;
+    background: #245fd6;
+    border: 1px solid #1d4fb7;
+    border-radius: 5px !important;
+}
+
+body.uaw-v2 #uaw-playback-commands .player-time-display {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: baseline;
+    gap: 6px;
+    min-width: 150px;
+    height: 32px !important;
+    padding: 0 9px !important;
+    color: #26344a;
+    background: #fff;
+    border: 1px solid #ccd5e2;
+    border-radius: 5px !important;
+    text-align: left;
+}
+
+body.uaw-v2 #player-current-date { color: #59687c; font: 550 10px var(--uaw-font-ui); }
+body.uaw-v2 #player-current-time { color: #15243a; font: 650 11px var(--uaw-font-code); }
+body.uaw-v2 #uaw-playback-commands .player-time-display:hover,
+body.uaw-v2 #uaw-playback-commands .player-time-display[aria-expanded="true"] { border-color: #6a9be2; background: #f8fbff; }
+body.uaw-v2 #uaw-playback-commands .player-speed-control { gap: 3px; }
+body.uaw-v2 #uaw-playback-commands .player-speed-control label { color: #758297; font-size: 9px; }
+body.uaw-v2 #uaw-playback-commands .player-speed-control select { width: 54px; height: 28px !important; padding: 0 5px !important; }
+
+/* Temporal treatment is deliberately restrained: the whole model remains
+   inspectable, while the selected moment is unmistakable. */
+[data-temporal-state="upcoming"] { opacity: .38 !important; filter: grayscale(.68) saturate(.45); }
+[data-temporal-state="inactive"] { opacity: .52 !important; filter: grayscale(.52) saturate(.58); }
+[data-temporal-state="completed"] { opacity: .66 !important; filter: grayscale(.32) saturate(.72); }
+[data-temporal-state="active"] { opacity: 1 !important; filter: none !important; }
+
+tr[data-temporal-state] { transition: opacity 140ms ease, background-color 140ms ease; }
+tr[data-temporal-state="active"] { background: #eef5ff; box-shadow: inset 3px 0 #2671d9; }
+tr[data-temporal-state="completed"] td:first-child strong { text-decoration: line-through; text-decoration-color: #9aa7b8; text-decoration-thickness: 1px; }
+.uaw-temporal-badge { display: inline-flex; align-items: center; min-width: 58px; padding: 3px 6px; color: #64748a; background: #eef1f5; border: 1px solid #d8dfe8; border-radius: 999px; font: 650 8px var(--uaw-font-code); text-transform: uppercase; opacity: 1 !important; filter: none !important; }
+.uaw-temporal-badge[data-temporal-state="active"] { color: #08735b; background: #e7f7f1; border-color: #9fd9c6; }
+.uaw-temporal-badge[data-temporal-state="completed"] { color: #52677f; background: #edf1f5; border-color: #cad4df; }
+.uaw-temporal-badge[data-temporal-state="upcoming"] { color: #8b6414; background: #fff7e4; border-color: #e8ce8f; }
+.location-rect[data-temporal-state="active"],
+.digital-object-visual[data-temporal-state="active"],
+.display-element-rect[data-temporal-state="active"] { box-shadow: 0 0 0 3px rgba(38,113,217,.24), 0 6px 18px rgba(38,113,217,.16) !important; }
+.task-block[data-temporal-state="active"] { z-index: 4; }
+
+.workspec-time-navigator[hidden] { display: none !important; }
+.workspec-time-navigator {
+    position: fixed;
+    z-index: 12000;
+    top: calc(var(--uaw-titlebar-height, 56px) + var(--uaw-commandbar-height, 58px) + 8px);
+    right: 14px;
+    display: flex;
+    flex-direction: column;
+    width: min(760px, calc(100vw - 32px));
+    max-height: min(740px, calc(100vh - 132px));
+    overflow: hidden;
+    color: #1c293b;
+    background: #f7f8fa;
+    border: 1px solid #bdc8d7;
+    border-radius: 10px;
+    box-shadow: 0 24px 70px rgba(22,34,52,.24), 0 3px 10px rgba(22,34,52,.12);
+    transform: translateY(-5px);
+    opacity: 0;
+    transition: transform 130ms ease, opacity 130ms ease;
+}
+
+.workspec-time-navigator.open { transform: translateY(0); opacity: 1; }
+.workspec-time-navigator__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 18px 20px 14px; background: #fff; border-bottom: 1px solid #d9e0e9; }
+.workspec-time-kicker { color: #2871ce; font: 700 9px var(--uaw-font-code); letter-spacing: .14em; }
+.workspec-time-navigator__header h2 { margin: 3px 0 2px; color: #152238; font: 650 20px/1.15 "Geologica", var(--uaw-font-ui); letter-spacing: -.025em; }
+.workspec-time-navigator__header p { margin: 0; color: #657389; font-size: 11px; }
+.workspec-time-navigator__header > button { width: 30px; height: 30px; padding: 0; color: #617087; background: transparent; border: 1px solid #d6dee9; border-radius: 5px; font-size: 20px; line-height: 1; }
+
+.workspec-time-scales { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; padding: 10px 12px; background: #edf1f6; border-bottom: 1px solid #d6dee8; }
+.workspec-time-scales button { height: 30px; color: #536278; background: transparent; border: 1px solid transparent; border-radius: 5px; font-size: 10px; font-weight: 650; }
+.workspec-time-scales button:hover { color: #1e4f8f; background: rgba(255,255,255,.7); }
+.workspec-time-scales button.active { color: #174f91; background: #fff; border-color: #c6d1df; box-shadow: inset 0 -2px #2f78c4, 0 1px 2px rgba(34,55,82,.08); }
+
+.workspec-time-scrubber { padding: 13px 18px 14px; background: #fff; border-bottom: 1px solid #d9e0e9; }
+.workspec-time-scrubber > div { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-bottom: 9px; color: #7a8799; font: 550 9px var(--uaw-font-code); }
+.workspec-time-scrubber > div span:last-child { text-align: right; }
+.workspec-time-scrubber output { color: #25344b; font: 650 10px var(--uaw-font-ui); }
+.workspec-time-scrubber input { width: 100%; accent-color: #276fcf; cursor: ew-resize; }
+.workspec-time-overview { min-height: 0; padding: 16px 18px 20px; overflow: auto; }
+.workspec-time-status { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 13px; }
+.workspec-time-status span { display: flex; align-items: center; gap: 5px; padding: 5px 8px; color: #68768b; background: #fff; border: 1px solid #dce2ea; border-radius: 999px; font-size: 9px; }
+.workspec-time-status i { width: 7px; height: 7px; border-radius: 50%; }
+.workspec-time-status i.active { background: #168568; box-shadow: 0 0 0 3px rgba(22,133,104,.12); }
+.workspec-time-status i.completed { background: #7890aa; }
+.workspec-time-status i.upcoming { background: #d29c31; }
+
+.workspec-event-list { display: grid; gap: 5px; }
+.workspec-event-list button { display: grid; grid-template-columns: 145px minmax(0,1fr) auto; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 8px 11px; color: #243247; background: #fff; border: 1px solid #dce2ea; border-radius: 6px; text-align: left; }
+.workspec-event-list button:hover { border-color: #8eb0df; }
+.workspec-event-list time { color: #5d6c81; font: 550 9px var(--uaw-font-code); }
+.workspec-event-list button > span { display: grid; min-width: 0; gap: 2px; }
+.workspec-event-list strong { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.workspec-event-list small { color: #778499; font-size: 9px; }
+.workspec-event-list em { color: #718096; font: 600 8px var(--uaw-font-code); font-style: normal; letter-spacing: .07em; text-transform: uppercase; }
+.workspec-time-empty { color: #778499; text-align: center; }
+
+.workspec-day-summary { display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; margin-bottom: 12px; }
+.workspec-day-summary > span { display: grid; gap: 4px; padding: 11px; background: #fff; border: 1px solid #dce2ea; border-radius: 6px; }
+.workspec-day-summary small { color: #758297; font-size: 8px; letter-spacing: .05em; text-transform: uppercase; }
+.workspec-day-summary strong { color: #223148; font: 650 14px "Geologica", var(--uaw-font-ui); }
+
+.workspec-period-grid--week { display: grid; grid-template-columns: repeat(7, minmax(82px,1fr)); gap: 5px; }
+.workspec-period-grid--week button { display: grid; align-content: start; gap: 5px; min-height: 118px; padding: 10px 8px; color: #26354a; background: #fff; border: 1px solid #dbe2eb; border-radius: 6px; text-align: left; }
+.workspec-period-grid--week button.selected { border-color: #3479d2; box-shadow: inset 0 3px #3479d2; }
+.workspec-period-grid--week time { color: #65758b; font: 600 8px var(--uaw-font-code); }
+.workspec-period-grid--week strong { font-size: 11px; }
+.workspec-period-grid--week span { color: #7b8798; font-size: 8px; line-height: 1.35; }
+
+.workspec-month-heading { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-bottom: 5px; color: #758297; font: 650 8px var(--uaw-font-code); text-align: center; text-transform: uppercase; }
+.workspec-month-heading strong { grid-column: 1/-1; margin-bottom: 8px; color: #26364c; font: 650 14px "Geologica", var(--uaw-font-ui); text-align: left; text-transform: none; }
+.workspec-month-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+.workspec-month-grid button { display: grid; grid-template-columns: 1fr auto; gap: 5px; min-height: 64px; padding: 7px; color: #27364c; background: #fff; border: 1px solid #dce2ea; border-radius: 5px; text-align: left; }
+.workspec-month-grid button.selected { color: #164e91; border-color: #3479d2; background: #f4f8ff; box-shadow: inset 0 2px #3479d2; }
+.workspec-month-grid time { font: 650 9px var(--uaw-font-code); }
+.workspec-month-grid strong { justify-self: end; font-size: 10px; }
+.workspec-month-grid span { grid-column: 1/-1; color: #7c899a; font-size: 8px; }
+
+.workspec-calendar-periods { display: grid; grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); gap: 7px; }
+.workspec-calendar-periods button { display: grid; gap: 5px; padding: 13px; color: #27364b; background: #fff; border: 1px solid #dce2ea; border-radius: 6px; text-align: left; }
+.workspec-calendar-periods button.selected { border-color: #3479d2; box-shadow: inset 3px 0 #3479d2; }
+.workspec-calendar-periods time { color: #174f91; font: 650 11px "Geologica", var(--uaw-font-ui); }
+.workspec-calendar-periods strong { font-size: 10px; }
+.workspec-calendar-periods span { color: #78869a; font-size: 9px; }
+
+[data-theme="dark"] .workspec-time-navigator,
+body[data-theme="dark"] .workspec-time-navigator { color: #e3eaf4; background: #131a24; border-color: #3b4656; }
+[data-theme="dark"] .workspec-time-navigator__header,
+[data-theme="dark"] .workspec-time-scrubber,
+body[data-theme="dark"] .workspec-time-navigator__header,
+body[data-theme="dark"] .workspec-time-scrubber { background: #18212d; border-color: #354151; }
+[data-theme="dark"] .workspec-time-navigator h2,
+body[data-theme="dark"] .workspec-time-navigator h2 { color: #f1f5fb; }
+[data-theme="dark"] .workspec-time-scales,
+body[data-theme="dark"] .workspec-time-scales { background: #101720; border-color: #354151; }
+[data-theme="dark"] .workspec-time-scales button.active,
+[data-theme="dark"] .workspec-time-overview button,
+[data-theme="dark"] .workspec-day-summary > span,
+[data-theme="dark"] .workspec-time-status span,
+body[data-theme="dark"] .workspec-time-scales button.active,
+body[data-theme="dark"] .workspec-time-overview button,
+body[data-theme="dark"] .workspec-day-summary > span,
+body[data-theme="dark"] .workspec-time-status span { color: #dbe5f3; background: #1b2634; border-color: #3a4758; }
+
+@media (max-width: 1180px) {
+    body.uaw-v2 #player-current-date,
+    body.uaw-v2 #uaw-playback-commands .player-speed-control label { display: none; }
+    body.uaw-v2 #uaw-playback-commands .player-time-display { grid-template-columns: 1fr; min-width: 58px; }
+    .workspec-period-grid--week { grid-template-columns: repeat(4,1fr); }
+}
+
+@media (max-width: 760px) {
+    .workspec-time-navigator { inset: auto 8px 8px; width: auto; max-height: calc(100vh - 80px); }
+    .workspec-day-summary { grid-template-columns: repeat(2,1fr); }
+    .workspec-period-grid--week { grid-template-columns: repeat(2,1fr); }
+    .workspec-event-list button { grid-template-columns: 1fr auto; }
+    .workspec-event-list time { grid-column: 1/-1; }
+}
+
+/* The calendar scale belongs to Simulate, while Validation owns its own tab
+   group in the command bar. The breadcrumb remains useful context in-stage. */
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="timeline"] .schedule-view-switcher { display: none; }
+
+body.uaw-v2 .uaw-period-commands { margin-left: 4px; }
+body.uaw-v2 .uaw-validation-commands { margin-left: 0; }
+body.uaw-v2 .uaw-commandbar-group-label {
+    align-self: center;
+    padding: 0 7px 0 4px;
+    color: #778397;
+    font: 650 9px var(--uaw-font-code);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+/* Rules is an editor workspace, not a split metrics preview. Both rule tabs
+   therefore get the complete available stage width and height. */
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] .playground-left { display: none !important; }
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] .playground-top {
+    display: flex !important;
+    height: 100% !important;
+    border-bottom: 0 !important;
+}
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] #metrics-editor-panel {
+    display: flex !important;
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    border-left: 0 !important;
+}
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] #metrics-editor-panel > .panel-content,
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] .metrics-tab-content-wrapper,
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] .metrics-tab-content {
+    width: 100%;
+    min-width: 0;
+}
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] .metrics-tab-content-wrapper {
+    flex: 1 1 auto;
+    margin: 14px 22px 22px;
+}
+
+/* Compact global transport. The controls belong to the command bar, so they
+   do not need a second panel around them. */
+body.uaw-v2[data-uaw-workspace="build"] #uaw-playback-commands:not([hidden]),
+body.uaw-v2[data-uaw-workspace="source"] #uaw-playback-commands:not([hidden]),
+body.uaw-v2[data-uaw-workspace="run"] #uaw-playback-commands:not([hidden]) {
+    gap: 7px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+}
+
+body.uaw-v2 #uaw-playback-commands .playback-controls-group {
+    align-items: center;
+    gap: 7px;
+}
+
+body.uaw-v2 #uaw-playback-commands #player-play-pause-btn {
+    min-width: 74px;
+    height: 38px !important;
+    padding: 0 13px !important;
+    border-radius: 6px !important;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+body.uaw-v2 #uaw-playback-commands .player-time-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    min-width: 222px;
+    height: 38px !important;
+    padding: 0 13px !important;
+    border-radius: 6px !important;
+}
+
+body.uaw-v2 #player-current-date {
+    display: inline;
+    color: #526278;
+    font: 600 12px/1 var(--uaw-font-ui);
+    white-space: nowrap;
+}
+
+body.uaw-v2 #player-current-time {
+    color: #15243a;
+    font: 700 14px/1 var(--uaw-font-code);
+    white-space: nowrap;
+}
+
+body.uaw-v2 #uaw-playback-commands .player-speed-control {
+    display: flex;
+    align-items: center;
+}
+
+body.uaw-v2 #uaw-playback-commands .player-speed-control select {
+    width: 66px;
+    height: 38px !important;
+    padding: 0 8px !important;
+    border-color: #ccd5e2;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+/* Clicking the date reveals only the scale and scrubber—no competing
+   simulation dashboard. */
+.workspec-time-navigator {
+    top: calc(var(--uaw-titlebar-height, 56px) + var(--uaw-commandbar-height, 58px) + 6px);
+    right: 12px;
+    width: min(430px, calc(100vw - 24px));
+    max-height: none;
+    overflow: visible;
+    background: #fff;
+    border-color: #c8d2df;
+    border-radius: 8px;
+    box-shadow: 0 14px 38px rgba(22,34,52,.18), 0 2px 7px rgba(22,34,52,.10);
+}
+
+.workspec-time-navigator__controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 30px;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 8px 0;
+}
+
+.workspec-time-navigator__controls > button {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    color: #64748a;
+    background: transparent;
+    border: 0;
+    border-radius: 5px;
+    font-size: 19px;
+    line-height: 1;
+}
+
+.workspec-time-navigator__controls > button:hover { background: #edf1f6; }
+
+.workspec-time-scales {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    padding: 2px;
+    background: #edf1f6;
+    border: 0;
+    border-radius: 6px;
+}
+
+.workspec-time-scales button {
+    height: 28px;
+    border-radius: 4px;
+    font-size: 11px;
+}
+
+.workspec-time-scrubber {
+    display: grid;
+    gap: 8px;
+    padding: 11px 14px 13px;
+    border: 0;
+    border-radius: 0 0 8px 8px;
+}
+
+.workspec-time-scrubber output {
+    color: #223148;
+    font: 650 12px/1.2 var(--uaw-font-ui);
+    text-align: center;
+}
+
+.workspec-time-scrubber input { margin: 0; }
+
+.workspec-time-scrubber > div {
+    display: flex;
+    justify-content: space-between;
+    margin: 0;
+    color: #758297;
+    font: 550 9px/1.2 var(--uaw-font-code);
+}
+
+[data-theme="dark"] .workspec-time-navigator,
+body[data-theme="dark"] .workspec-time-navigator { background: #18212d; border-color: #3b4656; }
+[data-theme="dark"] .workspec-time-navigator__controls > button:hover,
+body[data-theme="dark"] .workspec-time-navigator__controls > button:hover { background: #263342; }
+[data-theme="dark"] .workspec-time-scrubber output,
+body[data-theme="dark"] .workspec-time-scrubber output { color: #e5edf7; }
+
+@media (max-width: 1360px) {
+    body.uaw-v2 #player-current-date { display: none; }
+    body.uaw-v2 #uaw-playback-commands .playback-controls-group { gap: 5px; }
+    body.uaw-v2 #uaw-playback-commands #player-play-pause-btn { min-width: 68px; padding-inline: 8px !important; }
+    body.uaw-v2 #uaw-playback-commands .player-time-display { min-width: 82px; padding-inline: 7px !important; }
+    body.uaw-v2 #uaw-playback-commands .player-speed-control select { width: 60px; padding-inline: 5px !important; }
+}
+
+@media (max-width: 760px) {
+    .workspec-time-navigator { inset: auto 8px 8px; width: auto; max-height: none; }
+}

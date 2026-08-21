@@ -9,10 +9,15 @@ class SimulationPlayer {
         this.isUpdatingEditor = false;
         this.isScrubbing = false;
         this.trackedEventListeners = [];
+        this.sortedTasks = [...(simulationData.tasks || [])].sort((a, b) => a.start_minutes - b.start_minutes);
 
         // Cache for optimized state calculations
         this.lastStateCalculationTime = -1;
         this.stateCalculationThreshold = 0.5; // Only recalculate if moved > 0.5 minutes
+        this.lastStateRefreshTimestamp = 0;
+        this.lastStateBoundaryIndex = -1;
+        this.taskTracks = [];
+        this.playheads = [];
 
         this.ui = {
             playPauseBtn: document.getElementById('player-play-pause-btn'),
@@ -25,10 +30,12 @@ class SimulationPlayer {
         };
 
         this.init();
+        window.workSpecTimeController?.attachPlayer?.(this);
     }
 
     destroy() {
         this.isPlaying = false;
+        window.simulationPlayerActive = false;
         cancelAnimationFrame(this.animationFrameId);
         this.animationFrameId = null;
 
@@ -36,12 +43,17 @@ class SimulationPlayer {
             element.removeEventListener(event, handler);
         });
         this.trackedEventListeners = [];
+        window.workSpecTimeController?.detachPlayer?.(this);
 
         if (this.ui.playPauseBtn) {
             this.ui.playPauseBtn.removeEventListener('click', () => this.togglePlay());
         }
         if (this.ui.speedSelect) {
             this.ui.speedSelect.removeEventListener('change', () => this.setSpeed());
+        }
+        if (this.ui.playPauseBtn) {
+            this.ui.playPauseBtn.innerHTML = '<span class="player-control-icon" aria-hidden="true">▶</span><span class="player-control-label">Play</span>';
+            this.ui.playPauseBtn.setAttribute('aria-label', 'Play or pause simulation');
         }
     }
 
@@ -114,11 +126,11 @@ class SimulationPlayer {
                 return;
             }
             
-            // Only trigger when simulation render tab is active
-            const simulationTab = document.getElementById('simulation-tab');
-            const isSimulationTabActive = simulationTab && simulationTab.classList.contains('active');
-            
-            if (isSimulationTabActive) {
+            // Playback is application-wide. Canvas and editor controls still keep
+            // their normal spacebar behaviour via the input checks above.
+            const playbackAvailable = document.querySelector('.playback-controls-group')?.offsetParent !== null;
+
+            if (playbackAvailable) {
                 e.preventDefault(); // Prevent page scroll
                 
                 // Find the current player instance and call togglePlay on it
@@ -162,13 +174,15 @@ class SimulationPlayer {
         }
 
         if (this.isPlaying) {
-            // A new play action always starts at the first task. This prevents
-            // playback from resuming in the configured but task-free time range.
             const firstTaskStart = (this.simData.tasks || [])
                 .map(task => Number(task.start_minutes))
                 .filter(Number.isFinite)
                 .reduce((earliest, start) => Math.min(earliest, start), this.simData.start_time_minutes);
-            this.update(firstTaskStart);
+            // Restart only after reaching the end. Pausing and resuming must
+            // preserve the application's one selected moment.
+            if (this.playheadTime >= this.simData.end_time_minutes || this.playheadTime < firstTaskStart) {
+                this.update(firstTaskStart);
+            }
 
             // Initialize lastFrameTime immediately before starting the loop.
             this.lastFrameTime = performance.now();
@@ -189,8 +203,10 @@ class SimulationPlayer {
         const deltaTime = (timestamp - this.lastFrameTime) / 1000; // time in seconds
         this.lastFrameTime = timestamp;
 
-        // Advance playhead time by simulation minutes (60 sim minutes per real second at 1x speed)
-        let timeIncrement = deltaTime * 60 * this.playbackSpeed;
+        // The selected calendar scale controls the useful base rate: event
+        // playback is precise while day/week/month views traverse long plans.
+        const minutesPerSecond = window.workSpecTimeController?.getMinutesPerSecond?.() || 60;
+        let timeIncrement = deltaTime * minutesPerSecond * this.playbackSpeed;
         
         let newTime = this.playheadTime + timeIncrement;
 
@@ -199,22 +215,29 @@ class SimulationPlayer {
             this.togglePlay(); // Stop playback at the end
         }
 
-        this.update(newTime);
-        
-        this.animationFrameId = requestAnimationFrame((t) => this.gameLoop(t));
+        this.update(newTime, { force: newTime >= this.simData.end_time_minutes });
+
+        if (this.isPlaying) {
+            this.animationFrameId = requestAnimationFrame((t) => this.gameLoop(t));
+        }
     }
 
-    update(timeInMinutes) {
+    update(timeInMinutes, options = {}) {
         this.playheadTime = timeInMinutes;
 
         // 1. Update Playhead Position (always fast, no optimization needed)
         const percentage = (this.playheadTime - this.simData.start_time_minutes) / this.simData.total_duration_minutes;
 
         // Create playheads if they don't exist or track count changed, otherwise just reposition them
-        const existingPlayheads = document.querySelectorAll('.timeline-playhead');
-        const taskTracks = document.querySelectorAll('.task-track');
+        if (!this.taskTracks.length || this.taskTracks.some(track => !track.isConnected)) {
+            this.taskTracks = Array.from(document.querySelectorAll('.task-track'));
+        }
+        let existingPlayheads = this.playheads.filter(playhead => playhead.isConnected);
+        const taskTracks = this.taskTracks;
+        let playheadsChanged = false;
 
         if (existingPlayheads.length === 0 || existingPlayheads.length !== taskTracks.length) {
+            playheadsChanged = true;
             // Remove any existing playheads before creating new ones
             existingPlayheads.forEach(el => el.remove());
 
@@ -236,6 +259,8 @@ class SimulationPlayer {
                 `;
                 track.appendChild(playheadClone);
             });
+            existingPlayheads = Array.from(document.querySelectorAll('.timeline-playhead'));
+            this.playheads = existingPlayheads;
         } else {
             // Just reposition existing playheads
             existingPlayheads.forEach(playhead => {
@@ -245,41 +270,48 @@ class SimulationPlayer {
 
         // Only attach scrubbing handlers if we're not currently scrubbing
         // This prevents duplicate playheads during drag operations
-        if (this.attachScrubbing && !this.isScrubbing) {
+        if (playheadsChanged && this.attachScrubbing && !this.isScrubbing) {
             this.attachScrubbing();
         }
 
         // 2. Update Time Displays (always fast)
-        const formattedTime = this.formatTime(this.playheadTime);
-        if (this.ui.currentTimeDisplay) {
-            this.ui.currentTimeDisplay.textContent = formattedTime;
-        }
-        if (this.ui.liveTimeSpans) {
-            this.ui.liveTimeSpans.forEach(span => span.textContent = formattedTime);
+        if (window.workSpecTimeController?.model) {
+            window.workSpecTimeController.setTime(this.playheadTime, { source: 'player', ...options });
+        } else {
+            const formattedTime = this.formatTime(this.playheadTime);
+            if (this.ui.currentTimeDisplay) this.ui.currentTimeDisplay.textContent = formattedTime;
+            if (this.ui.liveTimeSpans) this.ui.liveTimeSpans.forEach(span => span.textContent = formattedTime);
         }
 
         // Keep the visual timeline legible as a player: past, current and future
         // tasks should be obvious without opening a detail panel.
-        taskTracks.forEach(track => {
-            track.querySelectorAll('.task-block').forEach(taskBlock => {
-                const start = Number(taskBlock.dataset.startMinutes);
-                const duration = Number(taskBlock.dataset.duration);
-                const end = start + duration;
-                const active = Number.isFinite(start) && Number.isFinite(end) && this.playheadTime >= start && this.playheadTime < end;
-                const completed = Number.isFinite(end) && this.playheadTime >= end;
-                taskBlock.classList.toggle('active', active);
-                taskBlock.classList.toggle('completed', completed);
-                taskBlock.setAttribute('aria-current', active ? 'step' : 'false');
+        if (!window.workSpecTimeController?.model) {
+            taskTracks.forEach(track => {
+                track.querySelectorAll('.task-block').forEach(taskBlock => {
+                    const start = Number(taskBlock.dataset.startMinutes);
+                    const duration = Number(taskBlock.dataset.duration);
+                    const end = start + duration;
+                    const active = Number.isFinite(start) && Number.isFinite(end) && this.playheadTime >= start && this.playheadTime < end;
+                    const completed = Number.isFinite(end) && this.playheadTime >= end;
+                    taskBlock.classList.toggle('active', active);
+                    taskBlock.classList.toggle('completed', completed);
+                    taskBlock.setAttribute('aria-current', active ? 'step' : 'false');
+                });
             });
-        });
+        }
 
         // 3-5. Optimize expensive state calculations - only recalculate if significant movement
         const timeDelta = Math.abs(this.playheadTime - this.lastStateCalculationTime);
+        const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+        const boundaryIndex = window.workSpecTimeController?.getBoundaryIndex?.(this.playheadTime) ?? -1;
+        const boundaryChanged = boundaryIndex !== this.lastStateBoundaryIndex;
+        const refreshIntervalElapsed = (now - this.lastStateRefreshTimestamp) >= 80;
         const shouldRecalculateStates = (
             this.lastStateCalculationTime === -1 || // First run
-            timeDelta >= this.stateCalculationThreshold || // Moved significantly
-            this.isPlaying || // During playback, always update for smooth animation
-            !this.isScrubbing // Not scrubbing (e.g., user clicked)
+            options.force === true ||
+            !this.isPlaying || // Direct click/scrub while paused
+            (boundaryChanged && refreshIntervalElapsed) ||
+            (!window.workSpecTimeController?.model && timeDelta >= this.stateCalculationThreshold && refreshIntervalElapsed)
         );
 
         if (shouldRecalculateStates) {
@@ -289,11 +321,10 @@ class SimulationPlayer {
             // 4. Calculate and Render Live States
             this.updateAllObjectStates();
 
-            // 5. Update the Monaco editor with any changes and notify editors
-            this.updateMonacoEditorAndNotifyEditors();
-
             // Cache this calculation time
             this.lastStateCalculationTime = this.playheadTime;
+            this.lastStateRefreshTimestamp = now;
+            this.lastStateBoundaryIndex = boundaryIndex;
         }
 
     }
@@ -324,9 +355,7 @@ class SimulationPlayer {
         });
         
 
-        const sortedTasks = [...(this.simData.tasks || [])].sort((a,b) => a.start_minutes - b.start_minutes);
-        
-        for (const task of sortedTasks) {
+        for (const task of this.sortedTasks) {
             if (task.start_minutes > this.playheadTime) break; // Stop if task hasn't started
             
             const isTaskActive = this.playheadTime >= task.start_minutes && this.playheadTime < task.end_minutes;
@@ -461,13 +490,17 @@ class SimulationPlayer {
                     if (elementData && shouldMove) {
                         // Mark as moved to prevent repeated execution
                         interaction.move_display_element._moved = true;
-                        
-                        // Update Monaco editor with the moved element
-                        this.updateMonacoEditorAndNotifyEditors();
                     }
                 }
             });
         }
+
+        this.liveObjectMap = new Map();
+        Object.values(this.liveObjects).forEach(objects => {
+            if (Array.isArray(objects)) objects.forEach(object => {
+                if (object?.id && !this.liveObjectMap.has(object.id)) this.liveObjectMap.set(object.id, object);
+            });
+        });
     }
 
     findObjectById(objectId) {
@@ -494,6 +527,14 @@ class SimulationPlayer {
         // Search in digital_space.digital_objects (simulation level)
         if (this.simData.digital_space && this.simData.digital_space.digital_objects) {
             const found = this.simData.digital_space.digital_objects.find(obj => obj && obj.id === objectId);
+            if (found) return found;
+        }
+
+        // Display elements are nested inside displays rather than stored in a
+        // top-level object array, but they participate in the same clock.
+        for (const display of (this.simData.displays || [])) {
+            if (display?.id === objectId) return display;
+            const found = (display?.rectangles || []).find(element => element && element.id === objectId);
             if (found) return found;
         }
         
@@ -871,9 +912,13 @@ class SimulationPlayer {
                 }
             }
 
-            // Search in displays for display elements
-            if (!objectFound && currentJson.displays) {
-                for (const display of currentJson.displays) {
+            // Search in canonical and legacy displays for display elements.
+            const documentDisplays = currentJson.simulation?.world?.displays
+                || currentJson.simulation?.displays
+                || currentJson.displays
+                || [];
+            if (!objectFound && documentDisplays.length) {
+                for (const display of documentDisplays) {
                     if (display.rectangles) {
                         const element = display.rectangles.find(el => el.id === objectId);
                         if (element) {
@@ -998,7 +1043,7 @@ class SimulationPlayer {
             }
         });
 
-        const sortedTasks = [...(this.simData.tasks || [])].sort((a,b) => a.start_minutes - b.start_minutes);
+        const sortedTasks = this.sortedTasks;
         
         for (const task of sortedTasks) {
             if (task.start_minutes > this.playheadTime) break; // No need to process future tasks
@@ -1036,25 +1081,8 @@ class SimulationPlayer {
 
                 const isTemporary = interaction.temporary === true || interaction.revert_after === true;
 
-                // Search for the target object in ALL live object arrays, not just the current objectType
-                let targetObject = null;
-                
-                // Search through all object type arrays in liveObjects
-                for (const [objType, objArray] of Object.entries(this.liveObjects)) {
-                    if (Array.isArray(objArray)) {
-                        const found = objArray.find(obj => obj && obj.id === targetId);
-                        if (found) {
-                            targetObject = found;
-                            break;
-                        }
-                    }
-                }
-                
-                
-                // If not found in liveObjects, search in the raw simulation data
-                if (!targetObject) {
-                    targetObject = this.findObjectById(targetId);
-                }
+                // The live-object index is rebuilt only when the simulation state changes.
+                const targetObject = this.liveObjectMap?.get(targetId) || this.findObjectById(targetId);
                 
                 
                 if (targetObject && interaction.property_changes) {
@@ -1098,11 +1126,6 @@ class SimulationPlayer {
                                 propertyOverrides[targetId][property] = newValue;
                             }
                             
-                            // Also update the actual object data for persistence
-                            const objectPropertyPath = (property === 'location' || property === 'emoji' || property.startsWith('properties.'))
-                                ? property
-                                : `properties.${property}`;
-                            this.updateObjectProperty(targetObject, objectPropertyPath, newValue, changes.from, isTemporary, isTaskActive);
                         } else {
                             // Apply non-assignment operators after completion (or during active task if temporary)
                             const shouldApply = isTemporary ? isTaskActive : (task.end_minutes <= this.playheadTime);
@@ -1198,10 +1221,8 @@ class SimulationPlayer {
                                 newValue = isTemporary ? changes.from : toValue;
                             }
 
-                            // Try to update display element property directly via Monaco
-                            // For display elements, properties like "border" should be nested under "properties"
-                            const displayProperty = property.startsWith('properties.') ? property : `properties.${property}`;
-                            this.updateMonacoProperty(targetId, displayProperty, newValue);
+                            if (!propertyOverrides[targetId]) propertyOverrides[targetId] = {};
+                            propertyOverrides[targetId][property] = newValue;
                         }
                     });
                 }

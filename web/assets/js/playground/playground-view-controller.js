@@ -69,6 +69,7 @@ class MultiPeriodViewController {
 
         this.saveState();
         this.render();
+        window.UAWPlaygroundShell?.renderCommandbar?.();
     }
 
     /**

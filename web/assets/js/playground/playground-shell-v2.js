@@ -20,7 +20,7 @@
         projects: { title: 'Projects', description: 'Local WorkSpec projects' },
         build: { title: 'Model', description: 'Author the process and its environment' },
         run: { title: 'Simulate', description: 'Run, inspect and validate the current model' },
-        validate: { title: 'Simulate', description: 'Run, inspect and validate the current model' },
+        validate: { title: 'Validation', description: 'Inspect problems and manage rules' },
         assets: { title: 'Assets', description: 'Project media stored outside WorkSpec source' },
         settings: { title: 'Settings', description: 'Workspace preferences and integrations' },
         source: { title: 'Source', description: 'Edit the WorkSpec document directly' }
@@ -36,6 +36,8 @@
         assets: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v13H4z"/><path d="m4 15 4.5-4.5 3.5 3 2.5-2 5.5 5M15.5 9h.01"/></svg>',
         settings: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.4 1a8 8 0 0 0-1.8-1L14.4 3h-4.8l-.4 3.1a8 8 0 0 0-1.8 1l-2.4-1-2 3.4L5.1 11a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.4-1a8 8 0 0 0 1.8 1l.4 3.1h4.8l.4-3.1a8 8 0 0 0 1.8-1l2.4 1 2-3.4-2.1-1.5a7 7 0 0 0 .1-1z"/></svg>',
         source: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6-6 6 6 6M15 6l6 6-6 6M13.5 4l-3 16"/></svg>',
+        problems: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 21 20H3z"/><path d="M12 9v5M12 17h.01"/></svg>',
+        rules: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="11" cy="17" r="2"/></svg>',
         agent: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7.5h14v10H5zM9 17.5v2M15 17.5v2M9 11h.01M15 11h.01M9 14h6M12 7.5V4M10.5 4h3"/></svg>',
         search: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>',
         panel: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 4.5h17v15h-17zM15 4.5v15"/></svg>',
@@ -140,6 +142,7 @@
                             ${this.workspaceButton('projects', 'Projects', '1')}
                             ${this.workspaceButton('build', 'Model', '2')}
                             ${this.workspaceButton('run', 'Simulate', '3')}
+                            ${this.workspaceButton('validate', 'Validation')}
                             ${this.workspaceButton('assets', 'Assets', '4')}
                         </div>
                         <div class="uaw-rail__secondary">
@@ -252,6 +255,7 @@
                 projects: 'Project files',
                 build: 'Author WorkSpec',
                 run: 'Run and validate',
+                validate: 'Inspect problems and manage rules',
                 assets: 'Project media',
                 settings: 'Preferences'
             };
@@ -305,7 +309,7 @@
             });
             const catalogTab = document.querySelector('.metrics-tab-btn[data-tab="catalog"]');
             const validatorTab = document.querySelector('.metrics-tab-btn[data-tab="validator"]');
-            if (catalogTab) catalogTab.textContent = 'Rule catalogue';
+            if (catalogTab) catalogTab.textContent = 'Rule catalog';
             if (validatorTab) validatorTab.textContent = 'Rule logic';
         }
 
@@ -389,6 +393,9 @@
                 { id: 'run.toggle', label: 'Play or pause simulation', shortcut: 'Space', run: () => click('player-play-pause-btn') },
                 { id: 'validate.run', label: 'Validate WorkSpec', shortcut: '⌘ Enter', run: () => window.runManualValidation?.() || window.validateJSON?.() },
                 { id: 'run.timeline', label: 'Open simulation timeline', run: () => this.setRunView('timeline') },
+                { id: 'run.period.day', label: 'Show simulation by day', run: () => this.setSimulationPeriod('day') },
+                { id: 'run.period.week', label: 'Show simulation by week', run: () => this.setSimulationPeriod('week') },
+                { id: 'run.period.month', label: 'Show simulation by month', run: () => this.setSimulationPeriod('month') },
                 { id: 'review.problems', label: 'Review problems', run: () => this.setRunView('problems') },
                 { id: 'review.rules', label: 'Edit validation rules', run: () => this.setRunView('rules') },
                 { id: 'review.add-rule', label: 'Add validation rule', run: () => click('add-metric-btn') },
@@ -459,6 +466,7 @@
                 this.setWorkspace(this.workspace, { persist: false, animate: false, fromSubview: true });
                 if (this.workspace === 'build') this.setModelView(this.modelView, { persist: false, animate: false });
             });
+            document.addEventListener('simulation-rendered', () => this.renderCommandbar());
             window.addEventListener('uaw:project-saving', () => this.setSaveState('Saving…', 'working'));
             window.addEventListener('uaw:project-saved', () => {
                 this.setSaveState('Saved to folder', 'saved');
@@ -603,7 +611,10 @@
 
             primary.innerHTML = '';
             context.innerHTML = '';
-            playback.hidden = !(this.workspace === 'run' && this.runView === 'timeline');
+            // The WorkSpec has one application clock. Keep transport available
+            // while authoring and inspecting every model surface, not only on
+            // the simulation timeline.
+            playback.hidden = !['build', 'source', 'run'].includes(this.workspace);
 
             if (this.workspace === 'projects') {
                 primary.innerHTML = this.commandButton('project.new', 'New project', { primary: true })
@@ -636,7 +647,19 @@
             }
 
             if (this.workspace === 'run') {
-                primary.innerHTML = `<div class="uaw-segmented" role="tablist" aria-label="Simulation views">${this.commandButton('run.timeline', 'Timeline', { active: this.runView === 'timeline', pressed: this.runView === 'timeline' })}${this.commandButton('review.problems', 'Problems', { active: this.runView === 'problems', pressed: this.runView === 'problems' })}${this.commandButton('review.rules', 'Rules', { active: this.runView === 'rules', pressed: this.runView === 'rules' })}</div>`;
+                const periodViews = this.runView === 'timeline' && this.isMultiPeriodSimulation()
+                    ? `<div class="uaw-segmented uaw-period-commands" role="tablist" aria-label="Simulation period">${[
+                        ['day', 'Day', 'run.period.day'],
+                        ['week', 'Week', 'run.period.week'],
+                        ['month', 'Month', 'run.period.month']
+                    ].map(([id, label, command]) => this.commandButton(command, label, { active: this.getSimulationPeriodView() === id, pressed: this.getSimulationPeriodView() === id })).join('')}</div>`
+                    : '';
+                const validationViews = ['problems', 'rules'].includes(this.runView)
+                    ? `<div class="uaw-segmented uaw-validation-commands" role="tablist" aria-label="Validation views">${this.commandButton('review.problems', 'Problems', { active: this.runView === 'problems', pressed: this.runView === 'problems' })}${this.commandButton('review.rules', 'Rules', { active: this.runView === 'rules', pressed: this.runView === 'rules' })}</div>`
+                    : '';
+                primary.innerHTML = this.runView === 'timeline'
+                    ? this.commandButton('run.timeline', 'Timeline', { active: true, pressed: true }) + periodViews
+                    : validationViews;
                 context.innerHTML = this.runView === 'rules'
                     ? this.commandButton('review.add-rule', 'New rule', { primary: true }) + this.commandButton('review.run-custom', 'Run rules')
                     : this.runView === 'problems' ? this.commandButton('validate.run', 'Run validation', { primary: true }) : '';
@@ -653,6 +676,24 @@
             const toggle = document.getElementById('metrics-mode-toggle');
             if (!top || !toggle || toggle.dataset.metricsReady !== 'true') return;
             if (top.classList.contains('metrics-mode') !== active) toggle.click();
+        }
+
+        isMultiPeriodSimulation() {
+            return Boolean(window.multiPeriodViewController?.isMultiPeriod?.());
+        }
+
+        getSimulationPeriodView() {
+            const view = window.multiPeriodViewController?.currentView;
+            return view === 'calendar' ? 'month' : (view || 'day');
+        }
+
+        setSimulationPeriod(period) {
+            const controller = window.multiPeriodViewController;
+            if (!controller?.isMultiPeriod?.()) return;
+            if (period === 'day') controller.goToDay(controller.currentDay || 1);
+            if (period === 'week') controller.goToWeek(controller.currentWeek || 1);
+            if (period === 'month') controller.goToCalendar();
+            this.renderCommandbar();
         }
 
         setModelView(view, options = {}) {
@@ -691,7 +732,18 @@
         setWorkspace(workspace, options = {}) {
             if (workspace === 'validate') {
                 workspace = 'run';
-                if (!options.fromSubview) this.runView = 'problems';
+                if (!options.fromSubview) {
+                    this.runView = 'problems';
+                    this.settings.runView = this.runView;
+                    document.body.dataset.runView = this.runView;
+                }
+            } else if (workspace === 'run' && !options.fromSubview && this.runView !== 'timeline') {
+                // Simulate is the timeline destination. Validation keeps its
+                // own Problems/Rules subviews and must not remain selected when
+                // the user returns to Simulate.
+                this.runView = 'timeline';
+                this.settings.runView = this.runView;
+                document.body.dataset.runView = this.runView;
             }
             if (!WORKSPACE_META[workspace]) workspace = 'build';
             if (workspace === 'build' && !options.fromSubview && this.modelView === 'source') workspace = 'source';
@@ -703,12 +755,16 @@
             // environment.
             this.toggleInspector(this.hasPersistentInspector(), { persist: false });
             this.shell.querySelectorAll('.uaw-rail-button').forEach((button) => {
-                const selected = button.dataset.workspace === workspace || (workspace === 'source' && button.dataset.workspace === 'build');
+                const selected = (button.dataset.workspace === workspace && !(workspace === 'run' && ['problems', 'rules'].includes(this.runView)))
+                    || (workspace === 'source' && button.dataset.workspace === 'build')
+                    || (workspace === 'run' && button.dataset.workspace === 'validate' && ['problems', 'rules'].includes(this.runView));
                 button.classList.toggle('active', selected);
                 button.setAttribute('aria-current', selected ? 'page' : 'false');
             });
 
-            const meta = WORKSPACE_META[workspace];
+            const meta = workspace === 'run' && ['problems', 'rules'].includes(this.runView)
+                ? WORKSPACE_META.validate
+                : WORKSPACE_META[workspace];
             this.shell.querySelector('#uaw-workspace-title').textContent = meta.title;
             this.shell.querySelector('#uaw-workspace-description').textContent = meta.description;
 
@@ -758,7 +814,7 @@
                 content.insertAdjacentHTML('afterbegin', `<header class="uaw-rules-overview"><div><h1>Rules</h1><p>Define project-specific checks without exposing unrelated WorkSpec source.</p></div><span>Custom validation</span></header>`);
             }
             const tabs = content.querySelectorAll('.metrics-tab-btn');
-            if (tabs[0]) tabs[0].textContent = 'Rule catalogue';
+            if (tabs[0]) tabs[0].textContent = 'Rule catalog';
             if (tabs[1]) tabs[1].textContent = 'Rule logic';
         }
 
@@ -1005,7 +1061,12 @@
                 const periodObjects = Object.entries(simulation.day_types || {}).flatMap(([period, value]) =>
                     (value?.objects || []).map(object => ({ ...object, __period: period }))
                 );
-                const objectList = canonicalObjects.length ? canonicalObjects : legacyObjects.length ? legacyObjects : periodObjects;
+                const lifecycleObjects = [...canonicalTasks, ...periodTasks].flatMap(task => (task?.interactions || []).flatMap(interaction => [
+                    interaction?.object,
+                    ...((interaction?.add_objects || []).filter(item => item && typeof item === 'object'))
+                ])).filter(object => object?.id).map(object => ({ ...object, __lifecycle: 'Created by process' }));
+                const baseObjects = canonicalObjects.length ? canonicalObjects : legacyObjects.length ? legacyObjects : periodObjects;
+                const objectList = [...baseObjects, ...lifecycleObjects];
                 const objects = [...new Map(objectList.map((object, index) => [object?.id || `object-${index}`, object])).values()];
                 return { root, simulation, tasks, objects };
             } catch (_error) {
@@ -1039,6 +1100,7 @@
                     <td>${escapeHTML(task.duration ?? '—')} ${task.duration != null ? escapeHTML(simulation.config?.time_unit || 'min') : ''}</td>
                     <td>${escapeHTML(task.location || task.location_id || '—')}</td>
                     <td class="uaw-process-dependencies">${escapeHTML(dependencies)}</td>
+                    <td><span class="uaw-temporal-badge">Upcoming</span></td>
                     <td><button class="uaw-row-action" type="button" data-edit-process-task="${index}">${task.__period ? 'View source' : 'Edit'}</button></td>
                 </tr>`;
             }).join('');
@@ -1050,7 +1112,7 @@
                 </header>
                 <section class="uaw-process-register" aria-labelledby="uaw-task-register-heading">
                     <div class="uaw-process-section-heading"><div><h2 id="uaw-task-register-heading">Task register</h2><p>The authored sequence, assignments and dependencies. Run it from Simulate.</p></div></div>
-                    ${rows ? `<div class="uaw-process-table-wrap"><table class="uaw-process-table"><thead><tr><th>Task</th><th>Actor</th><th>Start</th><th>Duration</th><th>Location</th><th>Depends on</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="uaw-process-empty"><strong>No tasks yet</strong><p>Add the first task to establish this process.</p><button type="button" data-uaw-command="edit.task">Create first task</button></div>`}
+                    ${rows ? `<div class="uaw-process-table-wrap"><table class="uaw-process-table"><thead><tr><th>Task</th><th>Actor</th><th>Start</th><th>Duration</th><th>Location</th><th>Depends on</th><th>Moment</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="uaw-process-empty"><strong>No tasks yet</strong><p>Add the first task to establish this process.</p><button type="button" data-uaw-command="edit.task">Create first task</button></div>`}
                 </section>
             `;
 
@@ -1080,9 +1142,9 @@
                 const type = object?.type || 'custom';
                 const details = object?.properties || {};
                 const state = details.state ?? details.quantity ?? details.role ?? '—';
-                return `<tr data-object-row data-context-object-id="${escapeHTML(object?.id || '')}" data-object-search="${escapeHTML(`${object?.name || ''} ${object?.id || ''} ${type}`.toLowerCase())}" data-object-type="${escapeHTML(type)}"><td><div class="uaw-object-name"><span><strong>${escapeHTML(object?.name || object?.id || `Object ${index + 1}`)}</strong><code>${escapeHTML(object?.id || 'No ID')}</code></span></div></td><td><span class="uaw-type-pill">${escapeHTML(type)}</span></td><td>${escapeHTML(state)}</td><td>${escapeHTML(object?.__period || 'Global')}</td><td><button class="uaw-row-action" type="button" data-edit-object-index="${index}">${object?.__period ? 'View source' : 'Edit'}</button></td></tr>`;
+                return `<tr data-object-row data-context-object-id="${escapeHTML(object?.id || '')}" data-object-search="${escapeHTML(`${object?.name || ''} ${object?.id || ''} ${type}`.toLowerCase())}" data-object-type="${escapeHTML(type)}"><td><div class="uaw-object-name"><span><strong>${escapeHTML(object?.name || object?.id || `Object ${index + 1}`)}</strong><code>${escapeHTML(object?.id || 'No ID')}</code></span></div></td><td><span class="uaw-type-pill">${escapeHTML(type)}</span></td><td>${escapeHTML(state)}</td><td><span class="uaw-temporal-badge">Inactive</span></td><td>${escapeHTML(object?.__lifecycle || object?.__period || 'Global')}</td><td><button class="uaw-row-action" type="button" data-edit-object-index="${index}">${object?.__period || object?.__lifecycle ? 'View source' : 'Edit'}</button></td></tr>`;
             }).join('');
-            view.innerHTML = `<header class="uaw-process-heading uaw-objects-heading"><div><h1>Objects</h1><p>Actors, resources, equipment and outputs available to this process.</p></div><dl><div><dt>Objects</dt><dd>${objects.length}</dd></div><div><dt>Types</dt><dd>${groups.length}</dd></div></dl></header><section class="uaw-process-register"><div class="uaw-process-section-heading"><div><h2>Object register</h2><p>Reusable entities referenced by tasks and environment layouts.</p></div></div><div class="uaw-object-toolbar"><label><span class="sr-only">Search objects</span><input type="search" data-object-search-input placeholder="Search objects…"></label><select data-object-filter aria-label="Filter object type"><option value="">All types</option>${groups.map(type => `<option value="${escapeHTML(type)}">${escapeHTML(type)}</option>`).join('')}</select></div>${rows ? `<div class="uaw-process-table-wrap"><table class="uaw-process-table uaw-object-table"><thead><tr><th>Object</th><th>Type</th><th>State / quantity</th><th>Scope</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="uaw-process-empty"><strong>No objects yet</strong><p>Use Add object in the command bar to create an actor, resource, equipment item or product.</p></div>`}</section>`;
+            view.innerHTML = `<header class="uaw-process-heading uaw-objects-heading"><div><h1>Objects</h1><p>Actors, resources, equipment and outputs available to this process.</p></div><dl><div><dt>Objects</dt><dd>${objects.length}</dd></div><div><dt>Types</dt><dd>${groups.length}</dd></div></dl></header><section class="uaw-process-register"><div class="uaw-process-section-heading"><div><h2>Object register</h2><p>Reusable entities referenced by tasks and environment layouts.</p></div></div><div class="uaw-object-toolbar"><label><span class="sr-only">Search objects</span><input type="search" data-object-search-input placeholder="Search objects…"></label><select data-object-filter aria-label="Filter object type"><option value="">All types</option>${groups.map(type => `<option value="${escapeHTML(type)}">${escapeHTML(type)}</option>`).join('')}</select></div>${rows ? `<div class="uaw-process-table-wrap"><table class="uaw-process-table uaw-object-table"><thead><tr><th>Object</th><th>Type</th><th>State / quantity</th><th>Moment</th><th>Scope</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="uaw-process-empty"><strong>No objects yet</strong><p>Use Add object in the command bar to create an actor, resource, equipment item or product.</p></div>`}</section>`;
             const filter = () => {
                 const query = view.querySelector('[data-object-search-input]')?.value.trim().toLowerCase() || '';
                 const type = view.querySelector('[data-object-filter]')?.value || '';
@@ -1093,7 +1155,7 @@
             view.querySelectorAll('[data-edit-object-index]').forEach(button => button.addEventListener('click', () => {
                 const object = objects[Number(button.dataset.editObjectIndex)];
                 if (!object) return;
-                if (object.__period || typeof window.openEditObjectModal !== 'function') this.setModelView('source');
+                if (object.__period || object.__lifecycle || typeof window.openEditObjectModal !== 'function') this.setModelView('source');
                 else window.openEditObjectModal(object);
             }));
         }

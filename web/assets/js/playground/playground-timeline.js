@@ -247,9 +247,15 @@ function processSimulationData(simulationData) {
     }
     
     const config = sim.config || {};
+    const rawTasks = [
+        ...(Array.isArray(sim.process?.tasks) ? sim.process.tasks : []),
+        ...(Array.isArray(sim.tasks) ? sim.tasks : [])
+    ];
     const startTime = config.start_time || "06:00";
-    const [startHour, startMin] = startTime.split(":").map(Number);
-    const startTimeMinutes = startHour * 60 + startMin;
+    const clockContext = window.WorkSpecTime?.createClockContext?.(sim, rawTasks);
+    const startTimeMinutes = clockContext
+        ? window.WorkSpecTime.taskStartMinutes(startTime, clockContext)
+        : parseTimeToMinutes(startTime) ?? 360;
 
     let actualLastTaskEnd = startTimeMinutes;
     let actualFirstTaskStart = null;
@@ -265,6 +271,10 @@ function processSimulationData(simulationData) {
     if (digitalSpace && digitalSpace.digital_locations) {
         allObjects.push(...digitalSpace.digital_locations);
     }
+    if (digitalSpace && digitalSpace.digital_objects) {
+        allObjects.push(...digitalSpace.digital_objects);
+    }
+    const displays = sim.displays || sim.world?.displays || simulationData.displays || [];
     
     // Group objects by type dynamically (no hardcoded filtering)
     const objectsByType = {};
@@ -277,24 +287,19 @@ function processSimulationData(simulationData) {
     });
 
     const timeUnit = (typeof config.time_unit === 'string') ? config.time_unit : 'minutes';
-    const rawTasks = [
-        ...(Array.isArray(sim.process?.tasks) ? sim.process.tasks : []),
-        ...(Array.isArray(sim.tasks) ? sim.tasks : [])
-    ];
 
     const tasksWithMinutes = rawTasks.map(task => {
         if (!task) return null;
 
         let taskStartMinutes = startTimeMinutes;
         try {
-            if (window.WorkSpecValidator && typeof window.WorkSpecValidator.parseTaskStart === 'function') {
+            if (clockContext && window.WorkSpecTime?.taskStartMinutes) {
+                taskStartMinutes = window.WorkSpecTime.taskStartMinutes(task.start, clockContext);
+            } else if (window.WorkSpecValidator && typeof window.WorkSpecValidator.parseTaskStart === 'function') {
                 const parsedStart = window.WorkSpecValidator.parseTaskStart(task.start);
                 if (parsedStart && parsedStart.ok) {
                     if (typeof parsedStart.startMinutes === 'number') {
                         taskStartMinutes = parsedStart.startMinutes;
-                    } else if (parsedStart.kind === 'datetime' && typeof parsedStart.startMillis === 'number') {
-                        const date = new Date(parsedStart.startMillis);
-                        taskStartMinutes = (date.getHours() * 60) + date.getMinutes();
                     }
                 }
             } else if (typeof task.start === 'string') {
@@ -431,6 +436,10 @@ function processSimulationData(simulationData) {
 
     // Store the digital object types as metadata
     result._digitalObjectTypeKeys = Array.from(digitalObjectTypeKeys);
+    // Retain environment collections so the one application clock can apply
+    // interaction state in the Digital and Display editors as well as Timeline.
+    result.digital_space = digitalSpace || { digital_locations: [], digital_objects: [] };
+    result.displays = displays;
 
     return result;
 }
@@ -543,6 +552,9 @@ function renderSimulation(skipJsonValidation = false) {
         const isMultiPeriod = dataToProcess.simulation?.day_types && dataToProcess.simulation?.calendar;
 
         if (isMultiPeriod && !window.renderingSingleDayFromMultiPeriod) {
+            if (player && typeof player.destroy === 'function') player.destroy();
+            player = null;
+            window.player = null;
             // Initialize or update view controller for multi-period simulation
             if (!multiPeriodViewController) {
                 multiPeriodViewController = new MultiPeriodViewController();
@@ -1571,6 +1583,7 @@ function ensureMultiPeriodUI() {
     }
 
     breadcrumbsContainer.style.display = 'flex';
+    window.UAWPlaygroundShell?.renderCommandbar?.();
 }
 
 function hideMultiPeriodUI() {
@@ -1578,6 +1591,13 @@ function hideMultiPeriodUI() {
     if (breadcrumbsContainer) {
         breadcrumbsContainer.style.display = 'none';
     }
+    // Do not let the command bar keep advertising the previous project's
+    // calendar after a multi-day document is replaced by a single-day one.
+    if (!window.renderingSingleDayFromMultiPeriod) {
+        multiPeriodViewController = null;
+        window.multiPeriodViewController = null;
+    }
+    window.UAWPlaygroundShell?.renderCommandbar?.();
 }
 
 // Helper function for parseTimeToMinutes (if not already defined)

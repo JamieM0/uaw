@@ -55,7 +55,7 @@
         <link rel="stylesheet" href="/assets/css/emoji-picker.css" />
         <link rel="stylesheet" href="/assets/css/smart-actions.css" />
         <link rel="stylesheet" href="/assets/css/multi-period.css" />
-        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260821f" />
+        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260821i" />
 
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
@@ -140,7 +140,8 @@
 
         <script src="/assets/js/tutorial.js" defer></script>
         <script src="/assets/js/tutorial-validator.js" defer></script>
-        <script src="/assets/js/simulation-player.js?v=20260821b" defer></script>
+        <script src="/assets/js/playground/playground-time-controller.js?v=20260821c" defer></script>
+        <script src="/assets/js/simulation-player.js?v=20260821d" defer></script>
 
         <!-- Monaco Editor for JSON syntax highlighting -->
         <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
@@ -367,11 +368,12 @@
                     <!-- Playback Controls Group -->
                     <div class="playback-controls-group">
                         <button id="player-play-pause-btn" title="Play/Pause Simulation" aria-label="Play or pause simulation"><span class="player-control-icon" aria-hidden="true">▶</span><span class="player-control-label">Play</span></button>
-                        <div class="player-time-display" role="timer" aria-live="off">
-                            <span id="player-current-time">00:00</span>
-                        </div>
+                        <button id="player-time-button" class="player-time-display" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="workspec-time-navigator" title="Scrub the timeline">
+                            <span id="player-current-date">Select time</span>
+                            <span id="player-current-time" role="timer" aria-live="off">00:00</span>
+                        </button>
                         <div class="player-speed-control">
-                            <label for="player-speed-select">Speed:</label>
+                            <label class="sr-only" for="player-speed-select">Playback speed</label>
                             <select id="player-speed-select" aria-label="Playback speed">
                                 <option value="0.5">0.5x</option>
                                 <option value="1" selected>1x</option>
@@ -712,8 +714,8 @@
                         <div class="resize-handle-vertical metrics-resize"></div>
                         <div class="panel-content">
                             <div class="metrics-tab-bar">
-                                <button class="metrics-tab-btn active" data-tab="catalog">metrics-catalog-custom.json</button>
-                                <button class="metrics-tab-btn" data-tab="validator">simulation-validator-custom.js</button>
+                                <button id="metrics-catalog-tab-button" class="metrics-tab-btn active" data-tab="catalog" aria-controls="metrics-catalog-tab">Rule catalog</button>
+                                <button id="metrics-validator-tab-button" class="metrics-tab-btn" data-tab="validator" aria-controls="metrics-validator-tab">Rule logic</button>
                             </div>
                             <div class="metrics-tab-content-wrapper">
                                 <div id="metrics-catalog-tab" class="metrics-tab-content active">
@@ -1265,7 +1267,7 @@
         <!-- Playground v2 application shell. These modules preserve the legacy
              component IDs while providing the project workspace around them. -->
         <script src="/assets/js/playground/playground-projects-v2.js?v=20260820a" defer></script>
-        <script src="/assets/js/playground/playground-shell-v2.js?v=20260821d" defer></script>
+        <script src="/assets/js/playground/playground-shell-v2.js?v=20260821e" defer></script>
         <script src="/assets/js/playground/playground-agent-v2.js?v=20260818c" defer></script>
         <script type="module" src="/assets/js/playground/playground-motion-v2.js?v=20260818a"></script>
 
@@ -1292,7 +1294,7 @@
         <script src="/assets/js/playground/playground-calendar-view.js?v=20260814g" defer></script>
         <script src="/assets/js/playground/playground-week-view.js?v=20260814g" defer></script>
 
-        <script src="/assets/js/playground/playground-timeline.js?v=20260821b" defer></script>
+        <script src="/assets/js/playground/playground-timeline.js?v=20260821c" defer></script>
         <script src="/assets/js/playground/playground-timeline-extensions.js" defer></script>
         <script src="/assets/js/playground/playground-digital-space.js?v=20260814g" defer></script>
         <script src="/assets/js/playground/playground-display-editor.js?v=20260814g" defer></script>
