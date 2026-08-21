@@ -396,7 +396,7 @@ const sampleSimulation = {
         "schema_version": "2.0",
         "meta": {
             "title": "WorkSpec v2.0 Sample",
-            "description": "A minimal WorkSpec v2.0 simulation used as a Playground fallback.",
+            "description": "A minimal WorkSpec v2.0 simulation used as a WorkSpec Studio fallback.",
             "domain": "Example"
         },
         "config": {

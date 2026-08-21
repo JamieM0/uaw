@@ -1,6 +1,6 @@
 # Validation Rules Reference
 
-This comprehensive guide covers all validation rules in the UAW system. Each rule is automatically checked when you edit your simulation in the playground, helping ensure your process models are structurally sound, logically consistent, and ready for business analysis.
+This comprehensive guide covers all validation rules in the UAW system. Each rule is automatically checked when you edit your simulation in WorkSpec Studio, helping ensure your process models are structurally sound, logically consistent, and ready for business analysis.
 
 ## Validation Categories
 

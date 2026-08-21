@@ -605,7 +605,7 @@ Use clear task IDs and add comments in your simulation JSON:
 4. Check for typos in location IDs
 5. Review timeline chronologically to track location changes
 
-**Solution**: Use the playground's validation panel to see detailed error messages showing:
+**Solution**: Use WorkSpec Studio's validation panel to see detailed error messages showing:
 - Actor's expected location
 - Actor's actual simulated location
 - Task timing information

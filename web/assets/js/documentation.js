@@ -94,9 +94,9 @@ function generateDocsStructure() {
             ]),
         ]),
 
-        makeSection("Playground", "playground", [
+        makeSection("WorkSpec Studio", "playground", [
             makeSection("Guides", "playground-guides", [
-                makePage("Playground Guide", "/docs/playground/playground-guide"),
+                makePage("WorkSpec Studio Guide", "/docs/playground/playground-guide"),
                 makePage(
                     "Space Editor Guide",
                     "/docs/playground/space-editor-guide",

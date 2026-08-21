@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
                         <span class="theme-icon">&#9789;</span>
                     </button>
-                    <a href="/playground.html" class="btn btn-primary">Playground</a>
+                    <a href="/playground.html" class="btn btn-primary">WorkSpec Studio</a>
                     <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu" aria-expanded="false">
                         <span></span><span></span><span></span>
                     </button>
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             <h4>Platform</h4>
                             <ul>
                                 <li><a href="/about.html">About</a></li>
-                                <li><a href="/playground.html">Simulation Playground</a></li>
+                                <li><a href="/playground.html">WorkSpec Studio</a></li>
                             </ul>
                         </div>
                         <div class="footer-links-column">

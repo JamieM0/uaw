@@ -56,13 +56,13 @@
                         <div class="docs-title-section">
                             <h1 class="docs-page-title">Universal Object Model (UOM) for Simulations</h1>
                             
-                            <p class="docs-page-subtitle">The Universal Object Model (UOM) is the object + interaction schema used by UAW simulations. The canonical definitions live in WorkSpec; this page focuses on how the Simulation Playground uses the model and how legacy simulation fields map to the modern interaction format.</p>
+                            <p class="docs-page-subtitle">The Universal Object Model (UOM) is the object + interaction schema used by UAW simulations. The canonical definitions live in WorkSpec; this page focuses on how WorkSpec Studio uses the model and how legacy simulation fields map to the modern interaction format.</p>
                             
                         </div>
                     </header>
 
                     <div class="docs-content">
-                        <p>The Universal Object Model (UOM) is the object + interaction schema used by UAW simulations. The canonical definitions live in WorkSpec; this page focuses on how the Simulation Playground uses the model and how legacy simulation fields map to the modern interaction format.</p>
+                        <p>The Universal Object Model (UOM) is the object + interaction schema used by UAW simulations. The canonical definitions live in WorkSpec; this page focuses on how WorkSpec Studio uses the model and how legacy simulation fields map to the modern interaction format.</p>
 <h2 class="docs-heading" id="canonical-spec-workspec">Canonical Spec (WorkSpec)<a class="headerlink" href="#canonical-spec-workspec" title="Link to this section">¶</a></h2>
 <ul class="docs-list">
 <li><a href="/docs/workspec/specification/v2.0/schema">WorkSpec v2.0: Schema</a></li>
@@ -70,7 +70,7 @@
 <li><a href="/docs/workspec/specification/v2.0/interactions">WorkSpec v2.0: Interactions</a></li>
 <li><a href="/docs/workspec/guides/migration">WorkSpec Migration Guide</a></li>
 </ul>
-<h2 class="docs-heading" id="uom-in-the-playground">UOM in the Playground<a class="headerlink" href="#uom-in-the-playground" title="Link to this section">¶</a></h2>
+<h2 class="docs-heading" id="uom-in-workspec-studio">UOM in WorkSpec Studio<a class="headerlink" href="#uom-in-workspec-studio" title="Link to this section">¶</a></h2>
 <p>Most simulations follow this shape:</p>
 <ul class="docs-list">
 <li><code class="docs-inline-code">simulation.meta</code>: Human-facing metadata</li>
@@ -79,7 +79,7 @@
 <li><code class="docs-inline-code">simulation.tasks</code>: Scheduled work that changes object properties (and optionally moves actors)</li>
 </ul>
 <h2 class="docs-heading" id="objects">Objects<a class="headerlink" href="#objects" title="Link to this section">¶</a></h2>
-<p>Objects are identified by <code class="docs-inline-code">id</code> and carry arbitrary <code class="docs-inline-code">properties</code>. A few properties are commonly used by the playground and validators:</p>
+<p>Objects are identified by <code class="docs-inline-code">id</code> and carry arbitrary <code class="docs-inline-code">properties</code>. A few properties are commonly used by WorkSpec Studio and validators:</p>
 <ul class="docs-list">
 <li>Actors: <code class="docs-inline-code">cost_per_hour</code>, <code class="docs-inline-code">location</code></li>
 <li>Resources: <code class="docs-inline-code">quantity</code>, <code class="docs-inline-code">unit</code>, <code class="docs-inline-code">cost_per_unit</code></li>
@@ -102,7 +102,7 @@
 <span class="p">}</span>
 </code></pre></div>
 <h3 class="docs-heading" id="legacy-compatibility">Legacy Compatibility<a class="headerlink" href="#legacy-compatibility" title="Link to this section">¶</a></h3>
-<p>Some older simulations use fields like <code class="docs-inline-code">consumes</code>, <code class="docs-inline-code">produces</code>, and <code class="docs-inline-code">equipment_interactions</code>. The playground may still support these in many places, but new docs and examples should prefer <code class="docs-inline-code">interactions</code>.</p>
+<p>Some older simulations use fields like <code class="docs-inline-code">consumes</code>, <code class="docs-inline-code">produces</code>, and <code class="docs-inline-code">equipment_interactions</code>. WorkSpec Studio may still support these in many places, but new docs and examples should prefer <code class="docs-inline-code">interactions</code>.</p>
 <h2 class="docs-heading" id="movement">Movement<a class="headerlink" href="#movement" title="Link to this section">¶</a></h2>
 <p>To model actor movement, either change an actor’s <code class="docs-inline-code">location</code> via <code class="docs-inline-code">property_changes</code> or use a <code class="docs-inline-code">type: "movement"</code> task.</p>
 <p>See: <a href="/docs/simulations/actor-movement">Actor Movement in Simulations</a></p>

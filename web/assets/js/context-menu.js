@@ -29,6 +29,22 @@ function getContextMenuTasks(simulation) {
     return [];
 }
 
+function getContextMenuObjects(simulation) {
+    if (!simulation || typeof simulation !== 'object') return [];
+
+    const collections = [
+        simulation.world?.objects,
+        simulation.objects,
+        simulation.actors,
+        simulation.resources,
+        simulation.equipment,
+        simulation.tools,
+        simulation.products
+    ];
+
+    return collections.flatMap(collection => Array.isArray(collection) ? collection : []);
+}
+
 function saveContextMenuDocument(editorToUse, documentData) {
     if (!editorToUse || typeof editorToUse.setValue !== 'function') {
         throw new Error('Editor cannot save changes');
@@ -43,6 +59,7 @@ class ContextMenuManager {
         this.deleteMenuItem = document.getElementById('context-menu-delete');
         this.currentTarget = null;
         this.currentTargetType = null;
+        this.currentDeleteAllowed = false;
 
         this.init();
     }
@@ -75,7 +92,7 @@ class ContextMenuManager {
         });
 
         this.contextMenu.addEventListener('keydown', (e) => {
-            const items = [this.editMenuItem, this.deleteMenuItem];
+            const items = [this.editMenuItem, this.deleteMenuItem].filter(item => !item.hidden);
             const currentIndex = items.indexOf(document.activeElement);
 
             if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -100,12 +117,30 @@ class ContextMenuManager {
     addSimulationRightClickListeners() {
         // Use event delegation for simulation, space editor, digital space, and display editor elements
         document.addEventListener('contextmenu', (e) => {
-            // Check if right-click is on a task element in simulation render
-            const taskElement = e.target.closest('.task-block');
-            
-            if (taskElement && taskElement.closest('#simulation-content')) {
+            // Task blocks in the simulation already support deletion. Other task
+            // representations receive the same Edit action without broadening deletion.
+            const taskElement = e.target.closest('.task-block[data-task-id], [data-context-task-id]');
+            if (taskElement) {
                 e.preventDefault();
-                this.showContextMenu(e, taskElement, 'task');
+                const canDelete = taskElement.matches('.task-block[data-task-id]') && Boolean(taskElement.closest('#simulation-content'));
+                this.showContextMenu(e, taskElement, 'task', canDelete);
+                return;
+            }
+
+            // Digital objects have their own editor dialog.
+            const digitalObjectElement = e.target.closest('.object-item[data-object-id], .digital-object-visual[data-object-id]');
+            if (digitalObjectElement && digitalObjectElement.closest('#digital-space-tab, #digital-space-left-tab, #digital-space-canvas')) {
+                e.preventDefault();
+                this.showContextMenu(e, digitalObjectElement, 'digital-object', false);
+                return;
+            }
+
+            // Object rows, timeline lane labels, and live-state cards all open the
+            // canonical object modal. These are new menu locations, so they are Edit-only.
+            const objectElement = e.target.closest('[data-context-object-id], .actor-label[data-object-id], .resource-item[data-object-id]');
+            if (objectElement) {
+                e.preventDefault();
+                this.showContextMenu(e, objectElement, 'object', false);
                 return;
             }
 
@@ -114,7 +149,7 @@ class ContextMenuManager {
             
             if (rectElement && rectElement.closest('#space-canvas')) {
                 e.preventDefault();
-                this.showContextMenu(e, rectElement, 'location');
+                this.showContextMenu(e, rectElement, 'location', true);
                 return;
             }
 
@@ -123,7 +158,7 @@ class ContextMenuManager {
             
             if (digitalLocationElement && digitalLocationElement.closest('#digital-space-canvas')) {
                 e.preventDefault();
-                this.showContextMenu(e, digitalLocationElement, 'digital-location');
+                this.showContextMenu(e, digitalLocationElement, 'digital-location', true);
                 return;
             }
 
@@ -132,7 +167,7 @@ class ContextMenuManager {
             
             if (displayElement && displayElement.closest('#display-canvas')) {
                 e.preventDefault();
-                this.showContextMenu(e, displayElement, 'display-element');
+                this.showContextMenu(e, displayElement, 'display-element', true);
                 return;
             }
         });
@@ -143,9 +178,11 @@ class ContextMenuManager {
         // The main contextmenu event listener above handles both cases
     }
 
-    showContextMenu(event, targetElement, targetType) {
+    showContextMenu(event, targetElement, targetType, allowDelete = false) {
         this.currentTarget = targetElement;
         this.currentTargetType = targetType;
+        this.currentDeleteAllowed = allowDelete;
+        this.deleteMenuItem.hidden = !allowDelete;
 
         // Position the context menu at the mouse location
         const x = event.clientX;
@@ -183,6 +220,7 @@ class ContextMenuManager {
         this.contextMenu.style.display = 'none';
         this.currentTarget = null;
         this.currentTargetType = null;
+        this.currentDeleteAllowed = false;
     }
 
     handleEdit() {
@@ -192,6 +230,10 @@ class ContextMenuManager {
 
         if (this.currentTargetType === 'task') {
             this.editTask();
+        } else if (this.currentTargetType === 'object') {
+            this.editObject();
+        } else if (this.currentTargetType === 'digital-object') {
+            this.editDigitalObject();
         } else if (this.currentTargetType === 'location') {
             this.editLocation();
         } else if (this.currentTargetType === 'digital-location') {
@@ -203,7 +245,7 @@ class ContextMenuManager {
 
     editTask() {
         const taskElement = this.currentTarget;
-        const taskId = taskElement.dataset.taskId;
+        const taskId = taskElement.dataset.contextTaskId || taskElement.dataset.taskId;
 
         if (!taskId) {
             console.error('ERROR: No task ID found for editing');
@@ -232,6 +274,48 @@ class ContextMenuManager {
             }
         } catch (error) {
             console.error('ERROR editing task:', error);
+        }
+    }
+
+    editObject() {
+        const objectId = this.currentTarget?.dataset.contextObjectId || this.currentTarget?.dataset.objectId;
+        if (!objectId) {
+            console.error('ERROR: No object ID found for editing');
+            return;
+        }
+
+        try {
+            const editorToUse = getContextMenuEditor();
+            const currentJson = getContextMenuDocument(editorToUse);
+            const simulation = getContextMenuSimulation(currentJson);
+            const object = getContextMenuObjects(simulation).find(item => item?.id === objectId);
+
+            if (!object) {
+                console.error(`ERROR: Object ${objectId} not found in simulation data`);
+                return;
+            }
+
+            if (typeof window.openEditObjectModal === 'function') {
+                window.openEditObjectModal(object);
+            } else {
+                console.error('ERROR: openEditObjectModal function not found');
+            }
+        } catch (error) {
+            console.error('ERROR editing object:', error);
+        }
+    }
+
+    editDigitalObject() {
+        const objectId = this.currentTarget?.dataset.objectId;
+        if (!objectId) {
+            console.error('ERROR: No digital object ID found for editing');
+            return;
+        }
+
+        if (window.digitalSpaceEditor && typeof window.digitalSpaceEditor.showEditObjectDialog === 'function') {
+            window.digitalSpaceEditor.showEditObjectDialog(objectId);
+        } else {
+            console.error('ERROR: digitalSpaceEditor object editor is not available');
         }
     }
 
@@ -314,7 +398,7 @@ class ContextMenuManager {
     }
 
     handleDelete() {
-        if (!this.currentTarget || !this.currentTargetType) {
+        if (!this.currentTarget || !this.currentTargetType || !this.currentDeleteAllowed) {
             return;
         }
 

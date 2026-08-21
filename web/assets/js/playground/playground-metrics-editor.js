@@ -134,7 +134,7 @@ function updateMetricsMode() {
         playgroundTop.classList.remove("metrics-mode");
         
         if (specialTitle) {
-            specialTitle.textContent = "Playground";
+            specialTitle.textContent = "WorkSpec Studio";
         }
         
         // Show fullscreen button in standard mode

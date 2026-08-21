@@ -6,9 +6,9 @@
 
 The **Universal Automation Wiki (UAW)** is an interactive simulation platform for designing, validating, and optimising real-world automation processes. Build dynamic workflow models with drag-and-drop timeline editing, resource management, and real-time validation against hundreds of industry-standard metrics.
 
-Unlike traditional process documentation, UAW combines collaborative knowledge building with hands-on simulation capabilities, allowing users to not only explore automation processes but also test and validate them through our interactive playground.
+Unlike traditional process documentation, UAW combines collaborative knowledge building with hands-on simulation capabilities, allowing users to not only explore automation processes but also test and validate them through WorkSpec Studio.
 
-**[Try the Simulation Playground](https://universalautomation.wiki/playground.html)   |   [Explore the Wiki](https://universalautomation.wiki)**
+**[Try WorkSpec Studio](https://universalautomation.wiki/playground.html)   |   [Explore the Wiki](https://universalautomation.wiki)**
 
 ---
 
@@ -27,7 +27,7 @@ UAW bridges this gap with a **simulation-first approach** backed by collaborativ
 
 ## Core Simulation Features
 
-*   **Interactive Playground:** Web-based simulation editor with Monaco-powered JSON editing and visual timeline manipulation
+*   **WorkSpec Studio:** Web-based simulation editor with Monaco-powered JSON editing and visual timeline manipulation
 *   **Real-Time Validation Engine:** Validate against built-in metrics including resource flow analysis, timing constraints, economic calculations, and structural integrity checks
 *   **Custom Metrics in the Validation Engine:** Users can define their own custom metrics to validate their simulations and workflows
 *   **Visual Timeline Editor:** Drag-and-drop interface for editing task timing, resource allocation, and actor coordination
@@ -40,7 +40,7 @@ UAW bridges this gap with a **simulation-first approach** backed by collaborativ
 
 UAW transforms abstract automation concepts into testable, interactive models:
 
-1.  **Process Design:** Use our interactive playground to design automation workflows with timeline-based task scheduling
+1.  **Process Design:** Use WorkSpec Studio to design automation workflows with timeline-based task scheduling
 2.  **Resource Management:** Define actors, equipment, materials, and coordinate their interactions across the simulation timeline
 3.  **Real-Time Validation:** Simulations are continuously validated against structural, economic, and operational metrics as you design
 4.  **Multi-Perspective Analysis:** Evaluate your simulation from different viewpoints using persona-specific validation criteria
@@ -84,7 +84,7 @@ The most impactful way to contribute to our simulation capabilities:
 
 1.  Fork the repository
 2.  Create a feature branch (`git checkout -b feature/simulation-enhancement`)
-3.  Implement your changes to the playground, validation engine, or simulation models
+3.  Implement your changes to WorkSpec Studio, the validation engine, or simulation models
 4.  Submit a Pull Request with a clear description
 
 #### 📚 **Knowledge Base Contributions**
@@ -103,7 +103,7 @@ This licensing approach ensures the core platform remains open-source and commun
 
 ## Contact
 
-**Get Started:** [Try the Simulation Playground](https://universalautomation.wiki/playground.html)
+**Get Started:** [Try WorkSpec Studio](https://universalautomation.wiki/playground.html)
 
 **Explore:** [Browse the Wiki](https://universalautomation.wiki)
 

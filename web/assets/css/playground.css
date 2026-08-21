@@ -1307,7 +1307,7 @@ body {
     font-size: 1.5rem;
     line-height: 1;
     cursor: pointer;
-    color: var(--text-light);
+    color: #526071;
     padding: 0;
     width: 2rem;
     height: 2rem;
@@ -1321,6 +1321,12 @@ body {
 .dialog-close:hover {
     background: var(--bg-light);
     color: var(--text-color);
+}
+
+.dialog-close:focus-visible,
+.simulation-library-modal-content .modal-close:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 .dialog-content {
@@ -3433,6 +3439,16 @@ body.theme-switching * {
     color: var(--text-color);
 }
 
+[data-theme="dark"] .dialog-close,
+[data-theme="dark"] .simulation-library-modal-content .modal-close {
+    color: #d5dde5;
+}
+
+[data-theme="dark"] .dialog-close:hover,
+[data-theme="dark"] .simulation-library-modal-content .modal-close:hover {
+    color: #ffffff;
+}
+
 [data-theme="dark"] .dialog input,
 [data-theme="dark"] .dialog select,
 [data-theme="dark"] .dialog textarea {
@@ -4067,7 +4083,7 @@ body.theme-switching * {
     border: none;
     font-size: 1.4rem;
     cursor: pointer;
-    color: var(--text-lighter);
+    color: #526071;
     padding: 0 4px;
     line-height: 1;
 }

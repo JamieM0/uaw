@@ -30,7 +30,7 @@ In the WorkSpec specification, `type` is expected to be within the WorkSpec name
 https://universalautomation.wiki/workspec/errors/...
 ```
 
-In the UAW Playground validator implementation, the default is currently:
+In the WorkSpec Studio validator implementation, the default is currently:
 
 ```
 https://universalautomation.wiki/workspec/errors/{metric_id}

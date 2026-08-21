@@ -130,7 +130,7 @@ async function prepareProjectWorkspace(payload) {
     await writeFile(proposalPath, payload.workSpec, 'utf8');
     await writeFile(path.join(directory, 'v2.0.schema.json'), schema, 'utf8');
     await writeFile(path.join(directory, 'WORKSPEC_REFERENCE.md'), [
-        '# WorkSpec reference for the UAW Playground Agent',
+        '# WorkSpec reference for the WorkSpec Studio Agent',
         '',
         'The JSON Schema in `v2.0.schema.json` and the canonical validator are authoritative.',
         'Never invent aliases or fields that conflict with those files.',
@@ -156,9 +156,9 @@ try {
 `.trimStart(), 'utf8');
 
     await writeFile(path.join(directory, 'AGENTS.md'), `
-# UAW Playground Agent
+# WorkSpec Studio Agent
 
-You are operating on one browser-provided UAW project snapshot.
+You are operating on one browser-provided WorkSpec Studio project snapshot.
 
 - Read \`WORKSPEC_REFERENCE.md\`, \`v2.0.schema.json\`, and \`current.workspec.json\` before proposing changes.
 - The canonical validation command is: \`node validate-workspec.cjs proposal.workspec.json\`.
@@ -179,7 +179,7 @@ function buildPrompt(payload, validation) {
         : '- No canonical validation problems.';
 
     return `
-Work on the UAW Playground project named "${String(payload.projectName || 'Untitled project').replace(/"/g, '\\"')}".
+Work on the WorkSpec Studio project named "${String(payload.projectName || 'Untitled project').replace(/"/g, '\\"')}".
 
 User request:
 ${payload.message}
@@ -295,4 +295,3 @@ server.listen(PORT, HOST, () => {
     console.log(`UAW Agent bridge listening on http://${HOST}:${PORT}`);
     console.log(`Project workspaces: ${agentWorkspaceRoot}`);
 });
-

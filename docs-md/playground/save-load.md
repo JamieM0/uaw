@@ -1,6 +1,6 @@
-# Playground Save/Load System Documentation
+# WorkSpec Studio Save/Load System Documentation
 
-The Universal Automation Wiki's playground features a comprehensive save/load system, allowing users to save their simulations to a remote server and retrieve them later using unique 16-character save codes. This system is designed to be non-destructive, secure, and scalable.
+WorkSpec Studio features a comprehensive save/load system, allowing users to save their simulations to a remote server and retrieve them later using unique 16-character save codes. This system is designed to be non-destructive, secure, and scalable.
 
 ## System Overview
 
@@ -22,7 +22,7 @@ The save/load system consists of three main components:
 
 ### User Interface Components
 
-The playground includes two primary buttons in the top menu bar:
+WorkSpec Studio includes two primary buttons in the top menu bar:
 
 - **Save Simulation**: Opens save modal with privacy warnings and generates save codes
 - **Load Simulation**: Opens load modal for entering existing save codes
@@ -126,7 +126,7 @@ The system uses browser LocalStorage to persist user preferences:
 
 #### Event Listener Setup
 
-Event listeners are attached during the playground initialization phase to ensure DOM elements exist:
+Event listeners are attached during WorkSpec Studio initialization to ensure DOM elements exist:
 
 ```javascript
 function setupSaveLoadButtons() {
@@ -451,7 +451,7 @@ The original plan included "update" functionality that would overwrite existing 
 
 ### First-Time Save Experience
 
-1. User creates or modifies a simulation in the playground
+1. User creates or modifies a simulation in WorkSpec Studio
 2. User clicks "Save Simulation" button
 3. Privacy warning modal appears with detailed explanation
 4. User must check consent checkbox to enable save button
@@ -514,7 +514,7 @@ All error messages are user-friendly and actionable:
 
 ## Conclusion
 
-The Universal Automation Wiki playground save/load system provides a robust, secure, and user-friendly way for users to persist and share their simulations. The non-destructive architecture ensures data integrity while enabling powerful future features. The system successfully bridges the gap between static site limitations and modern web application functionality.
+The WorkSpec Studio save/load system provides a robust, secure, and user-friendly way for users to persist and share their simulations. The non-destructive architecture ensures data integrity while enabling powerful future features. The system successfully bridges the gap between static site limitations and modern web application functionality.
 
 The implementation demonstrates several key architectural patterns:
 

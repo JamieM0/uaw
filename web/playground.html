@@ -13,30 +13,30 @@
 
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Simulation Playground - Universal Automation Wiki</title>
+        <title>WorkSpec Studio - Universal Automation Wiki</title>
         <meta
             name="description"
-            content="Interactive simulation playground for testing and visualizing automation workflows"
+            content="WorkSpec Studio for testing and visualizing automation workflows"
         />
 
         <!-- SEO Meta Tags -->
-        <meta name="keywords" content="simulation, automation, workflow, process optimization, playground, interactive, visualization" />
+        <meta name="keywords" content="WorkSpec Studio, simulation, automation, workflow, process optimization, interactive, visualization" />
         <meta name="author" content="Universal Automation Wiki" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://universalautomation.wiki/playground.html" />
 
         <!-- Open Graph Meta Tags for Social Sharing -->
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="Simulation Playground - Universal Automation Wiki" />
-        <meta property="og:description" content="Interactive simulation playground for testing and visualising automation workflows. Create, edit, and simulate complex processes with real-time validation." />
+        <meta property="og:title" content="WorkSpec Studio - Universal Automation Wiki" />
+        <meta property="og:description" content="WorkSpec Studio for testing and visualising automation workflows. Create, edit, and simulate complex processes with real-time validation." />
         <meta property="og:url" content="https://universalautomation.wiki/playground.html" />
         <meta property="og:site_name" content="Universal Automation Wiki" />
         <meta property="og:locale" content="en_GB" />
 
         <!-- Twitter Card Meta Tags -->
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Simulation Playground - Universal Automation Wiki" />
-        <meta name="twitter:description" content="Interactive simulation playground for testing and visualising automation workflows" />
+        <meta name="twitter:title" content="WorkSpec Studio - Universal Automation Wiki" />
+        <meta name="twitter:description" content="WorkSpec Studio for testing and visualising automation workflows" />
 
         <!-- Theme and Browser Chrome -->
         <meta name="theme-color" content="#007bff" />
@@ -55,7 +55,7 @@
         <link rel="stylesheet" href="/assets/css/emoji-picker.css" />
         <link rel="stylesheet" href="/assets/css/smart-actions.css" />
         <link rel="stylesheet" href="/assets/css/multi-period.css" />
-        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260820a" />
+        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260821f" />
 
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
@@ -140,7 +140,7 @@
 
         <script src="/assets/js/tutorial.js" defer></script>
         <script src="/assets/js/tutorial-validator.js" defer></script>
-        <script src="/assets/js/simulation-player.js?v=20260818d" defer></script>
+        <script src="/assets/js/simulation-player.js?v=20260821b" defer></script>
 
         <!-- Monaco Editor for JSON syntax highlighting -->
         <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
@@ -286,7 +286,7 @@
     <body>
         <div id="welcome-overlay" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
             <div class="dialog">
-                <h2 id="welcome-title" class="special-subtitle">Welcome to the Simulation Playground!</h2>
+                <h2 id="welcome-title" class="special-subtitle">Welcome to WorkSpec Studio!</h2>
                 <p>Build and validate WorkSpec simulations with live feedback in the editor and timeline.</p>
                 <p>UAW is open source. Project and issues: <a href="https://github.com/JamieM0/uaw" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
                 <p><strong>Before you start:</strong> save regularly, especially when editing custom metrics and validators.</p>
@@ -319,8 +319,8 @@
                         />
                     </a>
                 </div>
-                <h1 class="special-title">Playground</h1>
-                <nav class="header-actions" role="navigation" aria-label="Playground controls">
+                <h1 class="special-title">WorkSpec Studio</h1>
+                <nav class="header-actions" role="navigation" aria-label="WorkSpec Studio controls">
                     <!-- File Operations Group -->
                     <div class="file-operations-group">
                         <button id="simulation-library-btn" class="action-btn" title="Browse simulation templates" aria-label="Simulation Library">Simulation Library</button>
@@ -396,7 +396,7 @@
                             <div class="dropdown-content" role="menu">
                                 <button type="button" id="start-tutorial-btn" class="dropdown-item-button" role="menuitem">Start Tutorial</button>
                                 <button type="button" id="start-llm-btn" class="dropdown-item-button" role="menuitem">Experimental LLM</button>
-                                <button type="button" id="feedback-btn" class="dropdown-item-button" title="Send feedback about the playground" role="menuitem">Feedback</button>
+                                <button type="button" id="feedback-btn" class="dropdown-item-button" title="Send feedback about WorkSpec Studio" role="menuitem">Feedback</button>
                             </div>
                         </div>
                         <button id="submit-btn" class="action-btn" title="Submit simulation to page" style="display: none;">Submit</button>
@@ -1109,7 +1109,7 @@
         <div id="feedback-modal" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
             <div class="dialog">
                 <h3 id="feedback-modal-title">Send Feedback</h3>
-                <p>Help us improve the Simulation Playground by sharing your suggestions and feedback.</p>
+                <p>Help us improve WorkSpec Studio by sharing your suggestions and feedback.</p>
                 
                 <form id="feedback-form" class="feedback-form">
                     <div class="feedback-form-field">
@@ -1265,11 +1265,11 @@
         <!-- Playground v2 application shell. These modules preserve the legacy
              component IDs while providing the project workspace around them. -->
         <script src="/assets/js/playground/playground-projects-v2.js?v=20260820a" defer></script>
-        <script src="/assets/js/playground/playground-shell-v2.js?v=20260820a" defer></script>
+        <script src="/assets/js/playground/playground-shell-v2.js?v=20260821d" defer></script>
         <script src="/assets/js/playground/playground-agent-v2.js?v=20260818c" defer></script>
         <script type="module" src="/assets/js/playground/playground-motion-v2.js?v=20260818a"></script>
 
-        <script src="/assets/js/context-menu.js" defer></script>
+        <script src="/assets/js/context-menu.js?v=20260821a" defer></script>
         <script src="/assets/js/html-sanitizer.js" defer></script>
         <!-- Smart Actions modules -->
         <script src="/assets/js/playground/smart-actions-markdown.js" defer></script>
@@ -1292,7 +1292,7 @@
         <script src="/assets/js/playground/playground-calendar-view.js?v=20260814g" defer></script>
         <script src="/assets/js/playground/playground-week-view.js?v=20260814g" defer></script>
 
-        <script src="/assets/js/playground/playground-timeline.js?v=20260818e" defer></script>
+        <script src="/assets/js/playground/playground-timeline.js?v=20260821b" defer></script>
         <script src="/assets/js/playground/playground-timeline-extensions.js" defer></script>
         <script src="/assets/js/playground/playground-digital-space.js?v=20260814g" defer></script>
         <script src="/assets/js/playground/playground-display-editor.js?v=20260814g" defer></script>

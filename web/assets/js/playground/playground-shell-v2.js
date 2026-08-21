@@ -12,6 +12,7 @@
         runView: 'timeline',
         sourceSplit: 52,
         agentWidth: 312,
+        sidebarCollapsed: false,
         layoutVersion: 4
     };
 
@@ -39,7 +40,8 @@
         search: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>',
         panel: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 4.5h17v15h-17zM15 4.5v15"/></svg>',
         chevron: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
-        close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>'
+        close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>',
+        collapse: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6M19 6v12"/></svg>'
     };
 
     const escapeHTML = (value) => String(value ?? '')
@@ -111,9 +113,11 @@
             shell.className = 'uaw-app-shell';
             shell.innerHTML = `
                 <header class="uaw-titlebar">
-                    <a class="uaw-brand" href="/" aria-label="Universal Automation Wiki home">
-                        <img src="/assets/images/logomark.png" alt="" />
-                        <span>UAW</span>
+                    <a class="uaw-brand" href="/" aria-label="WorkSpec Studio home">
+                        <span class="uaw-brand__asset" aria-hidden="true">
+                            <img class="uaw-brand__wordmark" src="/assets/images/workspec-logomark-wordmark.png" alt="" />
+                            <img class="uaw-brand__mark" src="/assets/images/workspec-logo.cleaned.png" alt="" />
+                        </span>
                     </a>
                     <div class="uaw-titlebar__divider"></div>
                     <button class="uaw-project-title" id="uaw-project-title" type="button" title="Switch project" aria-haspopup="menu" aria-expanded="false">
@@ -122,9 +126,6 @@
                     </button>
                     <span class="uaw-save-state" id="uaw-save-state" aria-live="polite">Choose a project folder</span>
                     <div class="uaw-titlebar__spacer"></div>
-                    <button class="uaw-quiet-button uaw-command-trigger" id="uaw-command-trigger" type="button">
-                        ${this.icon('search')}<span>Search commands</span><kbd>⌘ K</kbd>
-                    </button>
                     <button class="uaw-agent-button" id="uaw-agent-button" type="button">
                         ${this.icon('agent')}<span>Agent</span><span class="uaw-agent-dot" aria-hidden="true"></span>
                     </button>
@@ -133,15 +134,21 @@
                 <div class="uaw-project-menu" id="uaw-project-menu" role="menu" hidden></div>
 
                 <div class="uaw-app-body">
-                    <nav class="uaw-rail" aria-label="Playground workspaces">
+                    <nav class="uaw-rail" id="uaw-sidebar" aria-label="WorkSpec Studio workspaces">
                         <div class="uaw-rail__primary">
+                            <p class="uaw-rail__section-label">Workspace</p>
                             ${this.workspaceButton('projects', 'Projects', '1')}
                             ${this.workspaceButton('build', 'Model', '2')}
                             ${this.workspaceButton('run', 'Simulate', '3')}
                             ${this.workspaceButton('assets', 'Assets', '4')}
                         </div>
                         <div class="uaw-rail__secondary">
-                            ${this.workspaceButton('settings', 'Settings', '5')}
+                            <div class="uaw-rail__system-actions">
+                                ${this.workspaceButton('settings', 'Settings')}
+                                <button class="uaw-sidebar-toggle" id="uaw-sidebar-toggle" type="button" aria-expanded="true" aria-controls="uaw-sidebar" title="Collapse sidebar">
+                                    ${this.icon('collapse')}
+                                </button>
+                            </div>
                         </div>
                     </nav>
 
@@ -241,8 +248,21 @@
         }
 
         workspaceButton(id, label, shortcut) {
-            return `<button class="uaw-rail-button" type="button" data-workspace="${id}" title="${label} (${shortcut})">
-                ${this.icon(id)}<span>${label}</span><kbd>${shortcut}</kbd>
+            const descriptions = {
+                projects: 'Project files',
+                build: 'Author WorkSpec',
+                run: 'Run and validate',
+                assets: 'Project media',
+                settings: 'Preferences'
+            };
+            const description = id === 'settings' ? '' : (descriptions[id] || '');
+            const shortcutMarkup = shortcut ? `<kbd>${shortcut}</kbd>` : '';
+            const title = shortcut ? `${label} (${shortcut})` : label;
+            const buttonClass = id === 'settings' ? 'uaw-rail-button uaw-rail-button--settings' : 'uaw-rail-button';
+            return `<button class="${buttonClass}" type="button" data-workspace="${id}" title="${title}">
+                <span class="uaw-rail-button__icon">${this.icon(id)}</span>
+                <span class="uaw-rail-button__copy"><strong>${label}</strong><small>${description}</small></span>
+                ${shortcutMarkup}
             </button>`;
         }
 
@@ -337,7 +357,7 @@
                 { id: 'workspace.build', label: 'Go to Model', shortcut: '2', run: () => workspace('build') },
                 { id: 'workspace.run', label: 'Go to Simulate', shortcut: '3', run: () => workspace('run') },
                 { id: 'workspace.assets', label: 'Go to Assets', shortcut: '4', run: () => workspace('assets') },
-                { id: 'workspace.settings', label: 'Go to Settings', shortcut: '5', run: () => workspace('settings') },
+                { id: 'workspace.settings', label: 'Go to Settings', run: () => workspace('settings') },
                 { id: 'workspace.source', label: 'Open Source as a dedicated pane', shortcut: '⌘ `', run: () => workspace('source') },
                 { id: 'project.new', label: 'New project', run: () => this.createProject() },
                 { id: 'project.open-folder', label: 'Open project folder', run: () => this.openProjectFolder() },
@@ -383,7 +403,6 @@
                 button.addEventListener('click', () => this.setWorkspace(button.dataset.workspace));
             });
 
-            this.shell.querySelector('#uaw-command-trigger')?.addEventListener('click', () => this.openCommandPalette());
             this.shell.querySelector('#uaw-command-search')?.addEventListener('input', (event) => this.renderCommandResults(event.target.value));
             this.shell.querySelector('#uaw-command-search')?.addEventListener('keydown', (event) => this.handleCommandPaletteKey(event));
             this.shell.querySelector('[data-close-palette]')?.addEventListener('click', () => this.closeCommandPalette());
@@ -396,6 +415,7 @@
             this.shell.querySelector('#uaw-toggle-inspector')?.addEventListener('click', () => this.toggleInspector());
             this.shell.querySelector('#uaw-close-inspector')?.addEventListener('click', () => this.toggleInspector(false));
             this.shell.querySelector('#uaw-agent-button')?.addEventListener('click', () => this.toggleAgent());
+            this.shell.querySelector('#uaw-sidebar-toggle')?.addEventListener('click', () => this.toggleSidebar());
             this.shell.querySelector('#uaw-project-title')?.addEventListener('click', () => this.toggleProjectMenu());
             this.bindAgentResizer();
 
@@ -490,6 +510,7 @@
             this.setSourceDock(this.settings.sourceDock, { persist: false, navigate: false });
             this.toggleInspector(this.settings.inspectorOpen, { persist: false });
             document.body.classList.toggle('uaw-problems-open', Boolean(this.settings.problemsOpen));
+            this.toggleSidebar(this.settings.sidebarCollapsed, { persist: false, focus: false });
             document.body.dataset.modelView = this.modelView;
             document.body.dataset.runView = this.runView;
             document.documentElement.style.setProperty('--uaw-source-split', `${this.settings.sourceSplit || 52}%`);
@@ -585,10 +606,10 @@
             playback.hidden = !(this.workspace === 'run' && this.runView === 'timeline');
 
             if (this.workspace === 'projects') {
-                primary.innerHTML = this.commandButton('project.new', 'New blank', { primary: true })
-                    + this.commandButton('project.templates', 'New from template…')
-                    + this.commandButton('project.import', 'Import WorkSpec…')
-                    + this.commandButton('project.open-folder', 'Open folder…');
+                primary.innerHTML = this.commandButton('project.new', 'New project', { primary: true })
+                    + this.commandButton('project.templates', 'From template')
+                    + this.commandButton('project.import', 'Import WorkSpec')
+                    + this.commandButton('project.open-folder', 'Open project folder');
                 return;
             }
 
@@ -610,7 +631,7 @@
                     displays: this.commandButton('model.add-display', 'New display', { primary: true }) + this.commandButton('model.add-display-element', 'New element'),
                     source: this.commandButton('source.format', 'Format') + this.commandButton('edit.undo', 'Undo')
                 };
-                context.innerHTML = `<div class="uaw-context-actions">${actions[this.modelView] || ''}</div>${this.commandButton('project.export', 'Export…')}`;
+                context.innerHTML = `<div class="uaw-context-actions">${actions[this.modelView] || ''}</div>${this.commandButton('project.export', 'Export WorkSpec')}`;
                 return;
             }
 
@@ -623,7 +644,7 @@
             }
 
             if (this.workspace === 'assets') {
-                primary.innerHTML = this.commandButton('project.import', 'Import WorkSpec…');
+                primary.innerHTML = this.commandButton('project.import', 'Import WorkSpec');
             }
         }
 
@@ -828,6 +849,24 @@
             this.layoutEditors();
         }
 
+        toggleSidebar(force, options = {}) {
+            const collapsed = typeof force === 'boolean'
+                ? force
+                : !document.body.classList.contains('uaw-sidebar-collapsed');
+            document.body.classList.toggle('uaw-sidebar-collapsed', collapsed);
+            this.settings.sidebarCollapsed = collapsed;
+            const toggle = this.shell?.querySelector('#uaw-sidebar-toggle');
+            if (toggle) {
+                toggle.setAttribute('aria-expanded', String(!collapsed));
+                toggle.setAttribute('title', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+                toggle.querySelector('span').textContent = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+                toggle.querySelector('.uaw-icon').innerHTML = collapsed ? ICONS.chevron : ICONS.collapse;
+            }
+            if (options.persist !== false) this.saveSettings();
+            if (options.focus !== false) toggle?.focus();
+            this.layoutEditors();
+        }
+
         toggleAgent(force) {
             const drawer = this.shell.querySelector('#uaw-agent-drawer');
             const open = typeof force === 'boolean' ? force : !document.body.classList.contains('uaw-agent-open');
@@ -993,7 +1032,7 @@
                 const actor = objectById.get(task.actor_id);
                 const dependencies = Array.isArray(task.depends_on) ? task.depends_on.join(', ') : '—';
                 const period = task.__period ? `<span class="uaw-process-period">${escapeHTML(task.__period)}</span>` : '';
-                return `<tr>
+                return `<tr data-context-task-id="${escapeHTML(task.id || '')}">
                     <td><div class="uaw-process-task-name"><strong>${escapeHTML(task.name || task.id || `Task ${index + 1}`)}</strong><code>${escapeHTML(task.id || 'No ID')}</code>${period}</div></td>
                     <td>${escapeHTML(actor?.name || task.actor_id || 'Unassigned')}</td>
                     <td><span class="uaw-process-time">${escapeHTML(task.start || task.start_time || '—')}</span></td>
@@ -1041,7 +1080,7 @@
                 const type = object?.type || 'custom';
                 const details = object?.properties || {};
                 const state = details.state ?? details.quantity ?? details.role ?? '—';
-                return `<tr data-object-row data-object-search="${escapeHTML(`${object?.name || ''} ${object?.id || ''} ${type}`.toLowerCase())}" data-object-type="${escapeHTML(type)}"><td><div class="uaw-object-name"><span><strong>${escapeHTML(object?.name || object?.id || `Object ${index + 1}`)}</strong><code>${escapeHTML(object?.id || 'No ID')}</code></span></div></td><td><span class="uaw-type-pill">${escapeHTML(type)}</span></td><td>${escapeHTML(state)}</td><td>${escapeHTML(object?.__period || 'Global')}</td><td><button class="uaw-row-action" type="button" data-edit-object-index="${index}">${object?.__period ? 'View source' : 'Edit'}</button></td></tr>`;
+                return `<tr data-object-row data-context-object-id="${escapeHTML(object?.id || '')}" data-object-search="${escapeHTML(`${object?.name || ''} ${object?.id || ''} ${type}`.toLowerCase())}" data-object-type="${escapeHTML(type)}"><td><div class="uaw-object-name"><span><strong>${escapeHTML(object?.name || object?.id || `Object ${index + 1}`)}</strong><code>${escapeHTML(object?.id || 'No ID')}</code></span></div></td><td><span class="uaw-type-pill">${escapeHTML(type)}</span></td><td>${escapeHTML(state)}</td><td>${escapeHTML(object?.__period || 'Global')}</td><td><button class="uaw-row-action" type="button" data-edit-object-index="${index}">${object?.__period ? 'View source' : 'Edit'}</button></td></tr>`;
             }).join('');
             view.innerHTML = `<header class="uaw-process-heading uaw-objects-heading"><div><h1>Objects</h1><p>Actors, resources, equipment and outputs available to this process.</p></div><dl><div><dt>Objects</dt><dd>${objects.length}</dd></div><div><dt>Types</dt><dd>${groups.length}</dd></div></dl></header><section class="uaw-process-register"><div class="uaw-process-section-heading"><div><h2>Object register</h2><p>Reusable entities referenced by tasks and environment layouts.</p></div></div><div class="uaw-object-toolbar"><label><span class="sr-only">Search objects</span><input type="search" data-object-search-input placeholder="Search objects…"></label><select data-object-filter aria-label="Filter object type"><option value="">All types</option>${groups.map(type => `<option value="${escapeHTML(type)}">${escapeHTML(type)}</option>`).join('')}</select></div>${rows ? `<div class="uaw-process-table-wrap"><table class="uaw-process-table uaw-object-table"><thead><tr><th>Object</th><th>Type</th><th>State / quantity</th><th>Scope</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="uaw-process-empty"><strong>No objects yet</strong><p>Use Add object in the command bar to create an actor, resource, equipment item or product.</p></div>`}</section>`;
             const filter = () => {
@@ -1278,10 +1317,6 @@
                                 ${this.sourceChoice('hidden', 'Hidden in Model', 'Open source only when needed')}
                             </fieldset>
                         </section>
-                        <section class="uaw-settings-section" aria-labelledby="uaw-workspace-panes-heading">
-                            <div><h2 id="uaw-workspace-panes-heading">Environment inspector</h2><p>Physical, Digital and Displays always reserve a properties pane so selections and edits stay visible.</p></div>
-                            <div class="uaw-settings-fact"><strong>Always visible on canvas views</strong><small>Source and table views use the full workspace.</small></div>
-                        </section>
                         <section class="uaw-settings-section" aria-labelledby="uaw-agent-heading">
                             <div><h2 id="uaw-agent-heading">Codex Agent</h2><p>Connect the optional Agent to a bridge running on this machine.</p></div>
                             <div class="uaw-connection-card"><div><strong>Local bridge</strong><small>http://127.0.0.1:4317</small></div><button type="button" data-uaw-command="agent.open">Configure</button></div>
@@ -1436,7 +1471,6 @@
             const palette = this.shell.querySelector('#uaw-command-palette');
             if (!palette || palette.hidden) return;
             palette.hidden = true;
-            this.shell.querySelector('#uaw-command-trigger')?.focus();
         }
 
         handleCommandPaletteKey(event) {
@@ -1542,8 +1576,8 @@
                 else this.runCommand('validate.run');
                 return;
             }
-            if (/^[1-5]$/.test(event.key) && !event.altKey && !modifier) {
-                const ids = ['projects', 'build', 'run', 'assets', 'settings'];
+            if (/^[1-4]$/.test(event.key) && !event.altKey && !modifier) {
+                const ids = ['projects', 'build', 'run', 'assets'];
                 event.preventDefault();
                 this.setWorkspace(ids[Number(event.key) - 1]);
                 return;

@@ -1,6 +1,6 @@
 # Universal Object Model (UOM) for Simulations
 
-The Universal Object Model (UOM) is the object + interaction schema used by UAW simulations. The canonical definitions live in WorkSpec; this page focuses on how the Simulation Playground uses the model and how legacy simulation fields map to the modern interaction format.
+The Universal Object Model (UOM) is the object + interaction schema used by UAW simulations. The canonical definitions live in WorkSpec; this page focuses on how WorkSpec Studio uses the model and how legacy simulation fields map to the modern interaction format.
 
 ## Canonical Spec (WorkSpec)
 
@@ -9,7 +9,7 @@ The Universal Object Model (UOM) is the object + interaction schema used by UAW 
 - [WorkSpec v2.0: Interactions](/docs/workspec/specification/v2.0/interactions)
 - [WorkSpec Migration Guide](/docs/workspec/guides/migration)
 
-## UOM in the Playground
+## UOM in WorkSpec Studio
 
 Most simulations follow this shape:
 
@@ -20,7 +20,7 @@ Most simulations follow this shape:
 
 ## Objects
 
-Objects are identified by `id` and carry arbitrary `properties`. A few properties are commonly used by the playground and validators:
+Objects are identified by `id` and carry arbitrary `properties`. A few properties are commonly used by WorkSpec Studio and validators:
 
 - Actors: `cost_per_hour`, `location`
 - Resources: `quantity`, `unit`, `cost_per_unit`
@@ -49,7 +49,7 @@ Preferred format is `tasks[].interactions[]` with `property_changes`.
 
 ### Legacy Compatibility
 
-Some older simulations use fields like `consumes`, `produces`, and `equipment_interactions`. The playground may still support these in many places, but new docs and examples should prefer `interactions`.
+Some older simulations use fields like `consumes`, `produces`, and `equipment_interactions`. WorkSpec Studio may still support these in many places, but new docs and examples should prefer `interactions`.
 
 ## Movement
 

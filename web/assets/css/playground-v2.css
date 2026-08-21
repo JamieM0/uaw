@@ -4699,6 +4699,12 @@ body.uaw-v2[data-uaw-workspace="run"][data-run-view="timeline"] #uaw-playback-co
     border-radius: 9px;
 }
 
+/* Timeline has no contextual actions. Removing the empty end slot prevents its
+   auto margin from consuming the space that should place transport at right. */
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="timeline"] #uaw-context-commands {
+    display: none;
+}
+
 body.uaw-v2[data-uaw-workspace="run"][data-run-view="timeline"] #uaw-playback-commands .playback-controls-group { gap: 6px; }
 
 body.uaw-v2[data-uaw-workspace="run"][data-run-view="timeline"] #player-play-pause-btn {
@@ -5408,7 +5414,8 @@ body.uaw-v2 .dialog-close {
     width: 28px;
     height: 28px;
     padding: 0;
-    color: #7a879a;
+    /* Keep the close affordance readable against the white modal headers. */
+    color: #526071;
     background: transparent;
     border: 0;
     border-radius: 5px;
@@ -5417,7 +5424,15 @@ body.uaw-v2 .dialog-close {
 }
 
 body.uaw-v2 .modal-close:hover,
-body.uaw-v2 .dialog-close:hover { color: #253046; background: #f0f3f7; }
+body.uaw-v2 .dialog-close:hover,
+body.uaw-v2 .modal-close:focus-visible,
+body.uaw-v2 .dialog-close:focus-visible { color: #172033; background: #f0f3f7; }
+
+body.uaw-v2 .modal-close:focus-visible,
+body.uaw-v2 .dialog-close:focus-visible {
+    outline: 2px solid #3b82a0;
+    outline-offset: 2px;
+}
 
 body.uaw-v2 .uaw-entity-dialog > .modal-content,
 body.uaw-v2 .modal-overlay > .modal-content > .modal-body,
@@ -5999,4 +6014,528 @@ body.uaw-v2[data-uaw-workspace="run"][data-run-view="problems"] .validation-cont
 
 @media (max-width: 1050px) {
     :root { --uaw-agent-width: 288px; }
+}
+
+/* Navigation and command surface — legible, tool-like, and deliberately stable. */
+:root {
+    --uaw-titlebar-height: 64px;
+    --uaw-rail-width: 220px;
+    --uaw-commandbar-height: 58px;
+    --uaw-chrome-ink: #211f25;
+    --uaw-chrome-muted: #746f79;
+    --uaw-chrome-border: #cbc7cf;
+    --uaw-chrome-violet: #7457ff;
+    --uaw-chrome-cyan: #16bdb9;
+}
+
+body.uaw-v2 .uaw-titlebar {
+    color: var(--uaw-chrome-ink);
+    background: #f4f2ef;
+    border-bottom: 1px solid var(--uaw-chrome-border);
+    box-shadow: none;
+}
+
+body.uaw-v2 .uaw-brand {
+    width: var(--uaw-rail-width);
+    min-width: var(--uaw-rail-width);
+    padding: 0 16px;
+    overflow: hidden;
+    background: transparent;
+    border-right: 0;
+    box-shadow: none;
+    transition: background-color 140ms ease;
+}
+
+body.uaw-v2 .uaw-brand:hover {
+    background: #fff;
+}
+
+body.uaw-v2 .uaw-brand:focus-visible {
+    outline: 2px solid #675cf5;
+    outline-offset: -3px;
+}
+
+body.uaw-v2 .uaw-brand__asset {
+    display: block;
+    width: 100%;
+    height: 50px;
+    overflow: hidden;
+}
+
+body.uaw-v2 .uaw-brand__asset img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: contain;
+    object-position: left center;
+}
+
+body.uaw-v2 .uaw-brand__asset .uaw-brand__mark {
+    display: none;
+}
+
+body.uaw-v2 .uaw-titlebar__divider {
+    display: none;
+}
+
+body.uaw-v2 .uaw-project-title {
+    margin-left: 7px;
+    color: var(--uaw-chrome-ink);
+}
+
+body.uaw-v2 .uaw-project-title:hover {
+    background: #e9e6e3;
+    border-color: #d4cfd6;
+}
+
+body.uaw-v2 .uaw-inline-project-name {
+    color: var(--uaw-chrome-ink);
+    background: #fff;
+    border-color: rgba(103, 87, 232, .48);
+}
+
+body.uaw-v2 .uaw-save-state {
+    color: #7a7484;
+}
+
+body.uaw-v2 .uaw-agent-button {
+    color: #f8f7f9;
+    background: #2c2931;
+    border-color: #1f1d23;
+    box-shadow: inset 0 1px rgba(255, 255, 255, .08);
+}
+
+body.uaw-v2 .uaw-agent-button:hover {
+    color: #fff;
+    background: #3a3640;
+    border-color: #242129;
+}
+
+body.uaw-v2 .uaw-rail {
+    padding: 12px 8px 10px;
+    color: #454149;
+    background: #e9e7e5;
+    border-right: 1px solid #c9c5cb;
+    box-shadow: inset -1px 0 rgba(255, 255, 255, .5);
+}
+
+body.uaw-v2 .uaw-rail__primary,
+body.uaw-v2 .uaw-rail__secondary {
+    display: grid;
+    gap: 3px;
+}
+
+body.uaw-v2 .uaw-rail__section-label {
+    margin: 0;
+    padding: 0 9px 7px;
+    color: #78727c;
+    font: 650 8px/1 var(--uaw-font-code);
+    letter-spacing: .13em;
+    text-transform: uppercase;
+}
+
+body.uaw-v2 .uaw-rail__secondary {
+    padding-top: 10px;
+    border-top: 1px solid #cfccd0;
+}
+
+body.uaw-v2 .uaw-rail-button {
+    position: relative;
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr) 18px;
+    align-items: center;
+    justify-items: stretch;
+    gap: 9px;
+    width: 100%;
+    min-height: 52px;
+    padding: 6px 8px;
+    color: #534e57;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font: inherit;
+    text-align: left;
+    transition: color 110ms ease, background-color 110ms ease, border-color 110ms ease;
+}
+
+body.uaw-v2 .uaw-rail-button::before {
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    left: -8px;
+    width: 3px;
+    background: var(--uaw-chrome-cyan);
+    opacity: 0;
+    content: "";
+}
+
+body.uaw-v2 .uaw-rail-button:hover,
+body.uaw-v2 .uaw-rail-button:focus-visible {
+    color: #211e25;
+    background: #f2f0ee;
+    border-color: #ccc7cf;
+    outline: none;
+}
+
+body.uaw-v2 .uaw-rail-button:focus-visible {
+    box-shadow: 0 0 0 2px rgba(22, 189, 185, .42);
+}
+
+body.uaw-v2 .uaw-rail-button.active {
+    color: #242128;
+    background: #dad7dc;
+    border-color: #bcb6c1;
+    box-shadow: inset 0 1px rgba(255, 255, 255, .48), 0 1px 2px rgba(42, 36, 47, .08);
+}
+
+body.uaw-v2 .uaw-rail-button.active::before { opacity: 1; }
+
+body.uaw-v2 .uaw-rail-button__icon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    color: #6e6873;
+    background: #f4f2f0;
+    border: 1px solid #d2cdd4;
+    border-radius: 4px;
+}
+
+body.uaw-v2 .uaw-rail-button:hover .uaw-rail-button__icon,
+body.uaw-v2 .uaw-rail-button.active .uaw-rail-button__icon { color: #176f75; }
+
+body.uaw-v2 .uaw-rail-button .uaw-icon { width: 17px; height: 17px; }
+
+body.uaw-v2 .uaw-rail-button__copy {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+body.uaw-v2 .uaw-rail-button__copy strong {
+    overflow: visible;
+    font: 620 12px/1.1 var(--uaw-font-ui);
+    white-space: nowrap;
+}
+
+body.uaw-v2 .uaw-rail-button__copy small {
+    overflow: visible;
+    color: #817a84;
+    font: 9px/1.1 var(--uaw-font-ui);
+    white-space: nowrap;
+}
+
+body.uaw-v2 .uaw-rail-button.active .uaw-rail-button__copy small { color: #67616b; }
+
+body.uaw-v2 .uaw-rail-button kbd {
+    position: static;
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    color: #77717b;
+    background: #f4f2f0;
+    border: 1px solid #d2cdd4;
+    border-radius: 3px;
+    font: 8px var(--uaw-font-code);
+}
+
+body.uaw-v2 .uaw-rail-button.active kbd { color: #514b56; }
+
+/* User-controlled compact rail. The expanded rail above remains the default
+   layout; this state only reuses the existing narrow navigation treatment. */
+body.uaw-v2.uaw-sidebar-collapsed {
+    --uaw-rail-width: 68px;
+}
+
+body.uaw-v2.uaw-sidebar-collapsed .uaw-brand {
+    justify-content: center;
+    padding: 0 10px;
+}
+
+body.uaw-v2.uaw-sidebar-collapsed .uaw-rail__section-label,
+body.uaw-v2.uaw-sidebar-collapsed .uaw-rail-button__copy,
+body.uaw-v2.uaw-sidebar-collapsed .uaw-rail-button kbd {
+    display: none;
+}
+
+body.uaw-v2.uaw-sidebar-collapsed .uaw-brand__asset {
+    width: 48px;
+    height: 44px;
+}
+
+body.uaw-v2.uaw-sidebar-collapsed .uaw-brand__wordmark {
+    display: none;
+}
+
+body.uaw-v2.uaw-sidebar-collapsed .uaw-brand__mark {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    transform: scale(1.12);
+}
+
+body.uaw-v2.uaw-sidebar-collapsed .uaw-rail {
+    padding-inline: 7px;
+}
+
+body.uaw-v2.uaw-sidebar-collapsed .uaw-rail-button {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    padding-inline: 0;
+}
+
+body.uaw-v2.uaw-sidebar-collapsed .uaw-rail-button::before,
+body.uaw-v2.uaw-sidebar-collapsed .uaw-sidebar-toggle::before {
+    left: -7px;
+}
+
+body.uaw-v2 .uaw-rail__system-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 38px;
+    align-items: center;
+    gap: 3px;
+    min-height: 52px;
+}
+
+body.uaw-v2 .uaw-rail__system-actions .uaw-rail-button--settings {
+    min-height: 52px;
+}
+
+.uaw-sidebar-toggle {
+    display: grid;
+    grid-template-columns: 32px;
+    align-items: center;
+    justify-items: center;
+    width: 38px;
+    height: 38px;
+    padding: 2px;
+    color: #82919b;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font: 9px var(--uaw-font-ui);
+    text-align: left;
+    cursor: pointer;
+    transition: color 110ms ease, background-color 110ms ease, border-color 110ms ease;
+}
+
+body.uaw-v2 .uaw-sidebar-toggle {
+    color: #6f6973;
+}
+
+.uaw-sidebar-toggle:hover,
+.uaw-sidebar-toggle:focus-visible {
+    color: #f7f9fa;
+    background: rgba(255, 255, 255, .055);
+    border-color: rgba(255, 255, 255, .055);
+    outline: none;
+}
+
+body.uaw-v2 .uaw-sidebar-toggle:hover,
+body.uaw-v2 .uaw-sidebar-toggle:focus-visible {
+    color: #211e25;
+    background: #f2f0ee;
+    border-color: #ccc7cf;
+}
+
+body.uaw-v2 .uaw-sidebar-toggle:focus-visible {
+    box-shadow: 0 0 0 2px rgba(22, 189, 185, .42);
+}
+
+.uaw-sidebar-toggle:focus-visible {
+    box-shadow: 0 0 0 2px rgba(86, 153, 202, .42);
+}
+
+.uaw-sidebar-toggle .uaw-icon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    color: currentColor;
+    background: rgba(12, 17, 21, .2);
+    border: 1px solid rgba(255, 255, 255, .06);
+    border-radius: 4px;
+}
+
+body.uaw-v2 .uaw-sidebar-toggle .uaw-icon {
+    background: #f4f2f0;
+    border-color: #d2cdd4;
+}
+
+.uaw-sidebar-toggle .uaw-icon svg { width: 17px; height: 17px; }
+
+body.uaw-v2.uaw-sidebar-collapsed .uaw-sidebar-toggle {
+    width: 26px;
+    height: 38px;
+    padding: 2px 0;
+}
+
+body.uaw-v2.uaw-sidebar-collapsed .uaw-rail__system-actions {
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+}
+
+body.uaw-v2.uaw-sidebar-collapsed .uaw-rail__system-actions .uaw-rail-button--settings {
+    min-height: 52px;
+}
+
+body.uaw-v2.uaw-sidebar-collapsed .uaw-rail__system-actions .uaw-rail-button__icon,
+body.uaw-v2.uaw-sidebar-collapsed .uaw-sidebar-toggle .uaw-icon {
+    width: 26px;
+    height: 26px;
+}
+
+body.uaw-v2 .uaw-commandbar {
+    align-items: stretch;
+    min-width: 0;
+    padding: 0 8px 0 0;
+    overflow: visible;
+    background: #fff;
+    border-bottom: 1px solid #cfd6df;
+    box-shadow: 0 1px 2px rgba(31, 42, 55, .055);
+}
+
+body.uaw-v2 .uaw-commandbar__identity {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 220px !important;
+    max-width: none;
+    padding: 0 18px;
+    overflow: visible;
+    background: transparent;
+    border-right: 1px solid #d9dfe7;
+}
+
+body.uaw-v2 .uaw-commandbar__identity strong {
+    color: #1e2938;
+    font: 650 14px/1.1 "Geologica", var(--uaw-font-ui);
+    letter-spacing: -.01em;
+}
+
+body.uaw-v2 .uaw-commandbar__identity span {
+    max-width: none;
+    margin-top: 4px;
+    overflow: visible;
+    color: #69778a;
+    font-size: 10px;
+    line-height: 1;
+    text-overflow: clip;
+    white-space: nowrap;
+}
+
+body.uaw-v2 .uaw-commandbar__commands,
+body.uaw-v2 .uaw-commandbar__commands--primary,
+body.uaw-v2 .uaw-commandbar__commands--end {
+    flex: 0 0 auto;
+    min-width: max-content;
+    padding: 0 10px;
+    overflow: visible;
+    border-right: 1px solid #d9dfe7;
+}
+
+body.uaw-v2 .uaw-commandbar__commands--end {
+    margin-left: auto;
+    border-right: 0;
+}
+
+body.uaw-v2 .uaw-commandbar button,
+body.uaw-v2 .uaw-commandbar select,
+body.uaw-v2 .uaw-product-command {
+    flex: 0 0 auto;
+    min-width: max-content;
+    height: 32px !important;
+    padding: 0 11px !important;
+    overflow: visible;
+    border-radius: 5px !important;
+    font-size: 11px !important;
+    line-height: 1;
+    text-overflow: clip;
+    white-space: nowrap;
+    transition: color 100ms ease, background-color 100ms ease, border-color 100ms ease;
+}
+
+body.uaw-v2 .uaw-product-command.primary {
+    border-color: #185ca9 !important;
+    background: #2168b8 !important;
+    box-shadow: inset 0 1px rgba(255, 255, 255, .16), 0 1px 1px rgba(22, 49, 82, .11);
+}
+
+body.uaw-v2 .uaw-product-command.primary:hover { background: #195b9f !important; }
+
+body.uaw-v2 .uaw-segmented {
+    align-items: center;
+    gap: 2px;
+    height: 38px;
+    padding: 3px;
+    background: #eef1f5;
+    border: 1px solid #d8dee7;
+    border-radius: 6px;
+}
+
+body.uaw-v2 .uaw-segmented .uaw-product-command {
+    min-width: 62px;
+    height: 30px !important;
+    border: 1px solid transparent !important;
+    border-radius: 4px !important;
+    color: #526174 !important;
+    background: transparent !important;
+}
+
+body.uaw-v2 .uaw-segmented .uaw-product-command:last-child { border-right: 1px solid transparent !important; }
+
+body.uaw-v2 .uaw-segmented .uaw-product-command:hover {
+    color: #223044 !important;
+    background: rgba(255, 255, 255, .72) !important;
+}
+
+body.uaw-v2 .uaw-segmented .uaw-product-command.active {
+    color: #174f91 !important;
+    background: #fff !important;
+    border-color: #c8d2df !important;
+    box-shadow: 0 1px 2px rgba(27, 43, 65, .1), inset 0 -2px #2f78c4;
+}
+
+body.uaw-v2 .uaw-context-actions {
+    gap: 4px;
+    padding-right: 9px;
+    border-right-color: #d9dfe7;
+}
+
+body.uaw-v2 #uaw-playback-commands[hidden] { display: none; }
+
+@media (max-width: 1450px) {
+    body.uaw-agent-open { --uaw-rail-width: 68px; }
+    body.uaw-agent-open .uaw-brand { justify-content: center; padding: 0 10px; }
+    body.uaw-agent-open .uaw-brand__asset { width: 48px; height: 44px; }
+    body.uaw-agent-open .uaw-brand__wordmark { display: none; }
+    body.uaw-agent-open .uaw-brand__asset .uaw-brand__mark { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; transform: scale(1.12); }
+    body.uaw-agent-open .uaw-rail__section-label,
+    body.uaw-agent-open .uaw-rail-button__copy,
+    body.uaw-agent-open .uaw-rail-button kbd { display: none; }
+    body.uaw-agent-open .uaw-rail { padding-inline: 7px; }
+    body.uaw-agent-open .uaw-rail-button { grid-template-columns: 1fr; justify-items: center; padding-inline: 0; }
+    body.uaw-agent-open .uaw-rail-button::before { left: -7px; }
+    body.uaw-agent-open .uaw-commandbar__identity { min-width: 96px !important; }
+    body.uaw-agent-open .uaw-commandbar__identity span { display: none; }
+}
+
+@media (max-width: 1180px) {
+    :root { --uaw-rail-width: 68px; }
+    body.uaw-v2 .uaw-brand { justify-content: center; padding: 0 10px; }
+    body.uaw-v2 .uaw-brand__asset { width: 48px; height: 44px; }
+    body.uaw-v2 .uaw-brand__wordmark { display: none; }
+    body.uaw-v2 .uaw-brand__asset .uaw-brand__mark { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; transform: scale(1.12); }
+    body.uaw-v2 .uaw-rail__section-label,
+    body.uaw-v2 .uaw-rail-button__copy,
+    body.uaw-v2 .uaw-rail-button kbd { display: none; }
+    body.uaw-v2 .uaw-rail { padding-inline: 7px; }
+    body.uaw-v2 .uaw-rail-button { grid-template-columns: 1fr; justify-items: center; padding-inline: 0; }
+    body.uaw-v2 .uaw-rail-button::before { left: -7px; }
+    body.uaw-v2 .uaw-commandbar__identity { min-width: 96px !important; }
+    body.uaw-v2 .uaw-commandbar__identity span { display: none; }
 }

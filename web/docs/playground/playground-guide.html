@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulation Playground Guide - Universal Automation Wiki</title>
+    <title>WorkSpec Studio Guide - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
     <link rel="stylesheet" href="/assets/css/category.css">
@@ -42,11 +42,11 @@
                                         
                                     
                                         
-                                            <li><a href="/docs/playground/">Playground</a></li>
+                                            <li><a href="/docs/playground/">WorkSpec Studio</a></li>
                                         
                                     
                                         
-                                            <li aria-current="page">Simulation Playground Guide</li>
+                                            <li aria-current="page">WorkSpec Studio Guide</li>
                                         
                                     
                                 </ol>
@@ -54,19 +54,19 @@
                         </div>
                         
                         <div class="docs-title-section">
-                            <h1 class="docs-page-title">Simulation Playground Guide</h1>
+                            <h1 class="docs-page-title">WorkSpec Studio Guide</h1>
                             
-                            <p class="docs-page-subtitle">The Simulation Playground is an interactive, web-based tool for creating, editing, visualizing, and validating real-world process simulations. It serves as a complete Integrated Development Environment (IDE) for the Universal Automation Wiki&#39;s simulation data.</p>
+                            <p class="docs-page-subtitle">WorkSpec Studio is an interactive, web-based tool for creating, editing, visualizing, and validating real-world process simulations. It serves as a complete Integrated Development Environment (IDE) for the Universal Automation Wiki&#39;s simulation data.</p>
                             
                         </div>
                     </header>
 
                     <div class="docs-content">
-                        <p>The Simulation Playground is an interactive, web-based tool for creating, editing, visualizing, and validating real-world process simulations. It serves as a complete Integrated Development Environment (IDE) for the Universal Automation Wiki’s simulation data.</p>
+                        <p>WorkSpec Studio is an interactive, web-based tool for creating, editing, visualizing, and validating real-world process simulations. It serves as a complete Integrated Development Environment (IDE) for the Universal Automation Wiki’s simulation data.</p>
 <h2 class="docs-heading" id="overview">Overview<a class="headerlink" href="#overview" title="Link to this section">¶</a></h2>
-<p>The Playground is designed to give you immediate feedback on your simulation design. You can edit the underlying JSON data and see the changes reflected in a visual timeline in real-time. This tight feedback loop allows for rapid prototyping and refinement of process models.</p>
+<p>WorkSpec Studio is designed to give you immediate feedback on your simulation design. You can edit the underlying JSON data and see the changes reflected in a visual timeline in real-time. This tight feedback loop allows for rapid prototyping and refinement of process models.</p>
 <h2 class="docs-heading" id="layout">Layout<a class="headerlink" href="#layout" title="Link to this section">¶</a></h2>
-<p>The Playground interface is divided into three main panels:</p>
+<p>The WorkSpec Studio interface is divided into three main panels:</p>
 <ol class="docs-list docs-list-ordered">
 <li><strong>JSON Editor Panel (Left):</strong> This panel contains the raw <code class="docs-inline-code">simulation.json</code> data for your process. It uses the Monaco editor, providing features like syntax highlighting, auto-formatting, and error checking for the JSON format.</li>
 <li><strong>Simulation Panel (Right):</strong> This is where the simulation is visualized. It has multiple tabs:<ul class="docs-list">
@@ -79,7 +79,7 @@
 <li><strong>Validation Panel (Bottom):</strong> This panel displays the results of running the simulation against the project’s metrics catalog. It shows a summary of errors, warnings, suggestions, and passed checks, helping you identify issues and areas for improvement in your simulation.</li>
 </ol>
 <h2 class="docs-heading" id="interacting-with-the-simulation">Interacting with the Simulation<a class="headerlink" href="#interacting-with-the-simulation" title="Link to this section">¶</a></h2>
-<p>The Playground offers several ways to interact with and modify your simulation directly from the UI, which will automatically update the JSON data.</p>
+<p>WorkSpec Studio offers several ways to interact with and modify your simulation directly from the UI, which will automatically update the JSON data.</p>
 <h3 class="docs-heading" id="timeline-interaction">Timeline Interaction<a class="headerlink" href="#timeline-interaction" title="Link to this section">¶</a></h3>
 <ul class="docs-list">
 <li><strong>Move Task:</strong> Click and drag a task block on the timeline to a different actor’s lane or to a different time slot. This will update the task’s <code class="docs-inline-code">actor_id</code> and <code class="docs-inline-code">start</code> time.</li>
@@ -678,7 +678,7 @@ For actors moving between physical locations, you can track their movement:</p>
 </code></pre></div>
 <hr class="docs-hr"/>
 <h3 class="docs-heading" id="movement-tasks">Movement Tasks<a class="headerlink" href="#movement-tasks" title="Link to this section">¶</a></h3>
-<p>The Playground supports two methods for modeling actor movement between physical locations. Understanding when and how to use each method is key to creating realistic, validated simulations.</p>
+<p>WorkSpec Studio supports two methods for modeling actor movement between physical locations. Understanding when and how to use each method is key to creating realistic, validated simulations.</p>
 <h4 class="docs-heading" id="method-1-movement-task-type">Method 1: Movement Task Type<a class="headerlink" href="#method-1-movement-task-type" title="Link to this section">¶</a></h4>
 <p>Use a dedicated movement task to explicitly show travel time as a distinct activity on the timeline.</p>
 <p><strong>Structure:</strong></p>

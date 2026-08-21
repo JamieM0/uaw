@@ -1,6 +1,6 @@
 # The Space Editor Guide
 
-The Space Editor is a powerful visual tool within the Simulation Playground that allows you to define and manipulate the physical layout of your simulation environment. It provides a 2D canvas where you can draw, name, and arrange the different locations where tasks and objects reside.
+The Space Editor is a powerful visual tool within WorkSpec Studio that allows you to define and manipulate the physical layout of your simulation environment. It provides a 2D canvas where you can draw, name, and arrange the different locations where tasks and objects reside.
 
 ## Purpose and Functionality
 

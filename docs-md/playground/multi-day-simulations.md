@@ -152,7 +152,7 @@ Multi-day simulations use a `simulation_config` object to define overall setting
 
 ## Visualization Views
 
-Multi-day simulations can be viewed in multiple ways in the playground:
+Multi-day simulations can be viewed in multiple ways in WorkSpec Studio:
 
 ### Calendar View
 
@@ -198,7 +198,7 @@ const viewController = {
 
 ## Color Coding
 
-The playground automatically generates visually distinct colors for each day type using a sophisticated color generation algorithm that:
+WorkSpec Studio automatically generates visually distinct colors for each day type using a sophisticated color generation algorithm that:
 
 1. Maximizes perceptual distance between colors
 2. Ensures good readability (automatic text color selection)
@@ -251,9 +251,9 @@ These metrics are aggregated:
 
 ## Loading Sample Simulations
 
-The playground includes a sample multi-day simulation:
+WorkSpec Studio includes a sample multi-day simulation:
 
-1. Open the playground
+1. Open WorkSpec Studio
 2. Click "Load Sample"
 3. Select "Coffee Shop (Multi-Period)"
 4. Explore the calendar, week, and timeline views
@@ -268,7 +268,7 @@ Multi-day simulations are powered by the `MultiDaySimulator` class (`playground-
 - Converts calendar dates to simulation days and vice versa
 - Handles date expression parsing
 
-The system is integrated with existing playground components:
+The system is integrated with existing WorkSpec Studio components:
 - **playground-calendar-view.js**: Month grid calendar rendering
 - **playground-week-view.js**: Weekly breakdown views
 - **playground-timeline.js**: Enhanced to support multi-day context

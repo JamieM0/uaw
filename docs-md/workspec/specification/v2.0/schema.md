@@ -19,7 +19,7 @@ Schema identity:
 - `$id`: `https://universalautomation.wiki/workspec/v2.0.schema.json`
 - Draft: `http://json-schema.org/draft-07/schema#`
 
-The UAW Playground ships a local copy of this schema at:
+WorkSpec Studio ships a local copy of this schema at:
 
 - `/workspec/v2.0.schema.json`
 

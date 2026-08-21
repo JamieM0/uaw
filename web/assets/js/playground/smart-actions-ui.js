@@ -631,7 +631,7 @@
 
             const lightweightSystemMessage = {
                 role: 'system',
-                content: `You are an AI assistant helping with simulation analysis in the Universal Automation Wiki playground. Continue the conversation naturally while maintaining context of the ongoing discussion.
+                content: `You are an AI assistant helping with simulation analysis in WorkSpec Studio. Continue the conversation naturally while maintaining context of the ongoing discussion.
 
 ${toolCallingSection}
 

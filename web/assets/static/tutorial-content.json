@@ -1,11 +1,11 @@
 {
-  "title": "UAW Playground Tutorial",
+  "title": "WorkSpec Studio Tutorial",
   "introduction": "Learn process simulation modeling through hands-on challenges across multiple domains.",
   "steps": [
     {
       "id": "intro_layout",
       "title": "1. Interface Overview",
-      "instructions": "<p><strong>Welcome to the UAW Playground!</strong> This interface allows you to model and simulate real-world processes.</p><p><strong>Key interface areas:</strong></p><ul><li><b>JSON Editor (Top Left):</b> Define simulation structure - tasks, actors, and resources</li><li><b>Visual Timeline (Top Right):</b> Interactive timeline showing process flow</li><li><b>Space Editor Tab:</b> Design physical layouts and workspaces</li><li><b>Validation Panel (Bottom):</b> Automated error detection and optimization suggestions</li></ul><p><strong>Controls:</strong> Player controls, speed selector, and timeline scrubber enable time-based simulation.</p><p><em>Click 'Next' to continue.</em></p>",
+      "instructions": "<p><strong>Welcome to WorkSpec Studio!</strong> This interface allows you to model and simulate real-world processes.</p><p><strong>Key interface areas:</strong></p><ul><li><b>JSON Editor (Top Left):</b> Define simulation structure - tasks, actors, and resources</li><li><b>Visual Timeline (Top Right):</b> Interactive timeline showing process flow</li><li><b>Space Editor Tab:</b> Design physical layouts and workspaces</li><li><b>Validation Panel (Bottom):</b> Automated error detection and optimization suggestions</li></ul><p><strong>Controls:</strong> Player controls, speed selector, and timeline scrubber enable time-based simulation.</p><p><em>Click 'Next' to continue.</em></p>",
       "initial_json": {
         "simulation": { 
           "meta": { 
@@ -449,12 +449,12 @@
     {
       "id": "graduation_celebration",
       "title": "8. Tutorial Complete",
-      "instructions": "<p><strong>Tutorial Completed</strong></p><p><strong>Skills covered:</strong></p><ul><li>Space Design: Visual layout creation and property management</li><li>Timeline Editing: Interactive drag-and-drop editing and resizing</li><li>Simulation Playback: Time control, speed adjustment, and live state tracking</li><li>Resource Management: Supply chain modeling and constraint management</li><li>JSON Editing: Direct code editing and validation</li><li>Complex Problem Solving: Multi-domain workflow optimization</li></ul><p><strong>Next steps:</strong> Explore the sample simulation, create your own processes, or try advanced features like the experimental AI assistant.</p><p><em>Click 'Next' to return to the main playground.</em></p>",
+      "instructions": "<p><strong>Tutorial Completed</strong></p><p><strong>Skills covered:</strong></p><ul><li>Space Design: Visual layout creation and property management</li><li>Timeline Editing: Interactive drag-and-drop editing and resizing</li><li>Simulation Playback: Time control, speed adjustment, and live state tracking</li><li>Resource Management: Supply chain modeling and constraint management</li><li>JSON Editing: Direct code editing and validation</li><li>Complex Problem Solving: Multi-domain workflow optimization</li></ul><p><strong>Next steps:</strong> Explore the sample simulation, create your own processes, or try advanced features like the experimental AI assistant.</p><p><em>Click 'Next' to return to WorkSpec Studio.</em></p>",
       "initial_json": {
         "simulation": {
           "meta": {
             "id": "graduation_complete",
-            "article_title": "🎓 Playground Mastery Achieved",
+            "article_title": "🎓 WorkSpec Studio Mastery Achieved",
             "domain": "Education"
           },
           "config": {
@@ -470,7 +470,7 @@
           },
           "objects": [
             { "id": "graduate", "type": "actor", "name": "UAW Graduate", "properties": { "role": "Process Modeling Expert", "cost_per_hour": 0, "location": "auditorium" } },
-            { "id": "playground_mastery", "type": "product", "name": "Playground Mastery", "emoji": "🏆", "properties": { "unit": "skills", "quantity": 1, "location": "auditorium" } }
+            { "id": "playground_mastery", "type": "product", "name": "WorkSpec Studio Mastery", "emoji": "🏆", "properties": { "unit": "skills", "quantity": 1, "location": "auditorium" } }
           ],
           "tasks": [
             { "id": "graduation_ceremony", "emoji": "🎉", "actor_id": "graduate", "start": "12:00", "duration": 30, "location": "auditorium" }
@@ -478,7 +478,7 @@
         }
       },
       "validation": { "type": "none" },
-      "success_message": "Tutorial complete. You can now explore the full playground."
+      "success_message": "Tutorial complete. You can now explore WorkSpec Studio."
     }
   ]
 }

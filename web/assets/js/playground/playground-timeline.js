@@ -252,7 +252,7 @@ function processSimulationData(simulationData) {
     const startTimeMinutes = startHour * 60 + startMin;
 
     let actualLastTaskEnd = startTimeMinutes;
-    let actualFirstTaskStart = startTimeMinutes; // Track earliest task start
+    let actualFirstTaskStart = null;
 
     const allObjects = [
         ...(Array.isArray(sim.world?.objects) ? sim.world.objects : []),
@@ -321,14 +321,16 @@ function processSimulationData(simulationData) {
 
         const taskEndMinutes = taskStartMinutes + taskDurationMinutes;
         actualLastTaskEnd = Math.max(actualLastTaskEnd, taskEndMinutes);
-        actualFirstTaskStart = Math.min(actualFirstTaskStart, taskStartMinutes); // Track earliest start
+        actualFirstTaskStart = actualFirstTaskStart === null
+            ? taskStartMinutes
+            : Math.min(actualFirstTaskStart, taskStartMinutes);
         return { ...task, start_minutes: taskStartMinutes, end_minutes: taskEndMinutes, duration: taskDurationMinutes };
     }).filter(task => task !== null);
     
     // --- START OF THE UNIFIED SCALING FIX ---
 
     // 1. Determine the actual visual start time (earliest task or config start)
-    const visualStartTimeMinutes = actualFirstTaskStart;
+    const visualStartTimeMinutes = actualFirstTaskStart ?? startTimeMinutes;
     const visualStartTimeStr = formatTimeFromMinutes(visualStartTimeMinutes);
 
     // 2. Determine the logical end time, including a small buffer for visuals.
@@ -710,6 +712,7 @@ function renderSimulation(skipJsonValidation = false) {
 
             const actorLabel = document.createElement("div");
             actorLabel.className = "actor-label";
+            actorLabel.dataset.objectId = actor.id;
             actorLabel.style.cssText =
                 "width: 150px; padding: 0.5rem; background: var(--bg-light); border-radius: var(--border-radius-sm); margin-right: 1rem; flex-shrink: 0;";
             // Determine display role based on object type
@@ -726,9 +729,12 @@ function renderSimulation(skipJsonValidation = false) {
                 displayRole = `${actor.name} (${actor.type})`;
             }
 
-            const actorMarker = Array.from(String(actor.emoji || displayRole || '?').trim())[0] || '?';
+            const actorEmoji = typeof actor.emoji === 'string' ? actor.emoji.trim() : '';
+            const actorAvatar = actorEmoji
+                ? `<span class="actor-avatar" aria-hidden="true">${sanitizeHTML(actorEmoji)}</span>`
+                : '';
             actorLabel.innerHTML = `
-                <span class="actor-avatar" aria-hidden="true">${sanitizeHTML(actorMarker.toUpperCase())}</span>
+                ${actorAvatar}
                 <span class="actor-label-copy"><strong>${sanitizeHTML(displayRole)}</strong><small>${sanitizeHTML(actor.utilization_percentage)}% utilized</small></span>
             `;
             lane.appendChild(actorLabel);

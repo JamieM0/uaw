@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Playground Save/Load System Documentation - Universal Automation Wiki</title>
+    <title>WorkSpec Studio Save/Load System Documentation - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
     <link rel="stylesheet" href="/assets/css/category.css">
@@ -42,11 +42,11 @@
                                         
                                     
                                         
-                                            <li><a href="/docs/playground/">Playground</a></li>
+                                            <li><a href="/docs/playground/">WorkSpec Studio</a></li>
                                         
                                     
                                         
-                                            <li aria-current="page">Playground Save/Load System Documentation</li>
+                                            <li aria-current="page">WorkSpec Studio Save/Load System Documentation</li>
                                         
                                     
                                 </ol>
@@ -54,15 +54,15 @@
                         </div>
                         
                         <div class="docs-title-section">
-                            <h1 class="docs-page-title">Playground Save/Load System Documentation</h1>
+                            <h1 class="docs-page-title">WorkSpec Studio Save/Load System Documentation</h1>
                             
-                            <p class="docs-page-subtitle">The Universal Automation Wiki&#39;s playground features a comprehensive save/load system, allowing users to save their simulations to a remote server and retrieve them later using unique 16-character save codes. This system is designed to be non-destructive, secure, and scalable.</p>
+                            <p class="docs-page-subtitle">WorkSpec Studio features a comprehensive save/load system, allowing users to save their simulations to a remote server and retrieve them later using unique 16-character save codes. This system is designed to be non-destructive, secure, and scalable.</p>
                             
                         </div>
                     </header>
 
                     <div class="docs-content">
-                        <p>The Universal Automation Wiki’s playground features a comprehensive save/load system, allowing users to save their simulations to a remote server and retrieve them later using unique 16-character save codes. This system is designed to be non-destructive, secure, and scalable.</p>
+                        <p>WorkSpec Studio features a comprehensive save/load system, allowing users to save their simulations to a remote server and retrieve them later using unique 16-character save codes. This system is designed to be non-destructive, secure, and scalable.</p>
 <h2 class="docs-heading" id="system-overview">System Overview<a class="headerlink" href="#system-overview" title="Link to this section">¶</a></h2>
 <p>The save/load system consists of three main components:</p>
 <ol class="docs-list docs-list-ordered">
@@ -80,7 +80,7 @@
 </ul>
 <h2 class="docs-heading" id="frontend-implementation">Frontend Implementation<a class="headerlink" href="#frontend-implementation" title="Link to this section">¶</a></h2>
 <h3 class="docs-heading" id="user-interface-components">User Interface Components<a class="headerlink" href="#user-interface-components" title="Link to this section">¶</a></h3>
-<p>The playground includes two primary buttons in the top menu bar:</p>
+<p>WorkSpec Studio includes two primary buttons in the top menu bar:</p>
 <ul class="docs-list">
 <li><strong>Save Simulation</strong>: Opens save modal with privacy warnings and generates save codes</li>
 <li><strong>Load Simulation</strong>: Opens load modal for entering existing save codes</li>
@@ -172,7 +172,7 @@
 <li>Persists across browser sessions to avoid repeatedly showing disclaimer</li>
 </ul>
 <h4 class="docs-heading" id="event-listener-setup">Event Listener Setup<a class="headerlink" href="#event-listener-setup" title="Link to this section">¶</a></h4>
-<p>Event listeners are attached during the playground initialization phase to ensure DOM elements exist:</p>
+<p>Event listeners are attached during WorkSpec Studio initialization to ensure DOM elements exist:</p>
 <div class="codehilite"><pre><span></span><code class="language-text"><span class="kd">function</span><span class="w"> </span><span class="nx">setupSaveLoadButtons</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"INIT: Setting up save/load buttons."</span><span class="p">);</span>
 
@@ -439,7 +439,7 @@
 <h2 class="docs-heading" id="user-experience-flow">User Experience Flow<a class="headerlink" href="#user-experience-flow" title="Link to this section">¶</a></h2>
 <h3 class="docs-heading" id="first-time-save-experience">First-Time Save Experience<a class="headerlink" href="#first-time-save-experience" title="Link to this section">¶</a></h3>
 <ol class="docs-list docs-list-ordered">
-<li>User creates or modifies a simulation in the playground</li>
+<li>User creates or modifies a simulation in WorkSpec Studio</li>
 <li>User clicks “Save Simulation” button</li>
 <li>Privacy warning modal appears with detailed explanation</li>
 <li>User must check consent checkbox to enable save button</li>
@@ -498,7 +498,7 @@
 <li><strong>Collaboration Tools</strong>: Share and iterate on simulations</li>
 </ol>
 <h2 class="docs-heading" id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Link to this section">¶</a></h2>
-<p>The Universal Automation Wiki playground save/load system provides a robust, secure, and user-friendly way for users to persist and share their simulations. The non-destructive architecture ensures data integrity while enabling powerful future features. The system successfully bridges the gap between static site limitations and modern web application functionality.</p>
+<p>The WorkSpec Studio save/load system provides a robust, secure, and user-friendly way for users to persist and share their simulations. The non-destructive architecture ensures data integrity while enabling powerful future features. The system successfully bridges the gap between static site limitations and modern web application functionality.</p>
 <p>The implementation demonstrates several key architectural patterns:</p>
 <ul class="docs-list">
 <li><strong>Progressive Enhancement</strong>: Static site enhanced with dynamic features</li>

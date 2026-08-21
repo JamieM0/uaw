@@ -5,7 +5,7 @@ This page is a map of the Universal Automation Wiki (UAW) docs and the major sys
 ## Start Here
 
 - **WorkSpec (canonical schema + guides):** [Quickstart](/docs/workspec/guides/quickstart), [Specification v2.0](/docs/workspec/specification/v2.0/)
-- **Simulation Playground (build + validate simulations):** [Playground Guide](/docs/playground/playground-guide)
+- **WorkSpec Studio (build + validate simulations):** [WorkSpec Studio Guide](/docs/playground/playground-guide)
 - **Developer tooling (generators + doc build):** [Docs Translator](/docs/routines/docs-translator)
 
 ## Where Docs Live
@@ -14,9 +14,9 @@ This page is a map of the Universal Automation Wiki (UAW) docs and the major sys
 - **Generated site:** `web/docs/` (HTML)
 - **Generator:** `routines/docs/docs-translator.py`
 
-## Simulation Playground (High Level)
+## WorkSpec Studio (High Level)
 
-The playground is a browser-based editor for simulation JSON. It renders timelines/layouts and runs a client-side validation engine driven by a metrics catalog.
+WorkSpec Studio is a browser-based editor for simulation JSON. It renders timelines/layouts and runs a client-side validation engine driven by a metrics catalog.
 
 **Guides**
 - [Space Editor Guide](/docs/playground/space-editor-guide)

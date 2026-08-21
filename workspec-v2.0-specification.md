@@ -33,7 +33,7 @@ WorkSpec is a JSON-based specification language for defining work activities, pr
 - **AI-Native:** Optimized for generation and consumption by Large Language Models
 - **Human-Readable:** Clear, consistent syntax that's easy to author and review
 - **Validation-First:** Rich constraint system catches errors before execution
-- **Platform-Agnostic:** Usable in any environment, not tied to UAW Playground
+- **Platform-Agnostic:** Usable in any environment, not tied to WorkSpec Studio
 
 ### 1.2 File Format
 

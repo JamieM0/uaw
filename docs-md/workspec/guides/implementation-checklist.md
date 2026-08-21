@@ -2,7 +2,7 @@
 
 This is a **practical** checklist for evaluating the `workspec-v2.0` branch against `main`, mapped to the Phase 1–7 issue breakdown.
 
-It intentionally focuses on: **document shape**, **validator correctness**, **playground behavior**, and **tooling outside the UAW platform**.
+It intentionally focuses on: **document shape**, **validator correctness**, **WorkSpec Studio behavior**, and **tooling outside the UAW platform**.
 
 ---
 
@@ -19,10 +19,10 @@ It intentionally focuses on: **document shape**, **validator correctness**, **pl
 - **WorkSpec v1 → v2 migration**
   - Canonical (npm): `packages/workspec/workspec-migrate-v1-to-v2.js`
   - Web mirror: `web/assets/js/workspec-migrate-v1-to-v2.js`
-  - Playground UI: `web/assets/js/playground/playground-migration.js`
+  - WorkSpec Studio UI: `web/assets/js/playground/playground-migration.js`
 - **Simulation library migrated to v2**
   - `web/assets/static/simulation-library.json` (currently validator-clean)
-- **Playground emits and runs v2 documents**
+- **WorkSpec Studio emits and runs v2 documents**
   - Monaco schema wiring: `web/assets/js/playground/playground-editor.js`
   - Object/task paths: `web/assets/js/playground/playground-objects.js`
   - Save/load supports v2: `web/assets/js/playground/playground-save-load.js`
@@ -84,7 +84,7 @@ It intentionally focuses on: **document shape**, **validator correctness**, **pl
   - Validator validates operator shape; simulation playback now applies the full operator set
   - Missing: trait-aware enforcement (e.g., restricting numeric ops to numeric properties / quantifiable traits)
 - ✅ **4.4 Action interactions (`create`/`delete`)**
-  - Playground emits actions; player applies create/delete
+  - WorkSpec Studio emits actions; player applies create/delete
   - Validator enforces lifecycle semantics (created objects become valid after create; references after delete error)
 
 ### Phase 5 — Validation System
@@ -93,7 +93,7 @@ It intentionally focuses on: **document shape**, **validator correctness**, **pl
 - ✅ **5.2 Recipe validation** (missing inputs → warning)
 - ✅ **5.3 Strict time validation** (zero-padded HH:MM enforced)
 - ⚠️ UI polish (Partial)
-  - Playground shows v2 problems, but doesn’t yet surface `problem.suggestions` / `problem.doc_uri` well in the panel
+  - WorkSpec Studio shows v2 problems, but doesn’t yet surface `problem.suggestions` / `problem.doc_uri` well in the panel
 
 ### Phase 6 — Tooling
 
@@ -105,7 +105,7 @@ It intentionally focuses on: **document shape**, **validator correctness**, **pl
 ### Phase 7 — Migration
 
 - ✅ **7.1 v1 → v2 migration tool**
-  - CLI + Playground tool exist
+  - CLI + WorkSpec Studio tool exist
 - ✅ **7.2 Simulation library update**
   - Library is migrated and currently validates cleanly
 

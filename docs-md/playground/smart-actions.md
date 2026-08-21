@@ -1,6 +1,6 @@
 # Smart Actions
 
-Smart Actions is an AI-powered assistant integrated into the Universal Automation Wiki playground. It provides intelligent analysis, suggestions, and automated editing capabilities for your simulations using Large Language Models (LLMs).
+Smart Actions is an AI-powered assistant integrated into WorkSpec Studio. It provides intelligent analysis, suggestions, and automated editing capabilities for your simulations using Large Language Models (LLMs).
 
 ## Overview
 
@@ -16,7 +16,7 @@ Smart Actions helps you:
 
 ### Initial Setup
 
-1. Open the playground and locate the **Smart Actions** button in the toolbar
+1. Open WorkSpec Studio and locate the **Smart Actions** button in the toolbar
 2. Click the dropdown and select **Setup**
 3. Choose your AI provider and configure:
 

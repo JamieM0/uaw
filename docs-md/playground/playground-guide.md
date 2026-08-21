@@ -1,14 +1,14 @@
-# Simulation Playground Guide
+# WorkSpec Studio Guide
 
-The Simulation Playground is an interactive, web-based tool for creating, editing, visualizing, and validating real-world process simulations. It serves as a complete Integrated Development Environment (IDE) for the Universal Automation Wiki's simulation data.
+WorkSpec Studio is an interactive, web-based tool for creating, editing, visualizing, and validating real-world process simulations. It serves as a complete Integrated Development Environment (IDE) for the Universal Automation Wiki's simulation data.
 
 ## Overview
 
-The Playground is designed to give you immediate feedback on your simulation design. You can edit the underlying JSON data and see the changes reflected in a visual timeline in real-time. This tight feedback loop allows for rapid prototyping and refinement of process models.
+WorkSpec Studio is designed to give you immediate feedback on your simulation design. You can edit the underlying JSON data and see the changes reflected in a visual timeline in real-time. This tight feedback loop allows for rapid prototyping and refinement of process models.
 
 ## Layout
 
-The Playground interface is divided into three main panels:
+The WorkSpec Studio interface is divided into three main panels:
 
 1.  **JSON Editor Panel (Left):** This panel contains the raw `simulation.json` data for your process. It uses the Monaco editor, providing features like syntax highlighting, auto-formatting, and error checking for the JSON format.
 2.  **Simulation Panel (Right):** This is where the simulation is visualized. It has multiple tabs:
@@ -20,7 +20,7 @@ The Playground interface is divided into three main panels:
 
 ## Interacting with the Simulation
 
-The Playground offers several ways to interact with and modify your simulation directly from the UI, which will automatically update the JSON data.
+WorkSpec Studio offers several ways to interact with and modify your simulation directly from the UI, which will automatically update the JSON data.
 
 ### Timeline Interaction
 
@@ -645,7 +645,7 @@ This interaction allows a task to remove an object from the simulation. This is 
 
 ### Movement Tasks
 
-The Playground supports two methods for modeling actor movement between physical locations. Understanding when and how to use each method is key to creating realistic, validated simulations.
+WorkSpec Studio supports two methods for modeling actor movement between physical locations. Understanding when and how to use each method is key to creating realistic, validated simulations.
 
 #### Method 1: Movement Task Type
 

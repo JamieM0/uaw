@@ -1,6 +1,6 @@
 # Display Editor Guide
 
-The Display Editor is a powerful tool within the UAW Simulation Playground for creating and managing digital displays and screen elements. This guide covers everything from basic display setup to advanced interactive interface design.
+The Display Editor is a powerful tool within WorkSpec Studio for creating and managing digital displays and screen elements. This guide covers everything from basic display setup to advanced interactive interface design.
 
 ## Overview
 
@@ -249,7 +249,7 @@ Modal windows for user interactions, confirmations, and data entry.
 
 ### Accessing the Display Editor
 
-1. Open the Simulation Playground
+1. Open WorkSpec Studio
 2. Click the **Display Editor** tab in the Simulation Panel
 3. Your displays will be listed in the displays panel
 4. Select a display to edit its screen elements

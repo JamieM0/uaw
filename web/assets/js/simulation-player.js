@@ -162,15 +162,16 @@ class SimulationPlayer {
         }
 
         if (this.isPlaying) {
-            // --- START OF FIX ---
-            // If playback is at the end, reset to the beginning.
-            // Add safety check to ensure end_time_minutes is valid
-            if (this.simData.end_time_minutes && this.playheadTime >= this.simData.end_time_minutes) {
-                this.playheadTime = this.simData.start_time_minutes;
-            }
-            // Initialize lastFrameTime HERE, right before starting the loop.
+            // A new play action always starts at the first task. This prevents
+            // playback from resuming in the configured but task-free time range.
+            const firstTaskStart = (this.simData.tasks || [])
+                .map(task => Number(task.start_minutes))
+                .filter(Number.isFinite)
+                .reduce((earliest, start) => Math.min(earliest, start), this.simData.start_time_minutes);
+            this.update(firstTaskStart);
+
+            // Initialize lastFrameTime immediately before starting the loop.
             this.lastFrameTime = performance.now();
-            // --- END OF FIX ---
             this.animationFrameId = requestAnimationFrame((t) => this.gameLoop(t));
         } else {
             cancelAnimationFrame(this.animationFrameId);
@@ -353,7 +354,7 @@ class SimulationPlayer {
                                 ...newObj,
                                 createdAt: task.start_minutes,
                                 createdBy: task.id,
-                                emoji: newObj.emoji || newObj.properties?.emoji || this.getDefaultEmojiForType(newObj.type)
+                                emoji: newObj.emoji || newObj.properties?.emoji || ''
                             };
                             this.liveObjects.created.push(createdObject);
                             
@@ -966,16 +967,6 @@ class SimulationPlayer {
         }
     }
 
-    getDefaultEmojiForType(type) {
-        const defaults = {
-            'equipment': '⚙️',
-            'resource': '📦',
-            'actor': '👤',
-            'product': '📋'
-        };
-        return defaults[type] || '❓';
-    }
-
     updateAllObjectStates() {
         Object.entries(this.ui.livePanels).forEach(([objectType, panel]) => {
             this.updateObjectTypeState(objectType, panel);
@@ -1233,7 +1224,9 @@ class SimulationPlayer {
             const createdTitle = isCreated ? `Created by ${isCreated.createdBy}` : '';
             
             // Apply property overrides from interactions
-            const currentEmoji = propertyOverrides[item.id]?.emoji || item.properties?.emoji || item.emoji || "❓";
+            const emojiValue = propertyOverrides[item.id]?.emoji ?? item.emoji ?? item.properties?.emoji;
+            const currentEmoji = typeof emojiValue === 'string' ? emojiValue.trim() : '';
+            const emojiMarkup = currentEmoji ? `<div class="resource-emoji">${currentEmoji}</div>` : '';
             
             // Handle different display formats based on indicator_property
             let stateDisplay;
@@ -1281,7 +1274,7 @@ class SimulationPlayer {
             
             return `
             <div class="resource-item ${createdClass}" title="${createdTitle}" data-object-id="${item.id}" style="cursor: pointer;">
-                <div class="resource-emoji">${currentEmoji}</div>
+                ${emojiMarkup}
                 <div class="resource-info">
                     <div class="resource-name">${item.name || item.id}${isCreated ? ' ✨' : ''}</div>
                     <div class="resource-state ${stocks[item.id] !== undefined ? 'available' : states[item.id]}">${stateDisplay}</div>

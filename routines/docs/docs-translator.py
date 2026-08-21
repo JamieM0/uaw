@@ -73,7 +73,7 @@ def generate_breadcrumbs(input_path, title):
         if part and part != ".":  # Skip empty and current directory parts
             current_path += f"/{part}"
             # Capitalize and clean up directory names
-            display_name = part.replace("-", " ").replace("_", " ").title()
+            display_name = "WorkSpec Studio" if part == "playground" else part.replace("-", " ").replace("_", " ").title()
             breadcrumbs.append({"name": display_name, "url": f"{current_path}/"})
     
     # Add final page (no URL since it's current page)

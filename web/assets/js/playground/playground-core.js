@@ -625,7 +625,7 @@ function attemptInitializePlayground() {
   if (initState.monacoLoadFailed && initState.dataLoadFailed) {
     console.error('Both Monaco and data loading failed');
     showInitializationError(
-      "Playground failed to initialize. Please check your internet connection and refresh the page.",
+      "WorkSpec Studio failed to initialize. Please check your internet connection and refresh the page.",
     );
     return false;
   }

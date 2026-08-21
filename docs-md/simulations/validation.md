@@ -49,7 +49,7 @@ The file `/web/assets/js/simulation-validator.js` contains the runtime for all `
 
 ## How Validation Works
 
-The process is fully automated in the Simulation Playground:
+The process is fully automated in WorkSpec Studio:
 
 1.  **Edit & Render:** As you edit the JSON, the simulation is rendered.
 2.  **Run Checks:** The Validation Engine runs all computational checks from the catalog against the current JSON.
@@ -57,7 +57,7 @@ The process is fully automated in the Simulation Playground:
 
 ### Business Readiness Score
 
-While not a direct metric, the playground can calculate a "Business Readiness" score based on the validation results. This provides a high-level indicator of the simulation's quality, weighted by the severity of the issues found.
+While not a direct metric, WorkSpec Studio can calculate a "Business Readiness" score based on the validation results. This provides a high-level indicator of the simulation's quality, weighted by the severity of the issues found.
 
 ## Economic Validation
 

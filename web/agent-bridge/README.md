@@ -1,6 +1,6 @@
-# UAW Playground Agent bridge
+# WorkSpec Studio Agent bridge
 
-The Playground remains a static web application. This optional localhost service gives its Agent drawer access to programmatic Codex threads without placing credentials or a server-side SDK in browser code.
+WorkSpec Studio remains a static web application. This optional localhost service gives its Agent drawer access to programmatic Codex threads without placing credentials or a server-side SDK in browser code.
 
 ## Start
 
@@ -10,7 +10,7 @@ npm install
 npm start
 ```
 
-The bridge listens on `http://127.0.0.1:4317`. Change the port with `UAW_AGENT_PORT` or configure a different address in Playground → Settings → Codex Agent.
+The bridge listens on `http://127.0.0.1:4317`. Change the port with `UAW_AGENT_PORT` or configure a different address in WorkSpec Studio → Settings → Codex Agent.
 
 ## Behaviour
 

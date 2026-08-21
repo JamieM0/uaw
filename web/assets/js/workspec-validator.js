@@ -467,7 +467,7 @@
                 { field: 'schema_version' },
                 [
                     "Add \"schema_version\": \"2.0\" under simulation.",
-                    'Run the migration tool (Playground: Tools → Migrate v1 → v2) or CLI: workspec migrate <file> --out <output>.'
+                    'Run the migration tool (WorkSpec Studio: Tools → Migrate v1 → v2) or CLI: workspec migrate <file> --out <output>.'
                 ]
             ));
             return { ok: false, problems };

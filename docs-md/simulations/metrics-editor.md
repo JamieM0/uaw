@@ -1,10 +1,10 @@
 # The Metrics Editor
 
-The Metrics Editor is a powerful, advanced mode within the Simulation Playground that allows you to create, edit, and test your own custom validation metrics. It transforms the playground into a full development environment for extending the UAW's validation capabilities.
+The Metrics Editor is a powerful, advanced mode within WorkSpec Studio that allows you to create, edit, and test your own custom validation metrics. It transforms WorkSpec Studio into a full development environment for extending UAW's validation capabilities.
 
 ## Accessing the Metrics Editor
 
-You can switch to the Metrics Editor by clicking the "Open Metrics Editor" button in the playground's header. This will change the layout to reveal the two core components of the editor.
+You can switch to the Metrics Editor by clicking the "Open Metrics Editor" button in the WorkSpec Studio header. This will change the layout to reveal the two core components of the editor.
 
 ## Metrics Editor Layout
 
