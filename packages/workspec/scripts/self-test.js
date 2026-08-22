@@ -7,6 +7,8 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const validator = require('../workspec-validator.js');
+const stateVisuals = require('../state-visuals.js');
+const schema = require('../v2.0.schema.json');
 
 function baseDoc() {
     return {
@@ -36,6 +38,139 @@ function getMetric(problems, metricId) {
 }
 
 function run() {
+    // Canonical schema exposes every first-class WorkSpec v2 subsystem and has no broken internal refs.
+    {
+        const simulationProperties = schema.definitions?.Simulation?.properties || {};
+        for (const property of [
+            'schema_version', 'meta', 'config', 'world', 'process',
+            'type_definitions', 'type_traits', 'state_libraries',
+            'simulation_config', 'calendar', 'day_types', 'digital_space', 'displays'
+        ]) {
+            assert.ok(simulationProperties[property], `Canonical schema is missing simulation.${property}`);
+        }
+
+        for (const definition of [
+            'Object', 'Task', 'Interaction', 'StateLibrary', 'TypeDefinition', 'TypeTrait',
+            'Calendar', 'DayType', 'DigitalSpace', 'DigitalLocation', 'DigitalObject',
+            'DigitalConnection', 'DataFlow', 'Display', 'DisplayElement'
+        ]) {
+            assert.ok(schema.definitions?.[definition], `Canonical schema is missing ${definition}`);
+        }
+
+        const refs = [];
+        const visit = (value) => {
+            if (!value || typeof value !== 'object') return;
+            if (typeof value.$ref === 'string' && value.$ref.startsWith('#/')) refs.push(value.$ref);
+            Object.values(value).forEach(visit);
+        };
+        visit(schema);
+        for (const ref of refs) {
+            const target = ref.slice(2).split('/').reduce((value, segment) => value?.[segment.replace(/~1/g, '/').replace(/~0/g, '~')], schema);
+            assert.ok(target, `Canonical schema has unresolved reference ${ref}`);
+        }
+
+        assert.equal(validator.parseDurationToMinutes('PT', 'minutes').ok, false);
+        assert.equal(validator.parseDurationToMinutes('P0D', 'minutes').ok, false);
+        assert.equal(validator.parseDurationToMinutes('1.5h', 'minutes').minutes, 90);
+
+        const embeddedAssetDoc = baseDoc();
+        embeddedAssetDoc.assets = { sprite: 'data:image/png;base64,AAAA' };
+        const embeddedAssetResult = validator.validate(embeddedAssetDoc);
+        assert.equal(embeddedAssetResult.ok, false);
+        assert.equal(hasMetric(embeddedAssetResult.problems, 'schema.integrity.embedded_assets'), true);
+    }
+
+    // State Libraries validate references and resolve current-state visuals.
+    {
+        const doc = baseDoc();
+        doc.simulation.state_libraries = {
+            actor_basic: {
+                states: ['available', 'working', 'break'],
+                appearances: {
+                    female: {
+                        available: 'asset_idle',
+                        working: 'asset_working'
+                    }
+                }
+            }
+        };
+        const actor = {
+            id: 'worker_1',
+            type: 'actor',
+            name: 'Worker 1',
+            state_library: 'actor_basic',
+            appearance: 'female',
+            properties: { state: 'available' }
+        };
+        doc.simulation.world.objects = [actor];
+        doc.simulation.process.tasks = [{
+            id: 'work',
+            actor_id: 'worker_1',
+            start: '09:00',
+            duration: 30,
+            interactions: [{
+                target_id: 'worker_1',
+                temporary: true,
+                property_changes: { state: { from: 'available', to: 'working' } }
+            }]
+        }];
+
+        assert.equal(validator.validate(doc).ok, true);
+        assert.equal(stateVisuals.resolveStateVisualAssetId(doc, actor), 'asset_idle');
+        assert.equal(stateVisuals.resolveObjectStateAtTime(actor, doc.simulation.process.tasks, 9 * 60 + 10), 'working');
+        assert.equal(stateVisuals.resolveObjectStateAtTime(actor, doc.simulation.process.tasks, 9 * 60 + 31), 'available');
+        assert.equal(
+            stateVisuals.resolveStateVisualAssetId(doc, actor, stateVisuals.resolveObjectStateAtTime(actor, doc.simulation.process.tasks, 9 * 60 + 10)),
+            'asset_working'
+        );
+        assert.equal(stateVisuals.assetIdFromFilename('Baker Working.PNG'), 'baker_working');
+    }
+
+    // Physical visuals receive deterministic, non-overlapping slots inside a location.
+    {
+        const bounds = { x: 50, y: 50, width: 300, height: 150 };
+        const ids = Array.from({ length: 13 }, (_, index) => `object_${index + 1}`);
+        const slots = stateVisuals.calculateLocationObjectSlots(bounds, ids.reverse());
+        assert.equal(slots.size, 13);
+        for (const slot of slots.values()) {
+            assert.equal(slot.x >= bounds.x && slot.y >= bounds.y, true);
+            assert.equal(slot.x + slot.size <= bounds.x + bounds.width, true);
+            assert.equal(slot.y + slot.size <= bounds.y + bounds.height, true);
+        }
+        const values = [...slots.values()];
+        for (let a = 0; a < values.length; a++) {
+            for (let b = a + 1; b < values.length; b++) {
+                const left = values[a];
+                const right = values[b];
+                const overlaps = left.x < right.x + right.size
+                    && left.x + left.size > right.x
+                    && left.y < right.y + right.size
+                    && left.y + left.size > right.y;
+                assert.equal(overlaps, false);
+            }
+        }
+    }
+
+    // Invalid initial and interaction states are rejected for referenced libraries.
+    {
+        const doc = baseDoc();
+        doc.simulation.state_libraries = {
+            actor_basic: { states: ['available'], appearances: { main: { available: 'asset_idle' } } }
+        };
+        doc.simulation.world.objects = [{
+            id: 'worker_1', type: 'actor', name: 'Worker 1', state_library: 'actor_basic', appearance: 'missing', properties: { state: 'unknown' }
+        }];
+        doc.simulation.process.tasks = [{
+            id: 'work', actor_id: 'worker_1', start: '09:00', duration: 30,
+            interactions: [{ target_id: 'worker_1', property_changes: { state: { set: 'working' } } }]
+        }];
+        const result = validator.validate(doc);
+        assert.equal(result.ok, false);
+        assert.equal(hasMetric(result.problems, 'state_visuals.reference.invalid_state'), true);
+        assert.equal(hasMetric(result.problems, 'state_visuals.reference.unknown_appearance'), true);
+        assert.equal(hasMetric(result.problems, 'state_visuals.reference.invalid_interaction_state'), true);
+    }
+
     // 1) Standard v2 path: simulation.world/process
     {
         const doc = baseDoc();

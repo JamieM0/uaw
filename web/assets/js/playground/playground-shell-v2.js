@@ -4,7 +4,7 @@
 
     const DEFAULT_SETTINGS = {
         lastWorkspace: 'projects',
-        sourceDock: 'hidden',
+        sourceDock: 'split-left',
         inspectorOpen: false,
         problemsOpen: false,
         onboardingDismissed: false,
@@ -66,6 +66,10 @@
             this.runView = this.settings.runView || 'timeline';
             this.projectStore = window.UAWProjectStore;
             this.projectRenderToken = 0;
+            this.assetsRenderToken = 0;
+            this.assetVisibleCount = 60;
+            this.assetPreviewObserver = null;
+            this.assetsRenderTimer = null;
         }
 
         loadSettings() {
@@ -174,6 +178,7 @@
                                 <section class="uaw-product-view" id="uaw-assets-view" aria-label="Assets"></section>
                                 <section class="uaw-product-view" id="uaw-settings-view" aria-label="Settings"></section>
                                 <div id="uaw-legacy-host" class="uaw-legacy-host"></div>
+                                <aside id="uaw-source-pane" class="uaw-source-pane" aria-label="WorkSpec source"></aside>
                                 <div class="uaw-source-resizer" id="uaw-source-resizer" role="separator" tabindex="0" aria-label="Resize Source pane"></div>
                             </section>
 
@@ -273,6 +278,9 @@
         rehomeLegacyComponents() {
             const host = this.shell.querySelector('#uaw-legacy-host');
             host.appendChild(this.legacyMain);
+            const sourcePane = this.shell.querySelector('#uaw-source-pane');
+            const sourcePanel = this.legacyMain.querySelector('.json-editor-panel');
+            if (sourcePane && sourcePanel) sourcePane.appendChild(sourcePanel);
             this.legacyHeader.classList.add('uaw-legacy-header');
 
             const playback = this.legacyHeader.querySelector('.playback-controls-group');
@@ -427,6 +435,7 @@
             this.bindAgentResizer();
 
             window.addEventListener('uaw:project-opened', (event) => {
+                this.assetVisibleCount = 60;
                 const projectSettings = event.detail.project?.settings?.workspace;
                 if (projectSettings?.layoutVersion === DEFAULT_SETTINGS.layoutVersion) {
                     const globalOnboardingDismissed = this.settings.onboardingDismissed;
@@ -450,7 +459,7 @@
             window.addEventListener('uaw:legacy-project-migrated', () => this.renderProjects());
             window.addEventListener('uaw:legacy-project-deleted', () => this.renderProjects());
             window.addEventListener('uaw:assets-changed', () => {
-                if (this.workspace === 'assets') this.renderAssets();
+                if (this.workspace === 'assets') this.scheduleAssetsRender();
             });
             window.addEventListener('uaw:metrics-ready', () => {
                 if (this.workspace === 'run' && this.runView === 'rules') {
@@ -1343,22 +1352,278 @@
             if (dialog) dialog.hidden = true;
         }
 
+        readStateVisualDocument() {
+            const activeEditor = window.monacoEditor || window.editor;
+            try {
+                const root = JSON.parse(activeEditor?.getValue?.() || '{}');
+                const simulation = root.simulation || root;
+                return { root, simulation, editor: activeEditor };
+            } catch (_error) {
+                return null;
+            }
+        }
+
+        updateStateVisualDocument(mutator) {
+            const documentState = this.readStateVisualDocument();
+            if (!documentState?.simulation || !documentState.editor) return false;
+            if (!documentState.simulation.state_libraries || Array.isArray(documentState.simulation.state_libraries)) {
+                documentState.simulation.state_libraries = {};
+            }
+            mutator(documentState.simulation);
+            documentState.editor.setValue(JSON.stringify(documentState.root, null, 2));
+            window.dispatchEvent(new CustomEvent('uaw:state-visuals-changed'));
+            return true;
+        }
+
+        usedStatesForLibrary(simulation, libraryId) {
+            const used = new Set();
+            const objects = simulation.world?.objects || simulation.objects || [];
+            const objectIds = new Set(objects.filter(object => object?.state_library === libraryId).map(object => object.id));
+            objects.forEach(object => {
+                if (object?.state_library === libraryId && typeof object.properties?.state === 'string') used.add(object.properties.state);
+            });
+            const tasks = simulation.process?.tasks || simulation.tasks || [];
+            tasks.forEach(task => (task.interactions || []).forEach(interaction => {
+                if (!objectIds.has(interaction?.target_id || interaction?.object_id)) return;
+                const operation = interaction.property_changes?.state;
+                ['from', 'to', 'set'].forEach(key => {
+                    if (typeof operation?.[key] === 'string') used.add(operation[key]);
+                });
+            }));
+            return used;
+        }
+
+        scheduleAssetsRender() {
+            clearTimeout(this.assetsRenderTimer);
+            this.assetsRenderTimer = setTimeout(() => this.renderAssets(), 80);
+        }
+
+        hydrateAssetPreviews(container) {
+            const images = [...(container?.querySelectorAll?.('img[data-asset-preview]') || [])];
+            if (!images.length) return;
+            const load = async image => {
+                if (!image?.isConnected || image.dataset.assetLoaded === 'true') return;
+                image.dataset.assetLoaded = 'true';
+                const source = await window.AssetManager?.ensureAssetThumbnail?.(image.dataset.assetPreview, 256);
+                if (source && image.isConnected) image.src = source;
+            };
+            if (!('IntersectionObserver' in window)) {
+                images.forEach(load);
+                return;
+            }
+            if (!this.assetPreviewObserver) {
+                this.assetPreviewObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    this.assetPreviewObserver?.unobserve(entry.target);
+                    load(entry.target);
+                }), { rootMargin: '160px' });
+            }
+            images.forEach(image => this.assetPreviewObserver.observe(image));
+        }
+
+        async uploadStateVisualAssets(files) {
+            for (const file of Array.from(files || [])) {
+                if (!file.type.startsWith('image/')) continue;
+                const data = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => reject(reader.error);
+                    reader.readAsDataURL(file);
+                });
+                const filenameId = window.WorkSpecStateVisuals?.assetIdFromFilename?.(file.name) || '';
+                const id = filenameId || window.AssetManager?.generateUUID?.() || `asset_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+                await this.projectStore?.putAsset?.({ id, name: file.name, mimeType: file.type, data });
+            }
+        }
+
         async renderAssets() {
             const view = this.shell?.querySelector('#uaw-assets-view');
             if (!view) return;
-            const assets = await this.projectStore?.listAssets?.() || [];
+            clearTimeout(this.assetsRenderTimer);
+            const renderToken = ++this.assetsRenderToken;
+            const assets = await this.projectStore?.listAssetMetadata?.() || [];
+            if (renderToken !== this.assetsRenderToken || this.workspace !== 'assets') return;
+            this.assetPreviewObserver?.disconnect();
+            this.assetPreviewObserver = null;
+            const imageAssets = assets.filter(asset => String(asset.mimeType || '').startsWith('image/'));
+            const displayedAssets = assets.slice(0, this.assetVisibleCount);
+            const documentState = this.readStateVisualDocument();
+            const libraries = documentState?.simulation?.state_libraries || {};
+            const libraryIds = Object.keys(libraries).sort();
+            if (!libraryIds.includes(this.selectedStateLibraryId)) this.selectedStateLibraryId = libraryIds[0] || '';
+            const selectedLibrary = libraries[this.selectedStateLibraryId];
+            const appearanceIds = Object.keys(selectedLibrary?.appearances || {}).sort();
+            if (!appearanceIds.includes(this.selectedStateAppearanceId)) this.selectedStateAppearanceId = appearanceIds[0] || '';
+            const selectedAppearance = selectedLibrary?.appearances?.[this.selectedStateAppearanceId] || {};
+            const states = Array.isArray(selectedLibrary?.states) ? selectedLibrary.states : [];
+            const assetById = new Map(assets.map(asset => [asset.id, asset]));
+
+            const stateRows = states.map(state => {
+                const configuredAssetId = selectedAppearance[state] || '';
+                const assetId = window.AssetManager?.normalizeId?.(configuredAssetId) || configuredAssetId;
+                const asset = assetById.get(assetId);
+                return `
+                    <div class="uaw-state-mapping" data-state="${escapeHTML(state)}">
+                        <code>${escapeHTML(state)}</code>
+                        <div class="uaw-state-mapping__asset">
+                            ${asset ? `<img data-asset-preview="${escapeHTML(asset.id)}" loading="lazy" decoding="async" alt="" /><span>${escapeHTML(asset.name || asset.id)}</span>` : `<span class="${assetId ? 'is-missing' : ''}">${assetId ? `Missing · ${escapeHTML(assetId)}` : 'Emoji fallback'}</span>`}
+                        </div>
+                        <button type="button" data-pick-state-asset="${escapeHTML(state)}">${configuredAssetId ? 'Change' : 'Choose'}</button>
+                        ${configuredAssetId ? `<button type="button" class="uaw-button-quiet" data-clear-state-asset="${escapeHTML(state)}">Clear</button>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            const libraryItems = libraryIds.map(id => {
+                const library = libraries[id];
+                const appearanceCount = Object.keys(library?.appearances || {}).length;
+                return `<button type="button" class="uaw-state-library-item ${id === this.selectedStateLibraryId ? 'is-active' : ''}" data-state-library-item="${escapeHTML(id)}"><code>${escapeHTML(id)}</code><span>${library?.states?.length || 0} states · ${appearanceCount}</span></button>`;
+            }).join('');
+            const appearanceItems = appearanceIds.map(id => `<button type="button" class="uaw-state-appearance-item ${id === this.selectedStateAppearanceId ? 'is-active' : ''}" data-state-appearance-item="${escapeHTML(id)}">${escapeHTML(id)}</button>`).join('');
+
             view.innerHTML = `
-                <div class="uaw-view-heading"><div><p class="uaw-eyebrow">PROJECT CONTENT</p><h1>Assets</h1><p>Media is stored with this local project and referenced from WorkSpec by ID. File bytes never enter the JSON.</p></div></div>
-                <div class="uaw-asset-grid">${assets.map(asset => {
-                    const data = asset.data;
-                    const kind = String(data).startsWith('data:image') ? 'Image' : String(data).startsWith('data:audio') ? 'Audio' : 'File';
-                    return `<article class="uaw-asset-card"><div class="uaw-asset-preview">${kind === 'Image' ? `<img src="${escapeHTML(data)}" alt="" />` : this.icon('assets')}</div><strong>${escapeHTML(asset.name || asset.id)}</strong><span>${kind} · asset:${escapeHTML(asset.id.slice(0, 8))}…</span><button type="button" data-remove-asset="${escapeHTML(asset.id)}">Remove</button></article>`;
-                }).join('') || '<div class="uaw-empty-state"><strong>No project assets</strong><p>Add media from Displays. UAW will store it here and place only an asset reference in WorkSpec.</p></div>'}</div>
+                <div class="uaw-view-heading"><div><p class="uaw-eyebrow">PROJECT CONTENT</p><h1>Assets</h1><p>Media is stored with this local project and referenced from WorkSpec by ID. File bytes never enter the JSON.</p></div><div><button type="button" data-upload-assets>Upload images</button><input type="file" accept="image/*" multiple hidden data-asset-file-input /></div></div>
+                <section class="uaw-state-visuals" aria-labelledby="uaw-state-visuals-title">
+                    <header class="uaw-state-visuals__bar"><h2 id="uaw-state-visuals-title">State visuals</h2></header>
+                    <div class="uaw-state-workbench">
+                        <aside class="uaw-state-library-rail">
+                            <div class="uaw-state-pane-heading"><strong>Libraries</strong><button type="button" data-show-new-state-library aria-label="New library" title="New library">+</button></div>
+                            <div class="uaw-state-library-list">
+                                ${libraryItems}
+                                <form class="uaw-state-library-create" data-new-state-library-form hidden><input name="library_id" required pattern="[a-z][a-z0-9_]{0,249}" placeholder="library_id" aria-label="Library ID" /><div><button type="submit">Create</button><button type="button" class="uaw-button-quiet" data-cancel-new-state-library>Cancel</button></div></form>
+                                ${libraryItems ? '' : '<p>No libraries</p>'}
+                            </div>
+                        </aside>
+                        <div class="uaw-state-library-editor">
+                            ${selectedLibrary ? `
+                                <div class="uaw-state-library-editor__top"><strong><code>${escapeHTML(this.selectedStateLibraryId)}</code></strong><label><span>States</span><input type="text" data-state-list value="${escapeHTML(states.join(', '))}" placeholder="available, working, break" /></label></div>
+                                <div class="uaw-state-appearance-bar"><strong>Appearances in <code>${escapeHTML(this.selectedStateLibraryId)}</code></strong><div class="uaw-state-appearance-list">${appearanceItems}<button type="button" data-new-state-appearance>+ Appearance</button></div></div>
+                                <form class="uaw-state-appearance-create" data-new-state-appearance-form hidden><label>New in <code>${escapeHTML(this.selectedStateLibraryId)}</code><input name="appearance_id" required pattern="[a-z][a-z0-9_]{0,249}" placeholder="appearance_id" /></label><button type="submit">Create</button><button type="button" class="uaw-button-quiet" data-cancel-new-state-appearance>Cancel</button></form>
+                                <div class="uaw-state-mapping-head"><span>State</span><span>Asset</span><span>Mapping</span></div>
+                                <div class="uaw-state-mappings">${this.selectedStateAppearanceId ? stateRows : '<div class="uaw-state-editor-empty"><strong>No appearance selected</strong><span>Create one inside this library.</span></div>'}</div>
+                            ` : '<div class="uaw-state-editor-empty"><strong>Select or add a library</strong><span>Libraries are peers; appearances live inside them.</span></div>'}
+                        </div>
+                    </div>
+                </section>
+                <div class="uaw-asset-section-heading"><div><p class="uaw-eyebrow">UPLOADED FILES</p><h2>Project assets</h2></div><span>${assets.length} file${assets.length === 1 ? '' : 's'}</span></div>
+                <div class="uaw-asset-grid">${displayedAssets.map(asset => {
+                    const kind = String(asset.mimeType || '').startsWith('image/') ? 'Image' : String(asset.mimeType || '').startsWith('audio/') ? 'Audio' : 'File';
+                    return `<article class="uaw-asset-card" data-asset-id="${escapeHTML(asset.id)}"><div class="uaw-asset-preview">${kind === 'Image' ? `<img data-asset-preview="${escapeHTML(asset.id)}" loading="lazy" decoding="async" alt="" />` : this.icon('assets')}</div><strong>${escapeHTML(asset.name || asset.id)}</strong><span>${kind} · ID ${escapeHTML(asset.id)}</span><button type="button" data-remove-asset="${escapeHTML(asset.id)}">Remove</button></article>`;
+                }).join('') || '<div class="uaw-empty-state"><strong>No project assets</strong><p>Upload images here or add media from Displays. WorkSpec stores only the asset ID.</p></div>'}</div>
+                ${displayedAssets.length < assets.length ? `<div class="uaw-asset-load-more"><button type="button" data-load-more-assets>Load ${Math.min(60, assets.length - displayedAssets.length)} more</button><span>${displayedAssets.length} of ${assets.length} shown</span></div>` : ''}
+                <div class="uaw-state-asset-picker" hidden role="dialog" aria-modal="true" aria-label="Choose an uploaded image"><div class="uaw-state-asset-picker__panel"><div><strong>Choose an uploaded image</strong><input type="search" data-asset-picker-search placeholder="Search assets" aria-label="Search uploaded images" /><button type="button" data-close-state-asset-picker aria-label="Close">×</button></div><div class="uaw-state-asset-picker__grid"></div></div></div>
             `;
+
+            this.hydrateAssetPreviews(view);
+
+            const fileInput = view.querySelector('[data-asset-file-input]');
+            view.querySelector('[data-upload-assets]')?.addEventListener('click', () => fileInput?.click());
+            fileInput?.addEventListener('change', async () => {
+                await this.uploadStateVisualAssets(fileInput.files);
+                await this.renderAssets();
+            });
+            view.querySelectorAll('[data-state-library-item]').forEach(button => button.addEventListener('click', () => {
+                this.selectedStateLibraryId = button.dataset.stateLibraryItem;
+                this.selectedStateAppearanceId = '';
+                this.renderAssets();
+            }));
+            const newLibraryForm = view.querySelector('[data-new-state-library-form]');
+            view.querySelector('[data-show-new-state-library]')?.addEventListener('click', () => {
+                newLibraryForm.hidden = false;
+                newLibraryForm.querySelector('input')?.focus();
+            });
+            view.querySelector('[data-cancel-new-state-library]')?.addEventListener('click', () => { newLibraryForm.hidden = true; });
+            newLibraryForm?.addEventListener('submit', event => {
+                event.preventDefault();
+                const id = String(new FormData(newLibraryForm).get('library_id') || '').trim();
+                if (!/^[a-z][a-z0-9_]{0,249}$/.test(id) || libraries[id]) return this.toast('Use a unique snake_case State Library ID');
+                this.updateStateVisualDocument(simulation => { simulation.state_libraries[id] = { states: ['available'], appearances: {} }; });
+                this.selectedStateLibraryId = id;
+                this.selectedStateAppearanceId = '';
+                this.renderAssets();
+            });
+            view.querySelector('[data-state-list]')?.addEventListener('change', event => {
+                const nextStates = [...new Set(event.target.value.split(',').map(value => value.trim()).filter(Boolean))];
+                if (!nextStates.length) return this.toast('A State Library needs at least one state');
+                const usedStates = this.usedStatesForLibrary(documentState.simulation, this.selectedStateLibraryId);
+                const removedInUse = [...usedStates].filter(state => !nextStates.includes(state));
+                if (removedInUse.length) {
+                    this.toast(`Cannot remove states currently in use: ${removedInUse.join(', ')}`);
+                    return this.renderAssets();
+                }
+                this.updateStateVisualDocument(simulation => {
+                    const library = simulation.state_libraries[this.selectedStateLibraryId];
+                    library.states = nextStates;
+                    Object.values(library.appearances || {}).forEach(mapping => Object.keys(mapping).forEach(state => {
+                        if (!nextStates.includes(state)) delete mapping[state];
+                    }));
+                });
+                this.renderAssets();
+            });
+            view.querySelectorAll('[data-state-appearance-item]').forEach(button => button.addEventListener('click', () => {
+                this.selectedStateAppearanceId = button.dataset.stateAppearanceItem;
+                this.renderAssets();
+            }));
+            const newAppearanceForm = view.querySelector('[data-new-state-appearance-form]');
+            view.querySelector('[data-new-state-appearance]')?.addEventListener('click', () => {
+                newAppearanceForm.hidden = false;
+                newAppearanceForm.querySelector('input')?.focus();
+            });
+            view.querySelector('[data-cancel-new-state-appearance]')?.addEventListener('click', () => { newAppearanceForm.hidden = true; });
+            newAppearanceForm?.addEventListener('submit', event => {
+                event.preventDefault();
+                const id = String(new FormData(newAppearanceForm).get('appearance_id') || '').trim();
+                if (!/^[a-z][a-z0-9_]{0,249}$/.test(id) || selectedLibrary?.appearances?.[id]) return this.toast('Use a unique snake_case appearance ID');
+                this.updateStateVisualDocument(simulation => {
+                    const library = simulation.state_libraries[this.selectedStateLibraryId];
+                    if (!library.appearances) library.appearances = {};
+                    library.appearances[id] = {};
+                });
+                this.selectedStateAppearanceId = id;
+                this.renderAssets();
+            });
+            const picker = view.querySelector('.uaw-state-asset-picker');
+            const pickerGrid = picker?.querySelector('.uaw-state-asset-picker__grid');
+            const pickerSearch = picker?.querySelector('[data-asset-picker-search]');
+            const renderPickerItems = (query = '') => {
+                const normalizedQuery = String(query).trim().toLowerCase();
+                const matches = imageAssets.filter(asset => !normalizedQuery || `${asset.name || ''} ${asset.id}`.toLowerCase().includes(normalizedQuery));
+                const visibleMatches = matches.slice(0, 80);
+                pickerGrid.innerHTML = visibleMatches.map(asset => `<button type="button" data-state-asset-id="${escapeHTML(asset.id)}"><img data-asset-preview="${escapeHTML(asset.id)}" loading="lazy" decoding="async" alt="" /><span>${escapeHTML(asset.name || asset.id)}</span></button>`).join('')
+                    || '<p>No matching uploaded images.</p>';
+                if (matches.length > visibleMatches.length) pickerGrid.insertAdjacentHTML('beforeend', `<p class="uaw-state-asset-picker__limit">Showing 80 of ${matches.length}. Search to narrow the list.</p>`);
+                this.hydrateAssetPreviews(pickerGrid);
+            };
+            view.querySelectorAll('[data-pick-state-asset]').forEach(button => button.addEventListener('click', () => {
+                this.stateVisualPickerState = button.dataset.pickStateAsset;
+                renderPickerItems(pickerSearch?.value);
+                picker.hidden = false;
+                pickerSearch?.focus();
+            }));
+            view.querySelector('[data-close-state-asset-picker]')?.addEventListener('click', () => { picker.hidden = true; });
+            pickerSearch?.addEventListener('input', event => renderPickerItems(event.target.value));
+            pickerGrid?.addEventListener('click', event => {
+                const button = event.target.closest('[data-state-asset-id]');
+                if (!button) return;
+                this.updateStateVisualDocument(simulation => {
+                    simulation.state_libraries[this.selectedStateLibraryId].appearances[this.selectedStateAppearanceId][this.stateVisualPickerState] = button.dataset.stateAssetId;
+                });
+                this.renderAssets();
+            });
+            view.querySelectorAll('[data-clear-state-asset]').forEach(button => button.addEventListener('click', () => {
+                this.updateStateVisualDocument(simulation => {
+                    delete simulation.state_libraries[this.selectedStateLibraryId].appearances[this.selectedStateAppearanceId][button.dataset.clearStateAsset];
+                });
+                this.renderAssets();
+            }));
             view.querySelectorAll('[data-remove-asset]').forEach(button => button.addEventListener('click', async () => {
                 await this.projectStore.removeAsset(button.dataset.removeAsset);
-                window.AssetManager?.cache?.delete(button.dataset.removeAsset);
+                window.AssetManager?.releaseAsset?.(button.dataset.removeAsset);
             }));
+            view.querySelector('[data-load-more-assets]')?.addEventListener('click', () => {
+                this.assetVisibleCount += 60;
+                this.renderAssets();
+            });
             window.UAWMotion?.listEnter?.('.uaw-asset-card');
         }
 
@@ -1370,7 +1635,7 @@
                 <div class="uaw-settings-layout">
                     <div class="uaw-settings-surface">
                         <section class="uaw-settings-section" aria-labelledby="uaw-source-layout-heading">
-                            <div><h2 id="uaw-source-layout-heading">Source layout</h2><p>Choose how WorkSpec source appears beside Process and Objects. Source remains available as its own Model view.</p></div>
+                            <div><h2 id="uaw-source-layout-heading">Source layout</h2><p>Choose how WorkSpec source appears beside Model, Simulate, Validation and Assets. Source remains available as its own Model view.</p></div>
                             <fieldset class="uaw-choice-grid" id="uaw-source-dock-choices" aria-label="Source layout">
                                 ${this.sourceChoice('split-left', 'Split left', 'Source beside the canvas')}
                                 ${this.sourceChoice('split-right', 'Split right', 'Canvas before source')}

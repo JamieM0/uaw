@@ -9,7 +9,12 @@
     const MINUTE = 60 * 1000;
     const DAY_MINUTES = 24 * 60;
     const SCALES = ['day', 'week', 'month'];
-    const SCALE_RATES = { day: 60, week: 360, month: 1440 };
+    const PLAYBACK_MINUTES_PER_SECOND = 5;
+    const SCALE_RATES = {
+        day: PLAYBACK_MINUTES_PER_SECOND,
+        week: PLAYBACK_MINUTES_PER_SECOND,
+        month: PLAYBACK_MINUTES_PER_SECOND
+    };
     const SCALE_STEPS = { day: 5, week: 30, month: 120 };
 
     const finite = (value, fallback = 0) => Number.isFinite(Number(value)) ? Number(value) : fallback;
@@ -444,7 +449,7 @@
             window.dispatchEvent(new CustomEvent('workspec:time-scale-change', { detail: { scale } }));
         }
 
-        getMinutesPerSecond() { return SCALE_RATES[this.scale] || SCALE_RATES.day; }
+        getMinutesPerSecond() { return PLAYBACK_MINUTES_PER_SECOND; }
         getCurrentDate() { return this.model ? dateForMinutes(this.model.clock, this.currentTime) : null; }
 
         createFormatters() {
@@ -634,7 +639,7 @@
     }
 
     const api = {
-        DAY_MINUTES, SCALES, SCALE_RATES, durationMinutes, taskStartMinutes,
+        DAY_MINUTES, SCALES, SCALE_RATES, PLAYBACK_MINUTES_PER_SECOND, durationMinutes, taskStartMinutes,
         createClockContext, normalizeDocument, taskState, buildSnapshot, dateForMinutes,
         WorkSpecTimeController
     };

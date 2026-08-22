@@ -2,7 +2,7 @@
 
 > **Status:** Final Draft  
 > **Version:** 2.0  
-> **Last Updated:** 2026-02-03  
+> **Last Updated:** 2026-08-22
 > **Namespace:** https://universalautomation.wiki/workspec/
 
 ---
@@ -87,7 +87,12 @@ Documents without a `schema_version` field are assumed to be v1.0 and will be re
     "process": {
       "tasks": [ ],
       "recipes": { }
-    }
+    },
+    "state_libraries": { },
+    "type_definitions": { },
+    "type_traits": { },
+    "digital_space": { },
+    "displays": [ ]
   }
 }
 ```
@@ -105,6 +110,14 @@ Documents without a `schema_version` field are assumed to be v1.0 and will be re
 | `simulation.process` | **Required** | Workflow definition |
 | `simulation.process.tasks` | **Required** | Task list |
 | `simulation.process.recipes` | Optional | Production recipes |
+| `simulation.state_libraries` | Optional | Reusable semantic states and asset mappings |
+| `simulation.type_definitions` | Optional | Custom object types |
+| `simulation.type_traits` | Optional | Reusable type capabilities |
+| `simulation.simulation_config` | Optional | Multi-period date range |
+| `simulation.calendar` | Optional | Repeating day-type calendar |
+| `simulation.day_types` | Optional | Reusable operational-day templates |
+| `simulation.digital_space` | Optional | Digital locations, objects, connections, and flows |
+| `simulation.displays` | Optional | Display-interface surfaces and elements |
 
 ### 2.2 Meta Section
 
@@ -193,6 +206,8 @@ All entities in a WorkSpec simulation are **objects**. Every object has the foll
 | `name` | string | **Required** | Display name |
 | `emoji` | string | Optional | Visual representation (single emoji) |
 | `location` | string | Optional | Reference to location ID |
+| `state_library` | string | Optional | Explicit State Library reference |
+| `appearance` | string | Optional | Appearance within the referenced State Library |
 | `properties` | object | Optional | Type-specific and custom properties |
 
 ### 3.2 Object ID Format
@@ -371,6 +386,40 @@ The following type names are reserved and cannot be used:
 - `_internal` - Any type starting with underscore
 - `any` - Reserved for type wildcards
 - `unknown` - Reserved for untyped objects
+
+### 3.6 State Libraries and Visuals
+
+State Libraries are optional reusable semantic state sets. They are explicitly referenced by objects and are independent of base object types. `properties.state` remains the source of truth for simulation state.
+
+```json
+{
+  "state_libraries": {
+    "actor_basic": {
+      "states": ["available", "working", "break"],
+      "appearances": {
+        "operator": {
+          "available": "operator_available",
+          "working": "operator_working"
+        }
+      }
+    }
+  },
+  "world": {
+    "objects": [
+      {
+        "id": "worker_1",
+        "type": "actor",
+        "name": "Worker 1",
+        "state_library": "actor_basic",
+        "appearance": "operator",
+        "properties": { "state": "available" }
+      }
+    ]
+  }
+}
+```
+
+Appearance values are project asset IDs only. WorkSpec documents never embed asset file bytes. Missing libraries, appearances, mappings, or uploaded assets fall back to the object's emoji in supporting renderers.
 
 ---
 
@@ -706,6 +755,36 @@ Invalid times produce clear errors:
 }
 ```
 
+### 7.3 Multi-Period Calendars
+
+Repeating simulations may define `simulation_config`, `calendar`, and `day_types`. A calendar pattern maps cycle days to reusable day-type IDs; overrides replace the pattern for a specific ISO date or `date.today` / `date.start` expression. Day types can define their own configuration, locations, objects, and tasks.
+
+```json
+{
+  "simulation_config": { "start_date": "date.today", "duration_days": 30 },
+  "calendar": {
+    "cycle_length": 7,
+    "pattern": [
+      { "day": 1, "type": "weekday" },
+      { "day": 7, "type": "closed" }
+    ],
+    "overrides": [
+      { "date": "date.start + 14", "type": "maintenance" }
+    ]
+  },
+  "day_types": {
+    "weekday": {
+      "name": "Weekday Operations",
+      "config": { "start_time": "06:00", "end_time": "18:00" },
+      "locations": [],
+      "objects": [],
+      "tasks": []
+    },
+    "closed": { "name": "Closed", "objects": [], "tasks": [] }
+  }
+}
+```
+
 ---
 
 ## 8. Spatial Model
@@ -786,6 +865,16 @@ Invalid times produce clear errors:
   ]
 }
 ```
+
+### 8.4 Digital Space and Displays
+
+`simulation.digital_space` models digital locations, digital objects, connections, and time-based data flows. `simulation.displays` models authored interface surfaces, their viewport, rectangular elements, UI state, task-linked interactions, and optional screen navigation. These structures complement rather than replace objects in `simulation.world.objects`.
+
+The canonical schema contains the complete structural definitions for:
+
+- `DigitalSpace`, `DigitalLocation`, `DigitalObject`, `DigitalConnection`, and `DataFlow`
+- `Display`, `DisplayElement`, element content/properties/state/interactions, and display navigation
+- Compatibility placements still read by Studio, including `world.digital_locations` and `world.displays`
 
 ---
 
@@ -1049,6 +1138,17 @@ Categories:
             "role": "Assistant",
             "cost_per_hour": 12.00,
             "state": "available"
+          }
+        },
+        {
+          "id": "service:timer",
+          "type": "service",
+          "name": "Proofing Timer",
+          "emoji": "⏱️",
+          "location": "prep_area",
+          "properties": {
+            "state": "running",
+            "interval": "1m"
           }
         },
         {

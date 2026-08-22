@@ -1628,3 +1628,20 @@ body.disable-animations * {
 .space-world .actor-emoji {
     pointer-events: none;
 }
+
+.actor-visual {
+    display: grid;
+    place-items: center;
+    width: var(--actor-visual-size, 32px);
+    height: var(--actor-visual-size, 32px);
+}
+
+.actor-visual__image {
+    width: var(--actor-visual-size, 32px);
+    height: var(--actor-visual-size, 32px);
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .22));
+}
+
+.actor-visual__emoji { line-height: 1; }
+.actor-visual [hidden] { display: none !important; }

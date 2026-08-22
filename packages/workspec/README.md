@@ -2,8 +2,48 @@
 
 This package provides:
 
-- A programmatic WorkSpec v1.1.0 validator (`validate()`) that emits RFC 7807 Problem Details
+- A programmatic WorkSpec v2.0 validator (`validate()`) that emits RFC 7807 Problem Details
+- The canonical draft-07 JSON Schema (`v2.0.schema.json`) used for generation, autocomplete, and structural validation
+- Shared State Library visual resolution helpers
 - A `workspec` CLI with `validate`, `migrate`, and `format` commands
+
+## State-driven visuals
+
+WorkSpec v2 simulations may define reusable `simulation.state_libraries`. Objects opt in with object-level `state_library` and optional `appearance` fields; `properties.state` remains the simulation source of truth. Appearance mappings contain project asset IDs only—asset bytes remain in the Studio project asset store.
+
+```json
+{
+  "simulation": {
+    "state_libraries": {
+      "actor_basic": {
+        "states": ["available", "working"],
+        "appearances": {
+          "female": {
+            "available": "asset_female_idle",
+            "working": "asset_female_working"
+          }
+        }
+      }
+    },
+    "world": {
+      "objects": [{
+        "id": "worker_1",
+        "type": "actor",
+        "name": "Worker 1",
+        "state_library": "actor_basic",
+        "appearance": "female",
+        "properties": { "state": "available" }
+      }]
+    }
+  }
+}
+```
+
+`resolveStateVisualAssetId(document, object, state)` returns the configured asset ID or `null`, allowing renderers to retain their normal fallback. `resolveObjectStateAtTime(object, tasks, time)` applies permanent and temporary WorkSpec v2 state interactions for playback-oriented consumers.
+
+## JSON Schema coverage
+
+`v2.0.schema.json` explicitly describes the complete v2 document surface implemented by WorkSpec Studio: core world/process data, built-in and custom object properties, type definitions and traits, interactions and lifecycle actions, recipes, layouts, State Libraries, multi-period calendars/day types, digital space, and display interfaces. Domain-specific object properties remain extensible through `properties`.
 
 ## Install
 

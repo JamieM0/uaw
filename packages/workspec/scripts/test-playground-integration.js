@@ -10,8 +10,10 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');
 
 const packageValidatorPath = path.join(repoRoot, 'packages', 'workspec', 'workspec-validator.js');
 const packageMigratorPath = path.join(repoRoot, 'packages', 'workspec', 'workspec-migrate-v1-to-v2.js');
+const packageStateVisualsPath = path.join(repoRoot, 'packages', 'workspec', 'state-visuals.js');
 const webValidatorPath = path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-validator.js');
 const webMigratorPath = path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-migrate-v1-to-v2.js');
+const webStateVisualsPath = path.join(repoRoot, 'web', 'packages', 'workspec', 'state-visuals.js');
 const playgroundHtmlPath = path.join(repoRoot, 'web', 'playground.html');
 const migrateCliPath = path.join(repoRoot, 'web', 'scripts', 'workspec-migrate.js');
 
@@ -90,6 +92,11 @@ function run() {
         /<script src="\/packages\/workspec\/workspec-migrate-v1-to-v2\.js" defer><\/script>/,
         'Playground is not loading the package-backed migrator script'
     );
+    assert.match(
+        playgroundHtml,
+        /<script src="\/packages\/workspec\/state-visuals\.js" defer><\/script>/,
+        'Playground is not loading the shared state visual resolver'
+    );
 
     const migrateCli = readText(migrateCliPath);
     assert.match(
@@ -100,8 +107,10 @@ function run() {
 
     assertMirrored(packageValidatorPath, webValidatorPath);
     assertMirrored(packageMigratorPath, webMigratorPath);
+    assertMirrored(packageStateVisualsPath, webStateVisualsPath);
 
     const nodeValidator = require(packageValidatorPath);
+    const stateVisuals = require(packageStateVisualsPath);
     const browserValidator = loadBrowserValidator(webValidatorPath);
 
     const validDoc = baseDoc();
@@ -115,6 +124,17 @@ function run() {
     const nodeInvalid = normalizeResult(nodeValidator.validate(clone(invalidDoc)));
     const browserInvalid = normalizeResult(browserValidator.validate(clone(invalidDoc)));
     assert.deepEqual(browserInvalid, nodeInvalid, 'Validator mismatch on invalid document');
+
+    const templateLibrary = JSON.parse(readText(path.join(repoRoot, 'web', 'assets', 'static', 'simulation-library.json')));
+    const breadmaking = templateLibrary.simulations.find(item => item.id === 'breadmaking')?.simulation;
+    assert.ok(breadmaking, 'Breadmaking template is missing');
+    assert.equal(nodeValidator.validate({ simulation: breadmaking }).ok, true, 'Breadmaking template is not WorkSpec-valid');
+    assert.equal(Object.keys(breadmaking.state_libraries || {}).length, 4, 'Breadmaking template should exercise reusable State Libraries');
+    breadmaking.world.objects.forEach(object => {
+        assert.ok(object.state_library, `${object.id} is missing a State Library`);
+        assert.ok(object.appearance, `${object.id} is missing an appearance`);
+        assert.equal(typeof stateVisuals.resolveStateVisualAssetId(breadmaking, object), 'string', `${object.id} has no initial visual mapping`);
+    });
 
     process.stdout.write('✓ playground integration uses package-backed WorkSpec validator\n');
 }

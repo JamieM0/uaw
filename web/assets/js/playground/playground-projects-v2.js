@@ -405,6 +405,27 @@
             return Array.isArray(metadata) ? metadata : [];
         }
 
+        async listAssetMetadata(projectId = this.currentProject?.id) {
+            const project = projectId === this.currentProject?.id ? this.currentProject : await this.get(projectId);
+            if (!project || project.accessRequired || !await this.ensurePermission(project.directoryHandle)) return [];
+            return (await this.readAssetMetadata(project)).map(item => ({ ...item, projectId: project.id }));
+        }
+
+        async readAsset(assetId, projectId = this.currentProject?.id) {
+            const project = projectId === this.currentProject?.id ? this.currentProject : await this.get(projectId);
+            if (!project || project.accessRequired || !await this.ensurePermission(project.directoryHandle)) return null;
+            const item = (await this.readAssetMetadata(project)).find(candidate => candidate.id === assetId);
+            if (!item) return null;
+            try {
+                const directory = await project.directoryHandle.getDirectoryHandle(ASSET_DIRECTORY);
+                const file = await (await directory.getFileHandle(item.fileName)).getFile();
+                return { ...item, projectId: project.id, file };
+            } catch (error) {
+                if (error?.name === 'NotFoundError') return null;
+                throw error;
+            }
+        }
+
         async writeAssetMetadata(metadata, project = this.currentProject) {
             await this.writeText(await this.getUawDirectory(project.directoryHandle, true), ASSET_META_FILE, JSON.stringify(metadata, null, 2));
         }
@@ -426,20 +447,10 @@
         }
 
         async listAssets(projectId = this.currentProject?.id) {
-            const project = projectId === this.currentProject?.id ? this.currentProject : await this.get(projectId);
-            if (!project || project.accessRequired || !await this.ensurePermission(project.directoryHandle)) return [];
-            const metadata = await this.readAssetMetadata(project);
-            const directory = await project.directoryHandle.getDirectoryHandle(ASSET_DIRECTORY).catch((error) => {
-                if (error?.name === 'NotFoundError') return null;
-                throw error;
-            });
-            if (!directory) return [];
             const assets = [];
-            for (const item of metadata) {
-                try {
-                    const file = await (await directory.getFileHandle(item.fileName)).getFile();
-                    assets.push({ ...item, projectId: project.id, data: await this.blobToDataUrl(file) });
-                } catch (error) { if (error?.name !== 'NotFoundError') throw error; }
+            for (const item of await this.listAssetMetadata(projectId)) {
+                const record = await this.readAsset(item.id, projectId);
+                if (record) assets.push({ ...item, data: await this.blobToDataUrl(record.file) });
             }
             return assets;
         }

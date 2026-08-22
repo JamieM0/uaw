@@ -55,7 +55,7 @@
         <link rel="stylesheet" href="/assets/css/emoji-picker.css" />
         <link rel="stylesheet" href="/assets/css/smart-actions.css" />
         <link rel="stylesheet" href="/assets/css/multi-period.css" />
-        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260821i" />
+        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260822b" />
 
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
@@ -135,13 +135,14 @@
         <script src="/assets/js/simulation-validator.js" defer></script>
         <script src="/packages/workspec/workspec-validator.js" defer></script>
         <script src="/packages/workspec/workspec-migrate-v1-to-v2.js" defer></script>
+        <script src="/packages/workspec/state-visuals.js" defer></script>
         <script src="/assets/js/space-editor.js?v=20260814g" defer></script>
         <script src="/assets/js/emoji-picker.js" defer></script>
 
         <script src="/assets/js/tutorial.js" defer></script>
         <script src="/assets/js/tutorial-validator.js" defer></script>
-        <script src="/assets/js/playground/playground-time-controller.js?v=20260821c" defer></script>
-        <script src="/assets/js/simulation-player.js?v=20260821d" defer></script>
+        <script src="/assets/js/playground/playground-time-controller.js?v=20260822b" defer></script>
+        <script src="/assets/js/simulation-player.js?v=20260822b" defer></script>
 
         <!-- Monaco Editor for JSON syntax highlighting -->
         <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
@@ -514,7 +515,7 @@
                                                         </div>
                                                         <div class="option-field">
                                                             <label>
-                                                                <input type="checkbox" id="show-actors-during-playback"> Show Actors During Playback
+                                                                <input type="checkbox" id="show-actors-during-playback" checked> Show Objects During Playback
                                                             </label>
                                                         </div>
                                                     </div>
@@ -1266,9 +1267,10 @@
 
         <!-- Playground v2 application shell. These modules preserve the legacy
              component IDs while providing the project workspace around them. -->
-        <script src="/assets/js/playground/playground-projects-v2.js?v=20260820a" defer></script>
-        <script src="/assets/js/playground/playground-shell-v2.js?v=20260821e" defer></script>
-        <script src="/assets/js/playground/playground-agent-v2.js?v=20260818c" defer></script>
+        <script src="/assets/js/playground/playground-projects-v2.js?v=20260822b" defer></script>
+        <script src="/assets/js/playground/playground-shell-v2.js?v=20260822b" defer></script>
+        <script src="/assets/js/playground/playground-source-context.js?v=20260821a" defer></script>
+        <script src="/assets/js/playground/playground-agent-v2.js?v=20260822a" defer></script>
         <script type="module" src="/assets/js/playground/playground-motion-v2.js?v=20260818a"></script>
 
         <script src="/assets/js/context-menu.js?v=20260821a" defer></script>
@@ -1300,11 +1302,11 @@
         <script src="/assets/js/playground/playground-display-editor.js?v=20260814g" defer></script>
         <script src="/assets/js/playground/playground-save-load.js?v=20260820a" defer></script>
         <script src="/assets/js/playground/playground-metrics-editor.js?v=20260818c" defer></script>
-        <script src="/assets/js/playground/playground-objects.js?v=20260820a" defer></script>
+        <script src="/assets/js/playground/playground-objects.js?v=20260822a" defer></script>
         <script src="/assets/js/playground/playground-features.js" defer></script>
         <script src="/assets/js/playground/playground-editor.js?v=20260818c" defer></script>
-        <script src="/assets/js/space-editor-actor-animation.js?v=20260818c" defer></script>
-        <script src="/assets/js/playground/playground-core.js?v=20260820a" defer></script>
+        <script src="/assets/js/space-editor-actor-animation.js?v=20260822b" defer></script>
+        <script src="/assets/js/playground/playground-core.js?v=20260822b" defer></script>
         <script src="/assets/js/playground/playground-canvas-v2.js?v=20260814h" defer></script>
         <script>
             document.addEventListener('DOMContentLoaded', () => {

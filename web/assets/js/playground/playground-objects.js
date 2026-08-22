@@ -134,6 +134,99 @@ function getSimulationLayout(simulation) {
     return simulation.layout || null;
 }
 
+function getCurrentStateLibraries() {
+    try {
+        const effectiveEditor = window.activeDayTypeEditor || window.editor || editor;
+        const documentValue = JSON.parse(effectiveEditor.getValue());
+        const simulation = getSimulationRoot(documentValue);
+        return isPlainObject(simulation?.state_libraries) ? simulation.state_libraries : {};
+    } catch (_error) {
+        return {};
+    }
+}
+
+function getStateVisualObjectFieldsHTML(counter) {
+    const safeCounter = escapeHtml(String(counter));
+    const libraries = getCurrentStateLibraries();
+    const libraryOptions = Object.keys(libraries).sort().map(id =>
+        `<option value="${escapeHtml(id)}">${escapeHtml(id)}</option>`
+    ).join('');
+    return `
+        <fieldset class="uaw-state-visual-object-fields">
+            <legend>State visual</legend>
+            <p>Optionally connect this object to a reusable State Library. Its simulation state remains in <code>properties.state</code>.</p>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>State Library</label>
+                    <select name="object_state_library_${safeCounter}" data-object-level="state_library">
+                        <option value="">None · use emoji</option>
+                        ${libraryOptions}
+                    </select>
+                </div>
+                <div class="form-group" data-initial-state-field>
+                    <label>Initial State</label>
+                    <input type="text" name="new_object_state_${safeCounter}" placeholder="e.g., available, working">
+                </div>
+                <div class="form-group">
+                    <label>Appearance</label>
+                    <select name="object_appearance_${safeCounter}" data-object-level="appearance" disabled>
+                        <option value="">None · use emoji</option>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+    `;
+}
+
+function syncStateVisualObjectFields(container, preferred = {}) {
+    if (!container) return;
+    const librarySelect = container.querySelector('[data-object-level="state_library"]');
+    const appearanceSelect = container.querySelector('[data-object-level="appearance"]');
+    const stateField = container.querySelector('[data-initial-state-field]');
+    if (!librarySelect || !appearanceSelect || !stateField) return;
+
+    const libraries = getCurrentStateLibraries();
+    const library = libraries[librarySelect.value];
+    const states = Array.isArray(library?.states) ? library.states.filter(state => typeof state === 'string' && state.trim()) : [];
+    const currentState = preferred.state ?? stateField.querySelector('input, select')?.value ?? '';
+    const stateName = stateField.querySelector('input, select')?.name || 'new_object_state_modal';
+
+    if (library) {
+        stateField.innerHTML = `
+            <label>Initial State</label>
+            <select name="${escapeHtml(stateName)}" required>
+                ${states.map(state => `<option value="${escapeHtml(state)}">${escapeHtml(state)}</option>`).join('')}
+            </select>
+            <small>Constrained by ${escapeHtml(librarySelect.value)}</small>
+        `;
+        const stateSelect = stateField.querySelector('select');
+        stateSelect.value = states.includes(currentState) ? currentState : (states[0] || '');
+    } else {
+        stateField.innerHTML = `
+            <label>Initial State</label>
+            <input type="text" name="${escapeHtml(stateName)}" value="${escapeHtml(currentState)}" placeholder="e.g., available, working">
+        `;
+    }
+
+    const appearances = isPlainObject(library?.appearances) ? Object.keys(library.appearances).sort() : [];
+    appearanceSelect.disabled = !library;
+    appearanceSelect.innerHTML = '<option value="">None · use emoji</option>' + appearances.map(id =>
+        `<option value="${escapeHtml(id)}">${escapeHtml(id)}</option>`
+    ).join('');
+    const preferredAppearance = preferred.appearance ?? appearanceSelect.dataset.currentValue ?? '';
+    appearanceSelect.value = appearances.includes(preferredAppearance) ? preferredAppearance : '';
+    appearanceSelect.dataset.currentValue = appearanceSelect.value;
+}
+
+function bindStateVisualObjectFields(container) {
+    const librarySelect = container?.querySelector('[data-object-level="state_library"]');
+    const appearanceSelect = container?.querySelector('[data-object-level="appearance"]');
+    if (!librarySelect) return;
+    librarySelect.addEventListener('change', () => syncStateVisualObjectFields(container));
+    appearanceSelect?.addEventListener('change', () => { appearanceSelect.dataset.currentValue = appearanceSelect.value; });
+    syncStateVisualObjectFields(container);
+}
+
 // Clean up event listeners for a modal
 function cleanupModalListeners(modalType) {
     if (eventListenerCleanup[modalType]) {
@@ -350,6 +443,7 @@ function openEditObjectModal(object) {
         const customType = fieldsContainer.querySelector('input[name^="new_object_custom_type_"]');
         if (customType) customType.value = object.type;
         Object.entries(object.properties || {}).forEach(([name, value]) => {
+            if (name === 'state') return;
             if (Array.isArray(value) || value == null) return;
             addCustomProperty('modal');
             const group = fieldsContainer.querySelector('.custom-properties-container')?.lastElementChild;
@@ -359,11 +453,19 @@ function openEditObjectModal(object) {
             group.querySelector('input[name^="custom_property_value_"]').value = String(value);
         });
     } else {
+        const librarySelect = fieldsContainer.querySelector('[data-object-level="state_library"]');
+        if (librarySelect) librarySelect.value = object.state_library || '';
+        syncStateVisualObjectFields(fieldsContainer, { state: object.properties?.state, appearance: object.appearance });
         Object.entries(object.properties || {}).forEach(([name, value]) => {
             const input = Array.from(fieldsContainer.querySelectorAll('input, select, textarea'))
                 .find(candidate => normalizeObjectPropertyInputName(candidate.name, 'modal') === name);
             if (input && !Array.isArray(value) && value != null) input.value = String(value);
         });
+    }
+    if (standardType === 'custom') {
+        const librarySelect = fieldsContainer.querySelector('[data-object-level="state_library"]');
+        if (librarySelect) librarySelect.value = object.state_library || '';
+        syncStateVisualObjectFields(fieldsContainer, { state: object.properties?.state, appearance: object.appearance });
     }
     const locationInput = Array.from(fieldsContainer.querySelectorAll('select'))
         .find(candidate => normalizeObjectPropertyInputName(candidate.name, 'modal') === 'location');
@@ -721,10 +823,6 @@ function getObjectTypeFieldsHTML(type, context, counter) {
                     <input type="text" name="new_object_role_${safeCounter}" placeholder="e.g., Baker, Assistant">
                 </div>
                 <div class="form-group">
-                    <label>Initial State</label>
-                    <input type="text" name="new_object_state_${safeCounter}" placeholder="e.g., available, busy, break">
-                </div>
-                <div class="form-group">
                     <label>Cost per Hour ($)</label>
                     <input type="number" name="new_object_cost_per_hour_${safeCounter}" min="0" step="0.01" placeholder="25.00">
                 </div>
@@ -733,10 +831,6 @@ function getObjectTypeFieldsHTML(type, context, counter) {
         case 'equipment':
             fieldsHTML = `
                 <div class="form-group">
-                    <label>Initial State</label>
-                    <input type="text" name="new_object_state_${safeCounter}" placeholder="e.g., clean, available">
-                </div>
-                <div class="form-group">
                     <label>Capacity</label>
                     <input type="number" name="new_object_capacity_${safeCounter}" min="1" placeholder="1">
                 </div>
@@ -744,10 +838,6 @@ function getObjectTypeFieldsHTML(type, context, counter) {
             break;
         case 'service':
             fieldsHTML = `
-                <div class="form-group">
-                    <label>Initial State</label>
-                    <input type="text" name="new_object_state_${safeCounter}" placeholder="e.g., running, stopped, error">
-                </div>
                 <div class="form-group">
                     <label>Interval</label>
                     <input type="text" name="new_object_interval_${safeCounter}" placeholder="e.g., 5m or PT5M">
@@ -789,10 +879,6 @@ function getObjectTypeFieldsHTML(type, context, counter) {
         case 'display':
             fieldsHTML = `
                 <div class="form-group">
-                    <label>Initial State</label>
-                    <input type="text" name="new_object_state_${safeCounter}" placeholder="e.g., active, inactive">
-                </div>
-                <div class="form-group">
                     <label>Resolution</label>
                     <input type="text" name="new_object_resolution_${safeCounter}" placeholder="e.g., 1920x1080">
                 </div>
@@ -801,10 +887,6 @@ function getObjectTypeFieldsHTML(type, context, counter) {
         case 'screen_element':
             fieldsHTML = `
                 <div class="form-group">
-                    <label>Initial State</label>
-                    <input type="text" name="new_object_state_${safeCounter}" placeholder="e.g., visible, hidden">
-                </div>
-                <div class="form-group">
                     <label>Display ID</label>
                     <input type="text" name="new_object_display_id_${safeCounter}" placeholder="e.g., kiosk_display">
                 </div>
@@ -812,10 +894,6 @@ function getObjectTypeFieldsHTML(type, context, counter) {
             break;
         case 'digital_object':
             fieldsHTML = `
-                <div class="form-group">
-                    <label>Initial State</label>
-                    <input type="text" name="new_object_state_${safeCounter}" placeholder="e.g., running, stopped, error">
-                </div>
                 <div class="form-group">
                     <label>Initial Quantity</label>
                     <input type="number" name="new_object_quantity_${safeCounter}" min="0" step="0.1" placeholder="0">
@@ -845,6 +923,7 @@ function getObjectTypeFieldsHTML(type, context, counter) {
             break;
     }
 
+    fieldsHTML += getStateVisualObjectFieldsHTML(counter);
     fieldsHTML += `
         <div class="form-group">
             <label>Location</label>
@@ -872,6 +951,7 @@ function updateObjectTypeFields(type, container) {
     }
 
     container.innerHTML = getObjectTypeFieldsHTML(type, context, 'modal');
+    bindStateVisualObjectFields(container);
 
     // Setup event delegation for add property button (replaces inline onclick)
     const addPropertyBtn = container.querySelector('[data-add-property]');
@@ -1190,7 +1270,7 @@ function openEditTaskModal(task) {
                         const objectSelect = lastInteractionGroup.querySelector(`select[name="interaction_object_${counter}"]`);
                         const propertySelect = lastInteractionGroup.querySelector(`select[name="interaction_property_${counter}"]`);
                         const fromInput = lastInteractionGroup.querySelector(`input[name="interaction_from_${counter}"]`);
-                        const toInput = lastInteractionGroup.querySelector(`input[name="interaction_to_${counter}"]`);
+                        let toInput = lastInteractionGroup.querySelector(`[name="interaction_to_${counter}"]`);
 
                         if (changeTypeSelect) changeTypeSelect.value = 'from_to';
                         if (objectSelect) {
@@ -1208,6 +1288,8 @@ function openEditTaskModal(task) {
                                 propertySelect.appendChild(option);
                             }
                             propertySelect.value = propertyName;
+                            syncInteractionStateValueControl(lastInteractionGroup, Object.prototype.hasOwnProperty.call(changeData, 'to') ? String(changeData.to) : String(changeData.set));
+                            toInput = lastInteractionGroup.querySelector(`[name="interaction_to_${counter}"]`);
                         }
                         if (fromInput) fromInput.value = Object.prototype.hasOwnProperty.call(changeData, 'from') ? String(changeData.from) : '';
                         if (toInput) toInput.value = Object.prototype.hasOwnProperty.call(changeData, 'to') ? String(changeData.to) : String(changeData.set);
@@ -1599,6 +1681,7 @@ function updateInteractionObjectTypeFields(selectElement) {
     const counter = group.id.split('-')[1];
     const context = getCurrentTimelineContext();
     container.innerHTML = getObjectTypeFieldsHTML(type, context, counter);
+    bindStateVisualObjectFields(container);
 }
 
 
@@ -1689,6 +1772,44 @@ function removeInteraction(button) {
     }
 }
 
+function syncInteractionStateValueControl(group, preferredValue) {
+    if (!group) return;
+    const propertySelect = group.querySelector('.from-to-fields select[name^="interaction_property_"]');
+    const objectSelect = group.querySelector('select[name^="interaction_object_"]');
+    const currentControl = group.querySelector('[name^="interaction_to_"]');
+    if (!propertySelect || !objectSelect || !currentControl) return;
+
+    const context = getCurrentTimelineContext();
+    const selectedObject = Object.values(context.objectsByType || {})
+        .flat()
+        .find(object => object?.id === objectSelect.value);
+    const library = getCurrentStateLibraries()[selectedObject?.state_library];
+    const states = Array.isArray(library?.states) ? library.states : [];
+    const value = preferredValue ?? currentControl.value ?? '';
+    const id = currentControl.id;
+    const name = currentControl.name;
+
+    if (propertySelect.value === 'state' && states.length) {
+        const select = document.createElement('select');
+        select.id = id;
+        select.name = name;
+        select.setAttribute('aria-label', 'New state');
+        select.required = true;
+        states.forEach(state => select.add(new Option(state, state)));
+        select.value = states.includes(value) ? value : states[0];
+        currentControl.replaceWith(select);
+    } else if (currentControl.tagName === 'SELECT') {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = id;
+        input.name = name;
+        input.placeholder = 'new value';
+        input.setAttribute('aria-label', 'New value');
+        input.value = value;
+        currentControl.replaceWith(input);
+    }
+}
+
 // Update property options when object selection changes
 function updateInteractionPropertyOptions(objectSelectElement) {
     const group = objectSelectElement.closest('.interaction-group');
@@ -1701,7 +1822,10 @@ function updateInteractionPropertyOptions(objectSelectElement) {
     propertySelect.innerHTML = '<option value="">Select property...</option>';
     fromInput.value = '';
 
-    if (!objectId) return;
+    if (!objectId) {
+        syncInteractionStateValueControl(group);
+        return;
+    }
 
     try {
         const context = getCurrentTimelineContext();
@@ -1745,6 +1869,8 @@ function updateInteractionPropertyOptions(objectSelectElement) {
             });
         }
 
+        syncInteractionStateValueControl(group);
+
     } catch (error) {
         console.error('Error updating property options:', error);
     }
@@ -1763,12 +1889,16 @@ function updatePropertyFromValue(propertySelectElement) {
 
     fromInput.value = '';
 
-    if (!objectId || !propertyName) return;
+    if (!objectId || !propertyName) {
+        syncInteractionStateValueControl(group);
+        return;
+    }
 
     try {
         // Get the current property value at the task's start time
         const currentValue = getPropertyValueAtTaskTime(objectId, propertyName);
         fromInput.value = currentValue !== null ? currentValue : '';
+        syncInteractionStateValueControl(group);
 
     } catch (error) {
         console.error('Error updating property from value:', error);
@@ -2026,6 +2156,7 @@ function addObjectToSimulation() {
             const fieldsContainer = document.getElementById('object-type-specific-fields');
             const inputs = fieldsContainer.querySelectorAll('input, select, textarea');
             inputs.forEach(input => {
+                if (input.dataset.objectLevel) return;
                 const name = normalizeObjectPropertyInputName(input.name, 'modal');
                 if (name) {
                     if (name === 'location') {
@@ -2045,6 +2176,21 @@ function addObjectToSimulation() {
             });
         }
 
+        const fieldsContainer = document.getElementById('object-type-specific-fields');
+        const initialStateControl = fieldsContainer.querySelector('[data-initial-state-field] input, [data-initial-state-field] select');
+        const initialState = safeTrim(initialStateControl?.value);
+        if (initialState) properties.state = initialState;
+        else delete properties.state;
+
+        const stateLibraryId = safeTrim(fieldsContainer.querySelector('[data-object-level="state_library"]')?.value);
+        const appearanceId = safeTrim(fieldsContainer.querySelector('[data-object-level="appearance"]')?.value);
+        if (stateLibraryId) {
+            const states = getCurrentStateLibraries()[stateLibraryId]?.states || [];
+            if (!states.includes(initialState)) {
+                throw new Error('Choose an Initial State defined by the selected State Library.');
+            }
+        }
+
         const newObject = {
             ...(editingIndex >= 0 ? (editingObjectSnapshot || objects[editingIndex]) : {}),
             id: finalObjectId,
@@ -2058,6 +2204,10 @@ function addObjectToSimulation() {
         } else delete newObject.emoji;
         if (objectLocation) newObject.location = objectLocation;
         else delete newObject.location;
+        if (stateLibraryId) newObject.state_library = stateLibraryId;
+        else delete newObject.state_library;
+        if (stateLibraryId && appearanceId) newObject.appearance = appearanceId;
+        else delete newObject.appearance;
 
         // Keep modal-created objects v2-valid with common required defaults.
         const baseType = objectType === 'custom' ? '' : objectType;
@@ -2183,7 +2333,7 @@ function addTaskToSimulation() {
             if (changeType === 'from_to') {
                 const property = group.querySelector(`select[name="interaction_property_${counter}"]`).value;
                 const from = group.querySelector(`input[name="interaction_from_${counter}"]`).value;
-                const to = group.querySelector(`input[name="interaction_to_${counter}"]`).value;
+                const to = group.querySelector(`[name="interaction_to_${counter}"]`).value;
                 if (property && to) {
                     if (!objectId) return;
                     interaction.target_id = objectId;
@@ -2220,6 +2370,7 @@ function addTaskToSimulation() {
 
                     const propInputs = group.querySelectorAll('.type-specific-fields-container input, .type-specific-fields-container select');
                     propInputs.forEach(input => {
+                        if (input.dataset.objectLevel) return;
                         if (input.value && input.name) {
                             const propName = normalizeObjectPropertyInputName(input.name, counter);
                             if (propName === 'location') return;
@@ -2227,6 +2378,10 @@ function addTaskToSimulation() {
                             newObject.properties[propName] = isNumberInput ? Number(input.value) : input.value;
                         }
                     });
+                    const stateLibraryId = safeTrim(group.querySelector('[data-object-level="state_library"]')?.value);
+                    const appearanceId = safeTrim(group.querySelector('[data-object-level="appearance"]')?.value);
+                    if (stateLibraryId) newObject.state_library = stateLibraryId;
+                    if (stateLibraryId && appearanceId) newObject.appearance = appearanceId;
 
                     const baseType = newObjectType === 'custom' ? '' : newObjectType;
                     applyCommonWorkSpecDefaults(newObject, baseType);
@@ -2354,7 +2509,7 @@ function saveTaskToSimulation() {
             if (changeType === 'from_to') {
                 const property = group.querySelector(`select[name="interaction_property_${counter}"]`).value;
                 const from = group.querySelector(`input[name="interaction_from_${counter}"]`).value;
-                const to = group.querySelector(`input[name="interaction_to_${counter}"]`).value;
+                const to = group.querySelector(`[name="interaction_to_${counter}"]`).value;
                 if (property && to) {
                     if (!objectId) return;
                     interaction.target_id = objectId;
@@ -2419,6 +2574,7 @@ function saveTaskToSimulation() {
                         // Handle standard object types in interactions
                         const propInputs = group.querySelectorAll('.type-specific-fields-container input, .type-specific-fields-container select');
                         propInputs.forEach(input => {
+                            if (input.dataset.objectLevel) return;
                             if (input.value && input.name) {
                                 const propName = normalizeObjectPropertyInputName(input.name, counter);
                                 if (propName === 'location') return;
@@ -2437,6 +2593,12 @@ function saveTaskToSimulation() {
 
                     if (newObjectEmoji) newObject.emoji = newObjectEmoji;
                     if (newObjectLocation) newObject.location = newObjectLocation;
+                    const initialState = safeTrim(group.querySelector('[data-initial-state-field] input, [data-initial-state-field] select')?.value);
+                    if (initialState) newObject.properties.state = initialState;
+                    const stateLibraryId = safeTrim(group.querySelector('[data-object-level="state_library"]')?.value);
+                    const appearanceId = safeTrim(group.querySelector('[data-object-level="appearance"]')?.value);
+                    if (stateLibraryId) newObject.state_library = stateLibraryId;
+                    if (stateLibraryId && appearanceId) newObject.appearance = appearanceId;
 
                     // Fill common defaults so created objects are immediately v2-valid.
                     const baseType = newObjectType === 'custom' ? '' : newObjectType;

@@ -3,9 +3,11 @@
 const validator = require('./workspec-validator.js');
 const migrator = require('./workspec-migrate-v1-to-v2.js');
 const customValidationRunner = require('./custom-validation-runner.js');
+const stateVisuals = require('./state-visuals.js');
 
 module.exports = {
     ...validator,
     ...migrator,
+    ...stateVisuals,
     ...customValidationRunner
 };

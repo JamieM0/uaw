@@ -4,8 +4,8 @@
 /**
  * ActorAnimationManager
  *
- * Manages animated actor visualization on the Space Editor canvas during simulation playback.
- * Actors appear as emoji characters and move at constant speed between locations based on task transitions.
+ * Manages state-driven object visualization on the Space Editor canvas during simulation playback.
+ * Task actors move between locations; all other located objects remain in a stable local slot.
  */
 class ActorAnimationManager {
     constructor(spaceEditor) {
@@ -13,9 +13,11 @@ class ActorAnimationManager {
         this.enabled = false;
         this.simulationData = null;
         this.actors = new Map(); // Map<actorId, ActorState>
+        this.actorTasks = new Map(); // Map<actorId, Task[]>; built once per document load
         this.transitions = new Map(); // Map<actorId, Transition[]>
         this.actorElements = new Map(); // Map<actorId, HTMLElement>
         this.locationCache = new Map(); // Map<locationId, {x, y, width, height}>
+        this.locationSlotCache = new Map(); // Stable grids avoid per-frame sorting/layout work
         this.animationFrameId = null;
         this.currentTime = 0; // Current simulation time in minutes
         this.isPlaying = false;
@@ -24,7 +26,6 @@ class ActorAnimationManager {
         this.EMOJI_SIZE = 24; // Font size in pixels
         this.MIN_TRANSITION_DURATION = 3; // Minimum seconds for fast transitions
         this.ACTOR_MARGIN = 8; // Margin from the top-left corner of locations
-        this.ACTOR_SPACING = 28; // Spacing between actors in the same location
 
         this.init();
     }
@@ -34,7 +35,7 @@ class ActorAnimationManager {
         const checkbox = document.getElementById('show-actors-during-playback');
         if (checkbox) {
             const savedState = window.UAWProjectStore?.getCurrent?.()?.settings?.showActorsDuringPlayback;
-            if (savedState === true) {
+            if (savedState !== false) {
                 checkbox.checked = true;
                 this.enabled = true;
                 // Delay enabling to ensure everything is loaded
@@ -91,6 +92,22 @@ class ActorAnimationManager {
                 this.loadSimulationData();
                 this.startAnimationLoop();
             }
+        });
+
+        window.addEventListener('uaw:asset-cache-ready', () => this.updateActorPositions());
+        window.addEventListener('uaw:assets-changed', () => this.updateActorPositions());
+        window.addEventListener('uaw:asset-thumbnail-loaded', event => {
+            const assetId = event.detail?.assetId;
+            this.actorElements.forEach((element, actorId) => {
+                if (element.dataset.assetId !== assetId) return;
+                const actor = this.actors.get(actorId);
+                if (actor) this.updateActorVisual(actor, element);
+            });
+        });
+        window.addEventListener('uaw:state-visuals-changed', () => {
+            this._loadAttempted = false;
+            this.loadSimulationData();
+            this.updateActorPositions();
         });
 
         // Also listen for editor content changes to reload simulation data
@@ -176,56 +193,55 @@ class ActorAnimationManager {
     }
 
     precomputeTransitions() {
-        if (!this.simulationData || !this.simulationData.objects || !this.simulationData.tasks) {
+        if (!this.simulationData) {
             return;
         }
 
         this.actors.clear();
+        this.actorTasks.clear();
         this.transitions.clear();
+        this.locationSlotCache.clear();
 
-        const objects = this.simulationData.objects;
-        const tasks = this.simulationData.tasks;
+        const objects = this.simulationData.world?.objects || this.simulationData.objects || [];
+        const tasks = this.simulationData.process?.tasks || this.simulationData.tasks || [];
 
-        // Find all actors (objects that have tasks)
+        // Task performers can move; every located object still receives a physical visual.
         const actorsInTasks = new Set();
         tasks.forEach(task => {
             if (task.actor_id) {
                 actorsInTasks.add(task.actor_id);
+                if (!this.actorTasks.has(task.actor_id)) this.actorTasks.set(task.actor_id, []);
+                this.actorTasks.get(task.actor_id).push(task);
             }
         });
+        this.actorTasks.forEach(actorTasks => actorTasks.sort((a, b) => this.parseTime(a.start) - this.parseTime(b.start)));
 
-        // Initialize actor states
-        actorsInTasks.forEach(actorId => {
-            const actorObj = objects.find(obj => obj.id === actorId);
-            if (actorObj) {
-                // Get initial location from object properties or first task
-                const initialLocation = actorObj.properties?.location || null;
-
-                this.actors.set(actorId, {
-                    id: actorId,
-                    name: actorObj.name || actorId,
-                    emoji: actorObj.properties?.emoji || this.getDefaultEmoji(actorObj.type),
-                    currentLocation: initialLocation,
-                    currentPosition: null, // Will be set when location is resolved
-                    type: actorObj.type
-                });
-            }
+        // Initialize all objects that belong to a physical location.
+        objects.forEach(actorObj => {
+            const firstTaskLocation = this.actorTasks.get(actorObj.id)?.[0]?.location;
+            const initialLocation = actorObj.location || actorObj.properties?.location || firstTaskLocation;
+            if (!actorObj?.id || !initialLocation) return;
+            this.actors.set(actorObj.id, {
+                id: actorObj.id,
+                name: actorObj.name || actorObj.id,
+                emoji: actorObj.emoji || actorObj.properties?.emoji || this.getDefaultEmoji(actorObj.type),
+                currentLocation: initialLocation,
+                currentPosition: null,
+                type: actorObj.type,
+                movable: actorsInTasks.has(actorObj.id),
+                object: actorObj
+            });
         });
 
         // Compute transitions for each actor
         this.actors.forEach((actor, actorId) => {
-            const actorTransitions = this.computeActorTransitions(actorId, tasks);
+            const actorTransitions = this.computeActorTransitions(this.actorTasks.get(actorId) || []);
             this.transitions.set(actorId, actorTransitions);
         });
     }
 
-    computeActorTransitions(actorId, tasks) {
+    computeActorTransitions(actorTasks) {
         const transitions = [];
-
-        // Get all tasks for this actor, sorted by start time
-        const actorTasks = tasks
-            .filter(task => task.actor_id === actorId)
-            .sort((a, b) => this.parseTime(a.start) - this.parseTime(b.start));
 
         if (actorTasks.length === 0) {
             return transitions;
@@ -314,10 +330,18 @@ class ActorAnimationManager {
         // Create DOM elements for each actor
         this.actors.forEach((actor, actorId) => {
             const element = document.createElement('div');
-            element.className = 'actor-emoji';
-            element.textContent = actor.emoji;
+            element.className = 'actor-emoji actor-visual';
+            const image = document.createElement('img');
+            image.className = 'actor-visual__image';
+            image.alt = '';
+            image.hidden = true;
+            const emoji = document.createElement('span');
+            emoji.className = 'actor-visual__emoji';
+            emoji.textContent = actor.emoji;
+            element.append(image, emoji);
             element.style.cssText = `
                 font-size: ${this.EMOJI_SIZE}px;
+                --actor-visual-size: 32px;
                 position: absolute;
                 pointer-events: none;
                 z-index: 1000;
@@ -325,6 +349,7 @@ class ActorAnimationManager {
                 display: none;
             `;
             element.title = actor.name;
+            this.updateActorVisual(actor, element);
 
             // Add to space world (the transformable container)
             this.spaceEditor.world.appendChild(element);
@@ -332,6 +357,38 @@ class ActorAnimationManager {
         });
 
         console.log(`ActorAnimation: Initialized ${this.actorElements.size} actor elements`);
+    }
+
+    updateActorVisual(actor, element) {
+        const tasks = this.simulationData?.process?.tasks || this.simulationData?.tasks || [];
+        const playerState = window.player?.getCurrentObjectState?.(actor.id);
+        const state = playerState !== undefined
+            ? playerState
+            : (window.WorkSpecStateVisuals?.resolveObjectStateAtTime?.(actor.object, tasks, this.currentTime) || actor.object?.properties?.state);
+        const assetId = window.WorkSpecStateVisuals?.resolveStateVisualAssetId?.(this.simulationData, actor.object, state);
+        const normalizedAssetId = typeof assetId === 'string' ? assetId.replace(/^asset:/, '') : '';
+        const assetSource = normalizedAssetId ? window.AssetManager?.getAssetThumbnail?.(normalizedAssetId, 64) : null;
+        const visualKey = `${state || ''}|${normalizedAssetId}|${assetSource || 'pending'}`;
+        element.dataset.assetId = normalizedAssetId;
+        if (element.dataset.visualKey === visualKey) return;
+        element.dataset.visualKey = visualKey;
+        const image = element.querySelector('.actor-visual__image');
+        const emoji = element.querySelector('.actor-visual__emoji');
+
+        if (assetSource) {
+            if (image.src !== assetSource) image.src = assetSource;
+            image.hidden = false;
+            emoji.hidden = true;
+            element.dataset.visual = 'asset';
+        } else {
+            if (normalizedAssetId) window.AssetManager?.ensureAssetThumbnail?.(normalizedAssetId, 64);
+            image.hidden = true;
+            image.removeAttribute('src');
+            emoji.hidden = false;
+            emoji.textContent = actor.emoji;
+            element.dataset.visual = 'emoji';
+        }
+        element.dataset.state = state || '';
     }
 
     clearActors() {
@@ -427,7 +484,7 @@ class ActorAnimationManager {
         // Resolve canvas positions for locations
         this.resolveCanvasPositions();
 
-        // Track actors at each location for stacking
+        // Track objects at each location for stable, non-overlapping layout.
         const actorsAtLocation = new Map();
         const transitingActors = [];
 
@@ -449,10 +506,9 @@ class ActorAnimationManager {
 
             // Determine actor's current state at this time
             const state = this.getActorStateAtTime(actorId, this.currentTime);
+            this.updateActorVisual(actor, element);
 
-            // DEBUG: Log when state is null or has no position
             if (!state || !state.position) {
-                console.log(`ActorAnimation DEBUG: Actor ${actorId} at time ${this.currentTime} - state:`, state, 'position:', state?.position);
                 element.style.display = 'none';
                 return;
             }
@@ -462,9 +518,9 @@ class ActorAnimationManager {
             } else {
                 const locationId = state.currentLocationId || 'unknown';
                 if (!actorsAtLocation.has(locationId)) {
-                    actorsAtLocation.set(locationId, { actors: [], basePosition: state.position });
+                    actorsAtLocation.set(locationId, []);
                 }
-                actorsAtLocation.get(locationId).actors.push({ actorId, element, actor, state });
+                actorsAtLocation.get(locationId).push({ actorId, element, actor, state });
             }
         });
 
@@ -473,27 +529,47 @@ class ActorAnimationManager {
             element.style.display = 'block';
             element.style.left = `${state.position.x}px`;
             element.style.top = `${state.position.y}px`;
+            element.style.setProperty('--actor-visual-size', '32px');
             element.style.transform = 'none';
         });
 
-        // Position stationary actors with stacking
-        actorsAtLocation.forEach(({ actors, basePosition }) => {
-            actors.forEach(({ element }, index) => {
+        // Position stationary objects in a compact grid inside their current location.
+        actorsAtLocation.forEach((actors, locationId) => {
+            const bounds = this.locationCache.get(locationId);
+            const ids = actors.map(item => item.actorId);
+            const slotKey = `${bounds?.x}|${bounds?.y}|${bounds?.width}|${bounds?.height}|${ids.join('|')}`;
+            let cachedSlots = this.locationSlotCache.get(locationId);
+            if (cachedSlots?.key !== slotKey) {
+                cachedSlots = {
+                    key: slotKey,
+                    slots: window.WorkSpecStateVisuals?.calculateLocationObjectSlots?.(bounds, ids, {
+                        margin: this.ACTOR_MARGIN,
+                        maxSize: 32,
+                        gap: 5
+                    })
+                };
+                this.locationSlotCache.set(locationId, cachedSlots);
+            }
+            const slots = cachedSlots.slots;
+            actors.forEach(({ actorId, element }) => {
+                const slot = slots?.get(actorId) || this.getLocationPosition(locationId);
+                if (!slot) return;
                 element.style.display = 'block';
-                const offsetY = index * this.ACTOR_SPACING;
-                element.style.left = `${basePosition.x}px`;
-                element.style.top = `${basePosition.y + offsetY}px`;
+                element.style.left = `${slot.x}px`;
+                element.style.top = `${slot.y}px`;
+                element.style.setProperty('--actor-visual-size', `${slot.size || 32}px`);
                 element.style.transform = 'none';
             });
         });
     }
 
     resolveCanvasPositions() {
-        if (!this.simulationData || !this.simulationData.layout) {
+        const layout = this.simulationData?.world?.layout || this.simulationData?.layout;
+        if (!layout) {
             return;
         }
 
-        const locations = this.simulationData.layout.locations || [];
+        const locations = layout.locations || [];
 
         // Clear and rebuild location cache
         this.locationCache.clear();
@@ -554,11 +630,6 @@ class ActorAnimationManager {
         const actorTransitions = this.transitions.get(actorId);
 
         if (!actor || !actorTransitions || !this.simulationData) {
-            console.log(`ActorAnimation DEBUG: getActorStateAtTime - Missing data for ${actorId}:`, {
-                hasActor: !!actor,
-                hasTransitions: !!actorTransitions,
-                hasSimData: !!this.simulationData
-            });
             return null;
         }
 
@@ -567,7 +638,6 @@ class ActorAnimationManager {
             if (time >= transition.startTime && time <= transition.endTime) {
                 // Actor is transitioning
                 if (!transition.fromPosition || !transition.toPosition) {
-                    console.log(`ActorAnimation DEBUG: Transition has no positions for ${actorId} at ${time}:`, transition);
                     continue; // Skip if positions not resolved
                 }
 
@@ -578,7 +648,6 @@ class ActorAnimationManager {
                 const x = transition.fromPosition.x + (transition.toPosition.x - transition.fromPosition.x) * progress;
                 const y = transition.fromPosition.y + (transition.toPosition.y - transition.fromPosition.y) * progress;
 
-                console.log(`ActorAnimation DEBUG: Actor ${actorId} transitioning at ${time}, progress: ${progress.toFixed(2)}`);
                 return {
                     position: { x, y },
                     isTransitioning: true,
@@ -588,12 +657,7 @@ class ActorAnimationManager {
         }
 
         // Not transitioning - find current location from tasks
-        const tasks = this.simulationData.tasks || [];
-        const actorTasks = tasks
-            .filter(task => task.actor_id === actorId)
-            .sort((a, b) => this.parseTime(a.start) - this.parseTime(b.start));
-
-        console.log(`ActorAnimation DEBUG: Checking ${actorTasks.length} tasks for ${actorId} at time ${time}`);
+        const actorTasks = this.actorTasks.get(actorId) || [];
 
         // Find the task that contains current time
         for (const task of actorTasks) {
@@ -606,15 +670,12 @@ class ActorAnimationManager {
                 const position = this.getLocationPosition(location);
 
                 if (position) {
-                    console.log(`ActorAnimation DEBUG: Actor ${actorId} performing task at ${location}`);
                     return {
                         position,
                         isTransitioning: false,
                         currentLocationId: location,
                         currentTask: task
                     };
-                } else {
-                    console.log(`ActorAnimation DEBUG: No position found for location ${location}`);
                 }
             }
         }
@@ -629,14 +690,11 @@ class ActorAnimationManager {
                 const position = this.getLocationPosition(location);
 
                 if (position) {
-                    console.log(`ActorAnimation DEBUG: Actor ${actorId} at last completed task location ${location}`);
                     return {
                         position,
                         isTransitioning: false,
                         currentLocationId: location
                     };
-                } else {
-                    console.log(`ActorAnimation DEBUG: No position for last task location ${location}`);
                 }
             }
         }
@@ -646,18 +704,14 @@ class ActorAnimationManager {
         if (initialLocation) {
             const position = this.getLocationPosition(initialLocation);
             if (position) {
-                console.log(`ActorAnimation DEBUG: Actor ${actorId} at initial location ${initialLocation}`);
                 return {
                     position,
                     isTransitioning: false,
                     currentLocationId: initialLocation
                 };
-            } else {
-                console.log(`ActorAnimation DEBUG: No position for initial location ${initialLocation}`);
             }
         }
 
-        console.log(`ActorAnimation DEBUG: No state found for actor ${actorId} at time ${time}`);
         return null;
     }
 
@@ -687,11 +741,12 @@ class ActorAnimationManager {
         }
 
         // Fallback to reading from simulation data
-        if (!this.simulationData || !this.simulationData.layout) {
+        const layout = this.simulationData?.world?.layout || this.simulationData?.layout;
+        if (!layout) {
             return null;
         }
 
-        const locations = this.simulationData.layout.locations || [];
+        const locations = layout.locations || [];
         
         // Try exact match first
         let location = locations.find(loc => loc.id === locationId);

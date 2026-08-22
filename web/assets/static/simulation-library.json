@@ -22,6 +22,94 @@
           "timezone": "UTC"
         },
         "schema_version": "2.0",
+        "state_libraries": {
+          "bakery_staff": {
+            "states": ["available", "working", "break"],
+            "appearances": {
+              "baker": {
+                "available": "baker_available",
+                "working": "baker_working",
+                "break": "baker_break"
+              },
+              "assistant": {
+                "available": "assistant_available",
+                "working": "assistant_working",
+                "break": "assistant_break"
+              }
+            }
+          },
+          "bakery_equipment": {
+            "states": ["available", "clean", "in_use", "dirty", "occupied", "preheating", "baking"],
+            "appearances": {
+              "stand_mixer": {
+                "clean": "stand_mixer_clean",
+                "in_use": "stand_mixer_in_use",
+                "dirty": "stand_mixer_dirty"
+              },
+              "commercial_oven": {
+                "available": "commercial_oven_available",
+                "preheating": "commercial_oven_preheating",
+                "baking": "commercial_oven_baking"
+              },
+              "prep_counter": {
+                "clean": "prep_counter_clean",
+                "in_use": "prep_counter_in_use",
+                "occupied": "prep_counter_occupied",
+                "dirty": "prep_counter_dirty"
+              },
+              "mixing_bowl": {
+                "clean": "mixing_bowl_clean",
+                "in_use": "mixing_bowl_in_use",
+                "dirty": "mixing_bowl_dirty"
+              }
+            }
+          },
+          "ingredient_stock": {
+            "states": ["stocked", "low", "empty"],
+            "appearances": {
+              "flour": {
+                "stocked": "flour_stocked",
+                "low": "flour_low",
+                "empty": "flour_empty"
+              },
+              "water": {
+                "stocked": "water_stocked",
+                "low": "water_low",
+                "empty": "water_empty"
+              },
+              "yeast": {
+                "stocked": "yeast_stocked",
+                "low": "yeast_low",
+                "empty": "yeast_empty"
+              }
+            }
+          },
+          "bakery_batch": {
+            "states": ["absent", "processing", "present", "ready"],
+            "appearances": {
+              "mixed_dough": {
+                "absent": "empty",
+                "processing": "mixed_dough_processing",
+                "present": "mixed_dough_present"
+              },
+              "risen_dough": {
+                "absent": "empty",
+                "processing": "risen_dough_processing",
+                "present": "risen_dough_present"
+              },
+              "shaped_loaves": {
+                "absent": "empty",
+                "processing": "shaped_loaves_processing",
+                "present": "shaped_loaves_present"
+              },
+              "baked_bread": {
+                "absent": "empty",
+                "processing": "baked_bread_processing",
+                "ready": "baked_bread_ready"
+              }
+            }
+          }
+        },
         "world": {
           "layout": {
             "meta": {
@@ -58,6 +146,8 @@
               "id": "baker",
               "type": "actor",
               "name": "Baker",
+              "state_library": "bakery_staff",
+              "appearance": "baker",
               "properties": {
                 "role": "Baker",
                 "cost_per_hour": 25,
@@ -69,6 +159,8 @@
               "id": "assistant",
               "type": "actor",
               "name": "Assistant",
+              "state_library": "bakery_staff",
+              "appearance": "assistant",
               "properties": {
                 "role": "Assistant Baker",
                 "cost_per_hour": 18,
@@ -80,6 +172,8 @@
               "id": "mixer",
               "type": "equipment",
               "name": "Stand Mixer",
+              "state_library": "bakery_equipment",
+              "appearance": "stand_mixer",
               "properties": {
                 "state": "clean",
                 "capacity": 1
@@ -91,6 +185,8 @@
               "id": "oven",
               "type": "equipment",
               "name": "Commercial Oven",
+              "state_library": "bakery_equipment",
+              "appearance": "commercial_oven",
               "properties": {
                 "state": "available",
                 "capacity": 4
@@ -102,6 +198,8 @@
               "id": "workspace",
               "type": "equipment",
               "name": "Prep Counter",
+              "state_library": "bakery_equipment",
+              "appearance": "prep_counter",
               "properties": {
                 "state": "clean",
                 "capacity": 2
@@ -113,6 +211,8 @@
               "id": "mixing_bowl",
               "type": "equipment",
               "name": "Mixing Bowl",
+              "state_library": "bakery_equipment",
+              "appearance": "mixing_bowl",
               "properties": {
                 "state": "clean",
                 "capacity": 1
@@ -124,10 +224,13 @@
               "id": "flour",
               "type": "resource",
               "name": "Flour",
+              "state_library": "ingredient_stock",
+              "appearance": "flour",
               "properties": {
                 "unit": "kg",
                 "quantity": 50,
-                "cost_per_unit": 2.5
+                "cost_per_unit": 2.5,
+                "state": "stocked"
               },
               "emoji": "🌾",
               "location": "prep_area"
@@ -136,10 +239,13 @@
               "id": "water",
               "type": "resource",
               "name": "Water",
+              "state_library": "ingredient_stock",
+              "appearance": "water",
               "properties": {
                 "unit": "liter",
                 "quantity": 20,
-                "cost_per_unit": 0.01
+                "cost_per_unit": 0.01,
+                "state": "stocked"
               },
               "emoji": "💧",
               "location": "prep_area"
@@ -148,10 +254,13 @@
               "id": "yeast",
               "type": "resource",
               "name": "Yeast",
+              "state_library": "ingredient_stock",
+              "appearance": "yeast",
               "properties": {
                 "unit": "g",
                 "quantity": 500,
-                "cost_per_unit": 0.02
+                "cost_per_unit": 0.02,
+                "state": "stocked"
               },
               "emoji": "🦠",
               "location": "prep_area"
@@ -160,9 +269,12 @@
               "id": "mixed_dough",
               "type": "product",
               "name": "Mixed Dough",
+              "state_library": "bakery_batch",
+              "appearance": "mixed_dough",
               "properties": {
                 "unit": "batch",
-                "quantity": 0
+                "quantity": 0,
+                "state": "absent"
               },
               "emoji": "🥖",
               "location": "prep_area"
@@ -171,9 +283,12 @@
               "id": "risen_dough",
               "type": "product",
               "name": "Risen Dough",
+              "state_library": "bakery_batch",
+              "appearance": "risen_dough",
               "properties": {
                 "unit": "batch",
-                "quantity": 0
+                "quantity": 0,
+                "state": "absent"
               },
               "emoji": "🍞",
               "location": "prep_area"
@@ -182,9 +297,12 @@
               "id": "shaped_loaves",
               "type": "product",
               "name": "Shaped Loaves",
+              "state_library": "bakery_batch",
+              "appearance": "shaped_loaves",
               "properties": {
                 "unit": "loaves",
-                "quantity": 0
+                "quantity": 0,
+                "state": "absent"
               },
               "emoji": "🥖",
               "location": "oven_area"
@@ -193,10 +311,13 @@
               "id": "baked_bread",
               "type": "product",
               "name": "Baked Bread",
+              "state_library": "bakery_batch",
+              "appearance": "baked_bread",
               "properties": {
                 "unit": "loaves",
                 "quantity": 0,
-                "revenue_per_unit": 35
+                "revenue_per_unit": 35,
+                "state": "absent"
               },
               "emoji": "🍞",
               "location": "oven_area"
@@ -217,11 +338,22 @@
                 {
                   "property_changes": {
                     "state": {
-                      "from": "clean",
-                      "to": "in-use"
+                      "from": "available",
+                      "to": "working"
                     }
                   },
-                  "target_id": "workspace"
+                  "target_id": "baker",
+                  "temporary": true
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "clean",
+                      "to": "in_use"
+                    }
+                  },
+                  "target_id": "workspace",
+                  "temporary": true
                 }
               ]
             },
@@ -234,6 +366,18 @@
               "location": "prep_area",
               "depends_on": [
                 "prepare_ingredients"
+              ],
+              "interactions": [
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "available",
+                      "to": "working"
+                    }
+                  },
+                  "target_id": "baker",
+                  "temporary": true
+                }
               ]
             },
             {
@@ -244,7 +388,18 @@
               "duration": 10,
               "location": "prep_area",
               "depends_on": [],
-              "interactions": []
+              "interactions": [
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "available",
+                      "to": "working"
+                    }
+                  },
+                  "target_id": "assistant",
+                  "temporary": true
+                }
+              ]
             },
             {
               "id": "mix_dough",
@@ -258,6 +413,16 @@
                 "activate_yeast"
               ],
               "interactions": [
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "available",
+                      "to": "working"
+                    }
+                  },
+                  "target_id": "baker",
+                  "temporary": true
+                },
                 {
                   "property_changes": {
                     "quantity": {
@@ -293,11 +458,49 @@
                 {
                   "property_changes": {
                     "state": {
+                      "from": "absent",
+                      "to": "present"
+                    }
+                  },
+                  "target_id": "mixed_dough"
+                },
+                {
+                  "property_changes": {
+                    "state": {
                       "from": "clean",
                       "to": "dirty"
                     }
                   },
                   "target_id": "mixer"
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "clean",
+                      "to": "in_use"
+                    }
+                  },
+                  "target_id": "mixer",
+                  "temporary": true
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "clean",
+                      "to": "dirty"
+                    }
+                  },
+                  "target_id": "mixing_bowl"
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "clean",
+                      "to": "in_use"
+                    }
+                  },
+                  "target_id": "mixing_bowl",
+                  "temporary": true
                 }
               ]
             },
@@ -314,6 +517,16 @@
               "interactions": [
                 {
                   "property_changes": {
+                    "state": {
+                      "from": "available",
+                      "to": "working"
+                    }
+                  },
+                  "target_id": "baker",
+                  "temporary": true
+                },
+                {
+                  "property_changes": {
                     "quantity": {
                       "delta": -1
                     }
@@ -322,11 +535,49 @@
                 },
                 {
                   "property_changes": {
+                    "state": {
+                      "from": "present",
+                      "to": "absent"
+                    }
+                  },
+                  "target_id": "mixed_dough"
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "present",
+                      "to": "processing"
+                    }
+                  },
+                  "target_id": "mixed_dough",
+                  "temporary": true
+                },
+                {
+                  "property_changes": {
                     "quantity": {
                       "delta": 1
                     }
                   },
                   "target_id": "risen_dough"
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "absent",
+                      "to": "present"
+                    }
+                  },
+                  "target_id": "risen_dough"
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "absent",
+                      "to": "processing"
+                    }
+                  },
+                  "target_id": "risen_dough",
+                  "temporary": true
                 }
               ]
             },
@@ -344,11 +595,31 @@
                 {
                   "property_changes": {
                     "state": {
-                      "from": "in-use",
+                      "from": "available",
+                      "to": "break"
+                    }
+                  },
+                  "target_id": "baker",
+                  "temporary": true
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "clean",
                       "to": "occupied"
                     }
                   },
                   "target_id": "workspace",
+                  "temporary": true
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "present",
+                      "to": "processing"
+                    }
+                  },
+                  "target_id": "risen_dough",
                   "temporary": true
                 }
               ]
@@ -365,11 +636,30 @@
                 {
                   "property_changes": {
                     "state": {
+                      "from": "available",
+                      "to": "working"
+                    }
+                  },
+                  "target_id": "assistant",
+                  "temporary": true
+                },
+                {
+                  "property_changes": {
+                    "state": {
                       "from": "dirty",
                       "to": "clean"
                     }
                   },
                   "target_id": "mixer"
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "dirty",
+                      "to": "clean"
+                    }
+                  },
+                  "target_id": "mixing_bowl"
                 }
               ]
             },
@@ -386,6 +676,16 @@
               "interactions": [
                 {
                   "property_changes": {
+                    "state": {
+                      "from": "available",
+                      "to": "working"
+                    }
+                  },
+                  "target_id": "baker",
+                  "temporary": true
+                },
+                {
+                  "property_changes": {
                     "quantity": {
                       "delta": -1
                     }
@@ -394,11 +694,59 @@
                 },
                 {
                   "property_changes": {
+                    "state": {
+                      "from": "present",
+                      "to": "absent"
+                    }
+                  },
+                  "target_id": "risen_dough"
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "present",
+                      "to": "processing"
+                    }
+                  },
+                  "target_id": "risen_dough",
+                  "temporary": true
+                },
+                {
+                  "property_changes": {
                     "quantity": {
                       "delta": 4
                     }
                   },
                   "target_id": "shaped_loaves"
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "absent",
+                      "to": "present"
+                    }
+                  },
+                  "target_id": "shaped_loaves"
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "absent",
+                      "to": "processing"
+                    }
+                  },
+                  "target_id": "shaped_loaves",
+                  "temporary": true
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "clean",
+                      "to": "in_use"
+                    }
+                  },
+                  "target_id": "workspace",
+                  "temporary": true
                 }
               ]
             },
@@ -411,6 +759,16 @@
               "location": "oven_area",
               "depends_on": [],
               "interactions": [
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "available",
+                      "to": "working"
+                    }
+                  },
+                  "target_id": "assistant",
+                  "temporary": true
+                },
                 {
                   "property_changes": {
                     "state": {
@@ -431,6 +789,28 @@
               "location": "prep_area",
               "depends_on": [
                 "shape_loaves"
+              ],
+              "interactions": [
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "available",
+                      "to": "break"
+                    }
+                  },
+                  "target_id": "baker",
+                  "temporary": true
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "present",
+                      "to": "processing"
+                    }
+                  },
+                  "target_id": "shaped_loaves",
+                  "temporary": true
+                }
               ]
             },
             {
@@ -447,11 +827,40 @@
               "interactions": [
                 {
                   "property_changes": {
+                    "state": {
+                      "from": "available",
+                      "to": "working"
+                    }
+                  },
+                  "target_id": "baker",
+                  "temporary": true
+                },
+                {
+                  "property_changes": {
                     "quantity": {
                       "delta": -4
                     }
                   },
                   "target_id": "shaped_loaves"
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "present",
+                      "to": "absent"
+                    }
+                  },
+                  "target_id": "shaped_loaves"
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "present",
+                      "to": "processing"
+                    }
+                  },
+                  "target_id": "shaped_loaves",
+                  "temporary": true
                 },
                 {
                   "property_changes": {
@@ -464,11 +873,40 @@
                 {
                   "property_changes": {
                     "state": {
+                      "from": "absent",
+                      "to": "ready"
+                    }
+                  },
+                  "target_id": "baked_bread"
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "absent",
+                      "to": "processing"
+                    }
+                  },
+                  "target_id": "baked_bread",
+                  "temporary": true
+                },
+                {
+                  "property_changes": {
+                    "state": {
                       "from": "preheating",
                       "to": "available"
                     }
                   },
                   "target_id": "oven"
+                },
+                {
+                  "property_changes": {
+                    "state": {
+                      "from": "preheating",
+                      "to": "baking"
+                    }
+                  },
+                  "target_id": "oven",
+                  "temporary": true
                 }
               ]
             }
@@ -4807,7 +5245,8 @@
                 "emoji": "👩‍🍳",
                 "properties": {
                   "role": "Lead Barista",
-                  "hourly_rate": 25
+                  "hourly_rate": 25,
+                  "state": "available"
                 }
               },
               {
@@ -4817,7 +5256,8 @@
                 "emoji": "👨‍🍳",
                 "properties": {
                   "role": "Barista",
-                  "hourly_rate": 20
+                  "hourly_rate": 20,
+                  "state": "available"
                 }
               },
               {
@@ -4828,7 +5268,8 @@
                 "properties": {
                   "model": "Professional X3000",
                   "purchase_cost": 5000,
-                  "daily_operating_cost": 15
+                  "daily_operating_cost": 15,
+                  "state": "available"
                 }
               },
               {
@@ -5107,7 +5548,8 @@
                 "emoji": "👩‍🍳",
                 "properties": {
                   "role": "Lead Barista",
-                  "hourly_rate": 30
+                  "hourly_rate": 30,
+                  "state": "available"
                 }
               },
               {
@@ -5117,7 +5559,8 @@
                 "emoji": "☕",
                 "properties": {
                   "model": "Professional X3000",
-                  "daily_operating_cost": 10
+                  "daily_operating_cost": 10,
+                  "state": "available"
                 }
               },
               {
@@ -5245,7 +5688,8 @@
                 "emoji": "🔧",
                 "properties": {
                   "role": "Equipment Technician",
-                  "service_cost": 150
+                  "service_cost": 150,
+                  "state": "available"
                 }
               },
               {
@@ -5255,7 +5699,8 @@
                 "emoji": "☕",
                 "properties": {
                   "model": "Professional X3000",
-                  "maintenance_cost": 75
+                  "maintenance_cost": 75,
+                  "state": "maintenance"
                 }
               }
             ],
@@ -5345,7 +5790,8 @@
                 "emoji": "👔",
                 "properties": {
                   "role": "Shop Manager",
-                  "hourly_rate": 35
+                  "hourly_rate": 35,
+                  "state": "available"
                 }
               },
               {

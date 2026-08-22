@@ -9,6 +9,7 @@ class SimulationPlayer {
         this.isUpdatingEditor = false;
         this.isScrubbing = false;
         this.trackedEventListeners = [];
+        this.currentObjectStates = new Map();
         this.sortedTasks = [...(simulationData.tasks || [])].sort((a, b) => a.start_minutes - b.start_minutes);
 
         // Cache for optimized state calculations
@@ -203,9 +204,9 @@ class SimulationPlayer {
         const deltaTime = (timestamp - this.lastFrameTime) / 1000; // time in seconds
         this.lastFrameTime = timestamp;
 
-        // The selected calendar scale controls the useful base rate: event
-        // playback is precise while day/week/month views traverse long plans.
-        const minutesPerSecond = window.workSpecTimeController?.getMinutesPerSecond?.() || 60;
+        // Calendar scale only changes navigation granularity. Playback speed is
+        // controlled exclusively by the base rate and the visible speed selector.
+        const minutesPerSecond = window.workSpecTimeController?.getMinutesPerSecond?.() || 5;
         let timeIncrement = deltaTime * minutesPerSecond * this.playbackSpeed;
         
         let newTime = this.playheadTime + timeIncrement;
@@ -1013,9 +1014,14 @@ class SimulationPlayer {
     }
 
     updateAllObjectStates() {
+        this.currentObjectStates.clear();
         Object.entries(this.ui.livePanels).forEach(([objectType, panel]) => {
             this.updateObjectTypeState(objectType, panel);
         });
+    }
+
+    getCurrentObjectState(objectId) {
+        return this.currentObjectStates.get(objectId);
     }
 
     updateObjectTypeState(objectType, panel) {
@@ -1237,6 +1243,10 @@ class SimulationPlayer {
             const bTime = bCreated?.createdAt || 0;
             if (aTime !== bTime) return aTime - bTime;
             return a.id.localeCompare(b.id);
+        });
+
+        Object.entries(states).forEach(([objectId, state]) => {
+            this.currentObjectStates.set(objectId, state);
         });
 
         panel.innerHTML = sortedObjects.map(item => {

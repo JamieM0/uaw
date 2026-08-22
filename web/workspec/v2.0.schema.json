@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://universalautomation.wiki/workspec/v2.0.schema.json",
   "title": "WorkSpec v2.0",
-  "description": "WorkSpec is an AI-native JSON specification for modeling work activities, processes, and simulations. This schema defines the WorkSpec v2.0 document structure (world/process split, unified interactions, dependency operators, flexible durations, multi-day starts, recipes, and type definitions).",
+  "description": "Canonical WorkSpec v2.0 schema for modeling work activities and simulations, including the world/process model, reusable state visuals, custom types and traits, multi-period calendars, digital space, display interfaces, interactions, recipes, and spatial layouts.",
   "type": "object",
   "required": [
     "simulation"
@@ -16,6 +16,9 @@
     "simulation": {
       "$ref": "#/definitions/Simulation"
     }
+  },
+  "not": {
+    "required": ["assets"]
   },
   "additionalProperties": true,
   "definitions": {
@@ -53,20 +56,76 @@
         "type_definitions": {
           "type": "object",
           "description": "Optional custom type definitions. Keys are custom type names; values describe base type extension and additional properties.",
+          "propertyNames": {
+            "$ref": "#/definitions/PlainId"
+          },
           "additionalProperties": {
             "$ref": "#/definitions/TypeDefinition"
           }
-        }
-      },
-      "not": {
-        "properties": {
-          "meta": {
-            "required": [
-              "article_title"
-            ]
+        },
+        "state_libraries": {
+          "type": "object",
+          "description": "Optional reusable semantic state sets and appearance-to-asset mappings. Library keys are referenced explicitly by objects.",
+          "propertyNames": {
+            "$ref": "#/definitions/PlainId"
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/StateLibrary"
+          }
+        },
+        "type_traits": {
+          "type": "object",
+          "description": "Optional reusable capability declarations for custom type systems.",
+          "propertyNames": {
+            "$ref": "#/definitions/PlainId"
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/TypeTrait"
+          }
+        },
+        "simulation_config": {
+          "$ref": "#/definitions/MultiPeriodConfig"
+        },
+        "calendar": {
+          "$ref": "#/definitions/Calendar"
+        },
+        "day_types": {
+          "type": "object",
+          "description": "Optional reusable day templates for repeating multi-period simulations.",
+          "propertyNames": {
+            "$ref": "#/definitions/PlainId"
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/DayType"
+          }
+        },
+        "digital_space": {
+          "$ref": "#/definitions/DigitalSpace"
+        },
+        "displays": {
+          "type": "array",
+          "description": "Optional display-interface surfaces authored in WorkSpec Studio.",
+          "items": {
+            "$ref": "#/definitions/Display"
           }
         }
       },
+      "allOf": [
+        {
+          "not": {
+            "properties": {
+              "meta": {
+                "required": ["article_title"]
+              }
+            }
+          }
+        },
+        {
+          "not": {
+            "required": ["assets"]
+          }
+        }
+      ],
       "additionalProperties": true
     },
     "Meta": {
@@ -78,16 +137,23 @@
         "domain"
       ],
       "properties": {
+        "id": {
+          "$ref": "#/definitions/PlainId",
+          "description": "Optional stable simulation identifier."
+        },
         "title": {
           "type": "string",
+          "minLength": 1,
           "description": "Human-readable title (also referred to as: name, label)."
         },
         "description": {
           "type": "string",
+          "minLength": 1,
           "description": "Detailed description of what this simulation models (also referred to as: summary, overview)."
         },
         "domain": {
           "type": "string",
+          "minLength": 1,
           "description": "Industry/domain category (also referred to as: sector, category)."
         },
         "version": {
@@ -153,6 +219,7 @@
         },
         "timezone": {
           "type": "string",
+          "minLength": 1,
           "description": "Optional IANA timezone identifier (default: UTC)."
         },
         "currency": {
@@ -162,8 +229,8 @@
         },
         "locale": {
           "type": "string",
-          "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
-          "description": "BCP 47 locale (e.g., en-US)."
+          "pattern": "^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$",
+          "description": "BCP 47-style locale tag (for example en-US or zh-Hans-CN)."
         }
       },
       "additionalProperties": true
@@ -184,6 +251,20 @@
             "$ref": "#/definitions/Object"
           },
           "description": "All entities in the simulation (people, equipment, resources, products, services, digital objects)."
+        },
+        "digital_locations": {
+          "type": "array",
+          "description": "Compatibility location for digital locations; prefer simulation.digital_space.digital_locations.",
+          "items": {
+            "$ref": "#/definitions/DigitalLocation"
+          }
+        },
+        "displays": {
+          "type": "array",
+          "description": "Compatibility location for displays; prefer simulation.displays.",
+          "items": {
+            "$ref": "#/definitions/Display"
+          }
         }
       },
       "additionalProperties": true
@@ -328,6 +409,7 @@
         },
         "points": {
           "type": "array",
+          "minItems": 3,
           "items": {
             "type": "object",
             "required": [
@@ -346,6 +428,38 @@
           }
         }
       },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": { "const": "rect" }
+            }
+          },
+          "then": {
+            "required": ["x", "y", "width", "height"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": { "const": "circle" }
+            }
+          },
+          "then": {
+            "required": ["x", "y", "radius"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": { "const": "polygon" }
+            }
+          },
+          "then": {
+            "required": ["points"]
+          }
+        }
+      ],
       "additionalProperties": true
     },
     "Coordinates": {
@@ -376,6 +490,82 @@
       },
       "additionalProperties": true
     },
+    "Point2D": {
+      "type": "object",
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      },
+      "additionalProperties": true
+    },
+    "Size2D": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "number", "minimum": 0 },
+        "height": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "Bounds2D": {
+      "type": "object",
+      "required": ["x", "y", "width", "height"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "width": { "type": "number", "minimum": 0 },
+        "height": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "StandardObjectProperties": {
+      "type": "object",
+      "description": "Documented properties shared by built-in object types. Domain-specific and custom-type properties are also allowed.",
+      "properties": {
+        "state": { "type": "string", "minLength": 1 },
+        "role": { "type": "string" },
+        "cost_per_hour": { "type": "number" },
+        "depreciation_per_hour": { "type": "number" },
+        "overhead_rate": { "type": "number", "minimum": 0 },
+        "fixed_cost": { "type": "number" },
+        "capacity": {
+          "description": "Numeric capacity or a domain-specific capacity string that includes units.",
+          "anyOf": [
+            { "type": "number", "minimum": 0 },
+            { "type": "string", "minLength": 1 }
+          ]
+        },
+        "quantity": { "type": "number" },
+        "unit": { "type": "string" },
+        "cost_per_unit": { "type": "number" },
+        "revenue_per_unit": { "type": "number" },
+        "utilization": { "type": "number", "minimum": 0, "maximum": 1 },
+        "interval": { "$ref": "#/definitions/Duration" },
+        "last_run": { "type": "string", "format": "date-time" },
+        "display_type": { "type": "string" },
+        "resolution": { "$ref": "#/definitions/Size2D" },
+        "viewport": { "$ref": "#/definitions/Bounds2D" },
+        "location": { "type": "string" },
+        "active": { "type": "boolean" },
+        "refresh_rate": { "type": "number", "exclusiveMinimum": 0 },
+        "touch_enabled": { "type": "boolean" },
+        "brightness": { "type": "number", "minimum": 0, "maximum": 100 },
+        "element_type": { "type": "string" },
+        "display_id": { "type": "string" },
+        "position": { "$ref": "#/definitions/Point2D" },
+        "dimensions": { "$ref": "#/definitions/Size2D" },
+        "visible": { "type": "boolean" },
+        "interactive": { "type": "boolean" },
+        "z_index": { "type": "integer" },
+        "location_id": { "type": "string" },
+        "size_mb": { "type": "number", "minimum": 0 },
+        "file_type": { "type": "string" },
+        "permissions": { "type": "string" },
+        "encrypted": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
     "Object": {
       "type": "object",
       "description": "An entity in the simulation (actor, equipment, resource, product, service, or digital object).",
@@ -391,24 +581,32 @@
         },
         "type": {
           "type": "string",
+          "pattern": "^(?!_)(?!timeline_actors$)(?!any$)(?!unknown$)(?!material$)(?!ingredient$)(?!tool$)[a-z][a-z0-9_]{0,249}$",
           "description": "Object type (built-in or custom)."
         },
         "name": {
           "type": "string",
+          "minLength": 1,
           "description": "Display name."
         },
         "emoji": {
           "type": "string",
-          "maxLength": 8
+          "maxLength": 32
         },
         "location": {
           "type": "string",
           "description": "Location ID where the object is situated."
         },
+        "state_library": {
+          "$ref": "#/definitions/PlainId",
+          "description": "Optional explicit reference to a key in simulation.state_libraries. This is independent of the object's base type."
+        },
+        "appearance": {
+          "$ref": "#/definitions/PlainId",
+          "description": "Optional appearance key within the referenced State Library."
+        },
         "properties": {
-          "type": "object",
-          "description": "Type-specific and custom properties.",
-          "additionalProperties": true
+          "$ref": "#/definitions/StandardObjectProperties"
         }
       },
       "not": {
@@ -419,6 +617,93 @@
               "any",
               "unknown"
             ]
+          }
+        }
+      },
+      "dependencies": {
+        "appearance": ["state_library"],
+        "state_library": ["properties"]
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": { "enum": ["actor", "equipment", "service", "display", "screen_element", "digital_object"] }
+            }
+          },
+          "then": {
+            "required": ["properties"],
+            "properties": {
+              "properties": {
+                "required": ["state"]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": { "enum": ["resource", "product", "digital_object"] }
+            }
+          },
+          "then": {
+            "required": ["properties"],
+            "properties": {
+              "properties": {
+                "required": ["quantity"],
+                "properties": {
+                  "quantity": { "type": "number", "minimum": 0 }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["state_library"]
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "required": ["state"]
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": true
+    },
+    "StateLibrary": {
+      "type": "object",
+      "description": "A reusable list of valid semantic states plus optional appearances that map those states to project asset IDs.",
+      "required": [
+        "states"
+      ],
+      "properties": {
+        "states": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": ".*\\S.*"
+          }
+        },
+        "appearances": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/definitions/PlainId"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "description": "Map of a declared state name to an uploaded project asset ID.",
+            "propertyNames": {
+              "pattern": ".*\\S.*"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "pattern": ".*\\S.*"
+            }
           }
         }
       },
@@ -439,10 +724,10 @@
         },
         "emoji": {
           "type": "string",
-          "maxLength": 8
+          "maxLength": 32
         },
         "actor_id": {
-          "type": "string",
+          "$ref": "#/definitions/ObjectId",
           "description": "Performer object id."
         },
         "start": {
@@ -489,7 +774,7 @@
       "description": "A task effect on an object. Either a property change, or an action (create/delete).",
       "properties": {
         "target_id": {
-          "type": "string",
+          "$ref": "#/definitions/ObjectId",
           "description": "ID of the affected object."
         },
         "property_changes": {
@@ -574,6 +859,10 @@
     "PropertyChanges": {
       "type": "object",
       "description": "Map of property name -> change operator.",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": ".*\\S.*"
+      },
       "additionalProperties": {
         "$ref": "#/definitions/ChangeOperator"
       }
@@ -581,6 +870,7 @@
     "ChangeOperator": {
       "type": "object",
       "description": "A change operator (delta/set/from-to/multiply/append/remove/increment/decrement).",
+      "minProperties": 1,
       "properties": {
         "from": {},
         "to": {},
@@ -594,40 +884,64 @@
         "append": {},
         "remove": {},
         "increment": {
-          "type": "boolean"
+          "const": true
         },
         "decrement": {
-          "type": "boolean"
+          "const": true
         }
       },
-      "additionalProperties": true
+      "dependencies": {
+        "from": ["to"],
+        "to": ["from"]
+      },
+      "allOf": [
+        {
+          "not": {
+            "anyOf": [
+              { "required": ["from", "delta"] },
+              { "required": ["from", "multiply"] },
+              { "required": ["from", "increment"] },
+              { "required": ["from", "decrement"] },
+              { "required": ["to", "delta"] },
+              { "required": ["to", "multiply"] },
+              { "required": ["to", "increment"] },
+              { "required": ["to", "decrement"] }
+            ]
+          }
+        }
+      ],
+      "additionalProperties": false
     },
     "DependsOn": {
       "description": "Task dependencies, either an array (implicit AND), or an object with explicit all/any operators.",
       "anyOf": [
         {
           "type": "array",
+          "uniqueItems": true,
           "items": {
             "$ref": "#/definitions/PlainId"
           }
         },
         {
           "type": "object",
+          "minProperties": 1,
           "properties": {
             "all": {
               "type": "array",
+              "uniqueItems": true,
               "items": {
                 "$ref": "#/definitions/PlainId"
               }
             },
             "any": {
               "type": "array",
+              "uniqueItems": true,
               "items": {
                 "$ref": "#/definitions/PlainId"
               }
             }
           },
-          "additionalProperties": true
+          "additionalProperties": false
         }
       ]
     },
@@ -657,7 +971,7 @@
       ]
     },
     "Duration": {
-      "description": "Task duration. Supports integer (uses config.time_unit), ISO 8601 duration (e.g., PT30M), or shorthand (e.g., 30m, 1h, 1d, 10s, 1w, 1M).",
+      "description": "Positive task duration. Supports integer (uses config.time_unit), ISO 8601 duration (e.g., PT30M), or shorthand including decimals (e.g., 30m, 1.5h, 1d, 10s, 1w, 1M).",
       "anyOf": [
         {
           "type": "integer",
@@ -667,10 +981,10 @@
           "type": "string",
           "anyOf": [
             {
-              "pattern": "^\\d+[smhdwWM]$"
+              "pattern": "^[0-9]+(?:\\.[0-9]+)?[smhdwWM]$"
             },
             {
-              "pattern": "^P(?!$)(?:\\d+Y)?(?:\\d+M)?(?:\\d+W)?(?:\\d+D)?(?:T(?:\\d+H)?(?:\\d+M)?(?:\\d+S)?)?$"
+              "pattern": "^[Pp](?=[^0-9]*[0-9]*[1-9])(?:[0-9]+Y)?(?:[0-9]+M)?(?:[0-9]+D)?(?:[Tt](?:[0-9]+H)?(?:[0-9]+M)?(?:[0-9]+S)?)?$"
             }
           ]
         }
@@ -710,6 +1024,320 @@
         }
       ]
     },
+    "DateExpression": {
+      "description": "ISO calendar date or a relative date expression used by multi-period calendars.",
+      "type": "string",
+      "anyOf": [
+        { "format": "date" },
+        { "pattern": "^date\\.(?:today|start)(?:\\s*[+-]\\s*\\d+)?$" }
+      ]
+    },
+    "MultiPeriodConfig": {
+      "type": "object",
+      "description": "Optional overall date range for a repeating multi-period simulation.",
+      "properties": {
+        "start_date": { "$ref": "#/definitions/DateExpression" },
+        "duration_days": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": true
+    },
+    "CalendarPatternEntry": {
+      "type": "object",
+      "required": ["day", "type"],
+      "properties": {
+        "day": { "type": "integer", "minimum": 1 },
+        "type": { "$ref": "#/definitions/PlainId" }
+      },
+      "additionalProperties": true
+    },
+    "CalendarOverride": {
+      "type": "object",
+      "required": ["date", "type"],
+      "properties": {
+        "date": { "$ref": "#/definitions/DateExpression" },
+        "type": { "$ref": "#/definitions/PlainId" }
+      },
+      "additionalProperties": true
+    },
+    "Calendar": {
+      "type": "object",
+      "description": "Repeating day-type pattern with optional date-specific overrides.",
+      "required": ["cycle_length", "pattern"],
+      "properties": {
+        "cycle_length": { "type": "integer", "minimum": 1 },
+        "pattern": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/CalendarPatternEntry" }
+        },
+        "overrides": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/CalendarOverride" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "DayTypeConfig": {
+      "type": "object",
+      "properties": {
+        "start_time": { "$ref": "#/definitions/TimeOrDateTime" },
+        "end_time": { "$ref": "#/definitions/TimeOrDateTime" }
+      },
+      "additionalProperties": true
+    },
+    "DayTypeLocation": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "name": { "type": "string", "minLength": 1 },
+        "emoji": { "type": "string", "maxLength": 32 },
+        "position": { "$ref": "#/definitions/Coordinates" },
+        "shape": { "$ref": "#/definitions/Shape" },
+        "properties": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": true
+    },
+    "LegacyDayTypeInteraction": {
+      "type": "object",
+      "description": "Compatibility form still understood by the multi-period Studio renderer; canonical task interactions should use property_changes.",
+      "required": ["target_id", "interaction_type"],
+      "properties": {
+        "target_id": { "$ref": "#/definitions/ObjectId" },
+        "interaction_type": { "type": "string", "minLength": 1 },
+        "quantity": { "type": "number" },
+        "duration": { "$ref": "#/definitions/Duration" },
+        "temporary": { "type": "boolean" },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "DayTypeTask": {
+      "type": "object",
+      "required": ["id", "actor_id", "start", "duration"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "emoji": { "type": "string", "maxLength": 32 },
+        "actor_id": { "$ref": "#/definitions/ObjectId" },
+        "start": { "$ref": "#/definitions/TaskStart" },
+        "duration": { "$ref": "#/definitions/Duration" },
+        "location": { "type": "string" },
+        "location_id": { "type": "string", "description": "Legacy multi-period alias for location." },
+        "depends_on": { "$ref": "#/definitions/DependsOn" },
+        "interactions": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              { "$ref": "#/definitions/Interaction" },
+              { "$ref": "#/definitions/LegacyDayTypeInteraction" }
+            ]
+          }
+        },
+        "description": { "type": "string" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "DayType": {
+      "type": "object",
+      "description": "Reusable definition of one operational day in a multi-period simulation.",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "config": { "$ref": "#/definitions/DayTypeConfig" },
+        "locations": { "type": "array", "items": { "$ref": "#/definitions/DayTypeLocation" } },
+        "objects": { "type": "array", "items": { "$ref": "#/definitions/Object" } },
+        "tasks": { "type": "array", "items": { "$ref": "#/definitions/DayTypeTask" } }
+      },
+      "additionalProperties": true
+    },
+    "DigitalLocation": {
+      "type": "object",
+      "required": ["id", "name", "type", "x", "y", "width", "height"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "minLength": 1 },
+        "layer": { "type": "integer" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number" },
+        "width": { "type": "number", "minimum": 0 },
+        "height": { "type": "number", "minimum": 0 },
+        "depth": { "type": "number", "minimum": 0 },
+        "parent_id": { "type": ["string", "null"] },
+        "physical_object_id": { "type": ["string", "null"] },
+        "capacity_gb": { "type": "number", "minimum": 0 },
+        "storage_type": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "DigitalObject": {
+      "type": "object",
+      "required": ["id", "name", "type"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "minLength": 1 },
+        "created_time": { "type": "string", "format": "date-time" },
+        "modified_time": { "type": "string", "format": "date-time" },
+        "properties": { "$ref": "#/definitions/StandardObjectProperties" }
+      },
+      "additionalProperties": true
+    },
+    "DigitalConnectionProperties": {
+      "type": "object",
+      "properties": {
+        "bandwidth_mbps": { "type": "number", "minimum": 0 },
+        "latency_ms": { "type": "number", "minimum": 0 },
+        "protocol": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "DigitalConnection": {
+      "type": "object",
+      "required": ["id", "from", "to", "type"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "from": { "type": "string", "minLength": 1 },
+        "to": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "minLength": 1 },
+        "properties": { "$ref": "#/definitions/DigitalConnectionProperties" }
+      },
+      "additionalProperties": true
+    },
+    "DataFlow": {
+      "type": "object",
+      "required": ["id", "source", "destination"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "source": { "type": "string", "minLength": 1 },
+        "destination": { "type": "string", "minLength": 1 },
+        "task_id": { "type": ["string", "null"] },
+        "start_time": { "$ref": "#/definitions/TimeOrDateTime" },
+        "duration": { "$ref": "#/definitions/Duration" },
+        "size_mb": { "type": "number", "minimum": 0 },
+        "properties": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": true
+    },
+    "DigitalSpace": {
+      "type": "object",
+      "description": "Digital topology and data movement associated with the simulation.",
+      "properties": {
+        "digital_locations": { "type": "array", "items": { "$ref": "#/definitions/DigitalLocation" } },
+        "digital_objects": { "type": "array", "items": { "$ref": "#/definitions/DigitalObject" } },
+        "connections": { "type": "array", "items": { "$ref": "#/definitions/DigitalConnection" } },
+        "data_flows": { "type": "array", "items": { "$ref": "#/definitions/DataFlow" } }
+      },
+      "additionalProperties": true
+    },
+    "DisplayContent": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "value": {},
+        "alignment": { "type": "string", "enum": ["left", "center", "right"] }
+      },
+      "additionalProperties": true
+    },
+    "DisplayElementProperties": {
+      "type": "object",
+      "properties": {
+        "visible": { "type": "boolean" },
+        "clickable": { "type": "boolean" },
+        "background": { "type": "string" },
+        "border": { "type": "string" },
+        "text_color": { "type": "string" },
+        "layout": { "type": "string", "enum": ["stretch", "center", "contain", "cover", "none"] }
+      },
+      "additionalProperties": true
+    },
+    "DisplayElementState": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "selected": { "type": "boolean" },
+        "visible": { "type": "boolean" },
+        "value": {},
+        "validation_state": { "type": "string", "enum": ["valid", "invalid", "warning"] },
+        "loading": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "DisplayElementInteraction": {
+      "type": "object",
+      "required": ["trigger", "action"],
+      "properties": {
+        "trigger": { "type": "string", "minLength": 1 },
+        "action": { "type": "string", "minLength": 1 },
+        "target": { "type": ["string", "null"] },
+        "task_id": { "type": ["string", "null"] },
+        "properties": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": true
+    },
+    "DisplayElement": {
+      "type": "object",
+      "required": ["id", "type", "bounds"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "type": { "type": "string", "minLength": 1 },
+        "bounds": { "$ref": "#/definitions/Bounds2D" },
+        "z_index": { "type": "integer" },
+        "parent_id": { "type": ["string", "null"] },
+        "content": { "$ref": "#/definitions/DisplayContent" },
+        "properties": { "$ref": "#/definitions/DisplayElementProperties" },
+        "state": { "$ref": "#/definitions/DisplayElementState" },
+        "interactions": { "type": "array", "items": { "$ref": "#/definitions/DisplayElementInteraction" } },
+        "animations": { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+      },
+      "additionalProperties": true
+    },
+    "DisplayNavigationScreen": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "name": { "type": "string", "minLength": 1 },
+        "elements": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "DisplayNavigationTransition": {
+      "type": "object",
+      "required": ["from", "to"],
+      "properties": {
+        "from": { "type": "string", "minLength": 1 },
+        "to": { "type": "string", "minLength": 1 },
+        "trigger_element": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "DisplayNavigation": {
+      "type": "object",
+      "properties": {
+        "initial_screen": { "type": "string" },
+        "screens": { "type": "array", "items": { "$ref": "#/definitions/DisplayNavigationScreen" } },
+        "transitions": { "type": "array", "items": { "$ref": "#/definitions/DisplayNavigationTransition" } }
+      },
+      "additionalProperties": true
+    },
+    "Display": {
+      "type": "object",
+      "required": ["id", "name", "viewport", "rectangles"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "name": { "type": "string", "minLength": 1 },
+        "physical_object_id": { "type": ["string", "null"] },
+        "digital_object_id": { "type": ["string", "null"] },
+        "viewport": { "$ref": "#/definitions/Size2D" },
+        "rectangles": { "type": "array", "items": { "$ref": "#/definitions/DisplayElement" } },
+        "navigation": { "$ref": "#/definitions/DisplayNavigation" }
+      },
+      "additionalProperties": true
+    },
     "Recipes": {
       "type": "object",
       "description": "Recipe definitions keyed by product id.",
@@ -727,6 +1355,9 @@
         "inputs": {
           "type": "object",
           "description": "Resource ID -> required quantity.",
+          "propertyNames": {
+            "$ref": "#/definitions/ObjectId"
+          },
           "additionalProperties": {
             "type": "number",
             "minimum": 0
@@ -734,8 +1365,9 @@
         },
         "equipment": {
           "type": "array",
+          "uniqueItems": true,
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/ObjectId"
           }
         },
         "output_quantity": {
@@ -749,6 +1381,47 @@
       },
       "additionalProperties": true
     },
+    "TypeTrait": {
+      "type": "object",
+      "description": "A reusable capability declaration for object types.",
+      "properties": {
+        "description": { "type": "string" },
+        "required_properties": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "valid_operations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["from/to", "delta", "set", "multiply", "append", "remove", "increment", "decrement"]
+          }
+        },
+        "can_be_actor_id": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "TypePropertyDefinition": {
+      "type": "object",
+      "description": "Schema-like metadata for a custom object property.",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["string", "number", "integer", "boolean", "array", "object"]
+        },
+        "description": { "type": "string" },
+        "unit": { "type": "string" },
+        "required": { "type": "boolean" },
+        "default": {},
+        "enum": { "type": "array" },
+        "minimum": { "type": "number" },
+        "maximum": { "type": "number" }
+      },
+      "additionalProperties": true
+    },
     "TypeDefinition": {
       "type": "object",
       "description": "Custom type definition extending a built-in base type.",
@@ -758,6 +1431,7 @@
       "properties": {
         "extends": {
           "type": "string",
+          "enum": ["actor", "equipment", "resource", "product", "service", "display", "screen_element", "digital_object"],
           "description": "Built-in base type to extend."
         },
         "description": {
@@ -766,7 +1440,19 @@
         "additional_properties": {
           "type": "object",
           "description": "Optional schema-like description of extra properties for this custom type.",
-          "additionalProperties": true
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]{0,249}$"
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/TypePropertyDefinition"
+          }
+        },
+        "traits": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/definitions/PlainId"
+          }
         }
       },
       "additionalProperties": true

@@ -2455,6 +2455,25 @@ body[data-uaw-workspace="settings"] #uaw-help-commands {
     border-radius: var(--uaw-radius);
 }
 
+.uaw-asset-card {
+    content-visibility: auto;
+    contain: layout paint style;
+    contain-intrinsic-size: 220px 240px;
+}
+
+.uaw-asset-load-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 0 6px;
+}
+
+.uaw-asset-load-more span {
+    color: var(--uaw-slate-600);
+    font-size: 12px;
+}
+
 .uaw-asset-preview {
     display: grid;
     place-items: center;
@@ -6596,6 +6615,199 @@ body.uaw-v2 #uaw-playback-commands .player-time-display {
     text-align: left;
 }
 
+/* Context-aware WorkSpec source ------------------------------------------------
+   The canonical editor is mounted once in this stage-level pane, so every
+   product surface can share the same source without copying document state. */
+.uaw-source-pane {
+    position: absolute;
+    inset: 0;
+    z-index: 12;
+    display: none;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    color: #d9e2f0;
+    background: #111827;
+    border-color: #344258;
+}
+
+.uaw-source-pane .json-editor-panel {
+    display: flex !important;
+    flex-direction: column;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0;
+    min-height: 0;
+    background: #111827;
+    border: 0 !important;
+}
+
+.uaw-source-pane .json-editor-panel > .panel-header {
+    display: flex !important;
+    flex: 0 0 43px;
+    min-height: 43px;
+    padding: 0;
+    color: #d9e2f0;
+    background: #172033;
+    border-bottom: 1px solid #344258;
+}
+
+.uaw-source-pane .json-editor-panel > .panel-content {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+}
+
+.uaw-source-pane #json-editor { width: 100%; height: 100%; }
+.uaw-source-pane .resize-handle-vertical { display: none !important; }
+
+.uaw-source-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    min-width: 0;
+    padding: 6px 9px 6px 12px;
+}
+
+.uaw-source-identity {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+}
+
+.uaw-source-identity strong {
+    color: #f4f7fb;
+    font: 650 11px/1 var(--uaw-font-ui);
+    white-space: nowrap;
+}
+
+.uaw-source-identity code {
+    min-width: 0;
+    overflow: hidden;
+    color: #8fa4c2;
+    font: 500 9px/1 var(--uaw-font-code);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.uaw-source-scope {
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 2px;
+    margin-left: auto;
+    padding: 2px;
+    background: #0f1726;
+    border: 1px solid #3a4960;
+    border-radius: 6px;
+}
+
+.uaw-source-scope button {
+    min-width: 66px;
+    height: 25px;
+    padding: 0 8px;
+    color: #9dafc8;
+    background: transparent;
+    border: 0;
+    border-radius: 4px;
+    font: 650 9px var(--uaw-font-ui);
+}
+
+.uaw-source-scope button:hover { color: #fff; background: #25324a; }
+.uaw-source-scope button[aria-pressed="true"] { color: #fff; background: #315fbd; box-shadow: inset 0 0 0 1px #4f7dd7; }
+.uaw-source-scope button:focus-visible { outline: 2px solid #78a7ff; outline-offset: 1px; }
+
+.uaw-source-status {
+    flex: 0 1 142px;
+    overflow: hidden;
+    color: #91a1b8;
+    font: 500 9px var(--uaw-font-ui);
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Source is available beside every document-facing workspace. */
+body.uaw-v2[data-uaw-workspace="build"][data-source-dock^="split-"] .uaw-source-pane,
+body.uaw-v2[data-uaw-workspace="run"][data-source-dock^="split-"] .uaw-source-pane,
+body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-source-pane,
+body.uaw-v2[data-uaw-workspace="source"] .uaw-source-pane { display: block !important; }
+
+body.uaw-v2[data-uaw-workspace="source"] .uaw-source-pane { inset: 0 !important; border: 0; }
+body.uaw-v2[data-uaw-workspace="source"] .uaw-legacy-host,
+body.uaw-v2[data-uaw-workspace="source"] .uaw-product-view { display: none !important; }
+
+body.uaw-v2[data-source-dock="split-left"] .uaw-source-pane {
+    left: 0;
+    right: calc(100% - var(--uaw-source-split, 52%));
+    border-right: 1px solid #344258;
+}
+
+body.uaw-v2[data-source-dock="split-right"] .uaw-source-pane {
+    left: var(--uaw-source-split, 52%);
+    right: 0;
+    border-left: 1px solid #344258;
+}
+
+body.uaw-v2[data-source-dock="split-bottom"] .uaw-source-pane {
+    top: var(--uaw-source-split, 62%);
+    bottom: 0;
+    border-top: 1px solid #344258;
+}
+
+body.uaw-v2[data-uaw-workspace="build"][data-source-dock="split-left"] :is(.uaw-legacy-host, #uaw-process-view, #uaw-objects-view),
+body.uaw-v2[data-uaw-workspace="run"][data-source-dock="split-left"] .uaw-legacy-host,
+body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-left"] #uaw-assets-view {
+    left: var(--uaw-source-split, 52%) !important;
+    right: 0 !important;
+}
+
+body.uaw-v2[data-uaw-workspace="build"][data-source-dock="split-right"] :is(.uaw-legacy-host, #uaw-process-view, #uaw-objects-view),
+body.uaw-v2[data-uaw-workspace="run"][data-source-dock="split-right"] .uaw-legacy-host,
+body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-right"] #uaw-assets-view {
+    left: 0 !important;
+    right: calc(100% - var(--uaw-source-split, 52%)) !important;
+}
+
+body.uaw-v2[data-uaw-workspace="build"][data-source-dock="split-bottom"] :is(.uaw-legacy-host, #uaw-process-view, #uaw-objects-view),
+body.uaw-v2[data-uaw-workspace="run"][data-source-dock="split-bottom"] .uaw-legacy-host,
+body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-bottom"] #uaw-assets-view {
+    top: 0 !important;
+    bottom: calc(100% - var(--uaw-source-split, 62%)) !important;
+}
+
+/* The visual half always fills its assigned side now that Source is a sibling. */
+body.uaw-v2 .uaw-legacy-host .playground-main,
+body.uaw-v2 .uaw-legacy-host .playground-top,
+body.uaw-v2 .uaw-legacy-host .playground-left,
+body.uaw-v2 .uaw-legacy-host .standard-mode-layout,
+body.uaw-v2 .uaw-legacy-host .simulation-panel {
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+body.uaw-v2 .uaw-legacy-host .simulation-panel { flex: 1 1 100% !important; }
+
+/* The separator only appears when both halves are visible. */
+body.uaw-v2 .uaw-source-resizer { display: none !important; }
+body.uaw-v2[data-uaw-workspace="build"][data-source-dock^="split-"] .uaw-source-resizer,
+body.uaw-v2[data-uaw-workspace="run"][data-source-dock^="split-"] .uaw-source-resizer,
+body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-source-resizer { display: block !important; }
+
+.monaco-editor .uaw-source-change-line { background: rgba(52, 211, 153, .16); box-shadow: inset 3px 0 #34d399; }
+.monaco-editor .uaw-source-change-gutter { border-left: 3px solid #34d399; }
+.uaw-source-linked { outline: 2px solid #2f78dd !important; outline-offset: 2px; }
+
+@media (max-width: 900px) {
+    .uaw-source-status { display: none; }
+    .uaw-source-identity code { display: none; }
+    .uaw-source-scope button { min-width: 58px; padding-inline: 6px; }
+}
+
 body.uaw-v2 #player-current-date { color: #59687c; font: 550 10px var(--uaw-font-ui); }
 body.uaw-v2 #player-current-time { color: #15243a; font: 650 11px var(--uaw-font-code); }
 body.uaw-v2 #uaw-playback-commands .player-time-display:hover,
@@ -6939,4 +7151,217 @@ body[data-theme="dark"] .workspec-time-scrubber output { color: #e5edf7; }
 
 @media (max-width: 760px) {
     .workspec-time-navigator { inset: auto 8px 8px; width: auto; max-height: none; }
+}
+
+/* State visuals ------------------------------------------------------------- */
+.uaw-state-visuals,
+.uaw-asset-section-heading {
+    max-width: 1180px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.uaw-state-visuals {
+    container-type: inline-size;
+    margin-bottom: 22px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--uaw-slate-300);
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(28, 43, 57, .04);
+}
+
+.uaw-state-visuals__bar {
+    display: flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 11px;
+    background: #eef3f6;
+    border-bottom: 1px solid var(--uaw-slate-300);
+}
+
+.uaw-state-visuals__bar h2,
+.uaw-asset-section-heading h2 { margin: 0; color: var(--uaw-slate-950); font: 650 18px/1.2 var(--uaw-font-ui); }
+.uaw-state-visuals__bar h2 { font-size: 12px; letter-spacing: .015em; }
+
+.uaw-state-visuals button,
+.uaw-view-heading > div > button,
+.uaw-state-mapping button {
+    min-height: 30px;
+    padding: 0 10px;
+    color: #24435d;
+    background: white;
+    border: 1px solid #aebdca;
+    border-radius: 4px;
+    font: 650 11px var(--uaw-font-ui);
+    cursor: pointer;
+}
+
+.uaw-state-visuals button:hover,
+.uaw-view-heading > div > button:hover { color: #123a5b; background: #edf6fa; border-color: #7096b2; }
+.uaw-state-visuals button:disabled { opacity: .45; cursor: default; }
+
+.uaw-state-workbench {
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1fr);
+    min-height: 250px;
+}
+
+.uaw-state-library-rail {
+    min-width: 0;
+    background: #f7f9fb;
+    border-right: 1px solid var(--uaw-slate-300);
+}
+
+.uaw-state-pane-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 34px;
+    padding: 0 8px 0 11px;
+    color: var(--uaw-slate-700);
+    border-bottom: 1px solid var(--uaw-slate-200);
+    font: 650 10px var(--uaw-font-ui);
+    letter-spacing: .045em;
+    text-transform: uppercase;
+}
+
+.uaw-state-pane-heading button {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 0;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.uaw-state-library-list { display: grid; align-content: start; padding: 5px; }
+.uaw-state-library-list > p { margin: 8px; color: var(--uaw-slate-500); font-size: 10px; }
+.uaw-state-library-item {
+    display: grid;
+    gap: 2px;
+    width: 100%;
+    min-height: 42px !important;
+    padding: 6px 8px !important;
+    color: var(--uaw-slate-700) !important;
+    background: transparent !important;
+    border-color: transparent !important;
+    text-align: left;
+}
+.uaw-state-library-item:hover { background: #edf2f6 !important; }
+.uaw-state-library-item.is-active { color: #123f62 !important; background: #e2eef6 !important; border-color: #a9c1d1 !important; }
+.uaw-state-library-item code { overflow: hidden; font: 650 11px var(--uaw-font-code); text-overflow: ellipsis; white-space: nowrap; }
+.uaw-state-library-item span { color: var(--uaw-slate-500); font: 9px var(--uaw-font-ui); }
+
+.uaw-state-library-create { display: grid; gap: 5px; margin-top: 4px; padding: 6px; background: #eaf1f5; border: 1px solid #a9bdca; border-radius: 4px; }
+.uaw-state-library-create > div { display: flex; gap: 4px; }
+.uaw-state-library-create button { flex: 1; min-height: 25px; padding: 0 5px; font-size: 9px; }
+
+.uaw-state-library-editor { min-width: 0; background: #fff; }
+.uaw-state-library-editor__top {
+    display: grid;
+    grid-template-columns: minmax(140px, .55fr) minmax(280px, 2fr);
+    align-items: center;
+    gap: 14px;
+    min-height: 48px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--uaw-slate-200);
+}
+.uaw-state-library-editor__top > strong code { color: #153f5e; font: 700 12px var(--uaw-font-code); }
+.uaw-state-library-editor__top label { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px; color: var(--uaw-slate-600); font: 650 9px var(--uaw-font-ui); letter-spacing: .04em; text-transform: uppercase; }
+
+.uaw-state-library-create input,
+.uaw-state-library-editor__top input,
+.uaw-state-appearance-create input {
+    width: 100%;
+    height: 28px;
+    padding: 0 7px;
+    color: var(--uaw-slate-900);
+    background: white;
+    border: 1px solid var(--uaw-slate-300);
+    border-radius: 4px;
+    font: 11px var(--uaw-font-code);
+}
+
+.uaw-state-appearance-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 38px;
+    padding: 4px 8px 4px 10px;
+    background: #f8fafb;
+    border-bottom: 1px solid var(--uaw-slate-200);
+}
+.uaw-state-appearance-bar > strong { flex: 0 0 auto; color: var(--uaw-slate-600); font: 600 10px var(--uaw-font-ui); }
+.uaw-state-appearance-bar code { color: #174b70; font: 650 10px var(--uaw-font-code); }
+.uaw-state-appearance-list { display: flex; flex: 1; flex-wrap: wrap; gap: 4px; }
+.uaw-state-appearance-item { min-height: 26px !important; padding: 0 8px !important; background: transparent !important; border-color: transparent !important; font: 600 10px var(--uaw-font-code) !important; }
+.uaw-state-appearance-item.is-active { color: #123f62; background: #e2eef6 !important; border-color: #a9c1d1 !important; }
+.uaw-state-appearance-list [data-new-state-appearance] { min-height: 26px; padding: 0 8px; margin-left: auto; }
+
+.uaw-state-appearance-create { display: grid; grid-template-columns: minmax(240px, 1fr) auto auto; align-items: end; gap: 6px; padding: 6px 8px 6px 10px; background: #eaf1f5; border-bottom: 1px solid #a9bdca; }
+.uaw-state-appearance-create label { display: grid; grid-template-columns: auto minmax(160px, 1fr); align-items: center; gap: 8px; color: #38566e; font: 650 10px var(--uaw-font-ui); }
+.uaw-state-appearance-create code { font-family: var(--uaw-font-code); }
+.uaw-state-appearance-create button { min-height: 28px; }
+
+.uaw-state-visuals [hidden] { display: none !important; }
+
+.uaw-state-mappings { display: grid; gap: 1px; padding: 0; background: var(--uaw-slate-200); }
+.uaw-state-mapping-head { display: grid; grid-template-columns: minmax(120px, .7fr) minmax(220px, 2fr) minmax(120px, auto); gap: 8px; min-height: 25px; padding: 0 8px 0 10px; color: var(--uaw-slate-500); background: #f1f4f6; border-bottom: 1px solid var(--uaw-slate-200); font: 650 8px/25px var(--uaw-font-ui); letter-spacing: .06em; text-transform: uppercase; }
+.uaw-state-mapping { display: grid; grid-template-columns: minmax(120px, .7fr) minmax(220px, 2fr) auto auto; align-items: center; gap: 8px; min-height: 40px; padding: 4px 8px 4px 10px; background: #fbfcfd; }
+.uaw-state-mapping > code { color: #153f5e; font: 650 12px var(--uaw-font-code); }
+.uaw-state-mapping__asset { display: flex; align-items: center; gap: 7px; min-width: 0; color: var(--uaw-slate-600); font-size: 10px; }
+.uaw-state-mapping__asset img { width: 30px; height: 30px; flex: 0 0 30px; object-fit: contain; background: repeating-conic-gradient(#eef1f3 0 25%, white 0 50%) 0 / 8px 8px; border: 1px solid var(--uaw-slate-300); border-radius: 3px; }
+.uaw-state-mapping__asset span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uaw-state-mapping__asset .is-missing { color: #a14335; }
+.uaw-state-mapping .uaw-button-quiet { color: var(--uaw-slate-600); background: transparent; border-color: transparent; }
+.uaw-state-mapping button { min-height: 26px; padding: 0 7px; font-size: 9px; }
+.uaw-state-editor-empty { display: grid; place-content: center; gap: 3px; min-height: 120px; padding: 16px; color: var(--uaw-slate-500); text-align: center; }
+.uaw-state-editor-empty strong { color: var(--uaw-slate-700); font-size: 11px; }
+.uaw-state-editor-empty span { font-size: 10px; }
+
+.uaw-asset-section-heading { display: flex; align-items: end; justify-content: space-between; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--uaw-slate-300); }
+.uaw-asset-section-heading > span { color: var(--uaw-slate-500); font: 11px var(--uaw-font-code); }
+
+.uaw-state-asset-picker { position: fixed; inset: 0; z-index: 900; display: grid; place-items: center; padding: 24px; background: rgba(17, 29, 41, .48); backdrop-filter: blur(2px); }
+.uaw-state-asset-picker__panel { width: min(760px, 92vw); max-height: min(620px, 82vh); overflow: hidden; background: white; border: 1px solid #71869a; border-radius: 6px; box-shadow: 0 24px 70px rgba(10, 22, 33, .3); }
+.uaw-state-asset-picker__panel > div:first-child { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 48px; padding: 0 15px; background: #eef3f6; border-bottom: 1px solid var(--uaw-slate-300); }
+.uaw-state-asset-picker__panel > div:first-child input { width: min(320px, 48vw); margin-left: auto; }
+.uaw-state-asset-picker__panel > div:first-child button { min-width: 30px; padding: 0; font-size: 18px; }
+.uaw-state-asset-picker__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; max-height: 540px; overflow: auto; padding: 12px; }
+.uaw-state-asset-picker__grid button { display: grid; gap: 6px; min-width: 0; height: auto; padding: 7px; text-align: left; }
+.uaw-state-asset-picker__grid img { width: 100%; height: 105px; object-fit: contain; background: repeating-conic-gradient(#eef1f3 0 25%, white 0 50%) 0 / 12px 12px; }
+.uaw-state-asset-picker__grid span { overflow: hidden; font: 10px var(--uaw-font-code); text-overflow: ellipsis; white-space: nowrap; }
+.uaw-state-asset-picker__limit { grid-column: 1 / -1; color: var(--uaw-slate-600); text-align: center; }
+
+.uaw-state-visual-object-fields { grid-column: 1 / -1; margin: 10px 0 2px; padding: 12px; background: #f5f8fa; border: 1px solid #cbd6de; border-radius: 5px; }
+.uaw-state-visual-object-fields legend { padding: 0 5px; color: #194b70; font: 700 11px var(--uaw-font-ui); }
+.uaw-state-visual-object-fields > p { margin: 0 0 10px; color: #637386; font-size: 11px; }
+.uaw-state-visual-object-fields code { font-family: var(--uaw-font-code); }
+.uaw-state-visual-object-fields small { display: block; margin-top: 4px; color: #6d7e8d; font-size: 10px; }
+
+@media (max-width: 900px) {
+    .uaw-state-workbench { grid-template-columns: 160px minmax(0, 1fr); }
+    .uaw-state-library-editor__top { grid-template-columns: 1fr; gap: 4px; }
+    .uaw-state-appearance-bar { align-items: flex-start; flex-direction: column; }
+    .uaw-state-mapping { grid-template-columns: 1fr auto auto; }
+    .uaw-state-mapping__asset { grid-column: 1 / -1; grid-row: 2; }
+    .uaw-state-mapping-head { display: none; }
+}
+
+@container (max-width: 700px) {
+    .uaw-state-workbench { grid-template-columns: 128px minmax(0, 1fr); }
+    .uaw-state-pane-heading { padding-left: 7px; }
+    .uaw-state-library-list { padding: 3px; }
+    .uaw-state-library-item { min-height: 38px !important; padding: 5px !important; }
+    .uaw-state-library-item span { font-size: 8px; }
+    .uaw-state-library-editor__top { grid-template-columns: 1fr; gap: 4px; padding: 6px 7px; }
+    .uaw-state-library-editor__top label { grid-template-columns: 1fr; gap: 3px; }
+    .uaw-state-appearance-bar { align-items: stretch; flex-direction: column; gap: 5px; padding: 6px 7px; }
+    .uaw-state-appearance-list [data-new-state-appearance] { margin-left: 0; }
+    .uaw-state-appearance-create { grid-template-columns: 1fr auto; }
+    .uaw-state-appearance-create label { grid-column: 1 / -1; grid-template-columns: 1fr; gap: 3px; }
+    .uaw-state-mapping-head { display: none; }
+    .uaw-state-mapping { grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px; min-height: 61px; padding: 4px 6px; }
+    .uaw-state-mapping__asset { grid-column: 1 / -1; grid-row: 2; }
+    .uaw-state-mapping__asset img { width: 24px; height: 24px; flex-basis: 24px; }
 }

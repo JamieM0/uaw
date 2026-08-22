@@ -40,7 +40,7 @@
     const OBJECT_ID_RE = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]{0,249}$/;
     const TIME_HHMM_RE = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
     const TIME_HHMMSS_RE = /^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/;
-    const ISO_DURATION_RE = /^P(?!$)(?:\d+Y)?(?:\d+M)?(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+S)?)?$/i;
+    const ISO_DURATION_RE = /^P(?=[^0-9]*[0-9]*[1-9])(?:\d+Y)?(?:\d+M)?(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+S)?)?$/i;
     const SHORTHAND_DURATION_RE = /^([0-9]+(?:\.[0-9]+)?)([smhdwWM])$/;
 
     function isPlainObject(value) {
@@ -499,6 +499,19 @@
             return { ok: false, problems };
         }
 
+        if (Object.prototype.hasOwnProperty.call(root, 'assets') || Object.prototype.hasOwnProperty.call(simulation, 'assets')) {
+            const instance = Object.prototype.hasOwnProperty.call(root, 'assets') ? '/assets' : '/simulation/assets';
+            problems.push(buildProblem(
+                'schema.integrity.embedded_assets',
+                'error',
+                'Embedded Assets Are Not Allowed',
+                'WorkSpec v2 stores project asset IDs only. Uploaded file bytes must remain in project asset storage.',
+                instance,
+                { field: instance.slice(1) },
+                ['Remove the embedded assets object.', 'Upload files through the project Assets workspace and reference their asset IDs from WorkSpec.']
+            ));
+        }
+
         // Required top-level sections
         if (!isPlainObject(simulation.meta)) {
             problems.push(buildProblem(
@@ -680,6 +693,94 @@
         }
 
         const typeDefinitions = isPlainObject(simulation.type_definitions) ? simulation.type_definitions : null;
+        const stateLibraries = isPlainObject(simulation.state_libraries) ? simulation.state_libraries : {};
+        const stateLibraryStates = new Map();
+
+        if (simulation.state_libraries !== undefined && !isPlainObject(simulation.state_libraries)) {
+            problems.push(buildProblem(
+                'state_visuals.integrity.invalid_libraries',
+                'error',
+                'Invalid State Libraries',
+                'simulation.state_libraries must be an object keyed by library ID.',
+                '/simulation/state_libraries',
+                { value_type: typeof simulation.state_libraries },
+                ['Set simulation.state_libraries to an object, or remove it when no state visuals are needed.']
+            ));
+        }
+
+        for (const [libraryId, library] of Object.entries(stateLibraries)) {
+            const libraryPtr = ['simulation', 'state_libraries', libraryId];
+            if (!PLAIN_ID_RE.test(libraryId) || !isPlainObject(library)) {
+                problems.push(buildProblem(
+                    'state_visuals.integrity.invalid_library',
+                    'error',
+                    'Invalid State Library',
+                    `State Library '${libraryId}' must use a snake_case ID and contain an object value.`,
+                    toJsonPointer(libraryPtr),
+                    { state_library: libraryId },
+                    ['Use a snake_case library ID and provide states plus optional appearances.']
+                ));
+                continue;
+            }
+
+            const states = Array.isArray(library.states) ? library.states : [];
+            const validStates = states.filter(state => typeof state === 'string' && safeTrim(state));
+            const uniqueStates = new Set(validStates.map(safeTrim));
+            stateLibraryStates.set(libraryId, uniqueStates);
+            if (!states.length || validStates.length !== states.length || uniqueStates.size !== states.length) {
+                problems.push(buildProblem(
+                    'state_visuals.integrity.invalid_states',
+                    'error',
+                    'Invalid State Library States',
+                    `State Library '${libraryId}' must define one or more unique, non-empty string states.`,
+                    toJsonPointer(libraryPtr.concat(['states'])),
+                    { state_library: libraryId },
+                    ['Add a non-empty states array and remove blank or duplicate state names.']
+                ));
+            }
+
+            if (library.appearances !== undefined && !isPlainObject(library.appearances)) {
+                problems.push(buildProblem(
+                    'state_visuals.integrity.invalid_appearances',
+                    'error',
+                    'Invalid State Library Appearances',
+                    `State Library '${libraryId}' appearances must be an object.`,
+                    toJsonPointer(libraryPtr.concat(['appearances'])),
+                    { state_library: libraryId },
+                    ['Set appearances to an object keyed by appearance ID.']
+                ));
+                continue;
+            }
+
+            for (const [appearanceId, mapping] of Object.entries(library.appearances || {})) {
+                const appearancePtr = libraryPtr.concat(['appearances', appearanceId]);
+                if (!PLAIN_ID_RE.test(appearanceId) || !isPlainObject(mapping)) {
+                    problems.push(buildProblem(
+                        'state_visuals.integrity.invalid_appearance',
+                        'error',
+                        'Invalid State Appearance',
+                        `Appearance '${appearanceId}' in State Library '${libraryId}' must use a snake_case ID and contain a state-to-asset map.`,
+                        toJsonPointer(appearancePtr),
+                        { state_library: libraryId, appearance: appearanceId },
+                        ['Use a snake_case appearance ID and map state names to uploaded asset IDs.']
+                    ));
+                    continue;
+                }
+                for (const [state, assetId] of Object.entries(mapping)) {
+                    if (!uniqueStates.has(state) || typeof assetId !== 'string' || !safeTrim(assetId)) {
+                        problems.push(buildProblem(
+                            'state_visuals.integrity.invalid_mapping',
+                            'error',
+                            'Invalid State Visual Mapping',
+                            `Appearance '${appearanceId}' maps unknown state '${state}' or has an empty asset ID.`,
+                            toJsonPointer(appearancePtr.concat([state])),
+                            { state_library: libraryId, appearance: appearanceId, state, asset_id: assetId },
+                            ['Map only states declared by the library and use a non-empty uploaded asset ID.']
+                        ));
+                    }
+                }
+            }
+        }
         const locationIds = new Set();
         const locations = layoutForLocations?.locations;
         if (Array.isArray(locations)) {
@@ -863,6 +964,76 @@
                         ['Add properties.state (example: "available", "running", "clean").']
                     ));
                 }
+            }
+
+            const stateLibraryId = safeTrim(obj.state_library);
+            const appearanceId = safeTrim(obj.appearance);
+            if (obj.state_library !== undefined && !stateLibraryId) {
+                problems.push(buildProblem(
+                    'state_visuals.reference.invalid_library',
+                    'error',
+                    'Invalid State Library Reference',
+                    `Object '${rawId}' has an empty state_library reference.`,
+                    toJsonPointer(objPtr.concat(['state_library'])),
+                    { object_id: rawId },
+                    ['Select a defined State Library or remove state_library.']
+                ));
+            } else if (stateLibraryId && !stateLibraryStates.has(stateLibraryId)) {
+                problems.push(buildProblem(
+                    'state_visuals.reference.unknown_library',
+                    'error',
+                    'Unknown State Library',
+                    `Object '${rawId}' references unknown State Library '${stateLibraryId}'.`,
+                    toJsonPointer(objPtr.concat(['state_library'])),
+                    { object_id: rawId, state_library: stateLibraryId },
+                    ['Select a State Library defined in simulation.state_libraries.']
+                ));
+            } else if (stateLibraryId) {
+                const allowedStates = stateLibraryStates.get(stateLibraryId);
+                const objectState = safeTrim(props.state);
+                if (!objectState || !allowedStates.has(objectState)) {
+                    problems.push(buildProblem(
+                        'state_visuals.reference.invalid_state',
+                        'error',
+                        'State Outside State Library',
+                        `Object '${rawId}' state '${objectState}' is not defined by State Library '${stateLibraryId}'.`,
+                        toJsonPointer(objPtr.concat(['properties', 'state'])),
+                        { object_id: rawId, state_library: stateLibraryId, state: objectState },
+                        ['Choose one of the states declared by the selected State Library.']
+                    ));
+                }
+
+                if (obj.appearance !== undefined && !appearanceId) {
+                    problems.push(buildProblem(
+                        'state_visuals.reference.invalid_appearance',
+                        'error',
+                        'Invalid Appearance Reference',
+                        `Object '${rawId}' has an empty appearance reference.`,
+                        toJsonPointer(objPtr.concat(['appearance'])),
+                        { object_id: rawId, state_library: stateLibraryId },
+                        ['Select a defined appearance or remove appearance.']
+                    ));
+                } else if (appearanceId && !isPlainObject(stateLibraries[stateLibraryId]?.appearances?.[appearanceId])) {
+                    problems.push(buildProblem(
+                        'state_visuals.reference.unknown_appearance',
+                        'error',
+                        'Unknown State Appearance',
+                        `Object '${rawId}' references unknown appearance '${appearanceId}' in State Library '${stateLibraryId}'.`,
+                        toJsonPointer(objPtr.concat(['appearance'])),
+                        { object_id: rawId, state_library: stateLibraryId, appearance: appearanceId },
+                        ['Select an appearance defined by the selected State Library.']
+                    ));
+                }
+            } else if (appearanceId) {
+                problems.push(buildProblem(
+                    'state_visuals.reference.appearance_without_library',
+                    'error',
+                    'Appearance Without State Library',
+                    `Object '${rawId}' sets appearance '${appearanceId}' without a state_library.`,
+                    toJsonPointer(objPtr.concat(['appearance'])),
+                    { object_id: rawId, appearance: appearanceId },
+                    ['Select a State Library or remove appearance.']
+                ));
             }
 
             objectTypeById.set(rawId, rawType);
@@ -1244,6 +1415,29 @@
                                 problems,
                                 { task_id: rawId, target_id: targetId, property: propertyName }
                             );
+
+                            if (propertyName === 'state' && isPlainObject(op)) {
+                                const targetObject = objectById.get(targetId);
+                                const stateLibraryId = safeTrim(targetObject?.state_library);
+                                const allowedStates = stateLibraryStates.get(stateLibraryId);
+                                if (allowedStates) {
+                                    for (const operatorName of ['from', 'to', 'set']) {
+                                        if (!Object.prototype.hasOwnProperty.call(op, operatorName)) continue;
+                                        const stateValue = safeTrim(op[operatorName]);
+                                        if (!allowedStates.has(stateValue)) {
+                                            problems.push(buildProblem(
+                                                'state_visuals.reference.invalid_interaction_state',
+                                                'error',
+                                                'Interaction State Outside State Library',
+                                                `Task '${rawId}' sets state '${stateValue}' on '${targetId}', but that state is not defined by State Library '${stateLibraryId}'.`,
+                                                toJsonPointer(operatorPtr.concat([operatorName])),
+                                                { task_id: rawId, target_id: targetId, state_library: stateLibraryId, state: stateValue },
+                                                ['Choose a state declared by the target object\'s State Library.']
+                                            ));
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

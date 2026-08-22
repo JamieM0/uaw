@@ -16,6 +16,10 @@ const mappings = [
         destination: path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-migrate-v1-to-v2.js')
     },
     {
+        source: path.join(repoRoot, 'packages', 'workspec', 'state-visuals.js'),
+        destination: path.join(repoRoot, 'web', 'packages', 'workspec', 'state-visuals.js')
+    },
+    {
         source: path.join(repoRoot, 'packages', 'workspec', 'v2.0.schema.json'),
         destination: path.join(repoRoot, 'web', 'packages', 'workspec', 'v2.0.schema.json')
     },

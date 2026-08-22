@@ -111,6 +111,13 @@ const PlaygroundUtils = {
 // Asset Management System
 const AssetManager = {
   cache: new Map(),
+  loading: new Map(),
+  objectUrls: new Map(),
+  thumbnailCache: new Map(),
+  thumbnailLoading: new Map(),
+  thumbnailObjectUrls: new Map(),
+  thumbnailQueue: Promise.resolve(),
+  cacheGeneration: 0,
 
   // Generate a UUID v4 for asset references
   generateUUID() {
@@ -135,14 +142,126 @@ const AssetManager = {
     const assetReference = `asset:${assetId}`;
     this.cache.set(assetId, dataUrl);
     window.UAWProjectStore?.putAsset?.({ id: assetId, data: dataUrl, mimeType: dataUrl.slice(5, dataUrl.indexOf(';')) || 'application/octet-stream' })
+      .then(() => this.ensureAsset(assetId, { refresh: true }))
       .catch(error => console.error('Failed to persist asset:', error));
     return assetReference;
+  },
+
+  normalizeId(value) {
+    return typeof value === 'string' ? value.replace(/^asset:/, '') : '';
+  },
+
+  releaseAsset(assetId) {
+    const id = this.normalizeId(assetId);
+    const objectUrl = this.objectUrls.get(id);
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    this.objectUrls.delete(id);
+    this.cache.delete(id);
+    this.loading.delete(id);
+    [...this.thumbnailObjectUrls.entries()].forEach(([key, url]) => {
+      if (!key.startsWith(`${id}:`)) return;
+      URL.revokeObjectURL(url);
+      this.thumbnailObjectUrls.delete(key);
+      this.thumbnailCache.delete(key);
+      this.thumbnailLoading.delete(key);
+    });
+  },
+
+  releaseAll() {
+    this.cacheGeneration += 1;
+    this.objectUrls.forEach(url => URL.revokeObjectURL(url));
+    this.thumbnailObjectUrls.forEach(url => URL.revokeObjectURL(url));
+    this.objectUrls.clear();
+    this.thumbnailObjectUrls.clear();
+    this.cache.clear();
+    this.loading.clear();
+    this.thumbnailCache.clear();
+    this.thumbnailLoading.clear();
+  },
+
+  async ensureAsset(assetId, options = {}) {
+    const id = this.normalizeId(assetId);
+    if (!id) return null;
+    if (!options.refresh && this.cache.has(id)) return this.cache.get(id);
+    if (this.loading.has(id)) return this.loading.get(id);
+    const generation = this.cacheGeneration;
+
+    const pending = (async () => {
+      if (generation !== this.cacheGeneration) return null;
+      const record = await window.UAWProjectStore?.readAsset?.(id);
+      if (!record?.file || generation !== this.cacheGeneration) return null;
+      const oldUrl = this.objectUrls.get(id);
+      const nextUrl = URL.createObjectURL(record.file);
+      this.cache.set(id, nextUrl);
+      this.objectUrls.set(id, nextUrl);
+      if (oldUrl) URL.revokeObjectURL(oldUrl);
+      window.dispatchEvent(new CustomEvent('uaw:asset-loaded', { detail: { assetId: id } }));
+      return nextUrl;
+    })().catch(error => {
+      console.warn(`AssetManager: Could not load ${id}`, error);
+      return null;
+    }).finally(() => this.loading.delete(id));
+    this.loading.set(id, pending);
+    return pending;
+  },
+
+  thumbnailKey(assetId, maxDimension = 256) {
+    return `${this.normalizeId(assetId)}:${Math.max(32, Math.round(maxDimension))}`;
+  },
+
+  getAssetThumbnail(assetId, maxDimension = 256) {
+    return this.thumbnailCache.get(this.thumbnailKey(assetId, maxDimension)) || null;
+  },
+
+  async ensureAssetThumbnail(assetId, maxDimension = 256) {
+    const id = this.normalizeId(assetId);
+    const size = Math.max(32, Math.round(maxDimension));
+    const key = this.thumbnailKey(id, size);
+    if (!id) return null;
+    if (this.thumbnailCache.has(key)) return this.thumbnailCache.get(key);
+    if (this.thumbnailLoading.has(key)) return this.thumbnailLoading.get(key);
+    const generation = this.cacheGeneration;
+
+    const pending = this.thumbnailQueue = this.thumbnailQueue.catch(() => null).then(async () => {
+      if (generation !== this.cacheGeneration) return null;
+      const record = await window.UAWProjectStore?.readAsset?.(id);
+      if (!record?.file || generation !== this.cacheGeneration) return null;
+      let bitmap;
+      try {
+        bitmap = await createImageBitmap(record.file);
+        const scale = Math.min(1, size / Math.max(bitmap.width, bitmap.height));
+        const width = Math.max(1, Math.round(bitmap.width * scale));
+        const height = Math.max(1, Math.round(bitmap.height * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d', { alpha: true }).drawImage(bitmap, 0, 0, width, height);
+        bitmap.close?.();
+        bitmap = null;
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', 0.82));
+        canvas.width = 1;
+        canvas.height = 1;
+        if (!blob || generation !== this.cacheGeneration) return null;
+        const url = URL.createObjectURL(blob);
+        this.thumbnailCache.set(key, url);
+        this.thumbnailObjectUrls.set(key, url);
+        window.dispatchEvent(new CustomEvent('uaw:asset-thumbnail-loaded', { detail: { assetId: id, size } }));
+        return url;
+      } finally {
+        bitmap?.close?.();
+      }
+    }).catch(error => {
+      console.warn(`AssetManager: Could not create preview for ${id}`, error);
+      return null;
+    }).finally(() => this.thumbnailLoading.delete(key));
+    this.thumbnailLoading.set(key, pending);
+    return pending;
   },
 
   // Retrieve an asset by reference
   getAsset(assetReference) {
     if (!assetReference || !assetReference.startsWith('asset:')) return null;
-    return this.cache.get(assetReference.replace('asset:', '')) || null;
+    return this.cache.get(this.normalizeId(assetReference)) || null;
   },
 
   // Check if a value is an asset reference
@@ -153,6 +272,7 @@ const AssetManager = {
   // Resolve asset reference to actual data URL
   resolveAsset(value) {
     if (this.isAssetReference(value)) {
+      this.ensureAsset(value);
       return this.getAsset(value) || value;
     }
     return value;
@@ -165,9 +285,18 @@ const AssetManager = {
   },
 
   async loadProjectAssets() {
-    const records = await window.UAWProjectStore?.listAssets?.() || [];
-    this.cache.clear();
-    records.forEach(record => this.cache.set(record.id, record.data));
+    this.releaseAll();
+    const referencedIds = new Set();
+    try {
+      const documentValue = JSON.parse(window.editor?.getValue?.() || '{}');
+      const visit = value => {
+        if (typeof value === 'string' && value.startsWith('asset:')) referencedIds.add(this.normalizeId(value));
+        else if (Array.isArray(value)) value.forEach(visit);
+        else if (value && typeof value === 'object') Object.values(value).forEach(visit);
+      };
+      visit(documentValue);
+    } catch (_error) { /* Invalid source is handled by the editor. */ }
+    await Promise.all([...referencedIds].map(id => this.ensureAsset(id)));
     window.dispatchEvent(new CustomEvent('uaw:asset-cache-ready'));
   },
 
@@ -217,6 +346,10 @@ const AssetManager = {
 window.AssetManager = AssetManager;
 window.addEventListener('uaw:project-opened', () => {
   AssetManager.loadProjectAssets().then(() => AssetManager.migrateEmbeddedAssets());
+});
+window.addEventListener('uaw:assets-changed', event => {
+  const removedId = event.detail?.removedAssetId;
+  if (removedId) AssetManager.releaseAsset(removedId);
 });
 
 // Initialization state tracking

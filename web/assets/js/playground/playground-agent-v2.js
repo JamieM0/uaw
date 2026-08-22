@@ -63,7 +63,7 @@
             if (!this.drawer || this.drawer.dataset.agentReady === 'true') return;
             this.drawer.dataset.agentReady = 'true';
             this.render();
-            this.checkConnection();
+            this.setConnectionState('offline', 'Local bridge not connected');
 
             window.addEventListener('uaw:agent-opened', () => {
                 this.renderConversation();
@@ -79,15 +79,15 @@
                     <div><span class="uaw-agent-header__icon">AI</span><div><strong>Agent</strong><small id="uaw-agent-project-label">Project assistant</small></div></div>
                     <button type="button" class="uaw-icon-button" id="uaw-agent-close" aria-label="Close Agent">×</button>
                 </div>
-                <div class="uaw-agent-status" id="uaw-agent-status">
+                <div class="uaw-agent-status" id="uaw-agent-status" data-state="offline">
                     <span class="uaw-agent-status__dot"></span>
-                    <span id="uaw-agent-status-label">Checking local bridge…</span>
+                    <span id="uaw-agent-status-label">Local bridge not connected</span>
                     <button type="button" id="uaw-agent-setup-toggle">Setup</button>
                 </div>
                 <div class="uaw-agent-setup" id="uaw-agent-setup" hidden>
                     <label for="uaw-agent-endpoint">Local bridge address</label>
                     <div><input id="uaw-agent-endpoint" type="url" value="${escapeHTML(this.endpoint)}" spellcheck="false"><button type="button" id="uaw-agent-connect">Connect</button></div>
-                    <p>Start the optional bridge from <code>web/agent-bridge</code>. Codex receives a project snapshot and returns a reviewable WorkSpec proposal.</p>
+                    <p>Start the optional bridge from <code>web/agent-bridge</code>. Connecting may ask permission to communicate with software on this device. Codex receives a project snapshot and returns a reviewable WorkSpec proposal.</p>
                 </div>
                 <div class="uaw-agent-conversation" id="uaw-agent-conversation"></div>
                 <form class="uaw-agent-composer" id="uaw-agent-form">

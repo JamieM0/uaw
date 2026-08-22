@@ -7,11 +7,20 @@ const {
     durationMinutes,
     SCALES,
     SCALE_RATES,
+    PLAYBACK_MINUTES_PER_SECOND,
     WorkSpecTimeController
 } = require('../assets/js/playground/playground-time-controller.js');
 
 assert.deepEqual(SCALES, ['day', 'week', 'month']);
-assert.deepEqual(SCALE_RATES, { day: 60, week: 360, month: 1440 });
+assert.equal(PLAYBACK_MINUTES_PER_SECOND, 5);
+assert.deepEqual(SCALE_RATES, { day: 5, week: 5, month: 5 });
+
+const defaultRateController = new WorkSpecTimeController();
+assert.equal(defaultRateController.getMinutesPerSecond(), 5);
+defaultRateController.scale = 'week';
+assert.equal(defaultRateController.getMinutesPerSecond(), 5);
+defaultRateController.scale = 'month';
+assert.equal(defaultRateController.getMinutesPerSecond(), 5);
 
 const documentValue = {
     simulation: {
