@@ -12,6 +12,7 @@
     const OBJECT_FIELDS = new Set(['id', 'type', 'name', 'emoji', 'location', 'state_library', 'appearance']);
     const TASK_FIELDS = new Set(['id', 'actor_id', 'start', 'end', 'duration', 'location', 'description', 'priority', 'tags']);
     const LOCATION_FIELDS = new Set(['id', 'name', 'parent_id', 'shape', 'coordinates', 'position', 'emoji']);
+    const COMPACT_ENTITY_ID = /^[a-z][a-z0-9_]*(?::[a-z][a-z0-9_]*)?$/;
 
     const own = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
     const plain = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -95,6 +96,12 @@
 
     function compactReference(entity, member) { return `@${entity}.${member}`; }
 
+    function formatCompactReference(entity, member) {
+        if (typeof entity !== 'string' || !COMPACT_ENTITY_ID.test(entity) || entity === 'now') throw new TypeError('Compact reference entity must be a valid entity ID other than now.');
+        if (typeof member !== 'string' || !member || member.includes('.') || member.includes('@')) throw new TypeError('Compact reference member must be a non-empty direct member without dots.');
+        return compactReference(entity, member);
+    }
+
     // Every ValueExpression consumer calls this normalizer. Compact and legacy
     // structured forms therefore share one evaluator and one semantic shape.
     function normalizeValueExpression(value) {
@@ -116,7 +123,7 @@
                 };
             }
             const entity = body.slice(0, firstDot); const member = body.slice(firstDot + 1);
-            if (entity.includes('@') || member.includes('@') || !entity || !member) {
+            if (!COMPACT_ENTITY_ID.test(entity) || member.includes('@') || !member) {
                 return {
                     ok: false,
                     metric_id: 'reference.compact.grammar',
@@ -163,6 +170,12 @@
     function isValueReference(value) {
         const normalized = normalizeValueExpression(value);
         return normalized.ok && normalized.kind === 'reference';
+    }
+
+    function referenceIdentity(reference) {
+        if (reference.clock) return '@now';
+        if (reference.entity === 'current' && reference.syntax === 'structured' && reference.selector === 'task') return '@$current_task.' + reference.member;
+        return compactReference(reference.entity, reference.member);
     }
 
     function collectEntities(documentValue) {
@@ -250,58 +263,69 @@
     }
 
     function entityFor(reference, context) {
-        if (own(reference, 'object')) {
-            let id = reference.object;
-            if (id === 'current') {
-                if (!context.currentTask) return failure('reference.current.unavailable', "'object: current' requires a current task.", context.instance);
-                id = context.currentTask.actor_id;
+        let id = reference.entity;
+        let kind = reference.selector;
+        if (id === 'current') {
+            if (!context.currentTask) return failure('reference.current.unavailable', "'@current' requires a current task performer.", context.instance, {}, ['Use "@current.member" only inside a task expression.']);
+            if (reference.syntax === 'structured' && reference.selector === 'task') {
+                id = context.currentTask.id; kind = 'task';
+            } else {
+                id = context.currentTask.actor_id; kind = 'object';
             }
-            const entity = context.state.objects.get(id);
-            return entity ? { ok: true, entity, id, kind: 'object', allowlist: OBJECT_FIELDS } : failure('reference.object.missing', `Object '${id}' is not live.`, context.instance, { object_id: id });
         }
-        if (own(reference, 'location')) {
-            const entity = context.state.locations.get(reference.location);
-            return entity ? { ok: true, entity, id: reference.location, kind: 'location', allowlist: LOCATION_FIELDS } : failure('reference.location.missing', `Location '${reference.location}' does not exist.`, context.instance);
+
+        if (!kind) {
+            const declared = context.index.ids.get(id);
+            if (!declared) return failure('reference.entity.unknown', `Unknown entity '${id}'.`, context.instance, { entity_id: id }, [`Declare '${id}' or use a reference such as "${compactReference(id, reference.member)}" with an existing entity ID.`]);
+            kind = declared.kind;
         }
-        let id = reference.task;
-        if (id === 'current') id = context.currentTask && context.currentTask.id;
-        const entity = context.index.tasks.get(id);
-        return entity ? { ok: true, entity, id, kind: 'task', allowlist: TASK_FIELDS } : failure('reference.task.missing', `Task '${id}' does not exist.`, context.instance);
+
+        let entity = null; let allowlist = null;
+        if (kind === 'object') { entity = context.state.objects.get(id); allowlist = OBJECT_FIELDS; }
+        else if (kind === 'location') { entity = context.state.locations.get(id); allowlist = LOCATION_FIELDS; }
+        else if (kind === 'task') { entity = context.index.tasks.get(id); allowlist = TASK_FIELDS; }
+        else return failure('reference.entity.unsupported', `Entity '${id}' is a ${kind}, which is not referenceable in ValueExpression positions.`, context.instance, { entity_id: id, kind });
+
+        if (!entity) {
+            const declared = context.index.ids.get(id);
+            const detail = declared
+                ? `Entity '${id}' is not available at this point in the simulation.`
+                : `Unknown entity '${id}'.`;
+            return failure(declared ? 'reference.entity.unavailable' : 'reference.entity.unknown', detail, context.instance, { entity_id: id });
+        }
+        return { ok: true, entity, id, kind, allowlist };
     }
 
     function evaluateValue(expression, context) {
-        if (!isValueReference(expression)) {
-            if (plain(expression) && ['object', 'task', 'location', 'clock', 'field', 'property'].some((key) => own(expression, key))) {
-                return failure('reference.shape.invalid', 'This object resembles a value reference but is not a valid WorkSpec 2.1 reference. Wrap it in {literal: ...} to use it as data.', context.instance);
-            }
-            return result(expression);
-        }
-        if (own(expression, 'literal')) return result(expression.literal);
-        if (own(expression, 'clock')) return expression.clock === 'now'
-            ? result(context.now, 'instant')
-            : failure('reference.clock.invalid', "The only clock reference is {clock:'now'}.", context.instance);
-        const selected = entityFor(expression, context);
+        const normalized = normalizeValueExpression(expression);
+        if (!normalized.ok) return failure(normalized.metric_id, normalized.detail, context.instance, {}, normalized.suggestions);
+        if (normalized.kind === 'literal') return result(normalized.value);
+        const reference = normalized.reference;
+        if (reference.clock === 'now') return result(context.now, 'instant');
+        const selected = entityFor(reference, context);
         if (!selected.ok) return selected;
-        if (own(expression, 'field')) {
-            if (!selected.allowlist.has(expression.field)) return failure('reference.field.invalid', `Field '${expression.field}' is not referenceable on ${selected.kind}.`, context.instance, { field: expression.field, kind: selected.kind });
+        const member = reference.member;
+        const useBuiltIn = reference.mode === 'field' || (reference.mode === 'auto' && selected.allowlist.has(member));
+        if (useBuiltIn) {
+            if (!selected.allowlist.has(member)) return failure('reference.member.unknown', `Unknown member '${member}' on ${selected.kind} '${selected.id}'.`, context.instance, { member, kind: selected.kind }, [`Use "${compactReference(selected.id, member)}" with an allowed built-in field or direct property.`]);
             if (selected.kind === 'task') {
                 const timing = context.timings.get(selected.id);
-                if (expression.field === 'end') return result(timing && timing.end, 'instant');
-                if (expression.field === 'start') return result(timing && timing.start, 'instant');
-                if (expression.field === 'duration') return result(timing && timing.duration, 'duration');
+                if (member === 'end') return result(timing && timing.end, 'instant');
+                if (member === 'start') return result(timing && timing.start, 'instant');
+                if (member === 'duration') return result(timing && timing.duration, 'duration');
             }
-            if (!own(selected.entity, expression.field)) return failure('reference.field.missing', `${selected.kind} '${selected.id}' has no field '${expression.field}'.`, context.instance);
-            return result(selected.entity[expression.field]);
+            if (!own(selected.entity, member)) return failure('reference.member.missing', `${selected.kind} '${selected.id}' has no built-in field '${member}' value.`, context.instance, { member, kind: selected.kind });
+            return result(selected.entity[member]);
         }
-        if (selected.kind === 'task') return failure('reference.property.invalid_kind', 'Task references do not have a properties bag.', context.instance);
+        if (selected.kind === 'task') return failure('reference.member.unknown', `Unknown member '${member}' on task '${selected.id}'.`, context.instance, { member, kind: selected.kind }, [`Use an allowed task field such as "${compactReference(selected.id, 'end')}".`]);
         const properties = plain(selected.entity.properties) ? selected.entity.properties : {};
-        if (!own(properties, expression.property)) return failure('reference.property.missing', `${selected.kind} '${selected.id}' has no property '${expression.property}'.`, context.instance, { property: expression.property });
-        const propertyKind = context.state.kinds.get(`${selected.kind}:${selected.id}:${expression.property}`);
-        if (!propertyKind && typeof properties[expression.property] === 'string') {
-            const instant = parseTime(properties[expression.property]);
+        if (!own(properties, member)) return failure('reference.member.unknown', `Unknown member '${member}' on ${selected.kind} '${selected.id}'.`, context.instance, { member, kind: selected.kind }, [`Use "${compactReference(selected.id, member)}" with an existing direct property.`]);
+        const propertyKind = context.state.kinds.get(`${selected.kind}:${selected.id}:${member}`);
+        if (!propertyKind && typeof properties[member] === 'string') {
+            const instant = parseTime(properties[member]);
             if (instant !== null) return result(instant, 'instant');
         }
-        return result(properties[expression.property], propertyKind);
+        return result(properties[member], propertyKind);
     }
 
     function equalValues(left, right) {
@@ -372,10 +396,17 @@
         return { all: [], any: [], present: true };
     }
 
-    function taskTimingReference(reference) {
-        if (!plain(reference) || typeof reference.task !== 'string' || typeof reference.field !== 'string') return null;
-        if (!['start', 'end'].includes(reference.field)) return null;
-        return { task: reference.task, field: reference.field };
+    function taskTimingReference(expression, index) {
+        const normalized = normalizeValueExpression(expression);
+        if (!normalized.ok || normalized.kind !== 'reference' || normalized.reference.clock) return null;
+        const reference = normalized.reference;
+        if (!['start', 'end'].includes(reference.member)) return null;
+        if (reference.entity === 'current') return null;
+        if (reference.selector && reference.selector !== 'task') return null;
+        const declared = index && index.ids.get(reference.entity);
+        if (!declared || declared.kind !== 'task') return null;
+        if (reference.mode === 'property') return null;
+        return { task: reference.entity, field: reference.member };
     }
 
     function simpleGuard(condition) {
@@ -389,11 +420,14 @@
         const operator = Object.keys(condition)[0];
         if (!['==', '!='].includes(operator) || !Array.isArray(condition[operator]) || condition[operator].length !== 2) return null;
         let [reference, literal] = condition[operator];
-        if (!isValueReference(reference) || own(reference, 'literal')) {
+        let normalizedReference = normalizeValueExpression(reference);
+        if (!normalizedReference.ok || normalizedReference.kind !== 'reference') {
             [literal, reference] = [reference, literal];
+            normalizedReference = normalizeValueExpression(reference);
         }
-        if (!isValueReference(reference) || own(reference, 'literal') || isValueReference(literal)) return null;
-        return { key: JSON.stringify(reference), operator, value: clone(literal) };
+        const normalizedLiteral = normalizeValueExpression(literal);
+        if (!normalizedReference.ok || normalizedReference.kind !== 'reference' || !normalizedLiteral.ok || normalizedLiteral.kind === 'reference') return null;
+        return { key: referenceIdentity(normalizedReference.reference), operator, value: clone(normalizedLiteral.value) };
     }
 
     function guardsConflict(leftCondition, rightCondition) {
@@ -472,7 +506,7 @@
         });
 
         const boundFor = (reference, includeInactive = false) => {
-            const taskRef = taskTimingReference(reference);
+            const taskRef = taskTimingReference(reference, index);
             if (!taskRef) return null;
             const target = timings.get(taskRef.task);
             if (!target || !target.resolved) return null;
@@ -508,7 +542,7 @@
                 const deps = dependencyBounds(task); const lower = [...deps.values]; let unresolvedLower = false;
                 (task.timing || []).forEach((constraint, constraintIndex) => {
                     if (!plain(constraint) || constraint.relation !== 'offset') return;
-                    const reference = taskTimingReference(constraint.relative_to);
+                    const reference = taskTimingReference(constraint.relative_to, index);
                     if (!reference) return;
                     const base = boundFor(constraint.relative_to);
                     if (own(constraint, 'min_offset')) {
@@ -552,10 +586,10 @@
                 if (min && min.ok) {
                     const value = base + min.minutes - (constraint.event === 'completion' ? timing.duration : 0);
                     if (!timing.lower_bounds.some((entry) => entry.kind === 'timing' && entry.constraint === constraintIndex && entry.value === value)) {
-                        timing.lower_bounds.push({ value, kind: 'timing', task: taskTimingReference(constraint.relative_to)?.task, field: taskTimingReference(constraint.relative_to)?.field, constraint: constraintIndex });
+                        timing.lower_bounds.push({ value, kind: 'timing', task: taskTimingReference(constraint.relative_to, index)?.task, field: taskTimingReference(constraint.relative_to, index)?.field, constraint: constraintIndex });
                     }
                 }
-                if (max && max.ok) timing.upper_bounds.push({ value: base + max.minutes - (constraint.event === 'completion' ? timing.duration : 0), kind: 'timing', task: taskTimingReference(constraint.relative_to)?.task, field: taskTimingReference(constraint.relative_to)?.field, constraint: constraintIndex });
+                if (max && max.ok) timing.upper_bounds.push({ value: base + max.minutes - (constraint.event === 'completion' ? timing.duration : 0), kind: 'timing', task: taskTimingReference(constraint.relative_to, index)?.task, field: taskTimingReference(constraint.relative_to, index)?.field, constraint: constraintIndex });
                 if ((min && min.ok && offsetValue < min.minutes) || (max && max.ok && offsetValue > max.minutes)) {
                     timing.error = { metric_id: 'timing.offset.violation', detail: `Task '${id}' violates its offset timing constraint.` };
                     problems.push(problem('timing.offset.violation', timing.error.detail, `${index.tasksBase}/${taskIndex}/timing/${constraintIndex}`, { task_id: id, offset_minutes: offsetValue }));
@@ -588,7 +622,7 @@
             const deps = dependencyGroups(task); const edges = [...deps.all, ...deps.any];
             (task.timing || []).forEach((constraint) => {
                 if (constraint && constraint.relation === 'offset' && own(constraint, 'min_offset')) {
-                    const ref = taskTimingReference(constraint.relative_to); if (ref) edges.push(ref.task);
+                    const ref = taskTimingReference(constraint.relative_to, index); if (ref) edges.push(ref.task);
                 }
             });
             return [...new Set(edges)].filter((edge) => timings.get(edge) && !timings.get(edge).resolved);
@@ -625,43 +659,83 @@
         };
     }
 
-    function validateExpressionShape(expression, index, instance) {
+    function referenceableFields(kind) {
+        return kind === 'object' ? OBJECT_FIELDS : kind === 'task' ? TASK_FIELDS : kind === 'location' ? LOCATION_FIELDS : null;
+    }
+
+    function staticReferenceEntity(reference, index, currentTask) {
+        let id = reference.entity; let kind = reference.selector; let entry = null;
+        if (id === 'current') {
+            if (!currentTask) return null;
+            if (reference.syntax === 'structured' && reference.selector === 'task') {
+                id = currentTask.id; kind = 'task'; entry = { entity: currentTask, kind };
+            } else {
+                id = currentTask.actor_id; kind = 'object'; entry = index.ids.get(id);
+            }
+        } else entry = index.ids.get(id);
+        if (!entry) return null;
+        if (kind && entry.kind !== kind) return null;
+        return { id, kind: entry.kind, entity: entry.entity };
+    }
+
+    function validateExpressionShape(expression, index, instance, currentTask) {
+        const normalized = normalizeValueExpression(expression);
+        if (!normalized.ok) return [problem(normalized.metric_id, normalized.detail, instance, {}, undefined, normalized.suggestions)];
+        if (normalized.kind !== 'reference' || normalized.reference.clock) return [];
+        const reference = normalized.reference;
+        const selected = staticReferenceEntity(reference, index, currentTask);
+        if (!selected) {
+            return [problem('reference.entity.unknown', `Unknown entity '${reference.entity}'.`, instance, { entity_id: reference.entity }, undefined, [`Use "${compactReference(reference.entity, reference.member)}" with an existing entity ID.`])];
+        }
+        const allowlist = referenceableFields(selected.kind);
+        if (!allowlist) return [problem('reference.entity.unsupported', `Entity '${selected.id}' is not referenceable in a ValueExpression.`, instance, { entity_id: selected.id, kind: selected.kind })];
+        const properties = plain(selected.entity.properties) ? selected.entity.properties : {};
+        const builtIn = allowlist.has(reference.member);
+        const directProperty = own(properties, reference.member);
+        const valid = reference.mode === 'field' ? builtIn : reference.mode === 'property' ? directProperty : builtIn || directProperty;
+        if (!valid) {
+            return [problem('reference.member.unknown', `Unknown member '${reference.member}' on ${selected.kind} '${selected.id}'.`, instance, { entity_id: selected.id, member: reference.member }, undefined, [`Use "${compactReference(selected.id, reference.member)}" with an allowed built-in field or existing direct property.`])];
+        }
+        return [];
+    }
+
+    function validateReferenceablePropertyNames(index) {
         const problems = [];
-        if (!plain(expression)) return problems;
-        const selectorLike = ['object', 'task', 'location', 'clock', 'field', 'property', 'literal'].some((key) => own(expression, key));
-        if (!selectorLike) return problems;
-        if (!isValueReference(expression)) {
-            problems.push(problem('reference.shape.invalid', 'Invalid WorkSpec 2.1 value reference shape; wrap reference-shaped data in {literal: value}.', instance));
-            return problems;
-        }
-        if (own(expression, 'literal')) return problems;
-        if (own(expression, 'clock')) {
-            if (expression.clock !== 'now') problems.push(problem('reference.clock.invalid', "The only clock reference is {clock:'now'}.", instance));
-            return problems;
-        }
-        const selector = own(expression, 'object') ? 'object' : own(expression, 'task') ? 'task' : 'location';
-        const id = expression[selector];
-        const allowlist = selector === 'object' ? OBJECT_FIELDS : selector === 'task' ? TASK_FIELDS : LOCATION_FIELDS;
-        if (own(expression, 'field') && !allowlist.has(expression.field)) problems.push(problem('reference.field.invalid', `Field '${expression.field}' is not referenceable on ${selector}.`, instance));
-        if (own(expression, 'property') && (selector === 'task' || typeof expression.property !== 'string' || !expression.property || expression.property.includes('.'))) problems.push(problem('reference.property.invalid', `Invalid direct property reference on ${selector}.`, instance));
-        if (selector === 'location' && id === 'current') problems.push(problem('reference.location.current_invalid', "'current' is only valid for object and task selectors.", instance));
-        if (id !== 'current') {
-            const declared = index.ids.get(id);
-            const acceptable = selector === 'object' ? declared?.kind === 'object' : selector === 'task' ? declared?.kind === 'task' : declared?.kind === 'location';
-            if (!acceptable) problems.push(problem(`reference.${selector}.missing`, `${selector} '${id}' is not declared as a ${selector}.`, instance));
-        }
+        collectEntities(index.sim).forEach((entry) => {
+            if (!plain(entry.entity.properties)) return;
+            const builtIns = referenceableFields(entry.kind);
+            Object.keys(entry.entity.properties).forEach((name) => {
+                const instance = pointer(entry.parts.concat(['properties', name]));
+                if (name.includes('.')) {
+                    problems.push(problem('reference.property.dotted', `Property name '${name}' contains '.', which is reserved for compact references.`, instance, { entity_id: entry.entity.id, property: name }, undefined, [`Rename it to '${name.replace(/\./g, '_')}'.`]));
+                }
+                if (builtIns && builtIns.has(name)) {
+                    problems.push(problem('reference.property.shadows_builtin', `Property '${name}' on ${entry.kind} '${entry.entity.id}' shadows a referenceable built-in field.`, instance, { entity_id: entry.entity.id, property: name, kind: entry.kind }, undefined, [`Rename the property; "${compactReference(entry.entity.id, name)}" always resolves to the built-in field.`]));
+                }
+            });
+        });
+        Object.entries(index.sim.type_definitions || {}).forEach(([typeName, definition]) => {
+            Object.keys((definition && definition.additional_properties) || {}).forEach((name) => {
+                const instance = pointer(['simulation', 'type_definitions', typeName, 'additional_properties', name]);
+                if (name.includes('.')) problems.push(problem('reference.property.dotted', `Custom property name '${name}' contains '.', which is reserved for compact references.`, instance, { type: typeName, property: name }, undefined, [`Rename it to '${name.replace(/\./g, '_')}'.`]));
+                if (OBJECT_FIELDS.has(name)) problems.push(problem('reference.property.shadows_builtin', `Custom property '${name}' shadows a referenceable object field.`, instance, { type: typeName, property: name }, undefined, [`Rename the property; compact references to '.${name}' select the built-in field.`]));
+            });
+        });
         return problems;
     }
 
-    function validateConditionShape(condition, index, instance) {
+    function validateConditionShape(condition, index, instance, currentTask) {
         const problems = [];
         if (typeof condition === 'boolean') return problems;
         if (!plain(condition) || Object.keys(condition).length !== 1) return [problem('condition.shape.invalid', 'A condition must be a boolean or contain exactly one operator.', instance)];
         const operator = Object.keys(condition)[0]; const operands = condition[operator];
         if (COMPARISONS.has(operator) || operator === 'contains') {
             if (!Array.isArray(operands) || operands.length !== 2) return [problem('condition.operator.arity', `Operator '${operator}' requires exactly two operands.`, instance)];
-            operands.forEach((operand, i) => problems.push(...validateExpressionShape(operand, index, `${instance}/${operator}/${i}`)));
-            const literalKinds = operands.map((operand) => isValueReference(operand) && !own(operand, 'literal') ? null : kindOf(isValueReference(operand) ? operand.literal : operand));
+            operands.forEach((operand, i) => problems.push(...validateExpressionShape(operand, index, `${instance}/${operator}/${i}`, currentTask)));
+            const literalKinds = operands.map((operand) => {
+                const normalized = normalizeValueExpression(operand);
+                return normalized.ok && normalized.kind === 'reference' ? null : kindOf(normalized.ok ? normalized.value : operand);
+            });
             if (literalKinds[0] && literalKinds[1]) {
                 if (operator === 'contains') {
                     const compatible = (literalKinds[0] === 'array') || (literalKinds[0] === 'string' && literalKinds[1] === 'string');
@@ -674,14 +748,14 @@
         }
         if (operator === 'all' || operator === 'any') {
             if (!Array.isArray(operands) || operands.length === 0) return [problem('condition.operator.arity', `Operator '${operator}' requires a non-empty array.`, instance)];
-            operands.forEach((entry, i) => problems.push(...validateConditionShape(entry, index, `${instance}/${operator}/${i}`)));
+            operands.forEach((entry, i) => problems.push(...validateConditionShape(entry, index, `${instance}/${operator}/${i}`, currentTask)));
             return problems;
         }
-        if (operator === 'not') return validateConditionShape(operands, index, `${instance}/not`);
+        if (operator === 'not') return validateConditionShape(operands, index, `${instance}/not`, currentTask);
         if (operator === 'held_for') {
             if (!plain(operands) || !own(operands, 'condition') || !own(operands, 'duration') || Object.keys(operands).some((key) => !['condition', 'duration'].includes(key))) return [problem('condition.held_for.shape', "'held_for' requires only condition and duration.", instance)];
             if (!parseDurationToMinutes(operands.duration, (index.sim.config || {}).time_unit).ok) problems.push(problem('condition.held_for.duration', "'held_for' has an invalid duration.", `${instance}/held_for/duration`));
-            problems.push(...validateConditionShape(operands.condition, index, `${instance}/held_for/condition`));
+            problems.push(...validateConditionShape(operands.condition, index, `${instance}/held_for/condition`, currentTask));
             return problems;
         }
         return [problem('condition.operator.invalid', `Unknown condition operator '${operator}'.`, instance)];
@@ -691,14 +765,15 @@
         const problems = []; const unit = (index.sim.config || {}).time_unit;
         [...index.tasks.values()].forEach((task, taskIndex) => {
             const base = `${index.tasksBase}/${taskIndex}`;
-            if (task.when !== undefined) problems.push(...validateConditionShape(task.when, index, `${base}/when`));
-            if (task.requires !== undefined) problems.push(...validateConditionShape(task.requires, index, `${base}/requires`));
+            if (task.when !== undefined) problems.push(...validateConditionShape(task.when, index, `${base}/when`, task));
+            if (task.requires !== undefined) problems.push(...validateConditionShape(task.requires, index, `${base}/requires`, task));
             (task.timing || []).forEach((constraint, i) => {
                 const at = `${base}/timing/${i}`;
                 if (!plain(constraint) || !['offset', 'not_overlap'].includes(constraint.relation)) { problems.push(problem('timing.constraint.invalid', 'Unknown or malformed timing constraint.', at)); return; }
                 if (constraint.relation === 'offset') {
                     if (!['start', 'completion'].includes(constraint.event)) problems.push(problem('timing.event.invalid', "Offset event must be 'start' or 'completion'.", `${at}/event`));
-                    problems.push(...validateExpressionShape(constraint.relative_to, index, `${at}/relative_to`));
+                    problems.push(...validateExpressionShape(constraint.relative_to, index, `${at}/relative_to`, task));
+                    if (!taskTimingReference(constraint.relative_to, index)) problems.push(problem('timing.relative_to.invalid', 'relative_to must be a task start or end reference.', `${at}/relative_to`, {}, undefined, ['Use compact syntax such as "@inspect.end".']));
                     if (!own(constraint, 'min_offset') && !own(constraint, 'max_offset')) problems.push(problem('timing.offset.bounds_missing', 'An offset constraint requires min_offset or max_offset.', at));
                     const min = own(constraint, 'min_offset') ? parseOffset(constraint.min_offset, unit) : null; const max = own(constraint, 'max_offset') ? parseOffset(constraint.max_offset, unit) : null;
                     if ((min && !min.ok) || (max && !max.ok)) problems.push(problem('timing.offset.invalid', 'Invalid relative time offset.', at));
@@ -708,30 +783,32 @@
             (task.reservations || []).forEach((reservation, i) => {
                 const at = `${base}/reservations/${i}`;
                 if (!plain(reservation) || !['exclusive', 'capacity'].includes(reservation.mode)) { problems.push(problem('reservation.shape.invalid', 'Reservation mode must be exclusive or capacity.', at)); return; }
-                problems.push(...validateExpressionShape(reservation.resource, index, `${at}/resource`));
+                problems.push(...validateExpressionShape(reservation.resource, index, `${at}/resource`, task));
                 if (reservation.mode === 'capacity') {
                     if (!own(reservation, 'amount')) problems.push(problem('reservation.amount.missing', 'Capacity reservation requires amount.', `${at}/amount`));
-                    else problems.push(...validateExpressionShape(reservation.amount, index, `${at}/amount`));
+                    else problems.push(...validateExpressionShape(reservation.amount, index, `${at}/amount`, task));
                 } else if (own(reservation, 'amount')) problems.push(problem('reservation.amount.invalid', 'Exclusive reservation does not use amount.', `${at}/amount`));
             });
             (task.interactions || []).forEach((interaction, i) => {
                 const at = `${base}/interactions/${i}`; if (!plain(interaction)) return;
-                if (interaction.when !== undefined) problems.push(...validateConditionShape(interaction.when, index, `${at}/when`));
+                if (interaction.when !== undefined) problems.push(...validateConditionShape(interaction.when, index, `${at}/when`, task));
                 if (interaction.at !== undefined && !['start', 'completion'].includes(interaction.at)) problems.push(problem('interaction.timing.invalid', "Interaction at must be 'start' or 'completion'.", `${at}/at`));
                 if (interaction.temporary === true && interaction.action) problems.push(problem('interaction.temporary.lifecycle_invalid', 'Temporary create and delete interactions are invalid in WorkSpec 2.1.', at));
                 if (interaction.temporary === true && interaction.at === 'completion') problems.push(problem('interaction.temporary.timing_invalid', "A temporary interaction cannot use at:'completion'.", at));
                 if (interaction.action === 'create') {
-                    Object.entries((interaction.object || {}).properties || {}).forEach(([name, value]) => problems.push(...validateExpressionShape(value, index, `${at}/object/properties/${ptrEscape(name)}`)));
-                    if (interaction.object && own(interaction.object, 'location')) problems.push(...validateExpressionShape(interaction.object.location, index, `${at}/object/location`));
+                    Object.entries((interaction.object || {}).properties || {}).forEach(([name, value]) => problems.push(...validateExpressionShape(value, index, `${at}/object/properties/${ptrEscape(name)}`, task)));
+                    if (interaction.object && own(interaction.object, 'location')) problems.push(...validateExpressionShape(interaction.object.location, index, `${at}/object/location`, task));
                 } else {
-                    problems.push(...validateExpressionShape(interaction.target_id, index, `${at}/target_id`));
+                    problems.push(...validateExpressionShape(interaction.target_id, index, `${at}/target_id`, task));
                     Object.entries(interaction.property_changes || {}).forEach(([name, operator]) => {
+                        if (name.includes('.')) problems.push(problem('reference.property.dotted', `Property name '${name}' contains '.', which is reserved for compact references.`, `${at}/property_changes/${ptrEscape(name)}`, { property: name }, undefined, [`Rename it to '${name.replace(/\./g, '_')}'.`]));
                         if (!plain(operator)) return;
-                        ['from', 'to', 'set', 'delta', 'multiply', 'append', 'remove'].forEach((key) => { if (own(operator, key)) problems.push(...validateExpressionShape(operator[key], index, `${at}/property_changes/${ptrEscape(name)}/${key}`)); });
+                        ['from', 'to', 'set', 'delta', 'multiply', 'append', 'remove'].forEach((key) => { if (own(operator, key)) problems.push(...validateExpressionShape(operator[key], index, `${at}/property_changes/${ptrEscape(name)}/${key}`, task)); });
                     });
                 }
             });
         });
+        problems.push(...validateReferenceablePropertyNames(index));
         problems.push(...boundedDependencyProblems(index));
         return problems;
     }
@@ -1029,5 +1106,5 @@
 
     function validate(documentValue) { const run = replay(documentValue); return { valid: run.problems.every((entry) => entry.severity !== 'error'), problems: run.problems, state: serialiseState(run), timings: run.timings }; }
 
-    return { parseDurationToMinutes, parseTaskStart, parseOffset, isValueReference, evaluateValue, evaluateCondition, buildIndex, resolveTimings, replay, snapshotAt, validate, OBJECT_FIELDS: [...OBJECT_FIELDS], TASK_FIELDS: [...TASK_FIELDS], LOCATION_FIELDS: [...LOCATION_FIELDS] };
+    return { parseDurationToMinutes, parseTaskStart, parseOffset, formatCompactReference, normalizeValueExpression, isValueReference, evaluateValue, evaluateCondition, buildIndex, resolveTimings, replay, snapshotAt, validate, OBJECT_FIELDS: [...OBJECT_FIELDS], TASK_FIELDS: [...TASK_FIELDS], LOCATION_FIELDS: [...LOCATION_FIELDS] };
 }));

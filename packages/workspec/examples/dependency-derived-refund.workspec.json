@@ -37,7 +37,7 @@
           "timing": [{
             "relation": "offset",
             "event": "start",
-            "relative_to": { "task": "prepare_refund", "field": "end" },
+            "relative_to": "@prepare_refund.end",
             "min_offset": "30m",
             "max_offset": "2h"
           }]

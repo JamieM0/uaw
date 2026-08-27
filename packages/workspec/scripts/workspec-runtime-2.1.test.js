@@ -81,15 +81,133 @@ test('field, property, task, location, clock and literal references evaluate wit
 
 test('invalid references, fields and missing properties are evaluation errors', () => {
     const cases = [
-        [{ '==': [{ actor: 'actor_a', field: 'id' }, 'actor_a'] }, 'reference.shape.invalid'],
-        [{ '==': [{ object: 'item', field: 'bogus' }, 1] }, 'reference.field.invalid'],
-        [{ '==': [{ object: 'item', property: 'missing' }, 1] }, 'reference.property.missing'],
+        [{ '==': [{ object: 'item' }, 'actor_a'] }, 'reference.structured.malformed'],
+        [{ '==': [{ object: 'item', field: 'bogus' }, 1] }, 'reference.member.unknown'],
+        [{ '==': [{ object: 'item', property: 'missing' }, 1] }, 'reference.member.unknown'],
         [{ '==': [1] }, 'condition.operator.arity']
     ];
     cases.forEach(([requires, metric], index) => {
         const doc = documentWith([task(`case_${index}`, 'actor_a', '09:00', { requires })]);
         assert.equal(has(runtime.validate(doc).problems, metric), true, metric);
     });
+});
+
+test('compact references resolve object fields/properties, task fields, locations, current performer, and now', () => {
+    const doc = documentWith([task('inspect', 'actor_a', '09:00', { requires: { all: [
+        { '==': ['@item.id', 'item'] },
+        { '==': ['@item.temperature', 4] },
+        { '==': ['@inspect.actor_id', 'actor_a'] },
+        { '==': ['@bay.name', 'Bay'] },
+        { '==': ['@bay.access_level', 2] },
+        { contains: ['@current.permissions', 'run'] },
+        { '==': ['@inspect.start', '@now'] }
+    ] } })]);
+    const run = runtime.replay(doc);
+    assert.equal(run.state.statuses.get('inspect'), 'completed');
+    assert.equal(run.problems.length, 0);
+});
+
+test('literal ValueExpression strings and leading-at escapes follow the exact one-character rule', () => {
+    assert.equal(runtime.normalizeValueExpression('@@machine.state').value, '@machine.state');
+    assert.equal(runtime.normalizeValueExpression('@@@machine.state').value, '@@machine.state');
+    const doc = documentWith([task('strings', 'actor_a', '09:00', { requires: { all: [
+        { '==': ['approved', 'approved'] },
+        { '==': ['@@machine.state', '@@machine.state'] },
+        { '==': ['@@@machine.state', '@@@machine.state'] }
+    ] } })]);
+    assert.equal(runtime.replay(doc).state.statuses.get('strings'), 'completed');
+
+    doc.simulation.meta.description = '@machine.state';
+    doc.simulation.process.tasks[0].description = '@@machine.state';
+    const snapshot = runtime.snapshotAt(doc, '09:30');
+    assert.equal(doc.simulation.meta.description, '@machine.state');
+    assert.equal(doc.simulation.process.tasks[0].description, '@@machine.state');
+    assert.equal(snapshot.task_statuses.strings, 'completed');
+});
+
+test('unknown, malformed, nested, and invalid clock compact references fail clearly', () => {
+    const cases = [
+        ['@missing.state', 'reference.entity.unknown'],
+        ['@item.missing', 'reference.member.unknown'],
+        ['@machine.sensor.temperature', 'reference.compact.grammar'],
+        ['@entity.', 'reference.compact.grammar'],
+        ['@.field', 'reference.compact.grammar'],
+        ['@now.value', 'reference.clock.invalid']
+    ];
+    cases.forEach(([operand, metric], index) => {
+        const doc = documentWith([task(`compact_bad_${index}`, 'actor_a', '09:00', { requires: { '==': [operand, true] } })]);
+        const problems = validator.validate(doc).problems;
+        assert.equal(has(problems, metric), true, `${operand}: ${metric}`);
+        assert.equal(problems.find((entry) => entry.metric_id === metric).suggestions.some((value) => value.includes('@')), true);
+    });
+});
+
+test('resolved compact values retain strict types', () => {
+    const doc = documentWith([task('resolved_type_error', 'actor_a', '09:00', { requires: { '==': ['@item.quantity', '10'] } })]);
+    assert.equal(has(validator.validate(doc).problems, 'condition.type.incompatible'), true);
+});
+
+test('@now is rejected where an instant is not the required resolved type', () => {
+    const reservation = documentWith([task('bad_clock_resource', 'actor_a', '09:00', { reservations: [{ resource: '@now', mode: 'exclusive' }] })]);
+    assert.equal(has(validator.validate(reservation).problems, 'reservation.resource.type'), true);
+
+    const timing = documentWith([task('bad_clock_timing', 'actor_a', '09:00', {
+        timing: [{ relation: 'offset', event: 'start', relative_to: '@now', min_offset: 0 }]
+    })]);
+    assert.equal(has(validator.validate(timing).problems, 'timing.relative_to.invalid'), true);
+});
+
+test('dotted properties and built-in shadowing are rejected in objects, locations, effects, and custom types', () => {
+    const doc = documentWith([task('bad_properties', 'actor_a', '09:00', {
+        requires: { '==': ['@item.name', 'Item'] },
+        interactions: [{ target_id: 'item', property_changes: { 'quality.result': { set: true } } }]
+    })]);
+    doc.simulation.world.objects.find((object) => object.id === 'item').properties['sensor.temperature'] = 4;
+    doc.simulation.world.objects.find((object) => object.id === 'item').properties.name = 'shadow';
+    doc.simulation.world.layout.locations[0].properties['access.level'] = 2;
+    doc.simulation.type_definitions.custom_machine = {
+        extends: 'equipment',
+        additional_properties: { 'quality.result': { type: 'string' }, id: { type: 'string' } }
+    };
+    const problems = validator.validate(doc).problems;
+    assert.equal(problems.filter((entry) => entry.metric_id === 'reference.property.dotted').length >= 4, true);
+    assert.equal(has(problems, 'reference.property.shadows_builtin'), true);
+    assert.equal(problems.some((entry) => entry.suggestions.some((suggestion) => suggestion.includes('sensor_temperature') || suggestion.includes('quality_result'))), true);
+    assert.equal(runtime.replay(doc).state.statuses.get('bad_properties'), 'completed', 'built-in fields must take precedence over colliding properties');
+});
+
+test('structured compatibility references share compact semantics and exact reference-shaped literals stay escapable', () => {
+    const compact = documentWith([task('compact', 'actor_a', '09:00', { requires: { '==': ['@item.quantity', 10] } })]);
+    const structured = documentWith([task('structured', 'actor_a', '09:00', { requires: { '==': [{ object: 'item', property: 'quantity' }, 10] } })]);
+    assert.equal(runtime.replay(compact).state.statuses.get('compact'), 'completed');
+    assert.equal(runtime.replay(structured).state.statuses.get('structured'), 'completed');
+
+    const literalShape = { object: 'item', property: 'quantity' };
+    const literals = documentWith([task('literal_shapes', 'actor_a', '09:00', { requires: { all: [
+        { '==': [{ literal: literalShape }, { literal: literalShape }] },
+        { '==': [{ object: 'item', property: 'quantity', note: 'example' }, { object: 'item', property: 'quantity', note: 'example' }] }
+    ] } })]);
+    assert.equal(runtime.replay(literals).state.statuses.get('literal_shapes'), 'completed');
+});
+
+test('compact expressions work in effects, created objects, interaction targets, reservations, and timing', () => {
+    const doc = documentWith([
+        task('prepare', 'actor_a', '08:00', { interactions: [
+            { target_id: 'machine', property_changes: { capacity: { set: '@item.temperature' } } },
+            { action: 'create', object: { id: 'copy', type: 'resource', name: 'Copy', location: '@bay.id', properties: { quantity: '@item.quantity' } } }
+        ] }),
+        task('use_copy', 'actor_b', undefined, {
+            depends_on: ['prepare'],
+            timing: [{ relation: 'offset', event: 'start', relative_to: '@prepare.end', min_offset: 0 }],
+            reservations: [{ resource: '@current.id', mode: 'exclusive' }],
+            interactions: [{ target_id: '@copy.id', property_changes: { quantity: { delta: -1 } } }]
+        })
+    ]);
+    const run = runtime.replay(doc);
+    assert.equal(run.timings.get('use_copy').start, 8 * 60 + 30);
+    assert.equal(run.state.objects.get('machine').properties.capacity, 4);
+    assert.equal(run.state.objects.get('copy').properties.quantity, 9);
+    assert.equal(run.problems.length, 0);
 });
 
 test('expressions are evaluated only in expression-enabled positions', () => {

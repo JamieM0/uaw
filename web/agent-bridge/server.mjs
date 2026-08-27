@@ -166,6 +166,8 @@ You are operating on one browser-provided WorkSpec Studio project snapshot.
 - Put the complete proposed document in \`proposal.workspec.json\`.
 - Validate after every substantive edit and report remaining problems honestly.
 - Preserve valid WorkSpec syntax and IDs unless the user's request requires a change.
+- Always author references as compact strings such as \`"@shipment.temperature"\`, \`"@inspect.end"\`, \`"@current.permissions"\`, or \`"@now"\`.
+- Use \`@@\` for a literal ValueExpression string beginning with \`@\`. Never generate structured selector references, dotted property names, or nested reference paths.
 - Do not access files outside this project workspace.
 - Do not use the network.
 `.trimStart(), 'utf8');

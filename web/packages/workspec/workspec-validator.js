@@ -1429,8 +1429,9 @@
                                 if (allowedStates) {
                                     for (const operatorName of ['from', 'to', 'set']) {
                                         if (!Object.prototype.hasOwnProperty.call(op, operatorName)) continue;
-                                        if (WorkSpecRuntime?.isValueReference?.(op[operatorName])) continue;
-                                        const stateValue = safeTrim(op[operatorName]);
+                                        const normalizedOperand = WorkSpecRuntime?.normalizeValueExpression?.(op[operatorName]);
+                                        if (normalizedOperand?.ok && normalizedOperand.kind === 'reference') continue;
+                                        const stateValue = safeTrim(normalizedOperand?.ok ? normalizedOperand.value : op[operatorName]);
                                         if (!allowedStates.has(stateValue)) {
                                             problems.push(buildProblem(
                                                 'state_visuals.reference.invalid_interaction_state',

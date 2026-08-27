@@ -230,6 +230,23 @@ function run() {
 
     // 4) CLI custom validation (Metrics Editor style + explicit catalog)
     {
+        const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'workspec-compact-cli-'));
+        const docPath = path.join(fixtureDir, 'compact.workspec.json');
+        const cliPath = path.join(__dirname, '..', 'bin', 'workspec.js');
+        const doc = baseDoc();
+        doc.simulation.world.objects = [
+            { id: 'actor_a', type: 'actor', name: 'Actor', properties: { state: 'idle' } },
+            { id: 'machine', type: 'equipment', name: 'Machine', properties: { state: 'ready' } }
+        ];
+        doc.simulation.process.tasks = [{ id: 'inspect', actor_id: 'actor_a', start: '09:00', duration: 10, requires: { '==': ['@machine.state', 'ready'] } }];
+        fs.writeFileSync(docPath, JSON.stringify(doc, null, 2), 'utf8');
+        const result = spawnSync(process.execPath, [cliPath, 'validate', docPath, '--json'], { encoding: 'utf8' });
+        assert.equal(result.status, 0, result.stderr || result.stdout);
+        assert.deepEqual(JSON.parse(result.stdout), []);
+    }
+
+    // 5) CLI custom validation (Metrics Editor style + explicit catalog)
+    {
         const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'workspec-selftest-'));
         const docPath = path.join(fixtureDir, 'sample.workspec.json');
         const customPath = path.join(fixtureDir, 'simulation-validator-custom.js');

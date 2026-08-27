@@ -18,6 +18,7 @@ const webMigratorPath = path.join(repoRoot, 'web', 'packages', 'workspec', 'work
 const webStateVisualsPath = path.join(repoRoot, 'web', 'packages', 'workspec', 'state-visuals.js');
 const playgroundHtmlPath = path.join(repoRoot, 'web', 'playground.html');
 const playgroundObjectsPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-objects.js');
+const playgroundEditorPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-editor.js');
 const playgroundTimelinePath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-timeline.js');
 const playgroundTimeControllerPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-time-controller.js');
 const migrateCliPath = path.join(repoRoot, 'web', 'scripts', 'workspec-migrate.js');
@@ -68,12 +69,16 @@ function baseDoc() {
             },
             world: {
                 objects: [
-                    { id: 'actor_a', type: 'actor', name: 'Actor A', properties: { state: 'idle' } }
+                    { id: 'actor_a', type: 'actor', name: 'Actor A', properties: { state: 'idle' } },
+                    { id: 'machine', type: 'equipment', name: 'Machine', properties: { state: 'ready' } }
                 ]
             },
             process: {
                 tasks: [
-                    { id: 'task_1', actor_id: 'actor_a', start: '08:30', duration: 30 }
+                    { id: 'task_1', actor_id: 'actor_a', start: '08:30', duration: 30, requires: { all: [
+                        { '==': ['@machine.state', 'ready'] },
+                        { '==': ['@@machine.state', '@@machine.state'] }
+                    ] } }
                 ]
             }
         }
@@ -119,6 +124,7 @@ function run() {
     );
 
     const playgroundObjects = readText(playgroundObjectsPath);
+    const playgroundEditor = readText(playgroundEditorPath);
     assert.match(
         playgroundObjects,
         /\.\.\.\(existingTask \|\| \{\}\)/,
@@ -137,6 +143,13 @@ function run() {
     assert.match(playgroundObjects, /preserveDerivedStart/, 'Studio does not preserve an omitted derived start on unrelated edits');
     assert.match(playgroundObjects, /delete newTask\.start/, 'Studio cannot keep or restore derived-start mode');
     assert.match(playgroundHtml, /id="task-start-source"/, 'Studio does not label explicit versus derived starts');
+    assert.match(playgroundEditor, /WorkSpecReferenceAuthoring/, 'Studio does not expose the compact-reference picker adapter');
+    assert.match(playgroundEditor, /formatCompactReference/, 'Studio reference pickers do not use package-owned compact formatting');
+    assert.match(playgroundEditor, /"@material\.quantity"/, 'Studio sample output does not use compact references');
+    assert.doesNotMatch(playgroundEditor, /\{\s*"object"\s*:\s*"material"\s*,\s*"property"/, 'Studio sample output still emits structured references');
+
+    const compactRoundTrip = { value: '@item.quantity', escaped: '@@item.quantity', description: '@item.quantity' };
+    assert.deepEqual(JSON.parse(JSON.stringify(compactRoundTrip)), compactRoundTrip, 'Studio JSON round-trip changes compact or escaped strings');
 
     const playgroundTimeline = readText(playgroundTimelinePath);
     const playgroundTimeController = readText(playgroundTimeControllerPath);

@@ -467,8 +467,8 @@ const sampleSimulation = {
                     "start": "06:00",
                     "duration": 30,
                     "location": "work_area",
-                    "when": { ">": [{ "object": "material", "property": "quantity" }, 0] },
-                    "requires": { "contains": [{ "object": "current", "property": "permissions" }, "produce"] },
+                    "when": { ">": ["@material.quantity", 0] },
+                    "requires": { "contains": ["@current.permissions", "produce"] },
                     "reservations": [
                         { "resource": "work_area", "mode": "capacity", "amount": 1 }
                     ],
@@ -489,6 +489,20 @@ const sampleSimulation = {
         }
     }
 };
+
+// Shared authoring adapter for Studio reference pickers. Pickers insert the
+// official compact string directly; source round-trips never expand it.
+window.WorkSpecReferenceAuthoring = Object.freeze({
+    format(entityId, member) {
+        return window.WorkSpecRuntime.formatCompactReference(entityId, member);
+    },
+    insert(input, entityId, member) {
+        if (!input || !('value' in input)) throw new TypeError('A reference picker requires an input target.');
+        input.value = this.format(entityId, member);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        return input.value;
+    }
+});
 
 // Monaco editor initialization with timeout and error handling
 require.config({

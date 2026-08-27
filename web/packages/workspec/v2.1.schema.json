@@ -369,6 +369,7 @@
         },
         "properties": {
           "type": "object",
+          "propertyNames": { "$ref": "#/definitions/ReferenceablePropertyName" },
           "additionalProperties": true
         }
       },
@@ -522,6 +523,7 @@
     "StandardObjectProperties": {
       "type": "object",
       "description": "Documented properties shared by built-in object types. Domain-specific and custom-type properties are also allowed.",
+      "propertyNames": { "$ref": "#/definitions/ReferenceablePropertyName" },
       "properties": {
         "state": { "type": "string", "minLength": 1 },
         "role": { "type": "string" },
@@ -903,7 +905,7 @@
       "description": "Map of property name -> change operator.",
       "minProperties": 1,
       "propertyNames": {
-        "pattern": ".*\\S.*"
+        "$ref": "#/definitions/ReferenceablePropertyName"
       },
       "additionalProperties": {
         "$ref": "#/definitions/ChangeOperator"
@@ -961,29 +963,16 @@
       "additionalProperties": false
     },
     "ValueExpression": {
-      "description": "A JSON literal or a WorkSpec value reference. Reference-shaped literal objects use {literal: value}.",
+      "description": "A JSON literal or WorkSpec compact reference. A single leading @ means reference; @@ escapes a literal leading @. Structured references remain accepted for compatibility.",
       "anyOf": [
         { "$ref": "#/definitions/ValueReference" },
-        { "type": ["null", "boolean", "number", "string", "array"] },
-        {
-          "type": "object",
-          "not": {
-            "anyOf": [
-              { "$ref": "#/definitions/ValueReference" },
-              { "required": ["object"] },
-              { "required": ["task"] },
-              { "required": ["location"] },
-              { "required": ["clock"] },
-              { "required": ["field"] },
-              { "required": ["property"] },
-              { "required": ["literal"] }
-            ]
-          }
-        }
+        { "$ref": "#/definitions/ValueLiteralString" },
+        { "type": ["null", "boolean", "number", "array", "object"] }
       ]
     },
     "ValueReference": {
       "oneOf": [
+        { "$ref": "#/definitions/CompactValueReference" },
         {
           "type": "object",
           "required": ["object", "field"],
@@ -1083,7 +1072,7 @@
         "location": { "$ref": "#/definitions/ValueExpression" },
         "state_library": { "$ref": "#/definitions/PlainId" },
         "appearance": { "$ref": "#/definitions/PlainId" },
-        "properties": { "type": "object", "additionalProperties": { "$ref": "#/definitions/ValueExpression" } }
+        "properties": { "type": "object", "propertyNames": { "$ref": "#/definitions/ReferenceablePropertyName" }, "additionalProperties": { "$ref": "#/definitions/ValueExpression" } }
       },
       "additionalProperties": true
     },
@@ -1095,7 +1084,7 @@
           "properties": {
             "relation": { "const": "offset" },
             "event": { "type": "string", "enum": ["start", "completion"] },
-            "relative_to": { "$ref": "#/definitions/ValueReference" },
+            "relative_to": { "$ref": "#/definitions/ValueExpression" },
             "min_offset": { "$ref": "#/definitions/TimeOffset" },
             "max_offset": { "$ref": "#/definitions/TimeOffset" }
           },
@@ -1241,6 +1230,22 @@
       "type": "string",
       "pattern": "^[a-z][a-z0-9_]{0,249}$"
     },
+    "ReferenceablePropertyName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^.]+$",
+      "description": "A direct property name. Dot is reserved for compact @entity.member references."
+    },
+    "CompactValueReference": {
+      "type": "string",
+      "pattern": "^@(?:now|(?!now\\.)(?:[a-z][a-z0-9_]*(?::[a-z][a-z0-9_]*)?)\\.[^.@]+)$",
+      "description": "Official WorkSpec 2.1 reference syntax: @entity.member, or @now. Nested paths are not supported."
+    },
+    "ValueLiteralString": {
+      "type": "string",
+      "pattern": "^(?:$|[^@][\\s\\S]*|@@[\\s\\S]*)$",
+      "description": "A literal string. In ValueExpression positions, @@ escapes one leading @."
+    },
     "ObjectId": {
       "description": "Object id, either plain snake_case or optional namespaced id '{type}:{identifier}'.",
       "type": "string",
@@ -1342,7 +1347,7 @@
         "emoji": { "type": "string", "maxLength": 32 },
         "position": { "$ref": "#/definitions/Coordinates" },
         "shape": { "$ref": "#/definitions/Shape" },
-        "properties": { "type": "object", "additionalProperties": true }
+        "properties": { "type": "object", "propertyNames": { "$ref": "#/definitions/ReferenceablePropertyName" }, "additionalProperties": true }
       },
       "additionalProperties": true
     },
@@ -1436,6 +1441,7 @@
     },
     "DigitalConnectionProperties": {
       "type": "object",
+      "propertyNames": { "$ref": "#/definitions/ReferenceablePropertyName" },
       "properties": {
         "bandwidth_mbps": { "type": "number", "minimum": 0 },
         "latency_ms": { "type": "number", "minimum": 0 },
@@ -1466,7 +1472,7 @@
         "start_time": { "$ref": "#/definitions/TimeOrDateTime" },
         "duration": { "$ref": "#/definitions/Duration" },
         "size_mb": { "type": "number", "minimum": 0 },
-        "properties": { "type": "object", "additionalProperties": true }
+        "properties": { "type": "object", "propertyNames": { "$ref": "#/definitions/ReferenceablePropertyName" }, "additionalProperties": true }
       },
       "additionalProperties": true
     },
@@ -1492,6 +1498,7 @@
     },
     "DisplayElementProperties": {
       "type": "object",
+      "propertyNames": { "$ref": "#/definitions/ReferenceablePropertyName" },
       "properties": {
         "visible": { "type": "boolean" },
         "clickable": { "type": "boolean" },
@@ -1522,7 +1529,7 @@
         "action": { "type": "string", "minLength": 1 },
         "target": { "type": ["string", "null"] },
         "task_id": { "type": ["string", "null"] },
-        "properties": { "type": "object", "additionalProperties": true }
+        "properties": { "type": "object", "propertyNames": { "$ref": "#/definitions/ReferenceablePropertyName" }, "additionalProperties": true }
       },
       "additionalProperties": true
     },
@@ -1637,7 +1644,7 @@
         "required_properties": {
           "type": "array",
           "uniqueItems": true,
-          "items": { "type": "string", "minLength": 1 }
+          "items": { "$ref": "#/definitions/ReferenceablePropertyName" }
         },
         "valid_operations": {
           "type": "array",

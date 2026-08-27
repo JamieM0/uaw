@@ -1901,7 +1901,7 @@
               ],
               "requires": {
                 "contains": [
-                  { "object": "current", "property": "permissions" },
+                  "@current.permissions",
                   "validate_order"
                 ]
               },
@@ -1909,7 +1909,7 @@
                 {
                   "relation": "offset",
                   "event": "start",
-                  "relative_to": { "task": "receive_order", "field": "end" },
+                  "relative_to": "@receive_order.end",
                   "min_offset": "10m",
                   "max_offset": "30m"
                 }
@@ -1940,7 +1940,7 @@
               ],
               "requires": {
                 ">": [
-                  { "object": "pending_order", "property": "quantity" },
+                  "@pending_order.quantity",
                   0
                 ]
               },

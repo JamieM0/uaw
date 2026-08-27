@@ -57,13 +57,13 @@
           "start": "09:10",
           "duration": "5m",
           "depends_on": ["verify_receipt"],
-          "when": { "==": [{ "object": "source_record", "property": "receipt_verified" }, true] },
-          "requires": { "contains": [{ "object": "current", "property": "permissions" }, "archive"] },
+          "when": { "==": ["@source_record.receipt_verified", true] },
+          "requires": { "contains": ["@current.permissions", "archive"] },
           "timing": [
             {
               "relation": "offset",
               "event": "start",
-              "relative_to": { "task": "verify_receipt", "field": "end" },
+              "relative_to": "@verify_receipt.end",
               "min_offset": "0m",
               "max_offset": "30m"
             }
@@ -77,8 +77,8 @@
                 "name": "Archived record",
                 "properties": {
                   "quantity": 1,
-                  "sha256": { "object": "source_record", "property": "sha256" },
-                  "source_id": { "object": "source_record", "field": "id" }
+                  "sha256": "@source_record.sha256",
+                  "source_id": "@source_record.id"
                 }
               }
             }

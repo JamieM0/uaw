@@ -49,10 +49,10 @@
           "duration": "10m",
           "requires": {
             "all": [
-              { "==": [{ "object": "aircraft", "property": "doors_closed" }, true] },
-              { "==": [{ "object": "aircraft", "property": "baggage_loaded" }, true] },
-              { "==": [{ "object": "aircraft", "property": "clearance_valid" }, true] },
-              { "contains": [{ "object": "current", "property": "permissions" }, "pushback"] }
+              { "==": ["@aircraft.doors_closed", true] },
+              { "==": ["@aircraft.baggage_loaded", true] },
+              { "==": ["@aircraft.clearance_valid", true] },
+              { "contains": ["@current.permissions", "pushback"] }
             ]
           },
           "timing": [{ "relation": "not_overlap", "with": { "task": "fuelling_operation" } }],
