@@ -269,15 +269,15 @@
                 throw new Error('Editor container not found');
             }
             
-            this.editor = monaco.editor.create(editorContainer, {
+            this.editor = monaco.editor.create(editorContainer, window.UAWMonacoPreferences.options({
                 value: '{\n  "simulation": {\n    "meta": {\n      "id": "new_simulation",\n      "article_title": "New Simulation"\n    },\n    "objects": [],\n    "tasks": []\n  }\n}',
                 language: 'json',
                 theme: 'vs-light',
                 automaticLayout: true,
                 minimap: { enabled: false },
                 scrollBeyondLastLine: false,
-                wordWrap: 'on'
-            });
+            }));
+            window.UAWMonacoPreferences.register(this.editor);
             
             // Set global for compatibility with legacy components
             if (!window.editor) {

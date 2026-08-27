@@ -368,7 +368,7 @@ function createMetricsJsonEditor() {
 
     // Create a secondary Monaco editor instance for the left tab
     require(['vs/editor/editor.main'], function() {
-        window.metricsJsonEditor = monaco.editor.create(metricsEditorContainer, {
+        window.metricsJsonEditor = monaco.editor.create(metricsEditorContainer, window.UAWMonacoPreferences.options({
             value: editor ? editor.getValue() : '',
             language: 'json',
             theme: isDarkMode ? 'vs-dark' : 'vs',
@@ -383,7 +383,8 @@ function createMetricsJsonEditor() {
             bracketMatching: 'always',
             formatOnPaste: true,
             formatOnType: true
-        });
+        }));
+        window.UAWMonacoPreferences.register(window.metricsJsonEditor);
 
         // Use a flag to prevent recursive updates
         let isSyncing = false;
@@ -460,7 +461,7 @@ function initializeMetricsCatalogEditor() {
     require(['vs/editor/editor.main'], function() {
         clearTimeout(monacoTimeout);
         try {
-            window.metricsCatalogEditor = monaco.editor.create(catalogEditorContainer, {
+            window.metricsCatalogEditor = monaco.editor.create(catalogEditorContainer, window.UAWMonacoPreferences.options({
                 value: customCatalog,
                 language: 'json',
                 theme: isDarkMode ? 'vs-dark' : 'vs',
@@ -475,7 +476,8 @@ function initializeMetricsCatalogEditor() {
                 bracketMatching: 'always',
                 formatOnPaste: true,
                 formatOnType: true
-            });
+            }));
+            window.UAWMonacoPreferences.register(window.metricsCatalogEditor);
 
             window.metricsCatalogEditor.onDidChangeModelContent(() => {
                 const content = window.metricsCatalogEditor.getValue();
@@ -576,7 +578,7 @@ function validateSampleCheck(metric) {
     require(['vs/editor/editor.main'], function() {
         clearTimeout(monacoTimeout);
         try {
-            window.metricsValidatorEditor = monaco.editor.create(validatorEditorContainer, {
+            window.metricsValidatorEditor = monaco.editor.create(validatorEditorContainer, window.UAWMonacoPreferences.options({
                 value: customValidator,
                 language: 'javascript',
                 theme: isDarkMode ? 'vs-dark' : 'vs',
@@ -591,7 +593,8 @@ function validateSampleCheck(metric) {
                 bracketMatching: 'always',
                 formatOnPaste: true,
                 formatOnType: true
-            });
+            }));
+            window.UAWMonacoPreferences.register(window.metricsValidatorEditor);
 
             window.metricsValidatorEditor.onDidChangeModelContent(() => {
                 const content = window.metricsValidatorEditor.getValue();

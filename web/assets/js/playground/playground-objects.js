@@ -93,7 +93,7 @@ function getSimulationRoot(doc) {
 
 function isWorkSpecV2Simulation(simulation) {
     if (!isPlainObject(simulation)) return false;
-    if (safeTrim(simulation.schema_version) === '2.0') return true;
+    if (safeTrim(simulation.schema_version) === '2.1') return true;
     return isPlainObject(simulation.world) || isPlainObject(simulation.process);
 }
 
@@ -1035,6 +1035,18 @@ function openAddTaskModal() {
             input.value = '';
         }
     });
+    if (startTimeInput) {
+        startTimeInput.dataset.startMode = 'omitted';
+        startTimeInput.dataset.resolvedValue = '';
+        startTimeInput.title = 'Leave blank only when dependencies or lower timing bounds provide a deterministic start.';
+        startTimeInput.oninput = () => {
+            startTimeInput.dataset.startMode = startTimeInput.value ? 'explicit' : 'omitted';
+            const status = document.getElementById('task-start-source');
+            if (status) status.textContent = startTimeInput.value ? 'Explicit start' : 'Derived when resolvable';
+        };
+    }
+    const startSource = document.getElementById('task-start-source');
+    if (startSource) startSource.textContent = 'Derived when omitted';
     if (document.querySelector('input[name="time-input-mode"][value="duration"]')) {
         document.querySelector('input[name="time-input-mode"][value="duration"]').checked = true;
     }
@@ -1229,7 +1241,31 @@ function openEditTaskModal(task) {
     if (taskEmojiInput) taskEmojiInput.value = task.emoji || '';
     if (actorSelect) actorSelect.value = task.actor_id || '';
     if (locationSelect) locationSelect.value = task.location || '';
-    if (startTimeInput) startTimeInput.value = task.start || '';
+    if (startTimeInput) {
+        const authoredStart = Object.prototype.hasOwnProperty.call(task, 'start');
+        let displayStart = task.start || '';
+        if (!authoredStart && window.WorkSpecRuntime?.replay) {
+            try {
+                const currentDocument = JSON.parse((window.activeDayTypeEditor || editor).getValue());
+                const timing = window.WorkSpecRuntime.replay(currentDocument).timings.get(task.id);
+                if (timing?.resolved) displayStart = minutesToTimeString(timing.start);
+            } catch (error) {
+                console.warn('Could not display derived task start:', error);
+            }
+        }
+        startTimeInput.value = displayStart;
+        startTimeInput.dataset.startMode = authoredStart ? 'explicit' : 'derived';
+        startTimeInput.dataset.resolvedValue = authoredStart ? '' : displayStart;
+        startTimeInput.title = authoredStart
+            ? 'Explicit authored start'
+            : 'Derived by WorkSpec from dependencies and timing bounds. Editing this value creates an explicit override.';
+        const status = document.getElementById('task-start-source');
+        if (status) status.textContent = authoredStart ? 'Explicit start' : 'Derived start';
+        startTimeInput.oninput = () => {
+            startTimeInput.dataset.startMode = 'explicit';
+            if (status) status.textContent = 'Explicit override';
+        };
+    }
     if (taskDurationInput) taskDurationInput.value = task.duration || '';
     if (taskDependsInput) taskDependsInput.value = Array.isArray(task.depends_on) ? task.depends_on.join(', ') : '';
 
@@ -1249,7 +1285,7 @@ function openEditTaskModal(task) {
     // object can contain more than one property, so represent every property
     // operation as its own editable form group.
     if (task.interactions && task.interactions.length > 0) {
-        task.interactions.forEach(interaction => {
+        task.interactions.forEach((interaction, interactionIndex) => {
             const propertyChanges = interaction?.property_changes;
             const propertyEntries = propertyChanges && typeof propertyChanges === 'object'
                 ? Object.entries(propertyChanges)
@@ -1259,6 +1295,26 @@ function openEditTaskModal(task) {
                 addInteraction();
                 const lastInteractionGroup = document.querySelector('.interaction-group:last-child');
             if (lastInteractionGroup) {
+                const operators = propertyChanges && typeof propertyChanges === 'object'
+                    ? Object.values(propertyChanges)
+                    : [];
+                const hasReferenceOperand = operators.some(operator => operator && typeof operator === 'object' &&
+                    Object.entries(operator).some(([key, value]) => !['increment', 'decrement'].includes(key) && value !== null && typeof value === 'object'));
+                const createdHasExpressions = interaction.object && (
+                    (interaction.object.location && typeof interaction.object.location === 'object') ||
+                    Object.values(interaction.object.properties || {}).some(value => value !== null && typeof value === 'object')
+                );
+                const unsupportedOperator = operators.some(operator => operator && typeof operator === 'object' &&
+                    Object.keys(operator).some(key => !['from', 'to', 'set', 'delta'].includes(key)));
+                const requiresJsonPreservation = Boolean(
+                    interaction.at || interaction.when ||
+                    (interaction.target_id && typeof interaction.target_id === 'object') ||
+                    hasReferenceOperand || createdHasExpressions || unsupportedOperator ||
+                    Object.keys(propertyChanges || {}).length > 1
+                );
+                lastInteractionGroup.dataset.originalInteraction = JSON.stringify(interaction);
+                lastInteractionGroup.dataset.originalInteractionIndex = String(interactionIndex);
+                lastInteractionGroup.dataset.preserveJson = requiresJsonPreservation ? 'true' : 'false';
                 const counter = lastInteractionGroup.id.split('-')[1];
 
                 // Determine interaction type and populate fields
@@ -1951,6 +2007,14 @@ function getPropertyValueAtTaskTime(objectId, propertyName) {
         const simulation = simulationDoc ? getSimulationRoot(simulationDoc) : null;
         if (simulation) {
             const taskStartMinutes = parseTimeToMinutes(taskStartTime);
+            if (window.WorkSpecRuntime?.snapshotAt && Number.isFinite(taskStartMinutes)) {
+                const snapshot = window.WorkSpecRuntime.snapshotAt(simulationDoc, taskStartMinutes);
+                const resolvedObject = snapshot.objects?.[objectId];
+                if (resolvedObject) {
+                    if (propertyName === 'location' || propertyName === 'emoji') return resolvedObject[propertyName] ?? null;
+                    return resolvedObject.properties?.[propertyName] ?? null;
+                }
+            }
             const tasks = getSimulationTasks(simulation);
 
             // Get tasks that complete before our task starts, sorted by time
@@ -2286,7 +2350,7 @@ function addTaskToSimulation() {
         const location = document.getElementById('task-location-select').value;
         const startTime = document.getElementById('task-start-input').value;
 
-        if (!taskId || !emoji || !actorId || !startTime) {
+        if (!taskId || !emoji || !actorId) {
             alert('Please fill in all required fields');
             return;
         }
@@ -2313,15 +2377,23 @@ function addTaskToSimulation() {
             id: taskId,
             emoji: emoji,
             actor_id: actorId,
-            start: startTime,
+            ...(startTime ? { start: startTime } : {}),
             duration: duration,
             location: location,
-            depends_on: [],
             interactions: []
         };
         
         const interactionGroups = document.querySelectorAll('.interaction-group');
+        const preservedInteractionIndexes = new Set();
         interactionGroups.forEach(group => {
+            if (group.dataset.preserveJson === 'true' && group.dataset.originalInteraction) {
+                const originalIndex = group.dataset.originalInteractionIndex || group.dataset.originalInteraction;
+                if (!preservedInteractionIndexes.has(originalIndex)) {
+                    newTask.interactions.push(JSON.parse(group.dataset.originalInteraction));
+                    preservedInteractionIndexes.add(originalIndex);
+                }
+                return;
+            }
             const counter = group.id.split('-')[1];
             const changeType = group.querySelector(`select[name="interaction_change_type_${counter}"]`).value;
             const objectId = group.querySelector(`select[name="interaction_object_${counter}"]`).value;
@@ -2451,7 +2523,7 @@ function saveTaskToSimulation() {
         const location = document.getElementById('task-location-select').value;
         const startTime = document.getElementById('task-start-input').value;
 
-        if (!taskId || !emoji || !actorId || !startTime) {
+        if (!taskId || !emoji || !actorId) {
             alert('Please fill in all required fields');
             return;
         }
@@ -2483,21 +2555,44 @@ function saveTaskToSimulation() {
         const existingTask = isEditMode
             ? getSimulationTasks(getSimulationRoot(currentJson)).find(task => task.id === editTaskId)
             : null;
+        const startInput = document.getElementById('task-start-input');
+        const preserveDerivedStart = Boolean(
+            existingTask
+            && !Object.prototype.hasOwnProperty.call(existingTask, 'start')
+            && startInput?.dataset.startMode === 'derived'
+            && startTime === startInput.dataset.resolvedValue
+        );
+        const dependencyText = document.getElementById('task-depends-input')?.value || '';
+        const simpleDependencies = dependencyText.split(',').map(value => value.trim()).filter(Boolean);
+        const dependencyFields = existingTask?.depends_on !== undefined && !Array.isArray(existingTask.depends_on)
+            ? { depends_on: existingTask.depends_on }
+            : (simpleDependencies.length ? { depends_on: simpleDependencies } : {});
         const newTask = {
             ...(existingTask || {}),
             id: taskId,
             emoji: emoji,
             actor_id: actorId,
-            start: startTime,
+            ...(!preserveDerivedStart && startTime ? { start: startTime } : {}),
             duration: duration,
             location: location,
-            depends_on: existingTask?.depends_on || [],
+            ...dependencyFields,
             interactions: []
         };
+        if (preserveDerivedStart || !startTime) delete newTask.start;
 
-        // Process interactions (same logic as before)
+        // Process interactions. Structures that the compact form cannot edit
+        // remain authoritative JSON and are round-tripped without coercion.
         const interactionGroups = document.querySelectorAll('.interaction-group');
+        const preservedInteractionIndexes = new Set();
         interactionGroups.forEach(group => {
+            if (group.dataset.preserveJson === 'true' && group.dataset.originalInteraction) {
+                const originalIndex = group.dataset.originalInteractionIndex || group.dataset.originalInteraction;
+                if (!preservedInteractionIndexes.has(originalIndex)) {
+                    newTask.interactions.push(JSON.parse(group.dataset.originalInteraction));
+                    preservedInteractionIndexes.add(originalIndex);
+                }
+                return;
+            }
             const counter = group.id.split('-')[1];
             const changeType = group.querySelector(`select[name="interaction_change_type_${counter}"]`).value;
             const objectId = group.querySelector(`select[name="interaction_object_${counter}"]`).value;

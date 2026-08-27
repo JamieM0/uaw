@@ -67,7 +67,7 @@
             this.modifiedModel = monaco.editor.createModel(newContent, 'json');
 
             // Create diff editor in the same container
-            this.diffEditor = monaco.editor.createDiffEditor(editorContainer, {
+            this.diffEditor = monaco.editor.createDiffEditor(editorContainer, window.UAWMonacoPreferences.options({
                 // Disable resizing for consistent UX
                 enableSplitViewResizing: false,
 
@@ -90,7 +90,8 @@
                     vertical: 'visible',
                     horizontal: 'visible'
                 }
-            });
+            }));
+            window.UAWMonacoPreferences.register(this.diffEditor);
 
             // Set the models
             this.diffEditor.setModel({

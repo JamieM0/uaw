@@ -21,7 +21,7 @@
 
     const blankWorkSpec = () => JSON.stringify({
         simulation: {
-            schema_version: '2.0',
+            schema_version: '2.1',
             meta: { title: 'Untitled process', description: 'Describe what this process should accomplish.', domain: 'General' },
             config: { time_unit: 'minutes', start_time: '08:00', end_time: '18:00', timezone: 'UTC', currency: 'USD', locale: 'en-US' },
             world: { objects: [], layout: { locations: [] }, digital_locations: [], displays: [] },

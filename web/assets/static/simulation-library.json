@@ -21,7 +21,7 @@
           "locale": "en-US",
           "timezone": "UTC"
         },
-        "schema_version": "2.0",
+        "schema_version": "2.1",
         "state_libraries": {
           "bakery_staff": {
             "states": ["available", "working", "break"],
@@ -333,7 +333,6 @@
               "start": "06:15",
               "duration": 30,
               "location": "prep_area",
-              "depends_on": [],
               "interactions": [
                 {
                   "property_changes": {
@@ -387,7 +386,6 @@
               "start": "06:45",
               "duration": 10,
               "location": "prep_area",
-              "depends_on": [],
               "interactions": [
                 {
                   "property_changes": {
@@ -631,7 +629,6 @@
               "start": "07:30",
               "duration": 20,
               "location": "prep_area",
-              "depends_on": [],
               "interactions": [
                 {
                   "property_changes": {
@@ -757,7 +754,6 @@
               "start": "09:05",
               "duration": 15,
               "location": "oven_area",
-              "depends_on": [],
               "interactions": [
                 {
                   "property_changes": {
@@ -1695,7 +1691,7 @@
             }
           }
         ],
-        "schema_version": "2.0",
+        "schema_version": "2.1",
         "world": {
           "layout": {
             "meta": {
@@ -1728,6 +1724,9 @@
               {
                 "id": "packing_station",
                 "name": "Packing Station",
+                "properties": {
+                  "capacity": 2
+                },
                 "shape": {
                   "type": "rect",
                   "x": 300,
@@ -1746,7 +1745,10 @@
               "properties": {
                 "role": "Customer Support",
                 "cost_per_hour": 22,
-                "state": "available"
+                "state": "available",
+                "permissions": [
+                  "validate_order"
+                ]
               },
               "location": "server_room"
             },
@@ -1874,7 +1876,6 @@
               "start": "09:00",
               "duration": 5,
               "location": "server_room",
-              "depends_on": [],
               "interactions": [
                 {
                   "property_changes": {
@@ -1883,7 +1884,8 @@
                       "to": "busy"
                     }
                   },
-                  "target_id": "workstation"
+                  "target_id": "workstation",
+                  "at": "start"
                 }
               ]
             },
@@ -1896,6 +1898,24 @@
               "location": "server_room",
               "depends_on": [
                 "receive_order"
+              ],
+              "requires": {
+                "contains": [
+                  { "object": "current", "property": "permissions" },
+                  "validate_order"
+                ]
+              },
+              "timing": [
+                {
+                  "relation": "offset",
+                  "event": "start",
+                  "relative_to": { "task": "receive_order", "field": "end" },
+                  "min_offset": "10m",
+                  "max_offset": "30m"
+                }
+              ],
+              "reservations": [
+                { "resource": "workstation", "mode": "exclusive" }
               ],
               "interactions": [
                 {
@@ -1918,6 +1938,12 @@
               "depends_on": [
                 "validate_order"
               ],
+              "requires": {
+                ">": [
+                  { "object": "pending_order", "property": "quantity" },
+                  0
+                ]
+              },
               "interactions": []
             },
             {
@@ -2040,6 +2066,9 @@
               "depends_on": [
                 "transport_to_packing"
               ],
+              "reservations": [
+                { "resource": "packing_station", "mode": "capacity", "amount": 1 }
+              ],
               "interactions": [
                 {
                   "property_changes": {
@@ -2086,7 +2115,6 @@
               "start": "11:00",
               "duration": 3,
               "location": "server_room",
-              "depends_on": [],
               "interactions": []
             },
             {
@@ -2126,7 +2154,7 @@
           "locale": "en-US",
           "timezone": "UTC"
         },
-        "schema_version": "2.0",
+        "schema_version": "2.1",
         "world": {
           "layout": {
             "meta": {
@@ -2490,7 +2518,6 @@
               "start": "08:00",
               "duration": 15,
               "location": "pcb_station",
-              "depends_on": [],
               "interactions": [
                 {
                   "property_changes": {
@@ -2586,7 +2613,6 @@
               "start": "08:30",
               "duration": 30,
               "location": "display_station",
-              "depends_on": [],
               "interactions": [
                 {
                   "property_changes": {
@@ -2644,7 +2670,6 @@
               "start": "09:20",
               "duration": 10,
               "location": "final_assembly",
-              "depends_on": [],
               "interactions": [
                 {
                   "property_changes": {
@@ -3015,7 +3040,7 @@
           "locale": "en-US",
           "timezone": "UTC"
         },
-        "schema_version": "2.0",
+        "schema_version": "2.1",
         "world": {
           "layout": {
             "meta": {
@@ -3794,7 +3819,6 @@
               "start": "09:00",
               "duration": 60,
               "location": "formulation_suite",
-              "depends_on": [],
               "interactions": [
                 {
                   "property_changes": {
@@ -4016,7 +4040,7 @@
           "locale": "en-US",
           "timezone": "UTC"
         },
-        "schema_version": "2.0",
+        "schema_version": "2.1",
         "world": {
           "layout": {
             "meta": {
@@ -4573,7 +4597,6 @@
               "start": "16:00",
               "duration": 30,
               "location": "expedite_pass",
-              "depends_on": [],
               "interactions": [
                 {
                   "property_changes": {
@@ -4593,7 +4616,6 @@
               "start": "16:15",
               "duration": 20,
               "location": "grill_station",
-              "depends_on": [],
               "interactions": [
                 {
                   "property_changes": {
@@ -4613,7 +4635,6 @@
               "start": "16:15",
               "duration": 15,
               "location": "saute_station",
-              "depends_on": [],
               "interactions": [
                 {
                   "property_changes": {
@@ -4716,7 +4737,6 @@
               "start": "17:00",
               "duration": 40,
               "location": "garde_manger",
-              "depends_on": [],
               "interactions": [
                 {
                   "property_changes": {
@@ -4751,7 +4771,6 @@
               "start": "17:00",
               "duration": 90,
               "location": "pastry_station",
-              "depends_on": [],
               "interactions": [
                 {
                   "property_changes": {
@@ -5094,7 +5113,6 @@
               "start": "18:00",
               "duration": 240,
               "location": "dish_pit",
-              "depends_on": [],
               "interactions": [
                 {
                   "property_changes": {
@@ -5520,7 +5538,7 @@
             },
             "locations": [
               {
-                "id": "counter",
+                "id": "weekend_counter",
                 "name": "Service Counter",
                 "emoji": "🪟",
                 "position": {
@@ -5530,7 +5548,7 @@
                 }
               },
               {
-                "id": "prep_area",
+                "id": "weekend_prep_area",
                 "name": "Preparation Area",
                 "emoji": "🔧",
                 "position": {
@@ -5542,7 +5560,7 @@
             ],
             "objects": [
               {
-                "id": "barista_alice",
+                "id": "weekend_barista_alice",
                 "type": "actor",
                 "name": "Alice",
                 "emoji": "👩‍🍳",
@@ -5553,7 +5571,7 @@
                 }
               },
               {
-                "id": "espresso_machine",
+                "id": "weekend_espresso_machine",
                 "type": "equipment",
                 "name": "Espresso Machine",
                 "emoji": "☕",
@@ -5564,7 +5582,7 @@
                 }
               },
               {
-                "id": "coffee_beans",
+                "id": "weekend_coffee_beans",
                 "type": "resource",
                 "name": "Coffee Beans",
                 "emoji": "🫘",
@@ -5574,7 +5592,7 @@
                 }
               },
               {
-                "id": "milk",
+                "id": "weekend_milk",
                 "type": "resource",
                 "name": "Milk",
                 "emoji": "🥛",
@@ -5584,7 +5602,7 @@
                 }
               },
               {
-                "id": "latte",
+                "id": "weekend_latte",
                 "type": "product",
                 "name": "Latte",
                 "emoji": "☕",
@@ -5596,59 +5614,59 @@
             ],
             "tasks": [
               {
-                "id": "open_shop",
+                "id": "weekend_open_shop",
                 "emoji": "🔓",
-                "actor_id": "barista_alice",
-                "location_id": "counter",
+                "actor_id": "weekend_barista_alice",
+                "location_id": "weekend_counter",
                 "start": "08:00",
                 "duration": 30,
-                "location": "counter"
+                "location": "weekend_counter"
               },
               {
                 "id": "weekend_service",
                 "emoji": "☕",
-                "actor_id": "barista_alice",
-                "location_id": "counter",
+                "actor_id": "weekend_barista_alice",
+                "location_id": "weekend_counter",
                 "start": "08:30",
                 "duration": 360,
                 "depends_on": [
-                  "open_shop"
+                  "weekend_open_shop"
                 ],
                 "interactions": [
                   {
                     "interaction_type": "use",
                     "duration": 360,
-                    "target_id": "espresso_machine"
+                    "target_id": "weekend_espresso_machine"
                   },
                   {
                     "interaction_type": "consume",
                     "quantity": 40,
-                    "target_id": "coffee_beans"
+                    "target_id": "weekend_coffee_beans"
                   },
                   {
                     "interaction_type": "consume",
                     "quantity": 25,
-                    "target_id": "milk"
+                    "target_id": "weekend_milk"
                   },
                   {
                     "interaction_type": "create",
                     "quantity": 35,
-                    "target_id": "latte"
+                    "target_id": "weekend_latte"
                   }
                 ],
-                "location": "counter"
+                "location": "weekend_counter"
               },
               {
-                "id": "close_shop",
+                "id": "weekend_close_shop",
                 "emoji": "🔒",
-                "actor_id": "barista_alice",
-                "location_id": "counter",
+                "actor_id": "weekend_barista_alice",
+                "location_id": "weekend_counter",
                 "start": "15:30",
                 "duration": 30,
                 "depends_on": [
                   "weekend_service"
                 ],
-                "location": "counter"
+                "location": "weekend_counter"
               }
             ]
           },
@@ -5660,7 +5678,7 @@
             },
             "locations": [
               {
-                "id": "prep_area",
+                "id": "maintenance_prep_area",
                 "name": "Preparation Area",
                 "emoji": "🔧",
                 "position": {
@@ -5670,7 +5688,7 @@
                 }
               },
               {
-                "id": "storage",
+                "id": "maintenance_storage",
                 "name": "Storage Room",
                 "emoji": "📦",
                 "position": {
@@ -5693,7 +5711,7 @@
                 }
               },
               {
-                "id": "espresso_machine",
+                "id": "maintenance_espresso_machine",
                 "type": "equipment",
                 "name": "Espresso Machine",
                 "emoji": "☕",
@@ -5709,23 +5727,23 @@
                 "id": "deep_clean",
                 "emoji": "🧽",
                 "actor_id": "technician",
-                "location_id": "prep_area",
+                "location_id": "maintenance_prep_area",
                 "start": "09:00",
                 "duration": 120,
                 "interactions": [
                   {
                     "interaction_type": "maintain",
                     "duration": 120,
-                    "target_id": "espresso_machine"
+                    "target_id": "maintenance_espresso_machine"
                   }
                 ],
-                "location": "prep_area"
+                "location": "maintenance_prep_area"
               },
               {
                 "id": "equipment_service",
                 "emoji": "🔧",
                 "actor_id": "technician",
-                "location_id": "prep_area",
+                "location_id": "maintenance_prep_area",
                 "start": "11:00",
                 "duration": 180,
                 "depends_on": [
@@ -5735,22 +5753,22 @@
                   {
                     "interaction_type": "repair",
                     "duration": 180,
-                    "target_id": "espresso_machine"
+                    "target_id": "maintenance_espresso_machine"
                   }
                 ],
-                "location": "prep_area"
+                "location": "maintenance_prep_area"
               },
               {
                 "id": "inventory_check",
                 "emoji": "📋",
                 "actor_id": "technician",
-                "location_id": "storage",
+                "location_id": "maintenance_storage",
                 "start": "14:00",
                 "duration": 60,
                 "depends_on": [
                   "equipment_service"
                 ],
-                "location": "storage"
+                "location": "maintenance_storage"
               }
             ]
           },
@@ -5772,7 +5790,7 @@
                 }
               },
               {
-                "id": "storage",
+                "id": "delivery_storage",
                 "name": "Storage Room",
                 "emoji": "📦",
                 "position": {
@@ -5795,7 +5813,7 @@
                 }
               },
               {
-                "id": "coffee_beans",
+                "id": "delivery_coffee_beans",
                 "type": "resource",
                 "name": "Coffee Beans",
                 "emoji": "🫘",
@@ -5805,7 +5823,7 @@
                 }
               },
               {
-                "id": "milk",
+                "id": "delivery_milk",
                 "type": "resource",
                 "name": "Milk",
                 "emoji": "🥛",
@@ -5827,12 +5845,12 @@
                   {
                     "interaction_type": "receive",
                     "quantity": 200,
-                    "target_id": "coffee_beans"
+                    "target_id": "delivery_coffee_beans"
                   },
                   {
                     "interaction_type": "receive",
                     "quantity": 100,
-                    "target_id": "milk"
+                    "target_id": "delivery_milk"
                   }
                 ],
                 "location": "loading_dock"
@@ -5841,25 +5859,25 @@
                 "id": "stock_storage",
                 "emoji": "📥",
                 "actor_id": "manager",
-                "location_id": "storage",
+                "location_id": "delivery_storage",
                 "start": "08:00",
                 "duration": 90,
                 "depends_on": [
                   "receive_delivery"
                 ],
-                "location": "storage"
+                "location": "delivery_storage"
               },
               {
                 "id": "quality_check",
                 "emoji": "✅",
                 "actor_id": "manager",
-                "location_id": "storage",
+                "location_id": "delivery_storage",
                 "start": "09:30",
                 "duration": 30,
                 "depends_on": [
                   "stock_storage"
                 ],
-                "location": "storage"
+                "location": "delivery_storage"
               }
             ]
           },
@@ -5874,7 +5892,7 @@
             "tasks": []
           }
         },
-        "schema_version": "2.0",
+        "schema_version": "2.1",
         "meta": {
           "title": "Coffee Shop Operations - Multi-Period",
           "description": "A coffee shop simulation with different operational patterns for weekdays, weekends, maintenance days, and closed days",

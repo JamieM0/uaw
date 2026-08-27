@@ -203,7 +203,17 @@ class ActorAnimationManager {
         this.locationSlotCache.clear();
 
         const objects = this.simulationData.world?.objects || this.simulationData.objects || [];
-        const tasks = this.simulationData.process?.tasks || this.simulationData.tasks || [];
+        const rawTasks = this.simulationData.process?.tasks || this.simulationData.tasks || [];
+        const workspecDocument = this.simulationData.simulation ? this.simulationData : { simulation: this.simulationData };
+        const timingRun = workspecDocument.simulation?.schema_version === '2.1' && window.WorkSpecRuntime?.replay
+            ? window.WorkSpecRuntime.replay(workspecDocument)
+            : null;
+        const tasks = rawTasks.map(task => {
+            const timing = timingRun?.timings?.get(task.id);
+            return timing?.resolved
+                ? { ...task, start_minutes: timing.start, end_minutes: timing.end, duration: timing.duration, start_source: timing.source }
+                : task;
+        }).filter(task => !timingRun || Number.isFinite(task.start_minutes));
 
         // Task performers can move; every located object still receives a physical visual.
         const actorsInTasks = new Set();
@@ -214,7 +224,7 @@ class ActorAnimationManager {
                 this.actorTasks.get(task.actor_id).push(task);
             }
         });
-        this.actorTasks.forEach(actorTasks => actorTasks.sort((a, b) => this.parseTime(a.start) - this.parseTime(b.start)));
+        this.actorTasks.forEach(actorTasks => actorTasks.sort((a, b) => (a.start_minutes ?? this.parseTime(a.start)) - (b.start_minutes ?? this.parseTime(b.start))));
 
         // Initialize all objects that belong to a physical location.
         objects.forEach(actorObj => {
@@ -250,14 +260,14 @@ class ActorAnimationManager {
         // Compute transitions between consecutive tasks
         for (let i = 0; i < actorTasks.length; i++) {
             const currentTask = actorTasks[i];
-            const currentStartTime = this.parseTime(currentTask.start);
-            const currentEndTime = currentStartTime + (currentTask.duration || 0);
+            const currentStartTime = currentTask.start_minutes ?? this.parseTime(currentTask.start);
+            const currentEndTime = currentTask.end_minutes ?? currentStartTime + (currentTask.duration || 0);
             const currentLocation = currentTask.location;
 
             // If there's a next task, create transition
             if (i < actorTasks.length - 1) {
                 const nextTask = actorTasks[i + 1];
-                const nextStartTime = this.parseTime(nextTask.start);
+                const nextStartTime = nextTask.start_minutes ?? this.parseTime(nextTask.start);
                 const nextLocation = nextTask.location;
 
                 // Only create transition if locations differ
@@ -364,7 +374,7 @@ class ActorAnimationManager {
         const playerState = window.player?.getCurrentObjectState?.(actor.id);
         const state = playerState !== undefined
             ? playerState
-            : (window.WorkSpecStateVisuals?.resolveObjectStateAtTime?.(actor.object, tasks, this.currentTime) || actor.object?.properties?.state);
+            : (window.WorkSpecStateVisuals?.resolveObjectStateAtTime?.(actor.object, tasks, this.currentTime, this.simulationData) || actor.object?.properties?.state);
         const assetId = window.WorkSpecStateVisuals?.resolveStateVisualAssetId?.(this.simulationData, actor.object, state);
         const normalizedAssetId = typeof assetId === 'string' ? assetId.replace(/^asset:/, '') : '';
         const assetSource = normalizedAssetId ? window.AssetManager?.getAssetThumbnail?.(normalizedAssetId, 64) : null;
@@ -661,8 +671,8 @@ class ActorAnimationManager {
 
         // Find the task that contains current time
         for (const task of actorTasks) {
-            const taskStart = this.parseTime(task.start);
-            const taskEnd = taskStart + (task.duration || 0);
+            const taskStart = task.start_minutes ?? this.parseTime(task.start);
+            const taskEnd = task.end_minutes ?? taskStart + (task.duration || 0);
 
             if (time >= taskStart && time < taskEnd) {
                 // Actor is performing this task
@@ -683,7 +693,7 @@ class ActorAnimationManager {
         // If no current task, use the location from the last completed task
         for (let i = actorTasks.length - 1; i >= 0; i--) {
             const task = actorTasks[i];
-            const taskEnd = this.parseTime(task.start) + (task.duration || 0);
+            const taskEnd = task.end_minutes ?? (task.start_minutes ?? this.parseTime(task.start)) + (task.duration || 0);
 
             if (time >= taskEnd) {
                 const location = task.location;

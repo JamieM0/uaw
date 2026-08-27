@@ -11,7 +11,7 @@ const customValidationRunner = require(path.join(__dirname, '..', 'custom-valida
 
 function printHelp(exitCode = 0) {
     const lines = [
-        'workspec - WorkSpec v1.1.0 CLI',
+        'workspec - WorkSpec 2.1 CLI',
         '',
         'Usage:',
         '  workspec validate <file.workspec.json> [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json] [-y]',
@@ -20,7 +20,7 @@ function printHelp(exitCode = 0) {
         '',
         'Commands:',
         '  validate   Validate a WorkSpec document (RFC 7807 output model).',
-        '  migrate    Previous UAW Syntax -> WorkSpec v1.0.0.',
+        '  migrate    Previous UAW syntax -> current WorkSpec 2.1.',
         '  format     Pretty-print JSON (2-space).',
         '',
         'Flags:',
@@ -380,7 +380,11 @@ async function main() {
     }
 }
 
-main().catch((error) => {
-    process.stderr.write(`Unexpected error: ${error && error.message ? error.message : String(error)}\n`);
-    process.exitCode = 1;
-});
+if (require.main === module) {
+    main().catch((error) => {
+        process.stderr.write(`Unexpected error: ${error && error.message ? error.message : String(error)}\n`);
+        process.exitCode = 1;
+    });
+}
+
+module.exports = { parseArgs, handleValidate, handleMigrate, handleFormat, main };

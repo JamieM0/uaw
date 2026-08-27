@@ -55,7 +55,7 @@
         <link rel="stylesheet" href="/assets/css/emoji-picker.css" />
         <link rel="stylesheet" href="/assets/css/smart-actions.css" />
         <link rel="stylesheet" href="/assets/css/multi-period.css" />
-        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260822b" />
+        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260826b" />
 
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
@@ -133,6 +133,7 @@
         />
 
         <script src="/assets/js/simulation-validator.js" defer></script>
+        <script src="/packages/workspec/workspec-runtime.js" defer></script>
         <script src="/packages/workspec/workspec-validator.js" defer></script>
         <script src="/packages/workspec/workspec-migrate-v1-to-v2.js" defer></script>
         <script src="/packages/workspec/state-visuals.js" defer></script>
@@ -141,7 +142,7 @@
 
         <script src="/assets/js/tutorial.js" defer></script>
         <script src="/assets/js/tutorial-validator.js" defer></script>
-        <script src="/assets/js/playground/playground-time-controller.js?v=20260822b" defer></script>
+        <script src="/assets/js/playground/playground-time-controller.js?v=20260826a" defer></script>
         <script src="/assets/js/simulation-player.js?v=20260822b" defer></script>
 
         <!-- Monaco Editor for JSON syntax highlighting -->
@@ -932,8 +933,8 @@
                         </div>
                         <div class="uaw-schedule-grid">
                             <div class="form-group">
-                                <label for="task-start-input">Starts <span class="required-indicator">*</span></label>
-                                <input type="text" id="task-start-input" placeholder="09:00" required pattern="[0-2][0-9]:[0-5][0-9]">
+                                <label for="task-start-input">Starts <small id="task-start-source">Explicit or derived</small></label>
+                                <input type="text" id="task-start-input" placeholder="Derived when omitted" pattern="[0-2][0-9]:[0-5][0-9]">
                                 <div class="field-error" id="task-start-error"></div>
                             </div>
                             <div class="form-group">
@@ -1268,7 +1269,7 @@
         <!-- Playground v2 application shell. These modules preserve the legacy
              component IDs while providing the project workspace around them. -->
         <script src="/assets/js/playground/playground-projects-v2.js?v=20260822b" defer></script>
-        <script src="/assets/js/playground/playground-shell-v2.js?v=20260822b" defer></script>
+        <script src="/assets/js/playground/playground-shell-v2.js?v=20260826a" defer></script>
         <script src="/assets/js/playground/playground-source-context.js?v=20260821a" defer></script>
         <script src="/assets/js/playground/playground-agent-v2.js?v=20260822a" defer></script>
         <script type="module" src="/assets/js/playground/playground-motion-v2.js?v=20260818a"></script>
@@ -1279,7 +1280,7 @@
         <script src="/assets/js/playground/smart-actions-markdown.js" defer></script>
         <script src="/assets/js/playground/smart-actions-context.js?v=20260818c" defer></script>
         <script src="/assets/js/playground/smart-actions-client.js" defer></script>
-        <script src="/assets/js/playground/smart-actions-diff.js" defer></script>
+        <script src="/assets/js/playground/smart-actions-diff.js?v=20260826a" defer></script>
         <script src="/assets/js/playground/smart-actions-setup.js?v=20260818c" defer></script>
         <script src="/assets/js/playground/smart-actions-ui.js?v=20260818c" defer></script>
 
@@ -1301,10 +1302,10 @@
         <script src="/assets/js/playground/playground-digital-space.js?v=20260814g" defer></script>
         <script src="/assets/js/playground/playground-display-editor.js?v=20260814g" defer></script>
         <script src="/assets/js/playground/playground-save-load.js?v=20260820a" defer></script>
-        <script src="/assets/js/playground/playground-metrics-editor.js?v=20260818c" defer></script>
+        <script src="/assets/js/playground/playground-metrics-editor.js?v=20260826a" defer></script>
         <script src="/assets/js/playground/playground-objects.js?v=20260822a" defer></script>
         <script src="/assets/js/playground/playground-features.js" defer></script>
-        <script src="/assets/js/playground/playground-editor.js?v=20260818c" defer></script>
+        <script src="/assets/js/playground/playground-editor.js?v=20260826a" defer></script>
         <script src="/assets/js/space-editor-actor-animation.js?v=20260822b" defer></script>
         <script src="/assets/js/playground/playground-core.js?v=20260822b" defer></script>
         <script src="/assets/js/playground/playground-canvas-v2.js?v=20260814h" defer></script>

@@ -8,12 +8,12 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const validator = require('../workspec-validator.js');
 const stateVisuals = require('../state-visuals.js');
-const schema = require('../v2.0.schema.json');
+const schema = require('../v2.1.schema.json');
 
 function baseDoc() {
     return {
         simulation: {
-            schema_version: '2.0',
+            schema_version: '2.1',
             meta: { title: 't', description: 'd', domain: 'x' },
             config: {
                 time_unit: 'minutes',
@@ -103,24 +103,27 @@ function run() {
             properties: { state: 'available' }
         };
         doc.simulation.world.objects = [actor];
-        doc.simulation.process.tasks = [{
-            id: 'work',
-            actor_id: 'worker_1',
-            start: '09:00',
-            duration: 30,
-            interactions: [{
-                target_id: 'worker_1',
-                temporary: true,
-                property_changes: { state: { from: 'available', to: 'working' } }
-            }]
-        }];
+        doc.simulation.process.tasks = [
+            { id: 'prepare', actor_id: 'worker_1', start: '09:00', duration: 5 },
+            {
+                id: 'work',
+                actor_id: 'worker_1',
+                duration: 30,
+                depends_on: ['prepare'],
+                interactions: [{
+                    target_id: 'worker_1',
+                    temporary: true,
+                    property_changes: { state: { from: 'available', to: 'working' } }
+                }]
+            }
+        ];
 
         assert.equal(validator.validate(doc).ok, true);
         assert.equal(stateVisuals.resolveStateVisualAssetId(doc, actor), 'asset_idle');
-        assert.equal(stateVisuals.resolveObjectStateAtTime(actor, doc.simulation.process.tasks, 9 * 60 + 10), 'working');
-        assert.equal(stateVisuals.resolveObjectStateAtTime(actor, doc.simulation.process.tasks, 9 * 60 + 31), 'available');
+        assert.equal(stateVisuals.resolveObjectStateAtTime(actor, doc.simulation.process.tasks, 9 * 60 + 10, doc), 'working');
+        assert.equal(stateVisuals.resolveObjectStateAtTime(actor, doc.simulation.process.tasks, 9 * 60 + 36, doc), 'available');
         assert.equal(
-            stateVisuals.resolveStateVisualAssetId(doc, actor, stateVisuals.resolveObjectStateAtTime(actor, doc.simulation.process.tasks, 9 * 60 + 10)),
+            stateVisuals.resolveStateVisualAssetId(doc, actor, stateVisuals.resolveObjectStateAtTime(actor, doc.simulation.process.tasks, 9 * 60 + 10, doc)),
             'asset_working'
         );
         assert.equal(stateVisuals.assetIdFromFilename('Baker Working.PNG'), 'baker_working');

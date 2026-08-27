@@ -1029,7 +1029,7 @@ function dismissNotification(notification) {
 function buildDefaultWorkspecDocument() {
     return {
         simulation: {
-            schema_version: "2.0",
+            schema_version: "2.1",
             meta: {
                 title: "New Simulation",
                 description: "",

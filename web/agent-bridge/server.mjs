@@ -122,17 +122,17 @@ async function prepareProjectWorkspace(payload) {
     const directory = path.join(agentWorkspaceRoot, safeProjectId(payload.projectId));
     await mkdir(directory, { recursive: true });
 
-    const schema = await readFile(path.join(workspecPackagePath, 'v2.0.schema.json'), 'utf8');
+    const schema = await readFile(path.join(workspecPackagePath, 'v2.1.schema.json'), 'utf8');
     const readme = await readFile(path.join(workspecPackagePath, 'README.md'), 'utf8');
     const currentPath = path.join(directory, 'current.workspec.json');
     const proposalPath = path.join(directory, 'proposal.workspec.json');
     await writeFile(currentPath, payload.workSpec, 'utf8');
     await writeFile(proposalPath, payload.workSpec, 'utf8');
-    await writeFile(path.join(directory, 'v2.0.schema.json'), schema, 'utf8');
+    await writeFile(path.join(directory, 'v2.1.schema.json'), schema, 'utf8');
     await writeFile(path.join(directory, 'WORKSPEC_REFERENCE.md'), [
         '# WorkSpec reference for the WorkSpec Studio Agent',
         '',
-        'The JSON Schema in `v2.0.schema.json` and the canonical validator are authoritative.',
+        'The JSON Schema in `v2.1.schema.json` and the canonical validator are authoritative.',
         'Never invent aliases or fields that conflict with those files.',
         '',
         readme
@@ -148,7 +148,7 @@ try {
     const value = JSON.parse(fs.readFileSync(target, 'utf8'));
     const result = WorkSpec.validate(value);
     process.stdout.write(JSON.stringify(result, null, 2) + '\\n');
-    process.exit(result.valid ? 0 : 1);
+    process.exit(result.ok ? 0 : 1);
 } catch (error) {
     process.stderr.write(error.message + '\\n');
     process.exit(2);
@@ -160,7 +160,7 @@ try {
 
 You are operating on one browser-provided WorkSpec Studio project snapshot.
 
-- Read \`WORKSPEC_REFERENCE.md\`, \`v2.0.schema.json\`, and \`current.workspec.json\` before proposing changes.
+- Read \`WORKSPEC_REFERENCE.md\`, \`v2.1.schema.json\`, and \`current.workspec.json\` before proposing changes.
 - The canonical validation command is: \`node validate-workspec.cjs proposal.workspec.json\`.
 - Never modify \`current.workspec.json\`.
 - Put the complete proposed document in \`proposal.workspec.json\`.

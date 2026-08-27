@@ -15,7 +15,8 @@
         week: PLAYBACK_MINUTES_PER_SECOND,
         month: PLAYBACK_MINUTES_PER_SECOND
     };
-    const SCALE_STEPS = { day: 5, week: 30, month: 120 };
+    const SCRUB_MARK_INTERVAL_MINUTES = 15;
+    const SCRUB_SNAP_TOLERANCE_MINUTES = 1.5;
 
     const finite = (value, fallback = 0) => Number.isFinite(Number(value)) ? Number(value) : fallback;
     const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -165,7 +166,15 @@
         const canonicalTasks = simulation.process?.tasks || simulation.tasks || [];
         const clock = createClockContext(simulation, canonicalTasks, options.now);
         const unit = simulation.config?.time_unit || 'minutes';
-        let tasks = canonicalTasks.map(task => normalizeTask(task, clock, unit));
+        const authoritativeRun = simulation.schema_version === '2.1' && root.WorkSpecRuntime?.replay
+            ? root.WorkSpecRuntime.replay(documentValue?.simulation ? documentValue : { simulation })
+            : null;
+        let tasks = canonicalTasks.map(task => {
+            const timing = authoritativeRun?.timings?.get(task.id);
+            return timing?.resolved
+                ? normalizeTask({ ...task, start_minutes: timing.start, end_minutes: timing.end, duration_minutes: timing.duration, start_source: timing.source }, clock, unit)
+                : (authoritativeRun ? null : normalizeTask(task, clock, unit));
+        }).filter(Boolean);
 
         // Legacy repeating calendars are expanded into the same absolute clock.
         if (!tasks.length && simulation.day_types && simulation.calendar && root.MultiDaySimulator) {
@@ -587,7 +596,7 @@
                 </div>
                 <div class="workspec-time-scrubber">
                     <output id="workspec-time-scrubber-output">Current time</output>
-                    <input id="workspec-time-range" type="range" min="0" max="1" value="0" step="1" aria-label="Current WorkSpec time">
+                    <input id="workspec-time-range" type="range" min="0" max="1" value="0" step="any" aria-label="Current WorkSpec time" aria-describedby="workspec-time-scrubber-hint">
                     <div><span id="workspec-time-range-start">Start</span><span id="workspec-time-range-end">End</span></div>
                 </div>
             `;
@@ -595,7 +604,9 @@
             this.navigator = navigator;
             navigator.querySelector('[data-close-time-navigator]')?.addEventListener('click', () => this.closeNavigator());
             navigator.querySelectorAll('[data-time-scale]').forEach(button => button.addEventListener('click', () => this.setScale(button.dataset.timeScale)));
-            navigator.querySelector('#workspec-time-range')?.addEventListener('input', event => this.setTime(Number(event.target.value), { source: 'navigator' }));
+            navigator.querySelector('#workspec-time-range')?.addEventListener('input', event => {
+                this.setTime(this.snapScrubTime(Number(event.target.value)), { source: 'navigator' });
+            });
         }
 
         toggleNavigator() {
@@ -623,11 +634,18 @@
             const range = this.navigator.querySelector('#workspec-time-range');
             range.min = String(this.model.startMinutes);
             range.max = String(this.model.endMinutes);
-            range.step = String(SCALE_STEPS[this.scale]);
+            range.step = 'any';
             range.value = String(this.currentTime);
             this.navigator.querySelector('#workspec-time-range-start').textContent = this.formatDate(this.model.startMinutes, { short: true });
             this.navigator.querySelector('#workspec-time-range-end').textContent = this.formatDate(this.model.endMinutes, { short: true });
             this.updateNavigatorTime();
+        }
+
+        snapScrubTime(time) {
+            if (!this.model) return time;
+            const start = this.model.startMinutes;
+            const nearestMark = start + (Math.round((time - start) / SCRUB_MARK_INTERVAL_MINUTES) * SCRUB_MARK_INTERVAL_MINUTES);
+            return Math.abs(time - nearestMark) <= SCRUB_SNAP_TOLERANCE_MINUTES ? nearestMark : time;
         }
 
         updateNavigatorTime() {

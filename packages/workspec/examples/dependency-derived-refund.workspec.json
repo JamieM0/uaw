@@ -1,0 +1,48 @@
+{
+  "$schema": "https://universalautomation.wiki/workspec/v2.1.schema.json",
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": {
+      "title": "Dependency-derived refund approval",
+      "description": "Approval begins at the deterministic dependency and timing lower bound.",
+      "domain": "customer service"
+    },
+    "config": {
+      "time_unit": "minutes",
+      "start_time": "09:00",
+      "end_time": "11:00",
+      "currency": "USD",
+      "locale": "en-GB",
+      "timezone": "UTC"
+    },
+    "world": {
+      "objects": [
+        { "id": "case_worker", "type": "actor", "name": "Case worker", "properties": { "state": "ready" } },
+        { "id": "approver", "type": "actor", "name": "Approver", "properties": { "state": "ready" } }
+      ]
+    },
+    "process": {
+      "tasks": [
+        {
+          "id": "prepare_refund",
+          "actor_id": "case_worker",
+          "start": "09:00",
+          "duration": "20m"
+        },
+        {
+          "id": "approve_refund",
+          "actor_id": "approver",
+          "duration": "10m",
+          "depends_on": ["prepare_refund"],
+          "timing": [{
+            "relation": "offset",
+            "event": "start",
+            "relative_to": { "task": "prepare_refund", "field": "end" },
+            "min_offset": "30m",
+            "max_offset": "2h"
+          }]
+        }
+      ]
+    }
+  }
+}

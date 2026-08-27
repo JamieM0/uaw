@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://universalautomation.wiki/workspec/v2.0.schema.json",
-  "title": "WorkSpec v2.0",
-  "description": "Canonical WorkSpec v2.0 schema for modeling work activities and simulations, including the world/process model, reusable state visuals, custom types and traits, multi-period calendars, digital space, display interfaces, interactions, recipes, and spatial layouts.",
+  "$id": "https://universalautomation.wiki/workspec/v2.1.schema.json",
+  "title": "WorkSpec v2.1",
+  "description": "Canonical WorkSpec v2.1 schema for modeled work, conditions, references, timed effects, schedule constraints, and reservations.",
   "type": "object",
   "required": [
     "simulation"
@@ -11,7 +11,7 @@
     "$schema": {
       "type": "string",
       "format": "uri",
-      "description": "Reference to this JSON Schema for IDE autocomplete and validation. Recommended value: 'https://universalautomation.wiki/workspec/v2.0.schema.json'."
+      "description": "Reference to this JSON Schema for IDE autocomplete and validation. Recommended value: 'https://universalautomation.wiki/workspec/v2.1.schema.json'."
     },
     "simulation": {
       "$ref": "#/definitions/Simulation"
@@ -37,9 +37,9 @@
           "type": "string",
           "pattern": "^[0-9]+\\.[0-9]+$",
           "enum": [
-            "2.0"
+            "2.1"
           ],
-          "description": "WorkSpec schema version using Major.Minor format. For this schema: '2.0'."
+          "description": "WorkSpec schema version using Major.Minor format. For this schema: '2.1'."
         },
         "meta": {
           "$ref": "#/definitions/Meta"
@@ -561,7 +561,12 @@
         "location_id": { "type": "string" },
         "size_mb": { "type": "number", "minimum": 0 },
         "file_type": { "type": "string" },
-        "permissions": { "type": "string" },
+        "permissions": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+          ]
+        },
         "encrypted": { "type": "boolean" }
       },
       "additionalProperties": true
@@ -715,7 +720,6 @@
       "required": [
         "id",
         "actor_id",
-        "start",
         "duration"
       ],
       "properties": {
@@ -741,6 +745,22 @@
         },
         "depends_on": {
           "$ref": "#/definitions/DependsOn"
+        },
+        "when": {
+          "$ref": "#/definitions/Condition",
+          "description": "If false at the scheduled start, skip this task."
+        },
+        "requires": {
+          "$ref": "#/definitions/Condition",
+          "description": "Mandatory start precondition; false blocks the task."
+        },
+        "timing": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/TimingConstraint" }
+        },
+        "reservations": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Reservation" }
         },
         "interactions": {
           "type": "array",
@@ -774,8 +794,8 @@
       "description": "A task effect on an object. Either a property change, or an action (create/delete).",
       "properties": {
         "target_id": {
-          "$ref": "#/definitions/ObjectId",
-          "description": "ID of the affected object."
+          "$ref": "#/definitions/ValueExpression",
+          "description": "Object ID or an expression resolving to one."
         },
         "property_changes": {
           "$ref": "#/definitions/PropertyChanges"
@@ -788,17 +808,39 @@
           ]
         },
         "object": {
-          "$ref": "#/definitions/Object"
+          "$ref": "#/definitions/CreatedObject"
         },
         "temporary": {
           "type": "boolean",
           "description": "If true, revert changes after the task completes."
+        },
+        "at": {
+          "type": "string",
+          "enum": ["start", "completion"],
+          "description": "Permanent effects default to completion. Temporary property changes always start and restore at completion."
+        },
+        "when": {
+          "$ref": "#/definitions/Condition"
         },
         "description": {
           "type": "string"
         }
       },
       "allOf": [
+        {
+          "not": {
+            "anyOf": [
+              {
+                "required": ["temporary", "action"],
+                "properties": { "temporary": { "const": true } }
+              },
+              {
+                "required": ["temporary", "at"],
+                "properties": { "temporary": { "const": true }, "at": { "const": "completion" } }
+              }
+            ]
+          }
+        },
         {
           "not": {
             "required": [
@@ -872,17 +914,13 @@
       "description": "A change operator (delta/set/from-to/multiply/append/remove/increment/decrement).",
       "minProperties": 1,
       "properties": {
-        "from": {},
-        "to": {},
-        "delta": {
-          "type": "number"
-        },
-        "set": {},
-        "multiply": {
-          "type": "number"
-        },
-        "append": {},
-        "remove": {},
+        "from": { "$ref": "#/definitions/ValueExpression" },
+        "to": { "$ref": "#/definitions/ValueExpression" },
+        "delta": { "$ref": "#/definitions/ValueExpression" },
+        "set": { "$ref": "#/definitions/ValueExpression" },
+        "multiply": { "$ref": "#/definitions/ValueExpression" },
+        "append": { "$ref": "#/definitions/ValueExpression" },
+        "remove": { "$ref": "#/definitions/ValueExpression" },
         "increment": {
           "const": true
         },
@@ -894,6 +932,16 @@
         "from": ["to"],
         "to": ["from"]
       },
+      "oneOf": [
+        { "required": ["from", "to"], "minProperties": 2, "maxProperties": 2 },
+        { "required": ["set"], "maxProperties": 1 },
+        { "required": ["delta"], "maxProperties": 1 },
+        { "required": ["multiply"], "maxProperties": 1 },
+        { "required": ["append"], "maxProperties": 1 },
+        { "required": ["remove"], "maxProperties": 1 },
+        { "required": ["increment"], "maxProperties": 1 },
+        { "required": ["decrement"], "maxProperties": 1 }
+      ],
       "allOf": [
         {
           "not": {
@@ -912,11 +960,191 @@
       ],
       "additionalProperties": false
     },
+    "ValueExpression": {
+      "description": "A JSON literal or a WorkSpec value reference. Reference-shaped literal objects use {literal: value}.",
+      "anyOf": [
+        { "$ref": "#/definitions/ValueReference" },
+        { "type": ["null", "boolean", "number", "string", "array"] },
+        {
+          "type": "object",
+          "not": {
+            "anyOf": [
+              { "$ref": "#/definitions/ValueReference" },
+              { "required": ["object"] },
+              { "required": ["task"] },
+              { "required": ["location"] },
+              { "required": ["clock"] },
+              { "required": ["field"] },
+              { "required": ["property"] },
+              { "required": ["literal"] }
+            ]
+          }
+        }
+      ]
+    },
+    "ValueReference": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["object", "field"],
+          "properties": {
+            "object": { "$ref": "#/definitions/ObjectIdOrCurrent" },
+            "field": { "type": "string", "enum": ["id", "type", "name", "emoji", "location", "state_library", "appearance"] }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["object", "property"],
+          "properties": { "object": { "$ref": "#/definitions/ObjectIdOrCurrent" }, "property": { "type": "string", "minLength": 1, "pattern": "^[^.]+$" } },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["task", "field"],
+          "properties": {
+            "task": { "$ref": "#/definitions/PlainIdOrCurrent" },
+            "field": { "type": "string", "enum": ["id", "actor_id", "start", "end", "duration", "location", "description", "priority", "tags"] }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["location", "field"],
+          "properties": {
+            "location": { "$ref": "#/definitions/NonCurrentPlainId" },
+            "field": { "type": "string", "enum": ["id", "name", "parent_id", "shape", "coordinates", "position", "emoji"] }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["location", "property"],
+          "properties": { "location": { "$ref": "#/definitions/NonCurrentPlainId" }, "property": { "type": "string", "minLength": 1, "pattern": "^[^.]+$" } },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["clock"],
+          "properties": { "clock": { "const": "now" } },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["literal"],
+          "properties": { "literal": {} },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Condition": {
+      "anyOf": [
+        { "type": "boolean" },
+        {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 1,
+          "properties": {
+        "==": { "$ref": "#/definitions/BinaryOperands" },
+        "!=": { "$ref": "#/definitions/BinaryOperands" },
+        "<": { "$ref": "#/definitions/BinaryOperands" },
+        "<=": { "$ref": "#/definitions/BinaryOperands" },
+        ">": { "$ref": "#/definitions/BinaryOperands" },
+        ">=": { "$ref": "#/definitions/BinaryOperands" },
+        "contains": { "$ref": "#/definitions/BinaryOperands" },
+        "all": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/Condition" } },
+        "any": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/Condition" } },
+        "not": { "$ref": "#/definitions/Condition" },
+        "held_for": {
+          "type": "object",
+          "required": ["condition", "duration"],
+          "properties": { "condition": { "$ref": "#/definitions/Condition" }, "duration": { "$ref": "#/definitions/Duration" } },
+          "additionalProperties": false
+        }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "BinaryOperands": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "$ref": "#/definitions/ValueExpression" }
+    },
+    "CreatedObject": {
+      "type": "object",
+      "required": ["id", "type", "name"],
+      "properties": {
+        "id": { "$ref": "#/definitions/ObjectId" },
+        "type": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "emoji": { "type": "string", "maxLength": 32 },
+        "location": { "$ref": "#/definitions/ValueExpression" },
+        "state_library": { "$ref": "#/definitions/PlainId" },
+        "appearance": { "$ref": "#/definitions/PlainId" },
+        "properties": { "type": "object", "additionalProperties": { "$ref": "#/definitions/ValueExpression" } }
+      },
+      "additionalProperties": true
+    },
+    "TimingConstraint": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["relation", "event", "relative_to"],
+          "properties": {
+            "relation": { "const": "offset" },
+            "event": { "type": "string", "enum": ["start", "completion"] },
+            "relative_to": { "$ref": "#/definitions/ValueReference" },
+            "min_offset": { "$ref": "#/definitions/TimeOffset" },
+            "max_offset": { "$ref": "#/definitions/TimeOffset" }
+          },
+          "anyOf": [{ "required": ["min_offset"] }, { "required": ["max_offset"] }],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["relation", "with"],
+          "properties": {
+            "relation": { "const": "not_overlap" },
+            "with": {
+              "type": "object",
+              "required": ["task"],
+              "properties": { "task": { "$ref": "#/definitions/PlainId" } },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Reservation": {
+      "type": "object",
+      "required": ["resource", "mode"],
+      "properties": {
+        "resource": { "$ref": "#/definitions/ValueExpression" },
+        "mode": { "type": "string", "enum": ["exclusive", "capacity"] },
+        "amount": { "$ref": "#/definitions/ValueExpression" }
+      },
+      "allOf": [
+        { "if": { "properties": { "mode": { "const": "capacity" } } }, "then": { "required": ["amount"] } },
+        { "if": { "properties": { "mode": { "const": "exclusive" } } }, "then": { "not": { "required": ["amount"] } } }
+      ],
+      "additionalProperties": false
+    },
+    "TimeOffset": {
+      "description": "A signed relative offset; zero is permitted.",
+      "anyOf": [
+        { "type": "integer" },
+        { "type": "string", "pattern": "^-?(?:0|[0-9]+(?:\\.[0-9]+)?[smhdwWM]|[Pp](?:T0M|(?=[^0-9]*[0-9]*[1-9])(?:[0-9]+Y)?(?:[0-9]+M)?(?:[0-9]+D)?(?:[Tt](?:[0-9]+H)?(?:[0-9]+M)?(?:[0-9]+S)?)?))$" }
+      ]
+    },
     "DependsOn": {
       "description": "Task dependencies, either an array (implicit AND), or an object with explicit all/any operators.",
       "anyOf": [
         {
           "type": "array",
+          "minItems": 1,
           "uniqueItems": true,
           "items": {
             "$ref": "#/definitions/PlainId"
@@ -928,6 +1156,7 @@
           "properties": {
             "all": {
               "type": "array",
+              "minItems": 1,
               "uniqueItems": true,
               "items": {
                 "$ref": "#/definitions/PlainId"
@@ -935,6 +1164,7 @@
             },
             "any": {
               "type": "array",
+              "minItems": 1,
               "uniqueItems": true,
               "items": {
                 "$ref": "#/definitions/PlainId"
@@ -1022,6 +1252,24 @@
         {
           "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]{0,249}$"
         }
+      ]
+    },
+    "PlainIdOrCurrent": {
+      "type": "string",
+      "anyOf": [
+        { "const": "current" },
+        { "$ref": "#/definitions/PlainId" }
+      ]
+    },
+    "NonCurrentPlainId": {
+      "type": "string",
+      "pattern": "^(?!current$)[a-z][a-z0-9_]{0,249}$"
+    },
+    "ObjectIdOrCurrent": {
+      "type": "string",
+      "anyOf": [
+        { "const": "current" },
+        { "$ref": "#/definitions/ObjectId" }
       ]
     },
     "DateExpression": {
@@ -1114,7 +1362,7 @@
     },
     "DayTypeTask": {
       "type": "object",
-      "required": ["id", "actor_id", "start", "duration"],
+      "required": ["id", "actor_id", "duration"],
       "properties": {
         "id": { "$ref": "#/definitions/PlainId" },
         "emoji": { "type": "string", "maxLength": 32 },

@@ -287,13 +287,20 @@ function processSimulationData(simulationData) {
     });
 
     const timeUnit = (typeof config.time_unit === 'string') ? config.time_unit : 'minutes';
+    const authoritativeRun = sim.schema_version === '2.1' && window.WorkSpecRuntime?.replay
+        ? window.WorkSpecRuntime.replay(simulationData)
+        : null;
 
     const tasksWithMinutes = rawTasks.map(task => {
         if (!task) return null;
 
-        let taskStartMinutes = startTimeMinutes;
+        const resolvedTiming = authoritativeRun?.timings?.get(task.id);
+        if (authoritativeRun && !resolvedTiming?.resolved) return null;
+        let taskStartMinutes = resolvedTiming?.start ?? startTimeMinutes;
         try {
-            if (clockContext && window.WorkSpecTime?.taskStartMinutes) {
+            if (resolvedTiming?.resolved) {
+                taskStartMinutes = resolvedTiming.start;
+            } else if (clockContext && window.WorkSpecTime?.taskStartMinutes) {
                 taskStartMinutes = window.WorkSpecTime.taskStartMinutes(task.start, clockContext);
             } else if (window.WorkSpecValidator && typeof window.WorkSpecValidator.parseTaskStart === 'function') {
                 const parsedStart = window.WorkSpecValidator.parseTaskStart(task.start);
@@ -310,9 +317,11 @@ function processSimulationData(simulationData) {
             taskStartMinutes = startTimeMinutes;
         }
 
-        let taskDurationMinutes = 0;
+        let taskDurationMinutes = resolvedTiming?.duration ?? 0;
         try {
-            if (window.WorkSpecValidator && typeof window.WorkSpecValidator.parseDurationToMinutes === 'function') {
+            if (resolvedTiming?.resolved) {
+                taskDurationMinutes = resolvedTiming.duration;
+            } else if (window.WorkSpecValidator && typeof window.WorkSpecValidator.parseDurationToMinutes === 'function') {
                 const parsedDuration = window.WorkSpecValidator.parseDurationToMinutes(task.duration, timeUnit);
                 if (parsedDuration && parsedDuration.ok && typeof parsedDuration.minutes === 'number') {
                     taskDurationMinutes = parsedDuration.minutes;
@@ -324,12 +333,19 @@ function processSimulationData(simulationData) {
             taskDurationMinutes = 0;
         }
 
-        const taskEndMinutes = taskStartMinutes + taskDurationMinutes;
+        const taskEndMinutes = resolvedTiming?.end ?? taskStartMinutes + taskDurationMinutes;
         actualLastTaskEnd = Math.max(actualLastTaskEnd, taskEndMinutes);
         actualFirstTaskStart = actualFirstTaskStart === null
             ? taskStartMinutes
             : Math.min(actualFirstTaskStart, taskStartMinutes);
-        return { ...task, start_minutes: taskStartMinutes, end_minutes: taskEndMinutes, duration: taskDurationMinutes };
+        return {
+            ...task,
+            start_minutes: taskStartMinutes,
+            end_minutes: taskEndMinutes,
+            duration: taskDurationMinutes,
+            start_source: resolvedTiming?.source || 'explicit',
+            start_is_derived: resolvedTiming?.source === 'derived'
+        };
     }).filter(task => task !== null);
     
     // --- START OF THE UNIFIED SCALING FIX ---
@@ -399,6 +415,7 @@ function processSimulationData(simulationData) {
     });
 
     const result = {
+        _workspec_document: simulationData,
         start_time: visualStartTimeStr, // Use the dynamic visual start time
         end_time: visualEndTimeStr, // Use the new visual end time
         start_time_minutes: visualStartTimeMinutes, // Use the dynamic start time

@@ -13,7 +13,28 @@
         sourceSplit: 52,
         agentWidth: 312,
         sidebarCollapsed: false,
+        sourceWordWrap: false,
         layoutVersion: 4
+    };
+
+    // Monaco editors are created by several independent Studio modules. Keep this
+    // shared preference here so one setting consistently controls all of them.
+    const monacoEditors = new Set();
+    window.UAWMonacoPreferences = {
+        options(options = {}) {
+            return { ...options, wordWrap: window.UAWPlaygroundShell?.settings?.sourceWordWrap ? 'on' : 'off' };
+        },
+        register(editor) {
+            if (!editor) return editor;
+            monacoEditors.add(editor);
+            editor.updateOptions?.({ wordWrap: window.UAWPlaygroundShell?.settings?.sourceWordWrap ? 'on' : 'off' });
+            editor.onDidDispose?.(() => monacoEditors.delete(editor));
+            return editor;
+        },
+        apply(enabled) {
+            const wordWrap = enabled ? 'on' : 'off';
+            monacoEditors.forEach((editor) => editor.updateOptions?.({ wordWrap }));
+        }
     };
 
     const WORKSPACE_META = {
@@ -532,6 +553,7 @@
             document.body.dataset.runView = this.runView;
             document.documentElement.style.setProperty('--uaw-source-split', `${this.settings.sourceSplit || 52}%`);
             document.documentElement.style.setProperty('--uaw-agent-width', `${this.settings.agentWidth || 312}px`);
+            window.UAWMonacoPreferences?.apply(this.settings.sourceWordWrap);
         }
 
         commandButton(command, label, options = {}) {
@@ -1033,7 +1055,7 @@
                 const tasks = simulation.process?.tasks || simulation.tasks;
                 return {
                     valid: true,
-                    version: simulation.schema_version || root.workspec_version || root.version || '2.0',
+                    version: simulation.schema_version || root.workspec_version || root.version || '2.1',
                     tasks: Array.isArray(tasks) && tasks.length ? tasks.length : uniqueAcrossDayTypes('tasks'),
                     objects,
                     locations: simulation.world?.layout?.locations?.length || simulation.locations?.length || uniqueAcrossDayTypes('locations'),
@@ -1098,14 +1120,21 @@
             const description = simulation.meta?.description || 'No process description has been written yet.';
             const actors = objects.filter(object => object?.type === 'actor');
             const objectById = new Map(objects.map(object => [object.id, object]));
+            const resolvedTimings = simulation.schema_version === '2.1' && window.WorkSpecRuntime?.replay
+                ? window.WorkSpecRuntime.replay({ simulation }).timings
+                : new Map();
             const rows = tasks.map((task, index) => {
                 const actor = objectById.get(task.actor_id);
                 const dependencies = Array.isArray(task.depends_on) ? task.depends_on.join(', ') : '—';
                 const period = task.__period ? `<span class="uaw-process-period">${escapeHTML(task.__period)}</span>` : '';
+                const timing = resolvedTimings.get(task.id);
+                const startDisplay = Object.prototype.hasOwnProperty.call(task, 'start')
+                    ? (task.start || task.start_time || '—')
+                    : (timing?.resolved ? `${formatTimeFromMinutes(timing.start)} (derived)` : 'Unresolved');
                 return `<tr data-context-task-id="${escapeHTML(task.id || '')}">
                     <td><div class="uaw-process-task-name"><strong>${escapeHTML(task.name || task.id || `Task ${index + 1}`)}</strong><code>${escapeHTML(task.id || 'No ID')}</code>${period}</div></td>
                     <td>${escapeHTML(actor?.name || task.actor_id || 'Unassigned')}</td>
-                    <td><span class="uaw-process-time">${escapeHTML(task.start || task.start_time || '—')}</span></td>
+                    <td><span class="uaw-process-time">${escapeHTML(startDisplay)}</span></td>
                     <td>${escapeHTML(task.duration ?? '—')} ${task.duration != null ? escapeHTML(simulation.config?.time_unit || 'min') : ''}</td>
                     <td>${escapeHTML(task.location || task.location_id || '—')}</td>
                     <td class="uaw-process-dependencies">${escapeHTML(dependencies)}</td>
@@ -1643,6 +1672,7 @@
                                 ${this.sourceChoice('dedicated', 'Dedicated pane', 'Source uses the full stage')}
                                 ${this.sourceChoice('hidden', 'Hidden in Model', 'Open source only when needed')}
                             </fieldset>
+                            <label class="uaw-choice"><input type="checkbox" name="source-word-wrap" ${this.settings.sourceWordWrap ? 'checked' : ''}><span><strong>Enable word wrap for source?</strong><small>Wrap long lines in every WorkSpec Studio source editor.</small></span></label>
                         </section>
                         <section class="uaw-settings-section" aria-labelledby="uaw-agent-heading">
                             <div><h2 id="uaw-agent-heading">Codex Agent</h2><p>Connect the optional Agent to a bridge running on this machine.</p></div>
@@ -1652,6 +1682,11 @@
                 </div>
             `;
             view.querySelectorAll('input[name="source-dock"]').forEach((input) => input.addEventListener('change', () => this.setSourceDock(input.value)));
+            view.querySelector('input[name="source-word-wrap"]')?.addEventListener('change', (event) => {
+                this.settings.sourceWordWrap = event.target.checked;
+                window.UAWMonacoPreferences?.apply(this.settings.sourceWordWrap);
+                this.saveSettings();
+            });
             this.syncSourceDockInputs();
             window.dispatchEvent(new CustomEvent('uaw:settings-rendered'));
         }

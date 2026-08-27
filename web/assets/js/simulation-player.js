@@ -331,6 +331,23 @@ class SimulationPlayer {
     }
 
     updateLiveObjectState() {
+        const workspecDocument = this.simData._workspec_document;
+        if (workspecDocument?.simulation?.schema_version === '2.1' && window.WorkSpecRuntime?.snapshotAt) {
+            this.runtimeSnapshot = window.WorkSpecRuntime.snapshotAt(workspecDocument, this.playheadTime);
+            const initialIds = new Set((workspecDocument.simulation.world?.objects || []).map(object => object.id));
+            this.liveObjects = { created: [], deleted: [] };
+            Object.values(this.runtimeSnapshot.objects || {}).forEach(object => {
+                if (!Array.isArray(this.liveObjects[object.type])) this.liveObjects[object.type] = [];
+                this.liveObjects[object.type].push(object);
+                if (!initialIds.has(object.id)) this.liveObjects.created.push(object);
+            });
+            (workspecDocument.simulation.world?.objects || []).forEach(object => {
+                if (!this.runtimeSnapshot.objects?.[object.id]) this.liveObjects.deleted.push(object);
+            });
+            this.liveObjectMap = new Map(Object.values(this.runtimeSnapshot.objects || {}).map(object => [object.id, object]));
+            return;
+        }
+        this.runtimeSnapshot = null;
         // Track objects that have been created or deleted at current timeline position
         // Initialize live objects dynamically based on available object types
         this.liveObjects = {
@@ -1049,7 +1066,9 @@ class SimulationPlayer {
             }
         });
 
-        const sortedTasks = this.sortedTasks;
+        // A 2.1 snapshot already contains all evaluated effects. The loop below
+        // remains only as a compatibility renderer for historical flat data.
+        const sortedTasks = this.runtimeSnapshot ? [] : this.sortedTasks;
         
         for (const task of sortedTasks) {
             if (task.start_minutes > this.playheadTime) break; // No need to process future tasks

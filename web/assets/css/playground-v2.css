@@ -6802,6 +6802,13 @@ body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-source
 .monaco-editor .uaw-source-change-gutter { border-left: 3px solid #34d399; }
 .uaw-source-linked { outline: 2px solid #2f78dd !important; outline-offset: 2px; }
 
+/* Source is mounted in its own pane. Do not let the now-empty legacy host
+   cover the Process or Objects register in the opposite half of a split. */
+body.uaw-v2[data-uaw-workspace="build"][data-model-view="process"][data-source-dock^="split-"] .uaw-legacy-host,
+body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock^="split-"] .uaw-legacy-host {
+    display: none !important;
+}
+
 @media (max-width: 900px) {
     .uaw-source-status { display: none; }
     .uaw-source-identity code { display: none; }
@@ -7126,6 +7133,12 @@ body.uaw-v2 #uaw-playback-commands .player-speed-control select {
 
 .workspec-time-scrubber input { margin: 0; }
 
+.workspec-time-scrubber small {
+    color: #8793a5;
+    font: 500 9px/1.3 var(--uaw-font-ui);
+    text-align: center;
+}
+
 .workspec-time-scrubber > div {
     display: flex;
     justify-content: space-between;
@@ -7140,6 +7153,8 @@ body[data-theme="dark"] .workspec-time-navigator { background: #18212d; border-c
 body[data-theme="dark"] .workspec-time-navigator__controls > button:hover { background: #263342; }
 [data-theme="dark"] .workspec-time-scrubber output,
 body[data-theme="dark"] .workspec-time-scrubber output { color: #e5edf7; }
+[data-theme="dark"] .workspec-time-scrubber small,
+body[data-theme="dark"] .workspec-time-scrubber small { color: #9ba9be; }
 
 @media (max-width: 1360px) {
     body.uaw-v2 #player-current-date { display: none; }

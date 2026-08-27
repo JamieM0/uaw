@@ -79,7 +79,7 @@ class TutorialManager {
         }
 
         const sim = rootDoc?.simulation;
-        const isV2 = sim?.schema_version === '2.0' && sim?.world && sim?.process;
+        const isV2 = sim?.schema_version === '2.1' && sim?.world && sim?.process;
         if (isV2) return this.applyTutorialDefaults(rootDoc);
 
         if (window.WorkSpecMigration && typeof window.WorkSpecMigration.migrate === 'function') {

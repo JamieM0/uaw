@@ -45,4 +45,6 @@ async function main() {
     }
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = { MAX_INPUT_BYTES, readStdin, main };

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://universalautomation.wiki/workspec/v2.1.schema.json",
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": {
+      "title": "Ready and reserved pushback",
+      "description": "Checks current readiness and reserves a tug and apron capacity.",
+      "domain": "ground operations"
+    },
+    "config": {
+      "time_unit": "minutes",
+      "start_time": "10:00",
+      "end_time": "11:30",
+      "currency": "USD",
+      "locale": "en-GB",
+      "timezone": "UTC"
+    },
+    "world": {
+      "layout": {
+        "locations": [
+          { "id": "apron", "name": "Apron", "properties": { "capacity": 2 } }
+        ]
+      },
+      "objects": [
+        { "id": "dispatcher", "type": "actor", "name": "Dispatcher", "properties": { "state": "ready", "permissions": ["pushback"] } },
+        { "id": "fuel_operator", "type": "actor", "name": "Fuel operator", "properties": { "state": "ready" } },
+        { "id": "tug_01", "type": "equipment", "name": "Tug", "properties": { "state": "available", "capacity": 1 } },
+        {
+          "id": "aircraft",
+          "type": "product",
+          "name": "Aircraft",
+          "properties": { "quantity": 1, "doors_closed": true, "baggage_loaded": true, "clearance_valid": true }
+        }
+      ]
+    },
+    "process": {
+      "tasks": [
+        {
+          "id": "fuelling_operation",
+          "actor_id": "fuel_operator",
+          "start": "10:00",
+          "duration": "30m",
+          "reservations": [{ "resource": "apron", "mode": "capacity", "amount": 1 }]
+        },
+        {
+          "id": "pushback",
+          "actor_id": "dispatcher",
+          "start": "10:30",
+          "duration": "10m",
+          "requires": {
+            "all": [
+              { "==": [{ "object": "aircraft", "property": "doors_closed" }, true] },
+              { "==": [{ "object": "aircraft", "property": "baggage_loaded" }, true] },
+              { "==": [{ "object": "aircraft", "property": "clearance_valid" }, true] },
+              { "contains": [{ "object": "current", "property": "permissions" }, "pushback"] }
+            ]
+          },
+          "timing": [{ "relation": "not_overlap", "with": { "task": "fuelling_operation" } }],
+          "reservations": [
+            { "resource": "tug_01", "mode": "exclusive" },
+            { "resource": "apron", "mode": "capacity", "amount": 1 }
+          ],
+          "interactions": [
+            { "target_id": "tug_01", "temporary": true, "property_changes": { "state": { "set": "reserved" } } }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -152,7 +152,7 @@ async function loadFromJsonFile(file, directoryHandle = null) {
 
                 // Validate simulation structure (WorkSpec v2 preferred; support v1 for compatibility)
                 const sim = data.simulation;
-                const isV2 = sim && (sim.schema_version === '2.0' || sim.world || sim.process);
+                const isV2 = sim && (sim.schema_version === '2.1' || sim.world || sim.process);
 
                 if (isV2) {
                     if (!sim.world || !Array.isArray(sim.world.objects)) {
@@ -262,7 +262,7 @@ async function loadFromZipFile(file, directoryHandle = null) {
 
         // Validate simulation structure (WorkSpec v2 preferred; support v1 for compatibility)
         const sim = data.simulation;
-        const isV2 = sim && (sim.schema_version === '2.0' || sim.world || sim.process);
+        const isV2 = sim && (sim.schema_version === '2.1' || sim.world || sim.process);
 
         if (isV2) {
             if (!sim.world || !Array.isArray(sim.world.objects)) {

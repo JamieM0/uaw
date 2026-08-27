@@ -629,12 +629,15 @@ function validateObjectDeletion(simulation, objectIdToDelete, taskStartTime) {
 
     const object = objectsArray[objectIndex];
     const taskStartMinutes = parseTimeToMinutes(taskStartTime);
+    const resolvedTimings = sim.schema_version === '2.1' && window.WorkSpecRuntime?.replay
+        ? window.WorkSpecRuntime.replay(simulation.simulation ? simulation : { simulation: sim }).timings
+        : null;
 
     // Check if object is referenced in tasks that start before the new task
     const referencingTasks = tasksArray.filter(task => {
         if (!task || typeof task !== 'object') return false;
 
-        const taskTime = parseTimeToMinutes(task.start || "00:00");
+        const taskTime = resolvedTimings?.get(task.id)?.start ?? parseTimeToMinutes(task.start || "00:00");
 
         // Only check tasks that start before our new task
         if (taskTime >= taskStartMinutes) return false;

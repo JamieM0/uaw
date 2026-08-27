@@ -83,8 +83,8 @@
         }
 
         const sim = parsed?.simulation;
-        if (sim?.schema_version === '2.0' && sim?.world && sim?.process) {
-            alert('This document already looks like WorkSpec v2.0.');
+        if (sim?.schema_version === '2.1' && sim?.world && sim?.process) {
+            alert('This document already looks like WorkSpec 2.1.');
             return;
         }
 

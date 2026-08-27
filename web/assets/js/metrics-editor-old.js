@@ -112,17 +112,17 @@ class MetricsEditor {
         if (catalogContainer) {
             try {
                 console.log('MetricsEditor: Creating catalog editor...');
-                this.catalogEditor = monaco.editor.create(catalogContainer, {
+                this.catalogEditor = monaco.editor.create(catalogContainer, window.UAWMonacoPreferences.options({
                     value: this.savedCatalog || this.catalogTemplate,
                     language: 'json',
                     theme: 'vs',
                     fontSize: 14,
                     lineNumbers: 'on',
-                    wordWrap: 'on',
                     minimap: { enabled: false },
                     scrollBeyondLastLine: false,
                     automaticLayout: true
-                });
+                }));
+                window.UAWMonacoPreferences.register(this.catalogEditor);
                 
                 // Auto-save, syntax validation and debounced validation on change
                 this.catalogEditor.onDidChangeModelContent(() => {
@@ -156,17 +156,17 @@ class MetricsEditor {
         if (validatorContainer) {
             try {
                 console.log('MetricsEditor: Creating validator editor...');
-                this.validatorEditor = monaco.editor.create(validatorContainer, {
+                this.validatorEditor = monaco.editor.create(validatorContainer, window.UAWMonacoPreferences.options({
                     value: this.savedValidator || this.validatorTemplate,
                     language: 'javascript',
                     theme: 'vs',
                     fontSize: 14,
                     lineNumbers: 'on',
-                    wordWrap: 'on',
                     minimap: { enabled: false },
                     scrollBeyondLastLine: false,
                     automaticLayout: true
-                });
+                }));
+                window.UAWMonacoPreferences.register(this.validatorEditor);
                 
                 // Auto-save, syntax validation and debounced validation on change
                 this.validatorEditor.onDidChangeModelContent(() => {

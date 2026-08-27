@@ -1,4 +1,4 @@
-// WorkSpec v2.0 Validator (RFC 7807 Problem Details)
+// WorkSpec v2.1 Validator (RFC 7807 Problem Details)
 // Universal Automation Wiki
 //
 // Single-source validator intended to run in both:
@@ -11,7 +11,10 @@
     'use strict';
 
     const WORKSPEC_NAMESPACE = 'https://universalautomation.wiki/workspec';
-    const SUPPORTED_SCHEMA_VERSIONS = Object.freeze(['2.0']);
+    const SUPPORTED_SCHEMA_VERSIONS = Object.freeze(['2.1']);
+    const WorkSpecRuntime = (typeof module !== 'undefined' && module.exports)
+        ? require('./workspec-runtime.js')
+        : (typeof globalThis !== 'undefined' ? globalThis.WorkSpecRuntime : null);
 
     const BUILTIN_TYPES = Object.freeze([
         'actor',
@@ -376,7 +379,7 @@
             ));
         }
 
-        if (hasDelta && typeof operatorValue.delta !== 'number') {
+        if (hasDelta && typeof operatorValue.delta !== 'number' && !WorkSpecRuntime?.isValueReference?.(operatorValue.delta)) {
             problems.push(buildProblem(
                 `${metricBase}.invalid_delta`,
                 'error',
@@ -388,7 +391,7 @@
             ));
         }
 
-        if (hasMultiply && typeof operatorValue.multiply !== 'number') {
+        if (hasMultiply && typeof operatorValue.multiply !== 'number' && !WorkSpecRuntime?.isValueReference?.(operatorValue.multiply)) {
             problems.push(buildProblem(
                 `${metricBase}.invalid_multiply`,
                 'error',
@@ -466,7 +469,7 @@
                 '/simulation/schema_version',
                 { field: 'schema_version' },
                 [
-                    "Add \"schema_version\": \"2.0\" under simulation.",
+                    "Add \"schema_version\": \"2.1\" under simulation.",
                     'Run the migration tool (WorkSpec Studio: Tools → Migrate v1 → v2) or CLI: workspec migrate <file> --out <output>.'
                 ]
             ));
@@ -478,10 +481,10 @@
                 'schema.integrity.invalid_version',
                 'error',
                 'Invalid Schema Version',
-                `simulation.schema_version must be in Major.Minor format (example: "2.0"). Received "${schemaVersion}".`,
+                `simulation.schema_version must be in Major.Minor format (example: "2.1"). Received "${schemaVersion}".`,
                 '/simulation/schema_version',
                 { value: schemaVersion },
-                ['Change schema_version to "2.0".']
+                ['Change schema_version to "2.1".']
             ));
             return { ok: false, problems };
         }
@@ -547,7 +550,7 @@
                     'schema.integrity.disallowed_meta_field',
                     'error',
                     'Disallowed Meta Field',
-                    "Legacy field 'meta.article_title' is not allowed in WorkSpec v2.0. Use 'meta.title' instead.",
+                    "Legacy field 'meta.article_title' is not allowed in WorkSpec 2.1. Use 'meta.title' instead.",
                     '/simulation/meta/article_title',
                     { field: 'article_title' },
                     ['Remove meta.article_title.', 'Rename meta.article_title to meta.title.']
@@ -1045,6 +1048,7 @@
         const taskIndexById = new Map();
         const taskTiming = new Map(); // id -> { startMinutes, endMinutes } (for time/daytime tasks)
         const taskMillis = new Map(); // id -> { startMillis, endMillis } (for datetime tasks)
+        let authoritativeRuntimeRun = null;
 
         const referencedObjectIds = new Set();
         const recipeDefinitions = isPlainObject(process.recipes)
@@ -1080,7 +1084,7 @@
                     `Task at index ${i} must be an object.`,
                     toJsonPointer(taskPtr),
                     { index: i },
-                    ['Replace this entry with a valid task containing id, actor_id, start, duration.']
+                    ['Replace this entry with a valid task containing id, actor_id, and duration; add start or deterministic timing anchors.']
                 ));
                 continue;
             }
@@ -1162,8 +1166,9 @@
                 ));
             }
 
-            const startParse = parseTaskStart(task.start);
-            if (!startParse.ok) {
+            const hasAuthoredStart = Object.prototype.hasOwnProperty.call(task, 'start');
+            const startParse = hasAuthoredStart ? parseTaskStart(task.start) : { ok: false, omitted: true };
+            if (hasAuthoredStart && !startParse.ok) {
                 const suggestions = [
                     'Use strict time strings like "09:30" (zero-padded).',
                     'Use "HH:MM:SS" if you need seconds.',
@@ -1321,6 +1326,7 @@
                     }
 
                     const action = safeTrim(interaction.action);
+                    const targetIsExpression = schemaVersion === '2.1' && WorkSpecRuntime?.isValueReference?.(interaction.target_id);
                     const targetId = ensureString(interaction.target_id);
 
                     if (action) {
@@ -1351,7 +1357,7 @@
                         }
 
                         if (action === 'delete') {
-                            if (!safeTrim(targetId)) {
+                            if (!safeTrim(targetId) && !targetIsExpression) {
                                 problems.push(buildProblem(
                                     'task.integrity.invalid_interaction',
                                     'error',
@@ -1365,7 +1371,7 @@
                         }
                     } else {
                         // Property change interaction
-                        if (!safeTrim(targetId)) {
+                        if (!safeTrim(targetId) && !targetIsExpression) {
                             problems.push(buildProblem(
                                 'task.integrity.invalid_interaction',
                                 'error',
@@ -1423,6 +1429,7 @@
                                 if (allowedStates) {
                                     for (const operatorName of ['from', 'to', 'set']) {
                                         if (!Object.prototype.hasOwnProperty.call(op, operatorName)) continue;
+                                        if (WorkSpecRuntime?.isValueReference?.(op[operatorName])) continue;
                                         const stateValue = safeTrim(op[operatorName]);
                                         if (!allowedStates.has(stateValue)) {
                                             problems.push(buildProblem(
@@ -1536,6 +1543,27 @@
             if ((visitState.get(id) || 0) === 0) dfs(id);
         }
 
+        if (schemaVersion === '2.1' && WorkSpecRuntime && typeof WorkSpecRuntime.replay === 'function') {
+            authoritativeRuntimeRun = WorkSpecRuntime.replay(documentValue);
+            taskTiming.clear();
+            authoritativeRuntimeRun.timings.forEach((timing, taskId) => {
+                if (!timing.resolved) return;
+                taskTiming.set(taskId, {
+                    startMinutes: timing.start,
+                    endMinutes: timing.end,
+                    index: taskIndexById.get(taskId)
+                });
+            });
+        }
+
+        // WorkSpec 2.0's validator carried three independent task-start replayers
+        // here (lifecycle, overlap and stock). WorkSpec 2.1 delegates all dynamic
+        // semantics to WorkSpecRuntime below.
+        const tasksInOrder = [...taskTiming.entries()]
+            .map(([taskId, timing]) => ({ taskId, ...timing }))
+            .sort((a, b) => (a.startMinutes - b.startMinutes) || (a.index - b.index));
+
+        if (schemaVersion !== '2.1') {
         // Object lifecycle semantics (best-effort):
         // - Objects created via action:create become valid targets after the create interaction runs.
         // - References to objects after action:delete must error.
@@ -1764,6 +1792,8 @@
             }
         }
 
+        }
+
         // Recipe validation (optional warnings)
         if (recipeDefinitions) {
             for (let i = 0; i < tasks.length; i += 1) {
@@ -1817,6 +1847,7 @@
             }
         }
 
+        if (schemaVersion !== '2.1') {
         // Resource flow: negative stock (best-effort sequential application by start time)
         const quantities = new Map(); // objectId -> quantity
         for (let i = 0; i < objects.length; i += 1) {
@@ -1832,10 +1863,6 @@
                 }
             }
         }
-
-        const tasksInOrder = [...taskTiming.entries()]
-            .map(([taskId, timing]) => ({ taskId, ...timing }))
-            .sort((a, b) => (a.startMinutes - b.startMinutes) || (a.index - b.index));
 
         for (const entry of tasksInOrder) {
             const task = taskById.get(entry.taskId);
@@ -1877,6 +1904,8 @@
                     ));
                 }
             }
+        }
+
         }
 
         // Economic: negative margin (warning)
@@ -1980,6 +2009,30 @@
                     { object_id: id },
                     ['Remove the unused resource, or add tasks/interactions that consume it.']
                 ));
+            }
+        }
+
+        if (schemaVersion === '2.1') {
+            if (!WorkSpecRuntime || typeof WorkSpecRuntime.validate !== 'function') {
+                problems.push(buildProblem(
+                    'system.runtime.unavailable',
+                    'error',
+                    'WorkSpec Runtime Unavailable',
+                    'The authoritative WorkSpec 2.1 runtime was not loaded before validation.',
+                    '/simulation',
+                    {},
+                    ['Load workspec-runtime.js before workspec-validator.js.']
+                ));
+            } else {
+                const runtimeResult = authoritativeRuntimeRun || WorkSpecRuntime.replay(documentValue);
+                const existing = new Set(problems.map((entry) => `${entry.metric_id}|${entry.instance}|${entry.detail}`));
+                for (const runtimeProblem of runtimeResult.problems) {
+                    const key = `${runtimeProblem.metric_id}|${runtimeProblem.instance}|${runtimeProblem.detail}`;
+                    if (!existing.has(key)) {
+                        problems.push(runtimeProblem);
+                        existing.add(key);
+                    }
+                }
             }
         }
 

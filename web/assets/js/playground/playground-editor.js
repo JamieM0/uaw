@@ -164,7 +164,6 @@ const legacySampleSimulation = {
         tasks: [
             {
                 id: "prepare_ingredients", emoji: "🔧", actor_id: "baker", start: "06:15", duration: 30, location: "prep_area",
-                depends_on: [],
                 interactions: [
                     {
                         object_id: "workspace",
@@ -180,7 +179,6 @@ const legacySampleSimulation = {
             },
             {
                 id: "activate_yeast", emoji: "🦠", actor_id: "assistant", start: "06:45", duration: 10, location: "prep_area",
-                depends_on: [],
                 interactions: [
                     {
                         object_id: "yeast",
@@ -277,7 +275,6 @@ const legacySampleSimulation = {
             },
             {
                 id: "clean_mixing_bowls", emoji: "🧼", actor_id: "assistant", start: "07:30", duration: 20, location: "prep_area",
-                depends_on: [],
                 interactions: [
                     {
                         object_id: "mixing_bowl",
@@ -371,7 +368,6 @@ const legacySampleSimulation = {
             },
             {
                 id: "wash_equipment", emoji: "🧽", actor_id: "assistant", start: "10:10", duration: 35, location: "prep_area",
-                depends_on: [],
                 interactions: [
                     {
                         object_id: "mixer",
@@ -389,14 +385,14 @@ const legacySampleSimulation = {
     }
 };
 
-// Sample WorkSpec v2.0 document (fallback when library isn't loaded)
+// Sample WorkSpec 2.1 document (fallback when library isn't loaded)
 const sampleSimulation = {
-    "$schema": "https://universalautomation.wiki/workspec/v2.0.schema.json",
+    "$schema": "https://universalautomation.wiki/workspec/v2.1.schema.json",
     "simulation": {
-        "schema_version": "2.0",
+        "schema_version": "2.1",
         "meta": {
-            "title": "WorkSpec v2.0 Sample",
-            "description": "A minimal WorkSpec v2.0 simulation used as a WorkSpec Studio fallback.",
+            "title": "WorkSpec 2.1 Sample",
+            "description": "A minimal state-aware WorkSpec 2.1 simulation used as a WorkSpec Studio fallback.",
             "domain": "Example"
         },
         "config": {
@@ -417,6 +413,7 @@ const sampleSimulation = {
                     {
                         "id": "work_area",
                         "name": "Work Area",
+                        "properties": { "capacity": 2 },
                         "shape": { "type": "rect", "x": 0, "y": 0, "width": 10, "height": 5 }
                     }
                 ]
@@ -431,7 +428,8 @@ const sampleSimulation = {
                     "properties": {
                         "role": "Operator",
                         "cost_per_hour": 25,
-                        "state": "available"
+                        "state": "available",
+                        "permissions": ["produce"]
                     }
                 },
                 {
@@ -469,10 +467,15 @@ const sampleSimulation = {
                     "start": "06:00",
                     "duration": 30,
                     "location": "work_area",
-                    "depends_on": [],
+                    "when": { ">": [{ "object": "material", "property": "quantity" }, 0] },
+                    "requires": { "contains": [{ "object": "current", "property": "permissions" }, "produce"] },
+                    "reservations": [
+                        { "resource": "work_area", "mode": "capacity", "amount": 1 }
+                    ],
                     "interactions": [
                         {
                             "target_id": "material",
+                            "at": "completion",
                             "property_changes": { "quantity": { "delta": -1 } }
                         },
                         {
@@ -484,10 +487,6 @@ const sampleSimulation = {
             ],
             "recipes": {}
         }
-    },
-    "assets": {
-        "image1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-        "document1": "data:text/plain;base64,SGVsbG8gV29ybGQ="
     }
 };
 
@@ -537,8 +536,8 @@ require(["vs/editor/editor.main"], function () {
     // Best-effort: wire WorkSpec v2 JSON Schema for autocomplete + validation.
     // Prefer the package mirror path, with legacy fallback.
     const schemaCandidates = [
-        '/packages/workspec/v2.0.schema.json',
-        '/workspec/v2.0.schema.json'
+        '/packages/workspec/v2.1.schema.json',
+        '/workspec/v2.1.schema.json'
     ];
 
     function fetchFirstSchema(urls) {
@@ -564,7 +563,7 @@ require(["vs/editor/editor.main"], function () {
                 allowComments: true,
                 schemas: [
                     {
-                        uri: 'https://universalautomation.wiki/workspec/v2.0.schema.json',
+                        uri: 'https://universalautomation.wiki/workspec/v2.1.schema.json',
                         fileMatch: ['*'],
                         schema: schema
                     }
@@ -587,7 +586,7 @@ require(["vs/editor/editor.main"], function () {
 
     editor = monaco.editor.create(
         editorElement,
-        {
+        window.UAWMonacoPreferences.options({
             value: initialData,
             language: "json",
             theme: isDarkMode ? "vs-dark" : "vs",
@@ -602,11 +601,11 @@ require(["vs/editor/editor.main"], function () {
             bracketMatching: "always",
             formatOnPaste: true,
             formatOnType: true,
-            wordWrap: "off",
             wordWrapColumn: 80,
             wordWrapMinified: false
-        }
+        })
     );
+    window.UAWMonacoPreferences.register(editor);
 
     // Reassert the model language and theme after construction.  Monaco can
     // retain a plain-text model when another integration replaces or restores
@@ -617,46 +616,6 @@ require(["vs/editor/editor.main"], function () {
         monaco.editor.setModelLanguage(editorModel, "json");
     }
     monaco.editor.setTheme(isDarkMode ? "vs-dark" : "vs");
-
-    // Add word wrap toggle to context menu
-    editor.addAction({
-        id: 'toggle-word-wrap',
-        label: 'Toggle Word Wrap',
-        contextMenuGroupId: 'navigation',
-        contextMenuOrder: 1.5,
-        run: function() {
-            // Get current word wrap setting using the correct API
-            const model = editor.getModel();
-            const currentOptions = editor.getOptions();
-            const currentWrap = currentOptions.get(monaco.editor.EditorOption.wordWrap);
-            const newWrap = (currentWrap === 'off') ? 'bounded' : 'off';
-
-            // Update the editor options with multiple methods to ensure it takes effect
-            editor.updateOptions({
-                wordWrap: newWrap
-            });
-
-            // Try multiple approaches to force the change
-            setTimeout(() => {
-                editor.layout();
-
-                const model = editor.getModel();
-                if (model) {
-                    const currentValue = model.getValue();
-                    model.setValue(currentValue);
-                }
-
-                editor.layout();
-            }, 10);
-
-            // Verify the change took effect
-            setTimeout(() => {
-                const updatedWrap = editor.getOptions().get(monaco.editor.EditorOption.wordWrap);
-                const editorDom = editor.getDomNode();
-                const viewLines = editorDom.querySelectorAll('.view-line');
-            }, 100);
-        }
-    });
 
     window.monacoEditor = editor;
 

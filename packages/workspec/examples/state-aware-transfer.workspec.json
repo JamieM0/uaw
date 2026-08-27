@@ -1,0 +1,90 @@
+{
+  "$schema": "https://universalautomation.wiki/workspec/v2.1.schema.json",
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": {
+      "title": "Verified archive transfer",
+      "description": "Creates an archive only after receipt verification and copies modeled values by reference.",
+      "domain": "records"
+    },
+    "config": {
+      "time_unit": "minutes",
+      "start_time": "09:00",
+      "end_time": "10:00",
+      "currency": "USD",
+      "locale": "en-US",
+      "timezone": "UTC"
+    },
+    "world": {
+      "objects": [
+        {
+          "id": "verifier",
+          "type": "actor",
+          "name": "Verifier",
+          "properties": { "state": "ready" }
+        },
+        {
+          "id": "archive_service",
+          "type": "service",
+          "name": "Archive service",
+          "properties": { "state": "ready", "permissions": ["archive"] }
+        },
+        {
+          "id": "source_record",
+          "type": "resource",
+          "name": "Source record",
+          "properties": { "quantity": 1, "sha256": "abc123", "receipt_verified": false }
+        }
+      ]
+    },
+    "process": {
+      "tasks": [
+        {
+          "id": "verify_receipt",
+          "actor_id": "verifier",
+          "start": "09:00",
+          "duration": "5m",
+          "interactions": [
+            {
+              "target_id": "source_record",
+              "property_changes": { "receipt_verified": { "set": true } }
+            }
+          ]
+        },
+        {
+          "id": "create_archive",
+          "actor_id": "archive_service",
+          "start": "09:10",
+          "duration": "5m",
+          "depends_on": ["verify_receipt"],
+          "when": { "==": [{ "object": "source_record", "property": "receipt_verified" }, true] },
+          "requires": { "contains": [{ "object": "current", "property": "permissions" }, "archive"] },
+          "timing": [
+            {
+              "relation": "offset",
+              "event": "start",
+              "relative_to": { "task": "verify_receipt", "field": "end" },
+              "min_offset": "0m",
+              "max_offset": "30m"
+            }
+          ],
+          "interactions": [
+            {
+              "action": "create",
+              "object": {
+                "id": "archived_record",
+                "type": "resource",
+                "name": "Archived record",
+                "properties": {
+                  "quantity": 1,
+                  "sha256": { "object": "source_record", "property": "sha256" },
+                  "source_id": { "object": "source_record", "field": "id" }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

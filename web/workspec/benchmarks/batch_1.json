@@ -1,0 +1,1335 @@
+{
+  "taxonomy_revision": {
+    "original_taxonomy_status": "retained as baseline",
+    "refinements": [
+      {
+        "change": "Treat partial observability, uncertainty, and actor-specific knowledge as related but separate concepts.",
+        "reason": "A world can be certain but unknown to one actor; two actors can hold conflicting observations; uncertainty should not be collapsed into one global state value."
+      },
+      {
+        "change": "Separate dependency ordering from execution guards and event triggers.",
+        "reason": "A completed predecessor does not imply that a changing world-state precondition still holds when the successor starts."
+      },
+      {
+        "change": "Separate resource presence/capacity from reservation or locking.",
+        "reason": "An object can exist and have capacity while still being double-booked by overlapping tasks."
+      },
+      {
+        "change": "Separate quantity semantics from object identity and provenance.",
+        "reason": "Many real processes care about the same physical or digital instance, not merely an equivalent amount."
+      },
+      {
+        "change": "Separate reversible state change, transactional rollback, and compensating recovery.",
+        "reason": "A physical or informational effect can become irreversible even though a later compensating process is possible."
+      },
+      {
+        "change": "Split interruption/resumption into interruption, partial progress, checkpoint state, and resumption rules.",
+        "reason": "Recovery frequently depends on how far a task progressed and which effects have already committed."
+      },
+      {
+        "change": "Treat spatial geometry and spatial topology as distinct.",
+        "reason": "Knowing coordinates or named locations does not encode traversable routes, occupancy, adjacency, or route invalidation."
+      },
+      {
+        "change": "Split runtime discovery into dynamic cardinality, object binding, and runtime graph mutation.",
+        "reason": "Discovering which existing object to use differs from discovering an unknown number of objects or creating entirely new work."
+      },
+      {
+        "change": "Treat cross-instance global invariants as stronger than generic local-vs-global correctness.",
+        "reason": "Some processes are locally complete while a shared system must still prohibit a global transition."
+      }
+    ],
+    "added_dimensions": {
+      "actors_and_coordination": [
+        "actor identity binding",
+        "separation of duties",
+        "role / skill based assignment",
+        "joint action / quorum"
+      ],
+      "state_and_epistemics": [
+        "continuous invariants",
+        "epistemic state / actor-specific knowledge",
+        "conflicting observations",
+        "exogenous events"
+      ],
+      "time": [
+        "event-triggered work",
+        "temporal windows / cooldowns",
+        "condition-held-for-duration"
+      ],
+      "resources_identity_and_measurement": [
+        "resource reservation / locking",
+        "object identity and provenance",
+        "unit / dimensional semantics",
+        "measurement tolerance / sensor error",
+        "yield / loss / conservation"
+      ],
+      "execution_and_runtime_structure": [
+        "task preconditions / guards",
+        "runtime object binding",
+        "dynamic cardinality / object binding",
+        "runtime graph mutation",
+        "partial progress / checkpointing",
+        "effect timing / atomicity",
+        "rollback / compensation boundary"
+      ],
+      "physical_spatial_semantics": [
+        "spatial topology / route constraints",
+        "occupancy / collision constraints"
+      ],
+      "information_and_digital_semantics": [
+        "idempotency / deduplication",
+        "version conflict / merge"
+      ],
+      "composition": [
+        "global invariants across process instances",
+        "instance identity / correlation"
+      ],
+      "scheduling_and_dispatch": [
+        "multiple valid execution orders",
+        "runtime dispatch / assignment",
+        "priority / preemption"
+      ]
+    }
+  },
+  "batch_1_scenarios": [
+    {
+      "id": "b1-01",
+      "title": "Copy the signed inspection bundle",
+      "domain": "data and information workflows",
+      "scenario": "A clerk sends a digitally signed inspection bundle from the project repository to a regulator's archive. After a successful transfer, the original signed bundle must remain in the project repository unchanged, while the archive contains a distinct byte-identical copy with the same hash. If the transfer fails or times out, the source must still remain available.",
+      "difficulty": 2,
+      "dimensions": [
+        "information transfer",
+        "copying versus moving",
+        "object identity and provenance",
+        "effect timing / atomicity",
+        "asynchronous external systems"
+      ],
+      "dimension_interactions": [
+        "Information transfer changes the number of artifact instances without changing the source artifact; identity and atomicity matter because a successful copy and a failed copy must leave different remote state but the same local state."
+      ],
+      "must_preserve": [
+        "The original signed bundle remains present and unchanged after success.",
+        "The archived artifact is a distinct instance whose content matches the signed source.",
+        "A failed or ambiguous transfer never removes or mutates the source."
+      ],
+      "likely_modelling_traps": [
+        "Treating transfer as generic movement and deleting the source.",
+        "Treating source and archive as one object that merely changes location.",
+        "Applying the copy effect before success is known."
+      ],
+      "why_this_is_useful": "This isolates copy semantics, artifact identity, and effect timing in a process that superficially looks like a simple hand-off.",
+      "adversarial_pair_id": "pair-copy-move"
+    },
+    {
+      "id": "b1-02",
+      "title": "Move the signed inspection bundle",
+      "domain": "data and information workflows",
+      "scenario": "A clerk sends the same kind of digitally signed inspection bundle from the project repository to a regulator's archive, but this time policy requires a true transfer: once receipt is verified, the source copy must no longer exist in the project repository and the archived artifact becomes the sole retained instance. If receipt cannot be verified, the source must remain so the bundle cannot be lost.",
+      "difficulty": 2,
+      "dimensions": [
+        "information transfer",
+        "copying versus moving",
+        "object identity and provenance",
+        "effect timing / atomicity",
+        "asynchronous external systems"
+      ],
+      "dimension_interactions": [
+        "Information transfer, identity, and atomicity interact because deletion of the source is conditional on verified remote persistence; the process must avoid both accidental loss and unintended duplicate retention."
+      ],
+      "must_preserve": [
+        "Verified success leaves exactly one retained instance in the archive and none in the source repository.",
+        "Unverified or failed transfer leaves the source intact.",
+        "The archived artifact preserves the signed content and provenance of the source."
+      ],
+      "likely_modelling_traps": [
+        "Representing the move as an ordinary copy and leaving two retained instances.",
+        "Deleting the source at transfer start rather than after verified receipt.",
+        "Representing the same object as simultaneously located in both repositories."
+      ],
+      "why_this_is_useful": "Paired with b1-01, this tests whether WorkSpec can distinguish copying from moving when the visible task sequence is almost identical.",
+      "adversarial_pair_id": "pair-copy-move"
+    },
+    {
+      "id": "b1-03",
+      "title": "Dual-control high-value refund",
+      "domain": "finance",
+      "scenario": "A payments company requires a high-value refund to be prepared by one authorised analyst and approved by a second authorised employee. The approver may hold the same job role as the preparer, but must be a different human identity. Approval must occur after preparation and before release of funds.",
+      "difficulty": 2,
+      "dimensions": [
+        "multiple actors",
+        "permissions / authorisation",
+        "separation of duties",
+        "actor identity binding",
+        "strict sequencing"
+      ],
+      "dimension_interactions": [
+        "Authorisation is insufficient by itself: actor identity must be bound across two sequenced tasks so that a valid role-holder still cannot approve their own prepared refund."
+      ],
+      "must_preserve": [
+        "The preparer and approver are two distinct human identities.",
+        "Both actors are authorised for their respective actions.",
+        "Funds cannot be released before both preparation and valid second-person approval complete."
+      ],
+      "likely_modelling_traps": [
+        "Checking only role membership and allowing the same actor to fill both roles.",
+        "Encoding two tasks with different labels while failing to constrain actor inequality.",
+        "Treating approval as optional metadata rather than a gating action."
+      ],
+      "why_this_is_useful": "This probes separation-of-duties constraints that cannot be reduced to simple task sequencing or permissions.",
+      "adversarial_pair_id": "pair-actor-identity"
+    },
+    {
+      "id": "b1-04",
+      "title": "Self-approval after cooling-off",
+      "domain": "finance",
+      "scenario": "A payments company uses an otherwise identical refund process, but for this class of refund the same authorised analyst is explicitly allowed to prepare and later approve the refund, provided at least 30 minutes have elapsed and the analyst re-authenticates before approval. A second employee is not required.",
+      "difficulty": 2,
+      "dimensions": [
+        "single actor",
+        "permissions / authorisation",
+        "actor identity binding",
+        "temporal windows / cooldowns",
+        "strict sequencing"
+      ],
+      "dimension_interactions": [
+        "Actor identity, authorisation, and a temporal cooldown interact: the process must permit same-person reuse that b1-03 forbids, while still enforcing delayed approval and re-authentication."
+      ],
+      "must_preserve": [
+        "The same human may perform both preparation and approval.",
+        "Approval cannot occur until at least 30 minutes after preparation.",
+        "The approving actor must be authorised and re-authenticated at approval time."
+      ],
+      "likely_modelling_traps": [
+        "Reusing a generic dual-approval template that incorrectly requires two people.",
+        "Representing the cooldown as a fixed absolute start time rather than a relation to preparation completion.",
+        "Ignoring the re-authentication condition because the actor identity is already known."
+      ],
+      "why_this_is_useful": "Paired with b1-03, this tests whether actor-identity constraints can vary independently of role and task structure.",
+      "adversarial_pair_id": "pair-actor-identity"
+    },
+    {
+      "id": "b1-05",
+      "title": "Bedside blood transfusion with interruption",
+      "domain": "healthcare and laboratory work",
+      "scenario": "At a hospital bedside, two clinicians jointly verify the patient's identity and the exact blood-unit identity before transfusion starts. Once removed from controlled storage, the unit has a latest permissible start time. During transfusion, the patient is monitored continuously. If a suspected reaction occurs, the transfusion is stopped immediately, the amount already infused is recorded, and further use of that same unit depends on a fresh clinical decision; the process cannot pretend the unit is unused or restart from zero.",
+      "difficulty": 4,
+      "dimensions": [
+        "joint action / quorum",
+        "object identity and provenance",
+        "continuous invariants",
+        "deadlines",
+        "interruption and resumption",
+        "partial progress / checkpointing",
+        "divisible quantities"
+      ],
+      "dimension_interactions": [
+        "Joint verification binds two actors to a specific physical unit before a deadline, while interruption creates partial progress whose quantity and unit identity must survive into recovery decisions.",
+        "Continuous monitoring can invalidate the planned execution mid-task, so correctness depends on what happened during the task rather than only on task start and completion."
+      ],
+      "must_preserve": [
+        "The exact verified blood unit is the one transfused.",
+        "Two clinicians participate in the pre-start verification.",
+        "The unit cannot start after its permitted out-of-storage window.",
+        "On interruption, the already-infused amount remains committed and recorded.",
+        "Recovery decisions apply to the partially used same unit, not to an abstract replacement quantity."
+      ],
+      "likely_modelling_traps": [
+        "Modelling transfusion as an indivisible fixed-duration task with only success/failure.",
+        "Replacing the blood unit with an anonymous consumable quantity and losing identity.",
+        "Allowing monitoring to occur before or after transfusion rather than throughout it.",
+        "Restarting an interrupted transfusion as if no volume had already been delivered."
+      ],
+      "why_this_is_useful": "It stresses joint action, identity, deadlines, continuous conditions, and partial progress in one clinically realistic process.",
+      "adversarial_pair_id": null
+    },
+    {
+      "id": "b1-06",
+      "title": "Refrigerated cross-dock transfer during a blocked route",
+      "domain": "logistics and transport",
+      "scenario": "A refrigerated pallet arrives at a distribution centre without a preassigned outbound bay. On arrival, staff select a compatible free bay and a forklift, then move the pallet through one of several chilled routes. A route may become blocked while the move is under way, bay capacity may change as other pallets arrive, and the pallet must remain within its allowed temperature exposure. If it cannot reach a compatible bay in time, it is quarantined rather than loaded.",
+      "difficulty": 4,
+      "dimensions": [
+        "concurrency",
+        "resource reservation / locking",
+        "spatial topology / route constraints",
+        "environmental state",
+        "runtime object binding",
+        "capacity limits",
+        "failure and recovery"
+      ],
+      "dimension_interactions": [
+        "Runtime bay binding and route choice compete for scarce forklift and bay capacity while environmental exposure continues to accumulate.",
+        "A mid-route obstruction changes the feasible spatial graph and can force recovery whose correct outcome depends on the pallet's current location and exposure state."
+      ],
+      "must_preserve": [
+        "Bay and route are chosen from resources actually available when the pallet arrives.",
+        "A forklift and destination capacity cannot be double-allocated beyond their capacities.",
+        "A newly blocked route cannot continue to be treated as traversable.",
+        "The pallet's exposure state persists through rerouting.",
+        "An over-exposed pallet is quarantined rather than silently completing loading."
+      ],
+      "likely_modelling_traps": [
+        "Predeclaring one static bay and route for every pallet.",
+        "Treating capacity as a descriptive property without reserving it.",
+        "Teleporting the pallet between named locations with no route semantics.",
+        "Resetting exposure when the route changes."
+      ],
+      "why_this_is_useful": "This combines dynamic resource binding, spatial topology, capacity, and environmental failure in a common logistics setting.",
+      "adversarial_pair_id": null
+    },
+    {
+      "id": "b1-07",
+      "title": "Online database migration with a rollback boundary",
+      "domain": "software and IT operations",
+      "scenario": "A live service migrates from an old database schema to a new one without downtime. The application dual-writes while historical rows are backfilled asynchronously. Cutover is allowed only after validation passes and replication lag has remained below a threshold for a sustained period. Before new-only writes begin, rollback can restore the old path. After new-only data using fields with no old-schema equivalent has been accepted, a simple rollback is no longer safe and requires a separate compensating migration.",
+      "difficulty": 4,
+      "dimensions": [
+        "concurrency",
+        "asynchronous external systems",
+        "state dependent on another object",
+        "rollback / compensation boundary",
+        "continuous invariants",
+        "effect timing / atomicity",
+        "irreversible changes"
+      ],
+      "dimension_interactions": [
+        "Concurrent dual-write and backfill alter two dependent system states while an asynchronous lag condition must remain acceptable through time before cutover.",
+        "The recovery semantics change at an irreversible boundary: the same 'rollback' action is valid before new-only writes and invalid afterwards."
+      ],
+      "must_preserve": [
+        "Old and new stores remain mutually consistent enough for cutover while concurrent writes continue.",
+        "Cutover cannot occur from a single momentary good lag reading if the threshold must be sustained.",
+        "Rollback before the boundary and compensation after the boundary are distinct behaviours.",
+        "New-only writes cannot be silently discarded to manufacture reversibility."
+      ],
+      "likely_modelling_traps": [
+        "Representing migration as a linear stop-copy-start sequence.",
+        "Treating rollback as universally available regardless of data already committed.",
+        "Checking validation only at task completion instead of as a gating condition.",
+        "Assuming asynchronous backfill completion implies replication health."
+      ],
+      "why_this_is_useful": "It tests continuous guards, concurrent state coupling, asynchronous systems, and state-dependent recovery boundaries.",
+      "adversarial_pair_id": null
+    },
+    {
+      "id": "b1-08",
+      "title": "Aircraft turnaround before pushback",
+      "domain": "logistics and transport",
+      "scenario": "During an aircraft turnaround, cleaning, catering, baggage loading, boarding, and some servicing occur concurrently. Pushback may begin only after doors are secured, the jet bridge is clear, fuelling equipment is disconnected, baggage loading is complete, a tug is reserved, and clearance has been received. Some activities are forbidden to overlap under the airline's procedure. A late baggage message or delayed clearance can cancel an intended pushback slot and reopen work before a later attempt.",
+      "difficulty": 4,
+      "dimensions": [
+        "concurrency",
+        "actions that must not overlap",
+        "task preconditions / guards",
+        "resource reservation / locking",
+        "delayed responses",
+        "cancellation",
+        "spatial topology / route constraints"
+      ],
+      "dimension_interactions": [
+        "Concurrency is constrained by both negative overlap rules and a multi-condition pushback guard, while external messages can invalidate a nearly complete plan.",
+        "The tug and taxi route are spatial resources that must remain available for the selected pushback attempt rather than merely being present in the world."
+      ],
+      "must_preserve": [
+        "Forbidden task combinations never overlap.",
+        "Pushback starts only when every required physical and informational condition is true.",
+        "The tug cannot be allocated to another aircraft at the same time.",
+        "A late event can cancel the pending attempt and require conditions to be re-established.",
+        "Clearance delay does not falsely imply that all other ready conditions remain indefinitely valid."
+      ],
+      "likely_modelling_traps": [
+        "Encoding only positive dependencies and missing must-not-overlap constraints.",
+        "Treating clearance as a task completed at a fixed time rather than an external response.",
+        "Assuming a tug listed as equipment is automatically reserved.",
+        "Letting pushback proceed because prerequisite tasks once completed, even if their resulting states later changed."
+      ],
+      "why_this_is_useful": "This exposes the gap between static dependency graphs and guarded execution over changing physical and external state.",
+      "adversarial_pair_id": null
+    },
+    {
+      "id": "b1-09",
+      "title": "Continuous concrete slab pour after a pump failure",
+      "domain": "construction and trades",
+      "scenario": "A crew pours a large reinforced-concrete slab from successive truck batches through a pump. The slab should be placed continuously enough to avoid an unacceptable cold joint; weather changes the usable working time of each batch. If the pump fails halfway through, the crew may switch to a backup pump or form a deliberate construction joint, but the recovery choice depends on how much concrete has already been placed, where the placement front is, and how long the interruption lasts. Placed concrete cannot be returned to the trucks.",
+      "difficulty": 4,
+      "dimensions": [
+        "consumable resources",
+        "divisible quantities",
+        "continuous invariants",
+        "deadlines",
+        "irreversible changes",
+        "environmental state",
+        "failure and recovery"
+      ],
+      "dimension_interactions": [
+        "Consumable batch quantities become irreversible spatial state as they are placed, while a time-dependent continuity condition determines whether normal pouring can resume.",
+        "Environmental conditions alter the effective deadline, and failure recovery depends on partial physical progress rather than merely on which task failed."
+      ],
+      "must_preserve": [
+        "Concrete already placed remains placed and is not restored on failure.",
+        "Batch quantities are consumed consistently with the amount poured.",
+        "An interruption long enough to violate the continuity condition changes the permitted recovery path.",
+        "Weather-dependent working time affects whether a batch remains usable.",
+        "Recovery preserves the actual placement front and amount completed."
+      ],
+      "likely_modelling_traps": [
+        "Rolling back consumed concrete when the pump task fails.",
+        "Treating each truck as an interchangeable quantity with no timing state.",
+        "Representing 'continuous pour' as simple task ordering.",
+        "Restarting from the beginning after repair regardless of the slab state."
+      ],
+      "why_this_is_useful": "It combines irreversible transformation, quantities, environment-sensitive deadlines, and stateful recovery.",
+      "adversarial_pair_id": null
+    },
+    {
+      "id": "b1-10",
+      "title": "Chlorine release with shifting exclusion zones",
+      "domain": "emergency response",
+      "scenario": "Responders manage a chlorine release at an industrial site. Entry, decontamination, rescue, and monitoring proceed concurrently. Hot, warm, and cold zones are revised from sensor readings, wind direction, and human judgement; wind can shift while teams are deployed. Newly discovered casualties create additional rescue and triage work. Only appropriately authorised and equipped teams may enter the current hot zone, and incident responsibility may transfer as specialist commanders arrive.",
+      "difficulty": 4,
+      "dimensions": [
+        "uncertain state",
+        "exogenous events",
+        "dynamic discovery of later work",
+        "access restrictions",
+        "changing responsibility",
+        "concurrency",
+        "human judgement"
+      ],
+      "dimension_interactions": [
+        "Uncertain environmental state and exogenous wind changes alter spatial access rules while concurrent teams are already acting.",
+        "Runtime discoveries create new work and can change priorities under a command structure whose responsible actor may itself change."
+      ],
+      "must_preserve": [
+        "Access permissions follow the current zone definition, not the zone at plan creation time.",
+        "A wind shift can make a previously safe route or location unsafe.",
+        "New casualty discoveries create additional work without requiring that every casualty be known initially.",
+        "Only qualified teams enter restricted zones.",
+        "Command transfer changes who may authorise subsequent actions without erasing prior state."
+      ],
+      "likely_modelling_traps": [
+        "Representing exclusion zones as static locations.",
+        "Pre-enumerating all rescue tasks and casualties.",
+        "Treating sensor values as certain ground truth.",
+        "Allowing an actor authorised earlier to continue authorising after responsibility has transferred."
+      ],
+      "why_this_is_useful": "This targets exogenous events, uncertainty, dynamic task discovery, changing authority, and spatially dependent permissions.",
+      "adversarial_pair_id": null
+    },
+    {
+      "id": "b1-11",
+      "title": "Nightly settlement feed with duplicates and corrections",
+      "domain": "data and information workflows",
+      "scenario": "A payment processor receives an unknown number of settlement files from a partner before a nightly cut-off. Files can arrive late, be retransmitted after an acknowledgement timeout, or be replaced by a corrected version. Each file is checksum- and schema-validated, invalid files are quarantined, a corrected version supersedes the earlier one, and valid transactions must be posted downstream exactly once even when the sender retries because it never saw the acknowledgement.",
+      "difficulty": 4,
+      "dimensions": [
+        "dynamic cardinality / object binding",
+        "validation",
+        "idempotency / deduplication",
+        "versioning",
+        "asynchronous external systems",
+        "failure and recovery",
+        "deadlines"
+      ],
+      "dimension_interactions": [
+        "Runtime cardinality, versioning, and idempotency interact because the system must distinguish a duplicate transmission from a genuinely corrected file discovered later.",
+        "An asynchronous acknowledgement can be lost even when posting succeeded, so retry handling cannot infer world state from message receipt alone."
+      ],
+      "must_preserve": [
+        "The workflow accepts a runtime-determined number of input files.",
+        "Exact retransmissions do not cause duplicate downstream postings.",
+        "Corrected versions replace the intended earlier version rather than being discarded as duplicates.",
+        "Invalid files remain quarantined and do not post.",
+        "The cut-off affects late-file handling without inventing a fixed list of expected tasks."
+      ],
+      "likely_modelling_traps": [
+        "Creating a fixed task per anticipated file.",
+        "Using filename equality as the only duplicate rule.",
+        "Treating every retransmission as new work.",
+        "Assuming acknowledgement timeout means downstream posting failed."
+      ],
+      "why_this_is_useful": "This is a compact test of dynamic cardinality, exactly-once effects, version semantics, and asynchronous uncertainty.",
+      "adversarial_pair_id": null
+    },
+    {
+      "id": "b1-12",
+      "title": "Railway track possession shared by multiple work groups",
+      "domain": "maintenance and repair",
+      "scenario": "A possession controller closes a section of railway so several independent maintenance groups can work concurrently at different points. Each group enters only after authority is granted and may use shared access routes and plant. The line can be returned to traffic only when every active group has reported clear, all engineering vehicles and tools are accounted for, and required isolations have been restored. An emergency request can curtail the possession, forcing all active groups to withdraw before responsibility returns to normal operations.",
+      "difficulty": 4,
+      "dimensions": [
+        "permissions / authorisation",
+        "global invariants across process instances",
+        "concurrency",
+        "multiple processes sharing resources",
+        "changing responsibility",
+        "cancellation",
+        "runtime object binding"
+      ],
+      "dimension_interactions": [
+        "Several process instances share one global safety invariant: reopening is forbidden until every dynamically participating group has cleared.",
+        "Authority and responsibility change across closure, work, emergency curtailment, and hand-back, while shared resources remain contested by concurrent groups."
+      ],
+      "must_preserve": [
+        "No group enters without current possession authority.",
+        "The line remains closed while any active group or engineering vehicle is uncleared.",
+        "Hand-back waits for all dynamically participating groups, not a hard-coded subset.",
+        "Emergency curtailment cancels or redirects active work but does not bypass clearance.",
+        "Responsibility transfers only after the global hand-back conditions are met."
+      ],
+      "likely_modelling_traps": [
+        "Modelling each work group locally and allowing the line to reopen when one group finishes.",
+        "Hard-coding a fixed number of groups.",
+        "Using task completion as proof that all equipment has physically cleared.",
+        "Treating cancellation as immediate deletion of in-progress work."
+      ],
+      "why_this_is_useful": "It probes global invariants across concurrent process instances, dynamic participation, shared access, and controlled hand-back.",
+      "adversarial_pair_id": null
+    },
+    {
+      "id": "b1-13",
+      "title": "Wet-plate collodion field portrait",
+      "domain": "science and experimentation",
+      "scenario": "A photographer prepares a glass plate for wet-plate collodion photography: the plate is coated, sensitised in darkness, moved to the camera, exposed while still wet, then returned promptly for development. The plate must stay in the correct orientation to avoid uneven flow, and drying at the wrong stage makes the plate unusable rather than merely delayed. Temperature and humidity change the useful timing window.",
+      "difficulty": 4,
+      "dimensions": [
+        "minimum/maximum durations",
+        "environmental state",
+        "irreversible changes",
+        "orientation",
+        "movement",
+        "transformation of an object"
+      ],
+      "dimension_interactions": [
+        "Movement and orientation must preserve a transforming physical object's condition while environment-dependent timing limits span several tasks.",
+        "Once the plate dries or is improperly processed, the state change is irreversible and a new plate must be prepared."
+      ],
+      "must_preserve": [
+        "The same coated plate moves through sensitising, exposure, and development.",
+        "Exposure and development occur within the viable wet interval.",
+        "Orientation constraints are maintained where they matter.",
+        "Environmental conditions can tighten or relax the practical timing window.",
+        "An unusable dried plate is discarded rather than resumed."
+      ],
+      "likely_modelling_traps": [
+        "Representing the plate as generic consumable quantity at each stage.",
+        "Using only fixed durations and ignoring a maximum cross-task wet window.",
+        "Recording locations without representing movement or orientation.",
+        "Allowing recovery from a physically irreversible dried state."
+      ],
+      "why_this_is_useful": "It stresses object continuity, orientation, movement, environment-sensitive timing, and irreversible transformation.",
+      "adversarial_pair_id": null
+    },
+    {
+      "id": "b1-14",
+      "title": "Counterweighted theatre fly-system scene change",
+      "domain": "arts, entertainment, and live events",
+      "scenario": "During a live theatre scene change, a fly operator and deck crew move several counterweighted scenic pieces while other stagehands clear and place floor scenery. Certain flown pieces must move together on cue, the deck beneath them must remain clear throughout movement, and shared fly lines or travel paths cannot be used by conflicting moves. If a performer or crew member enters the exclusion area, the affected movement stops and must be safely re-established before continuing.",
+      "difficulty": 4,
+      "dimensions": [
+        "concurrency",
+        "joint action / quorum",
+        "spatial topology / route constraints",
+        "continuous invariants",
+        "resource reservation / locking",
+        "actions that must overlap",
+        "failure and recovery"
+      ],
+      "dimension_interactions": [
+        "Joint cue execution and overlapping motion consume shared physical paths while a continuous clearance invariant must hold for the whole movement.",
+        "An intrusion causes a mid-action stop whose recovery depends on current scenery position and which coordinated moves have already progressed."
+      ],
+      "must_preserve": [
+        "Required coordinated moves overlap as intended.",
+        "Conflicting fly-line or path usage never overlaps.",
+        "The exclusion area remains clear for the entire overhead movement.",
+        "An intrusion halts the affected movement before continuation.",
+        "Recovery resumes from the actual safe intermediate position rather than resetting scenery magically."
+      ],
+      "likely_modelling_traps": [
+        "Checking deck clearance only before movement starts.",
+        "Representing coordinated crew actions as independent tasks that can drift apart.",
+        "Treating shared paths as descriptive locations rather than reservable resources.",
+        "Restarting an interrupted move from its initial state."
+      ],
+      "why_this_is_useful": "This tests joint action, continuous spatial safety, synchronised concurrency, reservation, and mid-task recovery.",
+      "adversarial_pair_id": null
+    },
+    {
+      "id": "b1-15",
+      "title": "Cryogenic transfer of identified patient samples",
+      "domain": "healthcare and laboratory work",
+      "scenario": "A laboratory transfers individually identified cryovials from one liquid-nitrogen dewar to another using a temporary working rack. The lids are opened only during transfer, sample identity must never be swapped, and each vial must remain below a temperature threshold. Temperature is inferred from imperfect sensors and exposure time rather than directly known. If the transfer is interrupted, completed vials stay in the destination, untransferred vials stay in the source, and exposed vials require assessment before work resumes.",
+      "difficulty": 4,
+      "dimensions": [
+        "temporary state changes",
+        "continuous invariants",
+        "uncertain state",
+        "measurement tolerance / sensor error",
+        "object identity and provenance",
+        "interruption and resumption"
+      ],
+      "dimension_interactions": [
+        "Temporary container states and a continuous thermal invariant span a partially completed identity-sensitive transfer.",
+        "Sensor uncertainty means recovery decisions depend on evidence about exposure, while interruption must preserve which exact vials have already moved."
+      ],
+      "must_preserve": [
+        "Each cryovial retains its identity throughout transfer.",
+        "Completed and uncompleted subsets remain distinguishable after interruption.",
+        "Thermal exposure accumulates across the interruption rather than resetting.",
+        "Temporary open-lid states end when transfer pauses or completes.",
+        "Uncertain temperature evidence is not silently converted into certain state."
+      ],
+      "likely_modelling_traps": [
+        "Representing vials only as an aggregate quantity.",
+        "Rolling back all moved vials after an interruption.",
+        "Treating temperature as an exact known property.",
+        "Reverting temporary states without considering what physical recovery action is required."
+      ],
+      "why_this_is_useful": "This combines identity, temporary state, continuous conditions, uncertainty, and partial interruption in laboratory handling.",
+      "adversarial_pair_id": null
+    },
+    {
+      "id": "b1-16",
+      "title": "Underwater archaeology photogrammetry transect",
+      "domain": "science and experimentation",
+      "scenario": "A buddy pair of divers photographs an underwater archaeological transect for photogrammetry. Visibility, current, remaining breathing gas, and the location of artefacts are only partly known before the dive. Newly observed features can require extra photographs or a changed route. The divers must remain within buddy constraints, avoid restricted fragile areas, and return with sufficient gas reserve even if the planned survey is incomplete.",
+      "difficulty": 4,
+      "dimensions": [
+        "actor availability",
+        "partially observable state",
+        "uncertain state",
+        "dynamic discovery of later work",
+        "spatial topology / route constraints",
+        "consumable resources",
+        "human judgement"
+      ],
+      "dimension_interactions": [
+        "Partial observability and human judgement create new work while finite breathing gas and spatial route constraints limit what can safely be added.",
+        "Actor availability is stateful because the two divers' safe operating envelopes are coupled; one diver's problem can terminate the other's survey."
+      ],
+      "must_preserve": [
+        "Newly discovered features can add survey work at runtime.",
+        "The route adapts to current, visibility, and restricted areas.",
+        "Buddy safety constraints remain active during the survey.",
+        "Gas consumption accumulates and can force early termination.",
+        "Returning safely takes priority over completing every dynamically discovered photograph."
+      ],
+      "likely_modelling_traps": [
+        "Pre-enumerating all artefacts and photo tasks.",
+        "Treating gas as a static capability rather than a consumable resource.",
+        "Modelling the two divers as independent actors.",
+        "Allowing newly added work without re-evaluating the return constraint."
+      ],
+      "why_this_is_useful": "It tests runtime discovery under partial observability, coupled actors, finite resources, and spatial safety constraints.",
+      "adversarial_pair_id": null
+    },
+    {
+      "id": "b1-17",
+      "title": "Semiconductor reticle change and wafer-lot rework",
+      "domain": "manufacturing and industrial work",
+      "scenario": "In a semiconductor fab, an exposure tool is prepared for a new wafer lot by loading the exact reticle and recipe revision specified for that lot, completing contamination-control checks, and reserving the tool. After exposure, metrology may accept the lot, require a bounded rework path, or scrap it. A later recipe revision must not silently change the provenance of a lot already exposed under the earlier revision.",
+      "difficulty": 4,
+      "dimensions": [
+        "object identity and provenance",
+        "resource reservation / locking",
+        "validation",
+        "retries",
+        "temporary state changes",
+        "environmental state",
+        "versioning"
+      ],
+      "dimension_interactions": [
+        "Tool reservation and temporary setup state bind an identity-specific reticle and versioned recipe to a particular lot.",
+        "Validation can trigger rework, but retries are constrained by the lot's physical state and must preserve which recipe revision produced each exposure."
+      ],
+      "must_preserve": [
+        "The exact reticle and recipe revision used for each exposure remain traceable.",
+        "The exposure tool is not concurrently allocated beyond capacity.",
+        "Contamination-control state is valid when exposure occurs.",
+        "Metrology outcome can select rework or scrap.",
+        "Rework does not rewrite the historical provenance of the first exposure."
+      ],
+      "likely_modelling_traps": [
+        "Treating any reticle of the same type as substitutable.",
+        "Resolving recipe references to the latest version after the fact.",
+        "Representing rework as an unconstrained loop.",
+        "Using equipment state without explicit reservation against concurrent lots."
+      ],
+      "why_this_is_useful": "This probes identity, version provenance, resource locking, validation-driven rework, and environment-sensitive setup.",
+      "adversarial_pair_id": null
+    },
+    {
+      "id": "b1-18",
+      "title": "Anoxic pest treatment for a rare book",
+      "domain": "unusual specialist professions",
+      "scenario": "A conservator treats an insect-infested rare book in a sealed anoxic enclosure. Oxygen concentration must remain below a threshold, while humidity stays within an acceptable band, for a minimum uninterrupted treatment interval. Sensor readings have known error. If a leak or opening raises oxygen beyond the allowed condition, accumulated treatment time is invalidated and the qualifying interval must begin again after the enclosure is restored.",
+      "difficulty": 4,
+      "dimensions": [
+        "continuous invariants",
+        "condition-held-for-duration",
+        "uncertain state",
+        "measurement tolerance / sensor error",
+        "failure and recovery",
+        "environmental state"
+      ],
+      "dimension_interactions": [
+        "A condition must remain continuously true for a duration; a single excursion changes the temporal state even if the enclosure is later restored.",
+        "Sensor uncertainty makes threshold evaluation non-trivial, and failure recovery resets only the qualifying timer, not the entire physical history."
+      ],
+      "must_preserve": [
+        "The book qualifies only after the full uninterrupted low-oxygen interval.",
+        "An invalidating oxygen excursion resets the qualifying interval.",
+        "Humidity constraints continue to matter during treatment.",
+        "Sensor uncertainty is represented rather than ignored at the threshold.",
+        "Repairing a leak restores the enclosure but does not retroactively preserve elapsed qualifying time."
+      ],
+      "likely_modelling_traps": [
+        "Modelling treatment as a fixed-duration task whose success ignores mid-task excursions.",
+        "Checking oxygen only at start and finish.",
+        "Treating a leak as a simple retry of the whole workflow with no retained state.",
+        "Using raw sensor values as exact truth despite measurement error."
+      ],
+      "why_this_is_useful": "It isolates condition-held-for-duration semantics, continuous invariants, uncertainty, and selective recovery.",
+      "adversarial_pair_id": null
+    },
+    {
+      "id": "b1-19",
+      "title": "Wildland fire suppression under a changing fire front",
+      "domain": "situations where humans react to uncertain real-world conditions",
+      "scenario": "An incident command team manages a fast-moving wildland fire. Fire edges, spot fires, wind, road access, crew locations, and structure risk are only partially observed and can change independently of planned work. New spot fires create new suppression and evacuation tasks; roads can close; crews and aircraft are reassigned; command roles can transfer as the incident escalates. Safety zones, airspace separation, crew work-rest limits, and evacuation priorities must remain globally valid across many concurrent operations even while the task graph itself changes.",
+      "difficulty": 5,
+      "dimensions": [
+        "exogenous events",
+        "partially observable state",
+        "dynamic cardinality / object binding",
+        "runtime graph mutation",
+        "changing responsibility",
+        "concurrency",
+        "global invariants across process instances"
+      ],
+      "dimension_interactions": [
+        "Exogenous environmental change alters both world state and the set of required tasks, so planning and execution cannot be separated into a fixed graph.",
+        "Global safety invariants couple independently operating crews and aircraft, while partial observability and changing command authority mean no single static process instance owns the full truth."
+      ],
+      "must_preserve": [
+        "Newly observed hazards can create work and invalidate planned work at runtime.",
+        "Closed routes and changed fire behaviour immediately affect feasible assignments.",
+        "Global safety constraints apply across all concurrent crews and aircraft.",
+        "Command transfer changes authority without resetting incident state.",
+        "Unknown or stale observations remain distinguishable from confirmed current state."
+      ],
+      "likely_modelling_traps": [
+        "Expanding every possible future branch into a finite static workflow.",
+        "Treating map and weather state as passive annotations.",
+        "Checking each crew locally while missing cross-crew airspace or safety conflicts.",
+        "Assuming a task graph generated at incident start remains authoritative."
+      ],
+      "why_this_is_useful": "This is intentionally hostile to static workflow modelling because the actors, environment, work graph, and authority structure all evolve during execution.",
+      "adversarial_pair_id": null
+    },
+    {
+      "id": "b1-20",
+      "title": "Ransomware investigation with competing hypotheses",
+      "domain": "cybersecurity and incident response",
+      "scenario": "An incident-response team investigates a suspected ransomware intrusion while the attacker may still be active. Analysts begin with competing hypotheses about initial access and lateral movement. Logs, endpoint artefacts, and interviews can conflict or be missing; new evidence creates new collection and containment tasks. Some containment actions, such as isolating or powering down a host, can destroy volatile evidence or alert the attacker, so the safest next action depends on what each responder currently knows, which evidence is trusted, and which irreversible effects have already occurred. Evidence must retain provenance and access controls throughout.",
+      "difficulty": 5,
+      "dimensions": [
+        "epistemic state / actor-specific knowledge",
+        "conflicting observations",
+        "dynamic discovery of later work",
+        "runtime graph mutation",
+        "object identity and provenance",
+        "permissions / authorisation",
+        "irreversible changes"
+      ],
+      "dimension_interactions": [
+        "Actions are chosen from actor-specific, possibly conflicting knowledge rather than from a single known world state; new evidence mutates both beliefs and the future task graph.",
+        "Evidence provenance and permissions constrain who can act, while irreversible containment can change the environment being investigated and invalidate future evidence-gathering options."
+      ],
+      "must_preserve": [
+        "Conflicting observations can coexist without forcing an immediate single truth value.",
+        "Different responders may legitimately know different subsets of evidence.",
+        "New evidence can add or remove investigative work at runtime.",
+        "Evidence identity, provenance, and access restrictions persist through handling.",
+        "Irreversible containment changes which later investigative actions remain possible."
+      ],
+      "likely_modelling_traps": [
+        "Collapsing belief, observation, and ground truth into one object state.",
+        "Predefining a finite branch for every possible finding.",
+        "Treating containment as a reversible status toggle.",
+        "Copying evidence without preserving provenance or access semantics."
+      ],
+      "why_this_is_useful": "This attacks a deep workflow-language assumption: that control flow can be derived from one authoritative state rather than evolving, distributed knowledge.",
+      "adversarial_pair_id": null
+    }
+  ],
+  "coverage_ledger": {
+    "batch_id": "batch-1",
+    "taxonomy_version": "revised-1",
+    "scenario_count": 20,
+    "scenario_distribution": {
+      "deceptively_simple_semantic_edge_cases": 4,
+      "realistic_but_difficult": 8,
+      "obscure_or_niche": 6,
+      "extremely_hostile": 2
+    },
+    "coverage_checks": {
+      "meaningful_concurrency": {
+        "count": 7,
+        "scenario_ids": [
+          "b1-06",
+          "b1-07",
+          "b1-08",
+          "b1-10",
+          "b1-12",
+          "b1-14",
+          "b1-19"
+        ],
+        "minimum_required": 5
+      },
+      "state_semantics": {
+        "count": 13,
+        "scenario_ids": [
+          "b1-05",
+          "b1-06",
+          "b1-07",
+          "b1-09",
+          "b1-10",
+          "b1-13",
+          "b1-14",
+          "b1-15",
+          "b1-16",
+          "b1-17",
+          "b1-18",
+          "b1-19",
+          "b1-20"
+        ],
+        "minimum_required": 5
+      },
+      "uncertainty_or_runtime_discovery": {
+        "count": 9,
+        "scenario_ids": [
+          "b1-06",
+          "b1-10",
+          "b1-11",
+          "b1-12",
+          "b1-15",
+          "b1-16",
+          "b1-18",
+          "b1-19",
+          "b1-20"
+        ],
+        "minimum_required": 4
+      },
+      "quantities_or_resources": {
+        "count": 8,
+        "scenario_ids": [
+          "b1-05",
+          "b1-06",
+          "b1-08",
+          "b1-09",
+          "b1-12",
+          "b1-14",
+          "b1-16",
+          "b1-17"
+        ],
+        "minimum_required": 4
+      },
+      "failure_or_recovery": {
+        "count": 8,
+        "scenario_ids": [
+          "b1-05",
+          "b1-06",
+          "b1-07",
+          "b1-09",
+          "b1-11",
+          "b1-14",
+          "b1-15",
+          "b1-18"
+        ],
+        "minimum_required": 3
+      },
+      "physical_or_spatial": {
+        "count": 6,
+        "scenario_ids": [
+          "b1-06",
+          "b1-08",
+          "b1-10",
+          "b1-13",
+          "b1-14",
+          "b1-16"
+        ],
+        "minimum_required": 3
+      },
+      "primarily_digital_or_informational": {
+        "count": 5,
+        "scenario_ids": [
+          "b1-01",
+          "b1-02",
+          "b1-07",
+          "b1-11",
+          "b1-20"
+        ],
+        "minimum_required": 3
+      },
+      "scenarios_in_adversarial_pairs": {
+        "count": 4,
+        "scenario_ids": [
+          "b1-01",
+          "b1-02",
+          "b1-03",
+          "b1-04"
+        ],
+        "minimum_required": 4
+      }
+    },
+    "dimension_counts_nonzero": {
+      "single actor": 1,
+      "multiple actors": 1,
+      "changing responsibility": 3,
+      "permissions / authorisation": 4,
+      "actor availability": 1,
+      "human judgement": 2,
+      "temporary state changes": 2,
+      "partially observable state": 2,
+      "uncertain state": 4,
+      "state dependent on another object": 1,
+      "environmental state": 5,
+      "irreversible changes": 4,
+      "strict sequencing": 2,
+      "concurrency": 7,
+      "deadlines": 3,
+      "minimum/maximum durations": 1,
+      "actions that must overlap": 1,
+      "actions that must not overlap": 1,
+      "interruption and resumption": 2,
+      "consumable resources": 2,
+      "divisible quantities": 2,
+      "transformation of an object": 1,
+      "capacity limits": 1,
+      "retries": 1,
+      "failure and recovery": 5,
+      "cancellation": 2,
+      "dynamic discovery of later work": 3,
+      "movement": 1,
+      "orientation": 1,
+      "access restrictions": 1,
+      "information transfer": 2,
+      "copying versus moving": 2,
+      "versioning": 2,
+      "validation": 2,
+      "asynchronous external systems": 4,
+      "delayed responses": 1,
+      "multiple processes sharing resources": 1,
+      "actor identity binding": 2,
+      "separation of duties": 1,
+      "joint action / quorum": 2,
+      "continuous invariants": 6,
+      "epistemic state / actor-specific knowledge": 1,
+      "conflicting observations": 1,
+      "exogenous events": 2,
+      "temporal windows / cooldowns": 1,
+      "condition-held-for-duration": 1,
+      "resource reservation / locking": 4,
+      "object identity and provenance": 6,
+      "measurement tolerance / sensor error": 2,
+      "task preconditions / guards": 1,
+      "runtime object binding": 2,
+      "dynamic cardinality / object binding": 2,
+      "runtime graph mutation": 2,
+      "partial progress / checkpointing": 1,
+      "effect timing / atomicity": 3,
+      "rollback / compensation boundary": 1,
+      "spatial topology / route constraints": 4,
+      "idempotency / deduplication": 1,
+      "global invariants across process instances": 2
+    },
+    "zero_coverage_dimensions": [
+      "simultaneous actions",
+      "hand-offs between actors",
+      "persistent state changes",
+      "mutually exclusive states",
+      "reversible changes",
+      "waiting",
+      "recurring actions",
+      "exclusive resources",
+      "shared resources",
+      "replenishment",
+      "borrowing and returning",
+      "combining objects",
+      "splitting objects",
+      "creation/destruction",
+      "conditional branching",
+      "loops",
+      "optional work",
+      "escalation",
+      "dependencies that are only known at runtime",
+      "location",
+      "containment",
+      "proximity",
+      "routes becoming unavailable",
+      "physical capacity",
+      "multiple actors manipulating one object",
+      "information creation",
+      "rollback",
+      "credentials / permissions",
+      "data dependencies",
+      "nested processes",
+      "subprocess reuse",
+      "processes interacting through state",
+      "processes running concurrently",
+      "one process spawning another",
+      "local correctness versus global correctness",
+      "role / skill based assignment",
+      "event-triggered work",
+      "unit / dimensional semantics",
+      "yield / loss / conservation",
+      "occupancy / collision constraints",
+      "version conflict / merge",
+      "instance identity / correlation",
+      "multiple valid execution orders",
+      "runtime dispatch / assignment",
+      "priority / preemption"
+    ],
+    "domain_counts": {
+      "manufacturing and industrial work": 1,
+      "healthcare and laboratory work": 2,
+      "logistics and transport": 2,
+      "agriculture and animal handling": 0,
+      "food preparation and hospitality": 0,
+      "maintenance and repair": 1,
+      "construction and trades": 1,
+      "science and experimentation": 2,
+      "emergency response": 1,
+      "arts, entertainment, and live events": 1,
+      "legal, administrative, and regulatory work": 0,
+      "education": 0,
+      "retail and service work": 0,
+      "software and IT operations": 1,
+      "cybersecurity and incident response": 1,
+      "data and information workflows": 3,
+      "finance": 2,
+      "domestic / everyday physical tasks": 0,
+      "unusual specialist professions": 1,
+      "situations where humans react to uncertain real-world conditions": 1
+    },
+    "repeated_dimension_combinations": [
+      {
+        "dimensions": [
+          "asynchronous external systems",
+          "effect timing / atomicity"
+        ],
+        "count": 3,
+        "scenario_ids": [
+          "b1-01",
+          "b1-02",
+          "b1-07"
+        ]
+      },
+      {
+        "dimensions": [
+          "concurrency",
+          "resource reservation / locking"
+        ],
+        "count": 3,
+        "scenario_ids": [
+          "b1-06",
+          "b1-08",
+          "b1-14"
+        ]
+      },
+      {
+        "dimensions": [
+          "concurrency",
+          "spatial topology / route constraints"
+        ],
+        "count": 3,
+        "scenario_ids": [
+          "b1-06",
+          "b1-08",
+          "b1-14"
+        ]
+      },
+      {
+        "dimensions": [
+          "environmental state",
+          "failure and recovery"
+        ],
+        "count": 3,
+        "scenario_ids": [
+          "b1-06",
+          "b1-09",
+          "b1-18"
+        ]
+      },
+      {
+        "dimensions": [
+          "resource reservation / locking",
+          "spatial topology / route constraints"
+        ],
+        "count": 3,
+        "scenario_ids": [
+          "b1-06",
+          "b1-08",
+          "b1-14"
+        ]
+      },
+      {
+        "dimensions": [
+          "continuous invariants",
+          "failure and recovery"
+        ],
+        "count": 3,
+        "scenario_ids": [
+          "b1-09",
+          "b1-14",
+          "b1-18"
+        ]
+      },
+      {
+        "dimensions": [
+          "changing responsibility",
+          "concurrency"
+        ],
+        "count": 3,
+        "scenario_ids": [
+          "b1-10",
+          "b1-12",
+          "b1-19"
+        ]
+      },
+      {
+        "dimensions": [
+          "asynchronous external systems",
+          "copying versus moving"
+        ],
+        "count": 2,
+        "scenario_ids": [
+          "b1-01",
+          "b1-02"
+        ]
+      },
+      {
+        "dimensions": [
+          "asynchronous external systems",
+          "information transfer"
+        ],
+        "count": 2,
+        "scenario_ids": [
+          "b1-01",
+          "b1-02"
+        ]
+      },
+      {
+        "dimensions": [
+          "asynchronous external systems",
+          "object identity and provenance"
+        ],
+        "count": 2,
+        "scenario_ids": [
+          "b1-01",
+          "b1-02"
+        ]
+      },
+      {
+        "dimensions": [
+          "copying versus moving",
+          "effect timing / atomicity"
+        ],
+        "count": 2,
+        "scenario_ids": [
+          "b1-01",
+          "b1-02"
+        ]
+      },
+      {
+        "dimensions": [
+          "copying versus moving",
+          "information transfer"
+        ],
+        "count": 2,
+        "scenario_ids": [
+          "b1-01",
+          "b1-02"
+        ]
+      },
+      {
+        "dimensions": [
+          "copying versus moving",
+          "object identity and provenance"
+        ],
+        "count": 2,
+        "scenario_ids": [
+          "b1-01",
+          "b1-02"
+        ]
+      },
+      {
+        "dimensions": [
+          "effect timing / atomicity",
+          "information transfer"
+        ],
+        "count": 2,
+        "scenario_ids": [
+          "b1-01",
+          "b1-02"
+        ]
+      },
+      {
+        "dimensions": [
+          "effect timing / atomicity",
+          "object identity and provenance"
+        ],
+        "count": 2,
+        "scenario_ids": [
+          "b1-01",
+          "b1-02"
+        ]
+      }
+    ],
+    "adversarial_pairs": [
+      {
+        "id": "pair-copy-move",
+        "scenario_ids": [
+          "b1-01",
+          "b1-02"
+        ],
+        "semantic_delta": "Copy retains the source; move removes the source only after verified receipt."
+      },
+      {
+        "id": "pair-actor-identity",
+        "scenario_ids": [
+          "b1-03",
+          "b1-04"
+        ],
+        "semantic_delta": "One process forbids the same human across two roles; the other explicitly permits the same human after a cooldown and re-authentication."
+      }
+    ],
+    "overrepresented_concepts": [
+      {
+        "dimension": "concurrency",
+        "count": 7
+      },
+      {
+        "dimension": "continuous invariants",
+        "count": 6
+      },
+      {
+        "dimension": "object identity and provenance",
+        "count": 6
+      },
+      {
+        "dimension": "environmental state",
+        "count": 5
+      },
+      {
+        "dimension": "failure and recovery",
+        "count": 5
+      }
+    ],
+    "weakly_covered_concepts": [
+      "conditional branching",
+      "loops",
+      "event-triggered work",
+      "role / skill based assignment",
+      "unit / dimensional semantics",
+      "yield / loss / conservation",
+      "occupancy / collision constraints",
+      "version conflict / merge",
+      "nested processes",
+      "subprocess reuse",
+      "multiple valid execution orders",
+      "runtime dispatch / assignment",
+      "priority / preemption"
+    ],
+    "newly_discovered_semantic_dimensions": [
+      "actor identity binding",
+      "separation of duties",
+      "role / skill based assignment",
+      "joint action / quorum",
+      "continuous invariants",
+      "epistemic state / actor-specific knowledge",
+      "conflicting observations",
+      "exogenous events",
+      "event-triggered work",
+      "temporal windows / cooldowns",
+      "condition-held-for-duration",
+      "resource reservation / locking",
+      "object identity and provenance",
+      "unit / dimensional semantics",
+      "measurement tolerance / sensor error",
+      "yield / loss / conservation",
+      "task preconditions / guards",
+      "runtime object binding",
+      "dynamic cardinality / object binding",
+      "runtime graph mutation",
+      "partial progress / checkpointing",
+      "effect timing / atomicity",
+      "rollback / compensation boundary",
+      "spatial topology / route constraints",
+      "occupancy / collision constraints",
+      "idempotency / deduplication",
+      "version conflict / merge",
+      "global invariants across process instances",
+      "instance identity / correlation",
+      "multiple valid execution orders",
+      "runtime dispatch / assignment",
+      "priority / preemption"
+    ]
+  },
+  "next_gaps": [
+    {
+      "rank": 1,
+      "gap": "Event-triggered work + waiting + delayed external response + cancellation",
+      "why": "The batch tests asynchronous systems, but not work whose very start is caused by an event rather than a fixed schedule or predecessor completion."
+    },
+    {
+      "rank": 2,
+      "gap": "Role/skill-based runtime dispatch + actor availability + priority/preemption",
+      "why": "WorkSpec names a specific actor for every task; the next batch should test choosing any currently qualified actor and reassigning work when availability changes."
+    },
+    {
+      "rank": 3,
+      "gap": "Conditional branching + derived state + uncertainty",
+      "why": "The batch contains runtime discoveries, but lacks a clean branch whose condition is computed from several state values and uncertain observations."
+    },
+    {
+      "rank": 4,
+      "gap": "Loops + dynamic cardinality + object identity",
+      "why": "A process such as inspect-each-item-until-no-more-remain tests repeated work over a set whose size is unknown until runtime without losing item identity."
+    },
+    {
+      "rank": 5,
+      "gap": "Unit/dimensional semantics + yield/loss/conservation + combining/splitting",
+      "why": "Quantities were covered, but not whether litres, kilograms, concentration, expected loss, and split/merge provenance compose safely."
+    },
+    {
+      "rank": 6,
+      "gap": "Containment + movement + occupancy/collision + multiple actors manipulating one object",
+      "why": "The current spatial cases use routes and orientation; they do not yet test moving a large object through constrained space while several actors jointly handle it."
+    },
+    {
+      "rank": 7,
+      "gap": "Version conflict/merge + concurrent processes + credentials/permissions",
+      "why": "Versioning was covered as provenance and correction, but not concurrent edits that create conflicts requiring authorised merge or rejection."
+    },
+    {
+      "rank": 8,
+      "gap": "Nested processes + subprocess reuse + one process spawning another + global invariants",
+      "why": "Batch 1 attacks runtime graph mutation but does not test whether reusable process composition preserves semantics when instantiated many times."
+    },
+    {
+      "rank": 9,
+      "gap": "Recurring actions + cross-instance quotas/shared resources + calendar exceptions",
+      "why": "The spec has multi-period calendars, yet Batch 1 barely tests recurrence, day-type variation, or resource constraints that span days."
+    },
+    {
+      "rank": 10,
+      "gap": "Multiple valid execution orders + runtime dispatch + fairness/optimisation objective",
+      "why": "The benchmark should distinguish semantic validity from scheduler choice when many orders are legal but operational goals or fairness select among them."
+    }
+  ]
+}

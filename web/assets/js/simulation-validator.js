@@ -7,6 +7,14 @@ class SimulationValidator {
     this.simulationData = simulationData;  // Store full data
     this.simulation = simulationData ? simulationData.simulation : null;
     this.results = [];
+    this.resolvedTimings = new Map();
+    if (this.simulation?.schema_version === '2.1' && window.WorkSpecRuntime?.replay) {
+      try {
+        this.resolvedTimings = window.WorkSpecRuntime.replay(simulationData).timings;
+      } catch (error) {
+        console.warn('Could not load authoritative WorkSpec timings for legacy metrics:', error);
+      }
+    }
   }
 
   runChecks(metricsCatalog, customValidatorCode = null) {
@@ -244,6 +252,16 @@ class SimulationValidator {
     return totalMinutes;
   }
 
+  _taskStartMinutes(task) {
+    return this.resolvedTimings.get(task?.id)?.start ?? this._timeToMinutes(task?.start);
+  }
+
+  _taskEndMinutes(task) {
+    const timing = this.resolvedTimings.get(task?.id);
+    const start = this._taskStartMinutes(task);
+    return timing?.end ?? (start === null ? null : start + (task?.duration || 0));
+  }
+
   // --- REFACTORED VALIDATION FUNCTIONS (Universal Object Model) ---
 
   validateRootObject(metric) {
@@ -362,11 +380,11 @@ class SimulationValidator {
           return hasOldStyle || hasNewStyle;
         })
         .map(t => {
-          const startMinutes = this._timeToMinutes(t.start);
+          const startMinutes = this._taskStartMinutes(t);
           return {
             ...t,
             startMinutes,
-            endMinutes: startMinutes !== null ? startMinutes + (t.duration || 0) : null
+            endMinutes: this._taskEndMinutes(t)
           };
         })
         .filter(t => t.startMinutes !== null) // Filter out tasks with invalid times
@@ -472,8 +490,8 @@ class SimulationValidator {
         .filter(t => t.actor_id === actor.id)
         .map(t => ({
           ...t,
-          startMinutes: this._timeToMinutes(t.start),
-          endMinutes: this._timeToMinutes(t.start) + (t.duration || 0)
+          startMinutes: this._taskStartMinutes(t),
+          endMinutes: this._taskEndMinutes(t)
         }))
         .filter(t => t.startMinutes !== null) // Filter out tasks with invalid start times
         .sort((a, b) => a.startMinutes - b.startMinutes);
@@ -520,11 +538,11 @@ class SimulationValidator {
     const taskTimes = new Map();
     for (const task of tasks) {
       if (!task.id) continue;
-      const startMinutes = this._timeToMinutes(task.start);
+      const startMinutes = this._taskStartMinutes(task);
       if (startMinutes !== null) {
         taskTimes.set(task.id, {
           start: startMinutes,
-          end: startMinutes + (task.duration || 0)
+          end: this._taskEndMinutes(task)
         });
       }
     }
@@ -623,11 +641,11 @@ class SimulationValidator {
     for (const actor of actors) {
         const schedule = tasks
             .filter(t => t.actor_id === actor.id)
-            .sort((a, b) => (a.start || "00:00").localeCompare(b.start || "00:00"));
+            .sort((a, b) => this._taskStartMinutes(a) - this._taskStartMinutes(b));
         for (let i = 0; i < schedule.length - 1; i++) {
             const currentTask = schedule[i]; const nextTask = schedule[i+1];
-            const currentEnd = this._timeToMinutes(currentTask.start) + (currentTask.duration || 0);
-            const nextStart = this._timeToMinutes(nextTask.start);
+            const currentEnd = this._taskEndMinutes(currentTask);
+            const nextStart = this._taskStartMinutes(nextTask);
             if (currentEnd === nextStart) {
                 this.addResult({ metricId: metric.id, status: 'info', message: `Optimization: Consider a buffer between '${currentTask.id}' and '${nextTask.id}' for actor '${actor.id}'.` });
                 issueFound = true;
@@ -807,8 +825,8 @@ class SimulationValidator {
     const sortedTasks = [...tasks]
       .map(t => ({
         ...t,
-        start_minutes: this._timeToMinutes(t.start),
-        end_minutes: this._timeToMinutes(t.start) + (t.duration || 0)
+        start_minutes: this._taskStartMinutes(t),
+        end_minutes: this._taskEndMinutes(t)
       }))
       .filter(t => t.start_minutes !== null)
       .sort((a, b) => a.start_minutes - b.start_minutes);
@@ -1236,8 +1254,13 @@ class SimulationValidator {
 
     for (const task of tasks) {
       const startTime = task.start;
-      
-      // Check if start time exists and is valid
+
+      // WorkSpec 2.1 permits the authoritative timing graph to derive start.
+      if ((startTime === undefined || startTime === null) && this.resolvedTimings.get(task.id)?.resolved) {
+        continue;
+      }
+
+      // Legacy documents still require an authored HH:MM start.
       if (startTime === undefined || startTime === null) {
         this.addResult({
           metricId: metric.id,
@@ -1625,6 +1648,22 @@ class SimulationValidator {
     let issueFound = false;
 
     for (const task of tasks) {
+      const resolvedTiming = this.resolvedTimings.get(task.id);
+      if (resolvedTiming?.resolved) {
+        const endMinutes = resolvedTiming.end;
+        if (endMinutes >= 1440) {
+          const endHours = Math.floor(endMinutes / 60);
+          const endMins = endMinutes % 60;
+          this.addResult({
+            metricId: metric.id,
+            status: 'error',
+            message: `Task '${task.id}' ends at ${endHours}:${String(endMins).padStart(2, '0')}, which exceeds 24:00 and causes day boundary overflow.`
+          });
+          issueFound = true;
+        }
+        continue;
+      }
+
       const startTime = task.start;
       const duration = task.duration;
 

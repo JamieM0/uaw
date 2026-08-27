@@ -56,28 +56,10 @@ function generateDocsStructure() {
             ]),
 
             makeSection("Specification", "workspec-specification", [
-                makeSection("v2.0", "workspec-specification-v2", [
+                makeSection("v2.1", "workspec-specification-v2", [
                     makePage(
-                        "Overview",
-                        "/docs/workspec/specification/v2.0/",
-                    ),
-                    makePage("Schema", "/docs/workspec/specification/v2.0/schema"),
-                    makePage(
-                        "Objects",
-                        "/docs/workspec/specification/v2.0/objects",
-                    ),
-                    makePage("Tasks", "/docs/workspec/specification/v2.0/tasks"),
-                    makePage(
-                        "Interactions",
-                        "/docs/workspec/specification/v2.0/interactions",
-                    ),
-                    makePage(
-                        "Validation",
-                        "/docs/workspec/specification/v2.0/validation",
-                    ),
-                    makePage(
-                        "Changelog",
-                        "/docs/workspec/specification/v2.0/changelog",
+                        "Current language",
+                        "/docs/workspec/specification/v2.1/",
                     ),
                 ]),
 
