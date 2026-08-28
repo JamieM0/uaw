@@ -11,6 +11,7 @@ class SimulationPlayer {
         this.trackedEventListeners = [];
         this.currentObjectStates = new Map();
         this.sortedTasks = [...(simulationData.tasks || [])].sort((a, b) => a.start_minutes - b.start_minutes);
+        this.playbackModel = window.WorkSpecPlaybackState?.createPlaybackModel?.(simulationData);
 
         // Cache for optimized state calculations
         this.lastStateCalculationTime = -1;
@@ -331,177 +332,18 @@ class SimulationPlayer {
     }
 
     updateLiveObjectState() {
-        // Track objects that have been created or deleted at current timeline position
-        // Initialize live objects dynamically based on available object types
+        this.worldSnapshot = window.WorkSpecPlaybackState?.resolveWorldStateAtTime?.(this.playbackModel, this.playheadTime);
+        if (!this.worldSnapshot) return;
         this.liveObjects = {
-            created: [], // Objects created during simulation
-            deleted: [] // Objects deleted during simulation (with their stored state)
+            ...this.worldSnapshot.objectsByType,
+            created: this.worldSnapshot.created.map(entry => entry.object),
+            deleted: this.worldSnapshot.deleted.map(entry => ({
+                ...entry.object,
+                deletedAt: entry.time,
+                deletedBy: entry.taskId
+            }))
         };
-        
-        // Add all object types dynamically
-        Object.keys(this.simData).forEach(key => {
-            // Skip non-object-type keys
-            if (['tasks', 'start_time', 'end_time', 'start_time_minutes', 'end_time_minutes', 'total_duration_minutes', 'article_title', 'domain'].includes(key)) {
-                return;
-            }
-            
-            // Check if this key represents an object type (arrays of objects)
-            if (Array.isArray(this.simData[key]) && this.simData[key].length > 0) {
-                // Verify it's actually an object type by checking if items have typical object properties
-                const firstItem = this.simData[key][0];
-                if (firstItem && (firstItem.id || firstItem.type)) {
-                    this.liveObjects[key] = [...(this.simData[key] || [])];
-                }
-            }
-        });
-        
-
-        for (const task of this.sortedTasks) {
-            if (task.start_minutes > this.playheadTime) break; // Stop if task hasn't started
-            
-            const isTaskActive = this.playheadTime >= task.start_minutes && this.playheadTime < task.end_minutes;
-            const isTaskCompleted = this.playheadTime >= task.end_minutes;
-            
-            (task.interactions || []).forEach(interaction => {
-                const isTemporary = interaction?.temporary === true || interaction?.revert_after === true;
-
-                // Handle object creation
-                const createdObjects = [];
-                if (interaction && interaction.action === 'create' && interaction.object) {
-                    createdObjects.push(interaction.object);
-                } else if (interaction && Array.isArray(interaction.add_objects)) {
-                    createdObjects.push(...interaction.add_objects);
-                }
-
-                if (createdObjects.length > 0) {
-                    createdObjects.forEach(newObj => {
-                        if (!newObj || !newObj.id) return;
-                        const shouldCreate = isTaskActive || (isTaskCompleted && !isTemporary);
-                        
-                        if (shouldCreate && !this.liveObjects.created.find(obj => obj.id === newObj.id)) {
-                            // Create the object
-                            const createdObject = {
-                                ...newObj,
-                                createdAt: task.start_minutes,
-                                createdBy: task.id,
-                                emoji: newObj.emoji || newObj.properties?.emoji || ''
-                            };
-                            this.liveObjects.created.push(createdObject);
-                            
-                            // Add to appropriate category dynamically
-                            if (newObj.type) {
-                                if (!Array.isArray(this.liveObjects[newObj.type])) {
-                                    this.liveObjects[newObj.type] = [];
-                                }
-                                this.liveObjects[newObj.type].push(createdObject);
-                            }
-                        } else if (!shouldCreate && this.liveObjects.created.find(obj => obj.id === newObj.id)) {
-                            // Remove the object (revert creation)
-                            this.liveObjects.created = this.liveObjects.created.filter(obj => obj.id !== newObj.id);
-                            
-                            // Remove from all object type arrays dynamically
-                            Object.keys(this.liveObjects).forEach(type => {
-                                if (Array.isArray(this.liveObjects[type])) {
-                                    this.liveObjects[type] = this.liveObjects[type].filter(obj => obj.id !== newObj.id);
-                                }
-                            });
-                        }
-                    });
-                }
-                
-                // Handle object deletion
-                const deletedIds = [];
-                if (interaction && interaction.action === 'delete' && (interaction.target_id || interaction.object_id)) {
-                    deletedIds.push(interaction.target_id || interaction.object_id);
-                } else if (interaction && Array.isArray(interaction.remove_objects)) {
-                    deletedIds.push(...interaction.remove_objects);
-                }
-
-                if (deletedIds.length > 0) {
-                    deletedIds.forEach(objectId => {
-                        if (!objectId) return;
-                        const shouldDelete = isTaskActive || (isTaskCompleted && !isTemporary);
-                        
-                        if (shouldDelete && !this.liveObjects.deleted.find(obj => obj.id === objectId)) {
-                            // Find and store the object before deletion
-                            const toDelete = this.findObjectById(objectId);
-                            if (toDelete) {
-                                this.liveObjects.deleted.push({
-                                    ...toDelete,
-                                    deletedAt: task.start_minutes,
-                                    deletedBy: task.id
-                                });
-                                
-                                // Remove from live arrays dynamically
-                                Object.keys(this.liveObjects).forEach(type => {
-                                    if (Array.isArray(this.liveObjects[type])) {
-                                        this.liveObjects[type] = this.liveObjects[type].filter(obj => obj.id !== objectId);
-                                    }
-                                });
-                            }
-                        } else if (!shouldDelete && this.liveObjects.deleted.find(obj => obj.id === objectId)) {
-                            // Restore the object (revert deletion)
-                            const deletedObj = this.liveObjects.deleted.find(obj => obj.id === objectId);
-                            if (deletedObj) {
-                                this.liveObjects.deleted = this.liveObjects.deleted.filter(obj => obj.id !== objectId);
-                                
-                                // Restore to appropriate category dynamically
-                                if (deletedObj.type) {
-                                    if (!Array.isArray(this.liveObjects[deletedObj.type])) {
-                                        this.liveObjects[deletedObj.type] = [];
-                                    }
-                                    this.liveObjects[deletedObj.type].push(deletedObj);
-                                }
-                            }
-                        }
-                    });
-                }
-                
-                // Handle digital object movement
-                if (interaction.move_digital_object) {
-                    const moveData = interaction.move_digital_object;
-                    const shouldMove = isTaskActive || (isTaskCompleted && !interaction.revert_after);
-                    const shouldRevert = !shouldMove && interaction.revert_after;
-                    
-                    // Find the digital object
-                    const digitalObject = this.findDigitalObjectById(moveData.object_id);
-                    if (digitalObject) {
-                        if (shouldMove && digitalObject.location_id !== moveData.to_location_id) {
-                            // Store original location for potential revert
-                            if (!digitalObject.original_location_id) {
-                                digitalObject.original_location_id = digitalObject.location_id;
-                            }
-                            digitalObject.location_id = moveData.to_location_id;
-                        } else if (shouldRevert && digitalObject.original_location_id) {
-                            // Revert to original location
-                            digitalObject.location_id = digitalObject.original_location_id;
-                            delete digitalObject.original_location_id;
-                        }
-                    }
-                }
-                
-                // Handle display element movement
-                if (interaction.move_display_element) {
-                    const moveData = interaction.move_display_element;
-                    const shouldMove = isTaskActive || (isTaskCompleted && !interaction.revert_after);
-                    const shouldRevert = !shouldMove && interaction.revert_after;
-                    
-                    // Find the display element and move it between displays
-                    const elementData = this.findAndMoveDisplayElement(moveData.element_id, moveData.from_display_id, moveData.to_display_id, shouldMove, shouldRevert);
-                    if (elementData && shouldMove) {
-                        // Mark as moved to prevent repeated execution
-                        interaction.move_display_element._moved = true;
-                    }
-                }
-            });
-        }
-
-        this.liveObjectMap = new Map();
-        Object.values(this.liveObjects).forEach(objects => {
-            if (Array.isArray(objects)) objects.forEach(object => {
-                if (object?.id && !this.liveObjectMap.has(object.id)) this.liveObjectMap.set(object.id, object);
-            });
-        });
+        this.liveObjectMap = this.worldSnapshot.objectsById;
     }
 
     findObjectById(objectId) {
@@ -1027,7 +869,9 @@ class SimulationPlayer {
     updateObjectTypeState(objectType, panel) {
         if (!panel) return;
 
-        const liveObjects = this.liveObjects?.[objectType] || this.simData[objectType] || [];
+        const liveObjects = this.worldSnapshot
+            ? (this.liveObjects?.[objectType] || [])
+            : (this.simData[objectType] || []);
         
         // All object types now use the generic handler for full flexibility
         this.updateGenericObjectTypeState(objectType, panel, liveObjects);
@@ -1035,205 +879,17 @@ class SimulationPlayer {
 
 
     updateGenericObjectTypeState(objectType, panel, liveObjects) {
-        // Universal method to handle all object types with backward compatibility
         const states = {};
-        const propertyOverrides = {}; // Track all property changes, not just state
-        const stocks = {}; // For resource quantity tracking
+        const propertyOverrides = {};
+        const stocks = {};
         
         liveObjects.forEach(obj => { 
             states[obj.id] = obj.properties?.state || 'available';
-            propertyOverrides[obj.id] = {};
-            // Initialize quantities for resource-like objects
+            propertyOverrides[obj.id] = { ...obj.properties, emoji: obj.emoji, location: obj.location };
             if (obj.properties?.quantity !== undefined) {
                 stocks[obj.id] = obj.properties.quantity;
             }
         });
-
-        const sortedTasks = this.sortedTasks;
-        
-        for (const task of sortedTasks) {
-            if (task.start_minutes > this.playheadTime) break; // No need to process future tasks
-            
-            // Handle old-style equipment_interactions (backward compatibility)
-            if (objectType === 'equipment') {
-                (task.equipment_interactions || []).forEach(interaction => {
-                    const isTaskActive = this.playheadTime >= task.start_minutes && this.playheadTime < task.end_minutes;
-                    if (isTaskActive) {
-                        states[interaction.id] = interaction.to_state;
-                    } else { // Task is finished
-                        states[interaction.id] = interaction.revert_after === true ? interaction.from_state : interaction.to_state;
-                    }
-                });
-            }
-            
-            // Handle old-style consumes/produces (backward compatibility for resources)
-            if (objectType === 'resource' && task.end_minutes <= this.playheadTime) {
-                // Only account for tasks that have fully completed
-                Object.entries(task.consumes || {}).forEach(([resId, amount]) => { 
-                    if (stocks[resId] !== undefined) stocks[resId] -= amount; 
-                });
-                Object.entries(task.produces || {}).forEach(([resId, amount]) => { 
-                    if (stocks[resId] !== undefined) stocks[resId] += amount; 
-                });
-            }
-            
-            // Handle new-style interactions for all object types
-            (task.interactions || []).forEach(interaction => {
-                if (!interaction || typeof interaction !== 'object') return;
-
-                // v2 field name, with legacy fallback
-                const targetId = interaction.target_id || interaction.object_id;
-                if (!targetId) return;
-
-                const isTemporary = interaction.temporary === true || interaction.revert_after === true;
-
-                // The live-object index is rebuilt only when the simulation state changes.
-                const targetObject = this.liveObjectMap?.get(targetId) || this.findObjectById(targetId);
-                
-                
-                if (targetObject && interaction.property_changes) {
-                    const isTaskActive = this.playheadTime >= task.start_minutes && this.playheadTime < task.end_minutes;
-                    
-                    // Process all property changes
-                    Object.entries(interaction.property_changes).forEach(([property, changes]) => {
-                        if (!changes || typeof changes !== 'object') return;
-
-                        const hasTo = changes.to !== undefined;
-                        const hasSet = changes.set !== undefined;
-
-                        if (hasTo || hasSet) {
-                            const toValue = hasTo ? changes.to : changes.set;
-                            let newValue;
-                            if (isTaskActive) {
-                                newValue = toValue;
-                            } else { // Task is finished
-                                if (isTemporary) {
-                                    if (changes.from !== undefined) {
-                                        newValue = changes.from;
-                                    } else if (property === 'state') {
-                                        newValue = states[targetId];
-                                    } else if (propertyOverrides[targetId] && propertyOverrides[targetId][property] !== undefined) {
-                                        newValue = propertyOverrides[targetId][property];
-                                    } else {
-                                        newValue = targetObject?.properties?.[property];
-                                    }
-                                } else {
-                                    newValue = toValue;
-                                }
-                            }
-                            
-                            if (property === 'state') {
-                                states[targetId] = newValue;
-                            } else {
-                                // Initialize propertyOverrides for this object if it doesn't exist
-                                if (!propertyOverrides[targetId]) {
-                                    propertyOverrides[targetId] = {};
-                                }
-                                propertyOverrides[targetId][property] = newValue;
-                            }
-                            
-                        } else {
-                            // Apply non-assignment operators after completion (or during active task if temporary)
-                            const shouldApply = isTemporary ? isTaskActive : (task.end_minutes <= this.playheadTime);
-                            if (!shouldApply) return;
-
-                            const hasDelta = changes.delta !== undefined;
-                            const hasMultiply = changes.multiply !== undefined;
-                            const hasAppend = changes.append !== undefined;
-                            const hasRemove = changes.remove !== undefined;
-                            const hasIncrement = changes.increment === true;
-                            const hasDecrement = changes.decrement === true;
-
-                            const objectPropertyPath = (property === 'location' || property === 'emoji' || property.startsWith('properties.'))
-                                ? property
-                                : `properties.${property}`;
-
-                            const readByPath = (obj, path) => {
-                                if (!obj || typeof obj !== 'object') return undefined;
-                                const parts = String(path).split('.');
-                                let current = obj;
-                                for (const part of parts) {
-                                    if (!current || typeof current !== 'object') return undefined;
-                                    current = current[part];
-                                }
-                                return current;
-                            };
-
-                            if (hasDelta || hasMultiply || hasIncrement || hasDecrement) {
-                                const delta = hasDelta ? Number(changes.delta) : (hasIncrement ? 1 : (hasDecrement ? -1 : null));
-                                const multiplier = hasMultiply ? Number(changes.multiply) : null;
-
-                                if (property === 'quantity' && stocks[targetId] !== undefined) {
-                                    let base = Number(stocks[targetId]);
-                                    if (!Number.isFinite(base)) base = 0;
-                                    let next = base;
-                                    if (delta !== null && Number.isFinite(delta)) next += delta;
-                                    if (multiplier !== null && Number.isFinite(multiplier)) next *= multiplier;
-                                    stocks[targetId] = next;
-                                } else {
-                                    if (!propertyOverrides[targetId]) {
-                                        propertyOverrides[targetId] = {};
-                                    }
-                                    let base = propertyOverrides[targetId][property];
-                                    if (base === undefined) {
-                                        base = readByPath(targetObject, objectPropertyPath);
-                                    }
-                                    base = Number(base);
-                                    if (!Number.isFinite(base)) base = 0;
-                                    let next = base;
-                                    if (delta !== null && Number.isFinite(delta)) next += delta;
-                                    if (multiplier !== null && Number.isFinite(multiplier)) next *= multiplier;
-                                    propertyOverrides[targetId][property] = next;
-                                }
-                            } else if (hasAppend || hasRemove) {
-                                if (!propertyOverrides[targetId]) {
-                                    propertyOverrides[targetId] = {};
-                                }
-                                let base = propertyOverrides[targetId][property];
-                                if (base === undefined) {
-                                    base = readByPath(targetObject, objectPropertyPath);
-                                }
-                                const arr = Array.isArray(base) ? [...base] : [];
-
-                                if (hasAppend) {
-                                    arr.push(changes.append);
-                                }
-                                if (hasRemove) {
-                                    const removeValue = changes.remove;
-                                    for (let idx = arr.length - 1; idx >= 0; idx -= 1) {
-                                        if (arr[idx] === removeValue) arr.splice(idx, 1);
-                                    }
-                                }
-
-                                propertyOverrides[targetId][property] = arr;
-                            }
-                        }
-                    });
-                } else if (!targetObject && interaction.property_changes) {
-                    // Handle display elements that weren't found in regular object searches
-                    const isTaskActive = this.playheadTime >= task.start_minutes && this.playheadTime < task.end_minutes;
-
-                    Object.entries(interaction.property_changes).forEach(([property, changes]) => {
-                        if (!changes || typeof changes !== 'object') return;
-
-                        const hasTo = changes.to !== undefined;
-                        const hasSet = changes.set !== undefined;
-                        if (hasTo || hasSet) {
-                            const toValue = hasTo ? changes.to : changes.set;
-                            let newValue;
-                            if (isTaskActive) {
-                                newValue = toValue;
-                            } else { // Task is finished
-                                newValue = isTemporary ? changes.from : toValue;
-                            }
-
-                            if (!propertyOverrides[targetId]) propertyOverrides[targetId] = {};
-                            propertyOverrides[targetId][property] = newValue;
-                        }
-                    });
-                }
-            });
-        }
 
         // Sort objects chronologically by their creation time, then by their id
         const sortedObjects = [...liveObjects].sort((a, b) => {

@@ -4,6 +4,10 @@
 (function() {
     'use strict';
 
+    const playbackState = typeof module !== 'undefined' && module.exports
+        ? require('./playback-state.js')
+        : (typeof window !== 'undefined' ? window.WorkSpecPlaybackState : null);
+
     function isPlainObject(value) {
         return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
     }
@@ -43,62 +47,11 @@
         return typeof assetId === 'string' && assetId.trim() ? assetId.trim() : null;
     }
 
-    function parseTimeToMinutes(value) {
-        if (typeof value === 'number' && Number.isFinite(value)) return value;
-        if (typeof value !== 'string') return null;
-        const match = value.trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
-        if (!match) return null;
-        return (Number(match[1]) * 60) + Number(match[2]);
-    }
-
-    function taskTiming(task) {
-        const start = Number.isFinite(task?.start_minutes)
-            ? task.start_minutes
-            : parseTimeToMinutes(task?.start);
-        if (!Number.isFinite(start)) return null;
-        const duration = Number.isFinite(task?.duration) ? task.duration : 0;
-        const end = Number.isFinite(task?.end_minutes) ? task.end_minutes : start + duration;
-        return { start, end };
-    }
-
     function resolveObjectStateAtTime(object, tasks, time) {
-        let committedState = typeof object?.properties?.state === 'string' ? object.properties.state : '';
-        if (!Array.isArray(tasks) || !Number.isFinite(time)) return committedState;
-
-        const activeTemporaryStates = [];
-        const orderedTasks = tasks
-            .map((task, index) => ({ task, index, timing: taskTiming(task) }))
-            .filter(entry => entry.timing && entry.timing.start <= time)
-            .sort((a, b) => a.timing.start - b.timing.start || a.index - b.index);
-
-        for (const { task, timing } of orderedTasks) {
-            for (const interaction of task.interactions || []) {
-                if (!isPlainObject(interaction)) continue;
-                const targetId = interaction.target_id || interaction.object_id;
-                if (targetId !== object?.id) continue;
-                const stateChange = interaction.property_changes?.state;
-                if (!isPlainObject(stateChange)) continue;
-                const nextState = Object.prototype.hasOwnProperty.call(stateChange, 'to')
-                    ? stateChange.to
-                    : stateChange.set;
-                if (typeof nextState !== 'string') continue;
-
-                const temporary = interaction.temporary === true || interaction.revert_after === true;
-                if (temporary) {
-                    if (time >= timing.start && time < timing.end) {
-                        activeTemporaryStates.push({ start: timing.start, state: nextState });
-                    }
-                } else if (time >= timing.start) {
-                    committedState = nextState;
-                }
-            }
-        }
-
-        if (activeTemporaryStates.length) {
-            activeTemporaryStates.sort((a, b) => a.start - b.start);
-            return activeTemporaryStates[activeTemporaryStates.length - 1].state;
-        }
-        return committedState;
+        if (!object?.id || !playbackState) return object?.properties?.state || '';
+        return playbackState.getObjectStateAtTime({ objects: [object], tasks, simulation: {} }, object.id, time)
+            ?? object?.properties?.state
+            ?? '';
     }
 
     function calculateLocationObjectSlots(bounds, objectIds, options = {}) {

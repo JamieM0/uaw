@@ -12,6 +12,8 @@ class ActorAnimationManager {
         this.spaceEditor = spaceEditor;
         this.enabled = false;
         this.simulationData = null;
+        this.normalizedSimulation = null;
+        this.playbackModel = null;
         this.actors = new Map(); // Map<actorId, ActorState>
         this.actorTasks = new Map(); // Map<actorId, Task[]>; built once per document load
         this.transitions = new Map(); // Map<actorId, Transition[]>
@@ -178,6 +180,9 @@ class ActorAnimationManager {
             }
 
             this.simulationData = data.simulation;
+            const normalized = window.WorkSpecTime?.normalizeDocument?.(data);
+            this.normalizedSimulation = normalized || null;
+            this.playbackModel = window.WorkSpecPlaybackState?.createPlaybackModel?.(normalized || data);
 
             // Pre-compute transitions for all actors
             this.precomputeTransitions();
@@ -202,8 +207,12 @@ class ActorAnimationManager {
         this.transitions.clear();
         this.locationSlotCache.clear();
 
-        const objects = this.simulationData.world?.objects || this.simulationData.objects || [];
-        const tasks = this.simulationData.process?.tasks || this.simulationData.tasks || [];
+        const objects = this.normalizedSimulation
+            ? this.normalizedSimulation.objects
+            : (this.simulationData.world?.objects || this.simulationData.objects || []);
+        const tasks = this.normalizedSimulation
+            ? this.normalizedSimulation.tasks
+            : (this.simulationData.process?.tasks || this.simulationData.tasks || []);
 
         // Task performers can move; every located object still receives a physical visual.
         const actorsInTasks = new Set();
@@ -214,11 +223,12 @@ class ActorAnimationManager {
                 this.actorTasks.get(task.actor_id).push(task);
             }
         });
-        this.actorTasks.forEach(actorTasks => actorTasks.sort((a, b) => this.parseTime(a.start) - this.parseTime(b.start)));
+        this.actorTasks.forEach(actorTasks => actorTasks.sort((a, b) => this.taskStart(a) - this.taskStart(b)));
 
         // Initialize all objects that belong to a physical location.
         objects.forEach(actorObj => {
-            const firstTaskLocation = this.actorTasks.get(actorObj.id)?.[0]?.location;
+            const firstTask = this.actorTasks.get(actorObj.id)?.[0];
+            const firstTaskLocation = firstTask?.location_id || firstTask?.location;
             const initialLocation = actorObj.location || actorObj.properties?.location || firstTaskLocation;
             if (!actorObj?.id || !initialLocation) return;
             this.actors.set(actorObj.id, {
@@ -250,15 +260,15 @@ class ActorAnimationManager {
         // Compute transitions between consecutive tasks
         for (let i = 0; i < actorTasks.length; i++) {
             const currentTask = actorTasks[i];
-            const currentStartTime = this.parseTime(currentTask.start);
-            const currentEndTime = currentStartTime + (currentTask.duration || 0);
-            const currentLocation = currentTask.location;
+            const currentStartTime = this.taskStart(currentTask);
+            const currentEndTime = this.taskEnd(currentTask);
+            const currentLocation = currentTask.location_id || currentTask.location;
 
             // If there's a next task, create transition
             if (i < actorTasks.length - 1) {
                 const nextTask = actorTasks[i + 1];
-                const nextStartTime = this.parseTime(nextTask.start);
-                const nextLocation = nextTask.location;
+                const nextStartTime = this.taskStart(nextTask);
+                const nextLocation = nextTask.location_id || nextTask.location;
 
                 // Only create transition if locations differ
                 if (currentLocation !== nextLocation) {
@@ -295,6 +305,16 @@ class ActorAnimationManager {
         }
 
         return 0;
+    }
+
+    taskStart(task) {
+        return Number.isFinite(task?.start_minutes) ? task.start_minutes : this.parseTime(task?.start);
+    }
+
+    taskEnd(task) {
+        if (Number.isFinite(task?.end_minutes)) return task.end_minutes;
+        const duration = Number.isFinite(task?.duration_minutes) ? task.duration_minutes : (task?.duration || 0);
+        return this.taskStart(task) + duration;
     }
 
     getDefaultEmoji(objectType) {
@@ -360,12 +380,9 @@ class ActorAnimationManager {
     }
 
     updateActorVisual(actor, element) {
-        const tasks = this.simulationData?.process?.tasks || this.simulationData?.tasks || [];
-        const playerState = window.player?.getCurrentObjectState?.(actor.id);
-        const state = playerState !== undefined
-            ? playerState
-            : (window.WorkSpecStateVisuals?.resolveObjectStateAtTime?.(actor.object, tasks, this.currentTime) || actor.object?.properties?.state);
-        const assetId = window.WorkSpecStateVisuals?.resolveStateVisualAssetId?.(this.simulationData, actor.object, state);
+        const resolvedObject = window.WorkSpecPlaybackState?.getObjectAtTime?.(this.playbackModel, actor.id, this.currentTime);
+        const state = resolvedObject?.properties?.state ?? actor.object?.properties?.state;
+        const assetId = window.WorkSpecStateVisuals?.resolveStateVisualAssetId?.(this.simulationData, resolvedObject || actor.object, state);
         const normalizedAssetId = typeof assetId === 'string' ? assetId.replace(/^asset:/, '') : '';
         const assetSource = normalizedAssetId ? window.AssetManager?.getAssetThumbnail?.(normalizedAssetId, 64) : null;
         const visualKey = `${state || ''}|${normalizedAssetId}|${assetSource || 'pending'}`;
@@ -656,58 +673,17 @@ class ActorAnimationManager {
             }
         }
 
-        // Not transitioning - find current location from tasks
-        const actorTasks = this.actorTasks.get(actorId) || [];
-
-        // Find the task that contains current time
-        for (const task of actorTasks) {
-            const taskStart = this.parseTime(task.start);
-            const taskEnd = taskStart + (task.duration || 0);
-
-            if (time >= taskStart && time < taskEnd) {
-                // Actor is performing this task
-                const location = task.location;
-                const position = this.getLocationPosition(location);
-
-                if (position) {
-                    return {
-                        position,
-                        isTransitioning: false,
-                        currentLocationId: location,
-                        currentTask: task
-                    };
-                }
-            }
-        }
-
-        // If no current task, use the location from the last completed task
-        for (let i = actorTasks.length - 1; i >= 0; i--) {
-            const task = actorTasks[i];
-            const taskEnd = this.parseTime(task.start) + (task.duration || 0);
-
-            if (time >= taskEnd) {
-                const location = task.location;
-                const position = this.getLocationPosition(location);
-
-                if (position) {
-                    return {
-                        position,
-                        isTransitioning: false,
-                        currentLocationId: location
-                    };
-                }
-            }
-        }
-
-        // Actor hasn't started any tasks yet - use initial location
-        const initialLocation = actor.currentLocation;
-        if (initialLocation) {
-            const position = this.getLocationPosition(initialLocation);
+        // Semantic location and lifecycle are resolved by the package layer.
+        const resolvedObject = window.WorkSpecPlaybackState?.getObjectAtTime?.(this.playbackModel, actorId, time);
+        if (!resolvedObject) return null;
+        const location = resolvedObject.location || resolvedObject.properties?.location || actor.currentLocation;
+        if (location) {
+            const position = this.getLocationPosition(location);
             if (position) {
                 return {
                     position,
                     isTransitioning: false,
-                    currentLocationId: initialLocation
+                    currentLocationId: location
                 };
             }
         }

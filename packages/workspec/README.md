@@ -4,7 +4,7 @@ This package provides:
 
 - A programmatic WorkSpec v2.0 validator (`validate()`) that emits RFC 7807 Problem Details
 - The canonical draft-07 JSON Schema (`v2.0.schema.json`) used for generation, autocomplete, and structural validation
-- Shared State Library visual resolution helpers
+- Shared observable playback-state and State Library visual resolution helpers
 - A `workspec` CLI with `validate`, `migrate`, and `format` commands
 
 ## State-driven visuals
@@ -39,7 +39,7 @@ WorkSpec v2 simulations may define reusable `simulation.state_libraries`. Object
 }
 ```
 
-`resolveStateVisualAssetId(document, object, state)` returns the configured asset ID or `null`, allowing renderers to retain their normal fallback. `resolveObjectStateAtTime(object, tasks, time)` applies permanent and temporary WorkSpec v2 state interactions for playback-oriented consumers.
+`createPlaybackModel(document)` prepares a reusable pure playback model. `resolveWorldStateAtTime(model, time)`, `getObjectAtTime(...)`, `getObjectStateAtTime(...)`, and `getObjectLocationAtTime(...)` resolve the observable WorkSpec v2 world without requiring renderers to replay interactions. `resolveStateVisualAssetId(document, object, state)` maps the resulting semantic state to an asset ID. The compatibility helper `resolveObjectStateAtTime(object, tasks, time)` delegates to the playback-state layer.
 
 ## JSON Schema coverage
 

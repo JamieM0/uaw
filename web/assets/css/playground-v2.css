@@ -6737,6 +6737,13 @@ body.uaw-v2[data-uaw-workspace="run"][data-source-dock^="split-"] .uaw-source-pa
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-source-pane,
 body.uaw-v2[data-uaw-workspace="source"] .uaw-source-pane { display: block !important; }
 
+/* Run hides the legacy editor globally, but Source owns that editor after it
+   is reparented into the stage-level pane. Keep it mounted in Simulate and
+   Validation when Source is split beside the run surface. */
+body.uaw-v2[data-uaw-workspace="run"][data-source-dock^="split-"] .uaw-source-pane .json-editor-panel {
+    display: flex !important;
+}
+
 body.uaw-v2[data-uaw-workspace="source"] .uaw-source-pane { inset: 0 !important; border: 0; }
 body.uaw-v2[data-uaw-workspace="source"] .uaw-legacy-host,
 body.uaw-v2[data-uaw-workspace="source"] .uaw-product-view { display: none !important; }

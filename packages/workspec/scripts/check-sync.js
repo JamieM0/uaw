@@ -18,6 +18,11 @@ const pairs = [
         label: 'workspec-migrate-v1-to-v2.js'
     },
     {
+        a: path.join(repoRoot, 'packages', 'workspec', 'playback-state.js'),
+        b: path.join(repoRoot, 'web', 'packages', 'workspec', 'playback-state.js'),
+        label: 'playback-state.js'
+    },
+    {
         a: path.join(repoRoot, 'packages', 'workspec', 'v2.0.schema.json'),
         b: path.join(repoRoot, 'web', 'packages', 'workspec', 'v2.0.schema.json'),
         label: 'packages/workspec/v2.0.schema.json'

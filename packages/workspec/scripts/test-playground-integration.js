@@ -11,9 +11,11 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const packageValidatorPath = path.join(repoRoot, 'packages', 'workspec', 'workspec-validator.js');
 const packageMigratorPath = path.join(repoRoot, 'packages', 'workspec', 'workspec-migrate-v1-to-v2.js');
 const packageStateVisualsPath = path.join(repoRoot, 'packages', 'workspec', 'state-visuals.js');
+const packagePlaybackStatePath = path.join(repoRoot, 'packages', 'workspec', 'playback-state.js');
 const webValidatorPath = path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-validator.js');
 const webMigratorPath = path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-migrate-v1-to-v2.js');
 const webStateVisualsPath = path.join(repoRoot, 'web', 'packages', 'workspec', 'state-visuals.js');
+const webPlaybackStatePath = path.join(repoRoot, 'web', 'packages', 'workspec', 'playback-state.js');
 const playgroundHtmlPath = path.join(repoRoot, 'web', 'playground.html');
 const migrateCliPath = path.join(repoRoot, 'web', 'scripts', 'workspec-migrate.js');
 
@@ -84,6 +86,11 @@ function run() {
     const playgroundHtml = readText(playgroundHtmlPath);
     assert.match(
         playgroundHtml,
+        /<script src="\/packages\/workspec\/playback-state\.js" defer><\/script>/,
+        'Playground is not loading the shared playback-state resolver'
+    );
+    assert.match(
+        playgroundHtml,
         /<script src="\/packages\/workspec\/workspec-validator\.js" defer><\/script>/,
         'Playground is not loading the package-backed validator script'
     );
@@ -108,9 +115,11 @@ function run() {
     assertMirrored(packageValidatorPath, webValidatorPath);
     assertMirrored(packageMigratorPath, webMigratorPath);
     assertMirrored(packageStateVisualsPath, webStateVisualsPath);
+    assertMirrored(packagePlaybackStatePath, webPlaybackStatePath);
 
     const nodeValidator = require(packageValidatorPath);
     const stateVisuals = require(packageStateVisualsPath);
+    const playbackState = require(packagePlaybackStatePath);
     const browserValidator = loadBrowserValidator(webValidatorPath);
 
     const validDoc = baseDoc();
@@ -135,8 +144,11 @@ function run() {
         assert.ok(object.appearance, `${object.id} is missing an appearance`);
         assert.equal(typeof stateVisuals.resolveStateVisualAssetId(breadmaking, object), 'string', `${object.id} has no initial visual mapping`);
     });
+    const bakeryModel = playbackState.createPlaybackModel({ simulation: breadmaking });
+    assert.equal(playbackState.getObjectLocationAtTime(bakeryModel, 'assistant', 9 * 60 + 10), 'oven_area');
+    assert.equal(playbackState.getObjectStateAtTime(bakeryModel, 'oven', 9 * 60 + 10), 'preheating');
 
-    process.stdout.write('✓ playground integration uses package-backed WorkSpec validator\n');
+    process.stdout.write('✓ playground integration uses package-backed WorkSpec runtime\n');
 }
 
 run();
