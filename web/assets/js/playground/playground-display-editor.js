@@ -2561,9 +2561,8 @@ class DisplayEditor {
             if (!task) return false;
 
             if (simulation?.schema_version === '2.1' && window.WorkSpecRuntime?.replay) {
-                const timing = window.WorkSpecRuntime.replay(doc?.simulation ? doc : { simulation }).timings.get(taskId);
-                if (!timing?.resolved) return false;
-                return time >= timing.start && time < timing.end;
+                const snapshot = window.WorkSpecRuntime.snapshotAt(doc?.simulation ? doc : { simulation }, time);
+                return snapshot.task_statuses?.[taskId] === 'active';
             }
 
             const timeUnit = simulation?.config?.time_unit || 'minutes';

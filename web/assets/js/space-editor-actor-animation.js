@@ -210,10 +210,12 @@ class ActorAnimationManager {
             : null;
         const tasks = rawTasks.map(task => {
             const timing = timingRun?.timings?.get(task.id);
+            const runtimeStatus = timingRun?.state?.statuses?.get(task.id);
+            const actualEnd = timingRun?.state?.taskRuntime?.get(task.id)?.actual_end;
             return timing?.resolved
-                ? { ...task, start_minutes: timing.start, end_minutes: timing.end, duration: timing.duration, start_source: timing.source }
+                ? { ...task, start_minutes: timing.start, end_minutes: timing.end, actual_end_minutes: actualEnd, runtime_status: runtimeStatus, duration: timing.duration, start_source: timing.source }
                 : task;
-        }).filter(task => !timingRun || Number.isFinite(task.start_minutes));
+        }).filter(task => !timingRun || (Number.isFinite(task.start_minutes) && ['active', 'completed', 'interrupted'].includes(task.runtime_status)));
 
         // Task performers can move; every located object still receives a physical visual.
         const actorsInTasks = new Set();
@@ -261,7 +263,7 @@ class ActorAnimationManager {
         for (let i = 0; i < actorTasks.length; i++) {
             const currentTask = actorTasks[i];
             const currentStartTime = currentTask.start_minutes ?? this.parseTime(currentTask.start);
-            const currentEndTime = currentTask.end_minutes ?? currentStartTime + (currentTask.duration || 0);
+            const currentEndTime = currentTask.actual_end_minutes ?? currentTask.end_minutes ?? currentStartTime + (currentTask.duration || 0);
             const currentLocation = currentTask.location;
 
             // If there's a next task, create transition
@@ -672,7 +674,7 @@ class ActorAnimationManager {
         // Find the task that contains current time
         for (const task of actorTasks) {
             const taskStart = task.start_minutes ?? this.parseTime(task.start);
-            const taskEnd = task.end_minutes ?? taskStart + (task.duration || 0);
+            const taskEnd = task.actual_end_minutes ?? task.end_minutes ?? taskStart + (task.duration || 0);
 
             if (time >= taskStart && time < taskEnd) {
                 // Actor is performing this task
@@ -693,7 +695,7 @@ class ActorAnimationManager {
         // If no current task, use the location from the last completed task
         for (let i = actorTasks.length - 1; i >= 0; i--) {
             const task = actorTasks[i];
-            const taskEnd = task.end_minutes ?? (task.start_minutes ?? this.parseTime(task.start)) + (task.duration || 0);
+            const taskEnd = task.actual_end_minutes ?? task.end_minutes ?? (task.start_minutes ?? this.parseTime(task.start)) + (task.duration || 0);
 
             if (time >= taskEnd) {
                 const location = task.location;

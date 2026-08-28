@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('assert/strict');
 const runtime = require('../workspec-runtime.js');
 const validator = require('../workspec-validator.js');
+const g008GroundedFixtures = require('./fixtures/g008-grounded-fixtures.js');
 
 function documentWith(tasks = []) {
     return {
@@ -567,4 +568,157 @@ test('VG003 rejects empty and provably impossible all dependency groups', () => 
         task('join', 'service_a', undefined, { depends_on: ['left', 'right'] })
     ]);
     assert.equal(has(runtime.replay(impossible).problems, 'dependency.all.mutually_exclusive'), true);
+});
+
+test('G008 blocks a false initial while and interrupts active work only at modeled event boundaries', () => {
+    const doc = documentWith([
+        task('already_unsafe', 'actor_b', '08:30', { while: { '==': ['@item.flag', false] } }),
+        task('infuse', 'actor_a', '09:00', {
+            duration: 60,
+            while: { '==': ['@item.flag', true] },
+            progress: '@item.quantity',
+            reservations: [{ resource: 'machine', mode: 'exclusive' }],
+            interactions: [
+                { target_id: 'machine', at: 'start', property_changes: { capacity: { set: 7 } } },
+                { target_id: 'machine', temporary: true, property_changes: { state: { set: 'running' } } },
+                { target_id: 'item', property_changes: { quantity: { set: 0 } } }
+            ]
+        }),
+        task('reaction', 'equipment_a', '09:10', { duration: 10, interactions: [
+            { target_id: 'item', property_changes: { flag: { set: false }, quantity: { set: 6 } } }
+        ] })
+    ]);
+    const beforeBoundary = runtime.snapshotAt(doc, '09:19');
+    assert.equal(beforeBoundary.task_statuses.infuse, 'active');
+    assert.equal(beforeBoundary.objects.machine.properties.state, 'running');
+    const run = runtime.replay(doc);
+    assert.equal(run.state.statuses.get('already_unsafe'), 'blocked');
+    assert.equal(run.state.statuses.get('infuse'), 'interrupted');
+    assert.equal(run.state.taskRuntime.get('infuse').actual_end, 9 * 60 + 20);
+    assert.equal(run.state.taskRuntime.get('infuse').progress, 6);
+    assert.equal(run.state.objects.get('machine').properties.capacity, 7, 'permanent start effects remain');
+    assert.equal(run.state.objects.get('machine').properties.state, 'idle', 'temporary effects restore');
+    assert.equal(run.state.objects.get('item').properties.quantity, 6, 'completion effects are suppressed');
+    assert.equal(run.state.reservations.some((claim) => claim.task === 'infuse'), false);
+    assert.equal(run.history.some((entry) => entry.time === 10 * 60 && entry.state.statuses.get('infuse') === 'completed'), false, 'stale planned completion is suppressed');
+});
+
+test('G008 task status, actual_end and captured progress are stable compact runtime references', () => {
+    const doc = documentWith([
+        task('source', 'actor_a', '09:00', { duration: 30, progress: '@item.quantity' }),
+        task('mutate_later', 'actor_b', '09:30', { duration: 10, interactions: [{ target_id: 'item', property_changes: { quantity: { set: 2 } } }] }),
+        task('observe', 'equipment_a', '09:40', { requires: { all: [
+            { '==': ['@source.status', 'completed'] },
+            { '==': ['@source.actual_end', '@source.end'] },
+            { '==': ['@source.progress', 10] }
+        ] } })
+    ]);
+    const run = runtime.replay(doc);
+    assert.equal(run.state.statuses.get('observe'), 'completed');
+    assert.equal(run.state.taskRuntime.get('source').progress, 10);
+    const undeclared = documentWith([task('plain', 'actor_a', '09:00'), task('bad_ref', 'actor_b', '09:30', { when: { '==': ['@plain.progress', 1] } })]);
+    assert.equal(has(validator.validate(undeclared).problems, 'reference.task.progress.undeclared'), true);
+});
+
+test('G008 resolves actual_end through G013 and starts authored recovery at the same timestamp', () => {
+    const doc = documentWith([
+        task('work', 'actor_a', '09:00', { duration: 60, while: { '==': ['@item.flag', true] }, progress: '@item.quantity' }),
+        task('fault', 'actor_b', '09:10', { duration: 10, interactions: [{ target_id: 'item', property_changes: { flag: { set: false } } }] }),
+        task('recovery', 'equipment_a', undefined, {
+            duration: 10,
+            when: { '==': ['@work.status', 'interrupted'] },
+            timing: [{ relation: 'offset', event: 'start', relative_to: '@work.actual_end', min_offset: '0m' }],
+            continues: { task: 'work' }
+        })
+    ]);
+    const run = runtime.replay(doc);
+    assert.equal(run.timings.get('recovery').start, 9 * 60 + 20);
+    assert.equal(run.state.statuses.get('recovery'), 'completed');
+    assert.equal(run.problems.length, 0);
+
+    const normal = documentWith([
+        task('work', 'actor_a', '09:00'),
+        task('recovery', 'actor_b', undefined, { when: { '==': ['@work.status', 'interrupted'] }, timing: [{ relation: 'offset', event: 'start', relative_to: '@work.actual_end', min_offset: 0 }] })
+    ]);
+    assert.equal(runtime.replay(normal).state.statuses.get('recovery'), 'skipped');
+});
+
+test('G008 continuation validation rejects unknown, self, cyclic, and non-interrupted sources', () => {
+    const self = documentWith([task('one', 'actor_a', '09:00', { continues: { task: 'one' } })]);
+    assert.equal(has(validator.validate(self).problems, 'task.continues.self'), true);
+    const cycle = documentWith([
+        task('one', 'actor_a', '09:00', { continues: { task: 'two' } }),
+        task('two', 'actor_b', '09:30', { continues: { task: 'one' } })
+    ]);
+    assert.equal(has(validator.validate(cycle).problems, 'task.continues.cycle'), true);
+    const unknown = documentWith([task('one', 'actor_a', '09:00', { continues: { task: 'missing' } })]);
+    assert.equal(has(validator.validate(unknown).problems, 'task.continues.unknown'), true);
+    const notInterrupted = documentWith([
+        task('one', 'actor_a', '09:00'),
+        task('two', 'actor_b', '09:30', { continues: { task: 'one' } })
+    ]);
+    const run = runtime.replay(notInterrupted);
+    assert.equal(run.state.statuses.get('two'), 'blocked');
+    assert.equal(has(run.problems, 'task.continues.source_not_interrupted'), true);
+});
+
+test('G008 completion wins the half-open planned-end race', () => {
+    const doc = documentWith([
+        task('work', 'actor_a', '09:00', { duration: 30, while: { '==': ['@item.flag', true] } }),
+        task('boundary_change', 'actor_b', '09:00', { duration: 30, interactions: [{ target_id: 'item', property_changes: { flag: { set: false } } }] })
+    ]);
+    const run = runtime.replay(doc);
+    assert.equal(run.state.statuses.get('work'), 'completed');
+    assert.equal(run.state.taskRuntime.get('work').actual_end, 9 * 60 + 30);
+});
+
+test('G008 post-start stabilization interrupts simultaneous failures before same-time recovery acquires resources', () => {
+    const doc = documentWith([
+        task('left', 'actor_a', '09:00', { duration: 60, while: { '==': ['@item.flag', true] }, reservations: [{ resource: 'machine', mode: 'exclusive' }] }),
+        task('right', 'actor_b', '09:00', { duration: 60, while: { '==': ['@item.flag', true] } }),
+        task('invalidate', 'equipment_a', '09:20', { duration: 10, interactions: [{ at: 'start', target_id: 'item', property_changes: { flag: { set: false } } }] }),
+        task('recover', 'service_a', undefined, {
+            duration: 10,
+            when: { '==': ['@left.status', 'interrupted'] },
+            timing: [{ relation: 'offset', event: 'start', relative_to: '@left.actual_end', min_offset: 0 }],
+            reservations: [{ resource: 'machine', mode: 'exclusive' }]
+        })
+    ]);
+    const run = runtime.replay(doc);
+    assert.equal(run.state.statuses.get('left'), 'interrupted');
+    assert.equal(run.state.statuses.get('right'), 'interrupted');
+    assert.equal(run.state.taskRuntime.get('left').actual_end, 9 * 60 + 20);
+    assert.equal(run.state.statuses.get('recover'), 'completed');
+    assert.equal(has(run.problems, 'reservation.exclusive.conflict'), false);
+});
+
+test('G008 interruption cleanup repeats invariant stabilization until cascading failures settle', () => {
+    const doc = documentWith([
+        task('provider', 'actor_a', '08:50', {
+            duration: 70,
+            while: { '==': ['@item.flag', true] },
+            interactions: [{ target_id: 'machine', temporary: true, property_changes: { state: { set: 'ready' } } }]
+        }),
+        task('consumer', 'actor_b', '09:00', { duration: 60, while: { '==': ['@machine.state', 'ready'] } }),
+        task('fault', 'equipment_a', '09:10', { duration: 10, interactions: [{ target_id: 'item', property_changes: { flag: { set: false } } }] })
+    ]);
+    const run = runtime.replay(doc);
+    assert.equal(run.state.statuses.get('provider'), 'interrupted');
+    assert.equal(run.state.statuses.get('consumer'), 'interrupted');
+    assert.equal(run.state.taskRuntime.get('provider').actual_end, 9 * 60 + 20);
+    assert.equal(run.state.taskRuntime.get('consumer').actual_end, 9 * 60 + 20);
+});
+
+test('G008 focused Batch 1 fixtures validate and exercise only authored interruption/recovery', () => {
+    for (const [scenarioId, doc] of Object.entries(g008GroundedFixtures)) {
+        const validation = validator.validate(doc);
+        assert.equal(validation.ok, true, `${scenarioId}: ${validation.problems.map(problem => problem.metric_id).join(', ')}`);
+        const run = runtime.replay(doc);
+        const source = doc.simulation.process.tasks[0];
+        const recoveryTask = doc.simulation.process.tasks[2];
+        assert.equal(run.state.statuses.get(source.id), 'interrupted', `${scenarioId} source`);
+        assert.equal(run.state.statuses.get(recoveryTask.id), 'completed', `${scenarioId} recovery`);
+        assert.equal(run.state.taskRuntime.get(source.id).actual_end, 9 * 60 + 20, `${scenarioId} actual_end`);
+        assert.notEqual(run.state.taskRuntime.get(source.id).progress, undefined, `${scenarioId} progress`);
+    }
 });

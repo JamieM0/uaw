@@ -172,7 +172,16 @@
         let tasks = canonicalTasks.map(task => {
             const timing = authoritativeRun?.timings?.get(task.id);
             return timing?.resolved
-                ? normalizeTask({ ...task, start_minutes: timing.start, end_minutes: timing.end, duration_minutes: timing.duration, start_source: timing.source }, clock, unit)
+                ? normalizeTask({
+                    ...task,
+                    start_minutes: timing.start,
+                    end_minutes: timing.end,
+                    duration_minutes: timing.duration,
+                    start_source: timing.source,
+                    runtime_status: authoritativeRun.state.statuses.get(task.id),
+                    actual_end_minutes: authoritativeRun.state.taskRuntime.get(task.id)?.actual_end,
+                    captured_progress: authoritativeRun.state.taskRuntime.get(task.id)?.progress
+                }, clock, unit)
                 : (authoritativeRun ? null : normalizeTask(task, clock, unit));
         }).filter(Boolean);
 
@@ -215,6 +224,8 @@
 
         return {
             simulation,
+            documentValue: documentValue?.simulation ? documentValue : { simulation },
+            authoritativeRun,
             clock,
             tasks: tasks.sort((a, b) => a.start_minutes - b.start_minutes),
             objects,
@@ -224,7 +235,11 @@
         };
     }
 
-    function taskState(task, time) {
+    function taskState(task, time, model) {
+        if (model?.documentValue && root.WorkSpecRuntime?.snapshotAt) {
+            const status = root.WorkSpecRuntime.snapshotAt(model.documentValue, time).task_statuses?.[task.source_id || task.id];
+            if (status) return status;
+        }
         if (time < task.start_minutes) return 'upcoming';
         if (time >= task.end_minutes) return 'completed';
         return 'active';
@@ -235,7 +250,7 @@
         const objectUsage = new Map();
         const locationUsage = new Map();
         model.tasks.forEach(task => {
-            const state = taskState(task, time);
+            const state = taskState(task, time, model);
             taskStates.set(task.id, state);
             if (task.source_id) taskStates.set(task.source_id, state);
             task.object_ids.forEach(id => {
@@ -250,7 +265,7 @@
         const usageState = (usage = []) => {
             if (usage.some(item => item.state === 'active')) return 'active';
             if (usage.length && usage.every(item => item.state === 'upcoming')) return 'upcoming';
-            if (usage.length && usage.every(item => item.state === 'completed')) return 'completed';
+            if (usage.length && usage.every(item => ['completed', 'interrupted', 'skipped', 'blocked'].includes(item.state))) return 'completed';
             return 'inactive';
         };
         return {
@@ -258,9 +273,10 @@
             taskStates,
             objectStates: new Map(model.objects.map(object => [object.id, usageState(objectUsage.get(object.id))])),
             locationStates: new Map(model.locations.map(location => [location.id, usageState(locationUsage.get(location.id))])),
-            activeTasks: model.tasks.filter(task => taskState(task, time) === 'active'),
-            completedTasks: model.tasks.filter(task => taskState(task, time) === 'completed'),
-            upcomingTasks: model.tasks.filter(task => taskState(task, time) === 'upcoming')
+            activeTasks: model.tasks.filter(task => taskState(task, time, model) === 'active'),
+            completedTasks: model.tasks.filter(task => taskState(task, time, model) === 'completed'),
+            interruptedTasks: model.tasks.filter(task => taskState(task, time, model) === 'interrupted'),
+            upcomingTasks: model.tasks.filter(task => ['upcoming', 'pending'].includes(taskState(task, time, model)))
         };
     }
 
@@ -333,7 +349,7 @@
         configure(model, options = {}) {
             const previous = this.currentTime;
             this.model = model;
-            this.boundaries = [...new Set(model.tasks.flatMap(task => [task.start_minutes, task.end_minutes]))].sort((a, b) => a - b);
+            this.boundaries = [...new Set(model.tasks.flatMap(task => [task.start_minutes, task.end_minutes, task.actual_end_minutes].filter(Number.isFinite)))].sort((a, b) => a - b);
             this.lastBoundaryIndex = -1;
             this.createFormatters();
             const desired = options.preserveTime !== false && Number.isFinite(previous) ? previous : model.startMinutes;
@@ -517,6 +533,9 @@
                 this.stateElement(element, state);
                 element.classList.toggle('active', state === 'active');
                 element.classList.toggle('completed', state === 'completed');
+                element.classList.toggle('interrupted', state === 'interrupted');
+                element.classList.toggle('blocked', state === 'blocked');
+                element.classList.toggle('skipped', state === 'skipped');
                 element.setAttribute('aria-current', state === 'active' ? 'step' : 'false');
             });
             document.querySelectorAll('[data-object-row], .resource-item[data-object-id], .object-item[data-object-id], .digital-object-visual[data-object-id], .actor-label[data-object-id], [data-element-id]').forEach(element => {

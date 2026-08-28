@@ -136,8 +136,9 @@ function findObjectStateModifierAtTime(objectId, timeInMinutes) {
         }
 
         const endMinutes = typeof task.end_minutes === 'number' ? task.end_minutes : task.start_minutes;
-        const isTaskActive = timeInMinutes >= task.start_minutes && timeInMinutes < endMinutes;
-        const isTaskCompleted = timeInMinutes >= endMinutes;
+        const authoritativeStatus = window.workSpecTimeController?.snapshot?.taskStates?.get(task.source_id || task.id);
+        const isTaskActive = authoritativeStatus ? authoritativeStatus === 'active' : timeInMinutes >= task.start_minutes && timeInMinutes < endMinutes;
+        const isTaskCompleted = authoritativeStatus ? authoritativeStatus === 'completed' : timeInMinutes >= endMinutes;
 
         // Check equipment_interactions (old style)
         if (Array.isArray(task.equipment_interactions)) {

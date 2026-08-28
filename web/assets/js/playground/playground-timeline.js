@@ -295,6 +295,8 @@ function processSimulationData(simulationData) {
         if (!task) return null;
 
         const resolvedTiming = authoritativeRun?.timings?.get(task.id);
+        const runtimeRecord = authoritativeRun?.state?.taskRuntime?.get(task.id) || {};
+        const runtimeStatus = authoritativeRun?.state?.statuses?.get(task.id) || 'pending';
         if (authoritativeRun && !resolvedTiming?.resolved) return null;
         let taskStartMinutes = resolvedTiming?.start ?? startTimeMinutes;
         try {
@@ -344,7 +346,12 @@ function processSimulationData(simulationData) {
             end_minutes: taskEndMinutes,
             duration: taskDurationMinutes,
             start_source: resolvedTiming?.source || 'explicit',
-            start_is_derived: resolvedTiming?.source === 'derived'
+            start_is_derived: resolvedTiming?.source === 'derived',
+            runtime_status: runtimeStatus,
+            actual_end_minutes: runtimeRecord.actual_end,
+            captured_progress: runtimeRecord.progress,
+            planned_end_minutes: taskEndMinutes,
+            continues_task_id: task.continues?.task || ''
         };
     }).filter(task => task !== null);
     
@@ -792,6 +799,7 @@ function renderSimulation(skipJsonValidation = false) {
                 taskElement.dataset.start = startDisplay;
                 taskElement.dataset.startMinutes = String(task.start_minutes);
                 taskElement.dataset.duration = task.duration;
+                taskElement.dataset.runtimeStatus = task.runtime_status || 'pending';
                 taskElement.setAttribute('role', 'button');
                 taskElement.setAttribute('aria-label', `Task: ${task.display_name}, ${task.duration} minutes, starts at ${startDisplay}`);
                 taskElement.setAttribute('tabindex', '0');
@@ -809,8 +817,20 @@ function renderSimulation(skipJsonValidation = false) {
                     emojiStyle = `style="font-size: ${emojiSize}px; line-height: 1;"`;
                 }
 
-                taskElement.innerHTML = `<span class="task-emoji" ${emojiStyle}>${sanitizeHTML(task.emoji)}</span><span class="task-block__label">${sanitizeHTML(task.display_name || task.id)}</span><span class="task-block__duration">${sanitizeHTML(task.duration)}m</span>`;
-                taskElement.title = `${sanitizeHTML(task.display_name)} (${sanitizeHTML(task.duration)} minutes)`;
+                const interrupted = task.runtime_status === 'interrupted' && Number.isFinite(task.actual_end_minutes);
+                const elapsed = interrupted ? Math.max(0, task.actual_end_minutes - task.start_minutes) : task.duration;
+                const suppressedPercent = interrupted && task.duration > 0 ? Math.max(0, Math.min(100, ((task.duration - elapsed) / task.duration) * 100)) : 0;
+                if (interrupted) {
+                    taskElement.classList.add('task-block--interrupted');
+                    taskElement.style.borderStyle = 'dashed';
+                }
+                const suppressed = interrupted ? `<span class="task-block__suppressed" aria-label="Suppressed remaining planned interval" style="position:absolute;right:0;top:0;bottom:0;width:${suppressedPercent}%;background:repeating-linear-gradient(135deg,transparent,transparent 4px,rgba(127,127,127,.25) 4px,rgba(127,127,127,.25) 8px);"></span>` : '';
+                taskElement.innerHTML = `${suppressed}<span class="task-emoji" ${emojiStyle}>${sanitizeHTML(task.emoji)}</span><span class="task-block__label">${sanitizeHTML(task.display_name || task.id)}</span><span class="task-block__duration">${sanitizeHTML(task.runtime_status === 'interrupted' ? 'interrupted' : `${task.duration}m`)}</span>`;
+                const progressText = task.captured_progress === undefined ? '' : `; captured progress ${JSON.stringify(task.captured_progress)}`;
+                const continuationText = task.continues_task_id ? `; continues ${task.continues_task_id}` : '';
+                taskElement.title = interrupted
+                    ? `${task.display_name}: interrupted at ${formatAxisTime(task.actual_end_minutes)}; planned end ${formatAxisTime(task.planned_end_minutes)}${progressText}${continuationText}; reservations released`
+                    : `${task.display_name} (${task.duration} minutes; ${task.runtime_status})${progressText}${continuationText}`;
 
                 // Add click event listener as backup for jump functionality
                 taskElement.addEventListener("click", (e) => {

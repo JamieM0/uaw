@@ -756,6 +756,18 @@
           "$ref": "#/definitions/Condition",
           "description": "Mandatory start precondition; false blocks the task."
         },
+        "while": {
+          "$ref": "#/definitions/Condition",
+          "description": "Active invariant evaluated at start and after state-changing modeled event phases; false interrupts the task."
+        },
+        "progress": {
+          "$ref": "#/definitions/CompactValueReference",
+          "description": "Observational world-property reference captured when the task completes or is interrupted."
+        },
+        "continues": {
+          "$ref": "#/definitions/Continuation",
+          "description": "Declares that this task continues the logical work of a distinct interrupted task."
+        },
         "timing": {
           "type": "array",
           "items": { "$ref": "#/definitions/TimingConstraint" }
@@ -1121,6 +1133,19 @@
       ],
       "additionalProperties": false
     },
+    "Continuation": {
+      "type": "object",
+      "required": ["task"],
+      "properties": {
+        "task": { "$ref": "#/definitions/PlainId" }
+      },
+      "additionalProperties": false
+    },
+    "TaskRuntimeStatus": {
+      "type": "string",
+      "enum": ["pending", "active", "completed", "skipped", "blocked", "interrupted"],
+      "description": "Authoritative runtime lifecycle status exposed through compact @task.status references."
+    },
     "TimeOffset": {
       "description": "A signed relative offset; zero is permitted.",
       "anyOf": [
@@ -1377,6 +1402,13 @@
         "location": { "type": "string" },
         "location_id": { "type": "string", "description": "Legacy multi-period alias for location." },
         "depends_on": { "$ref": "#/definitions/DependsOn" },
+        "when": { "$ref": "#/definitions/Condition" },
+        "requires": { "$ref": "#/definitions/Condition" },
+        "while": { "$ref": "#/definitions/Condition" },
+        "progress": { "$ref": "#/definitions/CompactValueReference" },
+        "continues": { "$ref": "#/definitions/Continuation" },
+        "timing": { "type": "array", "items": { "$ref": "#/definitions/TimingConstraint" } },
+        "reservations": { "type": "array", "items": { "$ref": "#/definitions/Reservation" } },
         "interactions": {
           "type": "array",
           "items": {

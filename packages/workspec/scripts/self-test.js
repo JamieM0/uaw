@@ -154,6 +154,23 @@ function run() {
         }
     }
 
+    // State Visuals follow authoritative interruption cleanup, not planned geometry.
+    {
+        const doc = baseDoc();
+        const worker = { id: 'worker', type: 'actor', name: 'Worker', properties: { state: 'idle' } };
+        doc.simulation.world.objects = [
+            worker,
+            { id: 'observer', type: 'actor', name: 'Observer', properties: { state: 'idle' } },
+            { id: 'permit', type: 'resource', name: 'Permit', properties: { quantity: 1, valid: true } }
+        ];
+        doc.simulation.process.tasks = [
+            { id: 'work', actor_id: 'worker', start: '09:00', duration: 60, while: { '==': ['@permit.valid', true] }, interactions: [{ target_id: 'worker', temporary: true, property_changes: { state: { set: 'working' } } }] },
+            { id: 'invalidate', actor_id: 'observer', start: '09:10', duration: 10, interactions: [{ target_id: 'permit', property_changes: { valid: { set: false } } }] }
+        ];
+        assert.equal(stateVisuals.resolveObjectStateAtTime(worker, doc.simulation.process.tasks, 9 * 60 + 15, doc), 'working');
+        assert.equal(stateVisuals.resolveObjectStateAtTime(worker, doc.simulation.process.tasks, 9 * 60 + 20, doc), 'idle');
+    }
+
     // Invalid initial and interaction states are rejected for referenced libraries.
     {
         const doc = baseDoc();

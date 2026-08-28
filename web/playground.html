@@ -969,6 +969,23 @@
                                 <div class="field-error" id="task-depends-error"></div>
                                 <small class="field-help">Comma-separated task IDs</small>
                             </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="task-progress-input">Progress reference <span class="uaw-optional-label">Optional</span></label>
+                                    <input type="text" id="task-progress-input" placeholder="@item.completed_units">
+                                    <small class="field-help">Captured at completion or interruption; no percentage is inferred.</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="task-continues-input">Continues task <span class="uaw-optional-label">Optional</span></label>
+                                    <input type="text" id="task-continues-input" placeholder="interrupted_task" list="task-depends-datalist">
+                                    <small class="field-help">The referenced task must be interrupted when this task starts.</small>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="task-while-input">Active invariant (`while`) <span class="uaw-optional-label">Optional</span></label>
+                                <textarea id="task-while-input" rows="4" placeholder='{"==":["@route.open",true]}'></textarea>
+                                <small class="field-help">A WorkSpec Condition that must remain true at modeled event boundaries.</small>
+                            </div>
                             <div class="interactions-section">
                                 <div class="section-header">
                                     <div><h4>Interactions</h4><p>Change object state, quantity or location when the task runs.</p></div>

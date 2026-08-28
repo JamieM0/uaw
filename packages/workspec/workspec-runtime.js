@@ -10,7 +10,8 @@
     const NS = 'https://universalautomation.wiki/workspec';
     const COMPARISONS = new Set(['==', '!=', '<', '<=', '>', '>=']);
     const OBJECT_FIELDS = new Set(['id', 'type', 'name', 'emoji', 'location', 'state_library', 'appearance']);
-    const TASK_FIELDS = new Set(['id', 'actor_id', 'start', 'end', 'duration', 'location', 'description', 'priority', 'tags']);
+    const TASK_FIELDS = new Set(['id', 'actor_id', 'start', 'end', 'duration', 'location', 'description', 'priority', 'tags', 'status', 'actual_end', 'progress']);
+    const TERMINAL_TASK_STATES = new Set(['completed', 'skipped', 'blocked', 'interrupted']);
     const LOCATION_FIELDS = new Set(['id', 'name', 'parent_id', 'shape', 'coordinates', 'position', 'emoji']);
     const COMPACT_ENTITY_ID = /^[a-z][a-z0-9_]*(?::[a-z][a-z0-9_]*)?$/;
 
@@ -247,6 +248,7 @@
             locations: new Map([...index.locations].map(([id, value]) => [id, clone(value)])),
             kinds: new Map(),
             statuses: new Map([...index.tasks.keys()].map((id) => [id, 'pending'])),
+            taskRuntime: new Map([...index.tasks.keys()].map((id) => [id, { actual_end: undefined, progress: undefined }])),
             active: new Map(),
             reservations: [],
             temporary: new Map()
@@ -258,6 +260,7 @@
             objects: new Map([...state.objects].map(([id, value]) => [id, clone(value)])),
             locations: new Map([...state.locations].map(([id, value]) => [id, clone(value)])),
             kinds: new Map(state.kinds), statuses: new Map(state.statuses), active: new Map(state.active),
+            taskRuntime: new Map([...state.taskRuntime].map(([id, value]) => [id, clone(value)])),
             reservations: clone(state.reservations), temporary: new Map([...state.temporary].map(([id, value]) => [id, clone(value)]))
         };
     }
@@ -313,6 +316,16 @@
                 if (member === 'end') return result(timing && timing.end, 'instant');
                 if (member === 'start') return result(timing && timing.start, 'instant');
                 if (member === 'duration') return result(timing && timing.duration, 'duration');
+                if (member === 'status') return result(context.state.statuses.get(selected.id), 'string');
+                if (member === 'actual_end') {
+                    const value = context.state.taskRuntime.get(selected.id)?.actual_end;
+                    return value === undefined ? failure('reference.task.actual_end.unresolved', `Task '${selected.id}' has not terminated, so actual_end is unresolved.`, context.instance, { task_id: selected.id }) : result(value, 'instant');
+                }
+                if (member === 'progress') {
+                    if (!own(selected.entity, 'progress')) return failure('reference.task.progress.undeclared', `Task '${selected.id}' has no progress declaration.`, context.instance, { task_id: selected.id });
+                    const value = context.state.taskRuntime.get(selected.id)?.progress;
+                    return value === undefined ? failure('reference.task.progress.unresolved', `Task '${selected.id}' has not terminated, so progress is unresolved.`, context.instance, { task_id: selected.id }) : result(value);
+                }
             }
             if (!own(selected.entity, member)) return failure('reference.member.missing', `${selected.kind} '${selected.id}' has no built-in field '${member}' value.`, context.instance, { member, kind: selected.kind });
             return result(selected.entity[member]);
@@ -400,7 +413,8 @@
         const normalized = normalizeValueExpression(expression);
         if (!normalized.ok || normalized.kind !== 'reference' || normalized.reference.clock) return null;
         const reference = normalized.reference;
-        if (!['start', 'end'].includes(reference.member)) return null;
+        if (!['start', 'end', 'actual_end'].includes(reference.member)) return null;
+        if (reference.member === 'actual_end' && reference.syntax !== 'compact') return null;
         if (reference.entity === 'current') return null;
         if (reference.selector && reference.selector !== 'task') return null;
         const declared = index && index.ids.get(reference.entity);
@@ -478,6 +492,7 @@
     function resolveTimingGraph(documentValue, options) {
         const index = options && options.index ? options.index : buildIndex(documentValue);
         const statuses = options && options.statuses instanceof Map ? options.statuses : null;
+        const taskRuntime = options && options.taskRuntime instanceof Map ? options.taskRuntime : null;
         const unit = index.sim.config && index.sim.config.time_unit;
         const timings = new Map(); const problems = []; const taskIndexes = new Map();
         [...index.tasks.entries()].forEach(([id, task], taskIndex) => {
@@ -508,6 +523,10 @@
         const boundFor = (reference, includeInactive = false) => {
             const taskRef = taskTimingReference(reference, index);
             if (!taskRef) return null;
+            if (taskRef.field === 'actual_end') {
+                const value = taskRuntime && taskRuntime.get(taskRef.task)?.actual_end;
+                return value === undefined ? null : value;
+            }
             const target = timings.get(taskRef.task);
             if (!target || !target.resolved) return null;
             if (statuses && !includeInactive && statuses.get(taskRef.task) !== 'completed') return null;
@@ -607,6 +626,10 @@
             } else if (groups.all.length || groups.any.length) {
                 metricId = 'timing.resolution.dependency_unresolved';
                 detail = `Task '${id}' cannot derive a start because a required predecessor is unresolved, skipped, or blocked.`;
+            } else if ((task.timing || []).some((constraint) => taskTimingReference(constraint && constraint.relative_to, index)?.field === 'actual_end')) {
+                timing.runtime_unresolved = true;
+                timing.error = null;
+                return;
             } else if ((task.timing || []).some((constraint) => constraint && constraint.relation === 'offset' && own(constraint, 'min_offset'))) {
                 metricId = 'timing.resolution.reference_unresolved';
                 detail = `Task '${id}' cannot derive a start because its lower timing anchor is unresolved.`;
@@ -625,7 +648,7 @@
                     const ref = taskTimingReference(constraint.relative_to, index); if (ref) edges.push(ref.task);
                 }
             });
-            return [...new Set(edges)].filter((edge) => timings.get(edge) && !timings.get(edge).resolved);
+            return [...new Set(edges)].filter((edge) => timings.get(edge) && !timings.get(edge).resolved && !timings.get(edge).runtime_unresolved);
         };
         const cycleKeys = new Set();
         function visit(id) {
@@ -645,7 +668,7 @@
             unresolvedEdges(id).forEach(visit);
             stack.pop(); visiting.delete(id); visited.add(id);
         }
-        timings.forEach((timing, id) => { if (!timing.resolved && timing.derived && timing.duration !== null) visit(id); });
+        timings.forEach((timing, id) => { if (!timing.resolved && !timing.runtime_unresolved && timing.derived && timing.duration !== null) visit(id); });
 
         const seen = new Set();
         return {
@@ -683,6 +706,9 @@
         if (!normalized.ok) return [problem(normalized.metric_id, normalized.detail, instance, {}, undefined, normalized.suggestions)];
         if (normalized.kind !== 'reference' || normalized.reference.clock) return [];
         const reference = normalized.reference;
+        if (['status', 'actual_end', 'progress'].includes(reference.member) && reference.syntax !== 'compact') {
+            return [problem('reference.task.runtime_field.compact_required', `Task runtime field '${reference.member}' must use compact reference syntax.`, instance, { member: reference.member }, undefined, [`Use "@${reference.entity}.${reference.member}".`])];
+        }
         const selected = staticReferenceEntity(reference, index, currentTask);
         if (!selected) {
             return [problem('reference.entity.unknown', `Unknown entity '${reference.entity}'.`, instance, { entity_id: reference.entity }, undefined, [`Use "${compactReference(reference.entity, reference.member)}" with an existing entity ID.`])];
@@ -696,7 +722,38 @@
         if (!valid) {
             return [problem('reference.member.unknown', `Unknown member '${reference.member}' on ${selected.kind} '${selected.id}'.`, instance, { entity_id: selected.id, member: reference.member }, undefined, [`Use "${compactReference(selected.id, reference.member)}" with an allowed built-in field or existing direct property.`])];
         }
+        if (selected.kind === 'task' && reference.member === 'progress' && !own(selected.entity, 'progress')) {
+            return [problem('reference.task.progress.undeclared', `Task '${selected.id}' has no progress declaration.`, instance, { task_id: selected.id })];
+        }
         return [];
+    }
+
+    function continuationProblems(index) {
+        const problems = []; const edges = new Map(); const taskEntries = [...index.tasks.entries()];
+        taskEntries.forEach(([id, task], taskIndex) => {
+            if (task.continues === undefined) return;
+            const at = `${index.tasksBase}/${taskIndex}/continues`;
+            if (!plain(task.continues) || Object.keys(task.continues).length !== 1 || typeof task.continues.task !== 'string' || !task.continues.task) {
+                problems.push(problem('task.continues.invalid', 'continues must contain exactly one task id.', at)); return;
+            }
+            const target = task.continues.task;
+            if (!index.tasks.has(target)) problems.push(problem('task.continues.unknown', `Continuation target '${target}' does not exist.`, `${at}/task`, { task_id: id, target_task_id: target }));
+            if (target === id) problems.push(problem('task.continues.self', `Task '${id}' cannot continue itself.`, `${at}/task`, { task_id: id }));
+            edges.set(id, target);
+        });
+        const visited = new Set(); const visiting = new Set(); const stack = [];
+        function visit(id) {
+            if (visiting.has(id)) {
+                const start = stack.indexOf(id); const cycle = stack.slice(start).concat(id);
+                problems.push(problem('task.continues.cycle', `Continuation cycle detected: ${cycle.join(' -> ')}.`, index.tasksBase, { task_ids: [...new Set(cycle)] })); return;
+            }
+            if (visited.has(id)) return;
+            visiting.add(id); stack.push(id);
+            const target = edges.get(id); if (target && edges.has(target)) visit(target);
+            stack.pop(); visiting.delete(id); visited.add(id);
+        }
+        edges.forEach((_target, id) => visit(id));
+        return problems;
     }
 
     function validateReferenceablePropertyNames(index) {
@@ -767,13 +824,22 @@
             const base = `${index.tasksBase}/${taskIndex}`;
             if (task.when !== undefined) problems.push(...validateConditionShape(task.when, index, `${base}/when`, task));
             if (task.requires !== undefined) problems.push(...validateConditionShape(task.requires, index, `${base}/requires`, task));
+            if (task.while !== undefined) problems.push(...validateConditionShape(task.while, index, `${base}/while`, task));
+            if (task.progress !== undefined) {
+                const normalized = normalizeValueExpression(task.progress);
+                problems.push(...validateExpressionShape(task.progress, index, `${base}/progress`, task));
+                const selected = normalized.ok && normalized.kind === 'reference' && !normalized.reference.clock ? staticReferenceEntity(normalized.reference, index, task) : null;
+                if (typeof task.progress !== 'string' || !task.progress.startsWith('@') || !selected || !['object', 'location'].includes(selected.kind)) {
+                    problems.push(problem('task.progress.invalid', 'progress must be one compact reference to a world object or location member.', `${base}/progress`, { task_id: task.id }, undefined, ['Use compact syntax such as "@blood_unit_42.infused_ml".']));
+                }
+            }
             (task.timing || []).forEach((constraint, i) => {
                 const at = `${base}/timing/${i}`;
                 if (!plain(constraint) || !['offset', 'not_overlap'].includes(constraint.relation)) { problems.push(problem('timing.constraint.invalid', 'Unknown or malformed timing constraint.', at)); return; }
                 if (constraint.relation === 'offset') {
                     if (!['start', 'completion'].includes(constraint.event)) problems.push(problem('timing.event.invalid', "Offset event must be 'start' or 'completion'.", `${at}/event`));
                     problems.push(...validateExpressionShape(constraint.relative_to, index, `${at}/relative_to`, task));
-                    if (!taskTimingReference(constraint.relative_to, index)) problems.push(problem('timing.relative_to.invalid', 'relative_to must be a task start or end reference.', `${at}/relative_to`, {}, undefined, ['Use compact syntax such as "@inspect.end".']));
+                    if (!taskTimingReference(constraint.relative_to, index)) problems.push(problem('timing.relative_to.invalid', 'relative_to must be a task start, end, or actual_end reference.', `${at}/relative_to`, {}, undefined, ['Use compact syntax such as "@inspect.end" or "@inspect.actual_end".']));
                     if (!own(constraint, 'min_offset') && !own(constraint, 'max_offset')) problems.push(problem('timing.offset.bounds_missing', 'An offset constraint requires min_offset or max_offset.', at));
                     const min = own(constraint, 'min_offset') ? parseOffset(constraint.min_offset, unit) : null; const max = own(constraint, 'max_offset') ? parseOffset(constraint.max_offset, unit) : null;
                     if ((min && !min.ok) || (max && !max.ok)) problems.push(problem('timing.offset.invalid', 'Invalid relative time offset.', at));
@@ -810,6 +876,7 @@
         });
         problems.push(...validateReferenceablePropertyNames(index));
         problems.push(...boundedDependencyProblems(index));
+        problems.push(...continuationProblems(index));
         return problems;
     }
 
@@ -998,58 +1065,139 @@
         return blocked;
     }
 
-    function replayWithTimings(index, timings, until, timingProblems) {
+    function replayWithTimings(index, initialTimings, until, timingProblems) {
         const runtimeProblems = [];
         const state = makeInitialState(index); const history = [];
-        const tasks = [...index.tasks.values()].map((task, indexValue) => ({ ...task, __index: indexValue })).filter((task) => timings.get(task.id)?.resolved);
+        const tasks = [...index.tasks.values()].map((task, indexValue) => ({ ...task, __index: indexValue }));
         tasks.forEach((task) => index.tasks.set(task.id, task));
-        const times = [...new Set(tasks.flatMap((task) => [timings.get(task.id).start, timings.get(task.id).end]))].sort((a, b) => a - b);
-        const invalidTimingTasks = new Set((timingProblems || [])
-            .filter((entry) => ['temporal.scheduling.dependency_violation', 'timing.offset.violation'].includes(entry.metric_id))
-            .map((entry) => entry.context && entry.context.task_id)
-            .filter(Boolean));
+        let timings = initialTimings;
         const initialStart = parseTaskStart((index.sim.config || {}).start_time);
         history.push({ time: initialStart.ok ? initialStart.startMinutes : -Infinity, state: cloneState(state) });
-        for (const time of times) {
-            if (time > until) break;
-            const finishing = tasks.filter((task) => state.statuses.get(task.id) === 'active' && timings.get(task.id).end === time);
-            finishing.forEach((task) => {
+
+        function transition(task, next, time) {
+            const current = state.statuses.get(task.id);
+            const allowed = (current === 'pending' && ['skipped', 'blocked', 'active'].includes(next)) || (current === 'active' && ['completed', 'interrupted'].includes(next));
+            if (!allowed) {
+                runtimeProblems.push(problem('task.lifecycle.transition.invalid', `Illegal task lifecycle transition '${current}' to '${next}' for '${task.id}'.`, `${index.tasksBase}/${task.__index}`, { task_id: task.id, from: current, to: next, time }));
+                return false;
+            }
+            state.statuses.set(task.id, next); return true;
+        }
+
+        function restoreTemporary(tasksToClean) {
+            tasksToClean.forEach((task) => {
                 const captures = state.temporary.get(task.id) || [];
                 captures.forEach((capture) => { const entity = state.objects.get(capture.id); if (entity) restoreProperty(entity, capture); });
                 state.temporary.delete(task.id);
             });
-            const finishSnapshot = cloneState(state);
-            const finishWrites = finishing.flatMap((task) => prepareInteractions(task, 'completion', expressionContext(index, finishSnapshot, timings, task, time, history), runtimeProblems, false));
-            commitWrites(state, finishWrites, runtimeProblems);
-            finishing.forEach((task) => { state.statuses.set(task.id, 'completed'); state.active.delete(task.id); state.reservations = state.reservations.filter((claim) => claim.task !== task.id); });
+        }
 
-            const scheduled = tasks.filter((task) => state.statuses.get(task.id) === 'pending' && timings.get(task.id).start === time);
-            const candidates = [];
-            scheduled.forEach((task) => {
-                if (!dependencyReady(task, state.statuses)) { state.statuses.set(task.id, 'blocked'); runtimeProblems.push(problem('temporal.scheduling.dependency_violation', `Dependencies for task '${task.id}' are not completed at its scheduled start.`, `${index.tasksBase}/${task.__index}/start`, { task_id: task.id })); return; }
-                const context = expressionContext(index, state, timings, task, time, history, `/simulation/process/tasks/${task.__index}`);
-                if (task.when !== undefined) { const condition = evaluateCondition(task.when, context); if (!condition.ok) { runtimeProblems.push(condition.problem); state.statuses.set(task.id, 'blocked'); return; } if (!condition.value) { state.statuses.set(task.id, 'skipped'); return; } }
-                if (task.requires !== undefined) { const condition = evaluateCondition(task.requires, context); if (!condition.ok || !condition.value) { runtimeProblems.push(condition.ok ? problem('task.requires.failed', `Required condition for task '${task.id}' is false.`, context.instance) : condition.problem); state.statuses.set(task.id, 'blocked'); return; } }
-                if (invalidTimingTasks.has(task.id)) { state.statuses.set(task.id, 'blocked'); return; }
-                candidates.push(task);
+        function captureProgress(task, time, snapshot) {
+            const record = state.taskRuntime.get(task.id) || {};
+            record.actual_end = time;
+            if (task.progress !== undefined) {
+                const captured = evaluateValue(task.progress, expressionContext(index, snapshot || state, timings, task, time, history, `${index.tasksBase}/${task.__index}/progress`));
+                if (captured.ok) record.progress = clone(captured.value); else runtimeProblems.push(captured.problem);
+            }
+            state.taskRuntime.set(task.id, record);
+        }
+
+        function interruptUntilStable(time) {
+            let changed = false;
+            for (let pass = 0; pass <= tasks.length; pass += 1) {
+                const snapshot = cloneState(state); const failing = [];
+                tasks.forEach((task) => {
+                    if (state.statuses.get(task.id) !== 'active' || task.while === undefined) return;
+                    const condition = evaluateCondition(task.while, expressionContext(index, snapshot, timings, task, time, history, `${index.tasksBase}/${task.__index}/while`));
+                    if (!condition.ok) { runtimeProblems.push(condition.problem); failing.push(task); }
+                    else if (!condition.value) failing.push(task);
+                });
+                if (!failing.length) return changed;
+                failing.forEach((task) => captureProgress(task, time, snapshot));
+                failing.forEach((task) => {
+                    transition(task, 'interrupted', time); state.active.delete(task.id);
+                    state.reservations = state.reservations.filter((claim) => claim.task !== task.id);
+                });
+                restoreTemporary(failing); changed = true;
+            }
+            runtimeProblems.push(problem('task.while.stabilization.failed', `Active invariants did not stabilize at ${time}.`, index.tasksBase, { time }));
+            return changed;
+        }
+
+        function refreshTimings() {
+            const resolution = resolveTimingGraph(index.sim, { index, statuses: state.statuses, taskRuntime: state.taskRuntime });
+            timings = resolution.timings;
+            return resolution;
+        }
+
+        let currentTime = -Infinity;
+        for (let eventCount = 0; eventCount <= tasks.length * 4 + 4; eventCount += 1) {
+            const resolution = refreshTimings();
+            const invalidTimingTasks = new Set([...(timingProblems || []), ...resolution.problems]
+                .filter((entry) => ['temporal.scheduling.dependency_violation', 'timing.offset.violation'].includes(entry.metric_id))
+                .map((entry) => entry.context && entry.context.task_id).filter(Boolean));
+            const nextCompletion = tasks
+                .filter((task) => state.statuses.get(task.id) === 'active')
+                .map((task) => timings.get(task.id)?.end).filter((time) => Number.isFinite(time) && time >= currentTime);
+            const nextStart = tasks
+                .filter((task) => state.statuses.get(task.id) === 'pending' && timings.get(task.id)?.resolved)
+                .map((task) => timings.get(task.id).start).filter((time) => Number.isFinite(time) && time >= currentTime);
+            const next = Math.min(...nextCompletion, ...nextStart);
+            if (!Number.isFinite(next) || next > until) break;
+            currentTime = next;
+
+            // A. Planned completions. Completion wins over any same-time invariant change.
+            const finishing = tasks.filter((task) => state.statuses.get(task.id) === 'active' && timings.get(task.id)?.end === currentTime);
+            restoreTemporary(finishing);
+            const finishSnapshot = cloneState(state);
+            const finishWrites = finishing.flatMap((task) => prepareInteractions(task, 'completion', expressionContext(index, finishSnapshot, timings, task, currentTime, history), runtimeProblems, false));
+            commitWrites(state, finishWrites, runtimeProblems);
+            const postCompletion = cloneState(state);
+            finishing.forEach((task) => {
+                transition(task, 'completed', currentTime); captureProgress(task, currentTime, postCompletion);
+                state.active.delete(task.id); state.reservations = state.reservations.filter((claim) => claim.task !== task.id);
             });
-            const claimMap = new Map(candidates.map((task) => [task.id, reservationClaims(task, expressionContext(index, state, timings, task, time, history), runtimeProblems)]));
-            const blocked = validateClaims(candidates, claimMap, state, runtimeProblems);
-            const starting = candidates.filter((task) => !blocked.has(task.id));
-            candidates.filter((task) => blocked.has(task.id)).forEach((task) => state.statuses.set(task.id, 'blocked'));
-            const startSnapshot = cloneState(state);
-            const startWrites = starting.flatMap((task) => prepareInteractions(task, 'start', expressionContext(index, startSnapshot, timings, task, time, history), runtimeProblems, false).concat(prepareInteractions(task, 'start', expressionContext(index, startSnapshot, timings, task, time, history), runtimeProblems, true)));
-            commitWrites(state, startWrites, runtimeProblems);
-            starting.forEach((task) => { state.statuses.set(task.id, 'active'); state.active.set(task.id, timings.get(task.id)); state.reservations.push(...(claimMap.get(task.id) || [])); });
-            history.push({ time, state: cloneState(state) });
+
+            // B-D can expose a same-time actual_end anchor, start recovery work,
+            // and then interrupt more work. Iterate without inventing a new time.
+            interruptUntilStable(currentTime);
+            for (let sameTimePass = 0; sameTimePass <= tasks.length + 1; sameTimePass += 1) {
+                const sameResolution = refreshTimings();
+                const scheduled = tasks.filter((task) => state.statuses.get(task.id) === 'pending' && timings.get(task.id)?.resolved && timings.get(task.id).start === currentTime);
+                if (!scheduled.length) break;
+                const candidates = [];
+                scheduled.forEach((task) => {
+                    const base = `${index.tasksBase}/${task.__index}`;
+                    if (!dependencyReady(task, state.statuses)) { transition(task, 'blocked', currentTime); runtimeProblems.push(problem('temporal.scheduling.dependency_violation', `Dependencies for task '${task.id}' are not completed at its scheduled start.`, `${base}/start`, { task_id: task.id })); return; }
+                    const context = expressionContext(index, state, timings, task, currentTime, history, base);
+                    if (task.when !== undefined) { const condition = evaluateCondition(task.when, context); if (!condition.ok) { runtimeProblems.push(condition.problem); transition(task, 'blocked', currentTime); return; } if (!condition.value) { transition(task, 'skipped', currentTime); return; } }
+                    if (task.requires !== undefined) { const condition = evaluateCondition(task.requires, context); if (!condition.ok || !condition.value) { runtimeProblems.push(condition.ok ? problem('task.requires.failed', `Required condition for task '${task.id}' is false.`, context.instance) : condition.problem); transition(task, 'blocked', currentTime); return; } }
+                    if (task.while !== undefined) { const condition = evaluateCondition(task.while, context); if (!condition.ok || !condition.value) { if (!condition.ok) runtimeProblems.push(condition.problem); else runtimeProblems.push(problem('task.while.failed_at_start', `Active invariant for task '${task.id}' is false before activation.`, `${base}/while`, { task_id: task.id })); transition(task, 'blocked', currentTime); return; } }
+                    if (task.continues && state.statuses.get(task.continues.task) !== 'interrupted') { runtimeProblems.push(problem('task.continues.source_not_interrupted', `Task '${task.id}' can start only after '${task.continues.task}' is interrupted.`, `${base}/continues/task`, { task_id: task.id, source_task_id: task.continues.task })); transition(task, 'blocked', currentTime); return; }
+                    if (invalidTimingTasks.has(task.id) || sameResolution.problems.some((entry) => ['temporal.scheduling.dependency_violation', 'timing.offset.violation'].includes(entry.metric_id) && entry.context?.task_id === task.id)) { transition(task, 'blocked', currentTime); return; }
+                    candidates.push(task);
+                });
+                const claimMap = new Map(candidates.map((task) => [task.id, reservationClaims(task, expressionContext(index, state, timings, task, currentTime, history), runtimeProblems)]));
+                const blocked = validateClaims(candidates, claimMap, state, runtimeProblems);
+                const starting = candidates.filter((task) => !blocked.has(task.id));
+                candidates.filter((task) => blocked.has(task.id)).forEach((task) => transition(task, 'blocked', currentTime));
+                const startSnapshot = cloneState(state);
+                const startWrites = starting.flatMap((task) => prepareInteractions(task, 'start', expressionContext(index, startSnapshot, timings, task, currentTime, history), runtimeProblems, false).concat(prepareInteractions(task, 'start', expressionContext(index, startSnapshot, timings, task, currentTime, history), runtimeProblems, true)));
+                commitWrites(state, startWrites, runtimeProblems);
+                starting.forEach((task) => { transition(task, 'active', currentTime); state.active.set(task.id, clone(timings.get(task.id))); state.reservations.push(...(claimMap.get(task.id) || [])); });
+                interruptUntilStable(currentTime);
+            }
+            history.push({ time: currentTime, state: cloneState(state) });
         }
         // not_overlap applies only to tasks that actually ran.
         tasks.forEach((task) => (task.timing || []).forEach((constraint, indexValue) => {
             if (!plain(constraint) || constraint.relation !== 'not_overlap') return;
             const otherId = constraint.with && constraint.with.task; const other = index.tasks.get(otherId);
-            if (!other || !['active', 'completed'].includes(state.statuses.get(task.id)) || !['active', 'completed'].includes(state.statuses.get(otherId))) return;
+            if (!other || !['active', 'completed', 'interrupted'].includes(state.statuses.get(task.id)) || !['active', 'completed', 'interrupted'].includes(state.statuses.get(otherId))) return;
             const a = timings.get(task.id); const b = timings.get(otherId);
-            if (a.start < b.end && b.start < a.end) runtimeProblems.push(problem('timing.not_overlap.violation', `Tasks '${task.id}' and '${otherId}' overlap.`, `/simulation/process/tasks/${task.__index}/timing/${indexValue}`));
+            const aEnd = state.taskRuntime.get(task.id)?.actual_end ?? a.end;
+            const bEnd = state.taskRuntime.get(otherId)?.actual_end ?? b.end;
+            if (a.start < bEnd && b.start < aEnd) runtimeProblems.push(problem('timing.not_overlap.violation', `Tasks '${task.id}' and '${otherId}' overlap.`, `/simulation/process/tasks/${task.__index}/timing/${indexValue}`));
         }));
         return { index, timings, state, problems: runtimeProblems, history };
     }
@@ -1060,21 +1208,12 @@
 
     function replay(documentValue, options) {
         const index = buildIndex(documentValue);
-        let resolution = resolveTimingGraph(documentValue, { index });
-        let fullRun = replayWithTimings(index, resolution.timings, Infinity, resolution.problems);
-        let stable = false;
-        for (let pass = 0; pass <= index.tasks.size + 1; pass += 1) {
-            const next = resolveTimingGraph(documentValue, { index, statuses: fullRun.state.statuses });
-            if (timingSignature(next.timings) === timingSignature(resolution.timings)) {
-                resolution = next; stable = true; break;
-            }
-            resolution = next;
-            fullRun = replayWithTimings(index, resolution.timings, Infinity, resolution.problems);
-        }
+        const resolution = resolveTimingGraph(documentValue, { index });
         const until = options && Number.isFinite(options.until) ? options.until : Infinity;
-        const selectedRun = until === Infinity ? replayWithTimings(index, resolution.timings, Infinity, resolution.problems) : replayWithTimings(index, resolution.timings, until, resolution.problems);
-        const runtimeProblems = [...index.problems, ...validateStatic(index), ...resolution.problems, ...selectedRun.problems];
-        if (!stable) runtimeProblems.push(problem('timing.resolution.non_deterministic', 'Task timing did not converge to one deterministic branch-aware result.', index.tasksBase));
+        const selectedRun = replayWithTimings(index, resolution.timings, until, resolution.problems);
+        const finalResolution = resolveTimingGraph(documentValue, { index, statuses: selectedRun.state.statuses, taskRuntime: selectedRun.state.taskRuntime });
+        selectedRun.timings = finalResolution.timings;
+        const runtimeProblems = [...index.problems, ...validateStatic(index), ...finalResolution.problems, ...selectedRun.problems];
         const seenProblems = new Set();
         const uniqueProblems = runtimeProblems.filter((entry) => {
             const key = `${entry.metric_id}|${entry.instance}|${entry.detail}`;
@@ -1082,14 +1221,18 @@
             seenProblems.add(key);
             return true;
         });
-        return { index, timings: resolution.timings, state: selectedRun.state, problems: uniqueProblems, history: selectedRun.history };
+        return { index, timings: finalResolution.timings, state: selectedRun.state, problems: uniqueProblems, history: selectedRun.history };
     }
 
     function serialiseState(run) {
         return {
             objects: Object.fromEntries([...run.state.objects].map(([id, value]) => [id, clone(value)])),
             locations: Object.fromEntries([...run.state.locations].map(([id, value]) => [id, clone(value)])),
-            task_statuses: Object.fromEntries(run.state.statuses), problems: run.problems
+            task_statuses: Object.fromEntries(run.state.statuses),
+            task_runtime: Object.fromEntries([...run.state.taskRuntime].map(([id, value]) => [id, clone(value)])),
+            active_tasks: Object.fromEntries([...run.state.active].map(([id, value]) => [id, clone(value)])),
+            reservations: clone(run.state.reservations),
+            problems: run.problems
         };
     }
 

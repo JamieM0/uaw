@@ -21,6 +21,10 @@ const playgroundObjectsPath = path.join(repoRoot, 'web', 'assets', 'js', 'playgr
 const playgroundEditorPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-editor.js');
 const playgroundTimelinePath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-timeline.js');
 const playgroundTimeControllerPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-time-controller.js');
+const playgroundTimelineExtensionsPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-timeline-extensions.js');
+const playgroundDisplayEditorPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-display-editor.js');
+const playgroundUtilsPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-utils.js');
+const actorAnimationPath = path.join(repoRoot, 'web', 'assets', 'js', 'space-editor-actor-animation.js');
 const migrateCliPath = path.join(repoRoot, 'web', 'scripts', 'workspec-migrate.js');
 
 function readText(filePath) {
@@ -143,6 +147,11 @@ function run() {
     assert.match(playgroundObjects, /preserveDerivedStart/, 'Studio does not preserve an omitted derived start on unrelated edits');
     assert.match(playgroundObjects, /delete newTask\.start/, 'Studio cannot keep or restore derived-start mode');
     assert.match(playgroundHtml, /id="task-start-source"/, 'Studio does not label explicit versus derived starts');
+    assert.match(playgroundHtml, /id="task-while-input"/, 'Studio does not edit active while invariants');
+    assert.match(playgroundHtml, /id="task-progress-input"/, 'Studio does not edit progress references');
+    assert.match(playgroundHtml, /id="task-continues-input"/, 'Studio does not edit continuation links');
+    assert.match(playgroundObjects, /progressReference/, 'Studio does not save progress references');
+    assert.match(playgroundObjects, /continuesTask/, 'Studio does not save continuation links');
     assert.match(playgroundEditor, /WorkSpecReferenceAuthoring/, 'Studio does not expose the compact-reference picker adapter');
     assert.match(playgroundEditor, /formatCompactReference/, 'Studio reference pickers do not use package-owned compact formatting');
     assert.match(playgroundEditor, /"@material\.quantity"/, 'Studio sample output does not use compact references');
@@ -153,9 +162,21 @@ function run() {
 
     const playgroundTimeline = readText(playgroundTimelinePath);
     const playgroundTimeController = readText(playgroundTimeControllerPath);
+    const playgroundTimelineExtensions = readText(playgroundTimelineExtensionsPath);
+    const playgroundDisplayEditor = readText(playgroundDisplayEditorPath);
+    const playgroundUtils = readText(playgroundUtilsPath);
+    const actorAnimation = readText(actorAnimationPath);
     assert.match(playgroundTimeline, /WorkSpecRuntime\?\.replay/, 'Timeline does not consume authoritative resolved timings');
     assert.match(playgroundTimeline, /start_is_derived/, 'Timeline does not retain timing provenance');
+    assert.match(playgroundTimeline, /task-block--interrupted/, 'Timeline does not render interrupted task intervals');
+    assert.match(playgroundTimeline, /actual_end_minutes/, 'Timeline does not expose actual interruption endpoints');
+    assert.match(playgroundTimeline, /captured_progress/, 'Timeline does not expose captured progress');
     assert.match(playgroundTimeController, /WorkSpecRuntime\?\.replay/, 'Time controller derives task timings independently');
+    assert.match(playgroundTimeController, /WorkSpecRuntime\?\.snapshotAt/, 'Playback infers task lifecycle from geometry instead of authoritative snapshots');
+    assert.match(playgroundTimelineExtensions, /authoritativeStatus/, 'Timeline extensions infer lifecycle from planned geometry');
+    assert.match(playgroundDisplayEditor, /snapshot\.task_statuses/, 'Display playback infers active state from planned geometry');
+    assert.match(playgroundUtils, /authoritativeStatus/, 'Object playback utilities infer lifecycle from planned geometry');
+    assert.match(actorAnimation, /actual_end_minutes/, 'Actor animation assumes every active task reaches its planned end');
 
     assertMirrored(packageValidatorPath, webValidatorPath);
     assertMirrored(packageRuntimePath, webRuntimePath);

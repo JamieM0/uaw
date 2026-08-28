@@ -1187,6 +1187,9 @@ function openEditTaskModal(task) {
     const taskDurationInput = document.getElementById('task-duration-input');
     const taskEndTimeInput = document.getElementById('task-end-time-input');
     const taskDependsInput = document.getElementById('task-depends-input');
+    const taskWhileInput = document.getElementById('task-while-input');
+    const taskProgressInput = document.getElementById('task-progress-input');
+    const taskContinuesInput = document.getElementById('task-continues-input');
 
     // Clear form first
     modal.querySelectorAll('input, select, textarea').forEach(input => {
@@ -1268,6 +1271,9 @@ function openEditTaskModal(task) {
     }
     if (taskDurationInput) taskDurationInput.value = task.duration || '';
     if (taskDependsInput) taskDependsInput.value = Array.isArray(task.depends_on) ? task.depends_on.join(', ') : '';
+    if (taskWhileInput) taskWhileInput.value = task.while === undefined ? '' : JSON.stringify(task.while, null, 2);
+    if (taskProgressInput) taskProgressInput.value = task.progress || '';
+    if (taskContinuesInput) taskContinuesInput.value = task.continues?.task || '';
 
     // Calculate end time if needed
     if (task.start && task.duration && typeof parseTimeToMinutes === 'function' && typeof minutesToTimeString === 'function') {
@@ -1426,7 +1432,7 @@ function openEditTaskModal(task) {
 
     const advancedDetails = document.getElementById('task-advanced-details');
     if (advancedDetails) {
-        advancedDetails.open = Boolean(taskDependsInput?.value || task.interactions?.length);
+        advancedDetails.open = Boolean(taskDependsInput?.value || taskWhileInput?.value || taskProgressInput?.value || taskContinuesInput?.value || task.interactions?.length);
     }
     prepareEntityDialogForInput(modal);
 
@@ -2567,6 +2573,14 @@ function saveTaskToSimulation() {
         const dependencyFields = existingTask?.depends_on !== undefined && !Array.isArray(existingTask.depends_on)
             ? { depends_on: existingTask.depends_on }
             : (simpleDependencies.length ? { depends_on: simpleDependencies } : {});
+        const whileText = document.getElementById('task-while-input')?.value.trim() || '';
+        let whileCondition;
+        if (whileText) {
+            try { whileCondition = JSON.parse(whileText); }
+            catch { alert('Active invariant must be valid JSON containing a WorkSpec Condition.'); return; }
+        }
+        const progressReference = document.getElementById('task-progress-input')?.value.trim() || '';
+        const continuesTask = document.getElementById('task-continues-input')?.value.trim() || '';
         const newTask = {
             ...(existingTask || {}),
             id: taskId,
@@ -2576,8 +2590,14 @@ function saveTaskToSimulation() {
             duration: duration,
             location: location,
             ...dependencyFields,
+            ...(whileText ? { while: whileCondition } : {}),
+            ...(progressReference ? { progress: progressReference } : {}),
+            ...(continuesTask ? { continues: { task: continuesTask } } : {}),
             interactions: []
         };
+        if (!whileText) delete newTask.while;
+        if (!progressReference) delete newTask.progress;
+        if (!continuesTask) delete newTask.continues;
         if (preserveDerivedStart || !startTime) delete newTask.start;
 
         // Process interactions. Structures that the compact form cannot edit

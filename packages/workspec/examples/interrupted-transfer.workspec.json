@@ -1,0 +1,60 @@
+{
+  "$schema": "https://universalautomation.wiki/workspec/v2.1.schema.json",
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": {
+      "title": "Interrupted transfer with authored recovery",
+      "description": "Shows while, captured progress, actual_end timing, cleanup, and continuation.",
+      "domain": "logistics"
+    },
+    "config": {
+      "time_unit": "minutes",
+      "start_time": "09:00",
+      "end_time": "11:00",
+      "currency": "GBP",
+      "locale": "en-GB",
+      "timezone": "Europe/London"
+    },
+    "world": {
+      "layout": {
+        "locations": [{ "id": "warehouse", "name": "Warehouse", "properties": { "capacity": 4 } }]
+      },
+      "objects": [
+        { "id": "operator", "type": "actor", "name": "Operator", "properties": { "state": "ready" } },
+        { "id": "controller", "type": "actor", "name": "Controller", "properties": { "state": "ready" } },
+        { "id": "forklift", "type": "equipment", "name": "Forklift", "properties": { "state": "available" } },
+        { "id": "pallet", "type": "resource", "name": "Pallet", "properties": { "quantity": 1, "route_open": true, "distance_m": 120 } }
+      ]
+    },
+    "process": {
+      "tasks": [
+        {
+          "id": "move_pallet",
+          "actor_id": "operator",
+          "start": "09:00",
+          "duration": "60m",
+          "while": { "==": ["@pallet.route_open", true] },
+          "progress": "@pallet.distance_m",
+          "reservations": [{ "resource": "forklift", "mode": "exclusive" }],
+          "interactions": [{ "target_id": "forklift", "temporary": true, "property_changes": { "state": { "set": "moving" } } }]
+        },
+        {
+          "id": "block_route",
+          "actor_id": "controller",
+          "start": "09:10",
+          "duration": "10m",
+          "interactions": [{ "target_id": "pallet", "property_changes": { "route_open": { "set": false } } }]
+        },
+        {
+          "id": "recover_pallet",
+          "actor_id": "operator",
+          "duration": "15m",
+          "continues": { "task": "move_pallet" },
+          "when": { "==": ["@move_pallet.status", "interrupted"] },
+          "timing": [{ "relation": "offset", "event": "start", "relative_to": "@move_pallet.actual_end", "min_offset": "0m" }],
+          "reservations": [{ "resource": "forklift", "mode": "exclusive" }]
+        }
+      ]
+    }
+  }
+}

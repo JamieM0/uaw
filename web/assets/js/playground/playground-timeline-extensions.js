@@ -388,8 +388,9 @@ function getAllDisplayElements() {
 
 // Process digital and display interactions in tasks
 function processDigitalDisplayInteractions(task, timeInMinutes) {
-    const isTaskActive = timeInMinutes >= task.start_minutes && timeInMinutes < task.end_minutes;
-    const isTaskCompleted = timeInMinutes >= task.end_minutes;
+    const authoritativeStatus = window.workSpecTimeController?.snapshot?.taskStates?.get(task.source_id || task.id);
+    const isTaskActive = authoritativeStatus ? authoritativeStatus === 'active' : timeInMinutes >= task.start_minutes && timeInMinutes < task.end_minutes;
+    const isTaskCompleted = authoritativeStatus ? authoritativeStatus === 'completed' : timeInMinutes >= task.end_minutes;
     
     // Process digital interactions
     if (task.digital_interactions) {
