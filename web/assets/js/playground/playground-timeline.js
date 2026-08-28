@@ -527,27 +527,22 @@ function renderSimulation(skipJsonValidation = false) {
             }
         }
         const simulationData = JSON.parse(stripJsonComments(jsonText));
-        const directMovie = window.WorkSpecDirectMovieExperiment;
-        const movieExperimentActive = directMovie?.isActive?.() === true;
 
-        let dataToProcess = movieExperimentActive ? directMovie.createStudioDocument() : simulationData;
-        const experimentPlaybackModel = movieExperimentActive
-            ? window.WorkSpecPlaybackState?.createPlaybackModel?.(directMovie.createSource())
-            : null;
+        let dataToProcess = simulationData;
 
-        if (dataToProcess.simulation) {
+        if (simulationData.simulation) {
         } else {
             console.warn('TIMELINE: No simulation key found. Trying to adapt structure...');
 
             // If the JSON doesn't have a 'simulation' wrapper, try to adapt it
-            if (dataToProcess.config || dataToProcess.tasks || dataToProcess.objects) {
+            if (simulationData.config || simulationData.tasks || simulationData.objects) {
                 // The JSON is already in the 'simulation' format, wrap it
                 dataToProcess = {
-                    simulation: dataToProcess
+                    simulation: simulationData
                 };
                 console.log('TIMELINE: Wrapped flat JSON structure');
             } else {
-                console.error('TIMELINE: Invalid simulation data structure:', dataToProcess);
+                console.error('TIMELINE: Invalid simulation data structure:', simulationData);
                 simulationContent.innerHTML = '<p style="color: var(--error-color); text-align: center; margin-top: 2rem;">Cannot render: Invalid simulation data structure. Please check your JSON format.</p>';
                 return;
             }
@@ -586,15 +581,6 @@ function renderSimulation(skipJsonValidation = false) {
         }
 
         currentSimulationData = processSimulationData(dataToProcess);
-        if (movieExperimentActive) {
-            currentSimulationData.start_time = '00:00';
-            currentSimulationData.end_time = '00:30';
-            currentSimulationData.start_time_minutes = 0;
-            currentSimulationData.end_time_minutes = 30;
-            currentSimulationData.total_duration_minutes = 30;
-            currentSimulationData.playbackModel = experimentPlaybackModel;
-            directMovie.mountTestBar();
-        }
 
         if (spaceEditor && dataToProcess.simulation && (dataToProcess.simulation.world?.layout || dataToProcess.simulation.layout)) {
             const layout = dataToProcess.simulation.world?.layout || dataToProcess.simulation.layout;
@@ -1016,13 +1002,9 @@ function renderSimulation(skipJsonValidation = false) {
         window.player = player; // Make globally accessible for spacebar functionality
 
         // Dispatch event for actor animation system
-        const renderContext = {
-            simulationData: currentSimulationData,
-            document: dataToProcess,
-            playbackModel: player.playbackModel
-        };
-        window.workSpecRenderContext = renderContext;
-        document.dispatchEvent(new CustomEvent('simulation-rendered', { detail: renderContext }));
+        document.dispatchEvent(new CustomEvent('simulation-rendered', {
+            detail: { simulationData: currentSimulationData }
+        }));
     } catch (e) {
         simulationContent.innerHTML = `<p style="color: var(--error-color); text-align: center; margin-top: 2rem;">Render Error: ${e.message}</p>`;
         console.error("Render error:", e);

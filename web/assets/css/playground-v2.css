@@ -7372,30 +7372,3 @@ body[data-theme="dark"] .workspec-time-scrubber output { color: #e5edf7; }
     .uaw-state-mapping__asset { grid-column: 1 / -1; grid-row: 2; }
     .uaw-state-mapping__asset img { width: 24px; height: 24px; flex-basis: 24px; }
 }
-.direct-movie-test-bar {
-    position: fixed;
-    top: 8px;
-    left: 50%;
-    z-index: 100000;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 10px;
-    border: 1px dashed #d97706;
-    border-radius: 6px;
-    background: #fffbeb;
-    color: #78350f;
-    box-shadow: 0 3px 12px rgb(0 0 0 / 18%);
-    font: 12px/1.2 "IBM Plex Mono", monospace;
-    transform: translateX(-50%);
-}
-
-.direct-movie-test-bar button {
-    padding: 3px 7px;
-    border: 1px solid #d97706;
-    border-radius: 4px;
-    background: #fff;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
-}

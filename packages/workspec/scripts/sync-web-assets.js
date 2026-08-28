@@ -20,10 +20,6 @@ const mappings = [
         destination: path.join(repoRoot, 'web', 'packages', 'workspec', 'playback-state.js')
     },
     {
-        source: path.join(repoRoot, 'packages', 'workspec', 'direct-movie-experiment.js'),
-        destination: path.join(repoRoot, 'web', 'packages', 'workspec', 'direct-movie-experiment.js')
-    },
-    {
         source: path.join(repoRoot, 'packages', 'workspec', 'state-visuals.js'),
         destination: path.join(repoRoot, 'web', 'packages', 'workspec', 'state-visuals.js')
     },

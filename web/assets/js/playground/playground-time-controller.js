@@ -299,17 +299,8 @@
                 this.syncFromEditor();
             });
             window.addEventListener('uaw:project-opened', () => setTimeout(() => this.syncFromEditor(), 0));
-            document.addEventListener('simulation-rendered', event => {
-                const renderedDocument = event.detail?.document;
-                const playbackModel = event.detail?.playbackModel;
-                if (renderedDocument) {
-                    this.configure(normalizeDocument(renderedDocument), {
-                        preserveTime: true,
-                        boundaries: window.WorkSpecPlaybackState?.getPlaybackBoundaries?.(playbackModel)
-                    });
-                } else {
-                    this.syncFromEditor({ preserveTime: true });
-                }
+            document.addEventListener('simulation-rendered', () => {
+                this.syncFromEditor({ preserveTime: true });
                 if (root.player) this.attachPlayer(root.player);
             });
             document.addEventListener('keydown', event => {
@@ -333,9 +324,7 @@
         configure(model, options = {}) {
             const previous = this.currentTime;
             this.model = model;
-            this.boundaries = Array.isArray(options.boundaries)
-                ? [...new Set(options.boundaries)].sort((a, b) => a - b)
-                : [...new Set(model.tasks.flatMap(task => [task.start_minutes, task.end_minutes]))].sort((a, b) => a - b);
+            this.boundaries = [...new Set(model.tasks.flatMap(task => [task.start_minutes, task.end_minutes]))].sort((a, b) => a - b);
             this.lastBoundaryIndex = -1;
             this.createFormatters();
             const desired = options.preserveTime !== false && Number.isFinite(previous) ? previous : model.startMinutes;

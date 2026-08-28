@@ -91,18 +91,6 @@
 
     function createPlaybackModel(documentValue) {
         if (documentValue?.[MODEL_MARKER]) return documentValue;
-        if (typeof documentValue?.resolveWorldStateAtTime === 'function') {
-            const observableObjects = Array.isArray(documentValue.objects) ? documentValue.objects : [];
-            return {
-                [MODEL_MARKER]: true,
-                source: documentValue,
-                simulation: documentValue.simulation || {},
-                tasks: [],
-                initialObjects: new Map(),
-                observableObjects,
-                boundaries: Array.isArray(documentValue.boundaries) ? [...documentValue.boundaries] : []
-            };
-        }
         const simulation = documentValue?.simulation || documentValue || {};
         const rawTasks = Array.isArray(documentValue?.tasks) && documentValue?.simulation
             ? documentValue.tasks
@@ -214,7 +202,6 @@
     function resolveWorldStateAtTime(documentOrModel, time) {
         const model = createPlaybackModel(documentOrModel);
         const resolvedTime = Number(time);
-        if (model.source) return normalizeSourceSnapshot(model, model.source.resolveWorldStateAtTime(resolvedTime), resolvedTime);
         const live = new Map();
         const categories = new Map();
         const creation = new Map();
@@ -335,48 +322,6 @@
         };
     }
 
-    function normalizeSourceSnapshot(model, snapshotValue, time) {
-        const snapshot = isPlainObject(snapshotValue) ? snapshotValue : {};
-        const objects = Array.isArray(snapshot.objects) ? snapshot.objects.map(cloneObject) : [];
-        const objectsById = new Map(objects.filter(object => object?.id).map(object => [object.id, object]));
-        const objectsByType = {};
-        objects.forEach(object => {
-            if (!object.type) return;
-            if (!objectsByType[object.type]) objectsByType[object.type] = [];
-            objectsByType[object.type].push(object);
-        });
-        return {
-            time,
-            objects,
-            objectsById,
-            objectsByType,
-            created: Array.isArray(snapshot.created) ? snapshot.created : [],
-            deleted: Array.isArray(snapshot.deleted) ? snapshot.deleted : []
-        };
-    }
-
-    function getObservableObjects(documentOrModel) {
-        const model = createPlaybackModel(documentOrModel);
-        if (Array.isArray(model.observableObjects)) return model.observableObjects.map(cloneObject);
-        const objects = new Map();
-        model.initialObjects.forEach(({ object }) => objects.set(object.id, cloneObject(object)));
-        model.tasks.forEach(({ task }) => {
-            (task.interactions || []).forEach(interaction => {
-                interactionCreatedObjects(interaction).forEach(object => {
-                    if (object?.id && !objects.has(object.id)) objects.set(object.id, cloneObject(object));
-                });
-            });
-        });
-        return [...objects.values()];
-    }
-
-    function getPlaybackBoundaries(documentOrModel) {
-        const model = createPlaybackModel(documentOrModel);
-        if (Array.isArray(model.boundaries)) return [...model.boundaries];
-        return [...new Set(model.tasks.flatMap(({ timing }) => [timing.start, timing.end]))]
-            .sort((left, right) => left - right);
-    }
-
     function getObjectAtTime(documentOrModel, objectId, time) {
         return resolveWorldStateAtTime(documentOrModel, time).objectsById.get(objectId) || null;
     }
@@ -397,9 +342,7 @@
         resolveWorldStateAtTime,
         getObjectAtTime,
         getObjectStateAtTime,
-        getObjectLocationAtTime,
-        getObservableObjects,
-        getPlaybackBoundaries
+        getObjectLocationAtTime
     };
 
     if (typeof window !== 'undefined') window.WorkSpecPlaybackState = api;
