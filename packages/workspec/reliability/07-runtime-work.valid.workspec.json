@@ -1,0 +1,16 @@
+{
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": { "title": "Runtime work", "description": "One stable work instance per collection member.", "domain": "reliability" },
+    "config": { "time_unit": "minutes", "start_time": "08:00", "end_time": "09:00", "currency": "USD", "locale": "en-US" },
+    "collections": { "files": { "from": "objects", "as": "member", "where": { "==": ["@member.type", "digital_object"] } } },
+    "world": { "objects": [
+      { "id": "processor", "type": "service", "name": "Processor", "properties": { "state": "ready" } },
+      { "id": "file_a", "type": "digital_object", "name": "File A", "properties": { "state": "new", "quantity": 1, "valid": true, "processed": false } }
+    ] },
+    "process": {
+      "tasks": [],
+      "work_definitions": [{ "id": "process_file", "instantiate": { "for_each": "files", "as": "file", "start": "on_appearance", "cancel_pending_on_exit": true }, "task": { "actor_id": "processor", "duration": "5m", "requires": { "==": ["@file.valid", true] }, "interactions": [{ "target_id": "@file.id", "property_changes": { "processed": { "set": true } } }] } }]
+    }
+  }
+}

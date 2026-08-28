@@ -411,6 +411,29 @@ document.addEventListener("DOMContentLoaded", () => {
 /**
  * Data fetching and initialization with comprehensive error handling
  */
+function buildBenchmarkTemplates(entries) {
+  if (!Array.isArray(entries)) return [];
+
+  return entries
+    .filter(entry => entry && entry.workspec && entry.workspec.simulation)
+    .map(entry => {
+      const simulation = entry.workspec.simulation;
+      const meta = simulation.meta || {};
+      return {
+        id: `benchmark-${entry.case_id}`,
+        name: meta.title || entry.case_id || "Generated benchmark",
+        description: meta.description || "Benchmark-generated WorkSpec template",
+        complexity: "Benchmark",
+        domain: meta.domain || "Generated benchmarks",
+        isBenchmark: true,
+        benchmarkCaseId: entry.case_id || "benchmark",
+        benchmarkStatus: entry.status || "unclassified",
+        benchmarkSource: "2026-08-28 WorkSpec benchmark runs",
+        simulation,
+      };
+    });
+}
+
 Promise.all([
   fetch("/assets/static/tutorial-content.json")
     .then((res) => {
@@ -451,13 +474,31 @@ Promise.all([
       }
       return data;
     }),
+  fetch("/workspec/benchmarks/runs/2026-08-28/QEO3W/final.QEO3W_glm-5.3.json")
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+      return res.json();
+    }),
+  fetch("/workspec/benchmarks/runs/2026-08-28/64TSY/final.B1-16--B1-20_v2.1_glm-5.3.json")
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+      return res.json();
+    }),
 ])
-  .then(([tutData, metData, simLibData]) => {
+  .then(([tutData, metData, simLibData, qeo3wRun, b1Run]) => {
     // Store data globally
     tutorialData = tutData;
     PlaygroundState.tutorialData = tutData;
     window.metricsCatalog = metData;
-    window.simulationLibrary = simLibData;
+    const benchmarkTemplates = buildBenchmarkTemplates([...qeo3wRun, ...b1Run]);
+    window.simulationLibrary = {
+      ...simLibData,
+      simulations: [...simLibData.simulations, ...benchmarkTemplates],
+    };
     initState.dataLoaded = true;
 
     console.log('✓ Data files loaded successfully');
@@ -788,23 +829,72 @@ function populateSimulationLibrary() {
   const closeBtn = PlaygroundUtils.safeGetElement("simulation-library-close");
   const grid = PlaygroundUtils.safeGetElement("simulation-library-grid");
   const filtersContainer = PlaygroundUtils.safeGetElement("simulation-library-filters");
+  const pagesContainer = PlaygroundUtils.safeGetElement("simulation-library-pages");
 
-  if (!btn || !modal || !grid || !filtersContainer) {
+  if (!btn || !modal || !grid || !filtersContainer || !pagesContainer) {
     console.warn('Simulation library UI elements not found');
     return false;
   }
 
   const simulations = window.simulationLibrary.simulations;
-  const domains = [...new Set(simulations.map(s => s.domain).filter(Boolean))];
+  const pageGroups = [
+    {
+      key: "core",
+      label: "Core templates",
+      description: "Starter simulations",
+      simulations: simulations.filter(simulation => !simulation.isBenchmark),
+    },
+    {
+      key: "benchmarks",
+      label: "Generated benchmarks",
+      description: "WorkSpecs from 28 Aug 2026",
+      simulations: simulations.filter(simulation => simulation.isBenchmark),
+    },
+  ].filter(page => page.simulations.length > 0);
+  let currentPage = 0;
+  let activeFilter = "all";
+  const modalSubtitle = modal.querySelector(".modal-subtitle");
 
-  filtersContainer.innerHTML = '<button class="filter-btn active" data-filter="all">All</button>';
-  domains.sort().forEach(domain => {
-    const filterBtn = document.createElement("button");
-    filterBtn.className = "filter-btn";
-    filterBtn.dataset.filter = domain;
-    filterBtn.textContent = domain;
-    filtersContainer.appendChild(filterBtn);
-  });
+  const formatDomain = (domain) => String(domain || "General")
+    .replace(/\band\b/gi, "&")
+    .replace(/\b(it)\b/gi, "IT")
+    .replace(/(^|[\s-])([a-z])/g, (_, prefix, letter) => `${prefix}${letter.toUpperCase()}`);
+
+  const escapeHtml = (value) => {
+    const element = document.createElement("div");
+    element.textContent = String(value ?? "");
+    return element.innerHTML;
+  };
+
+  function renderPageNavigation() {
+    pagesContainer.innerHTML = pageGroups.map((page, index) => `
+      <button type="button" class="simulation-page-btn${index === currentPage ? " active" : ""}" data-page-index="${index}">
+        <span class="simulation-page-number">0${index + 1}</span>
+        <span class="simulation-page-copy">
+          <strong>${escapeHtml(page.label)}</strong>
+          <small>${escapeHtml(page.description)}</small>
+        </span>
+        <span class="simulation-page-count">${page.simulations.length}</span>
+      </button>
+    `).join("");
+  }
+
+  function renderFilters() {
+    const pageSimulations = pageGroups[currentPage].simulations;
+    const domains = [...new Set(pageSimulations.map(s => s.domain).filter(Boolean))].sort();
+    if (!domains.includes(activeFilter)) activeFilter = "all";
+
+    filtersContainer.innerHTML = '<button class="filter-btn active" data-filter="all">All</button>';
+    domains.forEach(domain => {
+      const filterBtn = document.createElement("button");
+      filterBtn.className = "filter-btn";
+      filterBtn.dataset.filter = domain;
+      filterBtn.textContent = formatDomain(domain);
+      filtersContainer.appendChild(filterBtn);
+    });
+    filtersContainer.querySelector(`[data-filter="${CSS.escape(activeFilter)}"]`)?.classList.add("active");
+    filtersContainer.querySelector('[data-filter="all"]')?.classList.toggle("active", activeFilter === "all");
+  }
 
   const iconMap = {
     "Food Production": "\uD83C\uDF5E",
@@ -832,6 +922,22 @@ function populateSimulationLibrary() {
     multi_period: "\uD83D\uDCC5",
   };
 
+  const benchmarkIconMap = {
+    "data and information workflows": "🗂️",
+    finance: "💳",
+    "healthcare and laboratory work": "🩺",
+    "logistics and transport": "🚚",
+    "software and IT operations": "🖥️",
+    "construction and trades": "🏗️",
+    "emergency response": "🚨",
+    "maintenance and repair": "🛠️",
+    "science and experimentation": "🔬",
+    "arts, entertainment, and live events": "🎭",
+    "manufacturing and industrial work": "⚙️",
+    "unusual specialist professions": "🗝️",
+    "cybersecurity incident response": "🛡️",
+  };
+
   function getFeatures(sim) {
     const s = sim.simulation;
     const features = [];
@@ -842,11 +948,17 @@ function populateSimulationLibrary() {
     return features;
   }
 
-  function renderGrid(filter) {
+  function renderGrid(filter = activeFilter) {
     grid.innerHTML = "";
+    activeFilter = filter;
+    const page = pageGroups[currentPage];
     const filtered = filter === "all"
-      ? simulations
-      : simulations.filter(s => s.domain === filter);
+      ? page.simulations
+      : page.simulations.filter(s => s.domain === filter);
+
+    if (modalSubtitle) {
+      modalSubtitle.textContent = `${page.label} · ${page.simulations.length} template${page.simulations.length === 1 ? "" : "s"} · ${page.description}`;
+    }
 
     filtered.forEach(sim => {
       if (!sim || !sim.id || !sim.name) return;
@@ -857,17 +969,22 @@ function populateSimulationLibrary() {
       card.dataset.simulationId = sim.id;
       card.setAttribute('aria-label', `Load ${sim.name}`);
 
-      const icon = sim.icon || iconMap[sim.domain] || "\uD83D\uDCC1";
+      const icon = sim.icon || (sim.isBenchmark ? benchmarkIconMap[sim.domain] : iconMap[sim.domain]) || "\uD83D\uDCC1";
       const features = getFeatures(sim);
       const featureHTML = features.map(f => featureIcons[f] || "").join("");
+      const badgeClass = sim.isBenchmark ? "benchmark" : (sim.complexity || "basic").toLowerCase();
+      const badgeLabel = sim.isBenchmark ? "Benchmark" : (sim.complexity || "Basic");
+      const cardDomain = sim.isBenchmark
+        ? `${sim.benchmarkCaseId} · ${sim.benchmarkStatus}`
+        : formatDomain(sim.domain || "General");
 
       card.innerHTML = `
-        <div class="sim-lib-card-icon">${icon}</div>
-        <div class="sim-lib-card-title">${sim.name}</div>
-        <div class="sim-lib-card-domain">${sim.domain || "General"}</div>
-        <div class="sim-lib-card-description">${sim.description || ""}</div>
+        <div class="sim-lib-card-icon" aria-hidden="true">${icon}</div>
+        <div class="sim-lib-card-title">${escapeHtml(sim.name)}</div>
+        <div class="sim-lib-card-domain">${escapeHtml(cardDomain)}</div>
+        <div class="sim-lib-card-description">${escapeHtml(sim.description || "")}</div>
         <div class="sim-lib-card-footer">
-          <span class="sim-lib-card-badge ${(sim.complexity || "basic").toLowerCase()}">${sim.complexity || "Basic"}</span>
+          <span class="sim-lib-card-badge ${badgeClass}">${escapeHtml(badgeLabel)}</span>
           ${featureHTML ? `<span class="sim-lib-card-features">${featureHTML}</span>` : ""}
         </div>
       `;
@@ -886,7 +1003,18 @@ function populateSimulationLibrary() {
     if (!filterBtn) return;
     filtersContainer.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
     filterBtn.classList.add("active");
+    activeFilter = filterBtn.dataset.filter;
     renderGrid(filterBtn.dataset.filter);
+  });
+
+  pagesContainer.addEventListener("click", (e) => {
+    const pageBtn = e.target.closest(".simulation-page-btn");
+    if (!pageBtn) return;
+    currentPage = Number(pageBtn.dataset.pageIndex);
+    activeFilter = "all";
+    renderPageNavigation();
+    renderFilters();
+    renderGrid();
   });
 
   btn.addEventListener("click", () => {
@@ -907,7 +1035,9 @@ function populateSimulationLibrary() {
     }
   });
 
-  renderGrid("all");
+  renderPageNavigation();
+  renderFilters();
+  renderGrid();
   console.log(`✓ Loaded ${simulations.length} simulations`);
   return true;
 }

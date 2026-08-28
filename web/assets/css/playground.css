@@ -4100,6 +4100,83 @@ body.theme-switching * {
     border-bottom: 1px solid var(--border-color);
 }
 
+.simulation-library-pages {
+    display: flex;
+    gap: 8px;
+    padding: 12px 24px 0;
+    background: var(--bg-primary);
+}
+
+.simulation-page-btn {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 190px;
+    padding: 8px 11px;
+    border: 1px solid var(--border-color);
+    border-radius: 7px 7px 0 0;
+    background: transparent;
+    color: var(--text-light);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s ease;
+}
+
+.simulation-page-btn:hover,
+.simulation-page-btn:focus-visible {
+    border-color: var(--primary-color);
+    color: var(--text-color);
+    outline: none;
+}
+
+.simulation-page-btn.active {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: #fff;
+}
+
+.simulation-page-number {
+    color: var(--text-lighter);
+    font: 600 0.68rem/1 var(--font-mono, monospace);
+    letter-spacing: 0.08em;
+}
+
+.simulation-page-btn.active .simulation-page-number,
+.simulation-page-btn.active .simulation-page-copy small {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.simulation-page-copy {
+    display: grid;
+    gap: 2px;
+    flex: 1;
+}
+
+.simulation-page-copy strong {
+    font-size: 0.76rem;
+    font-weight: 600;
+}
+
+.simulation-page-copy small {
+    color: var(--text-lighter);
+    font-size: 0.66rem;
+}
+
+.simulation-page-count {
+    display: grid;
+    place-items: center;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.06);
+    font-size: 0.68rem;
+    font-weight: 600;
+}
+
+.simulation-page-btn.active .simulation-page-count {
+    background: rgba(255, 255, 255, 0.18);
+}
+
 .filter-btn {
     padding: 4px 12px;
     border-radius: 14px;
@@ -4205,6 +4282,17 @@ body.theme-switching * {
     color: #c62828;
 }
 
+.sim-lib-card-badge.benchmark {
+    background: #e8e4ff;
+    color: #5140a1;
+}
+
+.sim-lib-card-status {
+    color: var(--text-lighter);
+    font-size: 0.68rem;
+    text-transform: capitalize;
+}
+
 .sim-lib-card-features {
     display: flex;
     gap: 3px;
@@ -4233,4 +4321,9 @@ body.theme-switching * {
 [data-theme="dark"] .sim-lib-card-badge.expert {
     background: rgba(198, 40, 40, 0.2);
     color: #ef9a9a;
+}
+
+[data-theme="dark"] .sim-lib-card-badge.benchmark {
+    background: rgba(81, 64, 161, 0.28);
+    color: #c9c0ff;
 }

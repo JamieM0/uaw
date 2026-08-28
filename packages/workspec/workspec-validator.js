@@ -182,6 +182,9 @@
     }
 
     function parseDurationToMinutes(value, timeUnit) {
+        if (WorkSpecRuntime && typeof WorkSpecRuntime.parseDurationToMinutes === 'function') {
+            return WorkSpecRuntime.parseDurationToMinutes(value, timeUnit);
+        }
         if (typeof value === 'number') {
             if (!Number.isFinite(value)) return { ok: false, minutes: null, kind: 'number' };
             if (!Number.isInteger(value)) return { ok: false, minutes: null, kind: 'number' };
@@ -231,6 +234,12 @@
     }
 
     function parseTaskStart(value) {
+        if (WorkSpecRuntime && typeof WorkSpecRuntime.parseTaskStart === 'function') {
+            const parsed = WorkSpecRuntime.parseTaskStart(value);
+            return parsed.ok && parsed.kind === 'datetime'
+                ? { ...parsed, startMillis: parsed.startMinutes * 60 * 1000, raw: value }
+                : { ...parsed, raw: value };
+        }
         if (typeof value === 'string') {
             const trimmed = value.trim();
 
@@ -314,132 +323,6 @@
         return base === 'actor' || base === 'equipment' || base === 'service' || base === 'display' || base === 'screen_element' || base === 'digital_object';
     }
 
-    function validatePropertyOperator(metricBase, operatorValue, instanceParts, problems, contextBase) {
-        if (!isPlainObject(operatorValue)) {
-            problems.push(buildProblem(
-                `${metricBase}.invalid_operator`,
-                'error',
-                'Invalid Property Change Operator',
-                'Property change operator must be an object.',
-                toJsonPointer(instanceParts),
-                { ...contextBase, operator: operatorValue },
-                ['Replace this operator with a valid object like { "set": ... } or { "delta": ... }.']
-            ));
-            return;
-        }
-
-        const hasFrom = Object.prototype.hasOwnProperty.call(operatorValue, 'from');
-        const hasTo = Object.prototype.hasOwnProperty.call(operatorValue, 'to');
-        const hasDelta = Object.prototype.hasOwnProperty.call(operatorValue, 'delta');
-        const hasSet = Object.prototype.hasOwnProperty.call(operatorValue, 'set');
-        const hasMultiply = Object.prototype.hasOwnProperty.call(operatorValue, 'multiply');
-        const hasAppend = Object.prototype.hasOwnProperty.call(operatorValue, 'append');
-        const hasRemove = Object.prototype.hasOwnProperty.call(operatorValue, 'remove');
-        const hasIncrement = Object.prototype.hasOwnProperty.call(operatorValue, 'increment');
-        const hasDecrement = Object.prototype.hasOwnProperty.call(operatorValue, 'decrement');
-
-        const keys = Object.keys(operatorValue);
-        const allowedKeys = ['from', 'to', 'delta', 'set', 'multiply', 'append', 'remove', 'increment', 'decrement'];
-        const unknownKeys = keys.filter((k) => !allowedKeys.includes(k));
-
-        if (unknownKeys.length > 0) {
-            problems.push(buildProblem(
-                `${metricBase}.unknown_operator`,
-                'warning',
-                'Unknown Property Change Operator',
-                `Property change operator includes unknown keys: ${unknownKeys.join(', ')}.`,
-                toJsonPointer(instanceParts),
-                { ...contextBase, unknown_keys: unknownKeys },
-                ['Remove unknown keys or replace them with supported operators (from/to, delta, set, multiply, append, remove, increment, decrement).']
-            ));
-        }
-
-        // Cannot combine from/to with delta (or multiply) for same property
-        if ((hasFrom || hasTo) && (hasDelta || hasMultiply || hasIncrement || hasDecrement)) {
-            problems.push(buildProblem(
-                `${metricBase}.conflicting_operator`,
-                'error',
-                'Conflicting Property Change Operators',
-                'Cannot combine from/to with delta/multiply/increment/decrement for the same property.',
-                toJsonPointer(instanceParts),
-                { ...contextBase, operator: operatorValue },
-                ['Use either { "from": ..., "to": ... } for transitions, or use { "delta": ... } / { "set": ... } for direct changes.']
-            ));
-        }
-
-        if ((hasFrom || hasTo) && !(hasFrom && hasTo)) {
-            problems.push(buildProblem(
-                `${metricBase}.incomplete_transition`,
-                'error',
-                'Incomplete State Transition',
-                'from/to transitions require both "from" and "to".',
-                toJsonPointer(instanceParts),
-                { ...contextBase, operator: operatorValue },
-                ['Provide both "from" and "to", or use { "set": ... } instead.']
-            ));
-        }
-
-        if (hasDelta && typeof operatorValue.delta !== 'number' && !WorkSpecRuntime?.isValueReference?.(operatorValue.delta)) {
-            problems.push(buildProblem(
-                `${metricBase}.invalid_delta`,
-                'error',
-                'Invalid Delta',
-                'delta must be a number.',
-                toJsonPointer(instanceParts.concat(['delta'])),
-                { ...contextBase, delta: operatorValue.delta },
-                ['Use a numeric delta like { "delta": -1 } or { "delta": 2.5 }.']
-            ));
-        }
-
-        if (hasMultiply && typeof operatorValue.multiply !== 'number' && !WorkSpecRuntime?.isValueReference?.(operatorValue.multiply)) {
-            problems.push(buildProblem(
-                `${metricBase}.invalid_multiply`,
-                'error',
-                'Invalid Multiply',
-                'multiply must be a number.',
-                toJsonPointer(instanceParts.concat(['multiply'])),
-                { ...contextBase, multiply: operatorValue.multiply },
-                ['Use a numeric multiplier like { "multiply": 1.1 }.']
-            ));
-        }
-
-        if (hasIncrement && operatorValue.increment !== true) {
-            problems.push(buildProblem(
-                `${metricBase}.invalid_increment`,
-                'error',
-                'Invalid Increment',
-                'increment must be true when present.',
-                toJsonPointer(instanceParts.concat(['increment'])),
-                { ...contextBase, increment: operatorValue.increment },
-                ['Use { "increment": true } or remove this operator.']
-            ));
-        }
-
-        if (hasDecrement && operatorValue.decrement !== true) {
-            problems.push(buildProblem(
-                `${metricBase}.invalid_decrement`,
-                'error',
-                'Invalid Decrement',
-                'decrement must be true when present.',
-                toJsonPointer(instanceParts.concat(['decrement'])),
-                { ...contextBase, decrement: operatorValue.decrement },
-                ['Use { "decrement": true } or remove this operator.']
-            ));
-        }
-
-        if (hasSet && (hasDelta || hasMultiply || hasAppend || hasRemove || hasIncrement || hasDecrement || hasFrom || hasTo)) {
-            problems.push(buildProblem(
-                `${metricBase}.conflicting_set`,
-                'warning',
-                'Conflicting Set Operator',
-                'set is typically used alone; combining it with other operators is unusual.',
-                toJsonPointer(instanceParts),
-                { ...contextBase, operator: operatorValue },
-                ['Prefer a single operator per property (use set alone, or remove set if delta/from-to is intended).']
-            ));
-        }
-    }
-
     function validate(documentValue, options = {}) {
         const problems = [];
 
@@ -497,7 +380,7 @@
                 `WorkSpec schema_version "${schemaVersion}" is not supported by this validator. Supported versions: ${SUPPORTED_SCHEMA_VERSIONS.join(', ')}.`,
                 '/simulation/schema_version',
                 { value: schemaVersion, supported: [...SUPPORTED_SCHEMA_VERSIONS] },
-                ['Use the supported schema version "2.0".']
+                ['Use the supported schema version "2.1".']
             ));
             return { ok: false, problems };
         }
@@ -1417,13 +1300,8 @@
                     if (isPlainObject(interaction.property_changes)) {
                         for (const [propertyName, op] of Object.entries(interaction.property_changes)) {
                             const operatorPtr = interactionPtr.concat(['property_changes', propertyName]);
-                            validatePropertyOperator(
-                                'interaction.operator',
-                                op,
-                                operatorPtr,
-                                problems,
-                                { task_id: rawId, target_id: targetId, property: propertyName }
-                            );
+                            // WorkSpec 2.1 operator shape, expression, and type semantics
+                            // are validated by the authoritative runtime below.
 
                             if (propertyName === 'state' && isPlainObject(op)) {
                                 const targetObject = objectById.get(targetId);

@@ -31,6 +31,7 @@ When generating WorkSpec:
 13. Interrupt active work through `while` before assigning a separate continuation. Never mutate the active interval's actor.
 14. Use `+`, `-`, `*`, `/`, `min`, or `max` when a numeric relation belongs in the model; do not copy a derived literal.
 15. Never claim WorkSpec globally optimizes a schedule or assignment.
+16. Do not invent continuous physical evolution, unbounded external arrival, stochastic/Monte Carlo behavior, or external transaction/IAM/device guarantees; these are frozen 2.1 limitations.
 
 ---
 

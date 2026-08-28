@@ -61,6 +61,10 @@
         if (typeof value !== 'string') return null;
         const match = value.match(/^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9]))?$/);
         if (match) return Number(match[1]) * 60 + Number(match[2]) + Number(match[3] || 0) / 60;
+        const iso = value.match(/^(\d{4})-(\d{2})-(\d{2})T([01]\d|2[0-3]):([0-5]\d):([0-5]\d)(?:\.\d+)?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/);
+        if (!iso) return null;
+        const year = Number(iso[1]); const month = Number(iso[2]); const day = Number(iso[3]);
+        if (month < 1 || month > 12 || day < 1 || day > new Date(Date.UTC(year, month, 0)).getUTCDate()) return null;
         const ms = Date.parse(value);
         return Number.isFinite(ms) ? ms / 60000 : null;
     }
@@ -1122,6 +1126,42 @@
         return [problem('condition.operator.invalid', `Unknown condition operator '${operator}'.`, instance)];
     }
 
+    function validateChangeOperatorShape(operator, index, instance, currentTask, bindings) {
+        const taskLabel = currentTask?.id ? `Task '${currentTask.id}'` : 'This task';
+        if (!plain(operator)) return [problem('interaction.operator.invalid', `${taskLabel} has a property change operator that is not an object.`, instance, { task_id: currentTask?.id })];
+        const problems = [];
+        const expressionOperators = ['from', 'to', 'set', 'delta', 'multiply', 'append', 'remove'];
+        const flagOperators = ['increment', 'decrement'];
+        const allowed = new Set([...expressionOperators, ...flagOperators]);
+        const keys = Object.keys(operator);
+        const unknown = keys.filter((key) => !allowed.has(key));
+        if (unknown.length) problems.push(problem('interaction.operator.unknown_operator', `${taskLabel} uses unknown property change operator${unknown.length === 1 ? '' : 's'}: ${unknown.join(', ')}.`, instance, { task_id: currentTask?.id, unknown_keys: unknown }));
+
+        const isTransition = keys.length === 2 && keys.includes('from') && keys.includes('to');
+        const isSingle = keys.length === 1 && allowed.has(keys[0]) && !['from', 'to'].includes(keys[0]);
+        if (!isTransition && !isSingle) {
+            const metricId = own(operator, 'set') && keys.length > 1
+                ? 'interaction.operator.conflicting_set'
+                : (own(operator, 'from') !== own(operator, 'to'))
+                    ? 'interaction.operator.incomplete_transition'
+                    : 'interaction.operator.conflicting_operator';
+            problems.push(problem(metricId, `${taskLabel} must use exactly one property-change operator, or the exact from/to pair.`, instance, { task_id: currentTask?.id, operators: keys }));
+        }
+
+        flagOperators.forEach((key) => {
+            if (own(operator, key) && operator[key] !== true) problems.push(problem(`interaction.operator.invalid_${key}`, `${taskLabel} requires ${key} to be true when present.`, `${instance}/${key}`, { task_id: currentTask?.id }));
+        });
+        expressionOperators.forEach((key) => {
+            if (!own(operator, key)) return;
+            problems.push(...validateExpressionShape(operator[key], index, `${instance}/${key}`, currentTask, bindings));
+            if (['delta', 'multiply'].includes(key)) {
+                const kind = staticExpressionKind(operator[key], index, currentTask, bindings);
+                if (kind && kind !== 'number') problems.push(problem(`interaction.operator.invalid_${key}`, `${taskLabel} requires ${key} to resolve to a finite number.`, `${instance}/${key}`, { task_id: currentTask?.id, actual_kind: kind }));
+            }
+        });
+        return problems;
+    }
+
     function validateStatic(index) {
         const problems = []; const unit = (index.sim.config || {}).time_unit;
         [...index.tasks.values()].forEach((task, taskIndex) => {
@@ -1182,8 +1222,7 @@
                     problems.push(...validateExpressionShape(interaction.target_id, index, `${at}/target_id`, task));
                     Object.entries(interaction.property_changes || {}).forEach(([name, operator]) => {
                         if (name.includes('.')) problems.push(problem('reference.property.dotted', `Property name '${name}' contains '.', which is reserved for compact references.`, `${at}/property_changes/${ptrEscape(name)}`, { property: name }, undefined, [`Rename it to '${name.replace(/\./g, '_')}'.`]));
-                        if (!plain(operator)) return;
-                        ['from', 'to', 'set', 'delta', 'multiply', 'append', 'remove'].forEach((key) => { if (own(operator, key)) problems.push(...validateExpressionShape(operator[key], index, `${at}/property_changes/${ptrEscape(name)}/${key}`, task)); });
+                        problems.push(...validateChangeOperatorShape(operator, index, `${at}/property_changes/${ptrEscape(name)}`, task));
                     });
                 }
             });
@@ -1259,7 +1298,10 @@
                     if (interaction.object && own(interaction.object, 'location')) problems.push(...validateExpressionShape(interaction.object.location, index, `${at}/object/location`, template, bindings));
                 } else {
                     problems.push(...validateExpressionShape(interaction.target_id, index, `${at}/target_id`, template, bindings));
-                    Object.entries(interaction.property_changes || {}).forEach(([name, change]) => Object.entries(change || {}).forEach(([operation, value]) => problems.push(...validateExpressionShape(value, index, `${at}/property_changes/${ptrEscape(name)}/${operation}`, template, bindings))));
+                    Object.entries(interaction.property_changes || {}).forEach(([name, change]) => {
+                        if (name.includes('.')) problems.push(problem('reference.property.dotted', `Property name '${name}' contains '.', which is reserved for compact references.`, `${at}/property_changes/${ptrEscape(name)}`, { property: name }, undefined, [`Rename it to '${name.replace(/\./g, '_')}'.`]));
+                        problems.push(...validateChangeOperatorShape(change, index, `${at}/property_changes/${ptrEscape(name)}`, template, bindings));
+                    });
                 }
             });
         });

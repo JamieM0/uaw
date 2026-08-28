@@ -1,0 +1,17 @@
+{
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": { "title": "Collections quantifiers", "description": "Snapshot-consistent member quantification and counting.", "domain": "reliability" },
+    "config": { "time_unit": "minutes", "start_time": "08:00", "end_time": "09:00", "currency": "USD", "locale": "en-US" },
+    "collections": { "stock_items": { "from": "objects", "as": "member", "where": { "==": ["@member.type", "resource"] } } },
+    "world": { "objects": [
+      { "id": "auditor", "type": "actor", "name": "Auditor", "properties": { "state": "ready" } },
+      { "id": "stock_a", "type": "resource", "name": "Stock A", "properties": { "quantity": 1 } },
+      { "id": "stock_b", "type": "resource", "name": "Stock B", "properties": { "quantity": 2 } }
+    ] },
+    "process": { "tasks": [{ "id": "audit", "actor_id": "auditor", "start": "08:00", "duration": "5m", "requires": { "all": [
+      { "all_members": { "collection": "stock_items", "as": "item", "satisfy": { ">": ["@item.quantity", 0] } } },
+      { ">=": [{ "count_members": { "collection": "stock_items", "as": "item" } }, 2] }
+    ] } }] }
+  }
+}

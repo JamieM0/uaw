@@ -97,6 +97,17 @@ function normalizeResult(value) {
     return JSON.parse(JSON.stringify(value));
 }
 
+function loadStudioTaskHelpers(runtime) {
+    const sandbox = {
+        window: { WorkSpecRuntime: runtime },
+        document: { addEventListener() {} },
+        console
+    };
+    vm.createContext(sandbox);
+    vm.runInContext(readText(playgroundObjectsPath), sandbox, { filename: playgroundObjectsPath });
+    return sandbox;
+}
+
 function run() {
     const playgroundHtml = readText(playgroundHtmlPath);
     assert.match(
@@ -152,6 +163,8 @@ function run() {
     assert.match(playgroundHtml, /id="task-continues-input"/, 'Studio does not edit continuation links');
     assert.match(playgroundObjects, /progressReference/, 'Studio does not save progress references');
     assert.match(playgroundObjects, /continuesTask/, 'Studio does not save continuation links');
+    assert.match(playgroundObjects, /dataset\.originalActorId = JSON\.stringify\(task\.actor_id\)/, 'Studio does not retain dynamic actor selection JSON');
+    assert.match(playgroundObjects, /interactionNeedsJsonPreservation/, 'Studio does not classify advanced interactions through a lossless preservation boundary');
     assert.match(playgroundEditor, /WorkSpecReferenceAuthoring/, 'Studio does not expose the compact-reference picker adapter');
     assert.match(playgroundEditor, /formatCompactReference/, 'Studio reference pickers do not use package-owned compact formatting');
     assert.match(playgroundEditor, /"@material\.quantity"/, 'Studio sample output does not use compact references');
@@ -184,6 +197,7 @@ function run() {
     assertMirrored(packageStateVisualsPath, webStateVisualsPath);
 
     const nodeValidator = require(packageValidatorPath);
+    const nodeRuntime = require(packageRuntimePath);
     const stateVisuals = require(packageStateVisualsPath);
     const browserValidator = loadBrowserValidator(webRuntimePath, webValidatorPath);
 
@@ -198,6 +212,21 @@ function run() {
     const nodeInvalid = normalizeResult(nodeValidator.validate(clone(invalidDoc)));
     const browserInvalid = normalizeResult(browserValidator.validate(clone(invalidDoc)));
     assert.deepEqual(browserInvalid, nodeInvalid, 'Validator mismatch on invalid document');
+
+    const studioHelpers = loadStudioTaskHelpers(nodeRuntime);
+    assert.equal(studioHelpers.interactionNeedsJsonPreservation({
+        target_id: '@selected_file.id',
+        property_changes: { quantity: { delta: { '+': ['@batch.amount', 1] } } }
+    }), true, 'Studio would coerce a compact-reference/arithmetic interaction');
+    assert.equal(studioHelpers.interactionNeedsJsonPreservation({
+        target_id: 'item',
+        description: 'Retain this valid unrepresented field.',
+        property_changes: { quantity: { delta: -1 } }
+    }), true, 'Studio would drop an unrepresented valid interaction field');
+    assert.equal(studioHelpers.interactionNeedsJsonPreservation({
+        action: 'create',
+        object: { id: 'created', type: 'resource', name: 'Created', properties: { custom_value: 1 } }
+    }), true, 'Studio would rewrite a created object it cannot represent losslessly');
 
     const templateLibrary = JSON.parse(readText(path.join(repoRoot, 'web', 'assets', 'static', 'simulation-library.json')));
     const breadmaking = templateLibrary.simulations.find(item => item.id === 'breadmaking')?.simulation;

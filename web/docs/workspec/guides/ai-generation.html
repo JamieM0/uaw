@@ -94,6 +94,7 @@
 <li>Interrupt active work through <code class="docs-inline-code">while</code> before assigning a separate continuation. Never mutate the active interval’s actor.</li>
 <li>Use <code class="docs-inline-code">+</code>, <code class="docs-inline-code">-</code>, <code class="docs-inline-code">*</code>, <code class="docs-inline-code">/</code>, <code class="docs-inline-code">min</code>, or <code class="docs-inline-code">max</code> when a numeric relation belongs in the model; do not copy a derived literal.</li>
 <li>Never claim WorkSpec globally optimizes a schedule or assignment.</li>
+<li>Do not invent continuous physical evolution, unbounded external arrival, stochastic/Monte Carlo behavior, or external transaction/IAM/device guarantees; these are frozen 2.1 limitations.</li>
 </ol>
 <hr class="docs-hr"/>
 <h2 class="docs-heading" id="common-failure-modes-to-avoid">Common failure modes to avoid<a class="headerlink" href="#common-failure-modes-to-avoid" title="Link to this section">¶</a></h2>

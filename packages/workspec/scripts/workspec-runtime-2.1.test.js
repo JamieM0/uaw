@@ -40,6 +40,27 @@ function has(problems, metricId) {
     return problems.some((entry) => entry.metric_id === metricId);
 }
 
+test('validator timing parsers delegate to the authoritative runtime', () => {
+    for (const value of [30, '1.5h', 'PT30M', 'P0D']) {
+        assert.deepEqual(
+            { ok: validator.parseDurationToMinutes(value, 'minutes').ok, minutes: validator.parseDurationToMinutes(value, 'minutes').minutes },
+            runtime.parseDurationToMinutes(value, 'minutes')
+        );
+    }
+    for (const value of ['09:30', { day: 2, time: '09:30' }, 'not-a-time']) {
+        const validatorResult = validator.parseTaskStart(value);
+        const runtimeResult = runtime.parseTaskStart(value);
+        assert.equal(validatorResult.ok, runtimeResult.ok);
+        assert.equal(validatorResult.startMinutes, runtimeResult.startMinutes);
+        assert.equal(validatorResult.kind, runtimeResult.kind);
+    }
+    for (const invalid of ['March 1 2020', '2026-02-30T09:30:00Z', '2026-02-03T09:30Z']) {
+        assert.equal(runtime.parseTaskStart(invalid).ok, false, invalid);
+        assert.equal(validator.parseTaskStart(invalid).ok, false, invalid);
+    }
+    assert.equal(runtime.parseTaskStart('2026-02-03T09:30:00Z').ok, true);
+});
+
 test('entity IDs are document-wide, current is reserved, and definition keys stay separate', () => {
     const duplicate = documentWith([task('bay', 'actor_a', '09:00')]);
     assert.equal(has(validator.validate(duplicate).problems, 'reference.id.duplicate'), true);
@@ -744,6 +765,48 @@ test('G012 evaluates strict pure arithmetic in conditions, effects, and reservat
     assert.equal(has(runtime.validate(badType).problems, 'value.arithmetic.type'), true);
     const divideZero = documentWith([task('divide_zero', 'actor_a', '09:00', { requires: { '==': [{ '/': [10, 0] }, 1] } })]);
     assert.equal(has(runtime.validate(divideZero).problems, 'value.arithmetic.division_by_zero'), true);
+});
+
+test('canonical validation accepts numeric expressions in delta and multiply operators', () => {
+    const doc = documentWith([
+        task('numeric_effects', 'actor_a', '09:00', { interactions: [
+            { target_id: 'item', property_changes: { quantity: { delta: { '+': [1, 2] } } } },
+            { target_id: 'machine', property_changes: { capacity: { multiply: { 'max': [1, 2] } } } }
+        ] })
+    ]);
+    const result = validator.validate(doc);
+    assert.equal(result.ok, true, JSON.stringify(result.problems, null, 2));
+    assert.equal(runtime.snapshotAt(doc, '09:30').objects.item.properties.quantity, 13);
+    assert.equal(runtime.snapshotAt(doc, '09:30').objects.machine.properties.capacity, 4);
+});
+
+test('canonical validation rejects unknown and combined property-change operators', () => {
+    const unknown = documentWith([task('unknown_operator', 'actor_a', '09:00', {
+        interactions: [{ target_id: 'item', property_changes: { quantity: { change: 2 } } }]
+    })]);
+    const combined = documentWith([task('combined_operator', 'actor_a', '09:00', {
+        interactions: [{ target_id: 'item', property_changes: { quantity: { set: 2, delta: 1 } } }]
+    })]);
+    assert.equal(has(validator.validate(unknown).problems, 'interaction.operator.unknown_operator'), true);
+    assert.equal(has(validator.validate(combined).problems, 'interaction.operator.conflicting_set'), true);
+    assert.equal(validator.validate(unknown).ok, false);
+    assert.equal(validator.validate(combined).ok, false);
+});
+
+test('runtime work templates reject malformed property-change operators before instantiation', () => {
+    const doc = documentWith();
+    doc.simulation.collections = { items: { from: 'objects', as: 'member', where: { '==': ['@member.type', 'resource'] } } };
+    doc.simulation.process.work_definitions = [{
+        id: 'bad_template',
+        instantiate: { for_each: 'items', as: 'item', start: 'on_appearance' },
+        task: {
+            actor_id: 'actor_a', duration: '5m',
+            interactions: [{ target_id: '@item.id', property_changes: { quantity: { change: 1 } } }]
+        }
+    }];
+    const result = validator.validate(doc);
+    assert.equal(result.ok, false);
+    assert.equal(has(result.problems, 'interaction.operator.unknown_operator'), true);
 });
 
 test('G010 evaluates dynamic collection quantifiers and counts from one snapshot', () => {

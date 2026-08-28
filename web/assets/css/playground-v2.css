@@ -5623,6 +5623,11 @@ body.uaw-v2 .btn-template:hover { color: #245fd6; background: #f8faff; border-co
 
 body.uaw-v2 .simulation-library-modal-content { max-width: 880px; }
 body.uaw-v2 .simulation-library-filters { padding: 10px 20px; background: #fff; border-bottom-color: #e1e6ee; }
+body.uaw-v2 .simulation-library-pages { padding: 12px 20px 0; background: #fff; }
+body.uaw-v2 .simulation-page-btn { min-width: 205px; padding: 8px 10px; border-color: #d5dbe5; border-radius: 3px 3px 0 0; background: #f7f9fc; }
+body.uaw-v2 .simulation-page-btn:hover,
+body.uaw-v2 .simulation-page-btn:focus-visible { border-color: #9fb6e8; background: #f8faff; }
+body.uaw-v2 .simulation-page-btn.active { border-color: #245fd6; background: #245fd6; }
 body.uaw-v2 .filter-btn { min-height: 28px; padding: 0 10px; color: #59677c; background: #fff; border-color: #d5dbe5; border-radius: 5px; transition: none; }
 body.uaw-v2 .filter-btn:hover { color: #245fd6; border-color: #9fb6e8; }
 body.uaw-v2 .filter-btn.active { color: #fff; background: #245fd6; border-color: #1d4fb7; }
@@ -6736,6 +6741,13 @@ body.uaw-v2[data-uaw-workspace="build"][data-source-dock^="split-"] .uaw-source-
 body.uaw-v2[data-uaw-workspace="run"][data-source-dock^="split-"] .uaw-source-pane,
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-source-pane,
 body.uaw-v2[data-uaw-workspace="source"] .uaw-source-pane { display: block !important; }
+
+/* Run hides the legacy editor globally, but Source owns that editor after it
+   is reparented into the stage-level pane. Keep it mounted in Simulate and
+   Validation when Source is split beside the run surface. */
+body.uaw-v2[data-uaw-workspace="run"][data-source-dock^="split-"] .uaw-source-pane .json-editor-panel {
+    display: flex !important;
+}
 
 body.uaw-v2[data-uaw-workspace="source"] .uaw-source-pane { inset: 0 !important; border: 0; }
 body.uaw-v2[data-uaw-workspace="source"] .uaw-legacy-host,

@@ -1107,6 +1107,7 @@ function setupToolsMenuActions() {
 }
 
 const modalReturnFocusMap = new WeakMap();
+const modalVisibilityMap = new WeakMap();
 let modalAccessibilityInitialized = false;
 let modalObserver = null;
 
@@ -1120,6 +1121,12 @@ function getVisibleDialogOverlays() {
 function getTopDialogOverlay() {
     const overlays = getVisibleDialogOverlays();
     return overlays.length > 0 ? overlays[overlays.length - 1] : null;
+}
+
+// Some dialog controls render their popup outside the dialog itself. Keep the
+// modal focus guard from fighting those controls while their popup is open.
+function isDialogAuxiliarySurface(element) {
+    return Boolean(element?.closest('.emoji-picker'));
 }
 
 function getFocusableElements(container) {
@@ -1145,7 +1152,17 @@ function setupModalAccessibility() {
     modalAccessibilityInitialized = true;
 
     modalObserver = new MutationObserver(() => {
-        getVisibleDialogOverlays().forEach((overlay) => {
+        document.querySelectorAll('.dialog-overlay').forEach((overlay) => {
+            const isVisible = getComputedStyle(overlay).display !== 'none' &&
+                getComputedStyle(overlay).visibility !== 'hidden';
+            if (!isVisible) {
+                modalVisibilityMap.set(overlay, false);
+                return;
+            }
+
+            const justOpened = modalVisibilityMap.get(overlay) !== true;
+            modalVisibilityMap.set(overlay, true);
+
             if (!modalReturnFocusMap.has(overlay)) {
                 const activeElement = document.activeElement;
                 if (activeElement && !overlay.contains(activeElement)) {
@@ -1156,7 +1173,9 @@ function setupModalAccessibility() {
             }
             overlay.setAttribute('aria-hidden', 'false');
             const focusables = getFocusableElements(overlay);
-            if (focusables.length > 0 && !overlay.contains(document.activeElement)) {
+            if (justOpened && focusables.length > 0 &&
+                !overlay.contains(document.activeElement) &&
+                !isDialogAuxiliarySurface(document.activeElement)) {
                 focusables[0].focus();
             }
         });

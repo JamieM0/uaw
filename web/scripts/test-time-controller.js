@@ -1,4 +1,7 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+global.WorkSpecRuntime = require('../../packages/workspec/workspec-runtime.js');
 const {
     DAY_MINUTES,
     normalizeDocument,
@@ -85,6 +88,19 @@ assert.equal(dayTimeModel.tasks[0].start_minutes, (2 * DAY_MINUTES) + 435);
 assert.equal(dayTimeModel.tasks[0].duration_minutes, 120);
 assert.equal(durationMinutes('P1M'), 30 * DAY_MINUTES);
 assert.equal(durationMinutes('2w'), 14 * DAY_MINUTES);
+
+const selectionFixture = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../packages/workspec/reliability/06-deterministic-selection.valid.workspec.json'), 'utf8'));
+const selectionModel = normalizeDocument(selectionFixture, { now: new Date('2027-01-10T12:00:00Z') });
+assert.equal(selectionModel.tasks[0].actor_id, 'worker_a');
+assert.ok(selectionModel.tasks[0].object_ids.includes('worker_a'));
+assert.equal(selectionModel.tasks[0].runtime_status, 'completed');
+
+const runtimeWorkFixture = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../packages/workspec/reliability/07-runtime-work.valid.workspec.json'), 'utf8'));
+const runtimeWorkModel = normalizeDocument(runtimeWorkFixture, { now: new Date('2027-01-10T12:00:00Z') });
+assert.equal(runtimeWorkModel.tasks.length, 1);
+assert.equal(runtimeWorkModel.tasks[0].__runtime_instance, true);
+assert.equal(runtimeWorkModel.tasks[0].__definition_id, 'process_file');
+assert.equal(runtimeWorkModel.tasks[0].__correlation_id, 'file_a');
 
 const priorDocument = global.document;
 global.document = {

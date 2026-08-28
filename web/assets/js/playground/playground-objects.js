@@ -45,6 +45,33 @@ function safeTrim(value) {
     return (typeof value === 'string') ? value.trim() : '';
 }
 
+function isAdvancedWorkSpecValue(value) {
+    if (value !== null && typeof value === 'object') return true;
+    if (typeof value !== 'string' || !value.startsWith('@')) return false;
+    const normalized = window.WorkSpecRuntime?.normalizeValueExpression?.(value);
+    return normalized ? normalized.ok && normalized.kind !== 'literal' : !value.startsWith('@@');
+}
+
+function interactionNeedsJsonPreservation(interaction) {
+    if (!isPlainObject(interaction)) return false;
+    const propertyChanges = isPlainObject(interaction.property_changes) ? interaction.property_changes : {};
+    const operators = Object.values(propertyChanges);
+    const hasAdvancedOperand = operators.some(operator => isPlainObject(operator) &&
+        Object.entries(operator).some(([key, value]) => !['increment', 'decrement'].includes(key) && isAdvancedWorkSpecValue(value)));
+    const createdHasExpressions = isPlainObject(interaction.object) && (
+        isAdvancedWorkSpecValue(interaction.object.location) ||
+        Object.values(interaction.object.properties || {}).some(isAdvancedWorkSpecValue)
+    );
+    const unsupportedOperator = operators.some(operator => isPlainObject(operator) &&
+        Object.keys(operator).some(key => !['from', 'to', 'set', 'delta'].includes(key)));
+    const compactFormKeys = new Set(['target_id', 'property_changes', 'action', 'object', 'temporary']);
+    const hasUnrepresentedInteractionField = Object.keys(interaction).some(key => !compactFormKeys.has(key));
+    return interaction.at !== undefined || interaction.when !== undefined ||
+        isAdvancedWorkSpecValue(interaction.target_id) || hasAdvancedOperand || createdHasExpressions ||
+        interaction.action === 'create' || hasUnrepresentedInteractionField ||
+        unsupportedOperator || Object.keys(propertyChanges).length > 1;
+}
+
 function normalizeObjectPropertyInputName(rawName, suffix = '') {
     if (typeof rawName !== 'string' || rawName.length === 0) return '';
     let name = rawName;
@@ -1066,6 +1093,8 @@ function openAddTaskModal() {
     // Populate actors/objects
     if (actorSelect) {
         actorSelect.innerHTML = '<option value="">Select actor/object...</option>';
+        actorSelect.dataset.preserveJson = 'false';
+        delete actorSelect.dataset.originalActorId;
         Object.entries(context.objectsByType).forEach(([type, objects]) => {
             const optgroup = document.createElement('optgroup');
             optgroup.label = type.charAt(0).toUpperCase() + type.slice(1);
@@ -1242,7 +1271,13 @@ function openEditTaskModal(task) {
     // Populate form with existing task data
     if (taskIdInput) taskIdInput.value = task.id || '';
     if (taskEmojiInput) taskEmojiInput.value = task.emoji || '';
-    if (actorSelect) actorSelect.value = task.actor_id || '';
+    if (actorSelect) {
+        const preserveActorJson = typeof task.actor_id !== 'string' || task.actor_id.startsWith('@');
+        actorSelect.value = preserveActorJson ? '' : (task.actor_id || '');
+        actorSelect.dataset.preserveJson = preserveActorJson ? 'true' : 'false';
+        actorSelect.dataset.originalActorId = JSON.stringify(task.actor_id);
+        actorSelect.onchange = () => { actorSelect.dataset.preserveJson = 'false'; };
+    }
     if (locationSelect) locationSelect.value = task.location || '';
     if (startTimeInput) {
         const authoredStart = Object.prototype.hasOwnProperty.call(task, 'start');
@@ -1301,23 +1336,7 @@ function openEditTaskModal(task) {
                 addInteraction();
                 const lastInteractionGroup = document.querySelector('.interaction-group:last-child');
             if (lastInteractionGroup) {
-                const operators = propertyChanges && typeof propertyChanges === 'object'
-                    ? Object.values(propertyChanges)
-                    : [];
-                const hasReferenceOperand = operators.some(operator => operator && typeof operator === 'object' &&
-                    Object.entries(operator).some(([key, value]) => !['increment', 'decrement'].includes(key) && value !== null && typeof value === 'object'));
-                const createdHasExpressions = interaction.object && (
-                    (interaction.object.location && typeof interaction.object.location === 'object') ||
-                    Object.values(interaction.object.properties || {}).some(value => value !== null && typeof value === 'object')
-                );
-                const unsupportedOperator = operators.some(operator => operator && typeof operator === 'object' &&
-                    Object.keys(operator).some(key => !['from', 'to', 'set', 'delta'].includes(key)));
-                const requiresJsonPreservation = Boolean(
-                    interaction.at || interaction.when ||
-                    (interaction.target_id && typeof interaction.target_id === 'object') ||
-                    hasReferenceOperand || createdHasExpressions || unsupportedOperator ||
-                    Object.keys(propertyChanges || {}).length > 1
-                );
+                const requiresJsonPreservation = interactionNeedsJsonPreservation(interaction);
                 lastInteractionGroup.dataset.originalInteraction = JSON.stringify(interaction);
                 lastInteractionGroup.dataset.originalInteractionIndex = String(interactionIndex);
                 lastInteractionGroup.dataset.preserveJson = requiresJsonPreservation ? 'true' : 'false';
@@ -2525,11 +2544,13 @@ function saveTaskToSimulation() {
 
         const taskId = document.getElementById('task-id-input').value || generateUniqueId('task');
         const emoji = document.getElementById('task-emoji-input').value || '📋';
-        const actorId = document.getElementById('task-actor-select').value;
+        const actorSelect = document.getElementById('task-actor-select');
+        const actorId = actorSelect.value;
+        const preserveActorJson = isEditMode && actorSelect.dataset.preserveJson === 'true' && actorSelect.dataset.originalActorId;
         const location = document.getElementById('task-location-select').value;
         const startTime = document.getElementById('task-start-input').value;
 
-        if (!taskId || !emoji || !actorId) {
+        if (!taskId || !emoji || (!actorId && !preserveActorJson)) {
             alert('Please fill in all required fields');
             return;
         }
@@ -2585,7 +2606,7 @@ function saveTaskToSimulation() {
             ...(existingTask || {}),
             id: taskId,
             emoji: emoji,
-            actor_id: actorId,
+            actor_id: preserveActorJson ? JSON.parse(actorSelect.dataset.originalActorId) : actorId,
             ...(!preserveDerivedStart && startTime ? { start: startTime } : {}),
             duration: duration,
             location: location,

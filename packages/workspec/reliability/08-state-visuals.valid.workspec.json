@@ -1,0 +1,13 @@
+{
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": { "title": "State visuals", "description": "Visual state follows authoritative object state.", "domain": "reliability" },
+    "config": { "time_unit": "minutes", "start_time": "08:00", "end_time": "09:00", "currency": "USD", "locale": "en-US" },
+    "state_libraries": { "machine_states": { "states": ["idle", "running"], "appearances": { "default": { "idle": "machine_idle", "running": "machine_running" } } } },
+    "world": { "objects": [
+      { "id": "operator", "type": "actor", "name": "Operator", "properties": { "state": "ready" } },
+      { "id": "machine", "type": "equipment", "name": "Machine", "state_library": "machine_states", "appearance": "default", "properties": { "state": "idle" } }
+    ] },
+    "process": { "tasks": [{ "id": "run", "actor_id": "operator", "start": "08:00", "duration": "5m", "interactions": [{ "target_id": "machine", "at": "start", "property_changes": { "state": { "set": "running" } } }] }] }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": { "title": "Derived timing", "description": "Dependency completion and a lower timing bound derive one start.", "domain": "reliability" },
+    "config": { "time_unit": "minutes", "start_time": "08:00", "end_time": "09:00", "currency": "USD", "locale": "en-US" },
+    "world": { "objects": [
+      { "id": "worker_a", "type": "actor", "name": "Worker A", "properties": { "state": "ready" } },
+      { "id": "worker_b", "type": "actor", "name": "Worker B", "properties": { "state": "ready" } }
+    ] },
+    "process": { "tasks": [
+      { "id": "prepare", "actor_id": "worker_a", "start": "08:00", "duration": "10m" },
+      { "id": "finish", "actor_id": "worker_b", "duration": "5m", "depends_on": ["prepare"], "timing": [{ "relation": "offset", "event": "start", "relative_to": "@prepare.end", "min_offset": "5m" }] }
+    ] }
+  }
+}

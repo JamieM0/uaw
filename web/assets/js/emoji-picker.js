@@ -16,6 +16,7 @@ class EmojiPicker {
         
         this.container = null;
         this.activeInput = null;
+        this.suppressFocusOpenFor = null;
         this.isVisible = false;
         this.workplaceEmojis = null;
         this.emojiAliases = null;
@@ -309,6 +310,8 @@ class EmojiPicker {
     }
     
     selectEmoji(emoji) {
+        const selectedInput = this.activeInput;
+
         // Handle Monaco editor insertion
         if (this.monacoEditor && this.monacoPosition) {
             this.monacoEditor.executeEdits('insert-emoji', [{
@@ -329,16 +332,16 @@ class EmojiPicker {
             this.monacoEditor.setPosition(newPosition);
             this.monacoEditor.focus();
             
-        } else if (this.activeInput) {
+        } else if (selectedInput) {
             // Insert emoji into the active input
-            if (this.activeInput.tagName.toLowerCase() === 'input' || 
-                this.activeInput.tagName.toLowerCase() === 'textarea') {
-                this.activeInput.value = emoji;
-                this.activeInput.dispatchEvent(new Event('input', { bubbles: true }));
+            if (selectedInput.tagName.toLowerCase() === 'input' ||
+                selectedInput.tagName.toLowerCase() === 'textarea') {
+                selectedInput.value = emoji;
+                selectedInput.dispatchEvent(new Event('input', { bubbles: true }));
             }
             
             // Trigger custom event
-            this.activeInput.dispatchEvent(new CustomEvent('emoji-selected', {
+            selectedInput.dispatchEvent(new CustomEvent('emoji-selected', {
                 detail: { emoji, picker: this }
             }));
         }
@@ -348,6 +351,13 @@ class EmojiPicker {
         
         // Hide picker after selection
         this.hide();
+
+        // Return focus to the field that owns the picker. This keeps keyboard
+        // entry and dialog focus management anchored to the user's field.
+        if (selectedInput && document.contains(selectedInput)) {
+            this.suppressFocusOpenFor = selectedInput;
+            selectedInput.focus();
+        }
     }
     
     addToRecentEmojis(emoji) {
@@ -412,6 +422,10 @@ class EmojiPicker {
         // Add focus event listener
         if (config.autoOpen) {
             inputElement.addEventListener('focus', (e) => {
+                if (this.suppressFocusOpenFor === e.target) {
+                    this.suppressFocusOpenFor = null;
+                    return;
+                }
                 this.show(e.target);
             });
         }
@@ -663,6 +677,13 @@ class EmojiPicker {
         if (!this.container) {
             console.warn('EmojiPicker: Not initialized');
             return;
+        }
+
+        // Native click focus can be deferred while the picker is being opened.
+        // Anchor focus to the owning field before changing the popup layout so
+        // dialog focus management does not fall back to its first control.
+        if (inputElement && document.activeElement !== inputElement) {
+            inputElement.focus();
         }
         
         // Position the picker

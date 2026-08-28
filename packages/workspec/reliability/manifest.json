@@ -1,0 +1,16 @@
+{
+  "cases": [
+    { "file": "01-compact-arithmetic.valid.workspec.json", "valid": true },
+    { "file": "02-derived-timing.valid.workspec.json", "valid": true },
+    { "file": "03-interruption-continuation.valid.workspec.json", "valid": true },
+    { "file": "04-temporary-reservation-boundary.valid.workspec.json", "valid": true },
+    { "file": "05-collections-quantifiers.valid.workspec.json", "valid": true },
+    { "file": "06-deterministic-selection.valid.workspec.json", "valid": true },
+    { "file": "07-runtime-work.valid.workspec.json", "valid": true },
+    { "file": "08-state-visuals.valid.workspec.json", "valid": true },
+    { "file": "09-compact-reference.invalid.workspec.json", "valid": false, "schema_valid": false, "metric_id": "reference.compact.grammar" },
+    { "file": "10-reservation-amount.invalid.workspec.json", "valid": false, "metric_id": "reservation.amount.type" },
+    { "file": "11-continuation.invalid.workspec.json", "valid": false, "metric_id": "task.continues.unknown" },
+    { "file": "12-write-conflict.invalid.workspec.json", "valid": false, "metric_id": "interaction.write.conflict" }
+  ]
+}

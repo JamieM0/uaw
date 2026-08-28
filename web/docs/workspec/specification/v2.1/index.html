@@ -284,6 +284,16 @@
 <p>Reservations validate the resolved interval. A conflict is reported at the explicit or derived start; WorkSpec does not delay the task to find a free slot or select a different resource.</p>
 <p>Deterministic derivation stops whenever WorkSpec would have to choose among schedules, wait for resources, or optimize an objective. An <code class="docs-inline-code">actual_end</code> timing anchor or runtime population may remain unresolved until its modeled event occurs; this is deterministic event resolution, not search.</p>
 <p>WorkSpec can deterministically instantiate, quantify, bind, and dispatch. It does not globally optimize schedules or assignments, silently wait for a resource, invent a comparator, run arbitrary scripts, infer progress, provide mutable resume modes, or promise external transaction semantics.</p>
+<h2 class="docs-heading" id="frozen-21-limitations">Frozen 2.1 limitations<a class="headerlink" href="#frozen-21-limitations" title="Link to this section">¶</a></h2>
+<p>These boundaries are intentional in the frozen 2.1 language:</p>
+<ul>
+<li>Physical properties do not evolve continuously or automatically from elapsed task time. State changes occur only at authored modeled events; <code class="docs-inline-code">progress</code> observes a modeled value rather than synthesizing one.</li>
+<li>Runtime work can react to members of modeled collections, including finite open collections with <code class="docs-inline-code">closes_at</code>, but 2.1 has no general external unbounded object-arrival source.</li>
+<li>Timing derivation, reservations, and selection are deterministic validation/dispatch mechanisms, not automatic or global schedule optimisation and not global assignment optimisation.</li>
+<li>Core semantics are deterministic. Stochastic distributions, Monte Carlo execution, and probabilistic branching are outside 2.1.</li>
+<li>WorkSpec event atomicity does not provide external database transactions, IAM enforcement, device-control safety, delivery guarantees, or other operational guarantees.</li>
+</ul>
+<p>Model these concerns in a surrounding system when needed; do not encode them by inventing WorkSpec syntax.</p>
                     </div>
                     
                     <footer class="docs-footer">

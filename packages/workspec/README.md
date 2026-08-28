@@ -58,6 +58,8 @@ Named live `simulation.collections` use explicit aliases and snapshot-consistent
 
 WorkSpec deterministically instantiates, quantifies, binds, and dispatches. It does not globally optimize schedules or assignments.
 
+Frozen 2.1 intentionally has no automatic continuous physical-state evolution from elapsed time, no general external unbounded arrival source, no global schedule or assignment optimisation, and no stochastic/Monte Carlo core semantics. Its modeled event atomicity also makes no external transaction, IAM, delivery, or device-control guarantee.
+
 The authoritative timing resolver is `runtime.resolveTimings()` in `workspec-runtime.js`. Its normalized map records each task's resolved `start`, `end`/`completion`, `duration`, explicit/derived provenance, and resolution error. Replay, validation, Studio, playback, State Visuals, the CLI, and benchmark validation consume this package-owned result. `workspec-validator.js` adds structural checks, then consumes the runtime's replay result. Browser consumers load the synced runtime before the validator.
 
 ## JSON Schema coverage

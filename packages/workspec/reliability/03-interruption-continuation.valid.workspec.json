@@ -1,0 +1,19 @@
+{
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": { "title": "Interruption continuation", "description": "Captures progress and starts authored recovery from actual_end.", "domain": "reliability" },
+    "config": { "time_unit": "minutes", "start_time": "08:00", "end_time": "10:00", "currency": "USD", "locale": "en-US" },
+    "world": { "objects": [
+      { "id": "worker_a", "type": "actor", "name": "Worker A", "properties": { "state": "ready" } },
+      { "id": "worker_b", "type": "actor", "name": "Worker B", "properties": { "state": "ready" } },
+      { "id": "supervisor", "type": "actor", "name": "Supervisor", "properties": { "state": "ready" } },
+      { "id": "gate", "type": "equipment", "name": "Gate", "properties": { "state": "open" } },
+      { "id": "batch", "type": "resource", "name": "Batch", "properties": { "quantity": 4 } }
+    ] },
+    "process": { "tasks": [
+      { "id": "work", "actor_id": "worker_a", "start": "08:00", "duration": "30m", "while": { "==": ["@gate.state", "open"] }, "progress": "@batch.quantity" },
+      { "id": "close_gate", "actor_id": "supervisor", "start": "08:10", "duration": "1m", "interactions": [{ "target_id": "gate", "property_changes": { "state": { "set": "closed" } } }] },
+      { "id": "recover", "actor_id": "worker_b", "duration": "5m", "continues": { "task": "work" }, "when": { "==": ["@work.status", "interrupted"] }, "timing": [{ "relation": "offset", "event": "start", "relative_to": "@work.actual_end", "min_offset": "0m" }] }
+    ] }
+  }
+}

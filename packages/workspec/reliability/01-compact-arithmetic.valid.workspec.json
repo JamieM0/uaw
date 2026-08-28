@@ -1,0 +1,17 @@
+{
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": { "title": "Compact arithmetic", "description": "Compact references and pure arithmetic in an effect.", "domain": "reliability" },
+    "config": { "time_unit": "minutes", "start_time": "08:00", "end_time": "09:00", "currency": "USD", "locale": "en-US" },
+    "world": { "objects": [
+      { "id": "operator", "type": "actor", "name": "Operator", "properties": { "state": "ready" } },
+      { "id": "stock", "type": "resource", "name": "Stock", "properties": { "quantity": 2 } },
+      { "id": "factor", "type": "resource", "name": "Factor", "properties": { "quantity": 3 } }
+    ] },
+    "process": { "tasks": [{
+      "id": "adjust", "actor_id": "operator", "start": "08:00", "duration": "5m",
+      "requires": { "==": ["@@stock.quantity", "@@stock.quantity"] },
+      "interactions": [{ "target_id": "stock", "property_changes": { "quantity": { "delta": { "+": ["@factor.quantity", 1] } } } }]
+    }] }
+  }
+}

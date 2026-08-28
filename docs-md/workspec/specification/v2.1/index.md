@@ -305,3 +305,15 @@ Reservations validate the resolved interval. A conflict is reported at the expli
 Deterministic derivation stops whenever WorkSpec would have to choose among schedules, wait for resources, or optimize an objective. An `actual_end` timing anchor or runtime population may remain unresolved until its modeled event occurs; this is deterministic event resolution, not search.
 
 WorkSpec can deterministically instantiate, quantify, bind, and dispatch. It does not globally optimize schedules or assignments, silently wait for a resource, invent a comparator, run arbitrary scripts, infer progress, provide mutable resume modes, or promise external transaction semantics.
+
+## Frozen 2.1 limitations
+
+These boundaries are intentional in the frozen 2.1 language:
+
+- Physical properties do not evolve continuously or automatically from elapsed task time. State changes occur only at authored modeled events; `progress` observes a modeled value rather than synthesizing one.
+- Runtime work can react to members of modeled collections, including finite open collections with `closes_at`, but 2.1 has no general external unbounded object-arrival source.
+- Timing derivation, reservations, and selection are deterministic validation/dispatch mechanisms, not automatic or global schedule optimisation and not global assignment optimisation.
+- Core semantics are deterministic. Stochastic distributions, Monte Carlo execution, and probabilistic branching are outside 2.1.
+- WorkSpec event atomicity does not provide external database transactions, IAM enforcement, device-control safety, delivery guarantees, or other operational guarantees.
+
+Model these concerns in a surrounding system when needed; do not encode them by inventing WorkSpec syntax.

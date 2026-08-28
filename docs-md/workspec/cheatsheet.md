@@ -111,6 +111,13 @@ Use exactly one dot and only a direct member. Never create dotted property names
 - `actor_id` may be a literal ID, compact reference, or `select_member` expression.
 - WorkSpec dispatches deterministically; it does not globally optimize schedules or assignments.
 
+## Frozen boundaries
+
+- No automatic continuous physical-state evolution from elapsed time.
+- No general external unbounded arrival source; modeled open collections require a finite `closes_at`.
+- No global schedule/assignment optimisation and no stochastic or Monte Carlo core.
+- No external transaction, IAM, delivery, or device-control guarantees.
+
 ## Guards and interruption
 
 - `when`: should this task execute? False → `skipped`.

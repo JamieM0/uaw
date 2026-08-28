@@ -169,18 +169,21 @@
         const authoritativeRun = simulation.schema_version === '2.1' && root.WorkSpecRuntime?.replay
             ? root.WorkSpecRuntime.replay(documentValue?.simulation ? documentValue : { simulation })
             : null;
-        let tasks = canonicalTasks.map(task => {
+        const tasksToNormalize = authoritativeRun ? [...authoritativeRun.index.tasks.values()] : canonicalTasks;
+        let tasks = tasksToNormalize.map(task => {
             const timing = authoritativeRun?.timings?.get(task.id);
+            const runtimeRecord = authoritativeRun?.state?.taskRuntime?.get(task.id) || {};
             return timing?.resolved
                 ? normalizeTask({
                     ...task,
+                    actor_id: runtimeRecord.selected_actor_id || task.actor_id,
                     start_minutes: timing.start,
                     end_minutes: timing.end,
                     duration_minutes: timing.duration,
                     start_source: timing.source,
                     runtime_status: authoritativeRun.state.statuses.get(task.id),
-                    actual_end_minutes: authoritativeRun.state.taskRuntime.get(task.id)?.actual_end,
-                    captured_progress: authoritativeRun.state.taskRuntime.get(task.id)?.progress
+                    actual_end_minutes: runtimeRecord.actual_end,
+                    captured_progress: runtimeRecord.progress
                 }, clock, unit)
                 : (authoritativeRun ? null : normalizeTask(task, clock, unit));
         }).filter(Boolean);
@@ -236,7 +239,7 @@
     }
 
     function taskState(task, time, model) {
-        if (model?.documentValue && root.WorkSpecRuntime?.snapshotAt) {
+        if (model?.authoritativeRun && model.documentValue && root.WorkSpecRuntime?.snapshotAt) {
             const status = root.WorkSpecRuntime.snapshotAt(model.documentValue, time).task_statuses?.[task.source_id || task.id];
             if (status) return status;
         }

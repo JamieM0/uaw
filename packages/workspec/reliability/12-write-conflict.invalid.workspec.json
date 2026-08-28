@@ -1,0 +1,16 @@
+{
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": { "title": "Invalid write conflict", "description": "Co-timed set and delta writes conflict.", "domain": "reliability" },
+    "config": { "time_unit": "minutes", "start_time": "08:00", "end_time": "09:00", "currency": "USD", "locale": "en-US" },
+    "world": { "objects": [
+      { "id": "worker_a", "type": "actor", "name": "Worker A", "properties": { "state": "ready" } },
+      { "id": "worker_b", "type": "actor", "name": "Worker B", "properties": { "state": "ready" } },
+      { "id": "stock", "type": "resource", "name": "Stock", "properties": { "quantity": 2 } }
+    ] },
+    "process": { "tasks": [
+      { "id": "set_stock", "actor_id": "worker_a", "start": "08:00", "duration": "5m", "interactions": [{ "target_id": "stock", "property_changes": { "quantity": { "set": 10 } } }] },
+      { "id": "change_stock", "actor_id": "worker_b", "start": "08:00", "duration": "5m", "interactions": [{ "target_id": "stock", "property_changes": { "quantity": { "delta": 1 } } }] }
+    ] }
+  }
+}

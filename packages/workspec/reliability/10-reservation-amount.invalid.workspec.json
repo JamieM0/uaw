@@ -1,0 +1,12 @@
+{
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": { "title": "Invalid reservation amount", "description": "Capacity amount must resolve to a positive number.", "domain": "reliability" },
+    "config": { "time_unit": "minutes", "start_time": "08:00", "end_time": "09:00", "currency": "USD", "locale": "en-US" },
+    "world": { "objects": [
+      { "id": "operator", "type": "actor", "name": "Operator", "properties": { "state": "ready" } },
+      { "id": "machine", "type": "equipment", "name": "Machine", "properties": { "state": "ready", "capacity": 2 } }
+    ] },
+    "process": { "tasks": [{ "id": "bad_amount", "actor_id": "operator", "start": "08:00", "duration": "5m", "reservations": [{ "resource": "machine", "mode": "capacity", "amount": "two" }] }] }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": { "title": "Temporary reservation boundary", "description": "Restoration and reservation release precede same-time acquisition.", "domain": "reliability" },
+    "config": { "time_unit": "minutes", "start_time": "08:00", "end_time": "09:00", "currency": "USD", "locale": "en-US" },
+    "world": { "objects": [
+      { "id": "worker_a", "type": "actor", "name": "Worker A", "properties": { "state": "ready" } },
+      { "id": "worker_b", "type": "actor", "name": "Worker B", "properties": { "state": "ready" } },
+      { "id": "machine", "type": "equipment", "name": "Machine", "properties": { "state": "idle" } }
+    ] },
+    "process": { "tasks": [
+      { "id": "first", "actor_id": "worker_a", "start": "08:00", "duration": "10m", "reservations": [{ "resource": "machine", "mode": "exclusive" }], "interactions": [{ "target_id": "machine", "temporary": true, "property_changes": { "state": { "set": "busy" } } }] },
+      { "id": "second", "actor_id": "worker_b", "start": "08:10", "duration": "5m", "requires": { "==": ["@machine.state", "idle"] }, "reservations": [{ "resource": "machine", "mode": "exclusive" }] }
+    ] }
+  }
+}

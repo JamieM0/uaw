@@ -12,7 +12,7 @@
     "check:sync": "node scripts/check-sync.js",
     "sync:web": "node scripts/sync-web-assets.js",
     "test:integration": "node scripts/sync-web-assets.js && node scripts/test-playground-integration.js",
-    "test": "node scripts/self-test.js && node --test scripts/workspec-runtime-2.1.test.js && npm run test:integration"
+    "test": "node scripts/self-test.js && node --test scripts/workspec-runtime-2.1.test.js scripts/reliability-corpus.test.js && npm run test:integration"
   },
   "files": [
     "bin/",
@@ -24,6 +24,7 @@
     "workspec-migrate-v1-to-v2.js",
     "state-visuals.js",
     "examples/",
+    "reliability/",
     "v2.1.schema.json",
     "README.md"
   ],

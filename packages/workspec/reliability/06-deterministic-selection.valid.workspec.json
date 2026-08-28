@@ -1,0 +1,13 @@
+{
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": { "title": "Deterministic selection", "description": "Stable performer selection from a live collection.", "domain": "reliability" },
+    "config": { "time_unit": "minutes", "start_time": "08:00", "end_time": "09:00", "currency": "USD", "locale": "en-US" },
+    "collections": { "workers": { "from": "objects", "as": "member", "where": { "==": ["@member.type", "actor"] } } },
+    "world": { "objects": [
+      { "id": "worker_b", "type": "actor", "name": "Worker B", "properties": { "state": "ready", "load": 1 } },
+      { "id": "worker_a", "type": "actor", "name": "Worker A", "properties": { "state": "ready", "load": 1 } }
+    ] },
+    "process": { "tasks": [{ "id": "selected_work", "actor_id": { "select_member": { "collection": "workers", "as": "candidate", "policy": "lowest", "by": "@candidate.load", "tie_break": "stable_id" } }, "start": "08:00", "duration": "5m" }] }
+  }
+}
