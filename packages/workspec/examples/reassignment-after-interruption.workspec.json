@@ -1,0 +1,26 @@
+{
+  "$schema": "https://universalautomation.wiki/workspec/v2.1.schema.json",
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": { "title": "Reassignment after interruption", "description": "Interrupt active work before assigning continuation work to a replacement.", "domain": "maintenance" },
+    "config": { "time_unit": "minutes", "start_time": "09:00", "end_time": "11:00", "currency": "GBP", "locale": "en-GB", "timezone": "Europe/London" },
+    "collections": { "technicians": { "from": "objects", "as": "member", "where": { "==": ["@member.type", "actor"] } } },
+    "world": { "objects": [
+      { "id": "technician_a", "type": "actor", "name": "Technician A", "properties": { "state": "available" } },
+      { "id": "technician_b", "type": "actor", "name": "Technician B", "properties": { "state": "available" } },
+      { "id": "monitor", "type": "service", "name": "Safety monitor", "properties": { "state": "active" } },
+      { "id": "permit", "type": "resource", "name": "Permit", "properties": { "quantity": 1, "valid": true } }
+    ] },
+    "process": { "tasks": [
+      { "id": "primary_repair", "actor_id": "technician_a", "start": "09:00", "duration": 60, "while": { "==": ["@permit.valid", true] } },
+      { "id": "invalidate_permit", "actor_id": "monitor", "start": "09:10", "duration": 10, "interactions": [{ "target_id": "permit", "property_changes": { "valid": { "set": false } } }] },
+      {
+        "id": "recovery_repair",
+        "actor_id": { "select_member": { "collection": "technicians", "as": "candidate", "where": { "!=": ["@candidate.id", "@primary_repair.actor_id"] }, "policy": "first_by_id" } },
+        "duration": 20,
+        "continues": { "task": "primary_repair" },
+        "timing": [{ "relation": "offset", "event": "start", "relative_to": "@primary_repair.actual_end", "min_offset": 0 }]
+      }
+    ] }
+  }
+}

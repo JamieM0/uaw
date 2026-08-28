@@ -1,6 +1,6 @@
-# Migration Guide: WorkSpec v1.0 → v2.0
+# Migration Guide: WorkSpec v1.0 → 2.1
 
-WorkSpec v2.0 introduces breaking changes. This guide documents the required transformations.
+WorkSpec 2.1 introduces breaking changes. This guide documents the required transformations.
 
 ---
 
@@ -10,9 +10,9 @@ Add:
 
 ```json
 {
-    "$schema": "https://universalautomation.wiki/workspec/v2.0.schema.json",
+    "$schema": "https://universalautomation.wiki/workspec/v2.1.schema.json",
     "simulation": {
-        "schema_version": "2.0"
+        "schema_version": "2.1"
     }
 }
 ```
@@ -43,7 +43,7 @@ Documents without `simulation.schema_version` are treated as legacy and should b
 ```json
 {
     "simulation": {
-        "schema_version": "2.0",
+        "schema_version": "2.1",
         "meta": {},
         "config": {},
         "world": {
@@ -183,5 +183,5 @@ After migration, verify:
 
 See:
 
-- v2.0 validation: [/docs/workspec/specification/v2.0/validation](/docs/workspec/specification/v2.0/validation)
+- WorkSpec 2.1 semantics: [/docs/workspec/specification/v2.1/](/docs/workspec/specification/v2.1/)
 - error code reference: [/docs/workspec/reference/errors](/docs/workspec/reference/errors)

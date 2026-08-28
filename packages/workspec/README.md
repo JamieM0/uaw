@@ -52,6 +52,12 @@ The runtime exposes compact `@task.status`, `@task.actual_end`, and—only for a
 
 Value references use the official compact syntax: `"@item.quantity"`, `"@prepare.end"`, and `"@now"`. In a ValueExpression, a normal string is literal, while `"@@item.quantity"` is the literal string `"@item.quantity"` (exactly one leading `@` is removed). Always use compact references in new WorkSpec; compatibility selector objects are accepted only for older documents. Property names must not contain `.`, and must not shadow referenceable built-in fields. Permanent interactions default to completion; `at: "start"` is explicit, while temporary property changes start and restore their captured value at completion.
 
+Named live `simulation.collections` use explicit aliases and snapshot-consistent filters. Conditions quantify them with `all_members`, `any_members`, and `no_members`; `count_members` is a numeric ValueExpression. `process.work_definitions` instantiate one deterministic runtime task per definition/member pair, retain definition and correlation identity, support pending cancellation on collection exit, and feed the same event runtime as authored tasks.
+
+`actor_id` can resolve a modeled ID or use deterministic `select_member` policies (`first_by_id`, `lowest`, `highest` with explicit stable-ID tie breaking). Selection never bypasses performer rules or reservations. Reassignment is a new G008 continuation after interruption, not mutation of an active task. Pure numeric ValueExpression operators are `+`, `-`, `*`, `/`, `min`, and `max`; they have no side effects or coercion.
+
+WorkSpec deterministically instantiates, quantifies, binds, and dispatches. It does not globally optimize schedules or assignments.
+
 The authoritative timing resolver is `runtime.resolveTimings()` in `workspec-runtime.js`. Its normalized map records each task's resolved `start`, `end`/`completion`, `duration`, explicit/derived provenance, and resolution error. Replay, validation, Studio, playback, State Visuals, the CLI, and benchmark validation consume this package-owned result. `workspec-validator.js` adds structural checks, then consumes the runtime's replay result. Browser consumers load the synced runtime before the validator.
 
 ## JSON Schema coverage

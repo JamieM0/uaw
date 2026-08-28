@@ -74,7 +74,7 @@ test('field, property, task, location, clock and literal references evaluate wit
     const doc = documentWith([task('check', 'actor_a', '09:00', { requires: conditions })]);
     const run = runtime.replay(doc);
     assert.equal(run.state.statuses.get('check'), 'completed');
-    assert.equal(run.problems.length, 0);
+    assert.equal(run.problems.length, 0, JSON.stringify(run.problems, null, 2));
 
     const wrongType = documentWith([task('wrong_type', 'actor_a', '09:00', { requires: { '==': ['5', 5] } })]);
     assert.equal(has(runtime.validate(wrongType).problems, 'condition.type.incompatible'), true);
@@ -105,7 +105,7 @@ test('compact references resolve object fields/properties, task fields, location
     ] } })]);
     const run = runtime.replay(doc);
     assert.equal(run.state.statuses.get('inspect'), 'completed');
-    assert.equal(run.problems.length, 0);
+    assert.equal(run.problems.length, 0, JSON.stringify(run.problems, null, 2));
 });
 
 test('literal ValueExpression strings and leading-at escapes follow the exact one-character rule', () => {
@@ -721,4 +721,200 @@ test('G008 focused Batch 1 fixtures validate and exercise only authored interrup
         assert.equal(run.state.taskRuntime.get(source.id).actual_end, 9 * 60 + 20, `${scenarioId} actual_end`);
         assert.notEqual(run.state.taskRuntime.get(source.id).progress, undefined, `${scenarioId} progress`);
     }
+});
+
+test('G012 evaluates strict pure arithmetic in conditions, effects, and reservation amounts', () => {
+    const doc = documentWith([task('derive', 'actor_a', '09:00', {
+        requires: { all: [
+            { '==': [{ '+': ['@item.temperature', 2] }, 6] },
+            { '==': [{ '-': ['@item.quantity', 3] }, 7] },
+            { '==': [{ '*': [2, 3, 4] }, 24] },
+            { '==': [{ '/': [20, 2, 2] }, 5] },
+            { '==': [{ min: [4, 2, 8] }, 2] },
+            { '==': [{ max: [4, 2, 8] }, 8] }
+        ] },
+        reservations: [{ resource: 'bay', mode: 'capacity', amount: { '-': [3, 2] } }],
+        interactions: [{ target_id: 'item', property_changes: { quantity: { set: { '-': ['@item.quantity', 3] } } } }]
+    })]);
+    const run = runtime.replay(doc);
+    assert.equal(run.state.objects.get('item').properties.quantity, 7);
+    assert.equal(run.problems.length, 0, JSON.stringify(run.problems, null, 2));
+
+    const badType = documentWith([task('bad_arithmetic', 'actor_a', '09:00', { requires: { '==': [{ '+': ['@item.flag', 1] }, 2] } })]);
+    assert.equal(has(runtime.validate(badType).problems, 'value.arithmetic.type'), true);
+    const divideZero = documentWith([task('divide_zero', 'actor_a', '09:00', { requires: { '==': [{ '/': [10, 0] }, 1] } })]);
+    assert.equal(has(runtime.validate(divideZero).problems, 'value.arithmetic.division_by_zero'), true);
+});
+
+test('G010 evaluates dynamic collection quantifiers and counts from one snapshot', () => {
+    const doc = documentWith([task('clearance', 'actor_a', '09:00', {
+        requires: { all: [
+            { all_members: { collection: 'crews', as: 'crew', satisfy: { '==': ['@crew.state', 'idle'] } } },
+            { no_members: { collection: 'crews', as: 'crew', satisfy: { '==': ['@crew.state', 'inside_closed_sector'] } } },
+            { any_members: { collection: 'crews', as: 'crew', satisfy: { '==': ['@crew.id', 'actor_a'] } } },
+            { '>=': [{ count_members: { collection: 'crews', as: 'crew', where: { '==': ['@crew.state', 'idle'] } } }, 2] }
+        ] }
+    })]);
+    doc.simulation.collections = { crews: { from: 'objects', as: 'member', where: { '==': ['@member.type', 'actor'] } } };
+    const run = runtime.replay(doc);
+    assert.equal(run.state.statuses.get('clearance'), 'completed');
+    assert.equal(run.problems.length, 0, JSON.stringify(run.problems, null, 2));
+});
+
+test('G011 binds and deterministically selects performers with assignment history and explicit ties', () => {
+    const doc = documentWith([task('dispatch', {
+        select_member: {
+            collection: 'technicians', as: 'candidate',
+            where: { contains: ['@candidate.permissions', 'run'] },
+            policy: 'lowest', by: '@candidate.load', tie_break: 'stable_id'
+        }
+    }, '09:00', { reservations: [{ resource: { select_member: {
+        collection: 'large_bays', as: 'candidate', where: { '>=': ['@candidate.capacity', 2] }, policy: 'first_by_id'
+    } }, mode: 'exclusive' }] })]);
+    doc.simulation.world.objects.find((entry) => entry.id === 'actor_a').properties.load = 2;
+    doc.simulation.world.objects.find((entry) => entry.id === 'actor_b').properties = { state: 'idle', permissions: ['run'], load: 1 };
+    doc.simulation.collections = {
+        technicians: { from: 'objects', as: 'member', where: { '==': ['@member.type', 'actor'] } },
+        large_bays: { from: 'locations', as: 'member', where: { '>=': ['@member.capacity', 2] } }
+    };
+    const run = runtime.replay(doc);
+    assert.equal(run.state.taskRuntime.get('dispatch').selected_actor_id, 'actor_b');
+    assert.deepEqual(run.state.taskRuntime.get('dispatch').assignment_history, [{ actor_id: 'actor_b', selected_at: 9 * 60, policy: 'lowest' }]);
+    assert.equal(run.problems.length, 0);
+
+    delete doc.simulation.process.tasks[0].actor_id.select_member.tie_break;
+    doc.simulation.world.objects.find((entry) => entry.id === 'actor_a').properties.load = 1;
+    assert.equal(has(runtime.validate(doc).problems, 'actor.selection.tie'), true);
+});
+
+test('G011 reassigns only through a new G008 continuation and preserves both assignments', () => {
+    const doc = documentWith([
+        task('primary_work', 'actor_a', '09:00', { duration: 60, while: { '==': ['@item.flag', true] } }),
+        task('invalidate', 'service_a', '09:10', { duration: 10, interactions: [{ target_id: 'item', property_changes: { flag: { set: false } } }] }),
+        task('recovery_work', { select_member: {
+            collection: 'replacement_actors', as: 'candidate',
+            where: { '!=': ['@candidate.id', '@primary_work.actor_id'] },
+            policy: 'first_by_id'
+        } }, undefined, {
+            duration: 20, continues: { task: 'primary_work' },
+            timing: [{ relation: 'offset', event: 'start', relative_to: '@primary_work.actual_end', min_offset: 0 }]
+        })
+    ]);
+    doc.simulation.collections = { replacement_actors: { from: 'objects', as: 'member', where: { '==': ['@member.type', 'actor'] } } };
+    const run = runtime.replay(doc);
+    assert.equal(run.state.statuses.get('primary_work'), 'interrupted');
+    assert.equal(run.state.statuses.get('recovery_work'), 'completed');
+    assert.equal(run.state.taskRuntime.get('primary_work').selected_actor_id, 'actor_a');
+    assert.equal(run.state.taskRuntime.get('recovery_work').selected_actor_id, 'actor_b');
+    assert.equal(run.state.taskRuntime.get('primary_work').assignment_history.length, 1);
+    assert.equal(run.state.taskRuntime.get('recovery_work').assignment_history.length, 1);
+});
+
+test('G009 instantiates exactly one stable correlated task for a newly created member', () => {
+    const doc = documentWith([task('receive', 'actor_a', '08:00', {
+        interactions: [{ action: 'create', object: { id: 'file_42', type: 'settlement_file', name: 'File 42', properties: { state: 'received', quantity: 1, valid: true } } }]
+    })]);
+    doc.simulation.type_definitions.settlement_file = { extends: 'digital_object', additional_properties: { valid: { type: 'boolean' }, processed: { type: 'boolean' } } };
+    doc.simulation.collections = { incoming_files: { from: 'objects', as: 'member', where: { '==': ['@member.type', 'settlement_file'] } } };
+    doc.simulation.process.work_definitions = [{
+        id: 'validate_file',
+        instantiate: { for_each: 'incoming_files', as: 'file', start: 'on_appearance' },
+        task: {
+            actor_id: 'actor_b', duration: 10,
+            requires: { '==': ['@file.valid', true] },
+            interactions: [{ target_id: '@file.id', property_changes: { processed: { set: true } } }]
+        }
+    }];
+    const first = runtime.replay(doc); const second = runtime.replay(doc);
+    const instances = [...first.index.tasks.values()].filter((entry) => entry.__runtime_instance);
+    assert.equal(instances.length, 1);
+    assert.equal(instances[0].id, [...second.index.tasks.values()].find((entry) => entry.__runtime_instance).id);
+    assert.equal(first.state.taskRuntime.get(instances[0].id).definition_id, 'validate_file');
+    assert.equal(first.state.taskRuntime.get(instances[0].id).correlation_id, 'file_42');
+    assert.equal(first.state.objects.get('file_42').properties.processed, true);
+    assert.equal(first.problems.length, 0, JSON.stringify(first.problems, null, 2));
+    const validation = validator.validate(doc);
+    assert.equal(validation.runtime.task_instances.length, 1);
+    assert.equal(validation.runtime.task_instances[0].correlation_id, 'file_42');
+});
+
+test('G009 cancels pending runtime work on collection exit without interrupting active work', () => {
+    const doc = documentWith([
+        task('receive', 'actor_a', '08:00', { duration: 10, interactions: [{ action: 'create', object: { id: 'file_99', type: 'settlement_file', name: 'File 99', properties: { state: 'received', quantity: 1 } } }] }),
+        task('withdraw', 'actor_a', '08:15', { duration: 5, interactions: [{ action: 'delete', target_id: 'file_99' }] })
+    ]);
+    doc.simulation.type_definitions.settlement_file = { extends: 'digital_object' };
+    doc.simulation.collections = { incoming_files: { from: 'objects', as: 'member', where: { '==': ['@member.type', 'settlement_file'] } } };
+    doc.simulation.process.work_definitions = [{
+        id: 'validate_file', instantiate: { for_each: 'incoming_files', as: 'file', offset: '30m', cancel_pending_on_exit: true },
+        task: { actor_id: 'actor_b', duration: 10 }
+    }];
+    const run = runtime.replay(doc);
+    const instance = [...run.index.tasks.values()].find((entry) => entry.__runtime_instance);
+    assert.equal(run.state.statuses.get(instance.id), 'cancelled');
+    assert.equal(run.state.taskRuntime.get(instance.id).cancelled_reason, 'collection_exit');
+});
+
+test('G009 treats appearance as a lower bound and combines it with dependency completion', () => {
+    const doc = documentWith([task('prepare', 'actor_a', '08:00', { duration: 30 })]);
+    doc.simulation.type_definitions.file = { extends: 'digital_object' };
+    doc.simulation.world.objects.push({ id: 'waiting_file', type: 'file', name: 'Waiting file', properties: { state: 'received', quantity: 1 } });
+    doc.simulation.collections = { files: { from: 'objects', as: 'member', where: { '==': ['@member.type', 'file'] } } };
+    doc.simulation.process.work_definitions = [{
+        id: 'process_file', instantiate: { for_each: 'files', as: 'file' },
+        task: { actor_id: 'actor_b', duration: 10, depends_on: ['prepare'] }
+    }];
+    const run = runtime.replay(doc);
+    const instance = [...run.index.tasks.values()].find((entry) => entry.__runtime_instance);
+    assert.equal(run.timings.get(instance.id).start, 8 * 60 + 30);
+    assert.equal(run.timings.get(instance.id).lower_bounds.some((bound) => bound.kind === 'appearance'), true);
+    assert.equal(run.timings.get(instance.id).lower_bounds.some((bound) => bound.kind === 'dependency'), true);
+});
+
+test('G009 gives open runtime populations an explicit close event and inspection boundary', () => {
+    const doc = documentWith([]);
+    doc.simulation.collections = { stream: { from: 'objects', as: 'member', open: true, closes_at: '09:30' } };
+    const run = runtime.replay(doc); const snapshot = runtime.serialiseState(run);
+    assert.equal(run.history.at(-1).time, 9 * 60 + 30);
+    assert.deepEqual(snapshot.collection_boundaries.stream, { open: false, closes_at: 9 * 60 + 30 });
+});
+
+test('VG002 validates co-timed claims across inactive branches and suppresses proven alternatives', () => {
+    const exclusive = documentWith([
+        task('true_branch', 'actor_a', '09:00', { when: { '==': ['@item.flag', true] } }),
+        task('false_branch', 'actor_a', '09:00', { when: { '!=': ['@item.flag', true] } })
+    ]);
+    const exclusiveProblems = runtime.validate(exclusive).problems;
+    assert.equal(has(exclusiveProblems, 'temporal.scheduling.actor_overlap_possible'), false);
+    assert.equal(has(exclusiveProblems, 'temporal.scheduling.actor_overlap'), false);
+
+    const uncertain = documentWith([
+        task('inactive_claim', 'actor_a', '09:00', { when: { '==': ['@item.flag', false] } }),
+        task('active_claim', 'actor_a', '09:00', { when: { contains: ['@actor_a.permissions', 'run'] } })
+    ]);
+    const warning = runtime.validate(uncertain).problems.find((entry) => entry.metric_id === 'temporal.scheduling.actor_overlap_possible');
+    assert.equal(warning?.severity, 'warning');
+});
+
+test('VG004 catches definite reference, arithmetic, ordering, actor, and reservation type errors early', () => {
+    const doc = documentWith([task('typed', 'actor_a', '09:00', {
+        requires: { all: [
+            { '==': ['@typed.start', '09:00'] },
+            { '==': [{ '+': ['@item.flag', 1] }, 2] },
+            { '<': ['@item.flag', true] }
+        ] },
+        reservations: [{ resource: 'bay', mode: 'capacity', amount: '@item.flag' }]
+    })]);
+    const problems = runtime.validate(doc).problems;
+    assert.equal(has(problems, 'condition.type.incompatible'), true);
+    assert.equal(has(problems, 'value.arithmetic.type'), true);
+    assert.equal(has(problems, 'reservation.amount.type'), true);
+
+    const actorType = documentWith([task('bad_actor_type', '@item.quantity', '09:00')]);
+    assert.equal(has(runtime.validate(actorType).problems, 'task.actor.type'), true);
+
+    const declared = documentWith([]);
+    declared.simulation.type_definitions.sensor = { extends: 'resource', additional_properties: { reading: { type: 'number' } } };
+    declared.simulation.world.objects.push({ id: 'sensor_1', type: 'sensor', name: 'Sensor', properties: { quantity: 1, reading: false } });
+    assert.equal(has(runtime.validate(declared).problems, 'object.property.type.declared'), true);
 });

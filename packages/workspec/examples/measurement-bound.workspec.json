@@ -1,0 +1,16 @@
+{
+  "$schema": "https://universalautomation.wiki/workspec/v2.1.schema.json",
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": { "title": "Measurement bound", "description": "Calculate a conservative upper measurement using pure arithmetic.", "domain": "quality" },
+    "config": { "time_unit": "minutes", "start_time": "09:00", "end_time": "10:00", "currency": "GBP", "locale": "en-GB", "timezone": "Europe/London" },
+    "world": { "objects": [
+      { "id": "inspector", "type": "actor", "name": "Inspector", "properties": { "state": "ready" } },
+      { "id": "measurement", "type": "resource", "name": "Measurement", "properties": { "quantity": 1, "reading": 12.4, "error": 0.3, "conservative_upper": 0 } }
+    ] },
+    "process": { "tasks": [{
+      "id": "record_bound", "actor_id": "inspector", "start": "09:00", "duration": 5,
+      "interactions": [{ "target_id": "measurement", "property_changes": { "conservative_upper": { "set": { "+": ["@measurement.reading", "@measurement.error"] } } } }]
+    }] }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://universalautomation.wiki/workspec/v2.1.schema.json",
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": { "title": "Runtime file processing", "description": "Instantiate validation work for each newly arriving settlement file.", "domain": "finance" },
+    "config": { "time_unit": "minutes", "start_time": "09:00", "end_time": "10:00", "currency": "GBP", "locale": "en-GB", "timezone": "Europe/London" },
+    "type_definitions": {
+      "settlement_file": { "extends": "digital_object", "additional_properties": { "valid": { "type": "boolean" }, "processed": { "type": "boolean" } } }
+    },
+    "collections": {
+      "incoming_files": { "from": "objects", "as": "member", "where": { "==": ["@member.type", "settlement_file"] } }
+    },
+    "world": {
+      "objects": [
+        { "id": "intake_service", "type": "service", "name": "File intake", "properties": { "state": "ready" } },
+        { "id": "file_processor", "type": "actor", "name": "File processor", "properties": { "state": "available" } }
+      ]
+    },
+    "process": {
+      "tasks": [{
+        "id": "receive_file", "actor_id": "intake_service", "start": "09:00", "duration": 5,
+        "interactions": [{ "action": "create", "object": { "id": "file_42", "type": "settlement_file", "name": "Settlement file 42", "properties": { "state": "received", "quantity": 1, "valid": true, "processed": false } } }]
+      }],
+      "work_definitions": [{
+        "id": "validate_file",
+        "instantiate": { "for_each": "incoming_files", "as": "file", "start": "on_appearance", "cancel_pending_on_exit": true },
+        "task": {
+          "actor_id": "file_processor", "duration": 10,
+          "requires": { "==": ["@file.valid", true] },
+          "interactions": [{ "target_id": "@file.id", "property_changes": { "processed": { "set": true } } }]
+        }
+      }]
+    }
+  }
+}

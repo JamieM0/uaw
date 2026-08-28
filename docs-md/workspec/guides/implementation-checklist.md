@@ -1,6 +1,6 @@
-# WorkSpec v2.0 Implementation Status (UAW)
+# WorkSpec v2.1 Implementation Status (UAW)
 
-This is a **practical** checklist for evaluating the `workspec-v2.0` branch against `main`, mapped to the Phase 1–7 issue breakdown.
+This is a practical checklist for evaluating the current WorkSpec implementation.
 
 It intentionally focuses on: **document shape**, **validator correctness**, **WorkSpec Studio behavior**, and **tooling outside the UAW platform**.
 
@@ -10,15 +10,15 @@ It intentionally focuses on: **document shape**, **validator correctness**, **Wo
 
 ### Implemented (core transition)
 
-- **WorkSpec v2.0 documentation + pages**
-  - Source: `docs-md/workspec/specification/v2.0/*`
-  - Built HTML: `web/docs/workspec/specification/v2.0/*`
-- **WorkSpec v2.0 JSON Schema**
-  - Web: `web/workspec/v2.0.schema.json`
-  - Canonical (npm): `packages/workspec/v2.0.schema.json`
+- **WorkSpec v2.1 documentation + pages**
+  - Source: `docs-md/workspec/specification/v2.1/*`
+  - Built HTML: `web/docs/workspec/specification/v2.1/*`
+- **WorkSpec v2.1 JSON Schema**
+  - Web: `web/workspec/v2.1.schema.json`
+  - Canonical (npm): `packages/workspec/v2.1.schema.json`
 - **WorkSpec v1 → v2 migration**
   - Canonical (npm): `packages/workspec/workspec-migrate-v1-to-v2.js`
-  - Web mirror: `web/assets/js/workspec-migrate-v1-to-v2.js`
+  - Web mirror: `web/packages/workspec/workspec-migrate-v1-to-v2.js`
   - WorkSpec Studio UI: `web/assets/js/playground/playground-migration.js`
 - **Simulation library migrated to v2**
   - `web/assets/static/simulation-library.json` (currently validator-clean)
@@ -37,6 +37,22 @@ It intentionally focuses on: **document shape**, **validator correctness**, **Wo
   - GitHub Actions publish scaffold: `.github/workflows/npm-publish-workspec.yml`
   - “No duplicate validation code”: browser copies are kept byte-identical via `packages/workspec/scripts/check-sync.js`
 
+### Implemented (WorkSpec 2.1 runtime language)
+
+- **Unknown-cardinality runtime work**
+  - Named live collections and reusable `process.work_definitions`
+  - Deterministic definition/member instance identity and correlation
+  - Exactly-once instantiation, pending cancellation, and the normal G008 lifecycle for active instances
+- **Runtime quantification and binding**
+  - `all_members`, `any_members`, `no_members`, and `count_members`
+  - Value-bound or deterministically selected performers/resources with stable assignment history
+  - Reassignment only through a separate continuation after interruption
+- **Pure derived values**
+  - Strict `+`, `-`, `*`, `/`, `min`, and `max` ValueExpressions
+- **Earlier bounded validation**
+  - Branch-aware actor/reservation conflict diagnostics
+  - Definite condition, arithmetic, performer, selection, and reservation type diagnostics
+
 ---
 
 ## Per-Issue Status (Done / Partial / Missing)
@@ -50,7 +66,7 @@ It intentionally focuses on: **document shape**, **validator correctness**, **Wo
 - ✅ **1.3 Meta section fields**
   - `meta.title|description|domain` required; `meta.article_title` rejected
 - ✅ **1.4 JSON Schema**
-  - Schema exists and Monaco is wired to local `/workspec/v2.0.schema.json`
+  - Schema exists and Monaco is wired to local `/workspec/v2.1.schema.json`
 
 ### Phase 2 — Object Model
 

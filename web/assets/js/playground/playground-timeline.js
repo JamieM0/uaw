@@ -290,8 +290,11 @@ function processSimulationData(simulationData) {
     const authoritativeRun = sim.schema_version === '2.1' && window.WorkSpecRuntime?.replay
         ? window.WorkSpecRuntime.replay(simulationData)
         : null;
+    const timelineTasks = authoritativeRun
+        ? [...authoritativeRun.index.tasks.values()]
+        : rawTasks;
 
-    const tasksWithMinutes = rawTasks.map(task => {
+    const tasksWithMinutes = timelineTasks.map(task => {
         if (!task) return null;
 
         const resolvedTiming = authoritativeRun?.timings?.get(task.id);
@@ -342,6 +345,12 @@ function processSimulationData(simulationData) {
             : Math.min(actualFirstTaskStart, taskStartMinutes);
         return {
             ...task,
+            actor_id: runtimeRecord.selected_actor_id || task.actor_id,
+            definition_id: runtimeRecord.definition_id || task.__definition_id,
+            correlation_id: runtimeRecord.correlation_id || task.__correlation_id,
+            correlation_collection: runtimeRecord.correlation_collection || task.__correlation_collection,
+            assignment_history: runtimeRecord.assignment_history || [],
+            runtime_instance: task.__runtime_instance === true,
             start_minutes: taskStartMinutes,
             end_minutes: taskEndMinutes,
             duration: taskDurationMinutes,
@@ -429,6 +438,11 @@ function processSimulationData(simulationData) {
         end_time_minutes: visualEndTimeMinutes, // Use the new visual end time
         total_duration_minutes: visualTotalDuration, // This is now the unified duration
         tasks: processedTasks,
+        work_definitions: Array.isArray(sim.process?.work_definitions) ? sim.process.work_definitions : [],
+        runtime_task_instances: processedTasks.filter(task => task.runtime_instance),
+        runtime_collections: authoritativeRun && window.WorkSpecRuntime?.serialiseState
+            ? window.WorkSpecRuntime.serialiseState(authoritativeRun).collections
+            : {},
         article_title: sim.meta?.title || sim.meta?.article_title || "Process Simulation",
         domain: sim.meta?.domain || "General",
     };
@@ -800,9 +814,19 @@ function renderSimulation(skipJsonValidation = false) {
                 taskElement.dataset.startMinutes = String(task.start_minutes);
                 taskElement.dataset.duration = task.duration;
                 taskElement.dataset.runtimeStatus = task.runtime_status || 'pending';
+                taskElement.dataset.runtimeInstance = task.runtime_instance ? 'true' : 'false';
+                if (task.definition_id) taskElement.dataset.definitionId = task.definition_id;
+                if (task.correlation_id) taskElement.dataset.correlationId = task.correlation_id;
                 taskElement.setAttribute('role', 'button');
                 taskElement.setAttribute('aria-label', `Task: ${task.display_name}, ${task.duration} minutes, starts at ${startDisplay}`);
                 taskElement.setAttribute('tabindex', '0');
+                const runtimeInspection = task.runtime_instance
+                    ? `\nRuntime instance of ${task.definition_id}\nCorrelation: ${task.correlation_collection} → ${task.correlation_id}`
+                    : '';
+                const assignmentInspection = Array.isArray(task.assignment_history) && task.assignment_history.length
+                    ? `\nAssignments: ${task.assignment_history.map(entry => `${entry.actor_id} at ${formatTimeFromMinutes(entry.selected_at)} (${entry.policy})`).join(', ')}`
+                    : '';
+                taskElement.title = `${task.display_name}\nInstance ID: ${task.id}\nSelected actor/resource: ${task.actor_id}${runtimeInspection}${assignmentInspection}`;
 
                 taskElement.style.cssText = `position: absolute; left: ${task.start_percentage}%; width: ${task.duration_percentage}%; height: 30px; top: 5px; background: var(--bg-color); color: var(--text-color); border: 2px solid var(--primary-color); border-radius: var(--border-radius-sm); font-size: 0.75rem; overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.5rem; user-select: none;`;
 

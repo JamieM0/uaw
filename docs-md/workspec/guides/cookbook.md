@@ -1,6 +1,6 @@
-# WorkSpec v2.0 Cookbook (Common Patterns)
+# WorkSpec 2.1 Cookbook (Common Patterns)
 
-This cookbook shows common patterns for modeling work activities with WorkSpec v2.0.
+This cookbook shows common patterns for modeling work activities with WorkSpec 2.1.
 
 ---
 

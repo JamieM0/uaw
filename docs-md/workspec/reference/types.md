@@ -1,4 +1,4 @@
-# WorkSpec v2.0 Type Reference
+# WorkSpec 2.1 Type Reference
 
 This page lists built-in types, reserved names, and the custom type definition mechanism.
 

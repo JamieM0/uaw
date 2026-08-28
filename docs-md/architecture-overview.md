@@ -4,7 +4,7 @@ This page is a map of the Universal Automation Wiki (UAW) docs and the major sys
 
 ## Start Here
 
-- **WorkSpec (canonical schema + guides):** [Quickstart](/docs/workspec/guides/quickstart), [Specification v2.0](/docs/workspec/specification/v2.0/)
+- **WorkSpec (canonical schema + guides):** [Quickstart](/docs/workspec/guides/quickstart), [WorkSpec 2.1](/docs/workspec/specification/v2.1/)
 - **WorkSpec Studio (build + validate simulations):** [WorkSpec Studio Guide](/docs/playground/playground-guide)
 - **Developer tooling (generators + doc build):** [Docs Translator](/docs/routines/docs-translator)
 
@@ -39,8 +39,8 @@ WorkSpec is the canonical specification for how work is described and exchanged 
 
 - [WorkSpec Cheatsheet](/docs/workspec/cheatsheet)
 - [WorkSpec Reference: Types](/docs/workspec/reference/types)
-- [WorkSpec Specification v2.0: Schema](/docs/workspec/specification/v2.0/schema)
-- [WorkSpec Specification v2.0: Objects](/docs/workspec/specification/v2.0/objects)
+- [WorkSpec 2.1 semantics](/docs/workspec/specification/v2.1/)
+- [WorkSpec 2.1 schema](/workspec/v2.1.schema.json)
 
 ## Content Generation Routines (High Level)
 

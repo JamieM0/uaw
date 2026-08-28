@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -122,6 +122,49 @@
 <div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"all"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"task_a"</span><span class="p">],</span><span class="w"> </span><span class="nt">"any"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"task_b"</span><span class="p">,</span><span class="s2">"task_c"</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <p>Meaning: (ALL of <code class="docs-inline-code">all</code>) AND (ANY of <code class="docs-inline-code">any</code>).</p>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="value-references-and-literals">Value references and literals<a class="headerlink" href="#value-references-and-literals" title="Link to this section">¶</a></h2>
+<ul class="docs-list">
+<li>Object field/property: <code class="docs-inline-code">"@shipment.temperature"</code></li>
+<li>Task field: <code class="docs-inline-code">"@inspect.end"</code></li>
+<li>Task runtime fields: <code class="docs-inline-code">"@inspect.status"</code>, <code class="docs-inline-code">"@inspect.actual_end"</code>, and <code class="docs-inline-code">"@inspect.progress"</code> when progress is declared</li>
+<li>Location field/property: <code class="docs-inline-code">"@cold_store.access_level"</code></li>
+<li>Current performer: <code class="docs-inline-code">"@current.permissions"</code></li>
+<li>Clock: <code class="docs-inline-code">"@now"</code></li>
+<li>Literal string: <code class="docs-inline-code">"approved"</code></li>
+<li>Literal leading <code class="docs-inline-code">@</code>: <code class="docs-inline-code">"@@shipment.temperature"</code> evaluates to <code class="docs-inline-code">"@shipment.temperature"</code></li>
+</ul>
+<p>Use exactly one dot and only a direct member. Never create dotted property names, nested paths, or structured selector references.</p>
+<h2 class="docs-heading" id="runtime-collections-and-work">Runtime collections and work<a class="headerlink" href="#runtime-collections-and-work" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nt">"collections"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"objects"</span><span class="p">,</span><span class="w"> </span><span class="nt">"as"</span><span class="p">:</span><span class="w"> </span><span class="s2">"member"</span><span class="p">,</span><span class="w"> </span><span class="nt">"where"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"=="</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"@member.type"</span><span class="p">,</span><span class="w"> </span><span class="s2">"settlement_file"</span><span class="p">]</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul class="docs-list">
+<li>Quantifiers: <code class="docs-inline-code">all_members</code>, <code class="docs-inline-code">any_members</code>, <code class="docs-inline-code">no_members</code> with <code class="docs-inline-code">collection</code>, <code class="docs-inline-code">as</code>, and <code class="docs-inline-code">satisfy</code>.</li>
+<li>Count: <code class="docs-inline-code">{ "count_members": { "collection": "files", "as": "file", "where": { ... } } }</code>.</li>
+<li>Runtime work: <code class="docs-inline-code">process.work_definitions[]</code> with <code class="docs-inline-code">id</code>, <code class="docs-inline-code">instantiate: { for_each, as }</code>, and a task template without <code class="docs-inline-code">id</code> or <code class="docs-inline-code">start</code>.</li>
+<li>Pending runtime work can use <code class="docs-inline-code">cancel_pending_on_exit: true</code>; active work uses <code class="docs-inline-code">while</code> interruption.</li>
+<li>An open collection requires <code class="docs-inline-code">open: true</code> and <code class="docs-inline-code">closes_at</code>.</li>
+</ul>
+<h2 class="docs-heading" id="derived-values-and-selection">Derived values and selection<a class="headerlink" href="#derived-values-and-selection" title="Link to this section">¶</a></h2>
+<ul class="docs-list">
+<li>Pure numeric expressions: <code class="docs-inline-code">{ "+": [a, b] }</code>, <code class="docs-inline-code">{ "-": [a, b] }</code>, <code class="docs-inline-code">{ "*": [a, b] }</code>, <code class="docs-inline-code">{ "/": [a, b] }</code>, <code class="docs-inline-code">{ "min": [a, b] }</code>, <code class="docs-inline-code">{ "max": [a, b] }</code>.</li>
+<li>Deterministic member selection: <code class="docs-inline-code">{ "select_member": { "collection": "technicians", "as": "candidate", "policy": "lowest", "by": "@candidate.load", "tie_break": "stable_id" } }</code>.</li>
+<li>Policies: <code class="docs-inline-code">first_by_id</code>, <code class="docs-inline-code">lowest</code>, <code class="docs-inline-code">highest</code>.</li>
+<li><code class="docs-inline-code">actor_id</code> may be a literal ID, compact reference, or <code class="docs-inline-code">select_member</code> expression.</li>
+<li>WorkSpec dispatches deterministically; it does not globally optimize schedules or assignments.</li>
+</ul>
+<h2 class="docs-heading" id="guards-and-interruption">Guards and interruption<a class="headerlink" href="#guards-and-interruption" title="Link to this section">¶</a></h2>
+<ul class="docs-list">
+<li><code class="docs-inline-code">when</code>: should this task execute? False → <code class="docs-inline-code">skipped</code>.</li>
+<li><code class="docs-inline-code">requires</code>: is it allowed to start? False → <code class="docs-inline-code">blocked</code>.</li>
+<li><code class="docs-inline-code">while</code>: must this remain true while active? False initially → <code class="docs-inline-code">blocked</code>; false at a modeled event boundary → <code class="docs-inline-code">interrupted</code>.</li>
+<li><code class="docs-inline-code">progress: "@entity.member"</code>: capture that value at completion or interruption; never infer it from elapsed time.</li>
+<li><code class="docs-inline-code">continues: { "task": "source" }</code>: this separate task can start only when <code class="docs-inline-code">source</code> is interrupted.</li>
+<li><code class="docs-inline-code">@task.end</code> is planned; <code class="docs-inline-code">@task.actual_end</code> is completion/interruption time.</li>
+</ul>
+<p>Interruption keeps permanent effects, suppresses completion effects, restores temporary effects, and releases reservations. Recovery is normal authored work using <code class="docs-inline-code">@task.status</code> and <code class="docs-inline-code">@task.actual_end</code>.</p>
 <hr class="docs-hr"/>
 <h2 class="docs-heading" id="interactions">Interactions<a class="headerlink" href="#interactions" title="Link to this section">¶</a></h2>
 <p>Property change:</p>

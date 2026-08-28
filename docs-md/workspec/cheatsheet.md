@@ -1,6 +1,6 @@
-# WorkSpec v2.0 Cheatsheet
+# WorkSpec 2.1 Cheatsheet
 
-One-page reference for authoring WorkSpec v2.0.
+One-page reference for authoring WorkSpec 2.1.
 
 ---
 
@@ -8,9 +8,9 @@ One-page reference for authoring WorkSpec v2.0.
 
 ```json
 {
-    "$schema": "https://universalautomation.wiki/workspec/v2.0.schema.json",
+    "$schema": "https://universalautomation.wiki/workspec/v2.1.schema.json",
     "simulation": {
-        "schema_version": "2.0",
+        "schema_version": "2.1",
         "meta": { "title": "...", "description": "...", "domain": "..." },
         "config": { "time_unit": "minutes", "start_time": "09:00", "end_time": "17:00", "currency": "USD", "locale": "en-US" },
         "world": { "layout": { "locations": [] }, "objects": [] },
@@ -76,6 +76,54 @@ Meaning: (ALL of `all`) AND (ANY of `any`).
 
 ---
 
+## Value references and literals
+
+- Object field/property: `"@shipment.temperature"`
+- Task field: `"@inspect.end"`
+- Task runtime fields: `"@inspect.status"`, `"@inspect.actual_end"`, and `"@inspect.progress"` when progress is declared
+- Location field/property: `"@cold_store.access_level"`
+- Current performer: `"@current.permissions"`
+- Clock: `"@now"`
+- Literal string: `"approved"`
+- Literal leading `@`: `"@@shipment.temperature"` evaluates to `"@shipment.temperature"`
+
+Use exactly one dot and only a direct member. Never create dotted property names, nested paths, or structured selector references.
+
+## Runtime collections and work
+
+```json
+"collections": {
+  "files": { "from": "objects", "as": "member", "where": { "==": ["@member.type", "settlement_file"] } }
+}
+```
+
+- Quantifiers: `all_members`, `any_members`, `no_members` with `collection`, `as`, and `satisfy`.
+- Count: `{ "count_members": { "collection": "files", "as": "file", "where": { ... } } }`.
+- Runtime work: `process.work_definitions[]` with `id`, `instantiate: { for_each, as }`, and a task template without `id` or `start`.
+- Pending runtime work can use `cancel_pending_on_exit: true`; active work uses `while` interruption.
+- An open collection requires `open: true` and `closes_at`.
+
+## Derived values and selection
+
+- Pure numeric expressions: `{ "+": [a, b] }`, `{ "-": [a, b] }`, `{ "*": [a, b] }`, `{ "/": [a, b] }`, `{ "min": [a, b] }`, `{ "max": [a, b] }`.
+- Deterministic member selection: `{ "select_member": { "collection": "technicians", "as": "candidate", "policy": "lowest", "by": "@candidate.load", "tie_break": "stable_id" } }`.
+- Policies: `first_by_id`, `lowest`, `highest`.
+- `actor_id` may be a literal ID, compact reference, or `select_member` expression.
+- WorkSpec dispatches deterministically; it does not globally optimize schedules or assignments.
+
+## Guards and interruption
+
+- `when`: should this task execute? False → `skipped`.
+- `requires`: is it allowed to start? False → `blocked`.
+- `while`: must this remain true while active? False initially → `blocked`; false at a modeled event boundary → `interrupted`.
+- `progress: "@entity.member"`: capture that value at completion or interruption; never infer it from elapsed time.
+- `continues: { "task": "source" }`: this separate task can start only when `source` is interrupted.
+- `@task.end` is planned; `@task.actual_end` is completion/interruption time.
+
+Interruption keeps permanent effects, suppresses completion effects, restores temporary effects, and releases reservations. Recovery is normal authored work using `@task.status` and `@task.actual_end`.
+
+---
+
 ## Interactions
 
 Property change:
@@ -106,7 +154,7 @@ Temporary:
 
 ## Links
 
-- v2.0 overview: [/docs/workspec/specification/v2.0/](/docs/workspec/specification/v2.0/)
-- Schema reference: [/docs/workspec/specification/v2.0/schema](/docs/workspec/specification/v2.0/schema)
+- WorkSpec 2.1: [/docs/workspec/specification/v2.1/](/docs/workspec/specification/v2.1/)
+- Canonical schema: [/workspec/v2.1.schema.json](/workspec/v2.1.schema.json)
 - Error reference: [/docs/workspec/reference/errors](/docs/workspec/reference/errors)
 - Migration: [/docs/workspec/guides/migration](/docs/workspec/guides/migration)

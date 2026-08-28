@@ -1,0 +1,23 @@
+{
+  "$schema": "https://universalautomation.wiki/workspec/v2.1.schema.json",
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": { "title": "Collection-wide clearance", "description": "Require every currently participating group to be clear.", "domain": "safety" },
+    "config": { "time_unit": "minutes", "start_time": "09:00", "end_time": "10:00", "currency": "GBP", "locale": "en-GB", "timezone": "Europe/London" },
+    "collections": {
+      "participating_groups": { "from": "objects", "as": "member", "where": { "==": ["@member.type", "response_group"] } }
+    },
+    "type_definitions": { "response_group": { "extends": "actor", "additional_properties": { "clear": { "type": "boolean" } } } },
+    "world": {
+      "objects": [
+        { "id": "supervisor", "type": "actor", "name": "Supervisor", "properties": { "state": "ready" } },
+        { "id": "group_north", "type": "response_group", "name": "North group", "properties": { "state": "participating", "clear": true } },
+        { "id": "group_south", "type": "response_group", "name": "South group", "properties": { "state": "participating", "clear": true } }
+      ]
+    },
+    "process": { "tasks": [{
+      "id": "confirm_clearance", "actor_id": "supervisor", "start": "09:00", "duration": 5,
+      "requires": { "all_members": { "collection": "participating_groups", "as": "group", "satisfy": { "==": ["@group.clear", true] } } }
+    }] }
+  }
+}

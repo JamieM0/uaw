@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkSpec v2.1 Implementation Status (UAW) - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/">Workspec</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/guides/">Guides</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">WorkSpec v2.1 Implementation Status (UAW)</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">WorkSpec v2.1 Implementation Status (UAW)</h1>
+                            
+                            <p class="docs-page-subtitle">This is a practical checklist for evaluating the current WorkSpec implementation.</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>This is a practical checklist for evaluating the current WorkSpec implementation.</p>
+<p>It intentionally focuses on: <strong>document shape</strong>, <strong>validator correctness</strong>, <strong>WorkSpec Studio behavior</strong>, and <strong>tooling outside the UAW platform</strong>.</p>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="summary-whats-different-vs-main">Summary (what’s different vs <code class="docs-inline-code">main</code>)<a class="headerlink" href="#summary-whats-different-vs-main" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="implemented-core-transition">Implemented (core transition)<a class="headerlink" href="#implemented-core-transition" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li><strong>WorkSpec v2.1 documentation + pages</strong></li>
+<li>Source: <code class="docs-inline-code">docs-md/workspec/specification/v2.1/*</code></li>
+<li>Built HTML: <code class="docs-inline-code">web/docs/workspec/specification/v2.1/*</code></li>
+<li><strong>WorkSpec v2.1 JSON Schema</strong></li>
+<li>Web: <code class="docs-inline-code">web/workspec/v2.1.schema.json</code></li>
+<li>Canonical (npm): <code class="docs-inline-code">packages/workspec/v2.1.schema.json</code></li>
+<li><strong>WorkSpec v1 → v2 migration</strong></li>
+<li>Canonical (npm): <code class="docs-inline-code">packages/workspec/workspec-migrate-v1-to-v2.js</code></li>
+<li>Web mirror: <code class="docs-inline-code">web/packages/workspec/workspec-migrate-v1-to-v2.js</code></li>
+<li>WorkSpec Studio UI: <code class="docs-inline-code">web/assets/js/playground/playground-migration.js</code></li>
+<li><strong>Simulation library migrated to v2</strong></li>
+<li><code class="docs-inline-code">web/assets/static/simulation-library.json</code> (currently validator-clean)</li>
+<li><strong>WorkSpec Studio emits and runs v2 documents</strong></li>
+<li>Monaco schema wiring: <code class="docs-inline-code">web/assets/js/playground/playground-editor.js</code></li>
+<li>Object/task paths: <code class="docs-inline-code">web/assets/js/playground/playground-objects.js</code></li>
+<li>Save/load supports v2: <code class="docs-inline-code">web/assets/js/playground/playground-save-load.js</code></li>
+<li>Timeline reads v2 paths: <code class="docs-inline-code">web/assets/js/playground/playground-timeline.js</code></li>
+<li>Player supports v2 create/delete + temporary: <code class="docs-inline-code">web/assets/js/simulation-player.js</code></li>
+</ul>
+<h3 class="docs-heading" id="implemented-major-gap-closed">Implemented (major gap closed)<a class="headerlink" href="#implemented-major-gap-closed" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li><strong>Validation accessible outside UAW</strong></li>
+<li>Self-contained npm package + CLI: <code class="docs-inline-code">packages/workspec/*</code></li>
+<li>CLI: <code class="docs-inline-code">packages/workspec/bin/workspec.js</code> (<code class="docs-inline-code">workspec validate|migrate|format</code>)</li>
+<li>GitHub Actions publish scaffold: <code class="docs-inline-code">.github/workflows/npm-publish-workspec.yml</code></li>
+<li>“No duplicate validation code”: browser copies are kept byte-identical via <code class="docs-inline-code">packages/workspec/scripts/check-sync.js</code></li>
+</ul>
+<h3 class="docs-heading" id="implemented-workspec-21-runtime-language">Implemented (WorkSpec 2.1 runtime language)<a class="headerlink" href="#implemented-workspec-21-runtime-language" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li><strong>Unknown-cardinality runtime work</strong></li>
+<li>Named live collections and reusable <code class="docs-inline-code">process.work_definitions</code></li>
+<li>Deterministic definition/member instance identity and correlation</li>
+<li>Exactly-once instantiation, pending cancellation, and the normal G008 lifecycle for active instances</li>
+<li><strong>Runtime quantification and binding</strong></li>
+<li><code class="docs-inline-code">all_members</code>, <code class="docs-inline-code">any_members</code>, <code class="docs-inline-code">no_members</code>, and <code class="docs-inline-code">count_members</code></li>
+<li>Value-bound or deterministically selected performers/resources with stable assignment history</li>
+<li>Reassignment only through a separate continuation after interruption</li>
+<li><strong>Pure derived values</strong></li>
+<li>Strict <code class="docs-inline-code">+</code>, <code class="docs-inline-code">-</code>, <code class="docs-inline-code">*</code>, <code class="docs-inline-code">/</code>, <code class="docs-inline-code">min</code>, and <code class="docs-inline-code">max</code> ValueExpressions</li>
+<li><strong>Earlier bounded validation</strong></li>
+<li>Branch-aware actor/reservation conflict diagnostics</li>
+<li>Definite condition, arithmetic, performer, selection, and reservation type diagnostics</li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="per-issue-status-done-partial-missing">Per-Issue Status (Done / Partial / Missing)<a class="headerlink" href="#per-issue-status-done-partial-missing" title="Link to this section">¶</a></h2>
+<h3 class="docs-heading" id="phase-1-foundation">Phase 1 — Foundation<a class="headerlink" href="#phase-1-foundation" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li>✅ <strong>1.1 Schema versioning support</strong> (<code class="docs-inline-code">simulation.schema_version</code> required; v1 rejected with migrate guidance)</li>
+<li><code class="docs-inline-code">packages/workspec/workspec-validator.js</code></li>
+<li>✅ <strong>1.2 world/process structure</strong></li>
+<li>Validator + library + editors updated for <code class="docs-inline-code">simulation.world</code> / <code class="docs-inline-code">simulation.process</code></li>
+<li>✅ <strong>1.3 Meta section fields</strong></li>
+<li><code class="docs-inline-code">meta.title|description|domain</code> required; <code class="docs-inline-code">meta.article_title</code> rejected</li>
+<li>✅ <strong>1.4 JSON Schema</strong></li>
+<li>Schema exists and Monaco is wired to local <code class="docs-inline-code">/workspec/v2.1.schema.json</code></li>
+</ul>
+<h3 class="docs-heading" id="phase-2-object-model">Phase 2 — Object Model<a class="headerlink" href="#phase-2-object-model" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li>✅ <strong>2.1 Top-level object fields</strong> (<code class="docs-inline-code">id|type|name</code> required; <code class="docs-inline-code">location</code> references validated)</li>
+<li>Validator enforces required fields + location references</li>
+<li>Object creation uses <code class="docs-inline-code">properties</code> bag (including UI-only hints under <code class="docs-inline-code">properties.*</code>)</li>
+<li>✅ <strong>2.2 Namespaced IDs</strong> (<code class="docs-inline-code">{type}:{id}</code> optional; namespace must match <code class="docs-inline-code">type</code>)</li>
+<li>Validator enforces namespace/type match</li>
+<li>✅ <strong>2.3 Remove type aliases</strong> (<code class="docs-inline-code">material|ingredient|tool</code> rejected; migration maps)</li>
+<li>✅ <strong>2.4 <code class="docs-inline-code">service</code> type</strong> (performer allowed in <code class="docs-inline-code">actor_id</code>)</li>
+<li>⚠️ <strong>2.5 Custom type definitions</strong> (Partial)</li>
+<li>Validator checks presence of <code class="docs-inline-code">simulation.type_definitions[customType]</code> and requires <code class="docs-inline-code">extends</code></li>
+<li>Missing: validating <code class="docs-inline-code">additional_properties</code> types/units and enforcing declared properties on objects</li>
+</ul>
+<h3 class="docs-heading" id="phase-3-task-model">Phase 3 — Task Model<a class="headerlink" href="#phase-3-task-model" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li>✅ <strong>3.1 Dependency operators (<code class="docs-inline-code">all</code>/<code class="docs-inline-code">any</code>)</strong></li>
+<li>Validator supports <code class="docs-inline-code">{all, any}</code> and detects circular deps</li>
+<li>UI dependency-builder is still “comma list” only (JSON editing required for <code class="docs-inline-code">{all, any}</code>)</li>
+<li>✅ <strong>3.2 Flexible duration parsing</strong></li>
+<li>Validator supports integers, ISO-8601 durations, and shorthand (<code class="docs-inline-code">30m</code>, <code class="docs-inline-code">1h</code>, <code class="docs-inline-code">1d</code>, <code class="docs-inline-code">1w</code>, <code class="docs-inline-code">1M</code>)</li>
+<li>✅ <strong>3.3 Multi-day starts</strong> (<code class="docs-inline-code">start: { day, time }</code>)</li>
+<li>Validator supports <code class="docs-inline-code">start: { day, time }</code></li>
+<li>Timeline displays multi-day boundaries as <code class="docs-inline-code">Day N HH:MM</code> (and drag/resize writes <code class="docs-inline-code">{ day, time }</code> instead of invalid <code class="docs-inline-code">"33:00"</code> times)</li>
+</ul>
+<h3 class="docs-heading" id="phase-4-interaction-system">Phase 4 — Interaction System<a class="headerlink" href="#phase-4-interaction-system" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li>✅ <strong>4.1 <code class="docs-inline-code">target_id</code> rename</strong> (<code class="docs-inline-code">object_id</code> rejected)</li>
+<li>✅ <strong>4.2 <code class="docs-inline-code">temporary</code> rename</strong> (<code class="docs-inline-code">revert_after</code> rejected)</li>
+<li>⚠️ <strong>4.3 New operators (<code class="docs-inline-code">multiply</code>, <code class="docs-inline-code">append</code>, <code class="docs-inline-code">remove</code>, <code class="docs-inline-code">increment</code>, <code class="docs-inline-code">decrement</code>)</strong> (Partial)</li>
+<li>Validator validates operator shape; simulation playback now applies the full operator set</li>
+<li>Missing: trait-aware enforcement (e.g., restricting numeric ops to numeric properties / quantifiable traits)</li>
+<li>✅ <strong>4.4 Action interactions (<code class="docs-inline-code">create</code>/<code class="docs-inline-code">delete</code>)</strong></li>
+<li>WorkSpec Studio emits actions; player applies create/delete</li>
+<li>Validator enforces lifecycle semantics (created objects become valid after create; references after delete error)</li>
+</ul>
+<h3 class="docs-heading" id="phase-5-validation-system">Phase 5 — Validation System<a class="headerlink" href="#phase-5-validation-system" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li>✅ <strong>5.1 RFC 7807 Problem Details</strong> (validator emits required fields)</li>
+<li>✅ <strong>5.2 Recipe validation</strong> (missing inputs → warning)</li>
+<li>✅ <strong>5.3 Strict time validation</strong> (zero-padded HH:MM enforced)</li>
+<li>⚠️ UI polish (Partial)</li>
+<li>WorkSpec Studio shows v2 problems, but doesn’t yet surface <code class="docs-inline-code">problem.suggestions</code> / <code class="docs-inline-code">problem.doc_uri</code> well in the panel</li>
+</ul>
+<h3 class="docs-heading" id="phase-6-tooling">Phase 6 — Tooling<a class="headerlink" href="#phase-6-tooling" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li>❌ <strong>6.1 Language Server (LSP)</strong> (Not implemented)</li>
+<li>❌ <strong>6.2 VS Code extension</strong> (Not implemented)</li>
+<li>✅ <strong>6.3 CLI validator</strong> (<code class="docs-inline-code">workspec validate</code>)</li>
+<li>✅ <strong>6.4 npm package</strong> (<code class="docs-inline-code">@uaw/workspec</code> scaffold; programmatic <code class="docs-inline-code">validate()</code> / <code class="docs-inline-code">migrate()</code>)</li>
+</ul>
+<h3 class="docs-heading" id="phase-7-migration">Phase 7 — Migration<a class="headerlink" href="#phase-7-migration" title="Link to this section">¶</a></h3>
+<ul class="docs-list">
+<li>✅ <strong>7.1 v1 → v2 migration tool</strong></li>
+<li>CLI + WorkSpec Studio tool exist</li>
+<li>✅ <strong>7.2 Simulation library update</strong></li>
+<li>Library is migrated and currently validates cleanly</li>
+</ul>
+<hr class="docs-hr"/>
+<h2 class="docs-heading" id="key-remaining-gaps-to-be-truly-complete-v20">Key Remaining Gaps (to be truly “complete” v2.0)<a class="headerlink" href="#key-remaining-gaps-to-be-truly-complete-v20" title="Link to this section">¶</a></h2>
+<ul class="docs-list">
+<li><strong>Trait-aware operator validation</strong>: enforce operator compatibility based on object type traits (beyond operand shape checks).</li>
+<li><strong>Custom type definitions</strong>: deeper validation of <code class="docs-inline-code">additional_properties</code> (types/units) and enforcement on objects.</li>
+<li><strong>Tooling roadmap</strong>: LSP + VS Code extension are still missing if you want first-class IDE integration beyond CLI/tasks.</li>
+</ul>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

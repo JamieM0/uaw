@@ -53,6 +53,12 @@
         "process": {
           "$ref": "#/definitions/Process"
         },
+        "collections": {
+          "type": "object",
+          "description": "Named live collections evaluated from one authoritative runtime snapshot.",
+          "propertyNames": { "$ref": "#/definitions/PlainId" },
+          "additionalProperties": { "$ref": "#/definitions/RuntimeCollection" }
+        },
         "type_definitions": {
           "type": "object",
           "description": "Optional custom type definitions. Keys are custom type names; values describe base type extension and additional properties.",
@@ -281,6 +287,11 @@
           "items": {
             "$ref": "#/definitions/Task"
           }
+        },
+        "work_definitions": {
+          "type": "array",
+          "description": "Reusable work templates instantiated once for each matching live collection member.",
+          "items": { "$ref": "#/definitions/WorkDefinition" }
         },
         "recipes": {
           "$ref": "#/definitions/Recipes"
@@ -733,8 +744,8 @@
           "maxLength": 32
         },
         "actor_id": {
-          "$ref": "#/definitions/ObjectId",
-          "description": "Performer object id."
+          "$ref": "#/definitions/ValueExpression",
+          "description": "Literal performer id, compact reference resolving to one, or deterministic select_member expression."
         },
         "start": {
           "$ref": "#/definitions/TaskStart"
@@ -975,12 +986,46 @@
       "additionalProperties": false
     },
     "ValueExpression": {
-      "description": "A JSON literal or WorkSpec compact reference. A single leading @ means reference; @@ escapes a literal leading @. Structured references remain accepted for compatibility.",
+      "description": "A JSON literal, compact reference, small pure numeric expression, count_members expression, or deterministic select_member expression.",
       "anyOf": [
         { "$ref": "#/definitions/ValueReference" },
+        { "$ref": "#/definitions/DerivedValueExpression" },
+        { "$ref": "#/definitions/CountMembersExpression" },
+        { "$ref": "#/definitions/SelectMemberExpression" },
         { "$ref": "#/definitions/ValueLiteralString" },
         { "type": ["null", "boolean", "number", "array", "object"] }
       ]
+    },
+    "DerivedValueExpression": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 1,
+      "properties": {
+        "+": { "$ref": "#/definitions/NumericOperands" },
+        "-": { "$ref": "#/definitions/NumericOperands" },
+        "*": { "$ref": "#/definitions/NumericOperands" },
+        "/": { "$ref": "#/definitions/NumericOperands" },
+        "min": { "$ref": "#/definitions/NumericOperands" },
+        "max": { "$ref": "#/definitions/NumericOperands" }
+      },
+      "additionalProperties": false
+    },
+    "NumericOperands": {
+      "type": "array",
+      "minItems": 2,
+      "items": { "$ref": "#/definitions/ValueExpression" }
+    },
+    "CountMembersExpression": {
+      "type": "object",
+      "required": ["count_members"],
+      "properties": { "count_members": { "$ref": "#/definitions/CollectionPredicate" } },
+      "additionalProperties": false
+    },
+    "SelectMemberExpression": {
+      "type": "object",
+      "required": ["select_member"],
+      "properties": { "select_member": { "$ref": "#/definitions/MemberSelection" } },
+      "additionalProperties": false
     },
     "ValueReference": {
       "oneOf": [
@@ -1061,7 +1106,10 @@
           "required": ["condition", "duration"],
           "properties": { "condition": { "$ref": "#/definitions/Condition" }, "duration": { "$ref": "#/definitions/Duration" } },
           "additionalProperties": false
-        }
+        },
+        "all_members": { "$ref": "#/definitions/CollectionPredicate" },
+        "any_members": { "$ref": "#/definitions/CollectionPredicate" },
+        "no_members": { "$ref": "#/definitions/CollectionPredicate" }
           },
           "additionalProperties": false
         }
@@ -1072,6 +1120,93 @@
       "minItems": 2,
       "maxItems": 2,
       "items": { "$ref": "#/definitions/ValueExpression" }
+    },
+    "RuntimeCollection": {
+      "type": "object",
+      "required": ["from", "as"],
+      "properties": {
+        "from": { "type": "string", "enum": ["objects", "locations"] },
+        "as": { "$ref": "#/definitions/PlainId" },
+        "where": { "$ref": "#/definitions/Condition" },
+        "open": { "type": "boolean" },
+        "closes_at": { "$ref": "#/definitions/TaskStart" }
+      },
+      "allOf": [{
+        "if": { "properties": { "open": { "const": true } }, "required": ["open"] },
+        "then": { "required": ["closes_at"] }
+      }],
+      "additionalProperties": false
+    },
+    "CollectionPredicate": {
+      "type": "object",
+      "required": ["collection", "as"],
+      "properties": {
+        "collection": { "$ref": "#/definitions/PlainId" },
+        "as": { "$ref": "#/definitions/PlainId" },
+        "where": { "$ref": "#/definitions/Condition" },
+        "satisfy": { "$ref": "#/definitions/Condition" }
+      },
+      "additionalProperties": false
+    },
+    "MemberSelection": {
+      "type": "object",
+      "required": ["collection", "as", "policy"],
+      "properties": {
+        "collection": { "$ref": "#/definitions/PlainId" },
+        "as": { "$ref": "#/definitions/PlainId" },
+        "where": { "$ref": "#/definitions/Condition" },
+        "policy": { "type": "string", "enum": ["first_by_id", "lowest", "highest"] },
+        "by": { "$ref": "#/definitions/ValueExpression" },
+        "tie_break": { "type": "string", "enum": ["stable_id"] }
+      },
+      "additionalProperties": false
+    },
+    "WorkDefinition": {
+      "type": "object",
+      "required": ["id", "instantiate", "task"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "instantiate": { "$ref": "#/definitions/InstanceTrigger" },
+        "task": { "$ref": "#/definitions/TaskTemplate" },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "InstanceTrigger": {
+      "type": "object",
+      "required": ["for_each", "as"],
+      "properties": {
+        "for_each": { "$ref": "#/definitions/PlainId" },
+        "as": { "$ref": "#/definitions/PlainId" },
+        "start": { "type": "string", "enum": ["on_appearance"] },
+        "offset": { "$ref": "#/definitions/TimeOffset" },
+        "cancel_pending_on_exit": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "TaskTemplate": {
+      "type": "object",
+      "required": ["actor_id", "duration"],
+      "properties": {
+        "emoji": { "type": "string", "maxLength": 32 },
+        "actor_id": { "$ref": "#/definitions/ValueExpression" },
+        "duration": { "$ref": "#/definitions/Duration" },
+        "location": { "type": "string" },
+        "depends_on": { "$ref": "#/definitions/DependsOn" },
+        "when": { "$ref": "#/definitions/Condition" },
+        "requires": { "$ref": "#/definitions/Condition" },
+        "while": { "$ref": "#/definitions/Condition" },
+        "progress": { "$ref": "#/definitions/CompactValueReference" },
+        "continues": { "$ref": "#/definitions/Continuation" },
+        "timing": { "type": "array", "items": { "$ref": "#/definitions/TimingConstraint" } },
+        "reservations": { "type": "array", "items": { "$ref": "#/definitions/Reservation" } },
+        "interactions": { "type": "array", "items": { "$ref": "#/definitions/Interaction" } },
+        "description": { "type": "string" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      },
+      "not": { "anyOf": [{ "required": ["id"] }, { "required": ["start"] }] },
+      "additionalProperties": true
     },
     "CreatedObject": {
       "type": "object",
@@ -1143,7 +1278,7 @@
     },
     "TaskRuntimeStatus": {
       "type": "string",
-      "enum": ["pending", "active", "completed", "skipped", "blocked", "interrupted"],
+      "enum": ["pending", "active", "completed", "skipped", "blocked", "interrupted", "cancelled"],
       "description": "Authoritative runtime lifecycle status exposed through compact @task.status references."
     },
     "TimeOffset": {

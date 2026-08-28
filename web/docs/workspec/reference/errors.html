@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorkSpec v2.0 Error Reference (All Error Codes) - Universal Automation Wiki</title>
+    <title>WorkSpec 2.1 Error Reference (All Error Codes) - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
     <link rel="stylesheet" href="/assets/css/category.css">
@@ -50,7 +50,7 @@
                                         
                                     
                                         
-                                            <li aria-current="page">WorkSpec v2.0 Error Reference (All Error Codes)</li>
+                                            <li aria-current="page">WorkSpec 2.1 Error Reference (All Error Codes)</li>
                                         
                                     
                                 </ol>
@@ -58,18 +58,18 @@
                         </div>
                         
                         <div class="docs-title-section">
-                            <h1 class="docs-page-title">WorkSpec v2.0 Error Reference (All Error Codes)</h1>
+                            <h1 class="docs-page-title">WorkSpec 2.1 Error Reference (All Error Codes)</h1>
                             
-                            <p class="docs-page-subtitle">This page lists validation error codes (`metric_id`) used for WorkSpec v2.0 validation.</p>
+                            <p class="docs-page-subtitle">This page lists validation error codes (`metric_id`) used for WorkSpec 2.1 validation.</p>
                             
                         </div>
                     </header>
 
                     <div class="docs-content">
-                        <p>This page lists validation error codes (<code class="docs-inline-code">metric_id</code>) used for WorkSpec v2.0 validation.</p>
+                        <p>This page lists validation error codes (<code class="docs-inline-code">metric_id</code>) used for WorkSpec 2.1 validation.</p>
 <p>If you are looking for the error format and severity semantics, see:</p>
 <ul class="docs-list">
-<li><a href="/docs/workspec/specification/v2.0/validation">/docs/workspec/specification/v2.0/validation</a></li>
+<li><a href="/docs/workspec/specification/v2.1/">/docs/workspec/specification/v2.1/</a></li>
 </ul>
 <hr class="docs-hr"/>
 <h2 class="docs-heading" id="error-identifier-fields">Error identifier fields<a class="headerlink" href="#error-identifier-fields" title="Link to this section">¶</a></h2>
@@ -88,7 +88,7 @@
 </code></pre></div>
 <h3 class="docs-heading" id="instance"><code class="docs-inline-code">instance</code><a class="headerlink" href="#instance" title="Link to this section">¶</a></h3>
 <p><code class="docs-inline-code">instance</code> is a JSON Pointer to the exact location in the document.</p>
-<p>Common pointer shapes in WorkSpec v2.0:</p>
+<p>Common pointer shapes in WorkSpec 2.1:</p>
 <ul class="docs-list">
 <li><code class="docs-inline-code">/simulation/schema_version</code></li>
 <li><code class="docs-inline-code">/simulation/meta</code></li>
@@ -99,7 +99,7 @@
 <h2 class="docs-heading" id="error-code-catalog">Error code catalog<a class="headerlink" href="#error-code-catalog" title="Link to this section">¶</a></h2>
 <p>This catalog includes:</p>
 <ul class="docs-list">
-<li>WorkSpec v2.0 schema/versioning errors emitted by the validator</li>
+<li>WorkSpec 2.1 schema/versioning errors emitted by the validator</li>
 <li>Built-in UAW validation metrics for WorkSpec documents</li>
 </ul>
 <div class="table-container"><table class="docs-table">
@@ -125,21 +125,21 @@
 <td>error</td>
 <td>Missing Schema Version</td>
 <td>Missing required <code class="docs-inline-code">simulation.schema_version</code> (WorkSpec v2 requires version declaration).</td>
-<td>Add <code class="docs-inline-code">simulation.schema_version: "2.0"</code>.</td>
+<td>Add <code class="docs-inline-code">simulation.schema_version: "2.1"</code>.</td>
 </tr>
 <tr>
 <td><code class="docs-inline-code">schema.integrity.invalid_version</code></td>
 <td>error</td>
 <td>Invalid Schema Version</td>
-<td><code class="docs-inline-code">simulation.schema_version</code> is not Major.Minor (e.g., <code class="docs-inline-code">"2.0"</code>).</td>
-<td>Use <code class="docs-inline-code">"2.0"</code> and keep Major.Minor format.</td>
+<td><code class="docs-inline-code">simulation.schema_version</code> is not Major.Minor (e.g., <code class="docs-inline-code">"2.1"</code>).</td>
+<td>Use <code class="docs-inline-code">"2.1"</code> and keep Major.Minor format.</td>
 </tr>
 <tr>
 <td><code class="docs-inline-code">schema.integrity.unsupported_version</code></td>
 <td>error</td>
 <td>Unsupported Schema Version</td>
 <td><code class="docs-inline-code">simulation.schema_version</code> is not supported by the validator.</td>
-<td>Use the supported version (<code class="docs-inline-code">"2.0"</code>).</td>
+<td>Use the supported version (<code class="docs-inline-code">"2.1"</code>).</td>
 </tr>
 <tr>
 <td><code class="docs-inline-code">schema.integrity.missing_world</code></td>
@@ -170,6 +170,160 @@
 <td>Set <code class="docs-inline-code">simulation.process.tasks</code> to <code class="docs-inline-code">[]</code> or an array of tasks.</td>
 </tr>
 <tr>
+<td><code class="docs-inline-code">reference.compact.grammar</code></td>
+<td>error</td>
+<td>Invalid Compact Reference</td>
+<td>A ValueExpression begins with one <code class="docs-inline-code">@</code> but is not <code class="docs-inline-code">@entity.member</code> or <code class="docs-inline-code">@now</code>, or attempts a nested path.</td>
+<td>Use compact syntax such as <code class="docs-inline-code">"@shipment.temperature"</code>; use <code class="docs-inline-code">@@</code> for a literal leading <code class="docs-inline-code">@</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">reference.entity.unknown</code></td>
+<td>error</td>
+<td>Unknown Reference Entity</td>
+<td>The entity before the dot does not match a globally declared entity ID.</td>
+<td>Fix the ID or declare the entity.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">reference.member.unknown</code></td>
+<td>error</td>
+<td>Unknown Reference Member</td>
+<td>The member is neither an allowed built-in field nor a direct property on that entity.</td>
+<td>Use an existing direct member, for example <code class="docs-inline-code">"@shipment.temperature"</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">reference.clock.invalid</code></td>
+<td>error</td>
+<td>Invalid Clock Reference</td>
+<td>A clock expression is not exactly <code class="docs-inline-code">"@now"</code>.</td>
+<td>Use <code class="docs-inline-code">"@now"</code>; do not append a member.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">reference.structured.malformed</code></td>
+<td>error</td>
+<td>Malformed Compatibility Reference</td>
+<td>A reference-key-only object does not exactly match a supported compatibility shape.</td>
+<td>Replace it with compact <code class="docs-inline-code">"@entity.member"</code> syntax.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">reference.property.dotted</code></td>
+<td>error</td>
+<td>Dotted Property Name</td>
+<td>A referenceable property name contains <code class="docs-inline-code">.</code>, which is reserved for compact references.</td>
+<td>Rename it with underscores, such as <code class="docs-inline-code">sensor_temperature</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">reference.property.shadows_builtin</code></td>
+<td>error</td>
+<td>Built-in Property Collision</td>
+<td>A property has the same name as a referenceable built-in field.</td>
+<td>Rename the property; built-in fields take precedence.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">collection.reference.unknown</code></td>
+<td>error</td>
+<td>Unknown Runtime Collection</td>
+<td>A quantifier, selection, or work trigger names an undeclared collection.</td>
+<td>Declare it in <code class="docs-inline-code">simulation.collections</code> or fix the ID.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">collection.binding.invalid</code></td>
+<td>error</td>
+<td>Invalid Member Binding</td>
+<td>A collection alias is missing, malformed, or ambiguously uses <code class="docs-inline-code">current</code>.</td>
+<td>Declare a plain local alias such as <code class="docs-inline-code">member</code>, <code class="docs-inline-code">candidate</code>, or <code class="docs-inline-code">file</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">collection.cutoff.invalid</code></td>
+<td>error</td>
+<td>Invalid Open Collection Cut-off</td>
+<td>An open collection lacks a valid finite <code class="docs-inline-code">closes_at</code>.</td>
+<td>Add a strict time/date-time cut-off.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">work_definition.id.duplicate</code></td>
+<td>error</td>
+<td>Duplicate Work Definition</td>
+<td>Two reusable work definitions use the same ID.</td>
+<td>Give each definition a unique plain ID.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">instance.trigger.collection.invalid</code></td>
+<td>error</td>
+<td>Invalid Instance Trigger</td>
+<td><code class="docs-inline-code">instantiate.for_each</code> does not name a live collection.</td>
+<td>Fix the collection ID.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">instance.identity.collision</code></td>
+<td>error</td>
+<td>Runtime Instance Identity Collision</td>
+<td>A deterministic runtime instance ID collides with another task.</td>
+<td>Rename the definition or colliding authored task.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">actor.selection.policy.invalid</code></td>
+<td>error</td>
+<td>Invalid Selection Policy</td>
+<td><code class="docs-inline-code">select_member</code> uses an unsupported or nondeterministic policy.</td>
+<td>Use <code class="docs-inline-code">first_by_id</code>, <code class="docs-inline-code">lowest</code>, or <code class="docs-inline-code">highest</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">actor.selection.tie</code></td>
+<td>error</td>
+<td>Unresolved Selection Tie</td>
+<td>Ranked candidates tie without a deterministic tie-break.</td>
+<td>Add <code class="docs-inline-code">"tie_break": "stable_id"</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">actor.selection.by.type</code></td>
+<td>error</td>
+<td>Invalid Selection Rank Type</td>
+<td>A ranked selection’s <code class="docs-inline-code">by</code> expression is definitely non-numeric.</td>
+<td>Rank by a numeric property or arithmetic expression.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">value.arithmetic.type</code></td>
+<td>error</td>
+<td>Invalid Arithmetic Operand</td>
+<td>A pure arithmetic operand is definitely non-numeric.</td>
+<td>Use numeric operands; WorkSpec does not coerce.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">value.arithmetic.division_by_zero</code></td>
+<td>error</td>
+<td>Division By Zero</td>
+<td>A divisor is zero.</td>
+<td>Change the expression or guard the modeled state.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">reservation.amount.type</code></td>
+<td>error</td>
+<td>Invalid Reservation Amount Type</td>
+<td>A capacity amount is definitely non-numeric.</td>
+<td>Use a numeric ValueExpression.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">object.property.type.declared</code></td>
+<td>error</td>
+<td>Declared Property Type Mismatch</td>
+<td>An initial custom property value contradicts its <code class="docs-inline-code">type_definitions</code> declaration.</td>
+<td>Correct the value or the custom property declaration.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">reservation.conflict.possible</code></td>
+<td>warning</td>
+<td>Possible Branch Reservation Conflict</td>
+<td>Co-timed branch claims are not provably mutually exclusive.</td>
+<td>Use simple exclusive guards or remove the conflict.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">temporal.scheduling.actor_overlap_possible</code></td>
+<td>warning</td>
+<td>Possible Branch Actor Conflict</td>
+<td>Co-timed actor claims are not provably mutually exclusive.</td>
+<td>Use simple exclusive guards or assign distinct performers.</td>
+</tr>
+<tr>
 <td><code class="docs-inline-code">schema.integrity.missing_meta</code></td>
 <td>error</td>
 <td>Missing Meta Section</td>
@@ -187,7 +341,7 @@
 <td><code class="docs-inline-code">schema.integrity.disallowed_meta_field</code></td>
 <td>error</td>
 <td>Disallowed Meta Field</td>
-<td>Legacy field <code class="docs-inline-code">meta.article_title</code> is not allowed in WorkSpec v2.0.</td>
+<td>Legacy field <code class="docs-inline-code">meta.article_title</code> is not allowed in WorkSpec 2.1.</td>
 <td>Remove <code class="docs-inline-code">meta.article_title</code> and use <code class="docs-inline-code">meta.title</code>.</td>
 </tr>
 <tr>
@@ -301,6 +455,76 @@
 <td>Task End Time Overflow</td>
 <td>Checks if <code class="docs-inline-code">start + duration</code> causes invalid day boundary handling.</td>
 <td>Use multi-day start objects or adjust times/durations.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.while.failed_at_start</code></td>
+<td>error</td>
+<td>Initial Active Invariant Failed</td>
+<td>A task’s <code class="docs-inline-code">while</code> condition is false before activation.</td>
+<td>Correct modeled state or author a conditional branch; the task is blocked, not briefly started.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.progress.invalid</code></td>
+<td>error</td>
+<td>Invalid Progress Reference</td>
+<td>Task progress is not one compact reference to a world object or location member.</td>
+<td>Use a compact reference such as <code class="docs-inline-code">"@blood_unit_42.infused_ml"</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">reference.task.progress.undeclared</code></td>
+<td>error</td>
+<td>Undeclared Task Progress</td>
+<td><code class="docs-inline-code">@task.progress</code> refers to a task without a <code class="docs-inline-code">progress</code> declaration.</td>
+<td>Declare observational progress on the source task or remove the reference.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">reference.task.runtime_field.compact_required</code></td>
+<td>error</td>
+<td>Compact Runtime Reference Required</td>
+<td>A new task runtime field uses structured compatibility syntax.</td>
+<td>Use <code class="docs-inline-code">"@task.status"</code>, <code class="docs-inline-code">"@task.actual_end"</code>, or <code class="docs-inline-code">"@task.progress"</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.continues.invalid</code></td>
+<td>error</td>
+<td>Invalid Continuation</td>
+<td><code class="docs-inline-code">continues</code> is malformed.</td>
+<td>Use <code class="docs-inline-code">{ "task": "interrupted_task" }</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.continues.unknown</code></td>
+<td>error</td>
+<td>Unknown Continuation Source</td>
+<td>The continuation source task does not exist.</td>
+<td>Fix the source task ID.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.continues.self</code></td>
+<td>error</td>
+<td>Self Continuation</td>
+<td>A task attempts to continue itself.</td>
+<td>Reference a distinct interrupted task.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.continues.cycle</code></td>
+<td>error</td>
+<td>Continuation Cycle</td>
+<td>Static continuation links form a cycle.</td>
+<td>Break the cycle.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.continues.source_not_interrupted</code></td>
+<td>error</td>
+<td>Continuation Source Not Interrupted</td>
+<td>A continuation reaches its start while the source is not interrupted.</td>
+<td>Guard with <code class="docs-inline-code">@source.status</code> and time from <code class="docs-inline-code">@source.actual_end</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.lifecycle.transition.invalid</code></td>
+<td>error</td>
+<td>Illegal Lifecycle Transition</td>
+<td>Runtime code attempted a transition outside the WorkSpec lifecycle.</td>
+<td>Use only pending-to-start/terminal or active-to-completed/interrupted transitions.</td>
 </tr>
 <tr>
 <td><code class="docs-inline-code">task.dependency.unreachable</code></td>

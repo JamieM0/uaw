@@ -1,6 +1,6 @@
-# WorkSpec v2.0 Quickstart (5 minutes)
+# WorkSpec 2.1 Quickstart (5 minutes)
 
-Create a minimal valid WorkSpec v2.0 document, validate it, and iterate.
+Create a minimal valid WorkSpec 2.1 document, validate it, and iterate.
 
 ---
 
@@ -8,9 +8,9 @@ Create a minimal valid WorkSpec v2.0 document, validate it, and iterate.
 
 ```json
 {
-    "$schema": "https://universalautomation.wiki/workspec/v2.0.schema.json",
+    "$schema": "https://universalautomation.wiki/workspec/v2.1.schema.json",
     "simulation": {
-        "schema_version": "2.0",
+        "schema_version": "2.1",
         "meta": {
             "title": "Hello WorkSpec",
             "description": "A minimal example simulation",
@@ -77,7 +77,6 @@ Create a minimal valid WorkSpec v2.0 document, validate it, and iterate.
 ## Next steps
 
 - Custom validation via CLI: [/docs/workspec/guides/custom-validation-cli](/docs/workspec/guides/custom-validation-cli)
-- Object model: [/docs/workspec/specification/v2.0/objects](/docs/workspec/specification/v2.0/objects)
-- Task model: [/docs/workspec/specification/v2.0/tasks](/docs/workspec/specification/v2.0/tasks)
-- Interaction system: [/docs/workspec/specification/v2.0/interactions](/docs/workspec/specification/v2.0/interactions)
+- WorkSpec 2.1 semantics: [/docs/workspec/specification/v2.1/](/docs/workspec/specification/v2.1/)
+- Canonical schema: [/workspec/v2.1.schema.json](/workspec/v2.1.schema.json)
 - Cheatsheet: [/docs/workspec/cheatsheet](/docs/workspec/cheatsheet)

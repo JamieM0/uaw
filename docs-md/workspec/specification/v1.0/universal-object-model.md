@@ -1,10 +1,10 @@
 # Universal Object Model (UOM) (Legacy / WorkSpec v1.0)
 
-This document describes the legacy UAW simulation schema used before WorkSpec v2.0 versioning and the `world`/`process` split.
+This document describes the legacy UAW simulation schema used before versioned WorkSpec and the `world`/`process` split.
 
-For WorkSpec v2.0, start here:
+For current WorkSpec 2.1, start here:
 
-- [/docs/workspec/specification/v2.0/](/docs/workspec/specification/v2.0/)
+- [/docs/workspec/specification/v2.1/](/docs/workspec/specification/v2.1/)
 - [/docs/workspec/guides/migration](/docs/workspec/guides/migration)
 
 The Universal Object Model is the standardized schema that defines how simulations are structured in the UAW system. This document describes the current implementation, including both legacy compatibility features and modern extensible patterns.

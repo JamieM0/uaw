@@ -1,4 +1,4 @@
-# WorkSpec v2.0 Standard Properties Reference
+# WorkSpec 2.1 Standard Properties Reference
 
 WorkSpec allows arbitrary custom properties under an object’s `properties` bag. This page documents commonly-used standard properties and their typical meaning.
 
@@ -8,7 +8,10 @@ WorkSpec allows arbitrary custom properties under an object’s `properties` bag
 
 - Type-specific properties live under `object.properties`.
 - Some properties have conventional meaning for validators/simulators (not all consumers implement all semantics).
-- `location` is a top-level object field (`object.location`) in WorkSpec v2.0.
+- `location` is a top-level object field (`object.location`) in WorkSpec 2.1.
+- Property names must not contain `.`. Use names such as `sensor_temperature` and `quality_result_final`.
+- A property must not reuse a referenceable built-in field name. Compact references always give the built-in field precedence.
+- Reference a direct property with compact syntax such as `"@shipment.temperature"`; nested paths are not supported.
 
 ---
 
@@ -108,4 +111,18 @@ Some properties have conventional semantics for validators/simulators:
 | `state` | `from/to` / `set` | For actors/equipment/services |
 | `location` | `from/to` / `set` | Used by simulators that track locations |
 
-See interaction operators: [/docs/workspec/specification/v2.0/interactions](/docs/workspec/specification/v2.0/interactions).
+See WorkSpec 2.1 interaction semantics: [/docs/workspec/specification/v2.1/](/docs/workspec/specification/v2.1/).
+
+## Task interruption fields and references
+
+| Field/reference | Type | Meaning |
+|---|---|---|
+| task `while` | Condition | Must be true before activation and at state-changing modeled event boundaries while active. |
+| task `progress` | compact world reference | Observational value captured at completion or interruption. |
+| task `continues.task` | task ID | Interrupted logical work continued by this separate task interval. |
+| `@task.status` | enum | `pending`, `active`, `completed`, `skipped`, `blocked`, `interrupted`, or runtime-instance `cancelled`. |
+| `@task.end` | instant | Planned end, unchanged by interruption. |
+| `@task.actual_end` | instant | Successful completion or interruption time; unresolved before termination. |
+| `@task.progress` | captured value | Stable termination capture; invalid if the task has no `progress` declaration. |
+
+Progress has no implied percentage, monotonicity, zero start, or threshold. Runtime task references use compact syntax only.

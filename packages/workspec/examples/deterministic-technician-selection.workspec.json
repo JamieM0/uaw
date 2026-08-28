@@ -1,0 +1,19 @@
+{
+  "$schema": "https://universalautomation.wiki/workspec/v2.1.schema.json",
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": { "title": "Deterministic technician selection", "description": "Dispatch the eligible technician with the lowest current load.", "domain": "maintenance" },
+    "config": { "time_unit": "minutes", "start_time": "09:00", "end_time": "10:00", "currency": "GBP", "locale": "en-GB", "timezone": "Europe/London" },
+    "collections": { "technicians": { "from": "objects", "as": "member", "where": { "==": ["@member.type", "technician"] } } },
+    "type_definitions": { "technician": { "extends": "actor", "additional_properties": { "qualified": { "type": "boolean" }, "load": { "type": "number" } } } },
+    "world": { "objects": [
+      { "id": "technician_a", "type": "technician", "name": "Technician A", "properties": { "state": "available", "qualified": true, "load": 2 } },
+      { "id": "technician_b", "type": "technician", "name": "Technician B", "properties": { "state": "available", "qualified": true, "load": 1 } }
+    ] },
+    "process": { "tasks": [{
+      "id": "repair_pump",
+      "actor_id": { "select_member": { "collection": "technicians", "as": "candidate", "where": { "==": ["@candidate.qualified", true] }, "policy": "lowest", "by": "@candidate.load", "tie_break": "stable_id" } },
+      "start": "09:00", "duration": 30
+    }] }
+  }
+}

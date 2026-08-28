@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorkSpec v2.0 Standard Properties Reference - Universal Automation Wiki</title>
+    <title>WorkSpec 2.1 Standard Properties Reference - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
     <link rel="stylesheet" href="/assets/css/category.css">
@@ -50,7 +50,7 @@
                                         
                                     
                                         
-                                            <li aria-current="page">WorkSpec v2.0 Standard Properties Reference</li>
+                                            <li aria-current="page">WorkSpec 2.1 Standard Properties Reference</li>
                                         
                                     
                                 </ol>
@@ -58,7 +58,7 @@
                         </div>
                         
                         <div class="docs-title-section">
-                            <h1 class="docs-page-title">WorkSpec v2.0 Standard Properties Reference</h1>
+                            <h1 class="docs-page-title">WorkSpec 2.1 Standard Properties Reference</h1>
                             
                             <p class="docs-page-subtitle">WorkSpec allows arbitrary custom properties under an object’s `properties` bag. This page documents commonly-used standard properties and their typical meaning.</p>
                             
@@ -72,7 +72,10 @@
 <ul class="docs-list">
 <li>Type-specific properties live under <code class="docs-inline-code">object.properties</code>.</li>
 <li>Some properties have conventional meaning for validators/simulators (not all consumers implement all semantics).</li>
-<li><code class="docs-inline-code">location</code> is a top-level object field (<code class="docs-inline-code">object.location</code>) in WorkSpec v2.0.</li>
+<li><code class="docs-inline-code">location</code> is a top-level object field (<code class="docs-inline-code">object.location</code>) in WorkSpec 2.1.</li>
+<li>Property names must not contain <code class="docs-inline-code">.</code>. Use names such as <code class="docs-inline-code">sensor_temperature</code> and <code class="docs-inline-code">quality_result_final</code>.</li>
+<li>A property must not reuse a referenceable built-in field name. Compact references always give the built-in field precedence.</li>
+<li>Reference a direct property with compact syntax such as <code class="docs-inline-code">"@shipment.temperature"</code>; nested paths are not supported.</li>
 </ul>
 <hr class="docs-hr"/>
 <h2 class="docs-heading" id="actor-properties-common">Actor properties (common)<a class="headerlink" href="#actor-properties-common" title="Link to this section">¶</a></h2>
@@ -366,7 +369,55 @@
 </tr>
 </tbody>
 </table></div>
-<p>See interaction operators: <a href="/docs/workspec/specification/v2.0/interactions">/docs/workspec/specification/v2.0/interactions</a>.</p>
+<p>See WorkSpec 2.1 interaction semantics: <a href="/docs/workspec/specification/v2.1/">/docs/workspec/specification/v2.1/</a>.</p>
+<h2 class="docs-heading" id="task-interruption-fields-and-references">Task interruption fields and references<a class="headerlink" href="#task-interruption-fields-and-references" title="Link to this section">¶</a></h2>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Field/reference</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>task <code class="docs-inline-code">while</code></td>
+<td>Condition</td>
+<td>Must be true before activation and at state-changing modeled event boundaries while active.</td>
+</tr>
+<tr>
+<td>task <code class="docs-inline-code">progress</code></td>
+<td>compact world reference</td>
+<td>Observational value captured at completion or interruption.</td>
+</tr>
+<tr>
+<td>task <code class="docs-inline-code">continues.task</code></td>
+<td>task ID</td>
+<td>Interrupted logical work continued by this separate task interval.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">@task.status</code></td>
+<td>enum</td>
+<td><code class="docs-inline-code">pending</code>, <code class="docs-inline-code">active</code>, <code class="docs-inline-code">completed</code>, <code class="docs-inline-code">skipped</code>, <code class="docs-inline-code">blocked</code>, <code class="docs-inline-code">interrupted</code>, or runtime-instance <code class="docs-inline-code">cancelled</code>.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">@task.end</code></td>
+<td>instant</td>
+<td>Planned end, unchanged by interruption.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">@task.actual_end</code></td>
+<td>instant</td>
+<td>Successful completion or interruption time; unresolved before termination.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">@task.progress</code></td>
+<td>captured value</td>
+<td>Stable termination capture; invalid if the task has no <code class="docs-inline-code">progress</code> declaration.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Progress has no implied percentage, monotonicity, zero start, or threshold. Runtime task references use compact syntax only.</p>
                     </div>
                     
                     <footer class="docs-footer">

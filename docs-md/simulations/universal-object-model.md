@@ -4,9 +4,8 @@ The Universal Object Model (UOM) is the object + interaction schema used by UAW 
 
 ## Canonical Spec (WorkSpec)
 
-- [WorkSpec v2.0: Schema](/docs/workspec/specification/v2.0/schema)
-- [WorkSpec v2.0: Objects](/docs/workspec/specification/v2.0/objects)
-- [WorkSpec v2.0: Interactions](/docs/workspec/specification/v2.0/interactions)
+- [WorkSpec 2.1 semantics](/docs/workspec/specification/v2.1/)
+- [WorkSpec 2.1 schema](/workspec/v2.1.schema.json)
 - [WorkSpec Migration Guide](/docs/workspec/guides/migration)
 
 ## UOM in WorkSpec Studio

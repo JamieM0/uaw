@@ -1049,6 +1049,7 @@
         const taskTiming = new Map(); // id -> { startMinutes, endMinutes } (for time/daytime tasks)
         const taskMillis = new Map(); // id -> { startMillis, endMillis } (for datetime tasks)
         let authoritativeRuntimeRun = null;
+        let authoritativeRuntimeState = null;
 
         const referencedObjectIds = new Set();
         const recipeDefinitions = isPlainObject(process.recipes)
@@ -1091,6 +1092,8 @@
 
             const rawId = safeTrim(task.id);
             const rawActorId = ensureString(task.actor_id);
+            const runtimeActorBinding = schemaVersion === '2.1' && task.actor_id !== undefined
+                && (typeof task.actor_id !== 'string' || WorkSpecRuntime?.isValueReference?.(task.actor_id));
 
             if (!rawId) {
                 problems.push(buildProblem(
@@ -1134,7 +1137,7 @@
             taskById.set(rawId, task);
             taskIndexById.set(rawId, i);
 
-            if (!rawActorId) {
+            if (!rawActorId && !runtimeActorBinding) {
                 problems.push(buildProblem(
                     'task.reference.invalid_actor',
                     'error',
@@ -1144,7 +1147,7 @@
                     { task_id: rawId },
                     ['Set actor_id to an existing performer object id (actor, equipment, or service).']
                 ));
-            } else if (!knownObjectIds.has(rawActorId)) {
+            } else if (rawActorId && !knownObjectIds.has(rawActorId)) {
                 problems.push(buildProblem(
                     'task.reference.invalid_actor',
                     'error',
@@ -1154,7 +1157,7 @@
                     { task_id: rawId, actor_id: rawActorId },
                     ['Fix the actor_id to match an object id in simulation.world.objects.', 'Add the missing object to world.objects.', 'Or create the object earlier via action:create.']
                 ));
-            } else if (objectTypeById.has(rawActorId) && !isPerformerType(objectTypeById.get(rawActorId), typeDefinitions)) {
+            } else if (rawActorId && objectTypeById.has(rawActorId) && !isPerformerType(objectTypeById.get(rawActorId), typeDefinitions)) {
                 problems.push(buildProblem(
                     'task.reference.invalid_actor',
                     'error',
@@ -1546,6 +1549,7 @@
 
         if (schemaVersion === '2.1' && WorkSpecRuntime && typeof WorkSpecRuntime.replay === 'function') {
             authoritativeRuntimeRun = WorkSpecRuntime.replay(documentValue);
+            authoritativeRuntimeState = WorkSpecRuntime.serialiseState?.(authoritativeRuntimeRun) || null;
             taskTiming.clear();
             authoritativeRuntimeRun.timings.forEach((timing, taskId) => {
                 if (!timing.resolved) return;
@@ -1720,31 +1724,33 @@
 
         // Temporal scheduling checks (only for time/daytime tasks where we have minutes)
         // 1) actor overlap
-        const tasksByActor = new Map(); // actorId -> [{taskId, start, end}]
-        for (const [taskId, timing] of taskTiming.entries()) {
-            const task = taskById.get(taskId);
-            if (!task) continue;
-            const actorId = ensureString(task.actor_id);
-            if (!safeTrim(actorId)) continue;
-            if (!tasksByActor.has(actorId)) tasksByActor.set(actorId, []);
-            tasksByActor.get(actorId).push({ taskId, start: timing.startMinutes, end: timing.endMinutes, index: timing.index });
-        }
+        if (schemaVersion !== '2.1') {
+            const tasksByActor = new Map(); // actorId -> [{taskId, start, end}]
+            for (const [taskId, timing] of taskTiming.entries()) {
+                const task = taskById.get(taskId);
+                if (!task) continue;
+                const actorId = ensureString(task.actor_id);
+                if (!safeTrim(actorId)) continue;
+                if (!tasksByActor.has(actorId)) tasksByActor.set(actorId, []);
+                tasksByActor.get(actorId).push({ taskId, start: timing.startMinutes, end: timing.endMinutes, index: timing.index });
+            }
 
-        for (const [actorId, items] of tasksByActor.entries()) {
-            items.sort((a, b) => (a.start - b.start) || (a.index - b.index));
-            for (let i = 1; i < items.length; i += 1) {
-                const prev = items[i - 1];
-                const cur = items[i];
-                if (cur.start < prev.end) {
-                    problems.push(buildProblem(
-                        'temporal.scheduling.actor_overlap',
-                        'error',
-                        'Actor Overlap',
-                        `Actor '${actorId}' has overlapping tasks: '${prev.taskId}' overlaps '${cur.taskId}'.`,
-                        tasksBaseInstance,
-                        { actor_id: actorId, task_a: prev.taskId, task_b: cur.taskId },
-                        ['Adjust start times/durations to remove the overlap.', 'Assign one task to a different performer object.']
-                    ));
+            for (const [actorId, items] of tasksByActor.entries()) {
+                items.sort((a, b) => (a.start - b.start) || (a.index - b.index));
+                for (let i = 1; i < items.length; i += 1) {
+                    const prev = items[i - 1];
+                    const cur = items[i];
+                    if (cur.start < prev.end) {
+                        problems.push(buildProblem(
+                            'temporal.scheduling.actor_overlap',
+                            'error',
+                            'Actor Overlap',
+                            `Actor '${actorId}' has overlapping tasks: '${prev.taskId}' overlaps '${cur.taskId}'.`,
+                            tasksBaseInstance,
+                            { actor_id: actorId, task_a: prev.taskId, task_b: cur.taskId },
+                            ['Adjust start times/durations to remove the overlap.', 'Assign one task to a different performer object.']
+                        ));
+                    }
                 }
             }
         }
@@ -2038,7 +2044,7 @@
         }
 
         const ok = problems.every((p) => p.severity !== 'error');
-        return { ok, problems };
+        return { ok, problems, ...(authoritativeRuntimeState ? { runtime: authoritativeRuntimeState } : {}) };
     }
 
     const api = {

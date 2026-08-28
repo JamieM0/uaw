@@ -43,6 +43,7 @@ function run() {
         const simulationProperties = schema.definitions?.Simulation?.properties || {};
         for (const property of [
             'schema_version', 'meta', 'config', 'world', 'process',
+            'collections',
             'type_definitions', 'type_traits', 'state_libraries',
             'simulation_config', 'calendar', 'day_types', 'digital_space', 'displays'
         ]) {
@@ -51,6 +52,7 @@ function run() {
 
         for (const definition of [
             'Object', 'Task', 'Interaction', 'StateLibrary', 'TypeDefinition', 'TypeTrait',
+            'RuntimeCollection', 'WorkDefinition', 'TaskTemplate', 'MemberSelection', 'DerivedValueExpression',
             'Calendar', 'DayType', 'DigitalSpace', 'DigitalLocation', 'DigitalObject',
             'DigitalConnection', 'DataFlow', 'Display', 'DisplayElement'
         ]) {
