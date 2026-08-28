@@ -83,6 +83,7 @@ function run() {
     assert.equal(playbackState.getObjectAtTime(model, 'loaf', 9 * 60 + 59), null);
     assert.equal(playbackState.getObjectAtTime(model, 'loaf', 10 * 60)?.properties.state, 'hot');
     assert.equal(playbackState.getObjectAtTime(model, 'loaf', 10 * 60 + 11)?.properties.state, 'hot');
+    assert.ok(playbackState.getObservableObjects(model).some(object => object.id === 'loaf'));
 
     // Deletion starts with the task and persists afterwards.
     assert.equal(playbackState.getObjectAtTime(model, 'tool', 10 * 60 + 29)?.id, 'tool');

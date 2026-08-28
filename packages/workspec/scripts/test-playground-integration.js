@@ -12,11 +12,15 @@ const packageValidatorPath = path.join(repoRoot, 'packages', 'workspec', 'worksp
 const packageMigratorPath = path.join(repoRoot, 'packages', 'workspec', 'workspec-migrate-v1-to-v2.js');
 const packageStateVisualsPath = path.join(repoRoot, 'packages', 'workspec', 'state-visuals.js');
 const packagePlaybackStatePath = path.join(repoRoot, 'packages', 'workspec', 'playback-state.js');
+const packageDirectMoviePath = path.join(repoRoot, 'packages', 'workspec', 'direct-movie-experiment.js');
 const webValidatorPath = path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-validator.js');
 const webMigratorPath = path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-migrate-v1-to-v2.js');
 const webStateVisualsPath = path.join(repoRoot, 'web', 'packages', 'workspec', 'state-visuals.js');
 const webPlaybackStatePath = path.join(repoRoot, 'web', 'packages', 'workspec', 'playback-state.js');
+const webDirectMoviePath = path.join(repoRoot, 'web', 'packages', 'workspec', 'direct-movie-experiment.js');
 const playgroundHtmlPath = path.join(repoRoot, 'web', 'playground.html');
+const timelinePath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-timeline.js');
+const actorAnimationPath = path.join(repoRoot, 'web', 'assets', 'js', 'space-editor-actor-animation.js');
 const migrateCliPath = path.join(repoRoot, 'web', 'scripts', 'workspec-migrate.js');
 
 function readText(filePath) {
@@ -91,6 +95,11 @@ function run() {
     );
     assert.match(
         playgroundHtml,
+        /<script src="\/packages\/workspec\/direct-movie-experiment\.js" defer><\/script>/,
+        'Playground is not loading the direct movie experiment fixture'
+    );
+    assert.match(
+        playgroundHtml,
         /<script src="\/packages\/workspec\/workspec-validator\.js" defer><\/script>/,
         'Playground is not loading the package-backed validator script'
     );
@@ -116,6 +125,18 @@ function run() {
     assertMirrored(packageMigratorPath, webMigratorPath);
     assertMirrored(packageStateVisualsPath, webStateVisualsPath);
     assertMirrored(packagePlaybackStatePath, webPlaybackStatePath);
+    assertMirrored(packageDirectMoviePath, webDirectMoviePath);
+
+    const directMovieSource = readText(packageDirectMoviePath);
+    assert.match(directMovieSource, /Direct Movie Experiment — 0 tasks/);
+    for (const label of ['00:00', '00:10', '00:20', '00:30']) {
+        assert.ok(directMovieSource.includes(label) || directMovieSource.includes('padStart'), `Missing movie test time ${label}`);
+    }
+    assert.match(directMovieSource, /workSpecTimeController\?\.setTime/);
+    assert.doesNotMatch(readText(actorAnimationPath), /movieExperiment|DirectMovie/,
+        'Space Editor renderer contains direct-movie-specific logic');
+    assert.match(readText(timelinePath), /playbackModel: player\.playbackModel/,
+        'Studio render context is not forwarding the shared playback model');
 
     const nodeValidator = require(packageValidatorPath);
     const stateVisuals = require(packageStateVisualsPath);

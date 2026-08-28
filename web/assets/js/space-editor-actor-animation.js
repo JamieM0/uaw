@@ -14,6 +14,7 @@ class ActorAnimationManager {
         this.simulationData = null;
         this.normalizedSimulation = null;
         this.playbackModel = null;
+        this.renderContext = window.workSpecRenderContext || null;
         this.actors = new Map(); // Map<actorId, ActorState>
         this.actorTasks = new Map(); // Map<actorId, Task[]>; built once per document load
         this.transitions = new Map(); // Map<actorId, Transition[]>
@@ -88,10 +89,11 @@ class ActorAnimationManager {
 
     setupPlaybackListeners() {
         // Listen for when the player is created/updated
-        document.addEventListener('simulation-rendered', () => {
+        document.addEventListener('simulation-rendered', event => {
             if (this.enabled) {
+                this.renderContext = event.detail || null;
                 this._loadAttempted = false; // Reset so we reload data
-                this.loadSimulationData();
+                this.loadSimulationData(this.renderContext);
                 this.startAnimationLoop();
             }
         });
@@ -108,7 +110,7 @@ class ActorAnimationManager {
         });
         window.addEventListener('uaw:state-visuals-changed', () => {
             this._loadAttempted = false;
-            this.loadSimulationData();
+            this.loadSimulationData(this.renderContext);
             this.updateActorPositions();
         });
 
@@ -122,7 +124,7 @@ class ActorAnimationManager {
                         clearTimeout(this.reloadTimeout);
                         this.reloadTimeout = setTimeout(() => {
                             this._loadAttempted = false;
-                            this.loadSimulationData();
+                            this.loadSimulationData(this.renderContext);
                         }, 500);
                     }
                 });
@@ -142,7 +144,7 @@ class ActorAnimationManager {
         this._loadAttempted = false;
 
         // Load simulation data and prepare actors
-        this.loadSimulationData();
+        this.loadSimulationData(this.renderContext);
 
         // Always start the animation loop - it will wait for player if needed
         this.startAnimationLoop();
@@ -161,19 +163,15 @@ class ActorAnimationManager {
         this.stopAnimationLoop();
     }
 
-    loadSimulationData() {
+    loadSimulationData(context = null) {
         try {
-            // Get simulation data from Monaco editor
-            if (!window.editor) {
-                return false;
+            let data = context?.document;
+            if (!data) {
+                if (!window.editor) return false;
+                const jsonText = window.editor.getValue();
+                if (!jsonText || jsonText.trim() === '') return false;
+                data = JSON.parse(stripJsonComments(jsonText));
             }
-
-            const jsonText = window.editor.getValue();
-            if (!jsonText || jsonText.trim() === '') {
-                return false;
-            }
-
-            const data = JSON.parse(stripJsonComments(jsonText));
 
             if (!data.simulation) {
                 return false;
@@ -182,7 +180,8 @@ class ActorAnimationManager {
             this.simulationData = data.simulation;
             const normalized = window.WorkSpecTime?.normalizeDocument?.(data);
             this.normalizedSimulation = normalized || null;
-            this.playbackModel = window.WorkSpecPlaybackState?.createPlaybackModel?.(normalized || data);
+            this.playbackModel = context?.playbackModel
+                || window.WorkSpecPlaybackState?.createPlaybackModel?.(normalized || data);
 
             // Pre-compute transitions for all actors
             this.precomputeTransitions();
@@ -207,9 +206,10 @@ class ActorAnimationManager {
         this.transitions.clear();
         this.locationSlotCache.clear();
 
-        const objects = this.normalizedSimulation
-            ? this.normalizedSimulation.objects
-            : (this.simulationData.world?.objects || this.simulationData.objects || []);
+        const objects = window.WorkSpecPlaybackState?.getObservableObjects?.(this.playbackModel)
+            || (this.normalizedSimulation
+                ? this.normalizedSimulation.objects
+                : (this.simulationData.world?.objects || this.simulationData.objects || []));
         const tasks = this.normalizedSimulation
             ? this.normalizedSimulation.tasks
             : (this.simulationData.process?.tasks || this.simulationData.tasks || []);
@@ -473,7 +473,7 @@ class ActorAnimationManager {
         // If we don't have actors yet, try to load them (but only once per animation cycle)
         if (this.actors.size === 0 && !this._loadAttempted) {
             this._loadAttempted = true;
-            const loaded = this.loadSimulationData();
+            const loaded = this.loadSimulationData(this.renderContext);
             if (this.actors.size === 0) {
                 return; // Still no actors, nothing to do
             }

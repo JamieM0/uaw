@@ -23,6 +23,11 @@ const pairs = [
         label: 'playback-state.js'
     },
     {
+        a: path.join(repoRoot, 'packages', 'workspec', 'direct-movie-experiment.js'),
+        b: path.join(repoRoot, 'web', 'packages', 'workspec', 'direct-movie-experiment.js'),
+        label: 'direct-movie-experiment.js'
+    },
+    {
         a: path.join(repoRoot, 'packages', 'workspec', 'v2.0.schema.json'),
         b: path.join(repoRoot, 'web', 'packages', 'workspec', 'v2.0.schema.json'),
         label: 'packages/workspec/v2.0.schema.json'

@@ -12,7 +12,7 @@
     "check:sync": "node scripts/check-sync.js",
     "sync:web": "node scripts/sync-web-assets.js",
     "test:integration": "node scripts/sync-web-assets.js && node scripts/test-playground-integration.js",
-    "test": "node scripts/self-test.js && node scripts/test-playback-state.js && npm run test:integration"
+    "test": "node scripts/self-test.js && node scripts/test-playback-state.js && node scripts/test-direct-movie-experiment.js && npm run test:integration"
   },
   "files": [
     "bin/",

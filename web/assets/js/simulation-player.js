@@ -11,7 +11,8 @@ class SimulationPlayer {
         this.trackedEventListeners = [];
         this.currentObjectStates = new Map();
         this.sortedTasks = [...(simulationData.tasks || [])].sort((a, b) => a.start_minutes - b.start_minutes);
-        this.playbackModel = window.WorkSpecPlaybackState?.createPlaybackModel?.(simulationData);
+        this.playbackModel = simulationData.playbackModel
+            || window.WorkSpecPlaybackState?.createPlaybackModel?.(simulationData);
 
         // Cache for optimized state calculations
         this.lastStateCalculationTime = -1;
