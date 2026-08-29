@@ -2316,11 +2316,11 @@ function addTaskToSimulation() {
             start: startTime,
             duration: duration,
             location: location,
-            depends_on: [],
-            interactions: []
+            depends_on: document.getElementById('task-depends-input').value
+                .split(',').map(id => id.trim()).filter(Boolean)
         };
         
-        const interactionGroups = document.querySelectorAll('.interaction-group');
+        const interactionGroups = [];
         interactionGroups.forEach(group => {
             const counter = group.id.split('-')[1];
             const changeType = group.querySelector(`select[name="interaction_change_type_${counter}"]`).value;
@@ -2491,12 +2491,13 @@ function saveTaskToSimulation() {
             start: startTime,
             duration: duration,
             location: location,
-            depends_on: existingTask?.depends_on || [],
-            interactions: []
+            depends_on: document.getElementById('task-depends-input').value
+                .split(',').map(id => id.trim()).filter(Boolean)
         };
 
-        // Process interactions (same logic as before)
-        const interactionGroups = document.querySelectorAll('.interaction-group');
+        // WorkSpec 2.1 behaviour belongs in Script, never in Define tasks.
+        delete newTask.interactions;
+        const interactionGroups = [];
         interactionGroups.forEach(group => {
             const counter = group.id.split('-')[1];
             const changeType = group.querySelector(`select[name="interaction_change_type_${counter}"]`).value;

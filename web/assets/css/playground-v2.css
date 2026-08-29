@@ -1761,15 +1761,61 @@ body.uaw-inspector-open .uaw-inspector {
 }
 
 body[data-uaw-workspace="projects"] #uaw-projects-view,
+body[data-uaw-workspace="script"] #uaw-script-view,
 body[data-uaw-workspace="assets"] #uaw-assets-view,
 body[data-uaw-workspace="settings"] #uaw-settings-view {
     display: block;
 }
 
 body[data-uaw-workspace="projects"] .uaw-legacy-host,
+body[data-uaw-workspace="script"] .uaw-legacy-host,
 body[data-uaw-workspace="assets"] .uaw-legacy-host,
 body[data-uaw-workspace="settings"] .uaw-legacy-host {
     display: none;
+}
+
+body[data-uaw-workspace="script"] #uaw-script-view {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+    background: var(--uaw-white);
+}
+
+.uaw-script-heading {
+    display: flex;
+    flex: 0 0 39px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px 0 15px;
+    border-bottom: 1px solid var(--uaw-slate-300);
+    color: var(--uaw-slate-700);
+    background: var(--uaw-slate-100);
+}
+
+.uaw-script-heading div {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.uaw-script-heading span,
+.uaw-script-heading small {
+    color: var(--uaw-slate-600);
+    font: 600 10px var(--uaw-font-code);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.uaw-script-heading strong {
+    color: var(--uaw-slate-800);
+    font-size: 12px;
+}
+
+.uaw-script-editor {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
 }
 
 .uaw-legacy-header {
@@ -2129,6 +2175,7 @@ body[data-uaw-workspace="validate"] #uaw-playback-commands {
 body[data-uaw-workspace="projects"] #uaw-edit-commands,
 body[data-uaw-workspace="projects"] #uaw-view-commands,
 body[data-uaw-workspace="projects"] #uaw-playback-commands,
+body[data-uaw-workspace="script"] #uaw-playback-commands,
 body[data-uaw-workspace="assets"] #uaw-edit-commands,
 body[data-uaw-workspace="assets"] #uaw-view-commands,
 body[data-uaw-workspace="assets"] #uaw-playback-commands,
@@ -2141,6 +2188,7 @@ body[data-uaw-workspace="settings"] #uaw-playback-commands {
 /* Product-only workspaces use the full stage; panel preferences are preserved
    and restored automatically when the user returns to Build or Run. */
 body[data-uaw-workspace="projects"] .uaw-workspace-grid,
+body[data-uaw-workspace="script"] .uaw-workspace-grid,
 body[data-uaw-workspace="assets"] .uaw-workspace-grid,
 body[data-uaw-workspace="settings"] .uaw-workspace-grid {
     grid-template-columns: 0 minmax(0, 1fr) 0 !important;
@@ -2148,6 +2196,8 @@ body[data-uaw-workspace="settings"] .uaw-workspace-grid {
 
 body[data-uaw-workspace="projects"] .uaw-explorer,
 body[data-uaw-workspace="projects"] .uaw-inspector,
+body[data-uaw-workspace="script"] .uaw-explorer,
+body[data-uaw-workspace="script"] .uaw-inspector,
 body[data-uaw-workspace="assets"] .uaw-explorer,
 body[data-uaw-workspace="assets"] .uaw-inspector,
 body[data-uaw-workspace="settings"] .uaw-explorer,
@@ -2158,6 +2208,8 @@ body[data-uaw-workspace="settings"] .uaw-inspector {
 
 body[data-uaw-workspace="projects"] #uaw-file-commands,
 body[data-uaw-workspace="projects"] #uaw-help-commands,
+body[data-uaw-workspace="script"] #uaw-file-commands,
+body[data-uaw-workspace="script"] #uaw-help-commands,
 body[data-uaw-workspace="assets"] #uaw-file-commands,
 body[data-uaw-workspace="assets"] #uaw-help-commands,
 body[data-uaw-workspace="settings"] #uaw-file-commands,

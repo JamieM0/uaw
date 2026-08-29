@@ -8,6 +8,7 @@
     const LEGACY_PROJECT_STORE = 'projects';
     const LEGACY_ASSET_STORE = 'assets';
     const WORKSPEC_FILE = 'project.workspec.json';
+    const SCRIPT_FILE = 'project.workspec.js';
     const UAW_DIRECTORY = '.uaw';
     const PROJECT_META_FILE = 'project.json';
     const LAST_VALID_FILE = 'last-valid.workspec.json';
@@ -29,6 +30,10 @@
         }
     }, null, 2);
 
+    const blankScript = () => `// WorkSpec 2.1 Script
+// Add behaviour here using the API provided by the WorkSpec runtime.
+`;
+
     const createId = () => window.crypto?.randomUUID?.()
         || `project-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const emit = (name, detail = {}) => window.dispatchEvent(new CustomEvent(name, { detail }));
@@ -39,6 +44,7 @@
             this.db = null;
             this.memoryRegistry = new Map();
             this.editor = null;
+            this.scriptEditor = null;
             this.currentProject = null;
             this.saveTimer = null;
             this.isOpeningProject = false;
@@ -198,6 +204,7 @@
             const metadata = uawDirectory ? await this.readJson(uawDirectory, PROJECT_META_FILE, {}) : {};
             const workSpecDraft = await this.readText(directoryHandle, WORKSPEC_FILE, true);
             if (workSpecDraft === null) throw new Error(`The folder does not contain ${WORKSPEC_FILE}.`);
+            const scriptDraft = await this.readText(directoryHandle, SCRIPT_FILE, true);
             const lastValidWorkSpec = uawDirectory ? await this.readText(uawDirectory, LAST_VALID_FILE, true) || '' : '';
             const checkpoints = [];
             const checkpointMetadata = Array.isArray(metadata.checkpoints) ? metadata.checkpoints : [];
@@ -208,7 +215,8 @@
                 });
                 for (const item of checkpointMetadata) {
                     const workSpec = directory ? await this.readText(directory, `${item.id}.workspec.json`, true) : null;
-                    if (workSpec !== null) checkpoints.push({ ...item, workSpec });
+                    const script = directory ? await this.readText(directory, `${item.id}.workspec.js`, true) : null;
+                    if (workSpec !== null) checkpoints.push({ ...item, workSpec, ...(script === null ? {} : { script }) });
                 }
             }
             return {
@@ -222,6 +230,7 @@
                 settings: metadata.settings || {},
                 checkpoints,
                 workSpecDraft,
+                scriptDraft: scriptDraft === null ? blankScript() : scriptDraft,
                 lastValidWorkSpec,
                 directoryHandle
             };
@@ -247,6 +256,7 @@
             if (!await this.ensurePermission(project.directoryHandle, true)) throw new Error(`Access to “${project.directoryHandle.name}” was not granted.`);
             const uawDirectory = await this.getUawDirectory(project.directoryHandle, true);
             await this.writeText(project.directoryHandle, WORKSPEC_FILE, project.workSpecDraft || '');
+            await this.writeText(project.directoryHandle, SCRIPT_FILE, project.scriptDraft ?? blankScript());
             if (project.lastValidWorkSpec) await this.writeText(uawDirectory, LAST_VALID_FILE, project.lastValidWorkSpec);
             await this.writeText(uawDirectory, PROJECT_META_FILE, JSON.stringify(this.projectMetadata(project), null, 2));
             await this.registryPut(project);
@@ -292,6 +302,7 @@
                 updatedAt: now,
                 archived: Boolean(project.archived),
                 workSpecDraft: project.workSpecDraft || '',
+                scriptDraft: project.scriptDraft ?? blankScript(),
                 lastValidWorkSpec: project.lastValidWorkSpec || '',
                 checkpoints: Array.isArray(project.checkpoints) ? project.checkpoints.slice(-20) : [],
                 agentThreadId: project.agentThreadId || null,
@@ -313,6 +324,7 @@
                 id: createId(), name: projectName,
                 description: '', createdAt: now, updatedAt: now, archived: false,
                 workSpecDraft: initialWorkSpec || blankWorkSpec(),
+                scriptDraft: blankScript(),
                 lastValidWorkSpec: this.isValidWorkSpec(initialWorkSpec) ? initialWorkSpec : '',
                 checkpoints: [], agentThreadId: null, settings: {}, directoryHandle: handle
             };
@@ -356,7 +368,12 @@
             catch (error) { if (isAbortError(error)) return null; throw error; }
             const source = await this.get(id, { requestPermission: true });
             if (!source || source.accessRequired) return null;
-            return this.create(`${source.name} copy`, source.workSpecDraft || source.lastValidWorkSpec, handle);
+            const duplicate = await this.create(`${source.name} copy`, source.workSpecDraft || source.lastValidWorkSpec, handle);
+            if (!duplicate) return null;
+            duplicate.scriptDraft = source.scriptDraft ?? blankScript();
+            this.currentProject = await this.put(duplicate);
+            if (this.scriptEditor) this.scriptEditor.setValue(this.currentProject.scriptDraft);
+            return this.currentProject;
         }
 
         async archive(id, archived = true) {
@@ -480,9 +497,16 @@
         async createCheckpoint(label = 'Checkpoint') {
             if (!this.currentProject || !this.editor) return null;
             await this.saveCurrent();
-            const checkpoint = { id: createId(), label, createdAt: new Date().toISOString(), workSpec: this.editor.getValue() };
+            const checkpoint = {
+                id: createId(),
+                label,
+                createdAt: new Date().toISOString(),
+                workSpec: this.editor.getValue(),
+                script: this.scriptEditor?.getValue?.() ?? this.currentProject.scriptDraft ?? blankScript()
+            };
             const directory = await (await this.getUawDirectory(this.currentProject.directoryHandle, true)).getDirectoryHandle(CHECKPOINT_DIRECTORY, { create: true });
             await this.writeText(directory, `${checkpoint.id}.workspec.json`, checkpoint.workSpec);
+            await this.writeText(directory, `${checkpoint.id}.workspec.js`, checkpoint.script);
             this.currentProject.checkpoints = [...(this.currentProject.checkpoints || []), checkpoint].slice(-20);
             this.currentProject = await this.put(this.currentProject);
             emit('uaw:checkpoint-created', { checkpoint });
@@ -494,6 +518,7 @@
             if (!checkpoint || !this.editor) return false;
             await this.createCheckpoint('Before checkpoint restore');
             this.editor.setValue(checkpoint.workSpec);
+            if (this.scriptEditor && typeof checkpoint.script === 'string') this.scriptEditor.setValue(checkpoint.script);
             return true;
         }
 
@@ -515,6 +540,8 @@
                 this.isOpeningProject = true;
                 const content = project.workSpecDraft || project.lastValidWorkSpec;
                 if (content && this.editor.getValue() !== content) this.editor.setValue(content);
+                const script = project.scriptDraft ?? blankScript();
+                if (this.scriptEditor && this.scriptEditor.getValue() !== script) this.scriptEditor.setValue(script);
                 queueMicrotask(() => { this.isOpeningProject = false; });
             }
             emit('uaw:project-opened', { project });
@@ -535,6 +562,7 @@
             const save = async () => {
                 const content = this.editor.getValue();
                 this.currentProject.workSpecDraft = content;
+                this.currentProject.scriptDraft = this.scriptEditor?.getValue?.() ?? this.currentProject.scriptDraft ?? blankScript();
                 if (this.isValidWorkSpec(content)) this.currentProject.lastValidWorkSpec = content;
                 this.currentProject = await this.put(this.currentProject);
                 emit('uaw:project-saved', { project: this.currentProject });
@@ -669,6 +697,7 @@
             const checkpointDirectory = await (await this.getUawDirectory(directoryHandle, true)).getDirectoryHandle(CHECKPOINT_DIRECTORY, { create: true });
             for (const checkpoint of this.currentProject.checkpoints || []) {
                 if (checkpoint.id && checkpoint.workSpec) await this.writeText(checkpointDirectory, `${checkpoint.id}.workspec.json`, checkpoint.workSpec);
+                if (checkpoint.id && typeof checkpoint.script === 'string') await this.writeText(checkpointDirectory, `${checkpoint.id}.workspec.js`, checkpoint.script);
             }
             await this.put(this.currentProject);
             await this.deleteLegacyRecord(legacy);
@@ -690,12 +719,25 @@
             emit('uaw:project-selection-required', { projects: registry });
         }
 
+        attachScriptEditor(editor) {
+            if (!editor || this.scriptEditor === editor) return;
+            this.scriptEditor = editor;
+            editor.onDidChangeModelContent(() => {
+                emit('uaw:script-changed', { script: editor.getValue(), project: this.currentProject });
+                this.scheduleSave();
+            });
+            const script = this.currentProject?.scriptDraft ?? blankScript();
+            if (editor.getValue() !== script) editor.setValue(script);
+            emit('uaw:script-ready', { script, project: this.currentProject });
+        }
+
         getCurrent() { return this.currentProject; }
     }
 
     const store = new ProjectStore();
     window.UAWProjectStore = store;
     window.addEventListener('uaw:editor-ready', (event) => store.attachEditor(event.detail?.editor || window.monacoEditor || window.editor));
+    window.addEventListener('uaw:script-editor-ready', (event) => store.attachScriptEditor(event.detail?.editor || window.workSpecScriptEditor));
     window.addEventListener('DOMContentLoaded', () => {
         let attempts = 0;
         const timer = setInterval(() => {

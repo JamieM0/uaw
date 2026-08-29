@@ -18,8 +18,9 @@
 
     const WORKSPACE_META = {
         projects: { title: 'Projects', description: 'Local WorkSpec projects' },
-        build: { title: 'Model', description: 'Author the process and its environment' },
-        run: { title: 'Simulate', description: 'Run, inspect and validate the current model' },
+        build: { title: 'Define', description: 'Author the declarative WorkSpec model' },
+        script: { title: 'Script', description: 'Author JavaScript behaviour for this WorkSpec' },
+        run: { title: 'Simulate', description: 'Run and inspect the current WorkSpec' },
         validate: { title: 'Validation', description: 'Inspect problems and manage rules' },
         assets: { title: 'Assets', description: 'Project media stored outside WorkSpec source' },
         settings: { title: 'Settings', description: 'Workspace preferences and integrations' },
@@ -31,6 +32,7 @@
     const ICONS = {
         projects: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6.5h6l1.7 2H20.5v10H3.5z"/><path d="M3.5 6.5v-2h6l1.7 2"/></svg>',
         build: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h5v5H5zM14 14h5v5h-5zM14 5h5v5h-5zM10 7.5h4M16.5 10v4M10 8v8h4"/></svg>',
+        script: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 6-5 6 5 6M15.5 6l5 6-5 6M13.5 4l-3 16"/></svg>',
         run: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg>',
         validate: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 20 7v5c0 4.5-3 7.4-8 9-5-1.6-8-4.5-8-9V7z"/><path d="m8.5 12 2.3 2.3 4.8-5"/></svg>',
         assets: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v13H4z"/><path d="m4 15 4.5-4.5 3.5 3 2.5-2 5.5 5M15.5 9h.01"/></svg>',
@@ -144,10 +146,11 @@
                         <div class="uaw-rail__primary">
                             <p class="uaw-rail__section-label">Workspace</p>
                             ${this.workspaceButton('projects', 'Projects', '1')}
-                            ${this.workspaceButton('build', 'Model', '2')}
-                            ${this.workspaceButton('run', 'Simulate', '3')}
+                            ${this.workspaceButton('build', 'Define', '2')}
+                            ${this.workspaceButton('script', 'Script', '3')}
+                            ${this.workspaceButton('run', 'Simulate', '4')}
                             ${this.workspaceButton('validate', 'Validation')}
-                            ${this.workspaceButton('assets', 'Assets', '4')}
+                            ${this.workspaceButton('assets', 'Assets', '5')}
                         </div>
                         <div class="uaw-rail__secondary">
                             <div class="uaw-rail__system-actions">
@@ -175,6 +178,10 @@
                                 <section class="uaw-product-view" id="uaw-projects-view" aria-label="Projects"></section>
                                 <section class="uaw-product-view" id="uaw-process-view" aria-label="Process definition"></section>
                                 <section class="uaw-product-view" id="uaw-objects-view" aria-label="Object catalogue"></section>
+                                <section class="uaw-product-view uaw-script-view" id="uaw-script-view" aria-label="WorkSpec Script">
+                                    <header class="uaw-script-heading"><div><span>JavaScript</span><strong>Project behaviour</strong></div><small>Runs through the WorkSpec runtime</small></header>
+                                    <div class="uaw-script-editor" id="uaw-script-editor" aria-label="JavaScript editor"></div>
+                                </section>
                                 <section class="uaw-product-view" id="uaw-assets-view" aria-label="Assets"></section>
                                 <section class="uaw-product-view" id="uaw-settings-view" aria-label="Settings"></section>
                                 <div id="uaw-legacy-host" class="uaw-legacy-host"></div>
@@ -258,8 +265,9 @@
         workspaceButton(id, label, shortcut) {
             const descriptions = {
                 projects: 'Project files',
-                build: 'Author WorkSpec',
-                run: 'Run and validate',
+                build: 'Declarative model',
+                script: 'JavaScript behaviour',
+                run: 'Run WorkSpec',
                 validate: 'Inspect problems and manage rules',
                 assets: 'Project media',
                 settings: 'Preferences'
@@ -366,9 +374,10 @@
 
             [
                 { id: 'workspace.projects', label: 'Go to Projects', shortcut: '1', run: () => workspace('projects') },
-                { id: 'workspace.build', label: 'Go to Model', shortcut: '2', run: () => workspace('build') },
-                { id: 'workspace.run', label: 'Go to Simulate', shortcut: '3', run: () => workspace('run') },
-                { id: 'workspace.assets', label: 'Go to Assets', shortcut: '4', run: () => workspace('assets') },
+                { id: 'workspace.build', label: 'Go to Define', shortcut: '2', run: () => workspace('build') },
+                { id: 'workspace.script', label: 'Go to Script', shortcut: '3', run: () => workspace('script') },
+                { id: 'workspace.run', label: 'Go to Simulate', shortcut: '4', run: () => workspace('run') },
+                { id: 'workspace.assets', label: 'Go to Assets', shortcut: '5', run: () => workspace('assets') },
                 { id: 'workspace.settings', label: 'Go to Settings', run: () => workspace('settings') },
                 { id: 'workspace.source', label: 'Open Source as a dedicated pane', shortcut: '⌘ `', run: () => workspace('source') },
                 { id: 'project.new', label: 'New project', run: () => this.createProject() },
@@ -380,12 +389,12 @@
                 { id: 'edit.undo', label: 'Undo last change', shortcut: '⌘ Z', run: () => click('undo-btn') },
                 { id: 'edit.task', label: 'New task', run: () => click('add-task-btn') },
                 { id: 'edit.object', label: 'New object', run: () => { this.setModelView('objects'); requestAnimationFrame(() => this.shell.querySelector('[data-object-menu-toggle]')?.click()); } },
-                { id: 'model.process', label: 'Model the process', run: () => this.setModelView('process') },
+                { id: 'model.process', label: 'Define the process', run: () => this.setModelView('process') },
                 { id: 'model.objects', label: 'Open object catalogue', run: () => this.setModelView('objects') },
-                { id: 'view.timeline', label: 'Model the process', run: () => this.setModelView('process') },
-                { id: 'view.physical', label: 'Model the physical environment', run: () => this.setModelView('physical') },
-                { id: 'view.digital', label: 'Model the digital environment', run: () => this.setModelView('digital') },
-                { id: 'view.displays', label: 'Model display interfaces', run: () => this.setModelView('displays') },
+                { id: 'view.timeline', label: 'Define the process', run: () => this.setModelView('process') },
+                { id: 'view.physical', label: 'Define the physical environment', run: () => this.setModelView('physical') },
+                { id: 'view.digital', label: 'Define the digital environment', run: () => this.setModelView('digital') },
+                { id: 'view.displays', label: 'Define display interfaces', run: () => this.setModelView('displays') },
                 { id: 'model.source', label: 'Edit WorkSpec source', run: () => this.setModelView('source') },
                 { id: 'model.add-location', label: 'Add physical location', run: () => click('add-location-btn') },
                 { id: 'model.add-digital-location', label: 'Add digital location', run: () => click('add-digital-location-btn') },
@@ -393,6 +402,8 @@
                 { id: 'model.add-display', label: 'Add display', run: () => click('add-display-btn') },
                 { id: 'model.add-display-element', label: 'Add display element', run: () => click('add-display-element-btn') },
                 { id: 'source.format', label: 'Format WorkSpec source', run: () => click('format-json-btn') },
+                { id: 'script.format', label: 'Format Script', run: () => window.UAWWorkSpecScript?.format?.() },
+                { id: 'script.undo', label: 'Undo Script edit', run: () => window.UAWWorkSpecScript?.undo?.() },
                 { id: 'view.source-left', label: 'Dock Source on the left', run: () => { this.setSourceDock('split-left'); this.setModelView('process'); } },
                 { id: 'view.source-right', label: 'Dock Source on the right', run: () => { this.setSourceDock('split-right'); this.setModelView('process'); } },
                 { id: 'view.source-bottom', label: 'Dock Source below the canvas', run: () => { this.setSourceDock('split-bottom'); this.setModelView('process'); } },
@@ -642,7 +653,7 @@
                     ['displays', 'Displays', 'view.displays'],
                     ['source', 'Source', 'model.source']
                 ];
-                primary.innerHTML = `<div class="uaw-segmented" role="tablist" aria-label="Model views">${views.map(([id, label, command]) => this.commandButton(command, label, { active: this.modelView === id, pressed: this.modelView === id })).join('')}</div>`;
+                primary.innerHTML = `<div class="uaw-segmented" role="tablist" aria-label="Define views">${views.map(([id, label, command]) => this.commandButton(command, label, { active: this.modelView === id, pressed: this.modelView === id })).join('')}</div>`;
                 const actions = {
                     process: this.commandButton('edit.task', 'New task', { primary: true }),
                     objects: this.objectAddMenuButton(),
@@ -652,6 +663,12 @@
                     source: this.commandButton('source.format', 'Format') + this.commandButton('edit.undo', 'Undo')
                 };
                 context.innerHTML = `<div class="uaw-context-actions">${actions[this.modelView] || ''}</div>${this.commandButton('project.export', 'Export WorkSpec')}`;
+                return;
+            }
+
+            if (this.workspace === 'script') {
+                primary.innerHTML = '<span class="uaw-mode-label">JavaScript</span>';
+                context.innerHTML = this.commandButton('script.format', 'Format') + this.commandButton('script.undo', 'Undo');
                 return;
             }
 
@@ -782,6 +799,7 @@
             if (workspace === 'build' && this.modelView === 'objects') this.renderObjectsModel();
             if (workspace === 'assets') this.renderAssets();
             if (workspace === 'settings') this.renderSettings();
+            if (workspace === 'script') window.UAWWorkSpecScript?.initialize?.();
             if (workspace === 'run') {
                 const rules = this.runView === 'rules';
                 this.ensureMetricsMode(rules);
@@ -792,7 +810,7 @@
                 });
                 if (this.runView === 'problems') requestAnimationFrame(() => this.prepareProblemsWorkspace());
             }
-            if (workspace === 'build' || workspace === 'source' || workspace === 'projects' || workspace === 'assets' || workspace === 'settings') {
+            if (workspace === 'build' || workspace === 'source' || workspace === 'script' || workspace === 'projects' || workspace === 'assets' || workspace === 'settings') {
                 this.ensureMetricsMode(false);
             }
             if (workspace === 'build' && !options.fromSubview) {
@@ -813,7 +831,7 @@
         prepareProblemsWorkspace() {
             const panel = document.querySelector('.validation-panel');
             if (!panel || panel.querySelector('.uaw-problems-overview')) return;
-            panel.insertAdjacentHTML('afterbegin', `<header class="uaw-problems-overview"><div><h1>Problems</h1><p>Validation errors, warnings, suggestions and passed checks for the current WorkSpec.</p></div><span>Model health</span></header>`);
+            panel.insertAdjacentHTML('afterbegin', `<header class="uaw-problems-overview"><div><h1>Problems</h1><p>Validation errors, warnings, suggestions and passed checks for the current WorkSpec.</p></div><span>WorkSpec health</span></header>`);
         }
 
         prepareRulesWorkspace() {
@@ -833,6 +851,7 @@
                 window.metricsJsonEditor?.layout?.();
                 window.metricsCatalogEditor?.layout?.();
                 window.metricsValidatorEditor?.layout?.();
+                window.UAWWorkSpecScript?.layout?.();
             };
             requestAnimationFrame(() => {
                 layout();
@@ -1301,7 +1320,7 @@
         onboardingMarkup() {
             return `<section class="uaw-project-journey">
                 <div class="uaw-project-journey__intro"><p>Your workflow</p><h2>From project to verified run</h2></div>
-                <ol><li class="done"><span>1</span><div><small>Project</small><strong>Create or open</strong></div></li><li><span>2</span><div><small>Model</small><strong>Define the process</strong></div></li><li><span>3</span><div><small>Simulate</small><strong>Run and validate</strong></div></li></ol>
+                <ol><li class="done"><span>1</span><div><small>Project</small><strong>Create or open</strong></div></li><li><span>2</span><div><small>Define</small><strong>Describe the process</strong></div></li><li><span>3</span><div><small>Script</small><strong>Add behaviour</strong></div></li><li><span>4</span><div><small>Simulate</small><strong>Run and validate</strong></div></li></ol>
                 <button class="uaw-icon-button" type="button" data-dismiss-onboarding title="Dismiss">${this.icon('close')}</button>
             </section>`;
         }
@@ -1635,13 +1654,13 @@
                 <div class="uaw-settings-layout">
                     <div class="uaw-settings-surface">
                         <section class="uaw-settings-section" aria-labelledby="uaw-source-layout-heading">
-                            <div><h2 id="uaw-source-layout-heading">Source layout</h2><p>Choose how WorkSpec source appears beside Model, Simulate, Validation and Assets. Source remains available as its own Model view.</p></div>
+                            <div><h2 id="uaw-source-layout-heading">Define Source layout</h2><p>Choose how declarative WorkSpec JSON appears beside Define views. These settings do not affect the Script editor.</p></div>
                             <fieldset class="uaw-choice-grid" id="uaw-source-dock-choices" aria-label="Source layout">
                                 ${this.sourceChoice('split-left', 'Split left', 'Source beside the canvas')}
                                 ${this.sourceChoice('split-right', 'Split right', 'Canvas before source')}
                                 ${this.sourceChoice('split-bottom', 'Split below', 'Source below the canvas')}
                                 ${this.sourceChoice('dedicated', 'Dedicated pane', 'Source uses the full stage')}
-                                ${this.sourceChoice('hidden', 'Hidden in Model', 'Open source only when needed')}
+                                ${this.sourceChoice('hidden', 'Hidden in Define', 'Open source only when needed')}
                             </fieldset>
                         </section>
                         <section class="uaw-settings-section" aria-labelledby="uaw-agent-heading">
@@ -1903,8 +1922,8 @@
                 else this.runCommand('validate.run');
                 return;
             }
-            if (/^[1-4]$/.test(event.key) && !event.altKey && !modifier) {
-                const ids = ['projects', 'build', 'run', 'assets'];
+            if (/^[1-5]$/.test(event.key) && !event.altKey && !modifier) {
+                const ids = ['projects', 'build', 'script', 'run', 'assets'];
                 event.preventDefault();
                 this.setWorkspace(ids[Number(event.key) - 1]);
                 return;

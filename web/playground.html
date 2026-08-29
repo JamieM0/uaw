@@ -55,7 +55,7 @@
         <link rel="stylesheet" href="/assets/css/emoji-picker.css" />
         <link rel="stylesheet" href="/assets/css/smart-actions.css" />
         <link rel="stylesheet" href="/assets/css/multi-period.css" />
-        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260822b" />
+        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260829a" />
 
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
@@ -958,7 +958,7 @@
 
                     <details class="uaw-dialog-disclosure" id="task-advanced-details">
                         <summary>
-                            <span><strong>Dependencies &amp; interactions</strong><small>Add prerequisites or describe changes caused by this task.</small></span>
+                            <span><strong>Dependencies</strong><small>Add prerequisite tasks that must complete first.</small></span>
                             <span class="uaw-disclosure-action">Optional</span>
                         </summary>
                         <div class="uaw-dialog-disclosure__body">
@@ -969,19 +969,7 @@
                                 <div class="field-error" id="task-depends-error"></div>
                                 <small class="field-help">Comma-separated task IDs</small>
                             </div>
-                            <div class="interactions-section">
-                                <div class="section-header">
-                                    <div><h4>Interactions</h4><p>Change object state, quantity or location when the task runs.</p></div>
-                                    <button type="button" class="btn-secondary" id="add-interaction-btn">Add interaction</button>
-                                </div>
-                                <div class="interaction-templates" id="interaction-templates">
-                                    <small>Start with</small>
-                                    <button type="button" class="btn-template" data-template="change-state">State change</button>
-                                    <button type="button" class="btn-template" data-template="modify-quantity">Quantity</button>
-                                    <button type="button" class="btn-template" data-template="create-object">New object</button>
-                                </div>
-                                <div id="interactions-container"><!-- Interactions will be dynamically added here --></div>
-                            </div>
+                            <div id="interactions-container" hidden></div>
                         </div>
                     </details>
                 </div>
@@ -1268,8 +1256,9 @@
 
         <!-- Playground v2 application shell. These modules preserve the legacy
              component IDs while providing the project workspace around them. -->
-        <script src="/assets/js/playground/playground-projects-v2.js?v=20260822b" defer></script>
-        <script src="/assets/js/playground/playground-shell-v2.js?v=20260822b" defer></script>
+        <script src="/assets/js/playground/playground-projects-v2.js?v=20260829a" defer></script>
+        <script src="/assets/js/playground/playground-shell-v2.js?v=20260829a" defer></script>
+        <script src="/assets/js/playground/playground-script-editor.js?v=20260829a" defer></script>
         <script src="/assets/js/playground/playground-source-context.js?v=20260821a" defer></script>
         <script src="/assets/js/playground/playground-agent-v2.js?v=20260822a" defer></script>
         <script type="module" src="/assets/js/playground/playground-motion-v2.js?v=20260818a"></script>
@@ -1303,7 +1292,7 @@
         <script src="/assets/js/playground/playground-display-editor.js?v=20260814g" defer></script>
         <script src="/assets/js/playground/playground-save-load.js?v=20260820a" defer></script>
         <script src="/assets/js/playground/playground-metrics-editor.js?v=20260818c" defer></script>
-        <script src="/assets/js/playground/playground-objects.js?v=20260822a" defer></script>
+        <script src="/assets/js/playground/playground-objects.js?v=20260829a" defer></script>
         <script src="/assets/js/playground/playground-features.js" defer></script>
         <script src="/assets/js/playground/playground-editor.js?v=20260818c" defer></script>
         <script src="/assets/js/space-editor-actor-animation.js?v=20260822b" defer></script>

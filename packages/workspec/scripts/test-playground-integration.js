@@ -17,6 +17,10 @@ const webMigratorPath = path.join(repoRoot, 'web', 'packages', 'workspec', 'work
 const webStateVisualsPath = path.join(repoRoot, 'web', 'packages', 'workspec', 'state-visuals.js');
 const webPlaybackStatePath = path.join(repoRoot, 'web', 'packages', 'workspec', 'playback-state.js');
 const playgroundHtmlPath = path.join(repoRoot, 'web', 'playground.html');
+const playgroundShellPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-shell-v2.js');
+const playgroundProjectsPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-projects-v2.js');
+const playgroundScriptEditorPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-script-editor.js');
+const playgroundObjectsPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-objects.js');
 const migrateCliPath = path.join(repoRoot, 'web', 'scripts', 'workspec-migrate.js');
 
 function readText(filePath) {
@@ -104,6 +108,31 @@ function run() {
         /<script src="\/packages\/workspec\/state-visuals\.js" defer><\/script>/,
         'Playground is not loading the shared state visual resolver'
     );
+    assert.match(
+        playgroundHtml,
+        /<script src="\/assets\/js\/playground\/playground-script-editor\.js\?v=[^"]+" defer><\/script>/,
+        'Playground is not loading the WorkSpec Script editor'
+    );
+
+    const studioShell = readText(playgroundShellPath);
+    const projectStore = readText(playgroundProjectsPath);
+    const scriptEditor = readText(playgroundScriptEditorPath);
+    const objectEditor = readText(playgroundObjectsPath);
+    for (const workspace of ['Projects', 'Define', 'Script', 'Simulate', 'Validation', 'Assets']) {
+        assert.match(studioShell, new RegExp(`workspaceButton\\([^\\n]+['"]${workspace}['"]`), `Studio is missing the ${workspace} workspace`);
+    }
+    assert.match(studioShell, /aria-label="Define views"/, 'Define views are not grouped under Define');
+    for (const view of ['Process', 'Objects', 'Physical', 'Digital', 'Displays', 'Source']) {
+        assert.match(studioShell, new RegExp(`\\['[^']+', '${view}',`), `Define is missing its ${view} view`);
+    }
+    assert.match(projectStore, /const SCRIPT_FILE = 'project\.workspec\.js'/, 'Project persistence does not define a Script file');
+    assert.match(projectStore, /await this\.writeText\(project\.directoryHandle, SCRIPT_FILE,/, 'Project persistence does not write Script');
+    assert.match(projectStore, /scriptDraft: scriptDraft === null/, 'Project persistence does not load Script');
+    assert.match(scriptEditor, /language: 'javascript'/, 'Script editor is not configured for JavaScript');
+    assert.doesNotMatch(scriptEditor, /new Function|\beval\s*\(/, 'Studio must not execute Script behaviour directly');
+    assert.doesNotMatch(playgroundHtml, />Interactions</, 'Define must not expose legacy task interactions');
+    assert.match(objectEditor, /depends_on: document\.getElementById\('task-depends-input'\)\.value/, 'Task dependencies are not persisted from Define');
+    assert.match(objectEditor, /delete newTask\.interactions/, 'Editing a task does not remove legacy behaviour from Define');
 
     const migrateCli = readText(migrateCliPath);
     assert.match(
