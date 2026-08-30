@@ -391,7 +391,7 @@ const legacySampleSimulation = {
 
 // Sample WorkSpec v2.0 document (fallback when library isn't loaded)
 const sampleSimulation = {
-    "$schema": "https://universalautomation.wiki/workspec/v2.0.schema.json",
+    "$schema": "https://universalautomation.wiki/workspec/v2.1.schema.json",
     "simulation": {
         "schema_version": "2.0",
         "meta": {
@@ -537,8 +537,8 @@ require(["vs/editor/editor.main"], function () {
     // Best-effort: wire WorkSpec v2 JSON Schema for autocomplete + validation.
     // Prefer the package mirror path, with legacy fallback.
     const schemaCandidates = [
-        '/packages/workspec/v2.0.schema.json',
-        '/workspec/v2.0.schema.json'
+        '/packages/workspec/v2.1.schema.json',
+        '/workspec/v2.1.schema.json'
     ];
 
     function fetchFirstSchema(urls) {
@@ -564,7 +564,7 @@ require(["vs/editor/editor.main"], function () {
                 allowComments: true,
                 schemas: [
                     {
-                        uri: 'https://universalautomation.wiki/workspec/v2.0.schema.json',
+                        uri: 'https://universalautomation.wiki/workspec/v2.1.schema.json',
                         fileMatch: ['*'],
                         schema: schema
                     }

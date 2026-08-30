@@ -1711,6 +1711,7 @@
                     kind: options.kind === 'template' ? 'template' : 'blank',
                     name: String(options.name || 'Untitled project'),
                     workSpec: options.workSpec || '',
+                    script: options.script || '',
                     resolve
                 };
                 dialog.querySelector('#uaw-project-setup-name').value = this.pendingProjectSetup.name;
@@ -1742,7 +1743,7 @@
             submit.textContent = 'Choose location…';
             try {
                 const project = pending.kind === 'template'
-                    ? await this.projectStore?.createFromTemplate(name, pending.workSpec)
+                    ? await this.projectStore?.createFromTemplate(name, pending.workSpec, null, pending.script)
                     : await this.projectStore?.createBlank(name);
                 if (!project) return;
                 this.shell.querySelector('#uaw-project-setup-dialog').hidden = true;

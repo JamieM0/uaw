@@ -22,9 +22,8 @@
 
     const blankWorkSpec = () => JSON.stringify({
         simulation: {
-            schema_version: '2.0',
+            schema_version: '2.1',
             meta: { title: 'Untitled process', description: 'Describe what this process should accomplish.', domain: 'General' },
-            config: { time_unit: 'minutes', start_time: '08:00', end_time: '18:00', timezone: 'UTC', currency: 'USD', locale: 'en-US' },
             world: { objects: [], layout: { locations: [] }, digital_locations: [], displays: [] },
             process: { tasks: [] }
         }
@@ -313,7 +312,7 @@
             return record;
         }
 
-        async create(name = 'Untitled project', initialWorkSpec = '', parentDirectoryHandle = null) {
+        async create(name = 'Untitled project', initialWorkSpec = '', parentDirectoryHandle = null, initialScript = null) {
             let parentHandle = parentDirectoryHandle;
             try { parentHandle = parentHandle || await this.chooseProjectDirectory('uaw-new-project'); }
             catch (error) { if (isAbortError(error)) return null; throw error; }
@@ -324,7 +323,7 @@
                 id: createId(), name: projectName,
                 description: '', createdAt: now, updatedAt: now, archived: false,
                 workSpecDraft: initialWorkSpec || blankWorkSpec(),
-                scriptDraft: blankScript(),
+                scriptDraft: initialScript ?? blankScript(),
                 lastValidWorkSpec: this.isValidWorkSpec(initialWorkSpec) ? initialWorkSpec : '',
                 checkpoints: [], agentThreadId: null, settings: {}, directoryHandle: handle
             };
@@ -334,12 +333,12 @@
             return project;
         }
 
-        async createFromTemplate(name, workSpec, directoryHandle = null) {
+        async createFromTemplate(name, workSpec, directoryHandle = null, script = null) {
             let handle = directoryHandle;
             try { handle = handle || await this.chooseProjectDirectory('uaw-template-project'); }
             catch (error) { if (isAbortError(error)) return null; throw error; }
             await this.saveCurrent();
-            const project = await this.create(name || handle.name, workSpec, handle);
+            const project = await this.create(name || handle.name, workSpec, handle, script);
             if (project) emit('uaw:project-created-from-template', { project });
             return project;
         }

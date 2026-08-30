@@ -1,4 +1,4 @@
-// WorkSpec v2.0 Validator (RFC 7807 Problem Details)
+// WorkSpec 2.1 Validator (RFC 7807 Problem Details)
 // Universal Automation Wiki
 //
 // Single-source validator intended to run in both:
@@ -11,7 +11,7 @@
     'use strict';
 
     const WORKSPEC_NAMESPACE = 'https://universalautomation.wiki/workspec';
-    const SUPPORTED_SCHEMA_VERSIONS = Object.freeze(['2.0']);
+    const SUPPORTED_SCHEMA_VERSIONS = Object.freeze(['2.0', '2.1']);
 
     const BUILTIN_TYPES = Object.freeze([
         'actor',
@@ -466,7 +466,7 @@
                 '/simulation/schema_version',
                 { field: 'schema_version' },
                 [
-                    "Add \"schema_version\": \"2.0\" under simulation.",
+                    "Add \"schema_version\": \"2.1\" under simulation.",
                     'Run the migration tool (WorkSpec Studio: Tools → Migrate v1 → v2) or CLI: workspec migrate <file> --out <output>.'
                 ]
             ));
@@ -481,7 +481,7 @@
                 `simulation.schema_version must be in Major.Minor format (example: "2.0"). Received "${schemaVersion}".`,
                 '/simulation/schema_version',
                 { value: schemaVersion },
-                ['Change schema_version to "2.0".']
+                ['Change schema_version to "2.1".']
             ));
             return { ok: false, problems };
         }
@@ -494,7 +494,7 @@
                 `WorkSpec schema_version "${schemaVersion}" is not supported by this validator. Supported versions: ${SUPPORTED_SCHEMA_VERSIONS.join(', ')}.`,
                 '/simulation/schema_version',
                 { value: schemaVersion, supported: [...SUPPORTED_SCHEMA_VERSIONS] },
-                ['Use the supported schema version "2.0".']
+                ['Use the supported schema version "2.1".']
             ));
             return { ok: false, problems };
         }
@@ -547,7 +547,7 @@
                     'schema.integrity.disallowed_meta_field',
                     'error',
                     'Disallowed Meta Field',
-                    "Legacy field 'meta.article_title' is not allowed in WorkSpec v2.0. Use 'meta.title' instead.",
+                    "Legacy field 'meta.article_title' is not allowed in WorkSpec 2.1. Use 'meta.title' instead.",
                     '/simulation/meta/article_title',
                     { field: 'article_title' },
                     ['Remove meta.article_title.', 'Rename meta.article_title to meta.title.']
@@ -555,21 +555,22 @@
             }
         }
 
-        if (!isPlainObject(simulation.config)) {
+        const configRequired = schemaVersion === '2.0';
+        if ((configRequired && !isPlainObject(simulation.config)) || (simulation.config !== undefined && !isPlainObject(simulation.config))) {
             problems.push(buildProblem(
-                'schema.integrity.missing_config',
+                configRequired ? 'schema.integrity.missing_config' : 'schema.integrity.invalid_config',
                 'error',
-                'Missing Config Section',
-                "Missing required object 'simulation.config'.",
+                configRequired ? 'Missing Config Section' : 'Invalid Config Section',
+                configRequired ? "Missing required object 'simulation.config'." : "simulation.config must be an object when provided.",
                 '/simulation/config',
                 { field: 'config' },
-                ['Add simulation.config with required fields: time_unit, start_time, end_time, currency, locale.']
+                configRequired ? ['Add simulation.config with the required legacy fields.'] : ['Remove simulation.config, or set it to an object.']
             ));
         }
 
         const config = isPlainObject(simulation.config) ? simulation.config : {};
-        const normalizedTimeUnit = normalizeTimeUnit(config.time_unit);
-        if (!normalizedTimeUnit) {
+        const normalizedTimeUnit = config.time_unit === undefined && !configRequired ? 'minutes' : normalizeTimeUnit(config.time_unit);
+        if (config.time_unit !== undefined && !normalizedTimeUnit) {
             problems.push(buildProblem(
                 'schema.integrity.invalid_time_unit',
                 'error',
@@ -583,7 +584,7 @@
 
         for (const key of ['start_time', 'end_time']) {
             const raw = config[key];
-            if (typeof raw !== 'string' || !safeTrim(raw)) {
+            if ((configRequired && (typeof raw !== 'string' || !safeTrim(raw))) || (raw !== undefined && (typeof raw !== 'string' || !safeTrim(raw)))) {
                 problems.push(buildProblem(
                     'schema.integrity.missing_config_field',
                     'error',
@@ -598,7 +599,7 @@
 
         for (const key of ['currency', 'locale']) {
             const raw = config[key];
-            if (typeof raw !== 'string' || !safeTrim(raw)) {
+            if ((configRequired && (typeof raw !== 'string' || !safeTrim(raw))) || (raw !== undefined && (typeof raw !== 'string' || !safeTrim(raw)))) {
                 problems.push(buildProblem(
                     'schema.integrity.missing_config_field',
                     'error',
@@ -1162,8 +1163,11 @@
                 ));
             }
 
-            const startParse = parseTaskStart(task.start);
-            if (!startParse.ok) {
+            const hasDependencies = Array.isArray(task.depends_on) && task.depends_on.length > 0;
+            const startParse = task.start === undefined && hasDependencies
+                ? { ok: false, derived: true }
+                : parseTaskStart(task.start);
+            if (!startParse.ok && !startParse.derived) {
                 const suggestions = [
                     'Use strict time strings like "09:30" (zero-padded).',
                     'Use "HH:MM:SS" if you need seconds.',

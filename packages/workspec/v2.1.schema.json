@@ -1,0 +1,1882 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://universalautomation.wiki/workspec/v2.1.schema.json",
+  "title": "WorkSpec v2.1",
+  "description": "Canonical WorkSpec v2.1 schema for modeled work, conditions, references, timed effects, schedule constraints, and reservations.",
+  "type": "object",
+  "required": [
+    "simulation"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri",
+      "description": "Reference to this JSON Schema for IDE autocomplete and validation. Recommended value: 'https://universalautomation.wiki/workspec/v2.1.schema.json'."
+    },
+    "simulation": {
+      "$ref": "#/definitions/Simulation"
+    }
+  },
+  "not": {
+    "required": ["assets"]
+  },
+  "additionalProperties": true,
+  "definitions": {
+    "Simulation": {
+      "type": "object",
+      "description": "Root container for a WorkSpec simulation (also referred to as: workflow, process).",
+      "required": [
+        "schema_version",
+        "meta",
+        "world",
+        "process"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$",
+          "enum": [
+            "2.1"
+          ],
+          "description": "WorkSpec schema version using Major.Minor format. For this schema: '2.1'."
+        },
+        "meta": {
+          "$ref": "#/definitions/Meta"
+        },
+        "config": {
+          "$ref": "#/definitions/Config"
+        },
+        "world": {
+          "$ref": "#/definitions/World"
+        },
+        "process": {
+          "$ref": "#/definitions/Process"
+        },
+        "collections": {
+          "type": "object",
+          "description": "Named live collections evaluated from one authoritative runtime snapshot.",
+          "propertyNames": { "$ref": "#/definitions/PlainId" },
+          "additionalProperties": { "$ref": "#/definitions/RuntimeCollection" }
+        },
+        "type_definitions": {
+          "type": "object",
+          "description": "Optional custom type definitions. Keys are custom type names; values describe base type extension and additional properties.",
+          "propertyNames": {
+            "$ref": "#/definitions/PlainId"
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/TypeDefinition"
+          }
+        },
+        "state_libraries": {
+          "type": "object",
+          "description": "Optional reusable semantic state sets and appearance-to-asset mappings. Library keys are referenced explicitly by objects.",
+          "propertyNames": {
+            "$ref": "#/definitions/PlainId"
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/StateLibrary"
+          }
+        },
+        "type_traits": {
+          "type": "object",
+          "description": "Optional reusable capability declarations for custom type systems.",
+          "propertyNames": {
+            "$ref": "#/definitions/PlainId"
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/TypeTrait"
+          }
+        },
+        "simulation_config": {
+          "$ref": "#/definitions/MultiPeriodConfig"
+        },
+        "calendar": {
+          "$ref": "#/definitions/Calendar"
+        },
+        "day_types": {
+          "type": "object",
+          "description": "Optional reusable day templates for repeating multi-period simulations.",
+          "propertyNames": {
+            "$ref": "#/definitions/PlainId"
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/DayType"
+          }
+        },
+        "digital_space": {
+          "$ref": "#/definitions/DigitalSpace"
+        },
+        "displays": {
+          "type": "array",
+          "description": "Optional display-interface surfaces authored in WorkSpec Studio.",
+          "items": {
+            "$ref": "#/definitions/Display"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "not": {
+            "properties": {
+              "meta": {
+                "required": ["article_title"]
+              }
+            }
+          }
+        },
+        {
+          "not": {
+            "required": ["assets"]
+          }
+        }
+      ],
+      "additionalProperties": true
+    },
+    "Meta": {
+      "type": "object",
+      "description": "Human-readable metadata about the simulation.",
+      "required": [
+        "title",
+        "description",
+        "domain"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/PlainId",
+          "description": "Optional stable simulation identifier."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable title (also referred to as: name, label)."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Detailed description of what this simulation models (also referred to as: summary, overview)."
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Industry/domain category (also referred to as: sector, category)."
+        },
+        "version": {
+          "type": "string",
+          "description": "Optional document version (not schema version)."
+        },
+        "author": {
+          "type": "string",
+          "description": "Optional author/creator."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional ISO 8601 creation timestamp."
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional ISO 8601 update timestamp."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Optional tags for discovery."
+        }
+      },
+      "not": {
+        "required": [
+          "article_title"
+        ]
+      },
+      "additionalProperties": true
+    },
+    "Config": {
+      "type": "object",
+      "description": "Global simulation configuration (timing, locale, currency).",
+      "required": [
+        "time_unit",
+        "start_time",
+        "end_time",
+        "currency",
+        "locale"
+      ],
+      "properties": {
+        "time_unit": {
+          "type": "string",
+          "enum": [
+            "seconds",
+            "minutes",
+            "hours"
+          ],
+          "description": "Base unit for numeric duration values."
+        },
+        "start_time": {
+          "$ref": "#/definitions/TimeOrDateTime",
+          "description": "Simulation start time (HH:MM / HH:MM:SS or ISO 8601 date-time)."
+        },
+        "end_time": {
+          "$ref": "#/definitions/TimeOrDateTime",
+          "description": "Simulation end time (HH:MM / HH:MM:SS or ISO 8601 date-time)."
+        },
+        "timezone": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional IANA timezone identifier (default: UTC)."
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$",
+          "description": "ISO 4217 currency code."
+        },
+        "locale": {
+          "type": "string",
+          "pattern": "^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$",
+          "description": "BCP 47-style locale tag (for example en-US or zh-Hans-CN)."
+        }
+      },
+      "additionalProperties": true
+    },
+    "World": {
+      "type": "object",
+      "description": "Static environment definition: layout and objects.",
+      "required": [
+        "objects"
+      ],
+      "properties": {
+        "layout": {
+          "$ref": "#/definitions/Layout"
+        },
+        "objects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Object"
+          },
+          "description": "All entities in the simulation (people, equipment, resources, products, services, digital objects)."
+        },
+        "digital_locations": {
+          "type": "array",
+          "description": "Compatibility location for digital locations; prefer simulation.digital_space.digital_locations.",
+          "items": {
+            "$ref": "#/definitions/DigitalLocation"
+          }
+        },
+        "displays": {
+          "type": "array",
+          "description": "Compatibility location for displays; prefer simulation.displays.",
+          "items": {
+            "$ref": "#/definitions/Display"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "Process": {
+      "type": "object",
+      "description": "Dynamic workflow definition: tasks and optional recipes.",
+      "required": [
+        "tasks"
+      ],
+      "properties": {
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Task"
+          }
+        },
+        "work_definitions": {
+          "type": "array",
+          "description": "Reusable work templates instantiated once for each matching live collection member.",
+          "items": { "$ref": "#/definitions/WorkDefinition" }
+        },
+        "recipes": {
+          "$ref": "#/definitions/Recipes"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Layout": {
+      "type": "object",
+      "description": "Spatial configuration for the simulation world.",
+      "properties": {
+        "meta": {
+          "$ref": "#/definitions/LayoutMeta"
+        },
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Location"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "LayoutMeta": {
+      "type": "object",
+      "description": "Layout measurement and rendering hints.",
+      "properties": {
+        "units": {
+          "type": "string",
+          "enum": [
+            "meters",
+            "feet",
+            "pixels"
+          ],
+          "description": "Distance unit for coordinates."
+        },
+        "pixels_per_unit": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Rendering scale factor."
+        },
+        "origin": {
+          "type": "string",
+          "enum": [
+            "top-left",
+            "bottom-left",
+            "top-right",
+            "bottom-right"
+          ],
+          "description": "Coordinate origin."
+        },
+        "coordinate_system": {
+          "type": "string",
+          "enum": [
+            "2d",
+            "3d"
+          ],
+          "description": "Coordinate system mode."
+        }
+      },
+      "additionalProperties": true
+    },
+    "Location": {
+      "type": "object",
+      "description": "A place/area where objects exist and tasks occur.",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/PlainId",
+          "description": "Location identifier (snake_case)."
+        },
+        "name": {
+          "type": "string"
+        },
+        "shape": {
+          "$ref": "#/definitions/Shape"
+        },
+        "coordinates": {
+          "$ref": "#/definitions/Coordinates"
+        },
+        "parent_id": {
+          "type": "string"
+        },
+        "properties": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/definitions/ReferenceablePropertyName" },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "Shape": {
+      "type": "object",
+      "description": "Geometric shape for layout rendering.",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "rect",
+            "circle",
+            "polygon"
+          ]
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number",
+          "minimum": 0
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0
+        },
+        "radius": {
+          "type": "number",
+          "minimum": 0
+        },
+        "points": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "object",
+            "required": [
+              "x",
+              "y"
+            ],
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": { "const": "rect" }
+            }
+          },
+          "then": {
+            "required": ["x", "y", "width", "height"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": { "const": "circle" }
+            }
+          },
+          "then": {
+            "required": ["x", "y", "radius"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": { "const": "polygon" }
+            }
+          },
+          "then": {
+            "required": ["points"]
+          }
+        }
+      ],
+      "additionalProperties": true
+    },
+    "Coordinates": {
+      "type": "object",
+      "description": "Optional coordinate metadata.",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number",
+          "minimum": 0
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0
+        },
+        "depth": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "Point2D": {
+      "type": "object",
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      },
+      "additionalProperties": true
+    },
+    "Size2D": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "number", "minimum": 0 },
+        "height": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "Bounds2D": {
+      "type": "object",
+      "required": ["x", "y", "width", "height"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "width": { "type": "number", "minimum": 0 },
+        "height": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "StandardObjectProperties": {
+      "type": "object",
+      "description": "Documented properties shared by built-in object types. Domain-specific and custom-type properties are also allowed.",
+      "propertyNames": { "$ref": "#/definitions/ReferenceablePropertyName" },
+      "properties": {
+        "state": { "type": "string", "minLength": 1 },
+        "role": { "type": "string" },
+        "cost_per_hour": { "type": "number" },
+        "depreciation_per_hour": { "type": "number" },
+        "overhead_rate": { "type": "number", "minimum": 0 },
+        "fixed_cost": { "type": "number" },
+        "capacity": {
+          "description": "Numeric capacity or a domain-specific capacity string that includes units.",
+          "anyOf": [
+            { "type": "number", "minimum": 0 },
+            { "type": "string", "minLength": 1 }
+          ]
+        },
+        "quantity": { "type": "number" },
+        "unit": { "type": "string" },
+        "cost_per_unit": { "type": "number" },
+        "revenue_per_unit": { "type": "number" },
+        "utilization": { "type": "number", "minimum": 0, "maximum": 1 },
+        "interval": { "$ref": "#/definitions/Duration" },
+        "last_run": { "type": "string", "format": "date-time" },
+        "display_type": { "type": "string" },
+        "resolution": { "$ref": "#/definitions/Size2D" },
+        "viewport": { "$ref": "#/definitions/Bounds2D" },
+        "location": { "type": "string" },
+        "active": { "type": "boolean" },
+        "refresh_rate": { "type": "number", "exclusiveMinimum": 0 },
+        "touch_enabled": { "type": "boolean" },
+        "brightness": { "type": "number", "minimum": 0, "maximum": 100 },
+        "element_type": { "type": "string" },
+        "display_id": { "type": "string" },
+        "position": { "$ref": "#/definitions/Point2D" },
+        "dimensions": { "$ref": "#/definitions/Size2D" },
+        "visible": { "type": "boolean" },
+        "interactive": { "type": "boolean" },
+        "z_index": { "type": "integer" },
+        "location_id": { "type": "string" },
+        "size_mb": { "type": "number", "minimum": 0 },
+        "file_type": { "type": "string" },
+        "permissions": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+          ]
+        },
+        "encrypted": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "Object": {
+      "type": "object",
+      "description": "An entity in the simulation (actor, equipment, resource, product, service, or digital object).",
+      "required": [
+        "id",
+        "type",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/ObjectId",
+          "description": "Object identifier (snake_case). May optionally be namespaced as '{type}:{id}'."
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^(?!_)(?!timeline_actors$)(?!any$)(?!unknown$)(?!material$)(?!ingredient$)(?!tool$)[a-z][a-z0-9_]{0,249}$",
+          "description": "Object type (built-in or custom)."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Display name."
+        },
+        "emoji": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "location": {
+          "type": "string",
+          "description": "Location ID where the object is situated."
+        },
+        "state_library": {
+          "$ref": "#/definitions/PlainId",
+          "description": "Optional explicit reference to a key in simulation.state_libraries. This is independent of the object's base type."
+        },
+        "appearance": {
+          "$ref": "#/definitions/PlainId",
+          "description": "Optional appearance key within the referenced State Library."
+        },
+        "properties": {
+          "$ref": "#/definitions/StandardObjectProperties"
+        }
+      },
+      "not": {
+        "properties": {
+          "type": {
+            "enum": [
+              "timeline_actors",
+              "any",
+              "unknown"
+            ]
+          }
+        }
+      },
+      "dependencies": {
+        "appearance": ["state_library"],
+        "state_library": ["properties"]
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": { "enum": ["actor", "equipment", "service", "display", "screen_element", "digital_object"] }
+            }
+          },
+          "then": {
+            "required": ["properties"],
+            "properties": {
+              "properties": {
+                "required": ["state"]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": { "enum": ["resource", "product", "digital_object"] }
+            }
+          },
+          "then": {
+            "required": ["properties"],
+            "properties": {
+              "properties": {
+                "required": ["quantity"],
+                "properties": {
+                  "quantity": { "type": "number", "minimum": 0 }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["state_library"]
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "required": ["state"]
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": true
+    },
+    "StateLibrary": {
+      "type": "object",
+      "description": "A reusable list of valid semantic states plus optional appearances that map those states to project asset IDs.",
+      "required": [
+        "states"
+      ],
+      "properties": {
+        "states": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": ".*\\S.*"
+          }
+        },
+        "appearances": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/definitions/PlainId"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "description": "Map of a declared state name to an uploaded project asset ID.",
+            "propertyNames": {
+              "pattern": ".*\\S.*"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "pattern": ".*\\S.*"
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "Task": {
+      "type": "object",
+      "description": "A discrete step performed by an actor/equipment/service.",
+      "required": [
+        "id",
+        "actor_id",
+        "duration"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/PlainId"
+        },
+        "emoji": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "actor_id": {
+          "$ref": "#/definitions/ValueExpression",
+          "description": "Literal performer id, compact reference resolving to one, or deterministic select_member expression."
+        },
+        "start": {
+          "$ref": "#/definitions/TaskStart"
+        },
+        "duration": {
+          "$ref": "#/definitions/Duration"
+        },
+        "location": {
+          "type": "string"
+        },
+        "depends_on": {
+          "$ref": "#/definitions/DependsOn"
+        },
+        "when": {
+          "$ref": "#/definitions/Condition",
+          "description": "If false at the scheduled start, skip this task."
+        },
+        "requires": {
+          "$ref": "#/definitions/Condition",
+          "description": "Mandatory start precondition; false blocks the task."
+        },
+        "while": {
+          "$ref": "#/definitions/Condition",
+          "description": "Active invariant evaluated at start and after state-changing modeled event phases; false interrupts the task."
+        },
+        "progress": {
+          "$ref": "#/definitions/CompactValueReference",
+          "description": "Observational world-property reference captured when the task completes or is interrupted."
+        },
+        "continues": {
+          "$ref": "#/definitions/Continuation",
+          "description": "Declares that this task continues the logical work of a distinct interrupted task."
+        },
+        "timing": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/TimingConstraint" }
+        },
+        "reservations": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Reservation" }
+        },
+        "interactions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Interaction"
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "Interaction": {
+      "type": "object",
+      "description": "A task effect on an object. Either a property change, or an action (create/delete).",
+      "properties": {
+        "target_id": {
+          "$ref": "#/definitions/ValueExpression",
+          "description": "Object ID or an expression resolving to one."
+        },
+        "property_changes": {
+          "$ref": "#/definitions/PropertyChanges"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "create",
+            "delete"
+          ]
+        },
+        "object": {
+          "$ref": "#/definitions/CreatedObject"
+        },
+        "temporary": {
+          "type": "boolean",
+          "description": "If true, revert changes after the task completes."
+        },
+        "at": {
+          "type": "string",
+          "enum": ["start", "completion"],
+          "description": "Permanent effects default to completion. Temporary property changes always start and restore at completion."
+        },
+        "when": {
+          "$ref": "#/definitions/Condition"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "not": {
+            "anyOf": [
+              {
+                "required": ["temporary", "action"],
+                "properties": { "temporary": { "const": true } }
+              },
+              {
+                "required": ["temporary", "at"],
+                "properties": { "temporary": { "const": true }, "at": { "const": "completion" } }
+              }
+            ]
+          }
+        },
+        {
+          "not": {
+            "required": [
+              "object_id"
+            ]
+          }
+        },
+        {
+          "not": {
+            "required": [
+              "revert_after"
+            ]
+          }
+        },
+        {
+          "oneOf": [
+            {
+              "title": "Property Change Interaction",
+              "required": [
+                "target_id",
+                "property_changes"
+              ],
+              "properties": {
+                "action": {
+                  "not": {}
+                }
+              }
+            },
+            {
+              "title": "Create Interaction",
+              "required": [
+                "action",
+                "object"
+              ],
+              "properties": {
+                "action": {
+                  "const": "create"
+                }
+              }
+            },
+            {
+              "title": "Delete Interaction",
+              "required": [
+                "action",
+                "target_id"
+              ],
+              "properties": {
+                "action": {
+                  "const": "delete"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "additionalProperties": true
+    },
+    "PropertyChanges": {
+      "type": "object",
+      "description": "Map of property name -> change operator.",
+      "minProperties": 1,
+      "propertyNames": {
+        "$ref": "#/definitions/ReferenceablePropertyName"
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/ChangeOperator"
+      }
+    },
+    "ChangeOperator": {
+      "type": "object",
+      "description": "A change operator (delta/set/from-to/multiply/append/remove/increment/decrement).",
+      "minProperties": 1,
+      "properties": {
+        "from": { "$ref": "#/definitions/ValueExpression" },
+        "to": { "$ref": "#/definitions/ValueExpression" },
+        "delta": { "$ref": "#/definitions/ValueExpression" },
+        "set": { "$ref": "#/definitions/ValueExpression" },
+        "multiply": { "$ref": "#/definitions/ValueExpression" },
+        "append": { "$ref": "#/definitions/ValueExpression" },
+        "remove": { "$ref": "#/definitions/ValueExpression" },
+        "increment": {
+          "const": true
+        },
+        "decrement": {
+          "const": true
+        }
+      },
+      "dependencies": {
+        "from": ["to"],
+        "to": ["from"]
+      },
+      "oneOf": [
+        { "required": ["from", "to"], "minProperties": 2, "maxProperties": 2 },
+        { "required": ["set"], "maxProperties": 1 },
+        { "required": ["delta"], "maxProperties": 1 },
+        { "required": ["multiply"], "maxProperties": 1 },
+        { "required": ["append"], "maxProperties": 1 },
+        { "required": ["remove"], "maxProperties": 1 },
+        { "required": ["increment"], "maxProperties": 1 },
+        { "required": ["decrement"], "maxProperties": 1 }
+      ],
+      "allOf": [
+        {
+          "not": {
+            "anyOf": [
+              { "required": ["from", "delta"] },
+              { "required": ["from", "multiply"] },
+              { "required": ["from", "increment"] },
+              { "required": ["from", "decrement"] },
+              { "required": ["to", "delta"] },
+              { "required": ["to", "multiply"] },
+              { "required": ["to", "increment"] },
+              { "required": ["to", "decrement"] }
+            ]
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "ValueExpression": {
+      "description": "A JSON literal, compact reference, small pure numeric expression, count_members expression, or deterministic select_member expression.",
+      "anyOf": [
+        { "$ref": "#/definitions/ValueReference" },
+        { "$ref": "#/definitions/DerivedValueExpression" },
+        { "$ref": "#/definitions/CountMembersExpression" },
+        { "$ref": "#/definitions/SelectMemberExpression" },
+        { "$ref": "#/definitions/ValueLiteralString" },
+        { "type": ["null", "boolean", "number", "array", "object"] }
+      ]
+    },
+    "DerivedValueExpression": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 1,
+      "properties": {
+        "+": { "$ref": "#/definitions/NumericOperands" },
+        "-": { "$ref": "#/definitions/NumericOperands" },
+        "*": { "$ref": "#/definitions/NumericOperands" },
+        "/": { "$ref": "#/definitions/NumericOperands" },
+        "min": { "$ref": "#/definitions/NumericOperands" },
+        "max": { "$ref": "#/definitions/NumericOperands" }
+      },
+      "additionalProperties": false
+    },
+    "NumericOperands": {
+      "type": "array",
+      "minItems": 2,
+      "items": { "$ref": "#/definitions/ValueExpression" }
+    },
+    "CountMembersExpression": {
+      "type": "object",
+      "required": ["count_members"],
+      "properties": { "count_members": { "$ref": "#/definitions/CollectionPredicate" } },
+      "additionalProperties": false
+    },
+    "SelectMemberExpression": {
+      "type": "object",
+      "required": ["select_member"],
+      "properties": { "select_member": { "$ref": "#/definitions/MemberSelection" } },
+      "additionalProperties": false
+    },
+    "ValueReference": {
+      "oneOf": [
+        { "$ref": "#/definitions/CompactValueReference" },
+        {
+          "type": "object",
+          "required": ["object", "field"],
+          "properties": {
+            "object": { "$ref": "#/definitions/ObjectIdOrCurrent" },
+            "field": { "type": "string", "enum": ["id", "type", "name", "emoji", "location", "state_library", "appearance"] }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["object", "property"],
+          "properties": { "object": { "$ref": "#/definitions/ObjectIdOrCurrent" }, "property": { "type": "string", "minLength": 1, "pattern": "^[^.]+$" } },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["task", "field"],
+          "properties": {
+            "task": { "$ref": "#/definitions/PlainIdOrCurrent" },
+            "field": { "type": "string", "enum": ["id", "actor_id", "start", "end", "duration", "location", "description", "priority", "tags"] }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["location", "field"],
+          "properties": {
+            "location": { "$ref": "#/definitions/NonCurrentPlainId" },
+            "field": { "type": "string", "enum": ["id", "name", "parent_id", "shape", "coordinates", "position", "emoji"] }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["location", "property"],
+          "properties": { "location": { "$ref": "#/definitions/NonCurrentPlainId" }, "property": { "type": "string", "minLength": 1, "pattern": "^[^.]+$" } },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["clock"],
+          "properties": { "clock": { "const": "now" } },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["literal"],
+          "properties": { "literal": {} },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Condition": {
+      "anyOf": [
+        { "type": "boolean" },
+        {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 1,
+          "properties": {
+        "==": { "$ref": "#/definitions/BinaryOperands" },
+        "!=": { "$ref": "#/definitions/BinaryOperands" },
+        "<": { "$ref": "#/definitions/BinaryOperands" },
+        "<=": { "$ref": "#/definitions/BinaryOperands" },
+        ">": { "$ref": "#/definitions/BinaryOperands" },
+        ">=": { "$ref": "#/definitions/BinaryOperands" },
+        "contains": { "$ref": "#/definitions/BinaryOperands" },
+        "all": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/Condition" } },
+        "any": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/Condition" } },
+        "not": { "$ref": "#/definitions/Condition" },
+        "held_for": {
+          "type": "object",
+          "required": ["condition", "duration"],
+          "properties": { "condition": { "$ref": "#/definitions/Condition" }, "duration": { "$ref": "#/definitions/Duration" } },
+          "additionalProperties": false
+        },
+        "all_members": { "$ref": "#/definitions/CollectionPredicate" },
+        "any_members": { "$ref": "#/definitions/CollectionPredicate" },
+        "no_members": { "$ref": "#/definitions/CollectionPredicate" }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "BinaryOperands": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "$ref": "#/definitions/ValueExpression" }
+    },
+    "RuntimeCollection": {
+      "type": "object",
+      "required": ["from", "as"],
+      "properties": {
+        "from": { "type": "string", "enum": ["objects", "locations"] },
+        "as": { "$ref": "#/definitions/PlainId" },
+        "where": { "$ref": "#/definitions/Condition" },
+        "open": { "type": "boolean" },
+        "closes_at": { "$ref": "#/definitions/TaskStart" }
+      },
+      "allOf": [{
+        "if": { "properties": { "open": { "const": true } }, "required": ["open"] },
+        "then": { "required": ["closes_at"] }
+      }],
+      "additionalProperties": false
+    },
+    "CollectionPredicate": {
+      "type": "object",
+      "required": ["collection", "as"],
+      "properties": {
+        "collection": { "$ref": "#/definitions/PlainId" },
+        "as": { "$ref": "#/definitions/PlainId" },
+        "where": { "$ref": "#/definitions/Condition" },
+        "satisfy": { "$ref": "#/definitions/Condition" }
+      },
+      "additionalProperties": false
+    },
+    "MemberSelection": {
+      "type": "object",
+      "required": ["collection", "as", "policy"],
+      "properties": {
+        "collection": { "$ref": "#/definitions/PlainId" },
+        "as": { "$ref": "#/definitions/PlainId" },
+        "where": { "$ref": "#/definitions/Condition" },
+        "policy": { "type": "string", "enum": ["first_by_id", "lowest", "highest"] },
+        "by": { "$ref": "#/definitions/ValueExpression" },
+        "tie_break": { "type": "string", "enum": ["stable_id"] }
+      },
+      "additionalProperties": false
+    },
+    "WorkDefinition": {
+      "type": "object",
+      "required": ["id", "instantiate", "task"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "instantiate": { "$ref": "#/definitions/InstanceTrigger" },
+        "task": { "$ref": "#/definitions/TaskTemplate" },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "InstanceTrigger": {
+      "type": "object",
+      "required": ["for_each", "as"],
+      "properties": {
+        "for_each": { "$ref": "#/definitions/PlainId" },
+        "as": { "$ref": "#/definitions/PlainId" },
+        "start": { "type": "string", "enum": ["on_appearance"] },
+        "offset": { "$ref": "#/definitions/TimeOffset" },
+        "cancel_pending_on_exit": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "TaskTemplate": {
+      "type": "object",
+      "required": ["actor_id", "duration"],
+      "properties": {
+        "emoji": { "type": "string", "maxLength": 32 },
+        "actor_id": { "$ref": "#/definitions/ValueExpression" },
+        "duration": { "$ref": "#/definitions/Duration" },
+        "location": { "type": "string" },
+        "depends_on": { "$ref": "#/definitions/DependsOn" },
+        "when": { "$ref": "#/definitions/Condition" },
+        "requires": { "$ref": "#/definitions/Condition" },
+        "while": { "$ref": "#/definitions/Condition" },
+        "progress": { "$ref": "#/definitions/CompactValueReference" },
+        "continues": { "$ref": "#/definitions/Continuation" },
+        "timing": { "type": "array", "items": { "$ref": "#/definitions/TimingConstraint" } },
+        "reservations": { "type": "array", "items": { "$ref": "#/definitions/Reservation" } },
+        "interactions": { "type": "array", "items": { "$ref": "#/definitions/Interaction" } },
+        "description": { "type": "string" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      },
+      "not": { "anyOf": [{ "required": ["id"] }, { "required": ["start"] }] },
+      "additionalProperties": true
+    },
+    "CreatedObject": {
+      "type": "object",
+      "required": ["id", "type", "name"],
+      "properties": {
+        "id": { "$ref": "#/definitions/ObjectId" },
+        "type": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "emoji": { "type": "string", "maxLength": 32 },
+        "location": { "$ref": "#/definitions/ValueExpression" },
+        "state_library": { "$ref": "#/definitions/PlainId" },
+        "appearance": { "$ref": "#/definitions/PlainId" },
+        "properties": { "type": "object", "propertyNames": { "$ref": "#/definitions/ReferenceablePropertyName" }, "additionalProperties": { "$ref": "#/definitions/ValueExpression" } }
+      },
+      "additionalProperties": true
+    },
+    "TimingConstraint": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["relation", "event", "relative_to"],
+          "properties": {
+            "relation": { "const": "offset" },
+            "event": { "type": "string", "enum": ["start", "completion"] },
+            "relative_to": { "$ref": "#/definitions/ValueExpression" },
+            "min_offset": { "$ref": "#/definitions/TimeOffset" },
+            "max_offset": { "$ref": "#/definitions/TimeOffset" }
+          },
+          "anyOf": [{ "required": ["min_offset"] }, { "required": ["max_offset"] }],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["relation", "with"],
+          "properties": {
+            "relation": { "const": "not_overlap" },
+            "with": {
+              "type": "object",
+              "required": ["task"],
+              "properties": { "task": { "$ref": "#/definitions/PlainId" } },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Reservation": {
+      "type": "object",
+      "required": ["resource", "mode"],
+      "properties": {
+        "resource": { "$ref": "#/definitions/ValueExpression" },
+        "mode": { "type": "string", "enum": ["exclusive", "capacity"] },
+        "amount": { "$ref": "#/definitions/ValueExpression" }
+      },
+      "allOf": [
+        { "if": { "properties": { "mode": { "const": "capacity" } } }, "then": { "required": ["amount"] } },
+        { "if": { "properties": { "mode": { "const": "exclusive" } } }, "then": { "not": { "required": ["amount"] } } }
+      ],
+      "additionalProperties": false
+    },
+    "Continuation": {
+      "type": "object",
+      "required": ["task"],
+      "properties": {
+        "task": { "$ref": "#/definitions/PlainId" }
+      },
+      "additionalProperties": false
+    },
+    "TaskRuntimeStatus": {
+      "type": "string",
+      "enum": ["pending", "active", "completed", "skipped", "blocked", "interrupted", "cancelled"],
+      "description": "Authoritative runtime lifecycle status exposed through compact @task.status references."
+    },
+    "TimeOffset": {
+      "description": "A signed relative offset; zero is permitted.",
+      "anyOf": [
+        { "type": "integer" },
+        { "type": "string", "pattern": "^-?(?:0|[0-9]+(?:\\.[0-9]+)?[smhdwWM]|[Pp](?:T0M|(?=[^0-9]*[0-9]*[1-9])(?:[0-9]+Y)?(?:[0-9]+M)?(?:[0-9]+D)?(?:[Tt](?:[0-9]+H)?(?:[0-9]+M)?(?:[0-9]+S)?)?))$" }
+      ]
+    },
+    "DependsOn": {
+      "description": "Task dependencies, either an array (implicit AND), or an object with explicit all/any operators.",
+      "anyOf": [
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/definitions/PlainId"
+          }
+        },
+        {
+          "type": "object",
+          "minProperties": 1,
+          "properties": {
+            "all": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/definitions/PlainId"
+              }
+            },
+            "any": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/definitions/PlainId"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "TaskStart": {
+      "description": "Task start time. Supports HH:MM, HH:MM:SS, ISO 8601 date-time, or {day,time}.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/TimeOrDateTime"
+        },
+        {
+          "type": "object",
+          "required": [
+            "day",
+            "time"
+          ],
+          "properties": {
+            "day": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "time": {
+              "$ref": "#/definitions/TimeOrDateTime"
+            }
+          },
+          "additionalProperties": true
+        }
+      ]
+    },
+    "Duration": {
+      "description": "Positive task duration. Supports integer (uses config.time_unit), ISO 8601 duration (e.g., PT30M), or shorthand including decimals (e.g., 30m, 1.5h, 1d, 10s, 1w, 1M).",
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "string",
+          "anyOf": [
+            {
+              "pattern": "^[0-9]+(?:\\.[0-9]+)?[smhdwWM]$"
+            },
+            {
+              "pattern": "^[Pp](?=[^0-9]*[0-9]*[1-9])(?:[0-9]+Y)?(?:[0-9]+M)?(?:[0-9]+D)?(?:[Tt](?:[0-9]+H)?(?:[0-9]+M)?(?:[0-9]+S)?)?$"
+            }
+          ]
+        }
+      ]
+    },
+    "TimeOrDateTime": {
+      "description": "Either a strict time-of-day (HH:MM or HH:MM:SS, zero-padded) or an ISO 8601 date-time.",
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+        },
+        {
+          "type": "string",
+          "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$"
+        },
+        {
+          "type": "string",
+          "format": "date-time"
+        }
+      ]
+    },
+    "PlainId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{0,249}$"
+    },
+    "ReferenceablePropertyName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^.]+$",
+      "description": "A direct property name. Dot is reserved for compact @entity.member references."
+    },
+    "CompactValueReference": {
+      "type": "string",
+      "pattern": "^@(?:now|(?!now\\.)(?:[a-z][a-z0-9_]*(?::[a-z][a-z0-9_]*)?)\\.[^.@]+)$",
+      "description": "Official WorkSpec 2.1 reference syntax: @entity.member, or @now. Nested paths are not supported."
+    },
+    "ValueLiteralString": {
+      "type": "string",
+      "pattern": "^(?:$|[^@][\\s\\S]*|@@[\\s\\S]*)$",
+      "description": "A literal string. In ValueExpression positions, @@ escapes one leading @."
+    },
+    "ObjectId": {
+      "description": "Object id, either plain snake_case or optional namespaced id '{type}:{identifier}'.",
+      "type": "string",
+      "maxLength": 250,
+      "anyOf": [
+        {
+          "$ref": "#/definitions/PlainId"
+        },
+        {
+          "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]{0,249}$"
+        }
+      ]
+    },
+    "PlainIdOrCurrent": {
+      "type": "string",
+      "anyOf": [
+        { "const": "current" },
+        { "$ref": "#/definitions/PlainId" }
+      ]
+    },
+    "NonCurrentPlainId": {
+      "type": "string",
+      "pattern": "^(?!current$)[a-z][a-z0-9_]{0,249}$"
+    },
+    "ObjectIdOrCurrent": {
+      "type": "string",
+      "anyOf": [
+        { "const": "current" },
+        { "$ref": "#/definitions/ObjectId" }
+      ]
+    },
+    "DateExpression": {
+      "description": "ISO calendar date or a relative date expression used by multi-period calendars.",
+      "type": "string",
+      "anyOf": [
+        { "format": "date" },
+        { "pattern": "^date\\.(?:today|start)(?:\\s*[+-]\\s*\\d+)?$" }
+      ]
+    },
+    "MultiPeriodConfig": {
+      "type": "object",
+      "description": "Optional overall date range for a repeating multi-period simulation.",
+      "properties": {
+        "start_date": { "$ref": "#/definitions/DateExpression" },
+        "duration_days": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": true
+    },
+    "CalendarPatternEntry": {
+      "type": "object",
+      "required": ["day", "type"],
+      "properties": {
+        "day": { "type": "integer", "minimum": 1 },
+        "type": { "$ref": "#/definitions/PlainId" }
+      },
+      "additionalProperties": true
+    },
+    "CalendarOverride": {
+      "type": "object",
+      "required": ["date", "type"],
+      "properties": {
+        "date": { "$ref": "#/definitions/DateExpression" },
+        "type": { "$ref": "#/definitions/PlainId" }
+      },
+      "additionalProperties": true
+    },
+    "Calendar": {
+      "type": "object",
+      "description": "Repeating day-type pattern with optional date-specific overrides.",
+      "required": ["cycle_length", "pattern"],
+      "properties": {
+        "cycle_length": { "type": "integer", "minimum": 1 },
+        "pattern": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/CalendarPatternEntry" }
+        },
+        "overrides": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/CalendarOverride" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "DayTypeConfig": {
+      "type": "object",
+      "properties": {
+        "start_time": { "$ref": "#/definitions/TimeOrDateTime" },
+        "end_time": { "$ref": "#/definitions/TimeOrDateTime" }
+      },
+      "additionalProperties": true
+    },
+    "DayTypeLocation": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "name": { "type": "string", "minLength": 1 },
+        "emoji": { "type": "string", "maxLength": 32 },
+        "position": { "$ref": "#/definitions/Coordinates" },
+        "shape": { "$ref": "#/definitions/Shape" },
+        "properties": { "type": "object", "propertyNames": { "$ref": "#/definitions/ReferenceablePropertyName" }, "additionalProperties": true }
+      },
+      "additionalProperties": true
+    },
+    "LegacyDayTypeInteraction": {
+      "type": "object",
+      "description": "Compatibility form still understood by the multi-period Studio renderer; canonical task interactions should use property_changes.",
+      "required": ["target_id", "interaction_type"],
+      "properties": {
+        "target_id": { "$ref": "#/definitions/ObjectId" },
+        "interaction_type": { "type": "string", "minLength": 1 },
+        "quantity": { "type": "number" },
+        "duration": { "$ref": "#/definitions/Duration" },
+        "temporary": { "type": "boolean" },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "DayTypeTask": {
+      "type": "object",
+      "required": ["id", "actor_id", "duration"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "emoji": { "type": "string", "maxLength": 32 },
+        "actor_id": { "$ref": "#/definitions/ObjectId" },
+        "start": { "$ref": "#/definitions/TaskStart" },
+        "duration": { "$ref": "#/definitions/Duration" },
+        "location": { "type": "string" },
+        "location_id": { "type": "string", "description": "Legacy multi-period alias for location." },
+        "depends_on": { "$ref": "#/definitions/DependsOn" },
+        "when": { "$ref": "#/definitions/Condition" },
+        "requires": { "$ref": "#/definitions/Condition" },
+        "while": { "$ref": "#/definitions/Condition" },
+        "progress": { "$ref": "#/definitions/CompactValueReference" },
+        "continues": { "$ref": "#/definitions/Continuation" },
+        "timing": { "type": "array", "items": { "$ref": "#/definitions/TimingConstraint" } },
+        "reservations": { "type": "array", "items": { "$ref": "#/definitions/Reservation" } },
+        "interactions": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              { "$ref": "#/definitions/Interaction" },
+              { "$ref": "#/definitions/LegacyDayTypeInteraction" }
+            ]
+          }
+        },
+        "description": { "type": "string" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "DayType": {
+      "type": "object",
+      "description": "Reusable definition of one operational day in a multi-period simulation.",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "config": { "$ref": "#/definitions/DayTypeConfig" },
+        "locations": { "type": "array", "items": { "$ref": "#/definitions/DayTypeLocation" } },
+        "objects": { "type": "array", "items": { "$ref": "#/definitions/Object" } },
+        "tasks": { "type": "array", "items": { "$ref": "#/definitions/DayTypeTask" } }
+      },
+      "additionalProperties": true
+    },
+    "DigitalLocation": {
+      "type": "object",
+      "required": ["id", "name", "type", "x", "y", "width", "height"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "minLength": 1 },
+        "layer": { "type": "integer" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number" },
+        "width": { "type": "number", "minimum": 0 },
+        "height": { "type": "number", "minimum": 0 },
+        "depth": { "type": "number", "minimum": 0 },
+        "parent_id": { "type": ["string", "null"] },
+        "physical_object_id": { "type": ["string", "null"] },
+        "capacity_gb": { "type": "number", "minimum": 0 },
+        "storage_type": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "DigitalObject": {
+      "type": "object",
+      "required": ["id", "name", "type"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "minLength": 1 },
+        "created_time": { "type": "string", "format": "date-time" },
+        "modified_time": { "type": "string", "format": "date-time" },
+        "properties": { "$ref": "#/definitions/StandardObjectProperties" }
+      },
+      "additionalProperties": true
+    },
+    "DigitalConnectionProperties": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/definitions/ReferenceablePropertyName" },
+      "properties": {
+        "bandwidth_mbps": { "type": "number", "minimum": 0 },
+        "latency_ms": { "type": "number", "minimum": 0 },
+        "protocol": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "DigitalConnection": {
+      "type": "object",
+      "required": ["id", "from", "to", "type"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "from": { "type": "string", "minLength": 1 },
+        "to": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "minLength": 1 },
+        "properties": { "$ref": "#/definitions/DigitalConnectionProperties" }
+      },
+      "additionalProperties": true
+    },
+    "DataFlow": {
+      "type": "object",
+      "required": ["id", "source", "destination"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "source": { "type": "string", "minLength": 1 },
+        "destination": { "type": "string", "minLength": 1 },
+        "task_id": { "type": ["string", "null"] },
+        "start_time": { "$ref": "#/definitions/TimeOrDateTime" },
+        "duration": { "$ref": "#/definitions/Duration" },
+        "size_mb": { "type": "number", "minimum": 0 },
+        "properties": { "type": "object", "propertyNames": { "$ref": "#/definitions/ReferenceablePropertyName" }, "additionalProperties": true }
+      },
+      "additionalProperties": true
+    },
+    "DigitalSpace": {
+      "type": "object",
+      "description": "Digital topology and data movement associated with the simulation.",
+      "properties": {
+        "digital_locations": { "type": "array", "items": { "$ref": "#/definitions/DigitalLocation" } },
+        "digital_objects": { "type": "array", "items": { "$ref": "#/definitions/DigitalObject" } },
+        "connections": { "type": "array", "items": { "$ref": "#/definitions/DigitalConnection" } },
+        "data_flows": { "type": "array", "items": { "$ref": "#/definitions/DataFlow" } }
+      },
+      "additionalProperties": true
+    },
+    "DisplayContent": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "value": {},
+        "alignment": { "type": "string", "enum": ["left", "center", "right"] }
+      },
+      "additionalProperties": true
+    },
+    "DisplayElementProperties": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/definitions/ReferenceablePropertyName" },
+      "properties": {
+        "visible": { "type": "boolean" },
+        "clickable": { "type": "boolean" },
+        "background": { "type": "string" },
+        "border": { "type": "string" },
+        "text_color": { "type": "string" },
+        "layout": { "type": "string", "enum": ["stretch", "center", "contain", "cover", "none"] }
+      },
+      "additionalProperties": true
+    },
+    "DisplayElementState": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "selected": { "type": "boolean" },
+        "visible": { "type": "boolean" },
+        "value": {},
+        "validation_state": { "type": "string", "enum": ["valid", "invalid", "warning"] },
+        "loading": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "DisplayElementInteraction": {
+      "type": "object",
+      "required": ["trigger", "action"],
+      "properties": {
+        "trigger": { "type": "string", "minLength": 1 },
+        "action": { "type": "string", "minLength": 1 },
+        "target": { "type": ["string", "null"] },
+        "task_id": { "type": ["string", "null"] },
+        "properties": { "type": "object", "propertyNames": { "$ref": "#/definitions/ReferenceablePropertyName" }, "additionalProperties": true }
+      },
+      "additionalProperties": true
+    },
+    "DisplayElement": {
+      "type": "object",
+      "required": ["id", "type", "bounds"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "type": { "type": "string", "minLength": 1 },
+        "bounds": { "$ref": "#/definitions/Bounds2D" },
+        "z_index": { "type": "integer" },
+        "parent_id": { "type": ["string", "null"] },
+        "content": { "$ref": "#/definitions/DisplayContent" },
+        "properties": { "$ref": "#/definitions/DisplayElementProperties" },
+        "state": { "$ref": "#/definitions/DisplayElementState" },
+        "interactions": { "type": "array", "items": { "$ref": "#/definitions/DisplayElementInteraction" } },
+        "animations": { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+      },
+      "additionalProperties": true
+    },
+    "DisplayNavigationScreen": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "name": { "type": "string", "minLength": 1 },
+        "elements": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "DisplayNavigationTransition": {
+      "type": "object",
+      "required": ["from", "to"],
+      "properties": {
+        "from": { "type": "string", "minLength": 1 },
+        "to": { "type": "string", "minLength": 1 },
+        "trigger_element": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "DisplayNavigation": {
+      "type": "object",
+      "properties": {
+        "initial_screen": { "type": "string" },
+        "screens": { "type": "array", "items": { "$ref": "#/definitions/DisplayNavigationScreen" } },
+        "transitions": { "type": "array", "items": { "$ref": "#/definitions/DisplayNavigationTransition" } }
+      },
+      "additionalProperties": true
+    },
+    "Display": {
+      "type": "object",
+      "required": ["id", "name", "viewport", "rectangles"],
+      "properties": {
+        "id": { "$ref": "#/definitions/PlainId" },
+        "name": { "type": "string", "minLength": 1 },
+        "physical_object_id": { "type": ["string", "null"] },
+        "digital_object_id": { "type": ["string", "null"] },
+        "viewport": { "$ref": "#/definitions/Size2D" },
+        "rectangles": { "type": "array", "items": { "$ref": "#/definitions/DisplayElement" } },
+        "navigation": { "$ref": "#/definitions/DisplayNavigation" }
+      },
+      "additionalProperties": true
+    },
+    "Recipes": {
+      "type": "object",
+      "description": "Recipe definitions keyed by product id.",
+      "additionalProperties": {
+        "$ref": "#/definitions/Recipe"
+      }
+    },
+    "Recipe": {
+      "type": "object",
+      "description": "A recipe describing required inputs for a product.",
+      "required": [
+        "inputs"
+      ],
+      "properties": {
+        "inputs": {
+          "type": "object",
+          "description": "Resource ID -> required quantity.",
+          "propertyNames": {
+            "$ref": "#/definitions/ObjectId"
+          },
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "equipment": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/definitions/ObjectId"
+          }
+        },
+        "output_quantity": {
+          "type": "number",
+          "minimum": 0
+        },
+        "process_time": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "TypeTrait": {
+      "type": "object",
+      "description": "A reusable capability declaration for object types.",
+      "properties": {
+        "description": { "type": "string" },
+        "required_properties": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/ReferenceablePropertyName" }
+        },
+        "valid_operations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["from/to", "delta", "set", "multiply", "append", "remove", "increment", "decrement"]
+          }
+        },
+        "can_be_actor_id": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "TypePropertyDefinition": {
+      "type": "object",
+      "description": "Schema-like metadata for a custom object property.",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["string", "number", "integer", "boolean", "array", "object"]
+        },
+        "description": { "type": "string" },
+        "unit": { "type": "string" },
+        "required": { "type": "boolean" },
+        "default": {},
+        "enum": { "type": "array" },
+        "minimum": { "type": "number" },
+        "maximum": { "type": "number" }
+      },
+      "additionalProperties": true
+    },
+    "TypeDefinition": {
+      "type": "object",
+      "description": "Custom type definition extending a built-in base type.",
+      "required": [
+        "extends"
+      ],
+      "properties": {
+        "extends": {
+          "type": "string",
+          "enum": ["actor", "equipment", "resource", "product", "service", "display", "screen_element", "digital_object"],
+          "description": "Built-in base type to extend."
+        },
+        "description": {
+          "type": "string"
+        },
+        "additional_properties": {
+          "type": "object",
+          "description": "Optional schema-like description of extra properties for this custom type.",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]{0,249}$"
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/TypePropertyDefinition"
+          }
+        },
+        "traits": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/definitions/PlainId"
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

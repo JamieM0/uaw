@@ -13,103 +13,7 @@
           "title": "Artisan Bread Making Process",
           "description": "A simple bakery process showing basic resource transformation and timing dependencies"
         },
-        "config": {
-          "time_unit": "minutes",
-          "start_time": "06:00",
-          "end_time": "18:00",
-          "currency": "USD",
-          "locale": "en-US",
-          "timezone": "UTC"
-        },
-        "schema_version": "2.0",
-        "state_libraries": {
-          "bakery_staff": {
-            "states": ["available", "working", "break"],
-            "appearances": {
-              "baker": {
-                "available": "baker_available",
-                "working": "baker_working",
-                "break": "baker_break"
-              },
-              "assistant": {
-                "available": "assistant_available",
-                "working": "assistant_working",
-                "break": "assistant_break"
-              }
-            }
-          },
-          "bakery_equipment": {
-            "states": ["available", "clean", "in_use", "dirty", "occupied", "preheating", "baking"],
-            "appearances": {
-              "stand_mixer": {
-                "clean": "stand_mixer_clean",
-                "in_use": "stand_mixer_in_use",
-                "dirty": "stand_mixer_dirty"
-              },
-              "commercial_oven": {
-                "available": "commercial_oven_available",
-                "preheating": "commercial_oven_preheating",
-                "baking": "commercial_oven_baking"
-              },
-              "prep_counter": {
-                "clean": "prep_counter_clean",
-                "in_use": "prep_counter_in_use",
-                "occupied": "prep_counter_occupied",
-                "dirty": "prep_counter_dirty"
-              },
-              "mixing_bowl": {
-                "clean": "mixing_bowl_clean",
-                "in_use": "mixing_bowl_in_use",
-                "dirty": "mixing_bowl_dirty"
-              }
-            }
-          },
-          "ingredient_stock": {
-            "states": ["stocked", "low", "empty"],
-            "appearances": {
-              "flour": {
-                "stocked": "flour_stocked",
-                "low": "flour_low",
-                "empty": "flour_empty"
-              },
-              "water": {
-                "stocked": "water_stocked",
-                "low": "water_low",
-                "empty": "water_empty"
-              },
-              "yeast": {
-                "stocked": "yeast_stocked",
-                "low": "yeast_low",
-                "empty": "yeast_empty"
-              }
-            }
-          },
-          "bakery_batch": {
-            "states": ["absent", "processing", "present", "ready"],
-            "appearances": {
-              "mixed_dough": {
-                "absent": "empty",
-                "processing": "mixed_dough_processing",
-                "present": "mixed_dough_present"
-              },
-              "risen_dough": {
-                "absent": "empty",
-                "processing": "risen_dough_processing",
-                "present": "risen_dough_present"
-              },
-              "shaped_loaves": {
-                "absent": "empty",
-                "processing": "shaped_loaves_processing",
-                "present": "shaped_loaves_present"
-              },
-              "baked_bread": {
-                "absent": "empty",
-                "processing": "baked_bread_processing",
-                "ready": "baked_bread_ready"
-              }
-            }
-          }
-        },
+        "schema_version": "2.1",
         "world": {
           "layout": {
             "meta": {
@@ -146,8 +50,6 @@
               "id": "baker",
               "type": "actor",
               "name": "Baker",
-              "state_library": "bakery_staff",
-              "appearance": "baker",
               "properties": {
                 "role": "Baker",
                 "cost_per_hour": 25,
@@ -159,8 +61,6 @@
               "id": "assistant",
               "type": "actor",
               "name": "Assistant",
-              "state_library": "bakery_staff",
-              "appearance": "assistant",
               "properties": {
                 "role": "Assistant Baker",
                 "cost_per_hour": 18,
@@ -172,8 +72,6 @@
               "id": "mixer",
               "type": "equipment",
               "name": "Stand Mixer",
-              "state_library": "bakery_equipment",
-              "appearance": "stand_mixer",
               "properties": {
                 "state": "clean",
                 "capacity": 1
@@ -185,8 +83,6 @@
               "id": "oven",
               "type": "equipment",
               "name": "Commercial Oven",
-              "state_library": "bakery_equipment",
-              "appearance": "commercial_oven",
               "properties": {
                 "state": "available",
                 "capacity": 4
@@ -198,8 +94,6 @@
               "id": "workspace",
               "type": "equipment",
               "name": "Prep Counter",
-              "state_library": "bakery_equipment",
-              "appearance": "prep_counter",
               "properties": {
                 "state": "clean",
                 "capacity": 2
@@ -211,8 +105,6 @@
               "id": "mixing_bowl",
               "type": "equipment",
               "name": "Mixing Bowl",
-              "state_library": "bakery_equipment",
-              "appearance": "mixing_bowl",
               "properties": {
                 "state": "clean",
                 "capacity": 1
@@ -224,8 +116,6 @@
               "id": "flour",
               "type": "resource",
               "name": "Flour",
-              "state_library": "ingredient_stock",
-              "appearance": "flour",
               "properties": {
                 "unit": "kg",
                 "quantity": 50,
@@ -239,8 +129,6 @@
               "id": "water",
               "type": "resource",
               "name": "Water",
-              "state_library": "ingredient_stock",
-              "appearance": "water",
               "properties": {
                 "unit": "liter",
                 "quantity": 20,
@@ -254,8 +142,6 @@
               "id": "yeast",
               "type": "resource",
               "name": "Yeast",
-              "state_library": "ingredient_stock",
-              "appearance": "yeast",
               "properties": {
                 "unit": "g",
                 "quantity": 500,
@@ -269,8 +155,6 @@
               "id": "mixed_dough",
               "type": "product",
               "name": "Mixed Dough",
-              "state_library": "bakery_batch",
-              "appearance": "mixed_dough",
               "properties": {
                 "unit": "batch",
                 "quantity": 0,
@@ -283,8 +167,6 @@
               "id": "risen_dough",
               "type": "product",
               "name": "Risen Dough",
-              "state_library": "bakery_batch",
-              "appearance": "risen_dough",
               "properties": {
                 "unit": "batch",
                 "quantity": 0,
@@ -297,8 +179,6 @@
               "id": "shaped_loaves",
               "type": "product",
               "name": "Shaped Loaves",
-              "state_library": "bakery_batch",
-              "appearance": "shaped_loaves",
               "properties": {
                 "unit": "loaves",
                 "quantity": 0,
@@ -311,8 +191,6 @@
               "id": "baked_bread",
               "type": "product",
               "name": "Baked Bread",
-              "state_library": "bakery_batch",
-              "appearance": "baked_bread",
               "properties": {
                 "unit": "loaves",
                 "quantity": 0,
@@ -331,53 +209,17 @@
               "emoji": "🔧",
               "actor_id": "baker",
               "start": "06:15",
-              "duration": 30,
-              "location": "prep_area",
-              "depends_on": [],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "working"
-                    }
-                  },
-                  "target_id": "baker",
-                  "temporary": true
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "clean",
-                      "to": "in_use"
-                    }
-                  },
-                  "target_id": "workspace",
-                  "temporary": true
-                }
-              ]
+              "duration": "30m",
+              "location": "prep_area"
             },
             {
               "id": "measure_flour",
               "emoji": "⚖️",
               "actor_id": "baker",
-              "start": "06:45",
-              "duration": 10,
+              "duration": "10m",
               "location": "prep_area",
               "depends_on": [
                 "prepare_ingredients"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "working"
-                    }
-                  },
-                  "target_id": "baker",
-                  "temporary": true
-                }
               ]
             },
             {
@@ -385,243 +227,38 @@
               "emoji": "🦠",
               "actor_id": "assistant",
               "start": "06:45",
-              "duration": 10,
-              "location": "prep_area",
-              "depends_on": [],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "working"
-                    }
-                  },
-                  "target_id": "assistant",
-                  "temporary": true
-                }
-              ]
+              "duration": "10m",
+              "location": "prep_area"
             },
             {
               "id": "mix_dough",
               "emoji": "🌀",
               "actor_id": "baker",
-              "start": "06:55",
-              "duration": 20,
+              "duration": "20m",
               "location": "prep_area",
               "depends_on": [
                 "measure_flour",
                 "activate_yeast"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "working"
-                    }
-                  },
-                  "target_id": "baker",
-                  "temporary": true
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -3
-                    }
-                  },
-                  "target_id": "flour"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -2
-                    }
-                  },
-                  "target_id": "water"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -15
-                    }
-                  },
-                  "target_id": "yeast"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 1
-                    }
-                  },
-                  "target_id": "mixed_dough"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "absent",
-                      "to": "present"
-                    }
-                  },
-                  "target_id": "mixed_dough"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "clean",
-                      "to": "dirty"
-                    }
-                  },
-                  "target_id": "mixer"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "clean",
-                      "to": "in_use"
-                    }
-                  },
-                  "target_id": "mixer",
-                  "temporary": true
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "clean",
-                      "to": "dirty"
-                    }
-                  },
-                  "target_id": "mixing_bowl"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "clean",
-                      "to": "in_use"
-                    }
-                  },
-                  "target_id": "mixing_bowl",
-                  "temporary": true
-                }
               ]
             },
             {
               "id": "knead_dough",
               "emoji": "👋",
               "actor_id": "baker",
-              "start": "07:15",
-              "duration": 15,
+              "duration": "15m",
               "location": "prep_area",
               "depends_on": [
                 "mix_dough"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "working"
-                    }
-                  },
-                  "target_id": "baker",
-                  "temporary": true
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -1
-                    }
-                  },
-                  "target_id": "mixed_dough"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "present",
-                      "to": "absent"
-                    }
-                  },
-                  "target_id": "mixed_dough"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "present",
-                      "to": "processing"
-                    }
-                  },
-                  "target_id": "mixed_dough",
-                  "temporary": true
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 1
-                    }
-                  },
-                  "target_id": "risen_dough"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "absent",
-                      "to": "present"
-                    }
-                  },
-                  "target_id": "risen_dough"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "absent",
-                      "to": "processing"
-                    }
-                  },
-                  "target_id": "risen_dough",
-                  "temporary": true
-                }
               ]
             },
             {
               "id": "first_rise",
               "emoji": "⏰",
               "actor_id": "baker",
-              "start": "07:30",
-              "duration": 90,
+              "duration": "90m",
               "location": "prep_area",
               "depends_on": [
                 "knead_dough"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "break"
-                    }
-                  },
-                  "target_id": "baker",
-                  "temporary": true
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "clean",
-                      "to": "occupied"
-                    }
-                  },
-                  "target_id": "workspace",
-                  "temporary": true
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "present",
-                      "to": "processing"
-                    }
-                  },
-                  "target_id": "risen_dough",
-                  "temporary": true
-                }
               ]
             },
             {
@@ -629,125 +266,17 @@
               "emoji": "🧼",
               "actor_id": "assistant",
               "start": "07:30",
-              "duration": 20,
-              "location": "prep_area",
-              "depends_on": [],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "working"
-                    }
-                  },
-                  "target_id": "assistant",
-                  "temporary": true
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "dirty",
-                      "to": "clean"
-                    }
-                  },
-                  "target_id": "mixer"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "dirty",
-                      "to": "clean"
-                    }
-                  },
-                  "target_id": "mixing_bowl"
-                }
-              ]
+              "duration": "20m",
+              "location": "prep_area"
             },
             {
               "id": "shape_loaves",
               "emoji": "👐",
               "actor_id": "baker",
-              "start": "09:00",
-              "duration": 25,
+              "duration": "25m",
               "location": "prep_area",
               "depends_on": [
                 "first_rise"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "working"
-                    }
-                  },
-                  "target_id": "baker",
-                  "temporary": true
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -1
-                    }
-                  },
-                  "target_id": "risen_dough"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "present",
-                      "to": "absent"
-                    }
-                  },
-                  "target_id": "risen_dough"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "present",
-                      "to": "processing"
-                    }
-                  },
-                  "target_id": "risen_dough",
-                  "temporary": true
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 4
-                    }
-                  },
-                  "target_id": "shaped_loaves"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "absent",
-                      "to": "present"
-                    }
-                  },
-                  "target_id": "shaped_loaves"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "absent",
-                      "to": "processing"
-                    }
-                  },
-                  "target_id": "shaped_loaves",
-                  "temporary": true
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "clean",
-                      "to": "in_use"
-                    }
-                  },
-                  "target_id": "workspace",
-                  "temporary": true
-                }
               ]
             },
             {
@@ -755,209 +284,34 @@
               "emoji": "🔥",
               "actor_id": "assistant",
               "start": "09:05",
-              "duration": 15,
-              "location": "oven_area",
-              "depends_on": [],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "working"
-                    }
-                  },
-                  "target_id": "assistant",
-                  "temporary": true
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "preheating"
-                    }
-                  },
-                  "target_id": "oven"
-                }
-              ]
+              "duration": "15m",
+              "location": "oven_area"
             },
             {
               "id": "second_rise",
               "emoji": "⏳",
               "actor_id": "baker",
-              "start": "09:25",
-              "duration": 45,
+              "duration": "45m",
               "location": "prep_area",
               "depends_on": [
                 "shape_loaves"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "break"
-                    }
-                  },
-                  "target_id": "baker",
-                  "temporary": true
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "present",
-                      "to": "processing"
-                    }
-                  },
-                  "target_id": "shaped_loaves",
-                  "temporary": true
-                }
               ]
             },
             {
               "id": "bake_bread",
               "emoji": "🍞",
               "actor_id": "baker",
-              "start": "10:10",
-              "duration": 35,
+              "duration": "35m",
               "location": "oven_area",
               "depends_on": [
                 "second_rise",
                 "preheat_oven"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "working"
-                    }
-                  },
-                  "target_id": "baker",
-                  "temporary": true
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -4
-                    }
-                  },
-                  "target_id": "shaped_loaves"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "present",
-                      "to": "absent"
-                    }
-                  },
-                  "target_id": "shaped_loaves"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "present",
-                      "to": "processing"
-                    }
-                  },
-                  "target_id": "shaped_loaves",
-                  "temporary": true
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 4
-                    }
-                  },
-                  "target_id": "baked_bread"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "absent",
-                      "to": "ready"
-                    }
-                  },
-                  "target_id": "baked_bread"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "absent",
-                      "to": "processing"
-                    }
-                  },
-                  "target_id": "baked_bread",
-                  "temporary": true
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "preheating",
-                      "to": "available"
-                    }
-                  },
-                  "target_id": "oven"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "preheating",
-                      "to": "baking"
-                    }
-                  },
-                  "target_id": "oven",
-                  "temporary": true
-                }
               ]
             }
-          ],
-          "recipes": {
-            "mixed_dough": {
-              "inputs": {
-                "flour": 3,
-                "water": 2,
-                "yeast": 15
-              },
-              "equipment": [
-                "mixer",
-                "mixing_bowl"
-              ],
-              "output_quantity": 1,
-              "process_time": 20
-            },
-            "risen_dough": {
-              "inputs": {
-                "mixed_dough": 1
-              },
-              "equipment": [
-                "workspace"
-              ],
-              "output_quantity": 1,
-              "process_time": 120
-            },
-            "shaped_loaves": {
-              "inputs": {
-                "risen_dough": 1
-              },
-              "equipment": [
-                "workspace"
-              ],
-              "output_quantity": 4,
-              "process_time": 20
-            },
-            "baked_bread": {
-              "inputs": {
-                "shaped_loaves": 4
-              },
-              "equipment": [
-                "oven"
-              ],
-              "output_quantity": 4,
-              "process_time": 25
-            }
-          }
+          ]
         }
-      }
+      },
+      "script": "// WorkSpec 2.1 Script\nWorkSpec.task(\"prepare_ingredients\").onStart(({ set, change, move, create, remove }) => {\n        set(\"baker\", \"state\", \"working\", { temporary: true });\n        set(\"workspace\", \"state\", \"in_use\", { temporary: true });\n});\n\nWorkSpec.task(\"measure_flour\").onStart(({ set, change, move, create, remove }) => {\n        set(\"baker\", \"state\", \"working\", { temporary: true });\n});\n\nWorkSpec.task(\"activate_yeast\").onStart(({ set, change, move, create, remove }) => {\n        set(\"assistant\", \"state\", \"working\", { temporary: true });\n});\n\nWorkSpec.task(\"mix_dough\").onStart(({ set, change, move, create, remove }) => {\n        set(\"baker\", \"state\", \"working\", { temporary: true });\n        set(\"mixer\", \"state\", \"in_use\", { temporary: true });\n        set(\"mixing_bowl\", \"state\", \"in_use\", { temporary: true });\n});\n\nWorkSpec.task(\"mix_dough\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"flour\", \"quantity\", -3);\n        change(\"water\", \"quantity\", -2);\n        change(\"yeast\", \"quantity\", -15);\n        change(\"mixed_dough\", \"quantity\", 1);\n        set(\"mixed_dough\", \"state\", \"present\");\n        set(\"mixer\", \"state\", \"dirty\");\n        set(\"mixing_bowl\", \"state\", \"dirty\");\n});\n\nWorkSpec.task(\"knead_dough\").onStart(({ set, change, move, create, remove }) => {\n        set(\"baker\", \"state\", \"working\", { temporary: true });\n        set(\"mixed_dough\", \"state\", \"processing\", { temporary: true });\n        set(\"risen_dough\", \"state\", \"processing\", { temporary: true });\n});\n\nWorkSpec.task(\"knead_dough\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"mixed_dough\", \"quantity\", -1);\n        set(\"mixed_dough\", \"state\", \"absent\");\n        change(\"risen_dough\", \"quantity\", 1);\n        set(\"risen_dough\", \"state\", \"present\");\n});\n\nWorkSpec.task(\"first_rise\").onStart(({ set, change, move, create, remove }) => {\n        set(\"baker\", \"state\", \"break\", { temporary: true });\n        set(\"workspace\", \"state\", \"occupied\", { temporary: true });\n        set(\"risen_dough\", \"state\", \"processing\", { temporary: true });\n});\n\nWorkSpec.task(\"clean_equipment\").onStart(({ set, change, move, create, remove }) => {\n        set(\"assistant\", \"state\", \"working\", { temporary: true });\n});\n\nWorkSpec.task(\"clean_equipment\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"mixer\", \"state\", \"clean\");\n        set(\"mixing_bowl\", \"state\", \"clean\");\n});\n\nWorkSpec.task(\"shape_loaves\").onStart(({ set, change, move, create, remove }) => {\n        set(\"baker\", \"state\", \"working\", { temporary: true });\n        set(\"risen_dough\", \"state\", \"processing\", { temporary: true });\n        set(\"shaped_loaves\", \"state\", \"processing\", { temporary: true });\n        set(\"workspace\", \"state\", \"in_use\", { temporary: true });\n});\n\nWorkSpec.task(\"shape_loaves\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"risen_dough\", \"quantity\", -1);\n        set(\"risen_dough\", \"state\", \"absent\");\n        change(\"shaped_loaves\", \"quantity\", 4);\n        set(\"shaped_loaves\", \"state\", \"present\");\n});\n\nWorkSpec.task(\"preheat_oven\").onStart(({ set, change, move, create, remove }) => {\n        set(\"assistant\", \"state\", \"working\", { temporary: true });\n});\n\nWorkSpec.task(\"preheat_oven\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"oven\", \"state\", \"preheating\");\n});\n\nWorkSpec.task(\"second_rise\").onStart(({ set, change, move, create, remove }) => {\n        set(\"baker\", \"state\", \"break\", { temporary: true });\n        set(\"shaped_loaves\", \"state\", \"processing\", { temporary: true });\n});\n\nWorkSpec.task(\"bake_bread\").onStart(({ set, change, move, create, remove }) => {\n        set(\"baker\", \"state\", \"working\", { temporary: true });\n        set(\"shaped_loaves\", \"state\", \"processing\", { temporary: true });\n        set(\"baked_bread\", \"state\", \"processing\", { temporary: true });\n        set(\"oven\", \"state\", \"baking\", { temporary: true });\n});\n\nWorkSpec.task(\"bake_bread\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"shaped_loaves\", \"quantity\", -4);\n        set(\"shaped_loaves\", \"state\", \"absent\");\n        change(\"baked_bread\", \"quantity\", 4);\n        set(\"baked_bread\", \"state\", \"ready\");\n        set(\"oven\", \"state\", \"available\");\n});\n"
     },
     {
       "id": "ecommerce_order",
@@ -971,14 +325,6 @@
           "domain": "Online Retail Operations",
           "title": "E-commerce Order Processing System",
           "description": "Online retail order fulfillment with digital infrastructure and UI interactions"
-        },
-        "config": {
-          "time_unit": "minutes",
-          "start_time": "09:00",
-          "end_time": "17:00",
-          "currency": "USD",
-          "locale": "en-US",
-          "timezone": "UTC"
         },
         "digital_space": {
           "digital_locations": [
@@ -1242,7 +588,6 @@
                   "validation_state": "valid",
                   "loading": false
                 },
-                "interactions": [],
                 "animations": []
               },
               {
@@ -1277,14 +622,6 @@
                   "validation_state": "valid",
                   "loading": false
                 },
-                "interactions": [
-                  {
-                    "trigger": "click",
-                    "action": "set_loading",
-                    "target": "search_results",
-                    "task_id": "search_products"
-                  }
-                ],
                 "animations": []
               },
               {
@@ -1319,20 +656,6 @@
                   "validation_state": "valid",
                   "loading": false
                 },
-                "interactions": [
-                  {
-                    "trigger": "click",
-                    "action": "navigate",
-                    "target": "cart_screen",
-                    "task_id": null
-                  },
-                  {
-                    "trigger": "click",
-                    "action": "update_value",
-                    "target": "cart_button",
-                    "task_id": "add_to_cart"
-                  }
-                ],
                 "animations": []
               },
               {
@@ -1367,7 +690,6 @@
                   "validation_state": "valid",
                   "loading": false
                 },
-                "interactions": [],
                 "animations": []
               },
               {
@@ -1402,20 +724,6 @@
                   "validation_state": "valid",
                   "loading": false
                 },
-                "interactions": [
-                  {
-                    "trigger": "click",
-                    "action": "set_loading",
-                    "target": "checkout_btn",
-                    "task_id": "process_payment"
-                  },
-                  {
-                    "trigger": "click",
-                    "action": "validate_success",
-                    "target": "checkout_btn",
-                    "task_id": "confirm_order"
-                  }
-                ],
                 "animations": []
               }
             ],
@@ -1491,7 +799,6 @@
                   "validation_state": "valid",
                   "loading": false
                 },
-                "interactions": [],
                 "animations": []
               },
               {
@@ -1526,14 +833,6 @@
                   "validation_state": "valid",
                   "loading": false
                 },
-                "interactions": [
-                  {
-                    "trigger": "update",
-                    "action": "update_value",
-                    "target": "order_status_label",
-                    "task_id": "validate_order"
-                  }
-                ],
                 "animations": []
               },
               {
@@ -1568,14 +867,6 @@
                   "validation_state": "valid",
                   "loading": false
                 },
-                "interactions": [
-                  {
-                    "trigger": "update",
-                    "action": "update_value",
-                    "target": "inventory_progress",
-                    "task_id": "update_inventory"
-                  }
-                ],
                 "animations": []
               },
               {
@@ -1610,20 +901,6 @@
                   "validation_state": "valid",
                   "loading": false
                 },
-                "interactions": [
-                  {
-                    "trigger": "load",
-                    "action": "set_loading",
-                    "target": "orders_table",
-                    "task_id": "validate_order"
-                  },
-                  {
-                    "trigger": "loaded",
-                    "action": "clear_loading",
-                    "target": "orders_table",
-                    "task_id": "validate_order"
-                  }
-                ],
                 "animations": []
               },
               {
@@ -1658,14 +935,6 @@
                   "validation_state": "valid",
                   "loading": false
                 },
-                "interactions": [
-                  {
-                    "trigger": "click",
-                    "action": "set_loading",
-                    "target": "orders_table",
-                    "task_id": "check_inventory"
-                  }
-                ],
                 "animations": []
               }
             ],
@@ -1695,7 +964,7 @@
             }
           }
         ],
-        "schema_version": "2.0",
+        "schema_version": "2.1",
         "world": {
           "layout": {
             "meta": {
@@ -1872,238 +1141,121 @@
               "emoji": "📨",
               "actor_id": "customer_service_rep",
               "start": "09:00",
-              "duration": 5,
-              "location": "server_room",
-              "depends_on": [],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "active",
-                      "to": "busy"
-                    }
-                  },
-                  "target_id": "workstation"
-                }
-              ]
+              "duration": "5m",
+              "location": "server_room"
             },
             {
               "id": "validate_order",
               "emoji": "✅",
               "actor_id": "customer_service_rep",
-              "start": "09:15",
-              "duration": 10,
+              "duration": "10m",
               "location": "server_room",
               "depends_on": [
                 "receive_order"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 1
-                    }
-                  },
-                  "target_id": "pending_order"
-                }
               ]
             },
             {
               "id": "check_inventory",
               "emoji": "🔍",
               "actor_id": "customer_service_rep",
-              "start": "09:25",
-              "duration": 8,
+              "duration": "8m",
               "location": "server_room",
               "depends_on": [
                 "validate_order"
-              ],
-              "interactions": []
+              ]
             },
             {
               "id": "process_payment",
               "emoji": "💳",
               "actor_id": "customer_service_rep",
-              "start": "09:35",
-              "duration": 12,
+              "duration": "12m",
               "location": "server_room",
               "depends_on": [
                 "check_inventory"
-              ],
-              "interactions": [
-                {
-                  "target_id": "service:order_management",
-                  "property_changes": {
-                    "state": {
-                      "from": "idle",
-                      "to": "processing"
-                    }
-                  },
-                  "temporary": true,
-                  "description": "Demonstrates service interactions (temporary state change)"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "busy",
-                      "to": "processing"
-                    }
-                  },
-                  "target_id": "workstation"
-                }
               ]
             },
             {
               "id": "confirm_order",
               "emoji": "✔️",
               "actor_id": "customer_service_rep",
-              "start": "09:48",
-              "duration": 5,
+              "duration": "5m",
               "location": "server_room",
               "depends_on": [
                 "process_payment"
-              ],
-              "interactions": []
+              ]
             },
             {
               "id": "update_inventory",
               "emoji": "📊",
               "actor_id": "warehouse_worker",
-              "start": "09:53",
-              "duration": 6,
+              "duration": "6m",
               "location": "warehouse",
               "depends_on": [
                 "confirm_order"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -1
-                    }
-                  },
-                  "target_id": "inventory_stock"
-                }
               ]
             },
             {
               "id": "pick_items",
               "emoji": "🔍",
               "actor_id": "warehouse_worker",
-              "start": "10:00",
-              "duration": 15,
+              "duration": "15m",
               "location": "warehouse",
               "depends_on": [
                 "update_inventory"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "ready",
-                      "to": "scanning"
-                    }
-                  },
-                  "target_id": "scanner"
-                }
               ]
             },
             {
               "id": "transport_to_packing",
               "emoji": "🚚",
               "actor_id": "warehouse_worker",
-              "start": "10:18",
-              "duration": 7,
+              "duration": "7m",
               "location": "warehouse",
               "depends_on": [
                 "pick_items"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "scanning",
-                      "to": "ready"
-                    }
-                  },
-                  "target_id": "scanner"
-                }
               ]
             },
             {
               "id": "pack_order",
               "emoji": "📦",
               "actor_id": "packer",
-              "start": "10:30",
-              "duration": 20,
+              "duration": "20m",
               "location": "packing_station",
               "depends_on": [
                 "transport_to_packing"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -1
-                    }
-                  },
-                  "target_id": "packing_supplies"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -1
-                    }
-                  },
-                  "target_id": "pending_order"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 1
-                    }
-                  },
-                  "target_id": "packed_order"
-                }
               ]
             },
             {
               "id": "label_shipment",
               "emoji": "🏷️",
               "actor_id": "packer",
-              "start": "10:52",
-              "duration": 8,
+              "duration": "8m",
               "location": "packing_station",
               "depends_on": [
                 "pack_order"
-              ],
-              "interactions": []
+              ]
             },
             {
               "id": "search_products",
               "emoji": "🔎",
               "actor_id": "customer_service_rep",
               "start": "11:00",
-              "duration": 3,
-              "location": "server_room",
-              "depends_on": [],
-              "interactions": []
+              "duration": "3m",
+              "location": "server_room"
             },
             {
               "id": "add_to_cart",
               "emoji": "🛒",
               "actor_id": "customer_service_rep",
-              "start": "11:05",
-              "duration": 2,
+              "duration": "2m",
               "location": "server_room",
               "depends_on": [
                 "search_products"
-              ],
-              "interactions": []
+              ]
             }
           ]
         }
-      }
+      },
+      "script": "// WorkSpec 2.1 Script\nWorkSpec.task(\"receive_order\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"workstation\", \"state\", \"busy\");\n});\n\nWorkSpec.task(\"validate_order\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"pending_order\", \"quantity\", 1);\n});\n\nWorkSpec.task(\"process_payment\").onStart(({ set, change, move, create, remove }) => {\n        set(\"service:order_management\", \"state\", \"processing\", { temporary: true });\n});\n\nWorkSpec.task(\"process_payment\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"workstation\", \"state\", \"processing\");\n});\n\nWorkSpec.task(\"update_inventory\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"inventory_stock\", \"quantity\", -1);\n});\n\nWorkSpec.task(\"pick_items\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"scanner\", \"state\", \"scanning\");\n});\n\nWorkSpec.task(\"transport_to_packing\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"scanner\", \"state\", \"ready\");\n});\n\nWorkSpec.task(\"pack_order\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"packing_supplies\", \"quantity\", -1);\n        change(\"pending_order\", \"quantity\", -1);\n        change(\"packed_order\", \"quantity\", 1);\n});\n"
     },
     {
       "id": "electronics_assembly",
@@ -2118,15 +1270,7 @@
           "title": "Smartphone Assembly Line Process",
           "description": "Complex electronics manufacturing with multiple parallel assembly stations, quality control checkpoints, and inventory management"
         },
-        "config": {
-          "time_unit": "minutes",
-          "start_time": "08:00",
-          "end_time": "18:00",
-          "currency": "USD",
-          "locale": "en-US",
-          "timezone": "UTC"
-        },
-        "schema_version": "2.0",
+        "schema_version": "2.1",
         "world": {
           "layout": {
             "meta": {
@@ -2488,95 +1632,27 @@
               "emoji": "⚙️",
               "actor_id": "technician_a",
               "start": "08:00",
-              "duration": 15,
-              "location": "pcb_station",
-              "depends_on": [],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "calibrating"
-                    }
-                  },
-                  "target_id": "smt_machine"
-                }
-              ]
+              "duration": "15m",
+              "location": "pcb_station"
             },
             {
               "id": "pcb_assembly_batch_1",
               "emoji": "🔌",
               "actor_id": "technician_a",
-              "start": "08:15",
-              "duration": 45,
+              "duration": "45m",
               "location": "pcb_station",
               "depends_on": [
                 "pcb_setup"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -6
-                    }
-                  },
-                  "target_id": "pcb_blanks"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -6
-                    }
-                  },
-                  "target_id": "processors"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -12
-                    }
-                  },
-                  "target_id": "memory_chips"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 6
-                    }
-                  },
-                  "target_id": "assembled_pcbs"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "calibrating",
-                      "to": "running"
-                    }
-                  },
-                  "target_id": "smt_machine"
-                }
               ]
             },
             {
               "id": "reflow_soldering_batch_1",
               "emoji": "🔥",
               "actor_id": "technician_a",
-              "start": "09:00",
-              "duration": 20,
+              "duration": "20m",
               "location": "pcb_station",
               "depends_on": [
                 "pcb_assembly_batch_1"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "heating"
-                    }
-                  },
-                  "target_id": "reflow_oven"
-                }
               ]
             },
             {
@@ -2584,57 +1660,17 @@
               "emoji": "📺",
               "actor_id": "technician_b",
               "start": "08:30",
-              "duration": 30,
-              "location": "display_station",
-              "depends_on": [],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "warming_up"
-                    }
-                  },
-                  "target_id": "display_bonding_machine"
-                }
-              ]
+              "duration": "30m",
+              "location": "display_station"
             },
             {
               "id": "display_assembly_batch_1",
               "emoji": "📱",
               "actor_id": "technician_b",
-              "start": "09:00",
-              "duration": 40,
+              "duration": "40m",
               "location": "display_station",
               "depends_on": [
                 "display_prep"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -6
-                    }
-                  },
-                  "target_id": "displays"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 6
-                    }
-                  },
-                  "target_id": "display_assemblies"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "warming_up",
-                      "to": "active"
-                    }
-                  },
-                  "target_id": "display_bonding_machine"
-                }
               ]
             },
             {
@@ -2642,357 +1678,96 @@
               "emoji": "🔧",
               "actor_id": "assembler_1",
               "start": "09:20",
-              "duration": 10,
-              "location": "final_assembly",
-              "depends_on": [],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "running",
-                      "to": "running"
-                    }
-                  },
-                  "target_id": "assembly_conveyor"
-                }
-              ]
+              "duration": "10m",
+              "location": "final_assembly"
             },
             {
               "id": "phone_assembly_batch_1",
               "emoji": "🔨",
               "actor_id": "assembler_1",
-              "start": "09:40",
-              "duration": 60,
+              "duration": "60m",
               "location": "final_assembly",
               "depends_on": [
                 "final_assembly_setup",
                 "reflow_soldering_batch_1",
                 "display_assembly_batch_1"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -6
-                    }
-                  },
-                  "target_id": "assembled_pcbs"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -6
-                    }
-                  },
-                  "target_id": "display_assemblies"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -6
-                    }
-                  },
-                  "target_id": "batteries"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -6
-                    }
-                  },
-                  "target_id": "housings"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 6
-                    }
-                  },
-                  "target_id": "partial_phones"
-                }
               ]
             },
             {
               "id": "quality_testing_batch_1",
               "emoji": "✅",
               "actor_id": "qa_engineer",
-              "start": "10:40",
-              "duration": 45,
+              "duration": "45m",
               "location": "quality_control",
               "depends_on": [
                 "phone_assembly_batch_1"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -6
-                    }
-                  },
-                  "target_id": "partial_phones"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 5
-                    }
-                  },
-                  "target_id": "tested_phones"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "testing"
-                    }
-                  },
-                  "target_id": "test_station"
-                }
               ]
             },
             {
               "id": "packaging_batch_1",
               "emoji": "📦",
               "actor_id": "packager",
-              "start": "11:25",
-              "duration": 30,
+              "duration": "30m",
               "location": "packaging",
               "depends_on": [
                 "quality_testing_batch_1"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -5
-                    }
-                  },
-                  "target_id": "tested_phones"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -5
-                    }
-                  },
-                  "target_id": "packaging_materials"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 5
-                    }
-                  },
-                  "target_id": "finished_phones"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "active"
-                    }
-                  },
-                  "target_id": "packaging_machine"
-                }
               ]
             },
             {
               "id": "pcb_assembly_batch_2",
               "emoji": "🔌",
               "actor_id": "technician_a",
-              "start": "10:30",
-              "duration": 45,
+              "duration": "45m",
               "location": "pcb_station",
               "depends_on": [
                 "reflow_soldering_batch_1"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -8
-                    }
-                  },
-                  "target_id": "pcb_blanks"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -8
-                    }
-                  },
-                  "target_id": "processors"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -16
-                    }
-                  },
-                  "target_id": "memory_chips"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 8
-                    }
-                  },
-                  "target_id": "assembled_pcbs"
-                }
               ]
             },
             {
               "id": "display_assembly_batch_2",
               "emoji": "📱",
               "actor_id": "technician_b",
-              "start": "10:45",
-              "duration": 50,
+              "duration": "50m",
               "location": "display_station",
               "depends_on": [
                 "display_assembly_batch_1"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -8
-                    }
-                  },
-                  "target_id": "displays"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 8
-                    }
-                  },
-                  "target_id": "display_assemblies"
-                }
               ]
             },
             {
               "id": "phone_assembly_batch_2",
               "emoji": "🔨",
               "actor_id": "assembler_2",
-              "start": "12:00",
-              "duration": 75,
+              "duration": "75m",
               "location": "final_assembly",
               "depends_on": [
                 "pcb_assembly_batch_2",
                 "display_assembly_batch_2"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -8
-                    }
-                  },
-                  "target_id": "assembled_pcbs"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -8
-                    }
-                  },
-                  "target_id": "display_assemblies"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -8
-                    }
-                  },
-                  "target_id": "batteries"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -8
-                    }
-                  },
-                  "target_id": "housings"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 8
-                    }
-                  },
-                  "target_id": "partial_phones"
-                }
               ]
             },
             {
               "id": "quality_testing_batch_2",
               "emoji": "✅",
               "actor_id": "qa_engineer",
-              "start": "13:15",
-              "duration": 60,
+              "duration": "60m",
               "location": "quality_control",
               "depends_on": [
                 "phone_assembly_batch_2"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -8
-                    }
-                  },
-                  "target_id": "partial_phones"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 7
-                    }
-                  },
-                  "target_id": "tested_phones"
-                }
               ]
             },
             {
               "id": "packaging_batch_2",
               "emoji": "📦",
               "actor_id": "packager",
-              "start": "14:15",
-              "duration": 40,
+              "duration": "40m",
               "location": "packaging",
               "depends_on": [
                 "quality_testing_batch_2"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -7
-                    }
-                  },
-                  "target_id": "tested_phones"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -7
-                    }
-                  },
-                  "target_id": "packaging_materials"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 7
-                    }
-                  },
-                  "target_id": "finished_phones"
-                }
               ]
             }
           ]
         }
-      }
+      },
+      "script": "// WorkSpec 2.1 Script\nWorkSpec.task(\"pcb_setup\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"smt_machine\", \"state\", \"calibrating\");\n});\n\nWorkSpec.task(\"pcb_assembly_batch_1\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"pcb_blanks\", \"quantity\", -6);\n        change(\"processors\", \"quantity\", -6);\n        change(\"memory_chips\", \"quantity\", -12);\n        change(\"assembled_pcbs\", \"quantity\", 6);\n        set(\"smt_machine\", \"state\", \"running\");\n});\n\nWorkSpec.task(\"reflow_soldering_batch_1\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"reflow_oven\", \"state\", \"heating\");\n});\n\nWorkSpec.task(\"display_prep\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"display_bonding_machine\", \"state\", \"warming_up\");\n});\n\nWorkSpec.task(\"display_assembly_batch_1\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"displays\", \"quantity\", -6);\n        change(\"display_assemblies\", \"quantity\", 6);\n        set(\"display_bonding_machine\", \"state\", \"active\");\n});\n\nWorkSpec.task(\"final_assembly_setup\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"assembly_conveyor\", \"state\", \"running\");\n});\n\nWorkSpec.task(\"phone_assembly_batch_1\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"assembled_pcbs\", \"quantity\", -6);\n        change(\"display_assemblies\", \"quantity\", -6);\n        change(\"batteries\", \"quantity\", -6);\n        change(\"housings\", \"quantity\", -6);\n        change(\"partial_phones\", \"quantity\", 6);\n});\n\nWorkSpec.task(\"quality_testing_batch_1\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"partial_phones\", \"quantity\", -6);\n        change(\"tested_phones\", \"quantity\", 5);\n        set(\"test_station\", \"state\", \"testing\");\n});\n\nWorkSpec.task(\"packaging_batch_1\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"tested_phones\", \"quantity\", -5);\n        change(\"packaging_materials\", \"quantity\", -5);\n        change(\"finished_phones\", \"quantity\", 5);\n        set(\"packaging_machine\", \"state\", \"active\");\n});\n\nWorkSpec.task(\"pcb_assembly_batch_2\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"pcb_blanks\", \"quantity\", -8);\n        change(\"processors\", \"quantity\", -8);\n        change(\"memory_chips\", \"quantity\", -16);\n        change(\"assembled_pcbs\", \"quantity\", 8);\n});\n\nWorkSpec.task(\"display_assembly_batch_2\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"displays\", \"quantity\", -8);\n        change(\"display_assemblies\", \"quantity\", 8);\n});\n\nWorkSpec.task(\"phone_assembly_batch_2\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"assembled_pcbs\", \"quantity\", -8);\n        change(\"display_assemblies\", \"quantity\", -8);\n        change(\"batteries\", \"quantity\", -8);\n        change(\"housings\", \"quantity\", -8);\n        change(\"partial_phones\", \"quantity\", 8);\n});\n\nWorkSpec.task(\"quality_testing_batch_2\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"partial_phones\", \"quantity\", -8);\n        change(\"tested_phones\", \"quantity\", 7);\n});\n\nWorkSpec.task(\"packaging_batch_2\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"tested_phones\", \"quantity\", -7);\n        change(\"packaging_materials\", \"quantity\", -7);\n        change(\"finished_phones\", \"quantity\", 7);\n});\n"
     },
     {
       "id": "pharmaceutical_production",
@@ -3007,15 +1782,7 @@
           "title": "Pharmaceutical Drug Manufacturing Process",
           "description": "Highly regulated pharmaceutical production with strict quality controls, batch tracking, environmental monitoring, and multi-stage chemical synthesis"
         },
-        "config": {
-          "time_unit": "minutes",
-          "start_time": "07:00",
-          "end_time": "19:00",
-          "currency": "USD",
-          "locale": "en-US",
-          "timezone": "UTC"
-        },
-        "schema_version": "2.0",
+        "schema_version": "2.1",
         "world": {
           "layout": {
             "meta": {
@@ -3566,225 +2333,77 @@
               "emoji": "📝",
               "actor_id": "production_manager",
               "start": "07:00",
-              "duration": 30,
-              "location": "synthesis_lab",
-              "depends_on": []
+              "duration": "30m",
+              "location": "synthesis_lab"
             },
             {
               "id": "raw_material_weighing",
               "emoji": "⚖️",
               "actor_id": "chemist_junior",
-              "start": "07:30",
-              "duration": 45,
+              "duration": "45m",
               "location": "weighing_room",
               "depends_on": [
                 "batch_documentation_setup"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "calibrated",
-                      "to": "in_use"
-                    }
-                  },
-                  "target_id": "analytical_balance"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -5.2
-                    }
-                  },
-                  "target_id": "api_precursor_a"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -3.8
-                    }
-                  },
-                  "target_id": "api_precursor_b"
-                }
               ]
             },
             {
               "id": "reaction_setup",
               "emoji": "🧪",
               "actor_id": "chemist_senior",
-              "start": "08:15",
-              "duration": 30,
+              "duration": "30m",
               "location": "synthesis_lab",
               "depends_on": [
                 "raw_material_weighing"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "clean",
-                      "to": "charged"
-                    }
-                  },
-                  "target_id": "reactor_vessel"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -8.5
-                    }
-                  },
-                  "target_id": "solvent_methanol"
-                }
               ]
             },
             {
               "id": "chemical_synthesis",
               "emoji": "⚗️",
               "actor_id": "chemist_senior",
-              "start": "08:45",
-              "duration": 180,
+              "duration": "180m",
               "location": "synthesis_lab",
               "depends_on": [
                 "reaction_setup"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 4.2
-                    }
-                  },
-                  "target_id": "crude_api"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "charged",
-                      "to": "reaction_complete"
-                    }
-                  },
-                  "target_id": "reactor_vessel"
-                }
               ]
             },
             {
               "id": "workup_and_isolation",
               "emoji": "🌀",
               "actor_id": "chemist_senior",
-              "start": "11:45",
-              "duration": 90,
+              "duration": "90m",
               "location": "synthesis_lab",
               "depends_on": [
                 "chemical_synthesis"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "concentrating"
-                    }
-                  },
-                  "target_id": "rotary_evaporator"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -12
-                    }
-                  },
-                  "target_id": "solvent_acetone"
-                }
               ]
             },
             {
               "id": "crude_api_purification",
               "emoji": "🔬",
               "actor_id": "chemist_junior",
-              "start": "13:15",
-              "duration": 120,
+              "duration": "120m",
               "location": "purification_unit",
               "depends_on": [
                 "workup_and_isolation"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -4.2
-                    }
-                  },
-                  "target_id": "crude_api"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 3.8
-                    }
-                  },
-                  "target_id": "purified_api"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "packed",
-                      "to": "eluting"
-                    }
-                  },
-                  "target_id": "chromatography_column"
-                }
               ]
             },
             {
               "id": "api_identity_testing",
               "emoji": "📊",
               "actor_id": "qa_analyst_1",
-              "start": "15:15",
-              "duration": 60,
+              "duration": "60m",
               "location": "qa_lab",
               "depends_on": [
                 "crude_api_purification"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "ready",
-                      "to": "analyzing"
-                    }
-                  },
-                  "target_id": "hplc_system"
-                }
               ]
             },
             {
               "id": "api_purity_assay",
               "emoji": "✨",
               "actor_id": "qa_analyst_2",
-              "start": "16:15",
-              "duration": 45,
+              "duration": "45m",
               "location": "qa_lab",
               "depends_on": [
                 "api_identity_testing"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -3.8
-                    }
-                  },
-                  "target_id": "purified_api"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 3.8
-                    }
-                  },
-                  "target_id": "tested_api"
-                }
               ]
             },
             {
@@ -3792,208 +2411,54 @@
               "emoji": "🌿",
               "actor_id": "formulation_tech",
               "start": "09:00",
-              "duration": 60,
-              "location": "formulation_suite",
-              "depends_on": [],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -45
-                    }
-                  },
-                  "target_id": "microcrystalline_cellulose"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -1.2
-                    }
-                  },
-                  "target_id": "magnesium_stearate"
-                }
-              ]
+              "duration": "60m",
+              "location": "formulation_suite"
             },
             {
               "id": "tablet_blend_preparation",
               "emoji": "🥄",
               "actor_id": "formulation_tech",
-              "start": "17:00",
-              "duration": 75,
+              "duration": "75m",
               "location": "formulation_suite",
               "depends_on": [
                 "api_purity_assay",
                 "excipient_preparation"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -3.8
-                    }
-                  },
-                  "target_id": "tested_api"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 50
-                    }
-                  },
-                  "target_id": "tablet_blend"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "clean",
-                      "to": "blending"
-                    }
-                  },
-                  "target_id": "high_shear_mixer"
-                }
               ]
             },
             {
               "id": "tablet_compression",
               "emoji": "📊",
               "actor_id": "press_operator",
-              "start": "18:15",
-              "duration": 90,
+              "duration": "90m",
               "location": "tablet_press_room",
               "depends_on": [
                 "tablet_blend_preparation"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -50
-                    }
-                  },
-                  "target_id": "tablet_blend"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 7600
-                    }
-                  },
-                  "target_id": "compressed_tablets"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "setup",
-                      "to": "running"
-                    }
-                  },
-                  "target_id": "tablet_press"
-                }
               ]
             },
             {
               "id": "tablet_coating",
               "emoji": "🎨",
               "actor_id": "coating_tech",
-              "start": "19:45",
-              "duration": 120,
+              "duration": "120m",
               "location": "coating_station",
               "depends_on": [
                 "tablet_compression"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -7600
-                    }
-                  },
-                  "target_id": "compressed_tablets"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -12
-                    }
-                  },
-                  "target_id": "coating_solution"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 7600
-                    }
-                  },
-                  "target_id": "coated_tablets"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "clean",
-                      "to": "coating"
-                    }
-                  },
-                  "target_id": "coating_pan"
-                }
               ]
             },
             {
               "id": "final_product_packaging",
               "emoji": "📦",
               "actor_id": "packaging_operator",
-              "start": "21:45",
-              "duration": 60,
+              "duration": "60m",
               "location": "packaging_cleanroom",
               "depends_on": [
                 "tablet_coating"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -7600
-                    }
-                  },
-                  "target_id": "coated_tablets"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -38
-                    }
-                  },
-                  "target_id": "blister_foil"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -380
-                    }
-                  },
-                  "target_id": "pvc_sheets"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 380
-                    }
-                  },
-                  "target_id": "finished_drug_product"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "packaging"
-                    }
-                  },
-                  "target_id": "blister_machine"
-                }
               ]
             }
           ]
         }
-      }
+      },
+      "script": "// WorkSpec 2.1 Script\nWorkSpec.task(\"raw_material_weighing\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"analytical_balance\", \"state\", \"in_use\");\n        change(\"api_precursor_a\", \"quantity\", -5.2);\n        change(\"api_precursor_b\", \"quantity\", -3.8);\n});\n\nWorkSpec.task(\"reaction_setup\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"reactor_vessel\", \"state\", \"charged\");\n        change(\"solvent_methanol\", \"quantity\", -8.5);\n});\n\nWorkSpec.task(\"chemical_synthesis\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"crude_api\", \"quantity\", 4.2);\n        set(\"reactor_vessel\", \"state\", \"reaction_complete\");\n});\n\nWorkSpec.task(\"workup_and_isolation\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"rotary_evaporator\", \"state\", \"concentrating\");\n        change(\"solvent_acetone\", \"quantity\", -12);\n});\n\nWorkSpec.task(\"crude_api_purification\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"crude_api\", \"quantity\", -4.2);\n        change(\"purified_api\", \"quantity\", 3.8);\n        set(\"chromatography_column\", \"state\", \"eluting\");\n});\n\nWorkSpec.task(\"api_identity_testing\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"hplc_system\", \"state\", \"analyzing\");\n});\n\nWorkSpec.task(\"api_purity_assay\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"purified_api\", \"quantity\", -3.8);\n        change(\"tested_api\", \"quantity\", 3.8);\n});\n\nWorkSpec.task(\"excipient_preparation\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"microcrystalline_cellulose\", \"quantity\", -45);\n        change(\"magnesium_stearate\", \"quantity\", -1.2);\n});\n\nWorkSpec.task(\"tablet_blend_preparation\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"tested_api\", \"quantity\", -3.8);\n        change(\"tablet_blend\", \"quantity\", 50);\n        set(\"high_shear_mixer\", \"state\", \"blending\");\n});\n\nWorkSpec.task(\"tablet_compression\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"tablet_blend\", \"quantity\", -50);\n        change(\"compressed_tablets\", \"quantity\", 7600);\n        set(\"tablet_press\", \"state\", \"running\");\n});\n\nWorkSpec.task(\"tablet_coating\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"compressed_tablets\", \"quantity\", -7600);\n        change(\"coating_solution\", \"quantity\", -12);\n        change(\"coated_tablets\", \"quantity\", 7600);\n        set(\"coating_pan\", \"state\", \"coating\");\n});\n\nWorkSpec.task(\"final_product_packaging\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coated_tablets\", \"quantity\", -7600);\n        change(\"blister_foil\", \"quantity\", -38);\n        change(\"pvc_sheets\", \"quantity\", -380);\n        change(\"finished_drug_product\", \"quantity\", 380);\n        set(\"blister_machine\", \"state\", \"packaging\");\n});\n"
     },
     {
       "id": "restaurant_kitchen",
@@ -4008,15 +2473,7 @@
           "title": "Fine Dining Restaurant Kitchen Operations",
           "description": "Complex commercial kitchen operations with multiple cooking stations, inventory management, food safety protocols, and synchronized meal service"
         },
-        "config": {
-          "time_unit": "minutes",
-          "start_time": "16:00",
-          "end_time": "23:00",
-          "currency": "USD",
-          "locale": "en-US",
-          "timezone": "UTC"
-        },
-        "schema_version": "2.0",
+        "schema_version": "2.1",
         "world": {
           "layout": {
             "meta": {
@@ -4571,142 +3028,43 @@
               "emoji": "🍴",
               "actor_id": "executive_chef",
               "start": "16:00",
-              "duration": 30,
-              "location": "expedite_pass",
-              "depends_on": [],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "heating",
-                      "to": "ready"
-                    }
-                  },
-                  "target_id": "plate_warmer"
-                }
-              ]
+              "duration": "30m",
+              "location": "expedite_pass"
             },
             {
               "id": "grill_preheat",
               "emoji": "🔥",
               "actor_id": "grill_cook",
               "start": "16:15",
-              "duration": 20,
-              "location": "grill_station",
-              "depends_on": [],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "cold",
-                      "to": "preheating"
-                    }
-                  },
-                  "target_id": "commercial_grill"
-                }
-              ]
+              "duration": "20m",
+              "location": "grill_station"
             },
             {
               "id": "range_startup",
               "emoji": "🍳",
               "actor_id": "saute_cook",
               "start": "16:15",
-              "duration": 15,
-              "location": "saute_station",
-              "depends_on": [],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "available",
-                      "to": "ready"
-                    }
-                  },
-                  "target_id": "gas_range"
-                }
-              ]
+              "duration": "15m",
+              "location": "saute_station"
             },
             {
               "id": "protein_prep",
               "emoji": "🥩",
               "actor_id": "prep_cook_1",
-              "start": "16:30",
-              "duration": 60,
+              "duration": "60m",
               "location": "prep_station",
               "depends_on": [
                 "kitchen_setup"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -2.5
-                    }
-                  },
-                  "target_id": "beef_tenderloin"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -12
-                    }
-                  },
-                  "target_id": "salmon_filets"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -8
-                    }
-                  },
-                  "target_id": "duck_breast"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 32
-                    }
-                  },
-                  "target_id": "prepped_proteins"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "clean",
-                      "to": "in_use"
-                    }
-                  },
-                  "target_id": "prep_tables"
-                }
               ]
             },
             {
               "id": "vegetable_prep",
               "emoji": "🥕",
               "actor_id": "prep_cook_2",
-              "start": "16:45",
-              "duration": 45,
+              "duration": "45m",
               "location": "prep_station",
               "depends_on": [
                 "kitchen_setup"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -8
-                    }
-                  },
-                  "target_id": "seasonal_vegetables"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 12
-                    }
-                  },
-                  "target_id": "brunoise_vegetables"
-                }
               ]
             },
             {
@@ -4714,377 +3072,110 @@
               "emoji": "🥗",
               "actor_id": "garde_manger_cook",
               "start": "17:00",
-              "duration": 40,
-              "location": "garde_manger",
-              "depends_on": [],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -1.5
-                    }
-                  },
-                  "target_id": "artisanal_greens"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -0.2
-                    }
-                  },
-                  "target_id": "truffle_oil"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 8
-                    }
-                  },
-                  "target_id": "composed_salads"
-                }
-              ]
+              "duration": "40m",
+              "location": "garde_manger"
             },
             {
               "id": "dessert_mise_en_place",
               "emoji": "🎂",
               "actor_id": "pastry_chef",
               "start": "17:00",
-              "duration": 90,
-              "location": "pastry_station",
-              "depends_on": [],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -0.8
-                    }
-                  },
-                  "target_id": "flour_tipo_00"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -0.3
-                    }
-                  },
-                  "target_id": "dark_chocolate"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -2
-                    }
-                  },
-                  "target_id": "vanilla_beans"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "clean",
-                      "to": "mixing"
-                    }
-                  },
-                  "target_id": "stand_mixer"
-                }
-              ]
+              "duration": "90m",
+              "location": "pastry_station"
             },
             {
               "id": "first_dinner_service_appetizers",
               "emoji": "🍽️",
               "actor_id": "garde_manger_cook",
-              "start": "18:00",
-              "duration": 45,
+              "duration": "45m",
               "location": "garde_manger",
               "depends_on": [
                 "cold_appetizer_prep"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -6
-                    }
-                  },
-                  "target_id": "composed_salads"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 6
-                    }
-                  },
-                  "target_id": "finished_appetizers"
-                }
               ]
             },
             {
               "id": "grill_first_proteins",
               "emoji": "🍖",
               "actor_id": "grill_cook",
-              "start": "18:15",
-              "duration": 40,
+              "duration": "40m",
               "location": "grill_station",
               "depends_on": [
                 "protein_prep",
                 "grill_preheat"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -12
-                    }
-                  },
-                  "target_id": "prepped_proteins"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 12
-                    }
-                  },
-                  "target_id": "cooked_proteins"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "preheating",
-                      "to": "cooking"
-                    }
-                  },
-                  "target_id": "commercial_grill"
-                }
               ]
             },
             {
               "id": "saute_first_dishes",
               "emoji": "🍳",
               "actor_id": "saute_cook",
-              "start": "18:20",
-              "duration": 35,
+              "duration": "35m",
               "location": "saute_station",
               "depends_on": [
                 "vegetable_prep",
                 "range_startup"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -4
-                    }
-                  },
-                  "target_id": "brunoise_vegetables"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -0.3
-                    }
-                  },
-                  "target_id": "premium_butter"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 12
-                    }
-                  },
-                  "target_id": "pan_sauces"
-                }
               ]
             },
             {
               "id": "expedite_first_course",
               "emoji": "🍽️",
               "actor_id": "executive_chef",
-              "start": "18:55",
-              "duration": 25,
+              "duration": "25m",
               "location": "expedite_pass",
               "depends_on": [
                 "first_dinner_service_appetizers",
                 "grill_first_proteins",
                 "saute_first_dishes"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -6
-                    }
-                  },
-                  "target_id": "cooked_proteins"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -6
-                    }
-                  },
-                  "target_id": "pan_sauces"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 6
-                    }
-                  },
-                  "target_id": "finished_entrees"
-                }
               ]
             },
             {
               "id": "dessert_plating_prep",
               "emoji": "🍰",
               "actor_id": "pastry_chef",
-              "start": "18:30",
-              "duration": 60,
+              "duration": "60m",
               "location": "pastry_station",
               "depends_on": [
                 "dessert_mise_en_place"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 10
-                    }
-                  },
-                  "target_id": "plated_desserts"
-                }
               ]
             },
             {
               "id": "second_service_wave",
               "emoji": "🍖",
               "actor_id": "grill_cook",
-              "start": "19:30",
-              "duration": 50,
+              "duration": "50m",
               "location": "grill_station",
               "depends_on": [
                 "expedite_first_course"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -15
-                    }
-                  },
-                  "target_id": "prepped_proteins"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 15
-                    }
-                  },
-                  "target_id": "cooked_proteins"
-                }
               ]
             },
             {
               "id": "second_saute_service",
               "emoji": "🍳",
               "actor_id": "saute_cook",
-              "start": "19:35",
-              "duration": 45,
+              "duration": "45m",
               "location": "saute_station",
               "depends_on": [
                 "expedite_first_course"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -6
-                    }
-                  },
-                  "target_id": "brunoise_vegetables"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -0.5
-                    }
-                  },
-                  "target_id": "premium_butter"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 15
-                    }
-                  },
-                  "target_id": "pan_sauces"
-                }
               ]
             },
             {
               "id": "expedite_main_service",
               "emoji": "🍽️",
               "actor_id": "executive_chef",
-              "start": "20:20",
-              "duration": 40,
+              "duration": "40m",
               "location": "expedite_pass",
               "depends_on": [
                 "second_service_wave",
                 "second_saute_service"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -15
-                    }
-                  },
-                  "target_id": "cooked_proteins"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -15
-                    }
-                  },
-                  "target_id": "pan_sauces"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 15
-                    }
-                  },
-                  "target_id": "finished_entrees"
-                }
               ]
             },
             {
               "id": "dessert_service",
               "emoji": "🍰",
               "actor_id": "pastry_chef",
-              "start": "21:00",
-              "duration": 30,
+              "duration": "30m",
               "location": "pastry_station",
               "depends_on": [
                 "dessert_plating_prep"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": -8
-                    }
-                  },
-                  "target_id": "plated_desserts"
-                },
-                {
-                  "property_changes": {
-                    "quantity": {
-                      "delta": 8
-                    }
-                  },
-                  "target_id": "finished_desserts"
-                }
               ]
             },
             {
@@ -5092,55 +3183,23 @@
               "emoji": "🧽",
               "actor_id": "dishwasher",
               "start": "18:00",
-              "duration": 240,
-              "location": "dish_pit",
-              "depends_on": [],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "running",
-                      "to": "active_service"
-                    }
-                  },
-                  "target_id": "dish_machine"
-                }
-              ]
+              "duration": "240m",
+              "location": "dish_pit"
             },
             {
               "id": "kitchen_breakdown",
               "emoji": "🧽",
               "actor_id": "sous_chef",
-              "start": "22:00",
-              "duration": 60,
+              "duration": "60m",
               "location": "saute_station",
               "depends_on": [
                 "dessert_service"
-              ],
-              "interactions": [
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "ready",
-                      "to": "cooling_down"
-                    }
-                  },
-                  "target_id": "gas_range"
-                },
-                {
-                  "property_changes": {
-                    "state": {
-                      "from": "cooking",
-                      "to": "cooling_down"
-                    }
-                  },
-                  "target_id": "commercial_grill"
-                }
               ]
             }
           ]
         }
-      }
+      },
+      "script": "// WorkSpec 2.1 Script\nWorkSpec.task(\"kitchen_setup\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"plate_warmer\", \"state\", \"ready\");\n});\n\nWorkSpec.task(\"grill_preheat\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"commercial_grill\", \"state\", \"preheating\");\n});\n\nWorkSpec.task(\"range_startup\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"gas_range\", \"state\", \"ready\");\n});\n\nWorkSpec.task(\"protein_prep\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"beef_tenderloin\", \"quantity\", -2.5);\n        change(\"salmon_filets\", \"quantity\", -12);\n        change(\"duck_breast\", \"quantity\", -8);\n        change(\"prepped_proteins\", \"quantity\", 32);\n        set(\"prep_tables\", \"state\", \"in_use\");\n});\n\nWorkSpec.task(\"vegetable_prep\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"seasonal_vegetables\", \"quantity\", -8);\n        change(\"brunoise_vegetables\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"cold_appetizer_prep\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"artisanal_greens\", \"quantity\", -1.5);\n        change(\"truffle_oil\", \"quantity\", -0.2);\n        change(\"composed_salads\", \"quantity\", 8);\n});\n\nWorkSpec.task(\"dessert_mise_en_place\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"flour_tipo_00\", \"quantity\", -0.8);\n        change(\"dark_chocolate\", \"quantity\", -0.3);\n        change(\"vanilla_beans\", \"quantity\", -2);\n        set(\"stand_mixer\", \"state\", \"mixing\");\n});\n\nWorkSpec.task(\"first_dinner_service_appetizers\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"composed_salads\", \"quantity\", -6);\n        change(\"finished_appetizers\", \"quantity\", 6);\n});\n\nWorkSpec.task(\"grill_first_proteins\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"prepped_proteins\", \"quantity\", -12);\n        change(\"cooked_proteins\", \"quantity\", 12);\n        set(\"commercial_grill\", \"state\", \"cooking\");\n});\n\nWorkSpec.task(\"saute_first_dishes\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"brunoise_vegetables\", \"quantity\", -4);\n        change(\"premium_butter\", \"quantity\", -0.3);\n        change(\"pan_sauces\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"expedite_first_course\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"cooked_proteins\", \"quantity\", -6);\n        change(\"pan_sauces\", \"quantity\", -6);\n        change(\"finished_entrees\", \"quantity\", 6);\n});\n\nWorkSpec.task(\"dessert_plating_prep\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"plated_desserts\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"second_service_wave\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"prepped_proteins\", \"quantity\", -15);\n        change(\"cooked_proteins\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"second_saute_service\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"brunoise_vegetables\", \"quantity\", -6);\n        change(\"premium_butter\", \"quantity\", -0.5);\n        change(\"pan_sauces\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"expedite_main_service\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"cooked_proteins\", \"quantity\", -15);\n        change(\"pan_sauces\", \"quantity\", -15);\n        change(\"finished_entrees\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"dessert_service\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"plated_desserts\", \"quantity\", -8);\n        change(\"finished_desserts\", \"quantity\", 8);\n});\n\nWorkSpec.task(\"dish_washing_service\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"dish_machine\", \"state\", \"active_service\");\n});\n\nWorkSpec.task(\"kitchen_breakdown\").onComplete(({ set, change, move, create, remove }) => {\n        set(\"gas_range\", \"state\", \"cooling_down\");\n        set(\"commercial_grill\", \"state\", \"cooling_down\");\n});\n"
     },
     {
       "id": "coffee-shop-multiperiod",
@@ -5149,62 +3208,14 @@
       "complexity": "Advanced",
       "domain": "Food Service",
       "simulation": {
-        "name": "Coffee Shop Operations - Multi-Period",
-        "description": "A coffee shop simulation with different operational patterns for weekdays, weekends, maintenance days, and closed days",
-        "simulation_config": {
-        "start_date": "date.today",
-        "duration_days": 14
+        "schema_version": "2.1",
+        "meta": {
+          "title": "Coffee Shop Operations - Multi-Period",
+          "description": "A coffee shop simulation with different operational patterns for weekdays, weekends, maintenance days, and closed days",
+          "domain": "Food Service"
         },
-        "calendar": {
-          "cycle_length": 7,
-          "pattern": [
-            {
-              "day": 1,
-              "type": "weekday"
-            },
-            {
-              "day": 2,
-              "type": "weekday"
-            },
-            {
-              "day": 3,
-              "type": "weekday"
-            },
-            {
-              "day": 4,
-              "type": "weekday"
-            },
-            {
-              "day": 5,
-              "type": "weekday"
-            },
-            {
-              "day": 6,
-              "type": "weekend"
-            },
-            {
-              "day": 7,
-              "type": "closed"
-            }
-          ],
-          "overrides": [
-            {
-              "date": "date.start + 7",
-              "type": "maintenance"
-            },
-            {
-              "date": "date.start + 10",
-              "type": "delivery"
-            }
-          ]
-        },
-        "day_types": {
-          "weekday": {
-            "name": "Weekday Operations",
-            "config": {
-              "start_time": "06:00",
-              "end_time": "18:00"
-            },
+        "world": {
+          "layout": {
             "locations": [
               {
                 "id": "counter",
@@ -5235,532 +3246,7 @@
                   "y": 50,
                   "z": 0
                 }
-              }
-            ],
-            "objects": [
-              {
-                "id": "barista_alice",
-                "type": "actor",
-                "name": "Alice",
-                "emoji": "👩‍🍳",
-                "properties": {
-                  "role": "Lead Barista",
-                  "hourly_rate": 25,
-                  "state": "available"
-                }
               },
-              {
-                "id": "barista_bob",
-                "type": "actor",
-                "name": "Bob",
-                "emoji": "👨‍🍳",
-                "properties": {
-                  "role": "Barista",
-                  "hourly_rate": 20,
-                  "state": "available"
-                }
-              },
-              {
-                "id": "espresso_machine",
-                "type": "equipment",
-                "name": "Espresso Machine",
-                "emoji": "☕",
-                "properties": {
-                  "model": "Professional X3000",
-                  "purchase_cost": 5000,
-                  "daily_operating_cost": 15,
-                  "state": "available"
-                }
-              },
-              {
-                "id": "coffee_beans",
-                "type": "resource",
-                "name": "Coffee Beans",
-                "emoji": "🫘",
-                "properties": {
-                  "unit_cost": 0.5,
-                  "quantity": 100
-                }
-              },
-              {
-                "id": "milk",
-                "type": "resource",
-                "name": "Milk",
-                "emoji": "🥛",
-                "properties": {
-                  "unit_cost": 0.3,
-                  "quantity": 50
-                }
-              },
-              {
-                "id": "latte",
-                "type": "product",
-                "name": "Latte",
-                "emoji": "☕",
-                "properties": {
-                  "sale_price": 5.5,
-                  "quantity": 0
-                }
-              },
-              {
-                "id": "cappuccino",
-                "type": "product",
-                "name": "Cappuccino",
-                "emoji": "☕",
-                "properties": {
-                  "sale_price": 5,
-                  "quantity": 0
-                }
-              }
-            ],
-            "tasks": [
-              {
-                "id": "open_shop",
-                "emoji": "🔓",
-                "actor_id": "barista_alice",
-                "location_id": "counter",
-                "start": "06:00",
-                "duration": 30,
-                "location": "counter"
-              },
-              {
-                "id": "prep_station",
-                "emoji": "🧹",
-                "actor_id": "barista_alice",
-                "location_id": "prep_area",
-                "start": "06:30",
-                "duration": 30,
-                "depends_on": [
-                  "open_shop"
-                ],
-                "location": "prep_area"
-              },
-              {
-                "id": "bob_arrives",
-                "emoji": "👋",
-                "actor_id": "barista_bob",
-                "location_id": "counter",
-                "start": "07:00",
-                "duration": 5,
-                "location": "counter"
-              },
-              {
-                "id": "morning_rush_1",
-                "emoji": "☕",
-                "actor_id": "barista_alice",
-                "location_id": "counter",
-                "start": "07:30",
-                "duration": 120,
-                "depends_on": [
-                  "prep_station"
-                ],
-                "interactions": [
-                  {
-                    "interaction_type": "use",
-                    "duration": 120,
-                    "target_id": "espresso_machine"
-                  },
-                  {
-                    "interaction_type": "consume",
-                    "quantity": 20,
-                    "target_id": "coffee_beans"
-                  },
-                  {
-                    "interaction_type": "consume",
-                    "quantity": 10,
-                    "target_id": "milk"
-                  },
-                  {
-                    "interaction_type": "create",
-                    "quantity": 15,
-                    "target_id": "latte"
-                  }
-                ],
-                "location": "counter"
-              },
-              {
-                "id": "morning_rush_2",
-                "emoji": "☕",
-                "actor_id": "barista_bob",
-                "location_id": "counter",
-                "start": "07:30",
-                "duration": 120,
-                "depends_on": [
-                  "bob_arrives"
-                ],
-                "interactions": [
-                  {
-                    "interaction_type": "use",
-                    "duration": 120,
-                    "target_id": "espresso_machine"
-                  },
-                  {
-                    "interaction_type": "consume",
-                    "quantity": 15,
-                    "target_id": "coffee_beans"
-                  },
-                  {
-                    "interaction_type": "consume",
-                    "quantity": 8,
-                    "target_id": "milk"
-                  },
-                  {
-                    "interaction_type": "create",
-                    "quantity": 12,
-                    "target_id": "cappuccino"
-                  }
-                ],
-                "location": "counter"
-              },
-              {
-                "id": "midday_service",
-                "emoji": "☕",
-                "actor_id": "barista_alice",
-                "location_id": "counter",
-                "start": "10:00",
-                "duration": 180,
-                "depends_on": [
-                  "morning_rush_1"
-                ],
-                "interactions": [
-                  {
-                    "interaction_type": "use",
-                    "duration": 180,
-                    "target_id": "espresso_machine"
-                  },
-                  {
-                    "interaction_type": "consume",
-                    "quantity": 25,
-                    "target_id": "coffee_beans"
-                  },
-                  {
-                    "interaction_type": "consume",
-                    "quantity": 12,
-                    "target_id": "milk"
-                  },
-                  {
-                    "interaction_type": "create",
-                    "quantity": 18,
-                    "target_id": "latte"
-                  },
-                  {
-                    "interaction_type": "create",
-                    "quantity": 10,
-                    "target_id": "cappuccino"
-                  }
-                ],
-                "location": "counter"
-              },
-              {
-                "id": "bob_afternoon",
-                "emoji": "☕",
-                "actor_id": "barista_bob",
-                "location_id": "counter",
-                "start": "10:00",
-                "duration": 120,
-                "depends_on": [
-                  "morning_rush_2"
-                ],
-                "interactions": [
-                  {
-                    "interaction_type": "use",
-                    "duration": 120,
-                    "target_id": "espresso_machine"
-                  },
-                  {
-                    "interaction_type": "consume",
-                    "quantity": 15,
-                    "target_id": "coffee_beans"
-                  },
-                  {
-                    "interaction_type": "consume",
-                    "quantity": 7,
-                    "target_id": "milk"
-                  },
-                  {
-                    "interaction_type": "create",
-                    "quantity": 10,
-                    "target_id": "latte"
-                  }
-                ],
-                "location": "counter"
-              },
-              {
-                "id": "afternoon_cleanup",
-                "emoji": "🧹",
-                "actor_id": "barista_bob",
-                "location_id": "prep_area",
-                "start": "14:00",
-                "duration": 60,
-                "depends_on": [
-                  "bob_afternoon"
-                ],
-                "location": "prep_area"
-              },
-              {
-                "id": "close_shop",
-                "emoji": "🔒",
-                "actor_id": "barista_alice",
-                "location_id": "counter",
-                "start": "17:30",
-                "duration": 30,
-                "depends_on": [
-                  "midday_service",
-                  "afternoon_cleanup"
-                ],
-                "location": "counter"
-              }
-            ]
-          },
-          "weekend": {
-            "name": "Weekend Operations",
-            "config": {
-              "start_time": "08:00",
-              "end_time": "16:00"
-            },
-            "locations": [
-              {
-                "id": "counter",
-                "name": "Service Counter",
-                "emoji": "🪟",
-                "position": {
-                  "x": 100,
-                  "y": 50,
-                  "z": 0
-                }
-              },
-              {
-                "id": "prep_area",
-                "name": "Preparation Area",
-                "emoji": "🔧",
-                "position": {
-                  "x": 200,
-                  "y": 50,
-                  "z": 0
-                }
-              }
-            ],
-            "objects": [
-              {
-                "id": "barista_alice",
-                "type": "actor",
-                "name": "Alice",
-                "emoji": "👩‍🍳",
-                "properties": {
-                  "role": "Lead Barista",
-                  "hourly_rate": 30,
-                  "state": "available"
-                }
-              },
-              {
-                "id": "espresso_machine",
-                "type": "equipment",
-                "name": "Espresso Machine",
-                "emoji": "☕",
-                "properties": {
-                  "model": "Professional X3000",
-                  "daily_operating_cost": 10,
-                  "state": "available"
-                }
-              },
-              {
-                "id": "coffee_beans",
-                "type": "resource",
-                "name": "Coffee Beans",
-                "emoji": "🫘",
-                "properties": {
-                  "unit_cost": 0.5,
-                  "quantity": 50
-                }
-              },
-              {
-                "id": "milk",
-                "type": "resource",
-                "name": "Milk",
-                "emoji": "🥛",
-                "properties": {
-                  "unit_cost": 0.3,
-                  "quantity": 30
-                }
-              },
-              {
-                "id": "latte",
-                "type": "product",
-                "name": "Latte",
-                "emoji": "☕",
-                "properties": {
-                  "sale_price": 6,
-                  "quantity": 0
-                }
-              }
-            ],
-            "tasks": [
-              {
-                "id": "open_shop",
-                "emoji": "🔓",
-                "actor_id": "barista_alice",
-                "location_id": "counter",
-                "start": "08:00",
-                "duration": 30,
-                "location": "counter"
-              },
-              {
-                "id": "weekend_service",
-                "emoji": "☕",
-                "actor_id": "barista_alice",
-                "location_id": "counter",
-                "start": "08:30",
-                "duration": 360,
-                "depends_on": [
-                  "open_shop"
-                ],
-                "interactions": [
-                  {
-                    "interaction_type": "use",
-                    "duration": 360,
-                    "target_id": "espresso_machine"
-                  },
-                  {
-                    "interaction_type": "consume",
-                    "quantity": 40,
-                    "target_id": "coffee_beans"
-                  },
-                  {
-                    "interaction_type": "consume",
-                    "quantity": 25,
-                    "target_id": "milk"
-                  },
-                  {
-                    "interaction_type": "create",
-                    "quantity": 35,
-                    "target_id": "latte"
-                  }
-                ],
-                "location": "counter"
-              },
-              {
-                "id": "close_shop",
-                "emoji": "🔒",
-                "actor_id": "barista_alice",
-                "location_id": "counter",
-                "start": "15:30",
-                "duration": 30,
-                "depends_on": [
-                  "weekend_service"
-                ],
-                "location": "counter"
-              }
-            ]
-          },
-          "maintenance": {
-            "name": "Maintenance Day",
-            "config": {
-              "start_time": "09:00",
-              "end_time": "15:00"
-            },
-            "locations": [
-              {
-                "id": "prep_area",
-                "name": "Preparation Area",
-                "emoji": "🔧",
-                "position": {
-                  "x": 200,
-                  "y": 50,
-                  "z": 0
-                }
-              },
-              {
-                "id": "storage",
-                "name": "Storage Room",
-                "emoji": "📦",
-                "position": {
-                  "x": 300,
-                  "y": 50,
-                  "z": 0
-                }
-              }
-            ],
-            "objects": [
-              {
-                "id": "technician",
-                "type": "actor",
-                "name": "Technician",
-                "emoji": "🔧",
-                "properties": {
-                  "role": "Equipment Technician",
-                  "service_cost": 150,
-                  "state": "available"
-                }
-              },
-              {
-                "id": "espresso_machine",
-                "type": "equipment",
-                "name": "Espresso Machine",
-                "emoji": "☕",
-                "properties": {
-                  "model": "Professional X3000",
-                  "maintenance_cost": 75,
-                  "state": "maintenance"
-                }
-              }
-            ],
-            "tasks": [
-              {
-                "id": "deep_clean",
-                "emoji": "🧽",
-                "actor_id": "technician",
-                "location_id": "prep_area",
-                "start": "09:00",
-                "duration": 120,
-                "interactions": [
-                  {
-                    "interaction_type": "maintain",
-                    "duration": 120,
-                    "target_id": "espresso_machine"
-                  }
-                ],
-                "location": "prep_area"
-              },
-              {
-                "id": "equipment_service",
-                "emoji": "🔧",
-                "actor_id": "technician",
-                "location_id": "prep_area",
-                "start": "11:00",
-                "duration": 180,
-                "depends_on": [
-                  "deep_clean"
-                ],
-                "interactions": [
-                  {
-                    "interaction_type": "repair",
-                    "duration": 180,
-                    "target_id": "espresso_machine"
-                  }
-                ],
-                "location": "prep_area"
-              },
-              {
-                "id": "inventory_check",
-                "emoji": "📋",
-                "actor_id": "technician",
-                "location_id": "storage",
-                "start": "14:00",
-                "duration": 60,
-                "depends_on": [
-                  "equipment_service"
-                ],
-                "location": "storage"
-              }
-            ]
-          },
-          "delivery": {
-            "name": "Delivery Day",
-            "config": {
-              "start_time": "07:00",
-              "end_time": "10:00"
-            },
-            "locations": [
               {
                 "id": "loading_dock",
                 "name": "Loading Dock",
@@ -5770,131 +3256,982 @@
                   "y": 50,
                   "z": 0
                 }
-              },
-              {
-                "id": "storage",
-                "name": "Storage Room",
-                "emoji": "📦",
-                "position": {
-                  "x": 300,
-                  "y": 50,
-                  "z": 0
-                }
-              }
-            ],
-            "objects": [
-              {
-                "id": "manager",
-                "type": "actor",
-                "name": "Manager",
-                "emoji": "👔",
-                "properties": {
-                  "role": "Shop Manager",
-                  "hourly_rate": 35,
-                  "state": "available"
-                }
-              },
-              {
-                "id": "coffee_beans",
-                "type": "resource",
-                "name": "Coffee Beans",
-                "emoji": "🫘",
-                "properties": {
-                  "unit_cost": 0.45,
-                  "quantity": 0
-                }
-              },
-              {
-                "id": "milk",
-                "type": "resource",
-                "name": "Milk",
-                "emoji": "🥛",
-                "properties": {
-                  "unit_cost": 0.28,
-                  "quantity": 0
-                }
-              }
-            ],
-            "tasks": [
-              {
-                "id": "receive_delivery",
-                "emoji": "📦",
-                "actor_id": "manager",
-                "location_id": "loading_dock",
-                "start": "07:00",
-                "duration": 60,
-                "interactions": [
-                  {
-                    "interaction_type": "receive",
-                    "quantity": 200,
-                    "target_id": "coffee_beans"
-                  },
-                  {
-                    "interaction_type": "receive",
-                    "quantity": 100,
-                    "target_id": "milk"
-                  }
-                ],
-                "location": "loading_dock"
-              },
-              {
-                "id": "stock_storage",
-                "emoji": "📥",
-                "actor_id": "manager",
-                "location_id": "storage",
-                "start": "08:00",
-                "duration": 90,
-                "depends_on": [
-                  "receive_delivery"
-                ],
-                "location": "storage"
-              },
-              {
-                "id": "quality_check",
-                "emoji": "✅",
-                "actor_id": "manager",
-                "location_id": "storage",
-                "start": "09:30",
-                "duration": 30,
-                "depends_on": [
-                  "stock_storage"
-                ],
-                "location": "storage"
               }
             ]
           },
-          "closed": {
-            "name": "Closed",
-            "config": {
-              "start_time": "00:00",
-              "end_time": "00:00"
+          "objects": [
+            {
+              "id": "barista_alice",
+              "type": "actor",
+              "name": "Alice",
+              "emoji": "👩‍🍳",
+              "properties": {
+                "role": "Lead Barista",
+                "hourly_rate": 25,
+                "state": "available"
+              }
             },
-            "locations": [],
-            "objects": [],
-            "tasks": []
-          }
-        },
-        "schema_version": "2.0",
-        "meta": {
-          "title": "Coffee Shop Operations - Multi-Period",
-          "description": "A coffee shop simulation with different operational patterns for weekdays, weekends, maintenance days, and closed days",
-          "domain": "Food Service"
-        },
-        "config": {
-          "time_unit": "minutes",
-          "start_time": "06:00",
-          "end_time": "18:00",
-          "currency": "USD",
-          "locale": "en-US",
-          "timezone": "UTC"
-        },
-        "world": {
-          "objects": []
+            {
+              "id": "barista_bob",
+              "type": "actor",
+              "name": "Bob",
+              "emoji": "👨‍🍳",
+              "properties": {
+                "role": "Barista",
+                "hourly_rate": 20,
+                "state": "available"
+              }
+            },
+            {
+              "id": "espresso_machine",
+              "type": "equipment",
+              "name": "Espresso Machine",
+              "emoji": "☕",
+              "properties": {
+                "model": "Professional X3000",
+                "purchase_cost": 5000,
+                "daily_operating_cost": 15,
+                "state": "available"
+              }
+            },
+            {
+              "id": "coffee_beans",
+              "type": "resource",
+              "name": "Coffee Beans",
+              "emoji": "🫘",
+              "properties": {
+                "unit_cost": 0.5,
+                "quantity": 100
+              }
+            },
+            {
+              "id": "milk",
+              "type": "resource",
+              "name": "Milk",
+              "emoji": "🥛",
+              "properties": {
+                "unit_cost": 0.3,
+                "quantity": 50
+              }
+            },
+            {
+              "id": "latte",
+              "type": "product",
+              "name": "Latte",
+              "emoji": "☕",
+              "properties": {
+                "sale_price": 5.5,
+                "quantity": 0
+              }
+            },
+            {
+              "id": "cappuccino",
+              "type": "product",
+              "name": "Cappuccino",
+              "emoji": "☕",
+              "properties": {
+                "sale_price": 5,
+                "quantity": 0
+              }
+            },
+            {
+              "id": "technician",
+              "type": "actor",
+              "name": "Technician",
+              "emoji": "🔧",
+              "properties": {
+                "role": "Equipment Technician",
+                "service_cost": 150,
+                "state": "available"
+              }
+            },
+            {
+              "id": "manager",
+              "type": "actor",
+              "name": "Manager",
+              "emoji": "👔",
+              "properties": {
+                "role": "Shop Manager",
+                "hourly_rate": 35,
+                "state": "available"
+              }
+            }
+          ]
         },
         "process": {
-          "tasks": []
+          "tasks": [
+            {
+              "id": "day_1_open_shop",
+              "emoji": "🔓",
+              "actor_id": "barista_alice",
+              "start": {
+                "day": 1,
+                "time": "06:00"
+              },
+              "duration": "30m",
+              "location": "counter"
+            },
+            {
+              "id": "day_1_prep_station",
+              "emoji": "🧹",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_1_open_shop"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_1_bob_arrives",
+              "emoji": "👋",
+              "actor_id": "barista_bob",
+              "start": {
+                "day": 1,
+                "time": "07:00"
+              },
+              "duration": "5m",
+              "location": "counter"
+            },
+            {
+              "id": "day_1_morning_rush_1",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "120m",
+              "depends_on": [
+                "day_1_prep_station"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_1_morning_rush_2",
+              "emoji": "☕",
+              "actor_id": "barista_bob",
+              "duration": "120m",
+              "depends_on": [
+                "day_1_bob_arrives"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_1_midday_service",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "180m",
+              "depends_on": [
+                "day_1_morning_rush_1"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_1_bob_afternoon",
+              "emoji": "☕",
+              "actor_id": "barista_bob",
+              "duration": "120m",
+              "depends_on": [
+                "day_1_morning_rush_2"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_1_afternoon_cleanup",
+              "emoji": "🧹",
+              "actor_id": "barista_bob",
+              "duration": "60m",
+              "depends_on": [
+                "day_1_bob_afternoon"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_1_close_shop",
+              "emoji": "🔒",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_1_midday_service",
+                "day_1_afternoon_cleanup"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_2_open_shop",
+              "emoji": "🔓",
+              "actor_id": "barista_alice",
+              "start": {
+                "day": 2,
+                "time": "06:00"
+              },
+              "duration": "30m",
+              "location": "counter"
+            },
+            {
+              "id": "day_2_prep_station",
+              "emoji": "🧹",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_2_open_shop"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_2_bob_arrives",
+              "emoji": "👋",
+              "actor_id": "barista_bob",
+              "start": {
+                "day": 2,
+                "time": "07:00"
+              },
+              "duration": "5m",
+              "location": "counter"
+            },
+            {
+              "id": "day_2_morning_rush_1",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "120m",
+              "depends_on": [
+                "day_2_prep_station"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_2_morning_rush_2",
+              "emoji": "☕",
+              "actor_id": "barista_bob",
+              "duration": "120m",
+              "depends_on": [
+                "day_2_bob_arrives"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_2_midday_service",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "180m",
+              "depends_on": [
+                "day_2_morning_rush_1"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_2_bob_afternoon",
+              "emoji": "☕",
+              "actor_id": "barista_bob",
+              "duration": "120m",
+              "depends_on": [
+                "day_2_morning_rush_2"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_2_afternoon_cleanup",
+              "emoji": "🧹",
+              "actor_id": "barista_bob",
+              "duration": "60m",
+              "depends_on": [
+                "day_2_bob_afternoon"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_2_close_shop",
+              "emoji": "🔒",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_2_midday_service",
+                "day_2_afternoon_cleanup"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_3_open_shop",
+              "emoji": "🔓",
+              "actor_id": "barista_alice",
+              "start": {
+                "day": 3,
+                "time": "06:00"
+              },
+              "duration": "30m",
+              "location": "counter"
+            },
+            {
+              "id": "day_3_prep_station",
+              "emoji": "🧹",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_3_open_shop"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_3_bob_arrives",
+              "emoji": "👋",
+              "actor_id": "barista_bob",
+              "start": {
+                "day": 3,
+                "time": "07:00"
+              },
+              "duration": "5m",
+              "location": "counter"
+            },
+            {
+              "id": "day_3_morning_rush_1",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "120m",
+              "depends_on": [
+                "day_3_prep_station"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_3_morning_rush_2",
+              "emoji": "☕",
+              "actor_id": "barista_bob",
+              "duration": "120m",
+              "depends_on": [
+                "day_3_bob_arrives"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_3_midday_service",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "180m",
+              "depends_on": [
+                "day_3_morning_rush_1"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_3_bob_afternoon",
+              "emoji": "☕",
+              "actor_id": "barista_bob",
+              "duration": "120m",
+              "depends_on": [
+                "day_3_morning_rush_2"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_3_afternoon_cleanup",
+              "emoji": "🧹",
+              "actor_id": "barista_bob",
+              "duration": "60m",
+              "depends_on": [
+                "day_3_bob_afternoon"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_3_close_shop",
+              "emoji": "🔒",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_3_midday_service",
+                "day_3_afternoon_cleanup"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_4_open_shop",
+              "emoji": "🔓",
+              "actor_id": "barista_alice",
+              "start": {
+                "day": 4,
+                "time": "06:00"
+              },
+              "duration": "30m",
+              "location": "counter"
+            },
+            {
+              "id": "day_4_prep_station",
+              "emoji": "🧹",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_4_open_shop"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_4_bob_arrives",
+              "emoji": "👋",
+              "actor_id": "barista_bob",
+              "start": {
+                "day": 4,
+                "time": "07:00"
+              },
+              "duration": "5m",
+              "location": "counter"
+            },
+            {
+              "id": "day_4_morning_rush_1",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "120m",
+              "depends_on": [
+                "day_4_prep_station"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_4_morning_rush_2",
+              "emoji": "☕",
+              "actor_id": "barista_bob",
+              "duration": "120m",
+              "depends_on": [
+                "day_4_bob_arrives"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_4_midday_service",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "180m",
+              "depends_on": [
+                "day_4_morning_rush_1"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_4_bob_afternoon",
+              "emoji": "☕",
+              "actor_id": "barista_bob",
+              "duration": "120m",
+              "depends_on": [
+                "day_4_morning_rush_2"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_4_afternoon_cleanup",
+              "emoji": "🧹",
+              "actor_id": "barista_bob",
+              "duration": "60m",
+              "depends_on": [
+                "day_4_bob_afternoon"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_4_close_shop",
+              "emoji": "🔒",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_4_midday_service",
+                "day_4_afternoon_cleanup"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_5_open_shop",
+              "emoji": "🔓",
+              "actor_id": "barista_alice",
+              "start": {
+                "day": 5,
+                "time": "06:00"
+              },
+              "duration": "30m",
+              "location": "counter"
+            },
+            {
+              "id": "day_5_prep_station",
+              "emoji": "🧹",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_5_open_shop"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_5_bob_arrives",
+              "emoji": "👋",
+              "actor_id": "barista_bob",
+              "start": {
+                "day": 5,
+                "time": "07:00"
+              },
+              "duration": "5m",
+              "location": "counter"
+            },
+            {
+              "id": "day_5_morning_rush_1",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "120m",
+              "depends_on": [
+                "day_5_prep_station"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_5_morning_rush_2",
+              "emoji": "☕",
+              "actor_id": "barista_bob",
+              "duration": "120m",
+              "depends_on": [
+                "day_5_bob_arrives"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_5_midday_service",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "180m",
+              "depends_on": [
+                "day_5_morning_rush_1"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_5_bob_afternoon",
+              "emoji": "☕",
+              "actor_id": "barista_bob",
+              "duration": "120m",
+              "depends_on": [
+                "day_5_morning_rush_2"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_5_afternoon_cleanup",
+              "emoji": "🧹",
+              "actor_id": "barista_bob",
+              "duration": "60m",
+              "depends_on": [
+                "day_5_bob_afternoon"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_5_close_shop",
+              "emoji": "🔒",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_5_midday_service",
+                "day_5_afternoon_cleanup"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_6_open_shop",
+              "emoji": "🔓",
+              "actor_id": "barista_alice",
+              "start": {
+                "day": 6,
+                "time": "08:00"
+              },
+              "duration": "30m",
+              "location": "counter"
+            },
+            {
+              "id": "day_6_weekend_service",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "360m",
+              "depends_on": [
+                "day_6_open_shop"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_6_close_shop",
+              "emoji": "🔒",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_6_weekend_service"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_8_deep_clean",
+              "emoji": "🧽",
+              "actor_id": "technician",
+              "start": {
+                "day": 8,
+                "time": "09:00"
+              },
+              "duration": "120m",
+              "location": "prep_area"
+            },
+            {
+              "id": "day_8_equipment_service",
+              "emoji": "🔧",
+              "actor_id": "technician",
+              "duration": "180m",
+              "depends_on": [
+                "day_8_deep_clean"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_8_inventory_check",
+              "emoji": "📋",
+              "actor_id": "technician",
+              "duration": "60m",
+              "depends_on": [
+                "day_8_equipment_service"
+              ],
+              "location": "storage"
+            },
+            {
+              "id": "day_9_open_shop",
+              "emoji": "🔓",
+              "actor_id": "barista_alice",
+              "start": {
+                "day": 9,
+                "time": "06:00"
+              },
+              "duration": "30m",
+              "location": "counter"
+            },
+            {
+              "id": "day_9_prep_station",
+              "emoji": "🧹",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_9_open_shop"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_9_bob_arrives",
+              "emoji": "👋",
+              "actor_id": "barista_bob",
+              "start": {
+                "day": 9,
+                "time": "07:00"
+              },
+              "duration": "5m",
+              "location": "counter"
+            },
+            {
+              "id": "day_9_morning_rush_1",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "120m",
+              "depends_on": [
+                "day_9_prep_station"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_9_morning_rush_2",
+              "emoji": "☕",
+              "actor_id": "barista_bob",
+              "duration": "120m",
+              "depends_on": [
+                "day_9_bob_arrives"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_9_midday_service",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "180m",
+              "depends_on": [
+                "day_9_morning_rush_1"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_9_bob_afternoon",
+              "emoji": "☕",
+              "actor_id": "barista_bob",
+              "duration": "120m",
+              "depends_on": [
+                "day_9_morning_rush_2"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_9_afternoon_cleanup",
+              "emoji": "🧹",
+              "actor_id": "barista_bob",
+              "duration": "60m",
+              "depends_on": [
+                "day_9_bob_afternoon"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_9_close_shop",
+              "emoji": "🔒",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_9_midday_service",
+                "day_9_afternoon_cleanup"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_10_open_shop",
+              "emoji": "🔓",
+              "actor_id": "barista_alice",
+              "start": {
+                "day": 10,
+                "time": "06:00"
+              },
+              "duration": "30m",
+              "location": "counter"
+            },
+            {
+              "id": "day_10_prep_station",
+              "emoji": "🧹",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_10_open_shop"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_10_bob_arrives",
+              "emoji": "👋",
+              "actor_id": "barista_bob",
+              "start": {
+                "day": 10,
+                "time": "07:00"
+              },
+              "duration": "5m",
+              "location": "counter"
+            },
+            {
+              "id": "day_10_morning_rush_1",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "120m",
+              "depends_on": [
+                "day_10_prep_station"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_10_morning_rush_2",
+              "emoji": "☕",
+              "actor_id": "barista_bob",
+              "duration": "120m",
+              "depends_on": [
+                "day_10_bob_arrives"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_10_midday_service",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "180m",
+              "depends_on": [
+                "day_10_morning_rush_1"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_10_bob_afternoon",
+              "emoji": "☕",
+              "actor_id": "barista_bob",
+              "duration": "120m",
+              "depends_on": [
+                "day_10_morning_rush_2"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_10_afternoon_cleanup",
+              "emoji": "🧹",
+              "actor_id": "barista_bob",
+              "duration": "60m",
+              "depends_on": [
+                "day_10_bob_afternoon"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_10_close_shop",
+              "emoji": "🔒",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_10_midday_service",
+                "day_10_afternoon_cleanup"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_11_receive_delivery",
+              "emoji": "📦",
+              "actor_id": "manager",
+              "start": {
+                "day": 11,
+                "time": "07:00"
+              },
+              "duration": "60m",
+              "location": "loading_dock"
+            },
+            {
+              "id": "day_11_stock_storage",
+              "emoji": "📥",
+              "actor_id": "manager",
+              "duration": "90m",
+              "depends_on": [
+                "day_11_receive_delivery"
+              ],
+              "location": "storage"
+            },
+            {
+              "id": "day_11_quality_check",
+              "emoji": "✅",
+              "actor_id": "manager",
+              "duration": "30m",
+              "depends_on": [
+                "day_11_stock_storage"
+              ],
+              "location": "storage"
+            },
+            {
+              "id": "day_12_open_shop",
+              "emoji": "🔓",
+              "actor_id": "barista_alice",
+              "start": {
+                "day": 12,
+                "time": "06:00"
+              },
+              "duration": "30m",
+              "location": "counter"
+            },
+            {
+              "id": "day_12_prep_station",
+              "emoji": "🧹",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_12_open_shop"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_12_bob_arrives",
+              "emoji": "👋",
+              "actor_id": "barista_bob",
+              "start": {
+                "day": 12,
+                "time": "07:00"
+              },
+              "duration": "5m",
+              "location": "counter"
+            },
+            {
+              "id": "day_12_morning_rush_1",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "120m",
+              "depends_on": [
+                "day_12_prep_station"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_12_morning_rush_2",
+              "emoji": "☕",
+              "actor_id": "barista_bob",
+              "duration": "120m",
+              "depends_on": [
+                "day_12_bob_arrives"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_12_midday_service",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "180m",
+              "depends_on": [
+                "day_12_morning_rush_1"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_12_bob_afternoon",
+              "emoji": "☕",
+              "actor_id": "barista_bob",
+              "duration": "120m",
+              "depends_on": [
+                "day_12_morning_rush_2"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_12_afternoon_cleanup",
+              "emoji": "🧹",
+              "actor_id": "barista_bob",
+              "duration": "60m",
+              "depends_on": [
+                "day_12_bob_afternoon"
+              ],
+              "location": "prep_area"
+            },
+            {
+              "id": "day_12_close_shop",
+              "emoji": "🔒",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_12_midday_service",
+                "day_12_afternoon_cleanup"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_13_open_shop",
+              "emoji": "🔓",
+              "actor_id": "barista_alice",
+              "start": {
+                "day": 13,
+                "time": "08:00"
+              },
+              "duration": "30m",
+              "location": "counter"
+            },
+            {
+              "id": "day_13_weekend_service",
+              "emoji": "☕",
+              "actor_id": "barista_alice",
+              "duration": "360m",
+              "depends_on": [
+                "day_13_open_shop"
+              ],
+              "location": "counter"
+            },
+            {
+              "id": "day_13_close_shop",
+              "emoji": "🔒",
+              "actor_id": "barista_alice",
+              "duration": "30m",
+              "depends_on": [
+                "day_13_weekend_service"
+              ],
+              "location": "counter"
+            }
+          ]
         }
-      }
+      },
+      "script": "// WorkSpec 2.1 Script\nWorkSpec.task(\"day_1_open_shop\").onStart(({ set }) => {\n        set(\"coffee_beans\", \"quantity\", 100);\n        set(\"milk\", \"quantity\", 50);\n        set(\"latte\", \"quantity\", 0);\n        set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_2_open_shop\").onStart(({ set }) => {\n        set(\"coffee_beans\", \"quantity\", 100);\n        set(\"milk\", \"quantity\", 50);\n        set(\"latte\", \"quantity\", 0);\n        set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_3_open_shop\").onStart(({ set }) => {\n        set(\"coffee_beans\", \"quantity\", 100);\n        set(\"milk\", \"quantity\", 50);\n        set(\"latte\", \"quantity\", 0);\n        set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_4_open_shop\").onStart(({ set }) => {\n        set(\"coffee_beans\", \"quantity\", 100);\n        set(\"milk\", \"quantity\", 50);\n        set(\"latte\", \"quantity\", 0);\n        set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_5_open_shop\").onStart(({ set }) => {\n        set(\"coffee_beans\", \"quantity\", 100);\n        set(\"milk\", \"quantity\", 50);\n        set(\"latte\", \"quantity\", 0);\n        set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_9_open_shop\").onStart(({ set }) => {\n        set(\"coffee_beans\", \"quantity\", 100);\n        set(\"milk\", \"quantity\", 50);\n        set(\"latte\", \"quantity\", 0);\n        set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_10_open_shop\").onStart(({ set }) => {\n        set(\"coffee_beans\", \"quantity\", 100);\n        set(\"milk\", \"quantity\", 50);\n        set(\"latte\", \"quantity\", 0);\n        set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_12_open_shop\").onStart(({ set }) => {\n        set(\"coffee_beans\", \"quantity\", 100);\n        set(\"milk\", \"quantity\", 50);\n        set(\"latte\", \"quantity\", 0);\n        set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_6_open_shop\").onStart(({ set }) => {\n        set(\"coffee_beans\", \"quantity\", 50);\n        set(\"milk\", \"quantity\", 30);\n        set(\"latte\", \"quantity\", 0);\n        set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_13_open_shop\").onStart(({ set }) => {\n        set(\"coffee_beans\", \"quantity\", 50);\n        set(\"milk\", \"quantity\", 30);\n        set(\"latte\", \"quantity\", 0);\n        set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_11_receive_delivery\").onStart(({ set }) => {\n        set(\"coffee_beans\", \"quantity\", 0);\n        set(\"milk\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_1_morning_rush_1\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -20);\n        change(\"milk\", \"quantity\", -10);\n        change(\"latte\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"day_1_morning_rush_2\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -15);\n        change(\"milk\", \"quantity\", -8);\n        change(\"cappuccino\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"day_1_midday_service\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -25);\n        change(\"milk\", \"quantity\", -12);\n        change(\"latte\", \"quantity\", 18);\n        change(\"cappuccino\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_1_bob_afternoon\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -15);\n        change(\"milk\", \"quantity\", -7);\n        change(\"latte\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_2_morning_rush_1\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -20);\n        change(\"milk\", \"quantity\", -10);\n        change(\"latte\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"day_2_morning_rush_2\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -15);\n        change(\"milk\", \"quantity\", -8);\n        change(\"cappuccino\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"day_2_midday_service\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -25);\n        change(\"milk\", \"quantity\", -12);\n        change(\"latte\", \"quantity\", 18);\n        change(\"cappuccino\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_2_bob_afternoon\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -15);\n        change(\"milk\", \"quantity\", -7);\n        change(\"latte\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_3_morning_rush_1\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -20);\n        change(\"milk\", \"quantity\", -10);\n        change(\"latte\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"day_3_morning_rush_2\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -15);\n        change(\"milk\", \"quantity\", -8);\n        change(\"cappuccino\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"day_3_midday_service\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -25);\n        change(\"milk\", \"quantity\", -12);\n        change(\"latte\", \"quantity\", 18);\n        change(\"cappuccino\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_3_bob_afternoon\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -15);\n        change(\"milk\", \"quantity\", -7);\n        change(\"latte\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_4_morning_rush_1\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -20);\n        change(\"milk\", \"quantity\", -10);\n        change(\"latte\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"day_4_morning_rush_2\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -15);\n        change(\"milk\", \"quantity\", -8);\n        change(\"cappuccino\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"day_4_midday_service\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -25);\n        change(\"milk\", \"quantity\", -12);\n        change(\"latte\", \"quantity\", 18);\n        change(\"cappuccino\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_4_bob_afternoon\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -15);\n        change(\"milk\", \"quantity\", -7);\n        change(\"latte\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_5_morning_rush_1\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -20);\n        change(\"milk\", \"quantity\", -10);\n        change(\"latte\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"day_5_morning_rush_2\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -15);\n        change(\"milk\", \"quantity\", -8);\n        change(\"cappuccino\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"day_5_midday_service\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -25);\n        change(\"milk\", \"quantity\", -12);\n        change(\"latte\", \"quantity\", 18);\n        change(\"cappuccino\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_5_bob_afternoon\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -15);\n        change(\"milk\", \"quantity\", -7);\n        change(\"latte\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_6_weekend_service\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -40);\n        change(\"milk\", \"quantity\", -25);\n        change(\"latte\", \"quantity\", 35);\n});\n\nWorkSpec.task(\"day_8_deep_clean\").onStart(({ set, change, move, create, remove }) => {\n        set(\"espresso_machine\", \"state\", \"maintenance\", { temporary: true });\n});\n\nWorkSpec.task(\"day_8_equipment_service\").onStart(({ set, change, move, create, remove }) => {\n        set(\"espresso_machine\", \"state\", \"repairing\", { temporary: true });\n});\n\nWorkSpec.task(\"day_9_morning_rush_1\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -20);\n        change(\"milk\", \"quantity\", -10);\n        change(\"latte\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"day_9_morning_rush_2\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -15);\n        change(\"milk\", \"quantity\", -8);\n        change(\"cappuccino\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"day_9_midday_service\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -25);\n        change(\"milk\", \"quantity\", -12);\n        change(\"latte\", \"quantity\", 18);\n        change(\"cappuccino\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_9_bob_afternoon\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -15);\n        change(\"milk\", \"quantity\", -7);\n        change(\"latte\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_10_morning_rush_1\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -20);\n        change(\"milk\", \"quantity\", -10);\n        change(\"latte\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"day_10_morning_rush_2\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -15);\n        change(\"milk\", \"quantity\", -8);\n        change(\"cappuccino\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"day_10_midday_service\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -25);\n        change(\"milk\", \"quantity\", -12);\n        change(\"latte\", \"quantity\", 18);\n        change(\"cappuccino\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_10_bob_afternoon\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -15);\n        change(\"milk\", \"quantity\", -7);\n        change(\"latte\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_11_receive_delivery\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", 200);\n        change(\"milk\", \"quantity\", 100);\n});\n\nWorkSpec.task(\"day_12_morning_rush_1\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -20);\n        change(\"milk\", \"quantity\", -10);\n        change(\"latte\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"day_12_morning_rush_2\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -15);\n        change(\"milk\", \"quantity\", -8);\n        change(\"cappuccino\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"day_12_midday_service\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -25);\n        change(\"milk\", \"quantity\", -12);\n        change(\"latte\", \"quantity\", 18);\n        change(\"cappuccino\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_12_bob_afternoon\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -15);\n        change(\"milk\", \"quantity\", -7);\n        change(\"latte\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_13_weekend_service\").onComplete(({ set, change, move, create, remove }) => {\n        change(\"coffee_beans\", \"quantity\", -40);\n        change(\"milk\", \"quantity\", -25);\n        change(\"latte\", \"quantity\", 35);\n});\n"
     }
   ]
 }

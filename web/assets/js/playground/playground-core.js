@@ -966,11 +966,12 @@ async function loadSimulationFromLibrary(simulationId) {
         kind: 'template',
         name: simulation.name,
         sourceLabel: `Template · ${simulation.name}`,
-        workSpec: content
+        workSpec: content,
+        script: simulation.script || ''
       });
       return true;
     } else if (window.UAWProjectStore?.createFromTemplate) {
-      const project = await window.UAWProjectStore.createFromTemplate(simulation.name, content);
+      const project = await window.UAWProjectStore.createFromTemplate(simulation.name, content, null, simulation.script || '');
       if (!project) return false;
       window.UAWPlaygroundShell?.setWorkspace('build');
     } else {

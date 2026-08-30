@@ -2,7 +2,7 @@
   "name": "workspec",
   "private": false,
   "version": "1.1.1",
-  "description": "WorkSpec v1.1.0 validator and CLI (validate/migrate/format + custom validation).",
+  "description": "WorkSpec 2.1 runtime, validator and CLI.",
   "license": "AGPL-3.0",
   "main": "index.js",
   "bin": {
@@ -11,7 +11,7 @@
   "scripts": {
     "check:sync": "node scripts/check-sync.js",
     "sync:web": "node scripts/sync-web-assets.js",
-    "test:integration": "node scripts/sync-web-assets.js && node scripts/test-playground-integration.js",
+    "test:integration": "node scripts/sync-web-assets.js && node scripts/test-playground-integration.js && node scripts/test-studio-templates-2.1.js",
     "test": "node scripts/self-test.js && node scripts/test-playback-state.js && npm run test:integration"
   },
   "files": [
@@ -20,9 +20,11 @@
     "custom-validation-runner.js",
     "custom-validation-worker.js",
     "workspec-validator.js",
+    "workspec-runtime.js",
     "workspec-migrate-v1-to-v2.js",
     "state-visuals.js",
     "playback-state.js",
+    "v2.1.schema.json",
     "v2.0.schema.json",
     "README.md"
   ],

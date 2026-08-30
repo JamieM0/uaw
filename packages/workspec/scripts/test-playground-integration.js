@@ -9,10 +9,12 @@ const vm = require('vm');
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 
 const packageValidatorPath = path.join(repoRoot, 'packages', 'workspec', 'workspec-validator.js');
+const packageRuntimePath = path.join(repoRoot, 'packages', 'workspec', 'workspec-runtime.js');
 const packageMigratorPath = path.join(repoRoot, 'packages', 'workspec', 'workspec-migrate-v1-to-v2.js');
 const packageStateVisualsPath = path.join(repoRoot, 'packages', 'workspec', 'state-visuals.js');
 const packagePlaybackStatePath = path.join(repoRoot, 'packages', 'workspec', 'playback-state.js');
 const webValidatorPath = path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-validator.js');
+const webRuntimePath = path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-runtime.js');
 const webMigratorPath = path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-migrate-v1-to-v2.js');
 const webStateVisualsPath = path.join(repoRoot, 'web', 'packages', 'workspec', 'state-visuals.js');
 const webPlaybackStatePath = path.join(repoRoot, 'web', 'packages', 'workspec', 'playback-state.js');
@@ -90,6 +92,11 @@ function run() {
     const playgroundHtml = readText(playgroundHtmlPath);
     assert.match(
         playgroundHtml,
+        /<script src="\/packages\/workspec\/workspec-runtime\.js" defer><\/script>/,
+        'Playground is not loading the WorkSpec 2.1 runtime'
+    );
+    assert.match(
+        playgroundHtml,
         /<script src="\/packages\/workspec\/playback-state\.js" defer><\/script>/,
         'Playground is not loading the shared playback-state resolver'
     );
@@ -128,6 +135,7 @@ function run() {
     assert.match(projectStore, /const SCRIPT_FILE = 'project\.workspec\.js'/, 'Project persistence does not define a Script file');
     assert.match(projectStore, /await this\.writeText\(project\.directoryHandle, SCRIPT_FILE,/, 'Project persistence does not write Script');
     assert.match(projectStore, /scriptDraft: scriptDraft === null/, 'Project persistence does not load Script');
+    assert.match(projectStore, /createFromTemplate\(name, workSpec, directoryHandle = null, script = null\)/, 'Template creation does not accept Script content');
     assert.match(scriptEditor, /language: 'javascript'/, 'Script editor is not configured for JavaScript');
     assert.doesNotMatch(scriptEditor, /new Function|\beval\s*\(/, 'Studio must not execute Script behaviour directly');
     assert.doesNotMatch(playgroundHtml, />Interactions</, 'Define must not expose legacy task interactions');
@@ -142,13 +150,12 @@ function run() {
     );
 
     assertMirrored(packageValidatorPath, webValidatorPath);
+    assertMirrored(packageRuntimePath, webRuntimePath);
     assertMirrored(packageMigratorPath, webMigratorPath);
     assertMirrored(packageStateVisualsPath, webStateVisualsPath);
     assertMirrored(packagePlaybackStatePath, webPlaybackStatePath);
 
     const nodeValidator = require(packageValidatorPath);
-    const stateVisuals = require(packageStateVisualsPath);
-    const playbackState = require(packagePlaybackStatePath);
     const browserValidator = loadBrowserValidator(webValidatorPath);
 
     const validDoc = baseDoc();
@@ -164,18 +171,12 @@ function run() {
     assert.deepEqual(browserInvalid, nodeInvalid, 'Validator mismatch on invalid document');
 
     const templateLibrary = JSON.parse(readText(path.join(repoRoot, 'web', 'assets', 'static', 'simulation-library.json')));
-    const breadmaking = templateLibrary.simulations.find(item => item.id === 'breadmaking')?.simulation;
-    assert.ok(breadmaking, 'Breadmaking template is missing');
-    assert.equal(nodeValidator.validate({ simulation: breadmaking }).ok, true, 'Breadmaking template is not WorkSpec-valid');
-    assert.equal(Object.keys(breadmaking.state_libraries || {}).length, 4, 'Breadmaking template should exercise reusable State Libraries');
-    breadmaking.world.objects.forEach(object => {
-        assert.ok(object.state_library, `${object.id} is missing a State Library`);
-        assert.ok(object.appearance, `${object.id} is missing an appearance`);
-        assert.equal(typeof stateVisuals.resolveStateVisualAssetId(breadmaking, object), 'string', `${object.id} has no initial visual mapping`);
+    assert.equal(templateLibrary.simulations.length, 6, 'Studio template inventory changed unexpectedly');
+    templateLibrary.simulations.forEach(template => {
+        assert.equal(template.simulation.schema_version, '2.1', `${template.id} is not WorkSpec 2.1`);
+        assert.equal(nodeValidator.validate({ simulation: template.simulation }).ok, true, `${template.id} Define is not WorkSpec-valid`);
+        assert.equal(typeof template.script, 'string', `${template.id} has no Script`);
     });
-    const bakeryModel = playbackState.createPlaybackModel({ simulation: breadmaking });
-    assert.equal(playbackState.getObjectLocationAtTime(bakeryModel, 'assistant', 9 * 60 + 10), 'oven_area');
-    assert.equal(playbackState.getObjectStateAtTime(bakeryModel, 'oven', 9 * 60 + 10), 'preheating');
 
     process.stdout.write('✓ playground integration uses package-backed WorkSpec runtime\n');
 }

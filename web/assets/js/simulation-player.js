@@ -11,7 +11,9 @@ class SimulationPlayer {
         this.trackedEventListeners = [];
         this.currentObjectStates = new Map();
         this.sortedTasks = [...(simulationData.tasks || [])].sort((a, b) => a.start_minutes - b.start_minutes);
-        this.playbackModel = window.WorkSpecPlaybackState?.createPlaybackModel?.(simulationData);
+        this.playbackModel = simulationData._workspec_document?.simulation?.schema_version === '2.1'
+            ? null
+            : window.WorkSpecPlaybackState?.createPlaybackModel?.(simulationData);
 
         // Cache for optimized state calculations
         this.lastStateCalculationTime = -1;
@@ -332,6 +334,28 @@ class SimulationPlayer {
     }
 
     updateLiveObjectState() {
+        if (this.simData._workspec_document?.simulation?.schema_version === '2.1' && window.WorkSpecRuntime?.snapshotProjectAt) {
+            const snapshot = window.WorkSpecRuntime.snapshotProjectAt(
+                this.simData._workspec_document,
+                this.simData._workspec_script || '',
+                this.playheadTime
+            );
+            const initial = this.simData._workspec_document.simulation.world?.objects || [];
+            const initialIds = new Set(initial.map(object => object.id));
+            const objects = Object.values(snapshot.objects || {});
+            this.worldSnapshot = { runtime: true };
+            this.liveObjects = { created: [], deleted: [] };
+            objects.forEach(object => {
+                if (!Array.isArray(this.liveObjects[object.type])) this.liveObjects[object.type] = [];
+                this.liveObjects[object.type].push(object);
+                if (!initialIds.has(object.id)) this.liveObjects.created.push(object);
+            });
+            initial.forEach(object => {
+                if (!snapshot.objects?.[object.id]) this.liveObjects.deleted.push(object);
+            });
+            this.liveObjectMap = new Map(objects.map(object => [object.id, object]));
+            return;
+        }
         this.worldSnapshot = window.WorkSpecPlaybackState?.resolveWorldStateAtTime?.(this.playbackModel, this.playheadTime);
         if (!this.worldSnapshot) return;
         this.liveObjects = {

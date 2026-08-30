@@ -8,6 +8,11 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');
 
 const pairs = [
     {
+        a: path.join(repoRoot, 'packages', 'workspec', 'workspec-runtime.js'),
+        b: path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-runtime.js'),
+        label: 'workspec-runtime.js'
+    },
+    {
         a: path.join(repoRoot, 'packages', 'workspec', 'workspec-validator.js'),
         b: path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-validator.js'),
         label: 'workspec-validator.js'
@@ -21,6 +26,16 @@ const pairs = [
         a: path.join(repoRoot, 'packages', 'workspec', 'playback-state.js'),
         b: path.join(repoRoot, 'web', 'packages', 'workspec', 'playback-state.js'),
         label: 'playback-state.js'
+    },
+    {
+        a: path.join(repoRoot, 'packages', 'workspec', 'v2.1.schema.json'),
+        b: path.join(repoRoot, 'web', 'packages', 'workspec', 'v2.1.schema.json'),
+        label: 'packages/workspec/v2.1.schema.json'
+    },
+    {
+        a: path.join(repoRoot, 'packages', 'workspec', 'v2.1.schema.json'),
+        b: path.join(repoRoot, 'web', 'workspec', 'v2.1.schema.json'),
+        label: 'workspec/v2.1.schema.json'
     },
     {
         a: path.join(repoRoot, 'packages', 'workspec', 'v2.0.schema.json'),
@@ -58,4 +73,6 @@ function main() {
     process.stdout.write('✓ WorkSpec web assets are in sync\n');
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = { pairs, main };
