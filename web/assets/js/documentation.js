@@ -56,6 +56,10 @@ function generateDocsStructure() {
             ]),
 
             makeSection("Specification", "workspec-specification", [
+                makeSection("v2.1", "workspec-specification-v2-1", [
+                    makePage("Script", "/docs/workspec/specification/v2.1/script"),
+                ]),
+
                 makeSection("v2.0", "workspec-specification-v2", [
                     makePage(
                         "Overview",

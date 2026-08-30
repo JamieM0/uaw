@@ -101,6 +101,13 @@ async function run() {
         }
         assert.equal(validate(documentValue).ok, true, `${template.id} Define is invalid`);
         assert.equal(typeof template.script, 'string', `${template.id} has no Script content`);
+        assert.doesNotMatch(template.script, /\(\{\s*(?:set|change|move|create|remove)/, `${template.id} still requires helper destructuring`);
+        const taskIds = template.simulation.process.tasks.map(task => task.id);
+        const analysis = runtime.analyzeScript(template.script, { taskIds });
+        assert.equal(analysis.diagnostics.some(diagnostic => diagnostic.severity === 'error'), false, `${template.id} Script has unresolved task references`);
+        assert.ok(analysis.handlers.length > 0, `${template.id} Script has no indexed handlers`);
+        assert.equal(analysis.handlers.every(handler => taskIds.includes(handler.taskId)), true, `${template.id} Script handler is not linked to Define`);
+        if (template.id === 'breadmaking') assert.ok(analysis.handlers.some(handler => handler.form === 'grouped'), 'breadmaking does not demonstrate grouped task handlers');
         const runtimeRun = runtime.runProject(documentValue, template.script);
         assert.equal(runtimeRun.problems.some(problem => problem.severity === 'error'), false, `${template.id} does not run through WorkSpec 2.1`);
         assert.ok(runtimeRun.history.length > 0, `${template.id} generated no change history`);

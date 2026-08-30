@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkSpec 2.1 Script - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/">Workspec</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/specification/">Specification</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/specification/v2.1/">V2.1</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">WorkSpec 2.1 Script</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">WorkSpec 2.1 Script</h1>
+                            
+                            <p class="docs-page-subtitle">Normal JavaScript task behaviour with ambient runtime helpers.</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+<p>WorkSpec 2.1 separates declarative process data from executable
+behaviour:</p>
+<ul>
+<li><strong>Define</strong> describes the world, tasks, timing,
+dependencies, and other declarative facts.</li>
+<li><strong>Script</strong> is normal JavaScript that registers task
+behaviour.</li>
+</ul>
+<p>Behaviour belongs in Script. Do not add <code>interactions</code> or
+<code>methods</code> to Define, and do not recreate a declarative
+interaction system inside JavaScript objects.</p>
+<h2 id="task-handlers">Task handlers</h2>
+<p><code>WorkSpec.task(id)</code> refers to a task whose ID is declared
+in Define. It returns a reusable task handle. A handler registered on
+that handle runs for the corresponding task phase.</p>
+<p>For one handler, prefer the direct chained form:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode js"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>WorkSpec<span class="op">.</span><span class="fu">task</span>(<span class="st">&quot;clean_equipment&quot;</span>)<span class="op">.</span><span class="fu">onComplete</span>(() <span class="kw">=&gt;</span> {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">set</span>(<span class="st">&quot;mixer&quot;</span><span class="op">,</span> <span class="st">&quot;state&quot;</span><span class="op">,</span> <span class="st">&quot;clean&quot;</span>)<span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<p>For several handlers that belong together, prefer the grouped form.
+The callback receives the same handle returned by
+<code>WorkSpec.task(id)</code>; it is convenience syntax, not a separate
+task system.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode js"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>WorkSpec<span class="op">.</span><span class="fu">task</span>(<span class="st">&quot;mix_dough&quot;</span><span class="op">,</span> task <span class="kw">=&gt;</span> {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    task<span class="op">.</span><span class="fu">onStart</span>(() <span class="kw">=&gt;</span> {</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">set</span>(<span class="st">&quot;baker&quot;</span><span class="op">,</span> <span class="st">&quot;state&quot;</span><span class="op">,</span> <span class="st">&quot;working&quot;</span><span class="op">,</span> { <span class="dt">temporary</span><span class="op">:</span> <span class="kw">true</span> })<span class="op">;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="kw">set</span>(<span class="st">&quot;mixer&quot;</span><span class="op">,</span> <span class="st">&quot;state&quot;</span><span class="op">,</span> <span class="st">&quot;in_use&quot;</span><span class="op">,</span> { <span class="dt">temporary</span><span class="op">:</span> <span class="kw">true</span> })<span class="op">;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    task<span class="op">.</span><span class="fu">onComplete</span>(() <span class="kw">=&gt;</span> {</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">change</span>(<span class="st">&quot;flour&quot;</span><span class="op">,</span> <span class="st">&quot;quantity&quot;</span><span class="op">,</span> <span class="op">-</span><span class="dv">3</span>)<span class="op">;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">change</span>(<span class="st">&quot;mixed_dough&quot;</span><span class="op">,</span> <span class="st">&quot;quantity&quot;</span><span class="op">,</span> <span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>        <span class="kw">set</span>(<span class="st">&quot;mixer&quot;</span><span class="op">,</span> <span class="st">&quot;state&quot;</span><span class="op">,</span> <span class="st">&quot;dirty&quot;</span>)<span class="op">;</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<p>Store the task handle when reuse across separate sections genuinely
+improves readability:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode js"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> mixDough <span class="op">=</span> WorkSpec<span class="op">.</span><span class="fu">task</span>(<span class="st">&quot;mix_dough&quot;</span>)<span class="op">;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>mixDough<span class="op">.</span><span class="fu">onStart</span>(() <span class="kw">=&gt;</span> {</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">set</span>(<span class="st">&quot;mixer&quot;</span><span class="op">,</span> <span class="st">&quot;state&quot;</span><span class="op">,</span> <span class="st">&quot;in_use&quot;</span><span class="op">,</span> { <span class="dt">temporary</span><span class="op">:</span> <span class="kw">true</span> })<span class="op">;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>mixDough<span class="op">.</span><span class="fu">onComplete</span>(() <span class="kw">=&gt;</span> {</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">set</span>(<span class="st">&quot;mixer&quot;</span><span class="op">,</span> <span class="st">&quot;state&quot;</span><span class="op">,</span> <span class="st">&quot;dirty&quot;</span>)<span class="op">;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<p>All three forms use the same task-handle API.</p>
+<h2 id="runtime-helpers">Runtime helpers</h2>
+<p>These WorkSpec Script helpers are automatically available while a
+task handler runs:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode js"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">set</span>(targetId<span class="op">,</span> property<span class="op">,</span> value<span class="op">,</span> options)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">change</span>(targetId<span class="op">,</span> property<span class="op">,</span> amount<span class="op">,</span> options)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">move</span>(targetId<span class="op">,</span> locationId<span class="op">,</span> options)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">create</span>(object)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">remove</span>(targetId)</span></code></pre></div>
+<p>They always resolve against the currently executing WorkSpec handler.
+<code>{ temporary: true }</code> makes a start effect last only for the
+task's active interval.</p>
+<p>Handlers do not need a callback parameter. Accept context only when
+the handler uses context information:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode js"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>WorkSpec<span class="op">.</span><span class="fu">task</span>(<span class="st">&quot;mix_dough&quot;</span>)<span class="op">.</span><span class="fu">onStart</span>(context <span class="kw">=&gt;</span> {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(context<span class="op">.</span><span class="at">taskId</span><span class="op">,</span> context<span class="op">.</span><span class="at">phase</span>)<span class="op">;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">set</span>(<span class="st">&quot;mixer&quot;</span><span class="op">,</span> <span class="st">&quot;state&quot;</span><span class="op">,</span> <span class="st">&quot;in_use&quot;</span>)<span class="op">;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<p>Existing destructured helper callbacks remain compatible, but ambient
+helpers are the canonical 2.1 style.</p>
+<h2 id="normal-javascript">Normal JavaScript</h2>
+<p>Script is executable JavaScript, not a declarative language.
+Arbitrary JavaScript remains valid inside handlers. Use ordinary
+functions when behaviour is genuinely reusable:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode js"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">consumeIngredient</span>(id<span class="op">,</span> amount) {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">change</span>(id<span class="op">,</span> <span class="st">&quot;quantity&quot;</span><span class="op">,</span> <span class="op">-</span>amount)<span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>WorkSpec<span class="op">.</span><span class="fu">task</span>(<span class="st">&quot;mix_dough&quot;</span>)<span class="op">.</span><span class="fu">onComplete</span>(() <span class="kw">=&gt;</span> {</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">consumeIngredient</span>(<span class="st">&quot;flour&quot;</span><span class="op">,</span> <span class="dv">3</span>)<span class="op">;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">consumeIngredient</span>(<span class="st">&quot;water&quot;</span><span class="op">,</span> <span class="dv">2</span>)<span class="op">;</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<p>Keep behaviour for one task together where practical. Keep simple
+effects simple rather than wrapping one-line changes in unnecessary
+abstractions. When logic becomes complex, prefer clear executable
+JavaScript over objects that imitate the removed
+<code>interactions</code> model.</p>
+<p>Studio statically indexes literal task IDs and the three standard
+authoring forms for navigation and diagnostics. Dynamic constructs are
+valid JavaScript, but when Studio cannot safely resolve one it leaves
+resolution to the authoritative runtime instead of guessing.</p>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

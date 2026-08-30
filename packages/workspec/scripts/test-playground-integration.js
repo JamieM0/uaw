@@ -137,6 +137,11 @@ function run() {
     assert.match(projectStore, /scriptDraft: scriptDraft === null/, 'Project persistence does not load Script');
     assert.match(projectStore, /createFromTemplate\(name, workSpec, directoryHandle = null, script = null\)/, 'Template creation does not accept Script content');
     assert.match(scriptEditor, /language: 'javascript'/, 'Script editor is not configured for JavaScript');
+    assert.match(scriptEditor, /declare function set/, 'Script editor does not declare ambient runtime helpers');
+    assert.match(scriptEditor, /WorkSpecRuntime\?\.analyzeScript/, 'Script editor is not using package-backed Script analysis');
+    assert.match(scriptEditor, /setModelMarkers/, 'Script diagnostics are not connected to the editor');
+    assert.match(studioShell, /data-open-script-task/, 'Process view does not expose Script handler references');
+    assert.match(studioShell, /data-open-script-object/, 'Object view does not expose Script helper references');
     assert.doesNotMatch(scriptEditor, /new Function|\beval\s*\(/, 'Studio must not execute Script behaviour directly');
     assert.doesNotMatch(playgroundHtml, />Interactions</, 'Define must not expose legacy task interactions');
     assert.match(objectEditor, /depends_on: document\.getElementById\('task-depends-input'\)\.value/, 'Task dependencies are not persisted from Define');
@@ -157,6 +162,9 @@ function run() {
 
     const nodeValidator = require(packageValidatorPath);
     const browserValidator = loadBrowserValidator(webValidatorPath);
+    const nodeRuntime = require(packageRuntimePath);
+    assert.equal(typeof nodeRuntime.analyzeScript, 'function', 'Package runtime does not expose Script analysis');
+    assert.equal(nodeRuntime.analyzeScript('WorkSpec.task("task_1").onStart(() => {});').handlers[0].taskId, 'task_1');
 
     const validDoc = baseDoc();
     const invalidDoc = baseDoc();

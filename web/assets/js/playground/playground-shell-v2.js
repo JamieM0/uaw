@@ -1117,10 +1117,14 @@
             const description = simulation.meta?.description || 'No process description has been written yet.';
             const actors = objects.filter(object => object?.type === 'actor');
             const objectById = new Map(objects.map(object => [object.id, object]));
+            const scriptSource = this.projectStore?.getCurrent()?.scriptDraft || '';
+            const scriptAnalysis = window.WorkSpecRuntime?.analyzeScript?.(scriptSource, { taskIds: tasks.map(task => task.id).filter(Boolean) }) || { handlers: [] };
+            const scriptHandlerCounts = scriptAnalysis.handlers.reduce((counts, handler) => counts.set(handler.taskId, (counts.get(handler.taskId) || 0) + 1), new Map());
             const rows = tasks.map((task, index) => {
                 const actor = objectById.get(task.actor_id);
                 const dependencies = Array.isArray(task.depends_on) ? task.depends_on.join(', ') : '—';
                 const period = task.__period ? `<span class="uaw-process-period">${escapeHTML(task.__period)}</span>` : '';
+                const handlerCount = scriptHandlerCounts.get(task.id) || 0;
                 return `<tr data-context-task-id="${escapeHTML(task.id || '')}">
                     <td><div class="uaw-process-task-name"><strong>${escapeHTML(task.name || task.id || `Task ${index + 1}`)}</strong><code>${escapeHTML(task.id || 'No ID')}</code>${period}</div></td>
                     <td>${escapeHTML(actor?.name || task.actor_id || 'Unassigned')}</td>
@@ -1128,6 +1132,7 @@
                     <td>${escapeHTML(task.duration ?? '—')} ${task.duration != null ? escapeHTML(simulation.config?.time_unit || 'min') : ''}</td>
                     <td>${escapeHTML(task.location || task.location_id || '—')}</td>
                     <td class="uaw-process-dependencies">${escapeHTML(dependencies)}</td>
+                    <td>${handlerCount ? `<button class="uaw-row-action" type="button" data-open-script-task="${escapeHTML(task.id)}">${handlerCount} handler${handlerCount === 1 ? '' : 's'}</button>` : '—'}</td>
                     <td><span class="uaw-temporal-badge">Upcoming</span></td>
                     <td><button class="uaw-row-action" type="button" data-edit-process-task="${index}">${task.__period ? 'View source' : 'Edit'}</button></td>
                 </tr>`;
@@ -1140,7 +1145,7 @@
                 </header>
                 <section class="uaw-process-register" aria-labelledby="uaw-task-register-heading">
                     <div class="uaw-process-section-heading"><div><h2 id="uaw-task-register-heading">Task register</h2><p>The authored sequence, assignments and dependencies. Run it from Simulate.</p></div></div>
-                    ${rows ? `<div class="uaw-process-table-wrap"><table class="uaw-process-table"><thead><tr><th>Task</th><th>Actor</th><th>Start</th><th>Duration</th><th>Location</th><th>Depends on</th><th>Moment</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="uaw-process-empty"><strong>No tasks yet</strong><p>Add the first task to establish this process.</p><button type="button" data-uaw-command="edit.task">Create first task</button></div>`}
+                    ${rows ? `<div class="uaw-process-table-wrap"><table class="uaw-process-table"><thead><tr><th>Task</th><th>Actor</th><th>Start</th><th>Duration</th><th>Location</th><th>Depends on</th><th>Script</th><th>Moment</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="uaw-process-empty"><strong>No tasks yet</strong><p>Add the first task to establish this process.</p><button type="button" data-uaw-command="edit.task">Create first task</button></div>`}
                 </section>
             `;
 
@@ -1154,6 +1159,10 @@
                 }
                 window.openEditTaskModal(task);
             }));
+            view.querySelectorAll('[data-open-script-task]').forEach(button => button.addEventListener('click', () => {
+                this.setWorkspace('script');
+                requestAnimationFrame(() => window.UAWWorkSpecScript?.revealReference?.('task', button.dataset.openScriptTask));
+            }));
         }
 
         renderObjectsModel() {
@@ -1166,13 +1175,16 @@
             }
             const objects = documentModel.objects || [];
             const groups = [...new Set(objects.map(object => object?.type || 'custom'))].sort();
+            const objectScriptAnalysis = window.WorkSpecRuntime?.analyzeScript?.(this.projectStore?.getCurrent()?.scriptDraft || '') || { targetReferences: [] };
+            const objectReferenceCounts = objectScriptAnalysis.targetReferences.reduce((counts, reference) => counts.set(reference.targetId, (counts.get(reference.targetId) || 0) + 1), new Map());
             const rows = objects.map((object, index) => {
                 const type = object?.type || 'custom';
                 const details = object?.properties || {};
                 const state = details.state ?? details.quantity ?? details.role ?? '—';
-                return `<tr data-object-row data-context-object-id="${escapeHTML(object?.id || '')}" data-object-search="${escapeHTML(`${object?.name || ''} ${object?.id || ''} ${type}`.toLowerCase())}" data-object-type="${escapeHTML(type)}"><td><div class="uaw-object-name"><span><strong>${escapeHTML(object?.name || object?.id || `Object ${index + 1}`)}</strong><code>${escapeHTML(object?.id || 'No ID')}</code></span></div></td><td><span class="uaw-type-pill">${escapeHTML(type)}</span></td><td>${escapeHTML(state)}</td><td><span class="uaw-temporal-badge">Inactive</span></td><td>${escapeHTML(object?.__lifecycle || object?.__period || 'Global')}</td><td><button class="uaw-row-action" type="button" data-edit-object-index="${index}">${object?.__period || object?.__lifecycle ? 'View source' : 'Edit'}</button></td></tr>`;
+                const referenceCount = objectReferenceCounts.get(object?.id) || 0;
+                return `<tr data-object-row data-context-object-id="${escapeHTML(object?.id || '')}" data-object-search="${escapeHTML(`${object?.name || ''} ${object?.id || ''} ${type}`.toLowerCase())}" data-object-type="${escapeHTML(type)}"><td><div class="uaw-object-name"><span><strong>${escapeHTML(object?.name || object?.id || `Object ${index + 1}`)}</strong><code>${escapeHTML(object?.id || 'No ID')}</code></span></div></td><td><span class="uaw-type-pill">${escapeHTML(type)}</span></td><td>${escapeHTML(state)}</td><td>${referenceCount ? `<button class="uaw-row-action" type="button" data-open-script-object="${escapeHTML(object.id)}">${referenceCount} reference${referenceCount === 1 ? '' : 's'}</button>` : '—'}</td><td><span class="uaw-temporal-badge">Inactive</span></td><td>${escapeHTML(object?.__lifecycle || object?.__period || 'Global')}</td><td><button class="uaw-row-action" type="button" data-edit-object-index="${index}">${object?.__period || object?.__lifecycle ? 'View source' : 'Edit'}</button></td></tr>`;
             }).join('');
-            view.innerHTML = `<header class="uaw-process-heading uaw-objects-heading"><div><h1>Objects</h1><p>Actors, resources, equipment and outputs available to this process.</p></div><dl><div><dt>Objects</dt><dd>${objects.length}</dd></div><div><dt>Types</dt><dd>${groups.length}</dd></div></dl></header><section class="uaw-process-register"><div class="uaw-process-section-heading"><div><h2>Object register</h2><p>Reusable entities referenced by tasks and environment layouts.</p></div></div><div class="uaw-object-toolbar"><label><span class="sr-only">Search objects</span><input type="search" data-object-search-input placeholder="Search objects…"></label><select data-object-filter aria-label="Filter object type"><option value="">All types</option>${groups.map(type => `<option value="${escapeHTML(type)}">${escapeHTML(type)}</option>`).join('')}</select></div>${rows ? `<div class="uaw-process-table-wrap"><table class="uaw-process-table uaw-object-table"><thead><tr><th>Object</th><th>Type</th><th>State / quantity</th><th>Moment</th><th>Scope</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="uaw-process-empty"><strong>No objects yet</strong><p>Use Add object in the command bar to create an actor, resource, equipment item or product.</p></div>`}</section>`;
+            view.innerHTML = `<header class="uaw-process-heading uaw-objects-heading"><div><h1>Objects</h1><p>Actors, resources, equipment and outputs available to this process.</p></div><dl><div><dt>Objects</dt><dd>${objects.length}</dd></div><div><dt>Types</dt><dd>${groups.length}</dd></div></dl></header><section class="uaw-process-register"><div class="uaw-process-section-heading"><div><h2>Object register</h2><p>Reusable entities referenced by tasks and environment layouts.</p></div></div><div class="uaw-object-toolbar"><label><span class="sr-only">Search objects</span><input type="search" data-object-search-input placeholder="Search objects…"></label><select data-object-filter aria-label="Filter object type"><option value="">All types</option>${groups.map(type => `<option value="${escapeHTML(type)}">${escapeHTML(type)}</option>`).join('')}</select></div>${rows ? `<div class="uaw-process-table-wrap"><table class="uaw-process-table uaw-object-table"><thead><tr><th>Object</th><th>Type</th><th>State / quantity</th><th>Script</th><th>Moment</th><th>Scope</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="uaw-process-empty"><strong>No objects yet</strong><p>Use Add object in the command bar to create an actor, resource, equipment item or product.</p></div>`}</section>`;
             const filter = () => {
                 const query = view.querySelector('[data-object-search-input]')?.value.trim().toLowerCase() || '';
                 const type = view.querySelector('[data-object-filter]')?.value || '';
@@ -1185,6 +1197,10 @@
                 if (!object) return;
                 if (object.__period || object.__lifecycle || typeof window.openEditObjectModal !== 'function') this.setModelView('source');
                 else window.openEditObjectModal(object);
+            }));
+            view.querySelectorAll('[data-open-script-object]').forEach(button => button.addEventListener('click', () => {
+                this.setWorkspace('script');
+                requestAnimationFrame(() => window.UAWWorkSpecScript?.revealReference?.('object', button.dataset.openScriptObject));
             }));
         }
 

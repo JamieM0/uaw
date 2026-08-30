@@ -30,7 +30,8 @@
     }, null, 2);
 
     const blankScript = () => `// WorkSpec 2.1 Script
-// Add behaviour here using the API provided by the WorkSpec runtime.
+// Register task behaviour with WorkSpec.task(...).
+// set, change, move, create and remove are available inside handlers.
 `;
 
     const createId = () => window.crypto?.randomUUID?.()

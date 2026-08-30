@@ -7,6 +7,25 @@ This package provides:
 - Shared observable playback-state and State Library visual resolution helpers
 - A `workspec` CLI with `validate`, `migrate`, and `format` commands
 
+## WorkSpec 2.1 Script
+
+Define remains declarative; executable task behaviour belongs in normal JavaScript passed to the WorkSpec runtime. Task handles support chained, reusable, and grouped authoring styles, and `set`, `change`, `move`, `create`, and `remove` are ambient while a handler runs:
+
+```js
+WorkSpec.task("mix_dough", task => {
+    task.onStart(() => {
+        set("mixer", "state", "in_use", { temporary: true });
+    });
+
+    task.onComplete(() => {
+        change("flour", "quantity", -3);
+        set("mixer", "state", "dirty");
+    });
+});
+```
+
+Use `runtime.analyzeScript(source, { taskIds })` for lightweight Studio-style indexing of literal task references, handlers, helper target references, and safe diagnostics. Runtime execution remains authoritative for dynamic JavaScript.
+
 ## State-driven visuals
 
 WorkSpec v2 simulations may define reusable `simulation.state_libraries`. Objects opt in with object-level `state_library` and optional `appearance` fields; `properties.state` remains the simulation source of truth. Appearance mappings contain project asset IDs only—asset bytes remain in the Studio project asset store.

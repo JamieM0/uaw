@@ -1814,8 +1814,198 @@
 
     function validate(documentValue) { const run = replay(documentValue); return { valid: run.problems.every((entry) => entry.severity !== 'error'), problems: run.problems, state: serialiseState(run), timings: run.timings }; }
 
+    const SCRIPT_HANDLER_METHODS = new Set(['onStart', 'onComplete']);
+    const SCRIPT_HELPERS = new Set(['set', 'change', 'move', 'create', 'remove']);
+
+    function tokenizeScript(source) {
+        const tokens = [];
+        let index = 0;
+        while (index < source.length) {
+            const start = index;
+            const character = source[index];
+            if (/\s/.test(character)) { index += 1; continue; }
+            if (character === '/' && source[index + 1] === '/') {
+                index += 2;
+                while (index < source.length && source[index] !== '\n') index += 1;
+                continue;
+            }
+            if (character === '/' && source[index + 1] === '*') {
+                index += 2;
+                while (index < source.length && !(source[index] === '*' && source[index + 1] === '/')) index += 1;
+                index = Math.min(source.length, index + 2);
+                continue;
+            }
+            if (character === '"' || character === "'") {
+                const quote = character;
+                index += 1;
+                let value = '';
+                let closed = false;
+                while (index < source.length) {
+                    if (source[index] === '\\') {
+                        if (index + 1 < source.length) value += source[index + 1];
+                        index += 2;
+                    } else if (source[index] === quote) {
+                        index += 1;
+                        closed = true;
+                        break;
+                    } else {
+                        value += source[index];
+                        index += 1;
+                    }
+                }
+                tokens.push({ type: closed ? 'string' : 'invalid-string', value, start, end: index });
+                continue;
+            }
+            if (character === '`') {
+                index += 1;
+                while (index < source.length) {
+                    if (source[index] === '\\') index += 2;
+                    else if (source[index] === '`') { index += 1; break; }
+                    else index += 1;
+                }
+                tokens.push({ type: 'template', value: source.slice(start, index), start, end: index });
+                continue;
+            }
+            if (/[A-Za-z_$]/.test(character)) {
+                index += 1;
+                while (index < source.length && /[A-Za-z0-9_$]/.test(source[index])) index += 1;
+                tokens.push({ type: 'identifier', value: source.slice(start, index), start, end: index });
+                continue;
+            }
+            if (character === '=' && source[index + 1] === '>') {
+                tokens.push({ type: 'punctuator', value: '=>', start, end: index + 2 });
+                index += 2;
+                continue;
+            }
+            tokens.push({ type: 'punctuator', value: character, start, end: index + 1 });
+            index += 1;
+        }
+        return tokens;
+    }
+
+    function matchingToken(tokens, startIndex, open, close) {
+        if (tokens[startIndex]?.value !== open) return -1;
+        let depth = 0;
+        for (let index = startIndex; index < tokens.length; index += 1) {
+            if (tokens[index].value === open) depth += 1;
+            if (tokens[index].value === close) {
+                depth -= 1;
+                if (depth === 0) return index;
+            }
+        }
+        return -1;
+    }
+
+    function scriptLocation(source, offset) {
+        const before = source.slice(0, offset);
+        const lines = before.split('\n');
+        return { offset, line: lines.length, column: lines[lines.length - 1].length + 1 };
+    }
+
+    function analyzeScript(scriptSource, options) {
+        const source = typeof scriptSource === 'string' ? scriptSource : '';
+        const tokens = tokenizeScript(source);
+        const taskIds = options?.taskIds ? new Set(options.taskIds) : null;
+        const taskReferences = [];
+        const handlers = [];
+        const targetReferences = [];
+        const diagnostics = [];
+        const aliases = new Map();
+        const seenHandlers = new Set();
+
+        const addTaskReference = (taskId, token, form) => {
+            const reference = { taskId, form, ...scriptLocation(source, token.start), endOffset: token.end };
+            taskReferences.push(reference);
+            if (taskIds && !taskIds.has(taskId)) diagnostics.push({
+                code: 'script.task.unknown', severity: 'error',
+                message: `Script refers to task '${taskId}', but Define has no task with that ID.`,
+                taskId, ...scriptLocation(source, token.start), endOffset: token.end
+            });
+            return reference;
+        };
+        const scanHandlerTargets = (openIndex, closeIndex, handler) => {
+            for (let index = openIndex + 1; index < closeIndex; index += 1) {
+                if (!SCRIPT_HELPERS.has(tokens[index]?.value) || tokens[index + 1]?.value !== '(') continue;
+                const argument = tokens[index + 2];
+                if (argument?.type !== 'string') continue;
+                targetReferences.push({ targetId: argument.value, helper: tokens[index].value, taskId: handler.taskId, phase: handler.phase, ...scriptLocation(source, argument.start), endOffset: argument.end });
+            }
+        };
+        const addHandler = (taskId, methodToken, form) => {
+            const key = `${taskId}:${methodToken.start}`;
+            if (seenHandlers.has(key)) return;
+            seenHandlers.add(key);
+            const phase = methodToken.value === 'onStart' ? 'start' : 'completion';
+            const handler = { taskId, phase, method: methodToken.value, form, ...scriptLocation(source, methodToken.start), endOffset: methodToken.end };
+            handlers.push(handler);
+            const openIndex = tokens.indexOf(methodToken) + 1;
+            const closeIndex = matchingToken(tokens, openIndex, '(', ')');
+            if (closeIndex !== -1) scanHandlerTargets(openIndex, closeIndex, handler);
+        };
+
+        for (let index = 0; index < tokens.length; index += 1) {
+            if (tokens[index]?.value !== 'WorkSpec' || tokens[index + 1]?.value !== '.' || tokens[index + 2]?.value !== 'task' || tokens[index + 3]?.value !== '(') continue;
+            const argument = tokens[index + 4];
+            const closeIndex = matchingToken(tokens, index + 3, '(', ')');
+            if (argument?.type !== 'string') {
+                diagnostics.push({ code: 'script.task.dynamic', severity: 'info', message: 'Dynamic WorkSpec.task(...) references are resolved only at runtime.', ...scriptLocation(source, argument?.start ?? tokens[index + 2].end), endOffset: argument?.end ?? tokens[index + 2].end });
+                continue;
+            }
+            let form = 'chained';
+            const previous = tokens[index - 1];
+            const previousPrevious = tokens[index - 2];
+            if (previous?.value === '=' && previousPrevious?.type === 'identifier') {
+                form = 'stored';
+                aliases.set(previousPrevious.value, { taskId: argument.value, tokenIndex: index });
+            }
+            const reference = addTaskReference(argument.value, argument, form);
+            if (closeIndex !== -1 && tokens[closeIndex + 1]?.value === '.' && SCRIPT_HANDLER_METHODS.has(tokens[closeIndex + 2]?.value)) {
+                addHandler(argument.value, tokens[closeIndex + 2], 'chained');
+            }
+            if (tokens[index + 5]?.value === ',') {
+                form = 'grouped';
+                reference.form = form;
+                let parameter = null;
+                let bodyOpen = -1;
+                if (tokens[index + 6]?.type === 'identifier' && tokens[index + 7]?.value === '=>') {
+                    parameter = tokens[index + 6].value;
+                    bodyOpen = index + 8;
+                } else if (tokens[index + 6]?.value === '(' && tokens[index + 7]?.type === 'identifier' && tokens[index + 8]?.value === ')' && tokens[index + 9]?.value === '=>') {
+                    parameter = tokens[index + 7].value;
+                    bodyOpen = index + 10;
+                } else if (tokens[index + 6]?.value === 'function' && tokens[index + 7]?.value === '(' && tokens[index + 8]?.type === 'identifier') {
+                    parameter = tokens[index + 8].value;
+                    bodyOpen = tokens.findIndex((token, tokenIndex) => tokenIndex > index + 8 && token.value === '{');
+                }
+                if (parameter && bodyOpen !== -1) {
+                    const braced = tokens[bodyOpen]?.value === '{';
+                    const bodyClose = braced ? matchingToken(tokens, bodyOpen, '{', '}') : closeIndex;
+                    for (let cursor = bodyOpen + (braced ? 1 : 0); cursor < bodyClose; cursor += 1) {
+                        if (tokens[cursor]?.value === parameter && tokens[cursor + 1]?.value === '.' && SCRIPT_HANDLER_METHODS.has(tokens[cursor + 2]?.value)) addHandler(argument.value, tokens[cursor + 2], 'grouped');
+                    }
+                }
+            }
+        }
+        for (let index = 0; index < tokens.length - 2; index += 1) {
+            const alias = aliases.get(tokens[index]?.value);
+            if (!alias || tokens[index + 1]?.value !== '.' || !SCRIPT_HANDLER_METHODS.has(tokens[index + 2]?.value)) continue;
+            const reassigned = tokens.slice(alias.tokenIndex + 1, index).some((token, offset, candidates) => token.value === tokens[index].value && candidates[offset + 1]?.value === '=');
+            if (reassigned) {
+                diagnostics.push({ code: 'script.task.alias_dynamic', severity: 'info', message: `Task handle '${tokens[index].value}' was reassigned; Studio leaves this handler to runtime resolution.`, ...scriptLocation(source, tokens[index].start), endOffset: tokens[index].end });
+                continue;
+            }
+            addHandler(alias.taskId, tokens[index + 2], 'stored');
+        }
+        handlers.sort((left, right) => left.offset - right.offset);
+        targetReferences.sort((left, right) => left.offset - right.offset);
+        diagnostics.sort((left, right) => left.offset - right.offset);
+        return { taskReferences, handlers, targetReferences, diagnostics };
+    }
+
     function compileScript(scriptSource) {
         const effects = new Map();
+        const taskHandles = new Map();
+        let activeContext = null;
         const add = (taskId, phase, effect) => {
             if (typeof taskId !== 'string' || !taskId) throw new TypeError('Script task IDs must be non-empty strings.');
             const key = `${taskId}:${phase}`;
@@ -1824,19 +2014,45 @@
         const capture = (taskId, phase, callback) => {
             if (typeof callback !== 'function') throw new TypeError('A WorkSpec Script task handler must be a function.');
             const at = phase === 'start' ? { at: 'start' } : {};
-            callback(Object.freeze({
+            const context = Object.freeze({
+                taskId,
+                phase,
                 set(targetId, property, value, options) { add(taskId, phase, { target_id: targetId, property_changes: { [property]: { set: clone(value) } }, ...at, ...(options?.temporary ? { temporary: true } : {}) }); },
                 change(targetId, property, amount, options) { add(taskId, phase, { target_id: targetId, property_changes: { [property]: { delta: amount } }, ...at, ...(options?.temporary ? { temporary: true } : {}) }); },
                 move(targetId, locationId, options) { this.set(targetId, 'location', locationId, options); },
                 create(object) { add(taskId, phase, { action: 'create', object: clone(object), ...at }); },
                 remove(targetId) { add(taskId, phase, { action: 'delete', target_id: targetId, ...at }); }
-            }));
+            });
+            const previousContext = activeContext;
+            activeContext = context;
+            try { callback(context); }
+            finally { activeContext = previousContext; }
         };
-        const task = (taskId) => Object.freeze({
-            onStart(callback) { capture(taskId, 'start', callback); return this; },
-            onComplete(callback) { capture(taskId, 'completion', callback); return this; }
-        });
-        if (typeof scriptSource === 'string' && scriptSource.trim()) Function('WorkSpec', `'use strict';\n${scriptSource}`)(Object.freeze({ task }));
+        const ambient = (name) => (...args) => {
+            if (!activeContext) throw new Error(`WorkSpec Script helper '${name}' can only be used inside a task handler.`);
+            return activeContext[name](...args);
+        };
+        const task = (taskId, configure) => {
+            if (typeof taskId !== 'string' || !taskId) throw new TypeError('Script task IDs must be non-empty strings.');
+            let handle = taskHandles.get(taskId);
+            if (!handle) {
+                handle = Object.freeze({
+                    onStart(callback) { capture(taskId, 'start', callback); return handle; },
+                    onComplete(callback) { capture(taskId, 'completion', callback); return handle; }
+                });
+                taskHandles.set(taskId, handle);
+            }
+            if (configure !== undefined) {
+                if (typeof configure !== 'function') throw new TypeError('WorkSpec.task(id, callback) requires a function callback.');
+                configure(handle);
+            }
+            return handle;
+        };
+        if (typeof scriptSource === 'string' && scriptSource.trim()) {
+            const names = [...SCRIPT_HELPERS];
+            const helpers = names.map(ambient);
+            Function('WorkSpec', ...names, `'use strict';\n${scriptSource}`)(Object.freeze({ task }), ...helpers);
+        }
         return effects;
     }
 
@@ -1854,6 +2070,12 @@
 
     function runProject(documentValue, scriptSource, options) {
         const run = replay(defineWithScript(documentValue, scriptSource), options);
+        const taskIds = (simOf(documentValue)?.process?.tasks || []).map(task => task?.id).filter(Boolean);
+        const scriptAnalysis = analyzeScript(scriptSource, { taskIds });
+        scriptAnalysis.diagnostics.filter(diagnostic => diagnostic.severity === 'error').forEach((diagnostic) => {
+            run.problems.push(problem(diagnostic.code, diagnostic.message, `/script:${diagnostic.line}:${diagnostic.column}`, { task_id: diagnostic.taskId }));
+        });
+        run.scriptAnalysis = scriptAnalysis;
         run.define = documentValue;
         run.script = scriptSource || '';
         return run;
@@ -1865,5 +2087,5 @@
         return serialiseState(runProject(documentValue, scriptSource, { until }));
     }
 
-    return { parseDurationToMinutes, parseTaskStart, parseOffset, formatCompactReference, normalizeValueExpression, isValueReference, evaluateValue, evaluateCondition, buildIndex, resolveTimings, replay, serialiseState, snapshotAt, validate, compileScript, defineWithScript, runProject, snapshotProjectAt, OBJECT_FIELDS: [...OBJECT_FIELDS], TASK_FIELDS: [...TASK_FIELDS], LOCATION_FIELDS: [...LOCATION_FIELDS] };
+    return { parseDurationToMinutes, parseTaskStart, parseOffset, formatCompactReference, normalizeValueExpression, isValueReference, evaluateValue, evaluateCondition, buildIndex, resolveTimings, replay, serialiseState, snapshotAt, validate, analyzeScript, compileScript, defineWithScript, runProject, snapshotProjectAt, OBJECT_FIELDS: [...OBJECT_FIELDS], TASK_FIELDS: [...TASK_FIELDS], LOCATION_FIELDS: [...LOCATION_FIELDS] };
 }));
