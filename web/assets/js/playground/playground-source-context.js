@@ -1,4 +1,4 @@
-// Context-aware WorkSpec source navigation for the Playground shell.
+// Context-aware WorkSpec Definitions navigation for the Playground shell.
 (function () {
     'use strict';
 
@@ -169,8 +169,8 @@
             if (!header || header.querySelector('.uaw-source-toolbar')) return;
             header.innerHTML = `
                 <div class="uaw-source-toolbar">
-                    <div class="uaw-source-identity"><strong>WorkSpec source</strong><code id="uaw-source-path">WorkSpec</code></div>
-                    <div class="uaw-source-scope" role="group" aria-label="Source scope">
+                    <div class="uaw-source-identity"><strong>WorkSpec Definitions</strong><code id="uaw-source-path">WorkSpec</code></div>
+                    <div class="uaw-source-scope" role="group" aria-label="WorkSpec Definitions scope">
                         <button type="button" data-source-scope="context" aria-pressed="true">Context</button>
                         <button type="button" data-source-scope="full" aria-pressed="false">Full JSON</button>
                     </div>

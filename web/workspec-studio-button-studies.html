@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkSpec Studio · Button State Studies</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+    <style>
+        /* ============================================================
+           Page scaffold — styled as a WorkSpec Studio spec sheet
+           ============================================================ */
+        :root {
+            --ink: #211f25;
+            --ink-soft: #534e57;
+            --muted: #746f79;
+            --faint: #817a84;
+            --hairline: #cbc7cf;
+            --rail-bg: #e9e7e5;
+            --paper: #f1efec;
+            --chip-bg: #f4f2f0;
+            --chip-border: #d2cdd4;
+            --cyan: #16bdb9;
+            --cyan-deep: #176f75;
+            --violet: #7457ff;
+            --font-ui: "Source Sans 3", "Segoe UI", sans-serif;
+            --font-code: "IBM Plex Mono", "SFMono-Regular", monospace;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            color: var(--ink);
+            background:
+                repeating-linear-gradient(0deg, transparent 0 31px, rgba(33, 31, 37, .025) 31px 32px),
+                var(--paper);
+            font: 400 15px/1.5 var(--font-ui);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 56px 40px 120px;
+        }
+
+        /* ---------- header ---------- */
+        .masthead {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 32px;
+            padding-bottom: 22px;
+            border-bottom: 2px solid var(--ink);
+        }
+
+        .masthead .eyebrow {
+            margin: 0 0 10px;
+            color: var(--cyan-deep);
+            font: 600 11px/1 var(--font-code);
+            letter-spacing: .16em;
+            text-transform: uppercase;
+        }
+
+        .masthead h1 {
+            margin: 0 0 8px;
+            font: 700 32px/1.05 var(--font-ui);
+            letter-spacing: -.015em;
+        }
+
+        .masthead p {
+            margin: 0;
+            max-width: 520px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .controls {
+            flex: 0 0 auto;
+            display: grid;
+            gap: 8px;
+            justify-items: end;
+        }
+
+        .controls .hint {
+            color: var(--faint);
+            font: 500 10px/1 var(--font-code);
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .freeze-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 14px;
+            color: var(--ink);
+            background: #fff;
+            border: 1px solid var(--hairline);
+            border-radius: 5px;
+            box-shadow: 0 1px 2px rgba(42, 36, 47, .07);
+            font: 600 12px/1 var(--font-ui);
+            cursor: pointer;
+            user-select: none;
+            transition: border-color 120ms ease, box-shadow 120ms ease;
+        }
+
+        .freeze-toggle:hover { border-color: #b5afb8; }
+
+        .freeze-toggle:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(22, 189, 185, .42);
+        }
+
+        .freeze-toggle .switch {
+            position: relative;
+            width: 28px;
+            height: 15px;
+            background: #d9d6da;
+            border: 1px solid #bfbac1;
+            border-radius: 99px;
+            transition: background-color 140ms ease;
+        }
+
+        .freeze-toggle .switch::after {
+            content: "";
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            width: 11px;
+            height: 11px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 1px 1px rgba(42, 36, 47, .25);
+            transition: transform 140ms cubic-bezier(.2, .8, .2, 1);
+        }
+
+        body.states-frozen .freeze-toggle .switch { background: var(--cyan); border-color: var(--cyan-deep); }
+        body.states-frozen .freeze-toggle .switch::after { transform: translateX(13px); }
+
+        /* ---------- study rows ---------- */
+        .study {
+            display: grid;
+            grid-template-columns: 288px minmax(0, 1fr);
+            gap: 28px;
+            padding: 30px 0 34px;
+            border-bottom: 1px solid #d9d5d9;
+        }
+
+        .study:last-of-type { border-bottom: 0; }
+
+        .study__note { padding-top: 4px; }
+
+        .study__index {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 10px;
+            font: 600 10px/1 var(--font-code);
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--faint);
+        }
+
+        .study__index::before {
+            content: "";
+            width: 18px;
+            height: 2px;
+            background: var(--cyan);
+        }
+
+        .study--baseline .study__index::before { background: var(--faint); }
+
+        .study__note h2 {
+            margin: 0 0 6px;
+            font: 650 18px/1.15 var(--font-ui);
+            letter-spacing: -.01em;
+        }
+
+        .study__note > p {
+            margin: 0 0 16px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .spec { display: grid; gap: 5px; }
+
+        .spec__row {
+            display: grid;
+            grid-template-columns: 52px 10px minmax(0, 1fr);
+            align-items: center;
+            gap: 8px;
+            font: 400 10.5px/1.4 var(--font-code);
+            color: var(--muted);
+        }
+
+        .spec__row b {
+            font-weight: 600;
+            color: var(--ink-soft);
+            letter-spacing: .06em;
+        }
+
+        .spec__row i {
+            width: 10px;
+            height: 10px;
+            border: 1px solid rgba(33, 31, 37, .25);
+        }
+
+        .spec__row span code { color: var(--ink-soft); }
+
+        /* ---------- stage: a slice of the studio frame ---------- */
+        .stage {
+            display: flex;
+            min-height: 372px;
+            border: 1px solid #b9b4bc;
+            border-radius: 7px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(42, 36, 47, .09), inset 0 1px 0 rgba(255, 255, 255, .6);
+        }
+
+        .stage__canvas {
+            flex: 1;
+            background: #fff;
+            border-left: 1px solid var(--hairline);
+            padding: 16px 18px;
+        }
+
+        .stage__canvas .line {
+            height: 8px;
+            border-radius: 2px;
+            background: #ecebe9;
+            margin-bottom: 9px;
+        }
+
+        .stage__canvas .line.w60 { width: 60%; }
+        .stage__canvas .line.w85 { width: 85%; }
+        .stage__canvas .line.w40 { width: 40%; background: #e2f4f3; }
+
+        .stage__tag {
+            align-self: flex-end;
+            margin: 0 12px 10px;
+            color: #a49ea9;
+            font: 500 9px/1 var(--font-code);
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        /* ============================================================
+           RAIL — shared base replicating studio geometry exactly
+           ============================================================ */
+        .rail {
+            flex: 0 0 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 12px 8px 10px;
+            background: var(--rail-bg);
+            box-shadow: inset -1px 0 rgba(255, 255, 255, .5);
+        }
+
+        .rail__primary,
+        .rail__secondary {
+            display: grid;
+            gap: 3px;
+        }
+
+        .rail__label {
+            margin: 0;
+            padding: 0 9px 7px;
+            color: #78727c;
+            font: 650 8px/1 var(--font-code);
+            letter-spacing: .13em;
+            text-transform: uppercase;
+        }
+
+        .rbtn {
+            position: relative;
+            display: grid;
+            grid-template-columns: 32px minmax(0, 1fr) 18px;
+            align-items: center;
+            gap: 9px;
+            width: 100%;
+            min-height: 52px;
+            padding: 6px 8px;
+            color: var(--ink-soft);
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 5px;
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .rbtn:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(22, 189, 185, .42);
+        }
+
+        .rbtn__icon {
+            display: grid;
+            place-items: center;
+            width: 32px;
+            height: 32px;
+            color: #6e6873;
+            background: var(--chip-bg);
+            border: 1px solid var(--chip-border);
+            border-radius: 4px;
+            transition: inherit;
+        }
+
+        .rbtn .uaw-icon { display: inline-flex; width: 17px; height: 17px; }
+
+        .rbtn .uaw-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.7;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .rbtn__copy { display: grid; gap: 2px; min-width: 0; }
+
+        .rbtn__copy strong {
+            font: 620 12px/1.1 var(--font-ui);
+            white-space: nowrap;
+        }
+
+        .rbtn__copy small {
+            color: var(--faint);
+            font: 9px/1.1 var(--font-ui);
+            white-space: nowrap;
+        }
+
+        .rbtn kbd {
+            display: grid;
+            place-items: center;
+            width: 18px;
+            height: 18px;
+            color: #77717b;
+            background: var(--chip-bg);
+            border: 1px solid var(--chip-border);
+            border-radius: 3px;
+            font: 8px var(--font-code);
+        }
+
+        /* ============================================================
+           00 · BASELINE — current implementation
+           ============================================================ */
+        .rail--baseline .rbtn { transition: color 110ms ease, background-color 110ms ease, border-color 110ms ease; }
+
+        .rail--baseline .rbtn::before {
+            content: "";
+            position: absolute;
+            top: 10px;
+            bottom: 10px;
+            left: -8px;
+            width: 3px;
+            background: var(--cyan);
+            opacity: 0;
+        }
+
+        .rail--baseline .rbtn:hover,
+        .rail--baseline .rbtn.is-hover {
+            color: #211e25;
+            background: #f2f0ee;
+            border-color: #ccc7cf;
+        }
+
+        .rail--baseline .rbtn.is-hover { box-shadow: 0 0 0 1px rgba(22, 189, 185, .18); }
+
+        .rail--baseline .rbtn.active,
+        .rail--baseline .rbtn.is-active {
+            color: #242128;
+            background: #dad7dc;
+            border-color: #bcb6c1;
+            box-shadow: inset 0 1px rgba(255, 255, 255, .48), 0 1px 2px rgba(42, 36, 47, .08);
+        }
+
+        .rail--baseline .rbtn.active::before,
+        .rail--baseline .rbtn.is-active::before { opacity: 1; }
+
+        .rail--baseline .rbtn:hover .rbtn__icon,
+        .rail--baseline .rbtn.is-hover .rbtn__icon,
+        .rail--baseline .rbtn.active .rbtn__icon,
+        .rail--baseline .rbtn.is-active .rbtn__icon { color: var(--cyan-deep); }
+
+        .rail--baseline .rbtn.active .rbtn__copy small,
+        .rail--baseline .rbtn.is-active .rbtn__copy small { color: #67616b; }
+
+        .rail--baseline .rbtn.active kbd { color: #514b56; }
+
+        /* ============================================================
+           01 · CYAN TINT — accent wash instead of gray fill
+           ============================================================ */
+        .rail--tint .rbtn { transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease; }
+
+        .rail--tint .rbtn:hover,
+        .rail--tint .rbtn.is-hover {
+            color: #175a58;
+            background: rgba(22, 189, 185, .09);
+            border-color: rgba(22, 189, 185, .3);
+        }
+
+        .rail--tint .rbtn:hover .rbtn__icon,
+        .rail--tint .rbtn.is-hover .rbtn__icon {
+            color: #0f7c79;
+            background: #fff;
+            border-color: rgba(22, 189, 185, .45);
+        }
+
+        .rail--tint .rbtn.active,
+        .rail--tint .rbtn.is-active {
+            color: #0b5f5d;
+            background: rgba(22, 189, 185, .16);
+            border-color: rgba(22, 189, 185, .5);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55);
+        }
+
+        .rail--tint .rbtn.active .rbtn__icon,
+        .rail--tint .rbtn.is-active .rbtn__icon {
+            color: #fff;
+            background: var(--cyan);
+            border-color: var(--cyan-deep);
+            box-shadow: 0 1px 2px rgba(14, 122, 119, .35);
+        }
+
+        .rail--tint .rbtn.active .rbtn__copy small,
+        .rail--tint .rbtn.is-active .rbtn__copy small { color: #357c7a; }
+
+        .rail--tint .rbtn.active kbd,
+        .rail--tint .rbtn.is-active kbd {
+            color: #0b5f5d;
+            background: rgba(255, 255, 255, .8);
+            border-color: rgba(22, 189, 185, .45);
+        }
+
+        /* ============================================================
+           02 · MACHINED KEY — physical press metaphor
+           ============================================================ */
+        .rail--key .rbtn {
+            transition: transform 100ms ease, background-color 100ms ease,
+                        border-color 100ms ease, box-shadow 100ms ease, color 100ms ease;
+        }
+
+        .rail--key .rbtn:hover,
+        .rail--key .rbtn.is-hover {
+            color: #211e25;
+            background: #fdfcfb;
+            border-color: #c5c0c8;
+            box-shadow: 0 2px 3px rgba(42, 36, 47, .13);
+            transform: translateY(-1px);
+        }
+
+        .rail--key .rbtn:hover .rbtn__icon,
+        .rail--key .rbtn.is-hover .rbtn__icon {
+            color: var(--cyan-deep);
+            background: #fff;
+            border-color: #c8c3ca;
+        }
+
+        .rail--key .rbtn.active,
+        .rail--key .rbtn.is-active {
+            color: #17151b;
+            background: #e2dfdd;
+            border-color: #aaa4ad;
+            box-shadow: inset 0 2px 3px rgba(42, 36, 47, .18), inset 0 -1px 0 rgba(255, 255, 255, .5);
+            transform: translateY(0);
+        }
+
+        .rail--key .rbtn.active .rbtn__icon,
+        .rail--key .rbtn.is-active .rbtn__icon {
+            color: #fff;
+            background: var(--cyan);
+            border-color: var(--cyan-deep);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35);
+        }
+
+        .rail--key .rbtn.active .rbtn__copy small,
+        .rail--key .rbtn.is-active .rbtn__copy small { color: #5d5762; }
+
+        .rail--key .rbtn.active kbd,
+        .rail--key .rbtn.is-active kbd { color: #45404b; }
+
+        /* ============================================================
+           03 · EDGE SLIDE — motion-first indicator bar
+           ============================================================ */
+        .rail--edge .rbtn {
+            transition: background-color 130ms ease, border-color 130ms ease, color 130ms ease;
+        }
+
+        .rail--edge .rbtn::before {
+            content: "";
+            position: absolute;
+            top: 9px;
+            bottom: 9px;
+            left: -8px;
+            width: 3px;
+            border-radius: 0 2px 2px 0;
+            background: var(--cyan);
+            opacity: 0;
+            transform: scaleY(.35);
+            transform-origin: center;
+            transition: opacity 150ms ease, transform 220ms cubic-bezier(.34, 1.56, .64, 1);
+        }
+
+        .rail--edge .rbtn:hover,
+        .rail--edge .rbtn.is-hover {
+            color: #211e25;
+            background: #f1efec;
+            border-color: #cfcacf;
+        }
+
+        .rail--edge .rbtn:hover::before,
+        .rail--edge .rbtn.is-hover::before { opacity: .38; transform: scaleY(1); }
+
+        .rail--edge .rbtn.active,
+        .rail--edge .rbtn.is-active {
+            color: #17151b;
+            background: #fff;
+            border-color: #d3ced5;
+            box-shadow: 0 1px 2px rgba(42, 36, 47, .07);
+        }
+
+        .rail--edge .rbtn.active::before,
+        .rail--edge .rbtn.is-active::before { opacity: 1; transform: scaleY(1); }
+
+        .rail--edge .rbtn:hover .rbtn__icon,
+        .rail--edge .rbtn.is-hover .rbtn__icon,
+        .rail--edge .rbtn.active .rbtn__icon,
+        .rail--edge .rbtn.is-active .rbtn__icon {
+            color: var(--cyan-deep);
+            background: #fff;
+        }
+
+        .rail--edge .rbtn.active .rbtn__copy small,
+        .rail--edge .rbtn.is-active .rbtn__copy small { color: #67616b; }
+
+        /* ============================================================
+           04 · WHITE CARD — selection as elevation
+           ============================================================ */
+        .rail--card .rbtn { transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease; }
+
+        .rail--card .rbtn:hover,
+        .rail--card .rbtn.is-hover {
+            background: rgba(255, 255, 255, .55);
+            border-color: rgba(255, 255, 255, .95);
+            box-shadow: 0 1px 2px rgba(42, 36, 47, .08);
+        }
+
+        .rail--card .rbtn.active,
+        .rail--card .rbtn.is-active {
+            color: #17151b;
+            background: #fff;
+            border-color: #c4bfc7;
+            box-shadow: 0 2px 4px rgba(42, 36, 47, .14), 0 0 0 1px rgba(22, 189, 185, .28);
+        }
+
+        .rail--card .rbtn:hover .rbtn__icon,
+        .rail--card .rbtn.is-hover .rbtn__icon {
+            color: var(--cyan-deep);
+            background: #fff;
+            border-color: #d6d1d8;
+        }
+
+        .rail--card .rbtn.active .rbtn__icon,
+        .rail--card .rbtn.is-active .rbtn__icon {
+            color: #fff;
+            background: linear-gradient(180deg, #1cc9c5, #14a8a5);
+            border-color: var(--cyan-deep);
+        }
+
+        .rail--card .rbtn.active .rbtn__copy small,
+        .rail--card .rbtn.is-active .rbtn__copy small { color: #67616b; }
+
+        .rail--card .rbtn.active kbd,
+        .rail--card .rbtn.is-active kbd {
+            color: #0b5f5d;
+            background: #eef9f8;
+            border-color: rgba(22, 189, 185, .4);
+        }
+
+        /* ============================================================
+           05 · UNDERLINE TAB — selection connects to the surface
+           ============================================================ */
+        .rail--tab .rbtn {
+            transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+        }
+
+        .rail--tab .rbtn::after {
+            content: "";
+            position: absolute;
+            right: 8px;
+            bottom: -1px;
+            left: 8px;
+            height: 2px;
+            border-radius: 2px 2px 0 0;
+            background: var(--cyan);
+            transform: scaleX(0);
+            transform-origin: left center;
+            transition: transform 170ms cubic-bezier(.2, .8, .2, 1);
+        }
+
+        .rail--tab .rbtn:hover,
+        .rail--tab .rbtn.is-hover {
+            color: #211e25;
+            background: #f1efec;
+            border-color: #cfcacf;
+        }
+
+        .rail--tab .rbtn:hover::after,
+        .rail--tab .rbtn.is-hover::after {
+            background: #b3b0b5;
+            transform: scaleX(1);
+        }
+
+        .rail--tab .rbtn.active,
+        .rail--tab .rbtn.is-active {
+            color: #17151b;
+            background: #fff;
+            border-color: #cbc7cf;
+            border-bottom-color: transparent;
+            border-radius: 5px 5px 0 0;
+            box-shadow: 0 -1px 2px rgba(42, 36, 47, .05);
+        }
+
+        .rail--tab .rbtn.active::after,
+        .rail--tab .rbtn.is-active::after { background: var(--cyan); transform: scaleX(1); }
+
+        .rail--tab .rbtn:hover .rbtn__icon,
+        .rail--tab .rbtn.is-hover .rbtn__icon,
+        .rail--tab .rbtn.active .rbtn__icon,
+        .rail--tab .rbtn.is-active .rbtn__icon {
+            color: var(--cyan-deep);
+            background: #fff;
+        }
+
+        .rail--tab .rbtn.active .rbtn__copy small,
+        .rail--tab .rbtn.is-active .rbtn__copy small { color: #67616b; }
+
+        /* ============================================================
+           06 · INK SIGNAL — dark selection with glowing chip
+           ============================================================ */
+        .rail--signal .rbtn { transition: color 130ms ease, background-color 130ms ease, border-color 130ms ease, box-shadow 130ms ease; }
+
+        .rail--signal .rbtn::before {
+            content: "";
+            position: absolute;
+            top: 10px;
+            bottom: 10px;
+            left: -8px;
+            width: 3px;
+            background: var(--cyan);
+            opacity: 0;
+            transition: opacity 130ms ease;
+        }
+
+        .rail--signal .rbtn:hover,
+        .rail--signal .rbtn.is-hover {
+            color: #211e25;
+            background: #f2f0ee;
+            border-color: #ccc7cf;
+        }
+
+        .rail--signal .rbtn:hover .rbtn__icon,
+        .rail--signal .rbtn.is-hover .rbtn__icon {
+            color: #0f7c79;
+            background: #fff;
+            border-color: #c8c3ca;
+            box-shadow: 0 0 0 2px rgba(22, 189, 185, .22);
+        }
+
+        .rail--signal .rbtn.active,
+        .rail--signal .rbtn.is-active {
+            color: #f6f4f7;
+            background: linear-gradient(180deg, #2b2830, #232028);
+            border-color: #17151c;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 2px 5px rgba(23, 21, 28, .3);
+        }
+
+        .rail--signal .rbtn.active::before,
+        .rail--signal .rbtn.is-active::before { opacity: 1; }
+
+        .rail--signal .rbtn.active .rbtn__icon,
+        .rail--signal .rbtn.is-active .rbtn__icon {
+            color: #fff;
+            background: var(--cyan);
+            border-color: #0d918e;
+            box-shadow: 0 0 9px rgba(22, 189, 185, .55), inset 0 1px 0 rgba(255, 255, 255, .35);
+        }
+
+        .rail--signal .rbtn.active .rbtn__copy small,
+        .rail--signal .rbtn.is-active .rbtn__copy small { color: #a8a1b0; }
+
+        .rail--signal .rbtn.active kbd,
+        .rail--signal .rbtn.is-active kbd {
+            color: #d8d4dd;
+            background: rgba(255, 255, 255, .08);
+            border-color: rgba(255, 255, 255, .18);
+        }
+
+        /* ============================================================
+           Footer note
+           ============================================================ */
+        .colophon {
+            margin-top: 42px;
+            padding: 18px 20px;
+            background: #fff;
+            border: 1px solid var(--hairline);
+            border-radius: 6px;
+            color: var(--muted);
+            font-size: 12.5px;
+        }
+
+        .colophon code {
+            padding: 1px 5px;
+            background: var(--chip-bg);
+            border: 1px solid #e0dcdf;
+            border-radius: 3px;
+            font: 500 11px var(--font-code);
+            color: var(--ink-soft);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition-duration: 1ms !important; }
+        }
+
+        @media (max-width: 900px) {
+            .page { padding: 32px 20px 80px; }
+            .masthead { flex-direction: column; align-items: flex-start; }
+            .study { grid-template-columns: 1fr; gap: 18px; }
+            .stage { flex-direction: column; }
+            .stage__canvas { border-left: 0; border-top: 1px solid var(--hairline); min-height: 90px; }
+            .stage__tag { order: -1; align-self: flex-start; margin: 10px 12px 0; }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <header class="masthead">
+            <div>
+                <p class="eyebrow">WorkSpec Studio / Interaction Study</p>
+                <h1>Rail button states</h1>
+                <p>Seven treatments for the workspace buttons — hover and selected. Every rail below is live:
+                    move across it to feel the hover state, click to set the selection. Judge each one in context,
+                    against the canvas surface.</p>
+            </div>
+            <div class="controls">
+                <span class="hint">hover to test · click to select</span>
+                <button class="freeze-toggle" type="button" id="freeze-toggle">
+                    Preview all states at once
+                    <span class="switch" aria-hidden="true"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 00 · BASELINE -->
+        <section class="study study--baseline">
+            <div class="study__note">
+                <p class="study__index">00 · Reference</p>
+                <h2>Baseline — current</h2>
+                <p>The implementation today. Hover lifts the button to a light warm gray; selection fills it a
+                    shade darker with a cyan bar bleeding off the rail's left edge.</p>
+                <div class="spec">
+                    <div class="spec__row"><b>HOVER</b><i style="background:#f2f0ee"></i><span><code>#f2f0ee</code> · border <code>#ccc7cf</code></span></div>
+                    <div class="spec__row"><b>ACTIVE</b><i style="background:#dad7dc"></i><span><code>#dad7dc</code> · bar <code>#16bdb9</code></span></div>
+                </div>
+            </div>
+            <div class="stage">
+                <div class="rail rail--baseline" data-rail>
+                    <div class="rail__primary">
+                        <p class="rail__label">Workspace</p>
+                        <div data-buttons></div>
+                    </div>
+                </div>
+                <div class="stage__canvas">
+                    <div class="line w40"></div>
+                    <div class="line w85"></div>
+                    <div class="line w60"></div>
+                </div>
+                <span class="stage__tag">current</span>
+            </div>
+        </section>
+
+        <!-- 01 · CYAN TINT -->
+        <section class="study">
+            <div class="study__note">
+                <p class="study__index">01 · Tint</p>
+                <h2>Cyan Tint</h2>
+                <p>Invites the brand accent into the state itself instead of a single side bar. Hover is a faint
+                    cyan wash; selection deepens the wash and inverts the icon chip to solid cyan. The calmest
+                    way to make the accent do real work.</p>
+                <div class="spec">
+                    <div class="spec__row"><b>HOVER</b><i style="background:rgba(22,189,185,.09)"></i><span>wash <code>9%</code> · border <code>30%</code></span></div>
+                    <div class="spec__row"><b>ACTIVE</b><i style="background:rgba(22,189,185,.16)"></i><span>wash <code>16%</code> · chip solid cyan</span></div>
+                </div>
+            </div>
+            <div class="stage">
+                <div class="rail rail--tint" data-rail>
+                    <div class="rail__primary">
+                        <p class="rail__label">Workspace</p>
+                        <div data-buttons></div>
+                    </div>
+                </div>
+                <div class="stage__canvas">
+                    <div class="line w40"></div>
+                    <div class="line w85"></div>
+                    <div class="line w60"></div>
+                </div>
+                <span class="stage__tag">accent</span>
+            </div>
+        </section>
+
+        <!-- 02 · MACHINED KEY -->
+        <section class="study">
+            <div class="study__note">
+                <p class="study__index">02 · Tactile</p>
+                <h2>Machined Key</h2>
+                <p>Leans into the tool-like chrome: buttons behave like physical keys. Hover raises the key off
+                    the rail; selection presses it in — inset shadow, depressed surface, lit cyan chip. Selection
+                    reads through touch logic, not color alone.</p>
+                <div class="spec">
+                    <div class="spec__row"><b>HOVER</b><i style="background:#fdfcfb"></i><span>lift <code>-1px</code> · drop shadow</span></div>
+                    <div class="spec__row"><b>ACTIVE</b><i style="background:#e2dfdd"></i><span>pressed <code>inset</code> · chip solid cyan</span></div>
+                </div>
+            </div>
+            <div class="stage">
+                <div class="rail rail--key" data-rail>
+                    <div class="rail__primary">
+                        <p class="rail__label">Workspace</p>
+                        <div data-buttons></div>
+                    </div>
+                </div>
+                <div class="stage__canvas">
+                    <div class="line w40"></div>
+                    <div class="line w85"></div>
+                    <div class="line w60"></div>
+                </div>
+                <span class="stage__tag">tactile</span>
+            </div>
+        </section>
+
+        <!-- 03 · EDGE SLIDE -->
+        <section class="study">
+            <div class="study__note">
+                <p class="study__index">03 · Motion</p>
+                <h2>Edge Slide</h2>
+                <p>The current cyan bar, but given choreography. Hover previews the bar as a translucent ghost
+                    that stretches in; selection snaps it to full strength with a spring. Selection surface goes
+                    white so the bar is the only thing carrying state.</p>
+                <div class="spec">
+                    <div class="spec__row"><b>HOVER</b><i style="background:rgba(22,189,185,.38)"></i><span>ghost bar <code>38%</code> · <code>scaleY .35→1</code></span></div>
+                    <div class="spec__row"><b>ACTIVE</b><i style="background:#16bdb9"></i><span>solid bar · spring <code>220ms</code> · bg white</span></div>
+                </div>
+            </div>
+            <div class="stage">
+                <div class="rail rail--edge" data-rail>
+                    <div class="rail__primary">
+                        <p class="rail__label">Workspace</p>
+                        <div data-buttons></div>
+                    </div>
+                </div>
+                <div class="stage__canvas">
+                    <div class="line w40"></div>
+                    <div class="line w85"></div>
+                    <div class="line w60"></div>
+                </div>
+                <span class="stage__tag">motion</span>
+            </div>
+        </section>
+
+        <!-- 04 · WHITE CARD -->
+        <section class="study">
+            <div class="study__note">
+                <p class="study__index">04 · Elevation</p>
+                <h2>White Card</h2>
+                <p>Selection as a raised surface: the active button floats off the gray rail as a white card with
+                    a hairline cyan keyline, like a segmented control. Hover is the same card at half opacity.
+                    Highest-contrast selection with zero fill.</p>
+                <div class="spec">
+                    <div class="spec__row"><b>HOVER</b><i style="background:rgba(255,255,255,.55)"></i><span>ghost card <code>55%</code></span></div>
+                    <div class="spec__row"><b>ACTIVE</b><i style="background:#fff"></i><span>white card · shadow · keyline <code>28%</code></span></div>
+                </div>
+            </div>
+            <div class="stage">
+                <div class="rail rail--card" data-rail>
+                    <div class="rail__primary">
+                        <p class="rail__label">Workspace</p>
+                        <div data-buttons></div>
+                    </div>
+                </div>
+                <div class="stage__canvas">
+                    <div class="line w40"></div>
+                    <div class="line w85"></div>
+                    <div class="line w60"></div>
+                </div>
+                <span class="stage__tag">elevation</span>
+            </div>
+        </section>
+
+        <!-- 05 · UNDERLINE TAB -->
+        <section class="study">
+            <div class="study__note">
+                <p class="study__index">05 · Structural</p>
+                <h2>Underline Tab</h2>
+                <p>Treats rail buttons as tabs into the workspace. Selection turns the button white and drops a
+                    2px cyan underline that grows from the left, squaring off the bottom corners so the button
+                    appears connected to the content surface. Hover previews with a neutral hairline.</p>
+                <div class="spec">
+                    <div class="spec__row"><b>HOVER</b><i style="background:#b3b0b5"></i><span>hairline preview · <code>scaleX 0→1</code></span></div>
+                    <div class="spec__row"><b>ACTIVE</b><i style="background:#16bdb9"></i><span>cyan underline · bg white · opens downward</span></div>
+                </div>
+            </div>
+            <div class="stage">
+                <div class="rail rail--tab" data-rail>
+                    <div class="rail__primary">
+                        <p class="rail__label">Workspace</p>
+                        <div data-buttons></div>
+                    </div>
+                </div>
+                <div class="stage__canvas">
+                    <div class="line w40"></div>
+                    <div class="line w85"></div>
+                    <div class="line w60"></div>
+                </div>
+                <span class="stage__tag">structural</span>
+            </div>
+        </section>
+
+        <!-- 06 · INK SIGNAL -->
+        <section class="study">
+            <div class="study__note">
+                <p class="study__index">06 · Contrast</p>
+                <h2>Ink Signal</h2>
+                <p>The boldest option: selection inverts. The active button switches to dark ink with light copy,
+                    and the chip ignites cyan with a soft glow — unmistakable at a glance, and it echoes the dark
+                    accents already in dialogs. Hover stays quiet so the inversion lands harder.</p>
+                <div class="spec">
+                    <div class="spec__row"><b>HOVER</b><i style="background:#f2f0ee"></i><span><code>#f2f0ee</code> · chip ring <code>22%</code></span></div>
+                    <div class="spec__row"><b>ACTIVE</b><i style="background:#26232b"></i><span>ink <code>#2b2830</code> · chip glow cyan</span></div>
+                </div>
+            </div>
+            <div class="stage">
+                <div class="rail rail--signal" data-rail>
+                    <div class="rail__primary">
+                        <p class="rail__label">Workspace</p>
+                        <div data-buttons></div>
+                    </div>
+                </div>
+                <div class="stage__canvas">
+                    <div class="line w40"></div>
+                    <div class="line w85"></div>
+                    <div class="line w60"></div>
+                </div>
+                <span class="stage__tag">contrast</span>
+            </div>
+        </section>
+
+        <footer class="colophon">
+            All studies use the studio's real geometry (220px rail · 52px buttons · 32px chips) and palette
+            (<code>#e9e7e5</code> chrome · <code>#16bdb9</code> cyan · <code>#211f25</code> ink · Source Sans 3 / IBM Plex Mono).
+            Any of them can be applied to <code>.uaw-rail-button</code> in <code>playground-v2.css</code> —
+            hover and <code>.active</code> selectors only, no markup changes. The frozen-states toggle restages every
+            rail with a rest, hovered, and selected button side by side for direct comparison.
+        </footer>
+    </main>
+
+    <script>
+        (function () {
+            'use strict';
+
+            const ICONS = {
+                projects: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6.5h6l1.7 2H20.5v10H3.5z"/><path d="M3.5 6.5v-2h6l1.7 2"/></svg>',
+                build: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h5v5H5zM14 14h5v5h-5zM14 5h5v5h-5zM10 7.5h4M16.5 10v4M10 8v8h4"/></svg>',
+                script: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 6-5 6 5 6M15.5 6l5 6-5 6M13.5 4l-3 16"/></svg>',
+                run: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg>',
+                validate: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 20 7v5c0 4.5-3 7.4-8 9-5-1.6-8-4.5-8-9V7z"/><path d="m8.5 12 2.3 2.3 4.8-5"/></svg>'
+            };
+
+            const BUTTONS = [
+                { id: 'projects', label: 'Projects', description: 'Local WorkSpec projects', shortcut: '1' },
+                { id: 'build', label: 'Define', description: 'Author the WorkSpec model', shortcut: '2' },
+                { id: 'script', label: 'WorkSpec Script', description: 'JavaScript behaviour', shortcut: '3' },
+                { id: 'run', label: 'Simulate', description: 'Run and inspect', shortcut: '4' },
+                { id: 'validate', label: 'Validation', description: 'Problems and rules', shortcut: '5' }
+            ];
+
+            document.querySelectorAll('[data-rail]').forEach((rail) => {
+                const host = rail.querySelector('[data-buttons]');
+                host.outerHTML = BUTTONS.map((b, i) => `
+                    <button class="rbtn${i === 1 ? ' active' : ''}" type="button" data-id="${b.id}"
+                            title="${b.label} (${b.shortcut})" aria-pressed="${i === 1}">
+                        <span class="rbtn__icon"><span class="uaw-icon">${ICONS[b.id]}</span></span>
+                        <span class="rbtn__copy"><strong>${b.label}</strong><small>${b.description}</small></span>
+                        <kbd>${b.shortcut}</kbd>
+                    </button>`).join('');
+
+                rail.addEventListener('click', (event) => {
+                    const button = event.target.closest('.rbtn');
+                    if (!button) return;
+                    rail.querySelectorAll('.rbtn').forEach((b) => {
+                        b.classList.toggle('active', b === button);
+                        b.setAttribute('aria-pressed', String(b === button));
+                    });
+                });
+            });
+
+            // Frozen-states preview: rest / hovered / selected side by side in every rail.
+            const toggle = document.getElementById('freeze-toggle');
+            toggle.addEventListener('click', () => {
+                const frozen = document.body.classList.toggle('states-frozen');
+                toggle.setAttribute('aria-pressed', String(frozen));
+                document.querySelectorAll('[data-rail]').forEach((rail) => {
+                    const buttons = rail.querySelectorAll('.rbtn');
+                    buttons.forEach((b) => b.classList.remove('is-hover', 'is-active'));
+                    if (frozen) {
+                        buttons[1].classList.add('is-hover');
+                        buttons[2].classList.add('is-active');
+                        buttons[2].classList.remove('active');
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

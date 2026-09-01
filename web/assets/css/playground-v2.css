@@ -3921,9 +3921,9 @@ body.uaw-v2[data-uaw-workspace="build"][data-model-view="process"] .uaw-legacy-h
     display: none;
 }
 
-body.uaw-v2[data-uaw-workspace="build"][data-model-view="process"][data-source-dock^="split-"] .uaw-legacy-host {
-    display: block;
-}
+/* In a Process split the stage-level Definitions pane owns the editor, so the
+   legacy host stays hidden — showing it would paint an opaque white
+   .playground-main over the authoring register. */
 
 body.uaw-v2[data-uaw-workspace="build"][data-model-view="process"][data-source-dock^="split-"] .uaw-legacy-host .simulation-panel,
 body.uaw-v2[data-uaw-workspace="build"][data-model-view="process"][data-source-dock^="split-"] .uaw-legacy-host .playground-bottom {
@@ -6047,11 +6047,9 @@ body.uaw-resizing-agent { cursor: col-resize; user-select: none; }
 body.uaw-v2 .uaw-source-resizer { display: none !important; }
 body.uaw-v2[data-uaw-workspace="build"][data-model-view="process"][data-source-dock^="split-"] .uaw-source-resizer,
 body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock^="split-"] .uaw-source-resizer { display: block !important; }
-body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock^="split-"] .uaw-legacy-host { display: block !important; }
-body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock^="split-"] .uaw-legacy-host .simulation-panel,
-body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock^="split-"] .uaw-legacy-host .playground-bottom { display: none !important; }
-body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock^="split-"] .uaw-legacy-host .json-editor-panel,
-body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock^="split-"] .uaw-legacy-host .standard-mode-layout { display: flex !important; width: 100% !important; height: 100% !important; }
+/* Objects split: the stage-level Definitions pane owns the editor, so the
+   legacy host stays hidden — it would paint an opaque white .playground-main
+   over the object catalogue. */
 body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock="split-left"] .uaw-legacy-host { left: 0 !important; right: calc(100% - var(--uaw-source-split, 52%)) !important; }
 body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock="split-left"] #uaw-objects-view { left: var(--uaw-source-split, 52%) !important; right: 0 !important; }
 body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock="split-right"] .uaw-legacy-host { left: var(--uaw-source-split, 52%) !important; right: 0 !important; }
@@ -6096,7 +6094,7 @@ body.uaw-v2[data-uaw-workspace="run"][data-run-view="problems"] .validation-cont
     --uaw-chrome-muted: #746f79;
     --uaw-chrome-border: #cbc7cf;
     --uaw-chrome-violet: #7457ff;
-    --uaw-chrome-cyan: #16bdb9;
+    --uaw-chrome-blue: #245fd6;
 }
 
 body.uaw-v2 .uaw-titlebar {
@@ -6227,40 +6225,54 @@ body.uaw-v2 .uaw-rail-button {
     border-radius: 5px;
     font: inherit;
     text-align: left;
-    transition: color 110ms ease, background-color 110ms ease, border-color 110ms ease;
+    transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
 }
 
 body.uaw-v2 .uaw-rail-button::before {
     position: absolute;
-    top: 10px;
-    bottom: 10px;
+    top: 9px;
+    bottom: 9px;
     left: -8px;
     width: 3px;
-    background: var(--uaw-chrome-cyan);
+    border-radius: 0 2px 2px 0;
+    background: var(--uaw-chrome-blue);
     opacity: 0;
+    transform: scaleY(.35);
+    transform-origin: center;
+    transition: opacity 150ms ease, transform 220ms cubic-bezier(.34, 1.56, .64, 1);
     content: "";
 }
 
 body.uaw-v2 .uaw-rail-button:hover,
 body.uaw-v2 .uaw-rail-button:focus-visible {
     color: #211e25;
-    background: #f2f0ee;
-    border-color: #ccc7cf;
+    background: rgba(255, 255, 255, .55);
+    border-color: rgba(255, 255, 255, .95);
     outline: none;
+    box-shadow: 0 1px 2px rgba(42, 36, 47, .08);
+}
+
+body.uaw-v2 .uaw-rail-button:hover::before,
+body.uaw-v2 .uaw-rail-button:focus-visible::before {
+    opacity: .38;
+    transform: scaleY(1);
 }
 
 body.uaw-v2 .uaw-rail-button:focus-visible {
-    box-shadow: 0 0 0 2px rgba(22, 189, 185, .42);
+    box-shadow: 0 0 0 2px rgba(36, 95, 214, .42), 0 1px 2px rgba(42, 36, 47, .08);
 }
 
 body.uaw-v2 .uaw-rail-button.active {
-    color: #242128;
-    background: #dad7dc;
-    border-color: #bcb6c1;
-    box-shadow: inset 0 1px rgba(255, 255, 255, .48), 0 1px 2px rgba(42, 36, 47, .08);
+    color: #17151b;
+    background: #fff;
+    border-color: #d3ced5;
+    box-shadow: 0 1px 2px rgba(42, 36, 47, .07);
 }
 
-body.uaw-v2 .uaw-rail-button.active::before { opacity: 1; }
+body.uaw-v2 .uaw-rail-button.active::before {
+    opacity: 1;
+    transform: scaleY(1);
+}
 
 body.uaw-v2 .uaw-rail-button__icon {
     display: grid;
@@ -6274,7 +6286,11 @@ body.uaw-v2 .uaw-rail-button__icon {
 }
 
 body.uaw-v2 .uaw-rail-button:hover .uaw-rail-button__icon,
-body.uaw-v2 .uaw-rail-button.active .uaw-rail-button__icon { color: #176f75; }
+body.uaw-v2 .uaw-rail-button.active .uaw-rail-button__icon {
+    color: #245fd6;
+    background: #fff;
+    border-color: #d6d1d8;
+}
 
 body.uaw-v2 .uaw-rail-button .uaw-icon { width: 17px; height: 17px; }
 
@@ -6415,7 +6431,7 @@ body.uaw-v2 .uaw-sidebar-toggle:focus-visible {
 }
 
 body.uaw-v2 .uaw-sidebar-toggle:focus-visible {
-    box-shadow: 0 0 0 2px rgba(22, 189, 185, .42);
+    box-shadow: 0 0 0 2px rgba(36, 95, 214, .42);
 }
 
 .uaw-sidebar-toggle:focus-visible {
@@ -6785,6 +6801,7 @@ body.uaw-v2 #uaw-playback-commands .player-time-display {
 
 /* Source is available beside every document-facing workspace. */
 body.uaw-v2[data-uaw-workspace="build"][data-source-dock^="split-"] .uaw-source-pane,
+body.uaw-v2[data-uaw-workspace="script"][data-source-dock^="split-"] .uaw-source-pane,
 body.uaw-v2[data-uaw-workspace="run"][data-source-dock^="split-"] .uaw-source-pane,
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-source-pane,
 body.uaw-v2[data-uaw-workspace="source"] .uaw-source-pane { display: block !important; }
@@ -6818,7 +6835,69 @@ body.uaw-v2[data-source-dock="split-bottom"] .uaw-source-pane {
     border-top: 1px solid #344258;
 }
 
+/* A side split owns the full height of the workarea — the command bar belongs
+   only to the product surface beside the Definitions pane, so it is inset to
+   make room for the pane instead of capping the pane below it. Applies only
+   where the split pane is actually visible. */
+body.uaw-v2[data-uaw-workspace="build"][data-source-dock^="split-"] .uaw-workspace-grid,
+body.uaw-v2[data-uaw-workspace="script"][data-source-dock^="split-"] .uaw-workspace-grid,
+body.uaw-v2[data-uaw-workspace="run"][data-source-dock^="split-"] .uaw-workspace-grid,
+body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-workspace-grid {
+    grid-row: 1 / -1;
+    grid-column: 1;
+}
+
+body.uaw-v2[data-uaw-workspace="build"][data-source-dock^="split-"] .uaw-commandbar,
+body.uaw-v2[data-uaw-workspace="script"][data-source-dock^="split-"] .uaw-commandbar,
+body.uaw-v2[data-uaw-workspace="run"][data-source-dock^="split-"] .uaw-commandbar,
+body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-commandbar {
+    grid-row: 1;
+    grid-column: 1;
+    z-index: 41;
+}
+
+/* The main surface still starts below the command bar — only the Definitions
+   pane itself extends past it. */
+body.uaw-v2[data-uaw-workspace="build"][data-source-dock^="split-"] :is(.uaw-legacy-host, #uaw-process-view, #uaw-objects-view),
+body.uaw-v2[data-uaw-workspace="script"][data-source-dock^="split-"] #uaw-script-view,
+body.uaw-v2[data-uaw-workspace="run"][data-source-dock^="split-"] :is(.uaw-legacy-host, #uaw-simulate-view),
+body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] #uaw-assets-view {
+    top: var(--uaw-commandbar-height);
+}
+
+/* The stage is the workarea minus the explorer/inspector columns; express that
+   so the bar's inset matches the pane, which resolves the split % against the
+   stage itself. */
+body {
+    --uaw-stage-inset-left: 0px;
+    --uaw-stage-inset-right: 0px;
+}
+
+body.uaw-explorer-open { --uaw-stage-inset-left: var(--uaw-explorer-width); }
+body.uaw-inspector-open { --uaw-stage-inset-right: var(--uaw-inspector-width); }
+
+body.uaw-v2[data-uaw-workspace="build"][data-source-dock="split-left"] .uaw-commandbar,
+body.uaw-v2[data-uaw-workspace="script"][data-source-dock="split-left"] .uaw-commandbar,
+body.uaw-v2[data-uaw-workspace="run"][data-source-dock="split-left"] .uaw-commandbar,
+body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-left"] .uaw-commandbar {
+    margin-left: calc((100% - var(--uaw-stage-inset-left) - var(--uaw-stage-inset-right)) * var(--uaw-source-split-ratio, 0.52));
+    border-left: 1px solid #344258;
+    transition: margin-left 180ms cubic-bezier(.2,.8,.2,1);
+}
+
+body.uaw-v2[data-uaw-workspace="build"][data-source-dock="split-right"] .uaw-commandbar,
+body.uaw-v2[data-uaw-workspace="script"][data-source-dock="split-right"] .uaw-commandbar,
+body.uaw-v2[data-uaw-workspace="run"][data-source-dock="split-right"] .uaw-commandbar,
+body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-right"] .uaw-commandbar {
+    margin-right: calc((100% - var(--uaw-stage-inset-left) - var(--uaw-stage-inset-right)) * var(--uaw-source-split-ratio, 0.52));
+    border-right: 1px solid #344258;
+    transition: margin-right 180ms cubic-bezier(.2,.8,.2,1);
+}
+
+body.uaw-resizing-source .uaw-commandbar { transition: none; }
+
 body.uaw-v2[data-uaw-workspace="build"][data-source-dock="split-left"] :is(.uaw-legacy-host, #uaw-process-view, #uaw-objects-view),
+body.uaw-v2[data-uaw-workspace="script"][data-source-dock="split-left"] #uaw-script-view,
 body.uaw-v2[data-uaw-workspace="run"][data-source-dock="split-left"] .uaw-legacy-host,
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-left"] #uaw-assets-view {
     left: var(--uaw-source-split, 52%) !important;
@@ -6826,6 +6905,7 @@ body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-left"] #uaw-ass
 }
 
 body.uaw-v2[data-uaw-workspace="build"][data-source-dock="split-right"] :is(.uaw-legacy-host, #uaw-process-view, #uaw-objects-view),
+body.uaw-v2[data-uaw-workspace="script"][data-source-dock="split-right"] #uaw-script-view,
 body.uaw-v2[data-uaw-workspace="run"][data-source-dock="split-right"] .uaw-legacy-host,
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-right"] #uaw-assets-view {
     left: 0 !important;
@@ -6833,6 +6913,7 @@ body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-right"] #uaw-as
 }
 
 body.uaw-v2[data-uaw-workspace="build"][data-source-dock="split-bottom"] :is(.uaw-legacy-host, #uaw-process-view, #uaw-objects-view),
+body.uaw-v2[data-uaw-workspace="script"][data-source-dock="split-bottom"] #uaw-script-view,
 body.uaw-v2[data-uaw-workspace="run"][data-source-dock="split-bottom"] .uaw-legacy-host,
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-bottom"] #uaw-assets-view {
     top: 0 !important;
@@ -6854,6 +6935,7 @@ body.uaw-v2 .uaw-legacy-host .simulation-panel { flex: 1 1 100% !important; }
 /* The separator only appears when both halves are visible. */
 body.uaw-v2 .uaw-source-resizer { display: none !important; }
 body.uaw-v2[data-uaw-workspace="build"][data-source-dock^="split-"] .uaw-source-resizer,
+body.uaw-v2[data-uaw-workspace="script"][data-source-dock^="split-"] .uaw-source-resizer,
 body.uaw-v2[data-uaw-workspace="run"][data-source-dock^="split-"] .uaw-source-resizer,
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-source-resizer { display: block !important; }
 

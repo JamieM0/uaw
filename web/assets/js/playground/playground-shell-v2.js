@@ -19,12 +19,12 @@
     const WORKSPACE_META = {
         projects: { title: 'Projects', description: 'Local WorkSpec projects' },
         build: { title: 'Define', description: 'Author the declarative WorkSpec model' },
-        script: { title: 'Script', description: 'Author JavaScript behaviour for this WorkSpec' },
+        script: { title: 'WorkSpec Script', description: 'Author JavaScript behaviour for this WorkSpec' },
         run: { title: 'Simulate', description: 'Run and inspect the current WorkSpec' },
         validate: { title: 'Validation', description: 'Inspect problems and manage rules' },
-        assets: { title: 'Assets', description: 'Project media stored outside WorkSpec source' },
+        assets: { title: 'Assets', description: 'Project media stored outside WorkSpec Definitions' },
         settings: { title: 'Settings', description: 'Workspace preferences and integrations' },
-        source: { title: 'Source', description: 'Edit the WorkSpec document directly' }
+        source: { title: 'WorkSpec Definitions', description: 'Edit the WorkSpec Definitions document directly' }
     };
 
     const PERSISTENT_INSPECTOR_MODEL_VIEWS = new Set(['physical', 'digital', 'displays']);
@@ -185,8 +185,8 @@
                                 <section class="uaw-product-view" id="uaw-assets-view" aria-label="Assets"></section>
                                 <section class="uaw-product-view" id="uaw-settings-view" aria-label="Settings"></section>
                                 <div id="uaw-legacy-host" class="uaw-legacy-host"></div>
-                                <aside id="uaw-source-pane" class="uaw-source-pane" aria-label="WorkSpec source"></aside>
-                                <div class="uaw-source-resizer" id="uaw-source-resizer" role="separator" tabindex="0" aria-label="Resize Source pane"></div>
+                                <aside id="uaw-source-pane" class="uaw-source-pane" aria-label="WorkSpec Definitions"></aside>
+                                <div class="uaw-source-resizer" id="uaw-source-resizer" role="separator" tabindex="0" aria-label="Resize WorkSpec Definitions pane"></div>
                             </section>
 
                             <aside class="uaw-inspector" id="uaw-inspector" aria-label="Inspector">
@@ -375,11 +375,11 @@
             [
                 { id: 'workspace.projects', label: 'Go to Projects', shortcut: '1', run: () => workspace('projects') },
                 { id: 'workspace.build', label: 'Go to Define', shortcut: '2', run: () => workspace('build') },
-                { id: 'workspace.script', label: 'Go to Script', shortcut: '3', run: () => workspace('script') },
+                { id: 'workspace.script', label: 'Go to WorkSpec Script', shortcut: '3', run: () => workspace('script') },
                 { id: 'workspace.run', label: 'Go to Simulate', shortcut: '4', run: () => workspace('run') },
                 { id: 'workspace.assets', label: 'Go to Assets', shortcut: '5', run: () => workspace('assets') },
                 { id: 'workspace.settings', label: 'Go to Settings', run: () => workspace('settings') },
-                { id: 'workspace.source', label: 'Open Source as a dedicated pane', shortcut: '⌘ `', run: () => workspace('source') },
+                { id: 'workspace.source', label: 'Open WorkSpec Definitions as a dedicated pane', shortcut: '⌘ `', run: () => workspace('source') },
                 { id: 'project.new', label: 'New project', run: () => this.createProject() },
                 { id: 'project.open-folder', label: 'Open project folder', run: () => this.openProjectFolder() },
                 { id: 'project.templates', label: 'New project from template', run: () => click('simulation-library-btn') },
@@ -395,20 +395,20 @@
                 { id: 'view.physical', label: 'Define the physical environment', run: () => this.setModelView('physical') },
                 { id: 'view.digital', label: 'Define the digital environment', run: () => this.setModelView('digital') },
                 { id: 'view.displays', label: 'Define display interfaces', run: () => this.setModelView('displays') },
-                { id: 'model.source', label: 'Edit WorkSpec source', run: () => this.setModelView('source') },
+                { id: 'model.source', label: 'Edit WorkSpec Definitions', run: () => this.setModelView('source') },
                 { id: 'model.add-location', label: 'Add physical location', run: () => click('add-location-btn') },
                 { id: 'model.add-digital-location', label: 'Add digital location', run: () => click('add-digital-location-btn') },
                 { id: 'model.add-digital-object', label: 'Add digital object', run: () => click('add-digital-object-btn') },
                 { id: 'model.add-display', label: 'Add display', run: () => click('add-display-btn') },
                 { id: 'model.add-display-element', label: 'Add display element', run: () => click('add-display-element-btn') },
-                { id: 'source.format', label: 'Format WorkSpec source', run: () => click('format-json-btn') },
-                { id: 'script.format', label: 'Format Script', run: () => window.UAWWorkSpecScript?.format?.() },
-                { id: 'script.undo', label: 'Undo Script edit', run: () => window.UAWWorkSpecScript?.undo?.() },
-                { id: 'view.source-left', label: 'Dock Source on the left', run: () => { this.setSourceDock('split-left'); this.setModelView('process'); } },
-                { id: 'view.source-right', label: 'Dock Source on the right', run: () => { this.setSourceDock('split-right'); this.setModelView('process'); } },
-                { id: 'view.source-bottom', label: 'Dock Source below the canvas', run: () => { this.setSourceDock('split-bottom'); this.setModelView('process'); } },
-                { id: 'view.source-dedicated', label: 'Open Source in a dedicated pane', run: () => { this.setSourceDock('dedicated'); this.setModelView('source'); } },
-                { id: 'view.source-hidden', label: 'Hide Source while modelling', run: () => { this.setSourceDock('hidden'); this.setModelView('process'); } },
+                { id: 'source.format', label: 'Format WorkSpec Definitions', run: () => click('format-json-btn') },
+                { id: 'script.format', label: 'Format WorkSpec Script', run: () => window.UAWWorkSpecScript?.format?.() },
+                { id: 'script.undo', label: 'Undo WorkSpec Script edit', run: () => window.UAWWorkSpecScript?.undo?.() },
+                { id: 'view.source-left', label: 'Dock WorkSpec Definitions on the left', run: () => { this.setSourceDock('split-left'); this.setModelView('process'); } },
+                { id: 'view.source-right', label: 'Dock WorkSpec Definitions on the right', run: () => { this.setSourceDock('split-right'); this.setModelView('process'); } },
+                { id: 'view.source-bottom', label: 'Dock WorkSpec Definitions below the canvas', run: () => { this.setSourceDock('split-bottom'); this.setModelView('process'); } },
+                { id: 'view.source-dedicated', label: 'Open WorkSpec Definitions in a dedicated pane', run: () => { this.setSourceDock('dedicated'); this.setModelView('source'); } },
+                { id: 'view.source-hidden', label: 'Hide WorkSpec Definitions while modelling', run: () => { this.setSourceDock('hidden'); this.setModelView('process'); } },
                 { id: 'run.toggle', label: 'Play or pause simulation', shortcut: 'Space', run: () => click('player-play-pause-btn') },
                 { id: 'validate.run', label: 'Validate WorkSpec', shortcut: '⌘ Enter', run: () => window.runManualValidation?.() || window.validateJSON?.() },
                 { id: 'run.timeline', label: 'Open simulation timeline', run: () => this.setRunView('timeline') },
@@ -541,7 +541,7 @@
             this.toggleSidebar(this.settings.sidebarCollapsed, { persist: false, focus: false });
             document.body.dataset.modelView = this.modelView;
             document.body.dataset.runView = this.runView;
-            document.documentElement.style.setProperty('--uaw-source-split', `${this.settings.sourceSplit || 52}%`);
+            this.applySourceSplit(this.settings.sourceSplit || 52);
             document.documentElement.style.setProperty('--uaw-agent-width', `${this.settings.agentWidth || 312}px`);
         }
 
@@ -651,7 +651,7 @@
                     ['physical', 'Physical', 'view.physical'],
                     ['digital', 'Digital', 'view.digital'],
                     ['displays', 'Displays', 'view.displays'],
-                    ['source', 'Source', 'model.source']
+                    ['source', 'Definitions', 'model.source']
                 ];
                 primary.innerHTML = `<div class="uaw-segmented" role="tablist" aria-label="Define views">${views.map(([id, label, command]) => this.commandButton(command, label, { active: this.modelView === id, pressed: this.modelView === id })).join('')}</div>`;
                 const actions = {
@@ -838,7 +838,7 @@
             const content = document.querySelector('#metrics-editor-panel > .panel-content');
             if (!content) return;
             if (!content.querySelector('.uaw-rules-overview')) {
-                content.insertAdjacentHTML('afterbegin', `<header class="uaw-rules-overview"><div><h1>Rules</h1><p>Define project-specific checks without exposing unrelated WorkSpec source.</p></div><span>Custom validation</span></header>`);
+                content.insertAdjacentHTML('afterbegin', `<header class="uaw-rules-overview"><div><h1>Rules</h1><p>Define project-specific checks without exposing unrelated WorkSpec Definitions.</p></div><span>Custom validation</span></header>`);
             }
             const tabs = content.querySelectorAll('.metrics-tab-btn');
             if (tabs[0]) tabs[0].textContent = 'Rule catalog';
@@ -873,6 +873,15 @@
             this.layoutEditors();
         }
 
+        applySourceSplit(value) {
+            const ratio = Math.min(75, Math.max(25, Number(value) || 52)) / 100;
+            const rootStyle = document.documentElement.style;
+            rootStyle.setProperty('--uaw-source-split', `${ratio * 100}%`);
+            // Unitless companion so CSS can express the same length against a
+            // different width basis (e.g. the workarea instead of the stage).
+            rootStyle.setProperty('--uaw-source-split-ratio', ratio.toFixed(4));
+        }
+
         bindSourceResizer() {
             const handle = this.shell?.querySelector('#uaw-source-resizer');
             const stage = this.shell?.querySelector('#uaw-stage');
@@ -883,7 +892,7 @@
                 const raw = vertical ? ((event.clientY - rect.top) / rect.height) * 100 : ((event.clientX - rect.left) / rect.width) * 100;
                 const value = Math.min(75, Math.max(25, Math.round(raw * 10) / 10));
                 this.settings.sourceSplit = value;
-                document.documentElement.style.setProperty('--uaw-source-split', `${value}%`);
+                this.applySourceSplit(value);
                 this.layoutEditors();
             };
             handle.addEventListener('pointerdown', (event) => {
@@ -907,7 +916,7 @@
                 event.preventDefault();
                 const delta = ['ArrowRight', 'ArrowDown'].includes(event.key) ? 2 : -2;
                 this.settings.sourceSplit = Math.min(75, Math.max(25, (this.settings.sourceSplit || 52) + delta));
-                document.documentElement.style.setProperty('--uaw-source-split', `${this.settings.sourceSplit}%`);
+                this.applySourceSplit(this.settings.sourceSplit);
                 this.saveSettings();
                 this.layoutEditors();
             });
@@ -1000,7 +1009,7 @@
             container.innerHTML = `
                 <div class="uaw-tree-section">
                     <button class="uaw-tree-section__title" type="button"><span>WORKSPEC</span><span>${summary.tasks + summary.objects}</span></button>
-                    <button class="uaw-tree-item" type="button" data-uaw-command="model.source">${this.icon('source')}<span>Source</span><small>v${escapeHTML(summary.version)}</small></button>
+                    <button class="uaw-tree-item" type="button" data-uaw-command="model.source">${this.icon('source')}<span>Definitions</span><small>v${escapeHTML(summary.version)}</small></button>
                     <button class="uaw-tree-item" type="button" data-uaw-command="model.process"><span class="uaw-tree-dot uaw-tree-dot--task"></span><span>Tasks</span><small>${summary.tasks}</small></button>
                     <button class="uaw-tree-item" type="button" data-uaw-command="model.process"><span class="uaw-tree-dot uaw-tree-dot--object"></span><span>Objects</span><small>${summary.objects}</small></button>
                 </div>
@@ -1107,7 +1116,7 @@
             if (!view) return;
             const documentModel = this.readProcessDocument();
             if (!documentModel) {
-                view.innerHTML = `<div class="uaw-process-empty"><strong>The WorkSpec source is not valid JSON.</strong><p>Repair it in Source, then return here to continue modelling.</p><button type="button" data-uaw-command="model.source">Open Source</button></div>`;
+                view.innerHTML = `<div class="uaw-process-empty"><strong>WorkSpec Definitions is not valid JSON.</strong><p>Repair it in WorkSpec Definitions, then return here to continue modelling.</p><button type="button" data-uaw-command="model.source">Open Definitions</button></div>`;
                 return;
             }
 
@@ -1134,7 +1143,7 @@
                     <td class="uaw-process-dependencies">${escapeHTML(dependencies)}</td>
                     <td>${handlerCount ? `<button class="uaw-row-action" type="button" data-open-script-task="${escapeHTML(task.id)}">${handlerCount} handler${handlerCount === 1 ? '' : 's'}</button>` : '—'}</td>
                     <td><span class="uaw-temporal-badge">Upcoming</span></td>
-                    <td><button class="uaw-row-action" type="button" data-edit-process-task="${index}">${task.__period ? 'View source' : 'Edit'}</button></td>
+                    <td><button class="uaw-row-action" type="button" data-edit-process-task="${index}">${task.__period ? 'View in Definitions' : 'Edit'}</button></td>
                 </tr>`;
             }).join('');
 
@@ -1154,7 +1163,7 @@
                 if (!task) return;
                 if (task.__period || typeof window.openEditTaskModal !== 'function') {
                     this.setModelView('source');
-                    window.UAWPlaygroundShell?.toast?.('This task belongs to a day type; edit it in Source.');
+                    window.UAWPlaygroundShell?.toast?.('This task belongs to a day type; edit it in WorkSpec Definitions.');
                     return;
                 }
                 window.openEditTaskModal(task);
@@ -1170,7 +1179,7 @@
             if (!view) return;
             const documentModel = this.readProcessDocument();
             if (!documentModel) {
-                view.innerHTML = `<div class="uaw-process-empty"><strong>The WorkSpec source is not valid JSON.</strong><p>Repair it in Source before editing objects.</p><button type="button" data-uaw-command="model.source">Open Source</button></div>`;
+                view.innerHTML = `<div class="uaw-process-empty"><strong>WorkSpec Definitions is not valid JSON.</strong><p>Repair it in WorkSpec Definitions before editing objects.</p><button type="button" data-uaw-command="model.source">Open Definitions</button></div>`;
                 return;
             }
             const objects = documentModel.objects || [];
@@ -1182,7 +1191,7 @@
                 const details = object?.properties || {};
                 const state = details.state ?? details.quantity ?? details.role ?? '—';
                 const referenceCount = objectReferenceCounts.get(object?.id) || 0;
-                return `<tr data-object-row data-context-object-id="${escapeHTML(object?.id || '')}" data-object-search="${escapeHTML(`${object?.name || ''} ${object?.id || ''} ${type}`.toLowerCase())}" data-object-type="${escapeHTML(type)}"><td><div class="uaw-object-name"><span><strong>${escapeHTML(object?.name || object?.id || `Object ${index + 1}`)}</strong><code>${escapeHTML(object?.id || 'No ID')}</code></span></div></td><td><span class="uaw-type-pill">${escapeHTML(type)}</span></td><td>${escapeHTML(state)}</td><td>${referenceCount ? `<button class="uaw-row-action" type="button" data-open-script-object="${escapeHTML(object.id)}">${referenceCount} reference${referenceCount === 1 ? '' : 's'}</button>` : '—'}</td><td><span class="uaw-temporal-badge">Inactive</span></td><td>${escapeHTML(object?.__lifecycle || object?.__period || 'Global')}</td><td><button class="uaw-row-action" type="button" data-edit-object-index="${index}">${object?.__period || object?.__lifecycle ? 'View source' : 'Edit'}</button></td></tr>`;
+                return `<tr data-object-row data-context-object-id="${escapeHTML(object?.id || '')}" data-object-search="${escapeHTML(`${object?.name || ''} ${object?.id || ''} ${type}`.toLowerCase())}" data-object-type="${escapeHTML(type)}"><td><div class="uaw-object-name"><span><strong>${escapeHTML(object?.name || object?.id || `Object ${index + 1}`)}</strong><code>${escapeHTML(object?.id || 'No ID')}</code></span></div></td><td><span class="uaw-type-pill">${escapeHTML(type)}</span></td><td>${escapeHTML(state)}</td><td>${referenceCount ? `<button class="uaw-row-action" type="button" data-open-script-object="${escapeHTML(object.id)}">${referenceCount} reference${referenceCount === 1 ? '' : 's'}</button>` : '—'}</td><td><span class="uaw-temporal-badge">Inactive</span></td><td>${escapeHTML(object?.__lifecycle || object?.__period || 'Global')}</td><td><button class="uaw-row-action" type="button" data-edit-object-index="${index}">${object?.__period || object?.__lifecycle ? 'View in Definitions' : 'Edit'}</button></td></tr>`;
             }).join('');
             view.innerHTML = `<header class="uaw-process-heading uaw-objects-heading"><div><h1>Objects</h1><p>Actors, resources, equipment and outputs available to this process.</p></div><dl><div><dt>Objects</dt><dd>${objects.length}</dd></div><div><dt>Types</dt><dd>${groups.length}</dd></div></dl></header><section class="uaw-process-register"><div class="uaw-process-section-heading"><div><h2>Object register</h2><p>Reusable entities referenced by tasks and environment layouts.</p></div></div><div class="uaw-object-toolbar"><label><span class="sr-only">Search objects</span><input type="search" data-object-search-input placeholder="Search objects…"></label><select data-object-filter aria-label="Filter object type"><option value="">All types</option>${groups.map(type => `<option value="${escapeHTML(type)}">${escapeHTML(type)}</option>`).join('')}</select></div>${rows ? `<div class="uaw-process-table-wrap"><table class="uaw-process-table uaw-object-table"><thead><tr><th>Object</th><th>Type</th><th>State / quantity</th><th>Script</th><th>Moment</th><th>Scope</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="uaw-process-empty"><strong>No objects yet</strong><p>Use Add object in the command bar to create an actor, resource, equipment item or product.</p></div>`}</section>`;
             const filter = () => {
@@ -1670,13 +1679,13 @@
                 <div class="uaw-settings-layout">
                     <div class="uaw-settings-surface">
                         <section class="uaw-settings-section" aria-labelledby="uaw-source-layout-heading">
-                            <div><h2 id="uaw-source-layout-heading">Define Source layout</h2><p>Choose how declarative WorkSpec JSON appears beside Define views. These settings do not affect the Script editor.</p></div>
-                            <fieldset class="uaw-choice-grid" id="uaw-source-dock-choices" aria-label="Source layout">
-                                ${this.sourceChoice('split-left', 'Split left', 'Source beside the canvas')}
-                                ${this.sourceChoice('split-right', 'Split right', 'Canvas before source')}
-                                ${this.sourceChoice('split-bottom', 'Split below', 'Source below the canvas')}
-                                ${this.sourceChoice('dedicated', 'Dedicated pane', 'Source uses the full stage')}
-                                ${this.sourceChoice('hidden', 'Hidden in Define', 'Open source only when needed')}
+                            <div><h2 id="uaw-source-layout-heading">WorkSpec Definitions layout</h2><p>Choose how WorkSpec Definitions appear beside the Define and WorkSpec Script views.</p></div>
+                            <fieldset class="uaw-choice-grid" id="uaw-source-dock-choices" aria-label="WorkSpec Definitions layout">
+                                ${this.sourceChoice('split-left', 'Split left', 'Definitions beside the canvas')}
+                                ${this.sourceChoice('split-right', 'Split right', 'Canvas before Definitions')}
+                                ${this.sourceChoice('split-bottom', 'Split below', 'Definitions below the canvas')}
+                                ${this.sourceChoice('dedicated', 'Dedicated pane', 'Definitions uses the full stage')}
+                                ${this.sourceChoice('hidden', 'Hidden in Define', 'Open Definitions only when needed')}
                             </fieldset>
                         </section>
                         <section class="uaw-settings-section" aria-labelledby="uaw-agent-heading">
