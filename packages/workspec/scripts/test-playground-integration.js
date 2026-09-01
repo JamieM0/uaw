@@ -129,8 +129,8 @@ function run() {
         assert.match(studioShell, new RegExp(`workspaceButton\\([^\\n]+['"]${workspace}['"]`), `Studio is missing the ${workspace} workspace`);
     }
     assert.match(studioShell, /aria-label="Define views"/, 'Define views are not grouped under Define');
-    for (const view of ['Process', 'Objects', 'Physical', 'Digital', 'Displays', 'Source']) {
-        assert.match(studioShell, new RegExp(`\\['[^']+', '${view}',`), `Define is missing its ${view} view`);
+    for (const [viewId, viewLabel] of [['process', 'Process'], ['objects', 'Objects'], ['physical', 'Physical'], ['digital', 'Digital'], ['displays', 'Displays'], ['source', 'Source']]) {
+        assert.match(studioShell, new RegExp(`\\['${viewId}',`), `Define is missing its ${viewLabel} view`);
     }
     assert.match(projectStore, /const SCRIPT_FILE = 'project\.workspec\.js'/, 'Project persistence does not define a Script file');
     assert.match(projectStore, /await this\.writeText\(project\.directoryHandle, SCRIPT_FILE,/, 'Project persistence does not write Script');

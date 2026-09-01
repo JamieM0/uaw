@@ -4,13 +4,13 @@
 :root {
     --uaw-font-ui: "Source Sans 3", "Segoe UI", sans-serif;
     --uaw-font-code: "IBM Plex Mono", "SFMono-Regular", monospace;
-    --uaw-blue: #126ca8;
-    --uaw-blue-strong: #0b5c91;
-    --uaw-blue-soft: #e7f1f8;
-    --uaw-blue-800: #0b5c91;
-    --uaw-blue-700: #126ca8;
-    --uaw-blue-600: #2b7daf;
-    --uaw-blue-50: #e7f1f8;
+    --uaw-blue: #245fd6;
+    --uaw-blue-strong: #1d4fb7;
+    --uaw-blue-soft: #eaf1fd;
+    --uaw-blue-800: #1d4fb7;
+    --uaw-blue-700: #245fd6;
+    --uaw-blue-600: #3a71dd;
+    --uaw-blue-50: #eaf1fd;
     --uaw-slate-950: #20272e;
     --uaw-slate-900: #29323a;
     --uaw-slate-800: #35414c;
@@ -123,7 +123,7 @@ body.uaw-agent-open .uaw-agent-drawer { left: auto; right: 0; }
     text-align: left;
 }
 .uaw-object-add-menu > button:hover,
-.uaw-object-add-menu > button:focus-visible { background: var(--uaw-blue-soft) !important; border-color: #bfd8e7 !important; }
+.uaw-object-add-menu > button:focus-visible { background: #f5f4f2 !important; border-color: #e2e0dd !important; }
 .uaw-object-add-menu button > span:last-child { display: grid; gap: 2px; }
 .uaw-object-add-menu small { color: var(--uaw-slate-600); font-size: 11px; }
 .uaw-menu-separator { margin: 5px -5px; padding: 6px 12px 1px; border-top: 1px solid var(--uaw-slate-200); color: var(--uaw-slate-600); font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
@@ -1731,7 +1731,7 @@ body.uaw-inspector-open .uaw-inspector {
     background: #dfe5e8;
 }
 
-.uaw-tree-dot--task { background: #cfe3f0; border-color: #4d88ad; }
+.uaw-tree-dot--task { background: rgba(36, 95, 214, .16); border-color: rgba(36, 95, 214, .5); }
 .uaw-tree-dot--object { background: #e3ddd0; border-color: #87775d; }
 
 #uaw-outline-problem-count[data-severity="error"] { color: var(--uaw-danger); font-weight: 700; }
@@ -2403,6 +2403,7 @@ body[data-uaw-workspace="settings"] #uaw-help-commands {
     background: white;
     border: 1px solid var(--uaw-slate-300);
     border-radius: var(--uaw-radius);
+    transition: border-color 140ms ease, box-shadow 140ms ease;
 }
 
 .uaw-project-card__open {
@@ -2419,19 +2420,9 @@ body[data-uaw-workspace="settings"] #uaw-help-commands {
     cursor: pointer;
 }
 
-.uaw-project-card__open:hover {
-    background: var(--uaw-slate-50);
-}
-
-.uaw-project-card__mark {
-    display: grid;
-    place-items: center;
-    width: 36px;
-    height: 42px;
-    color: var(--uaw-blue-strong);
-    background: var(--uaw-blue-soft);
-    border: 1px solid #bad4e3;
-    font: 700 11px var(--uaw-font-code);
+.uaw-project-card:hover {
+    border-color: #d3ced5;
+    box-shadow: 0 2px 5px rgba(42, 36, 47, .12);
 }
 
 .uaw-project-card__body {
@@ -2505,7 +2496,15 @@ body[data-uaw-workspace="settings"] #uaw-help-commands {
     background: white;
     border: 1px solid var(--uaw-slate-300);
     border-radius: var(--uaw-radius);
+    transition: border-color 140ms ease, box-shadow 140ms ease;
 }
+
+.uaw-asset-card:hover {
+    border-color: #d3ced5;
+    box-shadow: 0 2px 5px rgba(42, 36, 47, .12);
+}
+
+.uaw-asset-card:hover strong { color: #1d4fb7; }
 
 .uaw-asset-card {
     content-visibility: auto;
@@ -3716,25 +3715,67 @@ body.uaw-v2[data-theme="dark"] {
 }
 
 .uaw-project-menu__list button {
+    position: relative;
     display: grid;
-    grid-template-columns: 30px minmax(0, 1fr) 18px;
+    grid-template-columns: minmax(0, 1fr) 18px;
     align-items: center;
     gap: 8px;
     width: 100%;
     min-height: 46px;
     padding: 5px 7px;
     border: 1px solid transparent;
-    border-radius: 2px;
+    border-radius: 3px;
     color: var(--uaw-slate-800);
     background: transparent;
     text-align: left;
     cursor: pointer;
+    transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.uaw-project-menu__list button::before {
+    content: "";
+    position: absolute;
+    top: 7px;
+    bottom: 7px;
+    left: -4px;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+    background: var(--uaw-chrome-blue);
+    opacity: 0;
+    transform: scaleY(.35);
+    transform-origin: center;
+    transition: opacity 150ms ease, transform 220ms cubic-bezier(.34, 1.56, .64, 1);
 }
 
 .uaw-project-menu__list button:hover,
+.uaw-project-menu__list button:focus-visible {
+    color: #211e25;
+    background: #f5f4f2;
+    border-color: #e2e0dd;
+    outline: none;
+    box-shadow: 0 1px 2px rgba(42, 36, 47, .07);
+}
+
+.uaw-project-menu__list button:hover::before,
+.uaw-project-menu__list button:focus-visible::before {
+    opacity: .38;
+    transform: scaleY(1);
+}
+
+.uaw-project-menu__list button:focus-visible {
+    box-shadow: 0 0 0 2px rgba(36, 95, 214, .42), 0 1px 2px rgba(42, 36, 47, .07);
+}
+
 .uaw-project-menu__list button.active {
-    border-color: #bad1df;
-    background: var(--uaw-blue-soft);
+    color: #17151b;
+    background: #fff;
+    border-color: #d3ced5;
+    box-shadow: 0 1px 2px rgba(42, 36, 47, .09);
+}
+
+.uaw-project-menu__list button.active::before {
+    opacity: 1;
+    transform: scaleY(1);
 }
 
 .uaw-project-menu__list button strong,
@@ -3747,7 +3788,6 @@ body.uaw-v2[data-theme="dark"] {
 
 .uaw-project-menu__list button strong { font-size: 12px; }
 .uaw-project-menu__list button small { color: var(--uaw-slate-500); font-size: 10px; }
-.uaw-project-menu__mark { color: var(--uaw-blue-strong); font: 600 10px var(--uaw-font-code); }
 .uaw-project-menu__check { color: var(--uaw-success); font-weight: 700; }
 
 .uaw-project-menu__actions {
@@ -4051,9 +4091,10 @@ body.uaw-v2[data-uaw-workspace="build"][data-model-view="process"][data-source-d
     text-transform: uppercase;
     letter-spacing: .045em;
 }
-.uaw-process-table td { padding: 9px 10px; border-bottom: 1px solid var(--uaw-slate-200); vertical-align: middle; }
+.uaw-process-table td { padding: 9px 10px; border-bottom: 1px solid var(--uaw-slate-200); vertical-align: middle; transition: background-color 140ms ease, box-shadow 140ms ease; }
 .uaw-process-table tbody tr:last-child td { border-bottom: 0; }
-.uaw-process-table tbody tr:hover { background: #f7fafc; }
+.uaw-process-table tbody tr:hover { background: #f7f6f4; }
+.uaw-process-table tbody tr:hover td:first-child { box-shadow: inset 2px 0 0 rgba(36, 95, 214, .38); }
 .uaw-process-task-name { display: grid; gap: 2px; min-width: 180px; }
 .uaw-process-task-name strong { color: var(--uaw-slate-950); font-size: 12px; }
 .uaw-process-task-name code { color: var(--uaw-slate-600); font-size: 10px; }
@@ -5340,7 +5381,8 @@ body.uaw-v2[data-uaw-workspace="build"] #uaw-objects-view {
 .uaw-process-table { background: #fff; }
 .uaw-process-table th { padding: 9px 10px; color: #7c899b; background: #f8fafc; border-bottom-color: #e3e8ef; font: 650 8px var(--uaw-font-code); letter-spacing: .06em; }
 .uaw-process-table td { padding: 10px; color: #344054; border-bottom-color: #e8ecf2; font-size: 11px; }
-.uaw-process-table tbody tr:hover { background: #fafbfd; }
+.uaw-process-table tbody tr:hover { background: #f7f6f4; }
+.uaw-process-table tbody tr:hover td:first-child { box-shadow: inset 2px 0 0 rgba(36, 95, 214, .38); }
 .uaw-process-task-name strong { color: #253046; font-size: 11px; }
 .uaw-process-task-name code,
 .uaw-process-dependencies { color: #7a879a; font-size: 9px; }
@@ -6093,7 +6135,6 @@ body.uaw-v2[data-uaw-workspace="run"][data-run-view="problems"] .validation-cont
     --uaw-chrome-ink: #211f25;
     --uaw-chrome-muted: #746f79;
     --uaw-chrome-border: #cbc7cf;
-    --uaw-chrome-violet: #7457ff;
     --uaw-chrome-blue: #245fd6;
 }
 
@@ -6120,7 +6161,7 @@ body.uaw-v2 .uaw-brand:hover {
 }
 
 body.uaw-v2 .uaw-brand:focus-visible {
-    outline: 2px solid #675cf5;
+    outline: 2px solid rgba(36, 95, 214, .55);
     outline-offset: -3px;
 }
 
@@ -6161,7 +6202,7 @@ body.uaw-v2 .uaw-project-title:hover {
 body.uaw-v2 .uaw-inline-project-name {
     color: var(--uaw-chrome-ink);
     background: #fff;
-    border-color: rgba(103, 87, 232, .48);
+    border-color: rgba(36, 95, 214, .48);
 }
 
 body.uaw-v2 .uaw-save-state {
@@ -6547,12 +6588,12 @@ body.uaw-v2 .uaw-product-command {
 }
 
 body.uaw-v2 .uaw-product-command.primary {
-    border-color: #185ca9 !important;
-    background: #2168b8 !important;
-    box-shadow: inset 0 1px rgba(255, 255, 255, .16), 0 1px 1px rgba(22, 49, 82, .11);
+    border-color: #1d4fb7 !important;
+    background: #245fd6 !important;
+    box-shadow: inset 0 1px rgba(255, 255, 255, .16), 0 1px 1px rgba(29, 79, 183, .16);
 }
 
-body.uaw-v2 .uaw-product-command.primary:hover { background: #195b9f !important; }
+body.uaw-v2 .uaw-product-command.primary:hover { background: #1d4fb7 !important; }
 
 body.uaw-v2 .uaw-segmented {
     align-items: center;
@@ -6578,13 +6619,14 @@ body.uaw-v2 .uaw-segmented .uaw-product-command:last-child { border-right: 1px s
 body.uaw-v2 .uaw-segmented .uaw-product-command:hover {
     color: #223044 !important;
     background: rgba(255, 255, 255, .72) !important;
+    box-shadow: inset 0 -2px rgba(36, 95, 214, .38) !important;
 }
 
 body.uaw-v2 .uaw-segmented .uaw-product-command.active {
-    color: #174f91 !important;
+    color: #1d4fb7 !important;
     background: #fff !important;
     border-color: #c8d2df !important;
-    box-shadow: 0 1px 2px rgba(27, 43, 65, .1), inset 0 -2px #2f78c4;
+    box-shadow: 0 1px 2px rgba(27, 43, 65, .1), inset 0 -2px #245fd6;
 }
 
 body.uaw-v2 .uaw-context-actions {
@@ -6712,12 +6754,11 @@ body.uaw-v2 #uaw-playback-commands .player-time-display {
 
 .uaw-source-pane .json-editor-panel > .panel-header {
     display: flex !important;
-    flex: 0 0 43px;
-    min-height: 43px;
+    flex: 0 0 var(--uaw-commandbar-height, 58px);
+    min-height: var(--uaw-commandbar-height, 58px);
     padding: 0;
-    color: #d9e2f0;
-    background: #172033;
-    border-bottom: 1px solid #344258;
+    background: #fff;
+    border-bottom: 0;
 }
 
 .uaw-source-pane .json-editor-panel > .panel-content {
@@ -6731,72 +6772,40 @@ body.uaw-v2 #uaw-playback-commands .player-time-display {
 .uaw-source-pane #json-editor { width: 100%; height: 100%; }
 .uaw-source-pane .resize-handle-vertical { display: none !important; }
 
-.uaw-source-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    width: 100%;
+/* The Definitions pane hosts its own commandbar instance. It reuses the
+   global commandbar theme, height and segmented controls verbatim; these
+   id-scoped rules only cover pane-specific placement. The margin/border
+   resets stop the split-dock insets — written for the workarea's main
+   commandbar — from indenting this one inside the pane. */
+#uaw-source-pane .uaw-commandbar {
+    flex: 1 1 auto;
     min-width: 0;
-    padding: 6px 9px 6px 12px;
+    margin: 0;
+    border-left: 0;
+    border-right: 0;
 }
 
-.uaw-source-identity {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: baseline;
-    gap: 8px;
-    min-width: 0;
-}
-
-.uaw-source-identity strong {
-    color: #f4f7fb;
-    font: 650 11px/1 var(--uaw-font-ui);
-    white-space: nowrap;
-}
-
-.uaw-source-identity code {
-    min-width: 0;
+body.uaw-v2 #uaw-source-pane .uaw-commandbar__identity {
+    flex: 0 1 auto !important;
+    max-width: 62%;
     overflow: hidden;
-    color: #8fa4c2;
-    font: 500 9px/1 var(--uaw-font-code);
+}
+
+#uaw-source-pane .uaw-commandbar__identity code {
+    max-width: 100%;
+    margin-top: 4px;
+    overflow: hidden;
+    color: #69778a;
+    font: 500 10px/1 var(--uaw-font-ui);
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.uaw-source-scope {
-    display: inline-flex;
+body.uaw-v2 #uaw-source-pane .uaw-commandbar__commands {
     flex: 0 0 auto;
-    gap: 2px;
+    min-width: 0;
     margin-left: auto;
-    padding: 2px;
-    background: #0f1726;
-    border: 1px solid #3a4960;
-    border-radius: 6px;
-}
-
-.uaw-source-scope button {
-    min-width: 66px;
-    height: 25px;
-    padding: 0 8px;
-    color: #9dafc8;
-    background: transparent;
-    border: 0;
-    border-radius: 4px;
-    font: 650 9px var(--uaw-font-ui);
-}
-
-.uaw-source-scope button:hover { color: #fff; background: #25324a; }
-.uaw-source-scope button[aria-pressed="true"] { color: #fff; background: #315fbd; box-shadow: inset 0 0 0 1px #4f7dd7; }
-.uaw-source-scope button:focus-visible { outline: 2px solid #78a7ff; outline-offset: 1px; }
-
-.uaw-source-status {
-    flex: 0 1 142px;
-    overflow: hidden;
-    color: #91a1b8;
-    font: 500 9px var(--uaw-font-ui);
-    text-align: right;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    border-right: 0;
 }
 
 /* Source is available beside every document-facing workspace. */
@@ -6944,9 +6953,7 @@ body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-source
 .uaw-source-linked { outline: 2px solid #2f78dd !important; outline-offset: 2px; }
 
 @media (max-width: 900px) {
-    .uaw-source-status { display: none; }
-    .uaw-source-identity code { display: none; }
-    .uaw-source-scope button { min-width: 58px; padding-inline: 6px; }
+    #uaw-source-pane .uaw-commandbar__identity code { display: none; }
 }
 
 body.uaw-v2 #player-current-date { color: #59687c; font: 550 10px var(--uaw-font-ui); }
@@ -6999,15 +7006,15 @@ tr[data-temporal-state="completed"] td:first-child strong { text-decoration: lin
 
 .workspec-time-navigator.open { transform: translateY(0); opacity: 1; }
 .workspec-time-navigator__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 18px 20px 14px; background: #fff; border-bottom: 1px solid #d9e0e9; }
-.workspec-time-kicker { color: #2871ce; font: 700 9px var(--uaw-font-code); letter-spacing: .14em; }
+.workspec-time-kicker { color: #245fd6; font: 700 9px var(--uaw-font-code); letter-spacing: .14em; }
 .workspec-time-navigator__header h2 { margin: 3px 0 2px; color: #152238; font: 650 20px/1.15 "Geologica", var(--uaw-font-ui); letter-spacing: -.025em; }
 .workspec-time-navigator__header p { margin: 0; color: #657389; font-size: 11px; }
 .workspec-time-navigator__header > button { width: 30px; height: 30px; padding: 0; color: #617087; background: transparent; border: 1px solid #d6dee9; border-radius: 5px; font-size: 20px; line-height: 1; }
 
 .workspec-time-scales { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; padding: 10px 12px; background: #edf1f6; border-bottom: 1px solid #d6dee8; }
 .workspec-time-scales button { height: 30px; color: #536278; background: transparent; border: 1px solid transparent; border-radius: 5px; font-size: 10px; font-weight: 650; }
-.workspec-time-scales button:hover { color: #1e4f8f; background: rgba(255,255,255,.7); }
-.workspec-time-scales button.active { color: #174f91; background: #fff; border-color: #c6d1df; box-shadow: inset 0 -2px #2f78c4, 0 1px 2px rgba(34,55,82,.08); }
+.workspec-time-scales button:hover { color: #1d4fb7; background: rgba(255,255,255,.7); }
+.workspec-time-scales button.active { color: #1d4fb7; background: #fff; border-color: #c6d1df; box-shadow: inset 0 -2px #245fd6, 0 1px 2px rgba(34,55,82,.08); }
 
 .workspec-time-scrubber { padding: 13px 18px 14px; background: #fff; border-bottom: 1px solid #d9e0e9; }
 .workspec-time-scrubber > div { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-bottom: 9px; color: #7a8799; font: 550 9px var(--uaw-font-code); }
@@ -7039,7 +7046,7 @@ tr[data-temporal-state="completed"] td:first-child strong { text-decoration: lin
 
 .workspec-period-grid--week { display: grid; grid-template-columns: repeat(7, minmax(82px,1fr)); gap: 5px; }
 .workspec-period-grid--week button { display: grid; align-content: start; gap: 5px; min-height: 118px; padding: 10px 8px; color: #26354a; background: #fff; border: 1px solid #dbe2eb; border-radius: 6px; text-align: left; }
-.workspec-period-grid--week button.selected { border-color: #3479d2; box-shadow: inset 0 3px #3479d2; }
+.workspec-period-grid--week button.selected { border-color: #245fd6; box-shadow: inset 0 3px #245fd6; }
 .workspec-period-grid--week time { color: #65758b; font: 600 8px var(--uaw-font-code); }
 .workspec-period-grid--week strong { font-size: 11px; }
 .workspec-period-grid--week span { color: #7b8798; font-size: 8px; line-height: 1.35; }
@@ -7048,15 +7055,15 @@ tr[data-temporal-state="completed"] td:first-child strong { text-decoration: lin
 .workspec-month-heading strong { grid-column: 1/-1; margin-bottom: 8px; color: #26364c; font: 650 14px "Geologica", var(--uaw-font-ui); text-align: left; text-transform: none; }
 .workspec-month-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
 .workspec-month-grid button { display: grid; grid-template-columns: 1fr auto; gap: 5px; min-height: 64px; padding: 7px; color: #27364c; background: #fff; border: 1px solid #dce2ea; border-radius: 5px; text-align: left; }
-.workspec-month-grid button.selected { color: #164e91; border-color: #3479d2; background: #f4f8ff; box-shadow: inset 0 2px #3479d2; }
+.workspec-month-grid button.selected { color: #1d4fb7; border-color: #245fd6; background: #eaf1fd; box-shadow: inset 0 2px #245fd6; }
 .workspec-month-grid time { font: 650 9px var(--uaw-font-code); }
 .workspec-month-grid strong { justify-self: end; font-size: 10px; }
 .workspec-month-grid span { grid-column: 1/-1; color: #7c899a; font-size: 8px; }
 
 .workspec-calendar-periods { display: grid; grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); gap: 7px; }
 .workspec-calendar-periods button { display: grid; gap: 5px; padding: 13px; color: #27364b; background: #fff; border: 1px solid #dce2ea; border-radius: 6px; text-align: left; }
-.workspec-calendar-periods button.selected { border-color: #3479d2; box-shadow: inset 3px 0 #3479d2; }
-.workspec-calendar-periods time { color: #174f91; font: 650 11px "Geologica", var(--uaw-font-ui); }
+.workspec-calendar-periods button.selected { border-color: #245fd6; box-shadow: inset 3px 0 #245fd6; }
+.workspec-calendar-periods time { color: #1d4fb7; font: 650 11px "Geologica", var(--uaw-font-ui); }
 .workspec-calendar-periods strong { font-size: 10px; }
 .workspec-calendar-periods span { color: #78869a; font-size: 9px; }
 
@@ -7505,4 +7512,19 @@ body[data-theme="dark"] .workspec-time-scrubber output { color: #e5edf7; }
     .uaw-state-mapping { grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px; min-height: 61px; padding: 4px 6px; }
     .uaw-state-mapping__asset { grid-column: 1 / -1; grid-row: 2; }
     .uaw-state-mapping__asset img { width: 24px; height: 24px; flex-basis: 24px; }
+}
+
+/* Shared state language: card hovers and blue edge selection, matching the
+   workspace rail and project switcher. */
+body.uaw-v2 .context-menu { border-color: #d3ced5; border-radius: 6px; }
+body.uaw-v2 .context-menu-item { border-radius: 3px; transition: background-color 140ms ease; }
+body.uaw-v2 .context-menu-item:hover { background: #f5f4f2; }
+body.uaw-v2 .context-menu-item:active { background: #ecebe8; }
+
+body.uaw-v2 .uaw-icon-button.active,
+body.uaw-v2 .uaw-icon-button[aria-pressed="true"] {
+    color: #245fd6;
+    background: #fff;
+    border-color: #d3ced5;
+    box-shadow: 0 1px 2px rgba(42, 36, 47, .08);
 }

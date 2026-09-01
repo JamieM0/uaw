@@ -157,24 +157,28 @@
         initialize() {
             if (this.ready) return;
             this.ready = true;
-            this.buildToolbar();
+            this.buildCommandbar();
             this.bindEvents();
             this.attachEditor(window.monacoEditor || window.editor);
             this.updateContext();
         }
 
-        buildToolbar() {
+        buildCommandbar() {
             const panel = document.querySelector('#uaw-source-pane .json-editor-panel');
             const header = panel?.querySelector('.panel-header');
-            if (!header || header.querySelector('.uaw-source-toolbar')) return;
+            if (!header || header.querySelector('#uaw-source-commandbar')) return;
             header.innerHTML = `
-                <div class="uaw-source-toolbar">
-                    <div class="uaw-source-identity"><strong>WorkSpec Definitions</strong><code id="uaw-source-path">WorkSpec</code></div>
-                    <div class="uaw-source-scope" role="group" aria-label="WorkSpec Definitions scope">
-                        <button type="button" data-source-scope="context" aria-pressed="true">Context</button>
-                        <button type="button" data-source-scope="full" aria-pressed="false">Full JSON</button>
+                <div class="uaw-commandbar" id="uaw-source-commandbar" aria-label="WorkSpec Definitions commands">
+                    <div class="uaw-commandbar__identity">
+                        <strong>WorkSpec Definitions</strong>
+                        <code id="uaw-source-path">WorkSpec</code>
                     </div>
-                    <span class="uaw-source-status" id="uaw-source-status" aria-live="polite">Current editor section</span>
+                    <div class="uaw-commandbar__commands" role="group" aria-label="WorkSpec Definitions scope">
+                        <div class="uaw-segmented">
+                            <button type="button" class="uaw-product-command active" data-source-scope="context" aria-pressed="true">Context</button>
+                            <button type="button" class="uaw-product-command" data-source-scope="full" aria-pressed="false">Full JSON</button>
+                        </div>
+                    </div>
                 </div>`;
             header.querySelectorAll('[data-source-scope]').forEach(button => {
                 button.addEventListener('click', () => this.setScope(button.dataset.sourceScope));
@@ -233,7 +237,9 @@
         setScope(scope) {
             this.scope = scope === 'full' ? 'full' : 'context';
             document.querySelectorAll('[data-source-scope]').forEach(button => {
-                button.setAttribute('aria-pressed', String(button.dataset.sourceScope === this.scope));
+                const selected = button.dataset.sourceScope === this.scope;
+                button.setAttribute('aria-pressed', String(selected));
+                button.classList.toggle('active', selected);
             });
             this.applyScope({ reveal: true });
         }
@@ -269,9 +275,7 @@
             }
             this.editor.setHiddenAreas?.(hidden);
             const pathElement = document.getElementById('uaw-source-path');
-            const status = document.getElementById('uaw-source-status');
             if (pathElement) pathElement.textContent = contextual ? pathLabel(path) : 'WorkSpec';
-            if (status) status.textContent = contextual ? `Showing ${this.currentContext().label} only` : 'Showing the complete document';
             this.editor.layout?.();
         }
 
@@ -320,9 +324,7 @@
                 this.decorationTimer = setTimeout(() => { this.decorations = this.editor.deltaDecorations?.(this.decorations, []) || []; }, 2200);
             }
             const pathElement = document.getElementById('uaw-source-path');
-            const status = document.getElementById('uaw-source-status');
             if (pathElement) pathElement.textContent = pathLabel(paths[0]);
-            if (status && options.source) status.textContent = options.source;
         }
 
         handleSourceSelection() {
@@ -350,10 +352,8 @@
                     this.linkedElements = [...document.querySelectorAll(`[data-object-id="${escaped}"], [data-context-object-id="${escaped}"], [data-task-id="${escaped}"], [data-context-task-id="${escaped}"], [data-location-id="${escaped}"], .location-rect[data-id="${escaped}"], [data-element-id="${escaped}"], [data-display-id="${escaped}"], [data-asset-id="${escaped}"]`)];
                     this.linkedElements.forEach(element => element.classList.add('uaw-source-linked'));
                 }
-                const status = document.getElementById('uaw-source-status');
                 const pathElement = document.getElementById('uaw-source-path');
                 if (pathElement) pathElement.textContent = pathLabel(node.path);
-                if (status) status.textContent = id ? `Linked to ${id}` : `Selected ${pathLabel(node.path)}`;
                 window.dispatchEvent(new CustomEvent('uaw:source-selection', { detail: { path: node.path, id } }));
             }, 40);
         }

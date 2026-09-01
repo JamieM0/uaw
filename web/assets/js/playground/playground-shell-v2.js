@@ -1235,7 +1235,7 @@
             menu.innerHTML = `
                 <div class="uaw-project-menu__heading">Switch project</div>
                 <div class="uaw-project-menu__list">
-                    ${projects.map(project => `<button type="button" role="menuitem" data-switch-project="${escapeHTML(project.id)}" class="${project.id === current?.id ? 'active' : ''}"><span class="uaw-project-menu__mark">WS</span><span><strong>${escapeHTML(project.name)}</strong><small>${project.id === current?.id ? 'Current project' : 'Open project'}</small></span>${project.id === current?.id ? '<span class="uaw-project-menu__check">✓</span>' : ''}</button>`).join('')}
+                    ${projects.map(project => `<button type="button" role="menuitem" data-switch-project="${escapeHTML(project.id)}" class="${project.id === current?.id ? 'active' : ''}"><span><strong>${escapeHTML(project.name)}</strong><small>${project.id === current?.id ? 'Current project' : 'Open project'}</small></span>${project.id === current?.id ? '<span class="uaw-project-menu__check">✓</span>' : ''}</button>`).join('')}
                 </div>
                 <div class="uaw-project-menu__actions">
                     <button type="button" data-project-menu-action="manage">Manage projects</button>
@@ -1283,7 +1283,6 @@
                     : `Updated ${date}`;
                 return `<article class="uaw-project-card" data-project-id="${escapeHTML(project.id)}">
                     <button class="uaw-project-card__open" type="button" data-open-project="${escapeHTML(project.id)}">
-                        <span class="uaw-project-card__mark">${projectIcons.document}</span>
                         <span class="uaw-project-card__body"><strong>${escapeHTML(project.name)}</strong><small>${escapeHTML(secondary)}</small></span>
                         <span class="uaw-project-card__arrow">${projectIcons.arrow}</span>
                     </button>
