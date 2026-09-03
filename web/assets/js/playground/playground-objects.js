@@ -3,6 +3,63 @@
 
 let interactionCounter = 0;
 
+function getConfiguredTaskDurationUnit() {
+    try {
+        const effectiveEditor = window.activeDayTypeEditor || editor;
+        const parsed = effectiveEditor?.getValue ? JSON.parse(effectiveEditor.getValue()) : null;
+        const simulation = parsed?.simulation || parsed;
+        const unit = safeTrim(simulation?.config?.time_unit).toLowerCase();
+        return ['seconds', 'minutes', 'hours'].includes(unit) ? unit : 'minutes';
+    } catch (_error) {
+        return 'minutes';
+    }
+}
+
+function updateTaskDurationUnitLabel() {
+    const unit = getConfiguredTaskDurationUnit();
+    const label = document.getElementById('task-duration-unit-label');
+    if (label) label.textContent = unit;
+    const input = document.getElementById('task-duration-input');
+    if (input) input.title = `Duration is entered in ${unit}. Whole numbers are required by WorkSpec.`;
+    return unit;
+}
+
+// Return true when a task interaction contains semantics the visual controls
+// cannot round-trip. Such interactions stay in the source model unchanged
+// while the modal edits the fields it understands.
+function interactionNeedsJsonPreservation(interaction) {
+    if (!isPlainObject(interaction)) return true;
+    if (interaction.at !== undefined || interaction.when !== undefined || interaction.condition !== undefined) return true;
+    const knownKeys = new Set(['target_id', 'property_changes', 'action', 'object', 'temporary', 'revert_after', 'at', 'when', 'condition', 'object_id', 'add_objects', 'remove_objects']);
+    if (Object.keys(interaction).some(key => !knownKeys.has(key))) return true;
+    if (Object.prototype.hasOwnProperty.call(interaction, 'object_id')
+        || Object.prototype.hasOwnProperty.call(interaction, 'add_objects')
+        || Object.prototype.hasOwnProperty.call(interaction, 'remove_objects')) return true;
+
+    const targetId = interaction.target_id;
+    if (typeof targetId !== 'string' || targetId.startsWith('@') || targetId.includes('.')) return true;
+
+    if (interaction.action === 'create') {
+        const created = interaction.object;
+        if (!isPlainObject(created)) return true;
+        const properties = created.properties;
+        if (properties && isPlainObject(properties) && Object.keys(properties).some(key => !['state', 'quantity'].includes(key))) return true;
+    } else if (interaction.action === 'delete') {
+        if (typeof targetId !== 'string') return true;
+    } else if (interaction.action !== undefined) {
+        return true;
+    }
+
+    const changes = interaction.property_changes;
+    if (!isPlainObject(changes) || Object.keys(changes).length === 0) return interaction.action !== 'create' && interaction.action !== 'delete';
+    return Object.values(changes).some(change => {
+        if (!isPlainObject(change)) return true;
+        const operators = Object.keys(change);
+        if (operators.length !== 1 || !['set', 'delta'].includes(operators[0])) return true;
+        return isPlainObject(change[operators[0]]) || Array.isArray(change[operators[0]]);
+    });
+}
+
 // Track active event listeners for cleanup
 const eventListenerCleanup = {
     objectModal: [],
@@ -1045,11 +1102,19 @@ function openAddTaskModal() {
     // Clear interactions
     document.getElementById('interactions-container').innerHTML = '';
     interactionCounter = 0;
+    modal.dataset.taskStartDay = '';
+    modal.dataset.preservedInteractions = '[]';
+    modal.dataset.preservedDependsOn = '';
+    if (actorSelect) {
+        actorSelect.dataset.originalActorId = '';
+        actorSelect.dataset.preserveJson = 'false';
+    }
     const advancedDetails = document.getElementById('task-advanced-details');
     if (advancedDetails) advancedDetails.open = false;
 
     // Populate dropdowns from current simulation
     const context = getCurrentTimelineContext();
+    updateTaskDurationUnitLabel();
 
     // Populate actors/objects
     if (actorSelect) {
@@ -1135,7 +1200,7 @@ function openAddTaskModal() {
     }
 
     // Setup add interaction button
-    const addInteractionBtn = document.getElementById('add-interaction-btn');
+    const addInteractionBtn = document.getElementById('task-add-interaction-btn');
     if (addInteractionBtn) {
         addInteractionBtn.onclick = addInteraction;
     }
@@ -1193,9 +1258,17 @@ function openEditTaskModal(task) {
     // Clear interactions
     document.getElementById('interactions-container').innerHTML = '';
     interactionCounter = 0;
+    modal.dataset.taskStartDay = '';
+    modal.dataset.preservedInteractions = '[]';
+    modal.dataset.preservedDependsOn = '';
+    if (actorSelect) {
+        actorSelect.dataset.originalActorId = '';
+        actorSelect.dataset.preserveJson = 'false';
+    }
 
     // Populate dropdowns from current simulation
     const context = getCurrentTimelineContext();
+    updateTaskDurationUnitLabel();
 
     // Populate actors/objects
     if (actorSelect) {
@@ -1227,16 +1300,31 @@ function openEditTaskModal(task) {
     // Populate form with existing task data
     if (taskIdInput) taskIdInput.value = task.id || '';
     if (taskEmojiInput) taskEmojiInput.value = task.emoji || '';
-    if (actorSelect) actorSelect.value = task.actor_id || '';
+    if (actorSelect) {
+        if (typeof task.actor_id === 'string') actorSelect.value = task.actor_id;
+        else if (task.actor_id !== undefined) {
+            actorSelect.dataset.originalActorId = JSON.stringify(task.actor_id);
+            actorSelect.dataset.preserveJson = 'true';
+        }
+        actorSelect.onchange = () => { actorSelect.dataset.preserveJson = 'false'; };
+    }
     if (locationSelect) locationSelect.value = task.location || '';
-    if (startTimeInput) startTimeInput.value = task.start || '';
+    const taskStartTime = task.start && typeof task.start === 'object' ? task.start.time : task.start;
+    if (startTimeInput) startTimeInput.value = taskStartTime || '';
+    if (task.start && typeof task.start === 'object' && Number.isInteger(task.start.day) && task.start.day > 0) {
+        modal.dataset.taskStartDay = String(task.start.day);
+    }
     if (taskDurationInput) taskDurationInput.value = task.duration || '';
-    if (taskDependsInput) taskDependsInput.value = Array.isArray(task.depends_on) ? task.depends_on.join(', ') : '';
+    if (taskDependsInput) {
+        if (Array.isArray(task.depends_on)) taskDependsInput.value = task.depends_on.join(', ');
+        else if (task.depends_on !== undefined) modal.dataset.preservedDependsOn = JSON.stringify(task.depends_on);
+        taskDependsInput.oninput = () => { modal.dataset.preservedDependsOn = ''; };
+    }
 
     // Calculate end time if needed
-    if (task.start && task.duration && typeof parseTimeToMinutes === 'function' && typeof minutesToTimeString === 'function') {
+    if (taskStartTime && task.duration && typeof parseTimeToMinutes === 'function' && typeof minutesToTimeString === 'function') {
         try {
-            const startMinutes = parseTimeToMinutes(task.start);
+            const startMinutes = parseTimeToMinutes(taskStartTime);
             const endMinutes = startMinutes + (task.duration || 0);
             const endTime = minutesToTimeString(endMinutes);
             if (taskEndTimeInput) taskEndTimeInput.value = endTime;
@@ -1248,8 +1336,31 @@ function openEditTaskModal(task) {
     // Populate interactions if they exist. A valid WorkSpec property_changes
     // object can contain more than one property, so represent every property
     // operation as its own editable form group.
+    const preservedInteractions = [];
+    const canRenderInteraction = (interaction) => {
+        const propertyChanges = interaction?.property_changes;
+        if (propertyChanges && typeof propertyChanges === 'object' && !Array.isArray(propertyChanges)) {
+            const entries = Object.values(propertyChanges);
+            if (entries.length > 0 && entries.every(change => change && typeof change === 'object' && (
+                Object.prototype.hasOwnProperty.call(change, 'delta')
+                || Object.prototype.hasOwnProperty.call(change, 'to')
+                || Object.prototype.hasOwnProperty.call(change, 'set')
+            ))) return true;
+        }
+        return Boolean(
+            (interaction?.action === 'create' && interaction.object)
+            || interaction?.add_objects
+            || interaction?.action === 'delete'
+            || interaction?.remove_objects
+        );
+    };
     if (task.interactions && task.interactions.length > 0) {
         task.interactions.forEach(interaction => {
+            const preserveJson = interactionNeedsJsonPreservation(interaction);
+            if (preserveJson || !canRenderInteraction(interaction)) {
+                preservedInteractions.push(interaction);
+                return;
+            }
             const propertyChanges = interaction?.property_changes;
             const propertyEntries = propertyChanges && typeof propertyChanges === 'object'
                 ? Object.entries(propertyChanges)
@@ -1260,6 +1371,8 @@ function openEditTaskModal(task) {
                 const lastInteractionGroup = document.querySelector('.interaction-group:last-child');
             if (lastInteractionGroup) {
                 const counter = lastInteractionGroup.id.split('-')[1];
+                lastInteractionGroup.dataset.originalInteraction = JSON.stringify(interaction);
+                lastInteractionGroup.dataset.preserveJson = String(preserveJson);
 
                 // Determine interaction type and populate fields
                 if (propertyName) {
@@ -1364,6 +1477,7 @@ function openEditTaskModal(task) {
             });
         });
     }
+    modal.dataset.preservedInteractions = JSON.stringify(preservedInteractions);
 
     // Setup time input toggle
     setupTimeInputToggle();
@@ -1405,7 +1519,7 @@ function openEditTaskModal(task) {
     }
 
     // Setup add interaction button
-    const addInteractionBtn = document.getElementById('add-interaction-btn');
+    const addInteractionBtn = document.getElementById('task-add-interaction-btn');
     if (addInteractionBtn) {
         addInteractionBtn.onclick = addInteraction;
     }
@@ -2296,7 +2410,7 @@ function addTaskToSimulation() {
         let duration;
         const timeInputMode = document.querySelector('input[name="time-input-mode"]:checked').value;
         if (timeInputMode === 'duration') {
-            duration = parseInt(document.getElementById('task-duration-input').value);
+            duration = Number(document.getElementById('task-duration-input').value);
         } else {
             const endTime = document.getElementById('task-end-time-input').value;
             const startMinutes = parseTimeToMinutes(startTime);
@@ -2304,8 +2418,8 @@ function addTaskToSimulation() {
             duration = endMinutes - startMinutes;
         }
         
-        if (!duration || duration <= 0) {
-            alert('Please provide a valid duration');
+        if (!Number.isInteger(duration) || duration <= 0) {
+            alert(`Please provide a positive whole-number duration in ${getConfiguredTaskDurationUnit()}.`);
             return;
         }
         
@@ -2320,7 +2434,11 @@ function addTaskToSimulation() {
                 .split(',').map(id => id.trim()).filter(Boolean)
         };
         
-        const interactionGroups = [];
+        const interactionGroups = document.querySelectorAll('.interaction-group');
+        const addInteractionToTask = (interaction) => {
+            newTask.interactions = Array.isArray(newTask.interactions) ? newTask.interactions : [];
+            newTask.interactions.push(interaction);
+        };
         interactionGroups.forEach(group => {
             const counter = group.id.split('-')[1];
             const changeType = group.querySelector(`select[name="interaction_change_type_${counter}"]`).value;
@@ -2340,7 +2458,7 @@ function addTaskToSimulation() {
                     interaction.property_changes = from
                         ? { [property]: { from: from, to: to } }
                         : { [property]: { set: to } };
-                    newTask.interactions.push(interaction);
+                    addInteractionToTask(interaction);
                 }
             } else if (changeType === 'delta') {
                 const property = group.querySelector(`input[name="interaction_property_delta_${counter}"]`).value;
@@ -2349,7 +2467,7 @@ function addTaskToSimulation() {
                     if (!objectId) return;
                     interaction.target_id = objectId;
                     interaction.property_changes = { [property]: { delta: parseFloat(delta) } };
-                    newTask.interactions.push(interaction);
+                    addInteractionToTask(interaction);
                 }
             } else if (changeType === 'add_object') {
                 const newObjectType = group.querySelector(`select[name="new_object_type_${counter}"]`).value;
@@ -2386,11 +2504,11 @@ function addTaskToSimulation() {
                     const baseType = newObjectType === 'custom' ? '' : newObjectType;
                     applyCommonWorkSpecDefaults(newObject, baseType);
                     
-                    newTask.interactions.push({ action: 'create', object: newObject });
+                    addInteractionToTask({ action: 'create', object: newObject });
                 }
             } else if (changeType === 'remove_object') {
                 if (!objectId) return;
-                newTask.interactions.push({ action: 'delete', target_id: objectId });
+                addInteractionToTask({ action: 'delete', target_id: objectId });
             } else if (changeType === 'move_digital_object') {
                 const fromLocationId = group.querySelector(`select[name="from_digital_location_${counter}"]`).value;
                 const toLocationId = group.querySelector(`select[name="to_digital_location_${counter}"]`).value;
@@ -2399,7 +2517,7 @@ function addTaskToSimulation() {
                     interaction.property_changes = {
                         location: { from: fromLocationId, to: toLocationId }
                     };
-                    newTask.interactions.push(interaction);
+                    addInteractionToTask(interaction);
                 }
             } else if (changeType === 'move_display_element') {
                 const fromDisplayId = group.querySelector(`select[name="from_display_${counter}"]`).value;
@@ -2409,7 +2527,7 @@ function addTaskToSimulation() {
                     interaction.property_changes = {
                         display_id: { from: fromDisplayId, to: toDisplayId }
                     };
-                    newTask.interactions.push(interaction);
+                    addInteractionToTask(interaction);
                 }
             }
         });
@@ -2451,7 +2569,10 @@ function saveTaskToSimulation() {
         const location = document.getElementById('task-location-select').value;
         const startTime = document.getElementById('task-start-input').value;
 
-        if (!taskId || !emoji || !actorId || !startTime) {
+        const actorSelect = document.getElementById('task-actor-select');
+        const preserveActorJson = isEditMode && actorSelect?.dataset.preserveJson === 'true';
+        const hasPreservedActor = Boolean(preserveActorJson);
+        if (!taskId || !emoji || (!actorId && !hasPreservedActor) || !startTime) {
             alert('Please fill in all required fields');
             return;
         }
@@ -2465,7 +2586,7 @@ function saveTaskToSimulation() {
         let duration;
         const timeInputMode = document.querySelector('input[name="time-input-mode"]:checked').value;
         if (timeInputMode === 'duration') {
-            duration = parseInt(document.getElementById('task-duration-input').value);
+            duration = Number(document.getElementById('task-duration-input').value);
         } else {
             const endTime = document.getElementById('task-end-time-input').value;
             const startMinutes = parseTimeToMinutes(startTime);
@@ -2473,8 +2594,8 @@ function saveTaskToSimulation() {
             duration = endMinutes - startMinutes;
         }
 
-        if (!duration || duration <= 0) {
-            alert('Please provide a valid duration');
+        if (!Number.isInteger(duration) || duration <= 0) {
+            alert(`Please provide a positive whole-number duration in ${getConfiguredTaskDurationUnit()}.`);
             return;
         }
 
@@ -2483,22 +2604,43 @@ function saveTaskToSimulation() {
         const existingTask = isEditMode
             ? getSimulationTasks(getSimulationRoot(currentJson)).find(task => task.id === editTaskId)
             : null;
+        const dependencyText = document.getElementById('task-depends-input').value.trim();
+        let dependsOn = dependencyText
+            ? dependencyText.split(',').map(id => id.trim()).filter(Boolean)
+            : [];
+        if (!dependencyText && isEditMode && modal.dataset.preservedDependsOn) {
+            try { dependsOn = JSON.parse(modal.dataset.preservedDependsOn); } catch (_error) { dependsOn = []; }
+        }
         const newTask = {
             ...(existingTask || {}),
             id: taskId,
             emoji: emoji,
-            actor_id: actorId,
-            start: startTime,
+            actor_id: preserveActorJson ? JSON.parse(actorSelect.dataset.originalActorId) : actorId,
+            start: modal.dataset.taskStartDay
+                ? { day: Number(modal.dataset.taskStartDay), time: startTime }
+                : startTime,
             duration: duration,
             location: location,
-            depends_on: document.getElementById('task-depends-input').value
-                .split(',').map(id => id.trim()).filter(Boolean)
+            depends_on: dependsOn
         };
 
-        // WorkSpec 2.1 behaviour belongs in Script, never in Define tasks.
-        delete newTask.interactions;
-        const interactionGroups = [];
+        let preservedInteractions = [];
+        try {
+            preservedInteractions = JSON.parse(modal.dataset.preservedInteractions || '[]');
+        } catch (_error) {
+            preservedInteractions = [];
+        }
+        const interactionGroups = document.querySelectorAll('.interaction-group');
+        if (interactionGroups.length > 0 || preservedInteractions.length > 0) newTask.interactions = preservedInteractions;
+        const addInteractionToTask = (interaction) => {
+            newTask.interactions = Array.isArray(newTask.interactions) ? newTask.interactions : [];
+            newTask.interactions.push(interaction);
+        };
         interactionGroups.forEach(group => {
+            if (group.dataset.preserveJson === 'true' && group.dataset.originalInteraction) {
+                try { addInteractionToTask(JSON.parse(group.dataset.originalInteraction)); } catch (_error) { /* Keep malformed UI data out of the saved document. */ }
+                return;
+            }
             const counter = group.id.split('-')[1];
             const changeType = group.querySelector(`select[name="interaction_change_type_${counter}"]`).value;
             const objectId = group.querySelector(`select[name="interaction_object_${counter}"]`).value;
@@ -2517,7 +2659,7 @@ function saveTaskToSimulation() {
                     interaction.property_changes = from
                         ? { [property]: { from: from, to: to } }
                         : { [property]: { set: to } };
-                    newTask.interactions.push(interaction);
+                    addInteractionToTask(interaction);
                 }
             } else if (changeType === 'delta') {
                 const property = group.querySelector(`input[name="interaction_property_delta_${counter}"]`).value;
@@ -2526,7 +2668,7 @@ function saveTaskToSimulation() {
                     if (!objectId) return;
                     interaction.target_id = objectId;
                     interaction.property_changes = { [property]: { delta: parseFloat(delta) } };
-                    newTask.interactions.push(interaction);
+                    addInteractionToTask(interaction);
                 }
             } else if (changeType === 'add_object') {
                 const newObjectType = group.querySelector(`select[name="new_object_type_${counter}"]`).value;
@@ -2605,11 +2747,11 @@ function saveTaskToSimulation() {
                     const baseType = newObjectType === 'custom' ? '' : newObjectType;
                     applyCommonWorkSpecDefaults(newObject, baseType);
 
-                    newTask.interactions.push({ action: 'create', object: newObject });
+                    addInteractionToTask({ action: 'create', object: newObject });
                 }
             } else if (changeType === 'remove_object') {
                 if (!objectId) return;
-                newTask.interactions.push({ action: 'delete', target_id: objectId });
+                addInteractionToTask({ action: 'delete', target_id: objectId });
             } else if (changeType === 'move_digital_object') {
                 const fromLocationId = group.querySelector(`select[name="from_digital_location_${counter}"]`).value;
                 const toLocationId = group.querySelector(`select[name="to_digital_location_${counter}"]`).value;
@@ -2618,7 +2760,7 @@ function saveTaskToSimulation() {
                     interaction.property_changes = {
                         location: { from: fromLocationId, to: toLocationId }
                     };
-                    newTask.interactions.push(interaction);
+                    addInteractionToTask(interaction);
                 }
             } else if (changeType === 'move_display_element') {
                 const fromDisplayId = group.querySelector(`select[name="from_display_${counter}"]`).value;
@@ -2628,7 +2770,7 @@ function saveTaskToSimulation() {
                     interaction.property_changes = {
                         display_id: { from: fromDisplayId, to: toDisplayId }
                     };
-                    newTask.interactions.push(interaction);
+                    addInteractionToTask(interaction);
                 }
             }
         });

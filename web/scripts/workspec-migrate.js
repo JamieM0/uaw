@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// WorkSpec v1.0 → v2.0 Migration CLI
+// WorkSpec v1.0 → v2.1 Migration CLI
 // Universal Automation Wiki
 
 'use strict';

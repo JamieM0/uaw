@@ -63,10 +63,14 @@
             return objects;
         }
 
-        (simulation.world?.objects || []).forEach(object => addObject(objects, object, object?.type));
-        ['objects', 'actors', 'resources', 'equipment', 'tools', 'products'].forEach(key => {
-            (simulation[key] || []).forEach(object => addObject(objects, object, object?.type || key.replace(/s$/, '')));
-        });
+        const hasCanonicalObjects = Array.isArray(simulation.world?.objects);
+        const canonicalObjects = hasCanonicalObjects ? simulation.world.objects : [];
+        canonicalObjects.forEach(object => addObject(objects, object, object?.type));
+        if (!hasCanonicalObjects) {
+            ['objects', 'actors', 'resources', 'equipment', 'tools', 'products'].forEach(key => {
+                (simulation[key] || []).forEach(object => addObject(objects, object, object?.type || key.replace(/s$/, '')));
+            });
+        }
         (simulation.digital_space?.digital_locations || []).forEach(object => addObject(objects, object, object?.type));
         (simulation.digital_space?.digital_objects || []).forEach(object => addObject(objects, object, object?.type));
         (simulation.displays || simulation.world?.displays || []).forEach(display => {
@@ -94,7 +98,9 @@
         const simulation = documentValue?.simulation || documentValue || {};
         const rawTasks = Array.isArray(documentValue?.tasks) && documentValue?.simulation
             ? documentValue.tasks
-            : (simulation.process?.tasks || simulation.tasks || []);
+            : Array.isArray(simulation.process?.tasks)
+                ? simulation.process.tasks
+                : (Array.isArray(simulation.tasks) ? simulation.tasks : []);
         const unit = simulation.config?.time_unit || 'minutes';
         const tasks = rawTasks
             .map((task, index) => ({ task, index, timing: taskTiming(task, unit) }))

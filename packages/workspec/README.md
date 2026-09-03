@@ -2,8 +2,8 @@
 
 This package provides:
 
-- A programmatic WorkSpec v2.0 validator (`validate()`) that emits RFC 7807 Problem Details
-- The canonical draft-07 JSON Schema (`v2.0.schema.json`) used for generation, autocomplete, and structural validation
+- A programmatic WorkSpec v2.1 validator (`validate()`) that emits RFC 7807 Problem Details (with v2.0 compatibility)
+- The canonical draft-07 JSON Schema (`v2.1.schema.json`; `v2.0.schema.json` remains available for compatibility)
 - Shared observable playback-state and State Library visual resolution helpers
 - A `workspec` CLI with `validate`, `migrate`, and `format` commands
 
@@ -62,7 +62,7 @@ WorkSpec v2 simulations may define reusable `simulation.state_libraries`. Object
 
 ## JSON Schema coverage
 
-`v2.0.schema.json` explicitly describes the complete v2 document surface implemented by WorkSpec Studio: core world/process data, built-in and custom object properties, type definitions and traits, interactions and lifecycle actions, recipes, layouts, State Libraries, multi-period calendars/day types, digital space, and display interfaces. Domain-specific object properties remain extensible through `properties`.
+`v2.1.schema.json` describes the current WorkSpec document surface implemented by WorkSpec Studio: core world/process data, built-in and custom object properties, type definitions and traits, interactions and lifecycle actions, recipes, layouts, State Libraries, multi-period calendars/day types, digital space, and display interfaces. `v2.0.schema.json` remains available for documents that explicitly target v2.0. Domain-specific object properties remain extensible through `properties`.
 
 ## Install
 
@@ -103,7 +103,7 @@ Custom validation execution is isolated in a subprocess with a hard timeout, and
 
 If `--custom-catalog` is omitted, the CLI auto-loads `metrics-catalog-custom.json` from the custom validator file's folder when present.
 
-Migrate (Previous UAW Syntax -> WorkSpec v1.0.0):
+Migrate (Previous UAW Syntax -> WorkSpec 2.1):
 
 ```bash
 workspec migrate legacy.json --out migrated.workspec.json --schema

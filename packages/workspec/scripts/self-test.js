@@ -190,7 +190,8 @@ function run() {
         assert.equal(problem.instance, '/simulation/process/tasks/1/start');
     }
 
-    // 2) Legacy alias path: simulation.objects/tasks/layout while world/process exist but are empty arrays
+    // 2) Canonical empty arrays are authoritative; stale legacy aliases must not
+    // silently replace them.
     {
         const doc = baseDoc();
         doc.simulation.objects = [
@@ -203,10 +204,8 @@ function run() {
         ];
 
         const res = validator.validate(doc);
-        assert.equal(res.ok, false);
-        assert.equal(hasMetric(res.problems, 'temporal.scheduling.dependency_violation'), true);
-        const problem = getMetric(res.problems, 'temporal.scheduling.dependency_violation');
-        assert.equal(problem.instance, '/simulation/tasks/1/start');
+        assert.equal(res.ok, true);
+        assert.equal(hasMetric(res.problems, 'temporal.scheduling.dependency_violation'), false);
     }
 
     // 3) Control: no dependency violation when start == dependency end

@@ -247,10 +247,9 @@ function processSimulationData(simulationData) {
     }
     
     const config = sim.config || {};
-    const rawTasks = [
-        ...(Array.isArray(sim.process?.tasks) ? sim.process.tasks : []),
-        ...(Array.isArray(sim.tasks) ? sim.tasks : [])
-    ];
+    const rawTasks = Array.isArray(sim.process?.tasks)
+        ? sim.process.tasks
+        : (Array.isArray(sim.tasks) ? sim.tasks : []);
     const startTime = config.start_time || "06:00";
     const clockContext = window.WorkSpecTime?.createClockContext?.(sim, rawTasks);
     const startTimeMinutes = clockContext
@@ -260,10 +259,9 @@ function processSimulationData(simulationData) {
     let actualLastTaskEnd = startTimeMinutes;
     let actualFirstTaskStart = null;
 
-    const allObjects = [
-        ...(Array.isArray(sim.world?.objects) ? sim.world.objects : []),
-        ...(Array.isArray(sim.objects) ? sim.objects : [])
-    ];
+    const allObjects = Array.isArray(sim.world?.objects)
+        ? [...sim.world.objects]
+        : (Array.isArray(sim.objects) ? [...sim.objects] : []);
 
     // Include digital locations from the simulation structure
     // Support both new (nested) and old (root-level) formats for backward compatibility

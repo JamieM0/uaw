@@ -92,7 +92,11 @@ function downloadCurrentWork() {
             return;
         }
 
-        const blob = new Blob([content], { type: 'application/json' });
+        // Monaco permits comments for authoring, but the exported artifact is
+        // strict JSON so it can be consumed by the CLI and other tools.
+        const parsed = JSON.parse(stripJsonComments(content));
+        const exportContent = JSON.stringify(parsed, null, 2);
+        const blob = new Blob([exportContent], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -890,10 +894,12 @@ function validateJSON() {
 
     try {
         const parsed = JSON.parse(strippedJson);
+        let semanticProblems = [];
+        let semanticValidationRan = false;
         if (jsonStatus) {
-            jsonStatus.className = "validation-indicator success";
-            jsonStatus.textContent = "✓ Valid JSON";
-            jsonStatus.title = "JSON syntax is valid";
+            jsonStatus.className = "validation-indicator warning";
+            jsonStatus.textContent = "✓ JSON syntax valid";
+            jsonStatus.title = "JSON syntax is valid; checking WorkSpec rules";
         }
 
         // Check if simulation content currently shows any error state and re-render if needed
@@ -918,8 +924,10 @@ function validateJSON() {
         if (window.autoValidationEnabled !== false) {
             // Prefer WorkSpec v2 validator (RFC 7807 Problem Details)
             if (window.WorkSpecValidator && typeof window.WorkSpecValidator.validate === 'function') {
+                semanticValidationRan = true;
                 const result = window.WorkSpecValidator.validate(parsed);
                 const problems = Array.isArray(result?.problems) ? result.problems : [];
+                semanticProblems = problems;
                 const mapped = problems.map((problem) => ({
                     metricId: problem.metric_id || 'system.error',
                     status: problem.severity === 'warning' ? 'warning' : problem.severity === 'info' ? 'suggestion' : 'error',
@@ -937,6 +945,7 @@ function validateJSON() {
                     displayValidationResults(mapped);
                 }
             } else if (mergedCatalog && mergedCatalog.length > 0 && window.SimulationValidator) {
+                semanticValidationRan = true;
                 // Fallback: legacy metrics validator
                 const validator = new window.SimulationValidator(parsed);
                 // Custom validators run asynchronously from the Metrics Editor.
@@ -944,6 +953,7 @@ function validateJSON() {
                 // built-in checks here instead of reporting a false error for
                 // every custom metric.
                 const validationResults = validator.runChecks(mergedCatalog);
+                semanticProblems = validationResults;
                 displayValidationResults(validationResults);
             } else {
                 displayValidationResults([]);
@@ -951,6 +961,28 @@ function validateJSON() {
         } else {
             // Clear validation results when auto-validation is disabled
             displayValidationResults([]);
+        }
+
+        if (jsonStatus) {
+            const errors = semanticProblems.filter((problem) => problem?.severity === 'error' || problem?.status === 'error');
+            const warnings = semanticProblems.filter((problem) => problem?.severity === 'warning' || problem?.status === 'warning');
+            if (!semanticValidationRan) {
+                jsonStatus.className = "validation-indicator warning";
+                jsonStatus.textContent = "✓ JSON syntax valid · WorkSpec checks off";
+                jsonStatus.title = "JSON syntax is valid; semantic WorkSpec validation is disabled or unavailable";
+            } else if (errors.length > 0) {
+                jsonStatus.className = "validation-indicator error";
+                jsonStatus.textContent = `✗ WorkSpec errors (${errors.length})`;
+                jsonStatus.title = "JSON syntax is valid, but the WorkSpec document has errors";
+            } else if (warnings.length > 0) {
+                jsonStatus.className = "validation-indicator warning";
+                jsonStatus.textContent = `⚠ WorkSpec warnings (${warnings.length})`;
+                jsonStatus.title = "JSON syntax is valid; review the WorkSpec warnings";
+            } else {
+                jsonStatus.className = "validation-indicator success";
+                jsonStatus.textContent = "✓ Valid WorkSpec";
+                jsonStatus.title = "JSON syntax and WorkSpec validation passed";
+            }
         }
 
         // Clear any syntax error highlighting

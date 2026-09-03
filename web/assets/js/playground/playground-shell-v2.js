@@ -492,6 +492,10 @@
                 this.setSaveState('Saved to folder', 'saved');
                 this.updateDocumentSummary();
             });
+            window.addEventListener('uaw:project-persistence-degraded', (event) => {
+                this.setSaveState('Folder saved · not remembered', 'warning');
+                this.toast(event.detail?.message || 'Project folders will not be remembered between sessions in this browser.');
+            });
             window.addEventListener('uaw:project-save-error', (event) => {
                 this.setSaveState('Save failed', 'error');
                 this.toast(`Could not save to the project folder: ${event.detail.error?.message || 'Unknown error'}`);
@@ -1053,18 +1057,20 @@
                 };
                 const canonicalObjects = simulation.world?.objects;
                 const legacyObjectArrays = ['actors', 'resources', 'equipment', 'objects', 'tools', 'products'];
-                const objects = Array.isArray(canonicalObjects) && canonicalObjects.length
+                const objects = Array.isArray(canonicalObjects)
                     ? canonicalObjects.length
                     : dayTypes.length
                         ? uniqueAcrossDayTypes('objects')
                     : legacyObjectArrays.reduce((total, key) => total + (Array.isArray(simulation[key]) ? simulation[key].length : 0), 0);
-                const tasks = simulation.process?.tasks || simulation.tasks;
+                const tasks = Array.isArray(simulation.process?.tasks) ? simulation.process.tasks : simulation.tasks;
                 return {
                     valid: true,
                     version: simulation.schema_version || root.workspec_version || root.version || '2.0',
                     tasks: Array.isArray(tasks) && tasks.length ? tasks.length : uniqueAcrossDayTypes('tasks'),
                     objects,
-                    locations: simulation.world?.layout?.locations?.length || simulation.locations?.length || uniqueAcrossDayTypes('locations'),
+                    locations: Array.isArray(simulation.world?.layout?.locations)
+                        ? simulation.world.layout.locations.length
+                        : Array.isArray(simulation.locations) ? simulation.locations.length : uniqueAcrossDayTypes('locations'),
                     digitalLocations: simulation.digital_space?.digital_locations?.length || 0,
                     displays: simulation.displays?.length || simulation.world?.displays?.length || 0,
                     assets: root.assets ? Object.keys(root.assets).length : 0
@@ -1087,12 +1093,15 @@
             try {
                 const root = JSON.parse(window.monacoEditor?.getValue?.() || window.editor?.getValue?.() || '{}');
                 const simulation = root.simulation || root;
-                const canonicalTasks = simulation.process?.tasks || simulation.tasks || [];
+                const canonicalTasks = Array.isArray(simulation.process?.tasks)
+                    ? simulation.process.tasks
+                    : (Array.isArray(simulation.tasks) ? simulation.tasks : []);
                 const periodTasks = Object.entries(simulation.day_types || {}).flatMap(([period, value]) =>
                     (value?.tasks || []).map(task => ({ ...task, __period: period }))
                 );
                 const tasks = canonicalTasks.length ? canonicalTasks : periodTasks;
-                const canonicalObjects = simulation.world?.objects || [];
+                const hasCanonicalObjects = Array.isArray(simulation.world?.objects);
+                const canonicalObjects = hasCanonicalObjects ? simulation.world.objects : [];
                 const legacyObjects = ['actors', 'resources', 'equipment', 'objects', 'tools', 'products']
                     .flatMap(key => Array.isArray(simulation[key]) ? simulation[key] : []);
                 const periodObjects = Object.entries(simulation.day_types || {}).flatMap(([period, value]) =>
@@ -1102,7 +1111,7 @@
                     interaction?.object,
                     ...((interaction?.add_objects || []).filter(item => item && typeof item === 'object'))
                 ])).filter(object => object?.id).map(object => ({ ...object, __lifecycle: 'Created by process' }));
-                const baseObjects = canonicalObjects.length ? canonicalObjects : legacyObjects.length ? legacyObjects : periodObjects;
+                const baseObjects = hasCanonicalObjects ? canonicalObjects : legacyObjects.length ? legacyObjects : periodObjects;
                 const objectList = [...baseObjects, ...lifecycleObjects];
                 const objects = [...new Map(objectList.map((object, index) => [object?.id || `object-${index}`, object])).values()];
                 return { root, simulation, tasks, objects };
@@ -1420,12 +1429,16 @@
 
         usedStatesForLibrary(simulation, libraryId) {
             const used = new Set();
-            const objects = simulation.world?.objects || simulation.objects || [];
+            const objects = Array.isArray(simulation.world?.objects)
+                ? simulation.world.objects
+                : (Array.isArray(simulation.objects) ? simulation.objects : []);
             const objectIds = new Set(objects.filter(object => object?.state_library === libraryId).map(object => object.id));
             objects.forEach(object => {
                 if (object?.state_library === libraryId && typeof object.properties?.state === 'string') used.add(object.properties.state);
             });
-            const tasks = simulation.process?.tasks || simulation.tasks || [];
+            const tasks = Array.isArray(simulation.process?.tasks)
+                ? simulation.process.tasks
+                : (Array.isArray(simulation.tasks) ? simulation.tasks : []);
             tasks.forEach(task => (task.interactions || []).forEach(interaction => {
                 if (!objectIds.has(interaction?.target_id || interaction?.object_id)) return;
                 const operation = interaction.property_changes?.state;

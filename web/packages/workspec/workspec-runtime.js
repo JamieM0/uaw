@@ -15,11 +15,15 @@
     const TASK_FIELDS = new Set(['id', 'actor_id', 'start', 'end', 'duration', 'location', 'description', 'priority', 'tags', 'status', 'actual_end', 'progress']);
     const TERMINAL_TASK_STATES = new Set(['completed', 'skipped', 'blocked', 'interrupted', 'cancelled']);
     const LOCATION_FIELDS = new Set(['id', 'name', 'parent_id', 'shape', 'coordinates', 'position', 'emoji']);
-    const COMPACT_ENTITY_ID = /^[a-z][a-z0-9_]*(?::[a-z][a-z0-9_]*)?$/;
+    const COMPACT_ENTITY_ID = /^(?=.{1,250}$)[a-z][a-z0-9_]*(?::[a-z][a-z0-9_]{0,249})?$/;
 
     const own = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
     const plain = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
     const clone = (value) => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+    const arrayFrom = (value, key, fallback = []) => {
+        if (plain(value) && own(value, key)) return Array.isArray(value[key]) ? value[key] : [];
+        return Array.isArray(fallback) ? fallback : [];
+    };
     const ptrEscape = (value) => String(value).replace(/~/g, '~0').replace(/\//g, '~1');
     const pointer = (parts) => '/' + parts.map(ptrEscape).join('/');
     const simOf = (documentValue) => plain(documentValue && documentValue.simulation) ? documentValue.simulation : documentValue;
@@ -202,15 +206,23 @@
         };
         add(sim.meta, 'simulation', ['simulation', 'meta']);
         const world = sim.world || {};
-        const mainLocations = (world.layout && world.layout.locations) || ((sim.layout && sim.layout.locations) || []);
-        const mainObjects = (world.objects && world.objects.length ? world.objects : (sim.objects || []));
-        mainLocations.forEach((e, i) => add(e, 'location', ['simulation', 'world', 'layout', 'locations', i]));
-        mainObjects.forEach((e, i) => add(e, 'object', ['simulation', 'world', 'objects', i]));
-        const tasks = ((sim.process && sim.process.tasks) && sim.process.tasks.length ? sim.process.tasks : (sim.tasks || []));
+        const worldLayout = plain(world.layout) ? world.layout : {};
+        const legacyLayout = plain(sim.layout) ? sim.layout : {};
+        const hasCanonicalLocations = Array.isArray(worldLayout.locations);
+        const hasCanonicalObjects = Array.isArray(world.objects);
+        const hasCanonicalTasks = plain(sim.process) && Array.isArray(sim.process.tasks);
+        const mainLocations = hasCanonicalLocations ? worldLayout.locations : arrayFrom(legacyLayout, 'locations');
+        const mainObjects = hasCanonicalObjects ? world.objects : arrayFrom(sim, 'objects');
+        const tasks = hasCanonicalTasks ? sim.process.tasks : arrayFrom(sim, 'tasks');
+        const locationsBase = hasCanonicalLocations ? ['simulation', 'world', 'layout', 'locations'] : ['simulation', 'layout', 'locations'];
+        const objectsBase = hasCanonicalObjects ? ['simulation', 'world', 'objects'] : ['simulation', 'objects'];
+        const tasksBase = hasCanonicalTasks ? ['simulation', 'process', 'tasks'] : ['simulation', 'tasks'];
+        mainLocations.forEach((e, i) => add(e, 'location', locationsBase.concat(i)));
+        mainObjects.forEach((e, i) => add(e, 'object', objectsBase.concat(i)));
         tasks.forEach((e, i) => {
-            add(e, 'task', ['simulation', 'process', 'tasks', i]);
+            add(e, 'task', tasksBase.concat(i));
             (e.interactions || []).forEach((interaction, j) => {
-                if (interaction && interaction.action === 'create') add(interaction.object, 'object', ['simulation', 'process', 'tasks', i, 'interactions', j, 'object']);
+                if (interaction && interaction.action === 'create') add(interaction.object, 'object', tasksBase.concat([i, 'interactions', j, 'object']));
             });
         });
         Object.entries(sim.day_types || {}).forEach(([key, dayType]) => {
@@ -245,13 +257,13 @@
             } else ids.set(entry.entity.id, entry);
         });
         const world = sim.world || {};
-        const objectList = world.objects && world.objects.length ? world.objects : (sim.objects || []);
-        const locationList = (world.layout && world.layout.locations) || ((sim.layout && sim.layout.locations) || []);
-        const taskList = (sim.process && sim.process.tasks && sim.process.tasks.length) ? sim.process.tasks : (sim.tasks || []);
+        const objectList = Array.isArray(world.objects) ? world.objects : arrayFrom(sim, 'objects');
+        const locationList = Array.isArray(world.layout?.locations) ? world.layout.locations : arrayFrom(sim.layout, 'locations');
+        const taskList = Array.isArray(sim.process?.tasks) ? sim.process.tasks : arrayFrom(sim, 'tasks');
         const objects = new Map(objectList.map((entity) => [entity.id, clone(entity)]));
         const locations = new Map(locationList.map((entity) => [entity.id, clone(entity)]));
         const tasks = new Map(taskList.map((entity) => [entity.id, entity]));
-        const tasksBase = (sim.process && sim.process.tasks && sim.process.tasks.length)
+        const tasksBase = Array.isArray(sim.process?.tasks)
             ? '/simulation/process/tasks'
             : '/simulation/tasks';
         return { sim, ids, objects, locations, tasks, tasksBase, problems };
@@ -1426,7 +1438,7 @@
             const hasActiveTemporary = [...state.temporary.entries()].some(([taskId, captures]) => taskId !== first.task && captures.some((capture) => capture.id === first.id && capture.property === first.property));
             if (group.some((write) => write.temporary) && hasActiveTemporary) { runtimeProblems.push(problem('interaction.temporary.overlap', `Temporary writes overlap on '${first.property}'.`, first.instance)); return; }
             if (group.every((write) => write.operation === 'delta')) {
-                if (typeof before !== 'number' || group.some((write) => typeof write.value !== 'number')) { runtimeProblems.push(problem('interaction.operator.type', `Delta on '${first.property}' requires numeric values.`, first.instance)); return; }
+                if (typeof before !== 'number' || !Number.isFinite(before) || group.some((write) => typeof write.value !== 'number' || !Number.isFinite(write.value))) { runtimeProblems.push(problem('interaction.operator.type', `Delta on '${first.property}' requires finite numeric values.`, first.instance)); return; }
                 const temporaryDeltas = group.filter((write) => write.temporary);
                 if (temporaryDeltas.length > 1) { temporaryDeltas.forEach((write) => runtimeProblems.push(problem('interaction.temporary.overlap', `Temporary writes overlap on '${first.property}'.`, write.instance))); return; }
                 if (temporaryDeltas.length === 1) {
@@ -1434,7 +1446,9 @@
                     captures.push({ id: write.id, property: write.property, value: clone(before), existed: before !== undefined });
                     state.temporary.set(write.task, captures);
                 }
-                writeProperty(entity, first.property, before + group.reduce((sum, write) => sum + write.value, 0));
+                const after = before + group.reduce((sum, write) => sum + write.value, 0);
+                if (!Number.isFinite(after)) { runtimeProblems.push(problem('interaction.operator.non_finite', `Delta on '${first.property}' produced a non-finite number.`, first.instance)); return; }
+                writeProperty(entity, first.property, after);
                 return;
             }
             if (first.from && equalValues(result(before), first.from) !== true) { runtimeProblems.push(problem('interaction.from.mismatch', `Property '${first.property}' does not equal the required from value.`, first.instance)); return; }
@@ -1444,8 +1458,9 @@
                 state.temporary.set(first.task, captures);
             }
             let after = first.value;
-            if (first.operation === 'delta') after = typeof before === 'number' && typeof first.value === 'number' ? before + first.value : undefined;
-            if (first.operation === 'multiply') after = typeof before === 'number' && typeof first.value === 'number' ? before * first.value : undefined;
+            if (first.operation === 'delta') after = typeof before === 'number' && Number.isFinite(before) && typeof first.value === 'number' && Number.isFinite(first.value) ? before + first.value : undefined;
+            if (first.operation === 'multiply') after = typeof before === 'number' && Number.isFinite(before) && typeof first.value === 'number' && Number.isFinite(first.value) ? before * first.value : undefined;
+            if (['delta', 'multiply'].includes(first.operation) && !Number.isFinite(after)) { runtimeProblems.push(problem('interaction.operator.non_finite', `Operator '${first.operation}' on '${first.property}' produced a non-finite number.`, first.instance)); return; }
             if (first.operation === 'append') after = Array.isArray(before) ? before.concat([clone(first.value)]) : typeof before === 'string' && typeof first.value === 'string' ? before + first.value : undefined;
             if (first.operation === 'remove') after = Array.isArray(before) ? before.filter((entry) => JSON.stringify(entry) !== JSON.stringify(first.value)) : undefined;
             if (after === undefined && first.operation !== 'set' && first.operation !== 'to') { runtimeProblems.push(problem('interaction.operator.type', `Operator '${first.operation}' is incompatible with '${first.property}'.`, first.instance)); return; }
@@ -1803,8 +1818,11 @@
 
     function snapshotAt(documentValue, time) {
         const parsed = typeof time === 'number' ? time : parseTaskStart(time);
-        const until = typeof parsed === 'number' ? parsed : parsed && parsed.ok ? parsed.startMinutes : Infinity;
-        return serialiseState(replay(documentValue, { until }));
+        const valid = typeof parsed === 'number' ? Number.isFinite(parsed) : Boolean(parsed?.ok && Number.isFinite(parsed.startMinutes));
+        const until = valid ? (typeof parsed === 'number' ? parsed : parsed.startMinutes) : 0;
+        const run = replay(documentValue, { until });
+        if (!valid) run.problems.push(problem('snapshot.time.invalid', 'Snapshot time must be a finite minute value or a valid WorkSpec task start.', '/snapshot/time', { value: time }, 'error', ['Use minutes such as 540, HH:MM such as "09:00", or a strict ISO date-time.']));
+        return serialiseState(run);
     }
 
     function resolveTimings(documentValue) {
@@ -2063,7 +2081,7 @@
         const effects = compileScript(scriptSource);
         tasks.forEach((task) => {
             const interactions = [...(effects.get(`${task.id}:start`) || []), ...(effects.get(`${task.id}:completion`) || [])];
-            if (interactions.length) task.interactions = interactions;
+            if (interactions.length) task.interactions = [...(Array.isArray(task.interactions) ? task.interactions : []), ...interactions];
         });
         return documentCopy;
     }
@@ -2083,8 +2101,11 @@
 
     function snapshotProjectAt(documentValue, scriptSource, time) {
         const parsed = typeof time === 'number' ? time : parseTaskStart(time);
-        const until = typeof parsed === 'number' ? parsed : parsed && parsed.ok ? parsed.startMinutes : Infinity;
-        return serialiseState(runProject(documentValue, scriptSource, { until }));
+        const valid = typeof parsed === 'number' ? Number.isFinite(parsed) : Boolean(parsed?.ok && Number.isFinite(parsed.startMinutes));
+        const until = valid ? (typeof parsed === 'number' ? parsed : parsed.startMinutes) : 0;
+        const run = runProject(documentValue, scriptSource, { until });
+        if (!valid) run.problems.push(problem('snapshot.time.invalid', 'Snapshot time must be a finite minute value or a valid WorkSpec task start.', '/snapshot/time', { value: time }, 'error', ['Use minutes such as 540, HH:MM such as "09:00", or a strict ISO date-time.']));
+        return serialiseState(run);
     }
 
     return { parseDurationToMinutes, parseTaskStart, parseOffset, formatCompactReference, normalizeValueExpression, isValueReference, evaluateValue, evaluateCondition, buildIndex, resolveTimings, replay, serialiseState, snapshotAt, validate, analyzeScript, compileScript, defineWithScript, runProject, snapshotProjectAt, OBJECT_FIELDS: [...OBJECT_FIELDS], TASK_FIELDS: [...TASK_FIELDS], LOCATION_FIELDS: [...LOCATION_FIELDS] };

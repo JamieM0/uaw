@@ -4,8 +4,12 @@
 // Constants
 const MAX_FILE_SIZE_MB = 10;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+const MAX_ZIP_ENTRIES = 1000;
+const MAX_ZIP_ENTRY_BYTES = 25 * 1024 * 1024;
+const MAX_ZIP_UNCOMPRESSED_BYTES = 50 * 1024 * 1024;
 const WORKSPEC_FILE_EXTENSION = '.workspec.json';
 const WORKSPEC_ZIP_EXTENSION = '.workspec.zip';
+const WORKSPEC_SCRIPT_EXTENSION = '.workspec.js';
 
 // Setup save/load buttons
 function setupSaveLoadButtons() {
@@ -80,18 +84,85 @@ function normalizeSimulationFileBaseName(rawName) {
     return base || fallbackName;
 }
 
-async function createImportedProject(projectName, data, fileName, directoryHandle = null) {
+function assetMimeTypeFromExtension(extension) {
+    const mimeTypes = {
+        png: 'image/png',
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        svg: 'image/svg+xml',
+        webp: 'image/webp',
+        mp3: 'audio/mpeg',
+        wav: 'audio/wav',
+        mp4: 'video/mp4',
+        pdf: 'application/pdf'
+    };
+    return mimeTypes[String(extension || '').toLowerCase()] || 'application/octet-stream';
+}
+
+function parseImportedWorkSpec(content, sourceLabel = 'file') {
+    const cleaned = typeof stripJsonComments === 'function' ? stripJsonComments(content) : content;
+    const data = JSON.parse(cleaned);
+    if (!data || typeof data !== 'object' || !data.simulation || typeof data.simulation !== 'object') {
+        throw new Error(`WorkSpec import rejected (${sourceLabel}): missing a simulation object.`);
+    }
+
+    const sim = data.simulation;
+    const isV2 = sim.schema_version === '2.0' || sim.schema_version === '2.1' || sim.world || sim.process;
+    if (isV2 && window.WorkSpecValidator?.validate) {
+        const result = window.WorkSpecValidator.validate(data);
+        const errors = (result?.problems || []).filter(problem => problem?.severity === 'error');
+        if (errors.length > 0) {
+            const details = errors.slice(0, 4).map(problem => `${problem.instance || '/'}: ${problem.detail || problem.title}`).join(' | ');
+            throw new Error(`WorkSpec import rejected: ${details}`);
+        }
+    } else if (isV2) {
+        if (!Array.isArray(sim.world?.objects)) throw new Error('WorkSpec import rejected: simulation.world.objects must be an array.');
+        if (!Array.isArray(sim.process?.tasks)) throw new Error('WorkSpec import rejected: simulation.process.tasks must be an array.');
+    } else {
+        if (!Array.isArray(sim.objects)) throw new Error('Simulation import rejected: simulation.objects must be an array.');
+        if (!Array.isArray(sim.tasks)) throw new Error('Simulation import rejected: simulation.tasks must be an array.');
+    }
+
+    return data;
+}
+
+function validateZipContents(zipContents) {
+    const entries = Object.values(zipContents?.files || {});
+    if (entries.length > MAX_ZIP_ENTRIES) {
+        throw new Error(`ZIP import rejected: archive contains more than ${MAX_ZIP_ENTRIES} entries.`);
+    }
+
+    let totalBytes = 0;
+    for (const entry of entries) {
+        const names = [entry.name, entry.unsafeOriginalName].filter(Boolean);
+        if (names.some(name => name.startsWith('/') || name.split('/').includes('..'))) {
+            throw new Error('ZIP import rejected: archive contains an unsafe path.');
+        }
+        const uncompressedSize = Number(entry._data?.uncompressedSize);
+        if (!Number.isFinite(uncompressedSize) || uncompressedSize < 0) continue;
+        if (uncompressedSize > MAX_ZIP_ENTRY_BYTES) {
+            throw new Error(`ZIP import rejected: an entry exceeds ${MAX_ZIP_ENTRY_BYTES / (1024 * 1024)}MB uncompressed.`);
+        }
+        totalBytes += uncompressedSize;
+        if (totalBytes > MAX_ZIP_UNCOMPRESSED_BYTES) {
+            throw new Error(`ZIP import rejected: uncompressed content exceeds ${MAX_ZIP_UNCOMPRESSED_BYTES / (1024 * 1024)}MB.`);
+        }
+    }
+}
+
+async function createImportedProject(projectName, data, fileName, directoryHandle = null, script = null) {
     const workSpec = JSON.stringify(data, null, 2);
     if (window.UAWPlaygroundShell?.requestProjectCreation) {
         return window.UAWPlaygroundShell.requestProjectCreation({
             kind: 'template',
             name: projectName,
             sourceLabel: `Import · ${fileName}`,
-            workSpec
+            workSpec,
+            script: typeof script === 'string' ? script : ''
         });
     }
     if (window.UAWProjectStore?.createFromTemplate) {
-        return window.UAWProjectStore.createFromTemplate(projectName, workSpec, directoryHandle);
+        return window.UAWProjectStore.createFromTemplate(projectName, workSpec, directoryHandle, typeof script === 'string' ? script : null);
     }
     editor?.setValue?.(workSpec);
     return true;
@@ -141,44 +212,7 @@ async function loadFromJsonFile(file, directoryHandle = null) {
                     return;
                 }
 
-                const data = JSON.parse(content);
-
-                // Validate that it's a simulation file
-                if (!data.simulation) {
-                    alert('Invalid simulation file: missing "simulation" property');
-                    reject(new Error('Missing simulation property'));
-                    return;
-                }
-
-                // Validate simulation structure (WorkSpec v2 preferred; support v1 for compatibility)
-                const sim = data.simulation;
-                const isV2 = sim && (sim.schema_version === '2.0' || sim.world || sim.process);
-
-                if (isV2) {
-                    if (!sim.world || !Array.isArray(sim.world.objects)) {
-                        alert('Invalid WorkSpec v2 file: simulation.world.objects must be an array');
-                        reject(new Error('Invalid world.objects structure'));
-                        return;
-                    }
-
-                    if (!sim.process || !Array.isArray(sim.process.tasks)) {
-                        alert('Invalid WorkSpec v2 file: simulation.process.tasks must be an array');
-                        reject(new Error('Invalid process.tasks structure'));
-                        return;
-                    }
-                } else {
-                    if (!sim.objects || !Array.isArray(sim.objects)) {
-                        alert('Invalid simulation file: simulation.objects must be an array');
-                        reject(new Error('Invalid objects structure'));
-                        return;
-                    }
-
-                    if (!sim.tasks || !Array.isArray(sim.tasks)) {
-                        alert('Invalid simulation file: simulation.tasks must be an array');
-                        reject(new Error('Invalid tasks structure'));
-                        return;
-                    }
-                }
+                const data = parseImportedWorkSpec(content, file.name);
 
                 // Load into editor
                 if (typeof editor !== 'undefined' && editor) {
@@ -234,7 +268,9 @@ async function loadFromZipFile(file, directoryHandle = null) {
 
     try {
         const zip = new JSZip();
+        if (file?.size > MAX_FILE_SIZE_BYTES) throw new Error(`ZIP import rejected: compressed file exceeds ${MAX_FILE_SIZE_MB}MB.`);
         const zipContents = await zip.loadAsync(file);
+        validateZipContents(zipContents);
 
         // Accept current and legacy package entry names.
         const simulationFile = zipContents.file('simulation.workspec.json') || zipContents.file('simulation.json');
@@ -248,48 +284,19 @@ async function loadFromZipFile(file, directoryHandle = null) {
         // Validate and load simulation
         let data;
         try {
-            data = JSON.parse(simulationContent);
+            data = parseImportedWorkSpec(simulationContent, `${file.name}:simulation.workspec.json`);
         } catch (error) {
             alert('Invalid simulation.json in ZIP: ' + error.message);
             return;
         }
 
-        // Validate simulation structure
-        if (!data.simulation) {
-            alert('Invalid simulation file: missing "simulation" property');
-            return;
-        }
-
-        // Validate simulation structure (WorkSpec v2 preferred; support v1 for compatibility)
-        const sim = data.simulation;
-        const isV2 = sim && (sim.schema_version === '2.0' || sim.world || sim.process);
-
-        if (isV2) {
-            if (!sim.world || !Array.isArray(sim.world.objects)) {
-                alert('Invalid WorkSpec v2 file: simulation.world.objects must be an array');
-                return;
-            }
-
-            if (!sim.process || !Array.isArray(sim.process.tasks)) {
-                alert('Invalid WorkSpec v2 file: simulation.process.tasks must be an array');
-                return;
-            }
-        } else {
-            if (!sim.objects || !Array.isArray(sim.objects)) {
-                alert('Invalid simulation file: simulation.objects must be an array');
-                return;
-            }
-
-            if (!sim.tasks || !Array.isArray(sim.tasks)) {
-                alert('Invalid simulation file: simulation.tasks must be an array');
-                return;
-            }
-        }
+        const scriptFile = zipContents.file('project.workspec.js') || zipContents.file('simulation.workspec.js');
+        const script = scriptFile ? await scriptFile.async('text') : null;
 
         // Load into editor
         if (typeof editor !== 'undefined' && editor) {
             const projectName = data.simulation?.meta?.title || file.name.replace(/\.workspec\.zip$|\.zip$/i, '');
-            const importedProject = await createImportedProject(projectName, data, file.name, directoryHandle);
+            const importedProject = await createImportedProject(projectName, data, file.name, directoryHandle, script);
             if (!importedProject) return;
 
             const assetEntries = [];
@@ -300,7 +307,7 @@ async function loadFromZipFile(file, directoryHandle = null) {
                 const fileName = path.split('/').pop();
                 const id = fileName.replace(/\.[^.]+$/, '');
                 const extension = (fileName.split('.').pop() || '').toLowerCase();
-                const mime = extension === 'png' ? 'image/png' : extension === 'jpg' || extension === 'jpeg' ? 'image/jpeg' : extension === 'svg' ? 'image/svg+xml' : extension === 'mp3' ? 'audio/mpeg' : 'application/octet-stream';
+                const mime = assetMimeTypeFromExtension(extension);
                 const base64 = await entry.async('base64');
                 await window.UAWProjectStore?.putAsset?.({ id, data: `data:${mime};base64,${base64}`, mimeType: mime, name: fileName });
             }
@@ -408,6 +415,48 @@ function openProjectImportDialog() {
     loadSimulationFromFileInput();
 }
 
+function getCurrentScriptForExport() {
+    return String(
+        window.workSpecScriptEditor?.getValue?.()
+        ?? window.UAWProjectStore?.getCurrent?.()?.scriptDraft
+        ?? ''
+    );
+}
+
+function hasNonDefaultScript(script) {
+    const normalized = String(script || '').trim();
+    const defaultScript = [
+        '// WorkSpec 2.1 Script',
+        '// Register task behaviour with WorkSpec.task(...).',
+        '// set, change, move, create and remove are available inside handlers.'
+    ].join('\n');
+    return Boolean(normalized && normalized !== defaultScript);
+}
+
+function exportAssetExtension(mimeType) {
+    const extensions = {
+        'image/png': 'png',
+        'image/jpeg': 'jpg',
+        'image/svg+xml': 'svg',
+        'image/webp': 'webp',
+        'audio/mpeg': 'mp3',
+        'audio/wav': 'wav',
+        'video/mp4': 'mp4',
+        'application/pdf': 'pdf'
+    };
+    return extensions[String(mimeType || '').toLowerCase()] || 'bin';
+}
+
+function getExportableWorkSpec() {
+    const raw = editor.getValue();
+    const cleaned = typeof stripJsonComments === 'function' ? stripJsonComments(raw) : raw;
+    const parsed = JSON.parse(cleaned);
+    delete parsed.assets;
+    if (parsed.simulation && typeof parsed.simulation === 'object') delete parsed.simulation.assets;
+    parseImportedWorkSpec(JSON.stringify(parsed), 'current editor');
+    return { parsed, content: JSON.stringify(parsed, null, 2) };
+}
+
 function openProjectExportDialog() {
     const dialog = document.getElementById('save-modal');
     if (!dialog) return;
@@ -428,21 +477,48 @@ function openProjectExportDialog() {
     cancel.onclick = () => { dialog.style.display = 'none'; };
     confirm.onclick = async () => {
         try {
-            const parsed = JSON.parse(editor.getValue());
-            delete parsed.assets;
-            const content = JSON.stringify(parsed, null, 2);
+            const { parsed, content } = getExportableWorkSpec();
+            const script = getCurrentScriptForExport();
+            const includeScript = hasNonDefaultScript(script);
             const base = normalizeSimulationFileBaseName(nameInput.value);
             const assets = await window.UAWProjectStore?.listAssets?.() || [];
             const custom = Boolean(includeExtras.checked && hasCustomMetrics());
-            if ((assets.length || custom) && window.JSZip) {
+            if ((assets.length || custom || includeScript) && window.JSZip) {
                 const zip = new JSZip();
                 zip.file('simulation.workspec.json', content);
-                assets.forEach(asset => zip.file(`assets/${asset.id}.${(asset.mimeType || '').split('/')[1] || 'bin'}`, asset.data.split(',')[1] || asset.data, { base64: asset.data.startsWith('data:') }));
+                if (includeScript) zip.file('project.workspec.js', script);
+                const exportedAssets = assets.map(asset => {
+                    const id = String(asset.id || 'asset').replace(/[^a-zA-Z0-9_-]/g, '_');
+                    const extension = exportAssetExtension(asset.mimeType);
+                    return { asset, id, extension, file: `assets/${id}.${extension}` };
+                });
+                exportedAssets.forEach(({ asset, file }) => {
+                    const data = String(asset.data || '');
+                    zip.file(file, data.split(',')[1] || data, { base64: data.startsWith('data:') });
+                });
                 if (custom) {
                     const metrics = getCustomMetricsContent();
                     if (metrics.catalog) zip.file('metrics-catalog-custom.json', metrics.catalog);
                     if (metrics.validator) zip.file('simulation-validator-custom.js', metrics.validator);
                 }
+                zip.file('workspec.manifest.json', JSON.stringify({
+                    format_version: 1,
+                    workspec_version: parsed.simulation?.schema_version || null,
+                    definition_file: 'simulation.workspec.json',
+                    script_file: includeScript ? 'project.workspec.js' : null,
+                    assets: exportedAssets.map(({ asset, file }) => ({
+                        id: asset.id,
+                        file,
+                        name: asset.name || file.split('/').pop(),
+                        mime_type: asset.mimeType || 'application/octet-stream',
+                        size: String(asset.data || '').length
+                    })),
+                    custom_metrics: custom ? {
+                        catalog_file: 'metrics-catalog-custom.json',
+                        validator_file: 'simulation-validator-custom.js'
+                    } : null,
+                    created_at: new Date().toISOString()
+                }, null, 2));
                 const fileName = `${base}${WORKSPEC_ZIP_EXTENSION}`;
                 downloadSimulationFile(await zip.generateAsync({ type: 'blob' }), fileName);
                 savedName.textContent = fileName;
@@ -450,6 +526,15 @@ function openProjectExportDialog() {
                 const fileName = `${base}${WORKSPEC_FILE_EXTENSION}`;
                 downloadSimulationFile(new Blob([content], { type: 'application/json' }), fileName);
                 savedName.textContent = fileName;
+                if (includeScript) {
+                    downloadSimulationFile(new Blob([script], { type: 'text/javascript' }), `${base}${WORKSPEC_SCRIPT_EXTENSION}`);
+                }
+                const omitted = [
+                    includeScript ? 'Script' : '',
+                    assets.length ? 'assets' : '',
+                    custom ? 'custom metrics' : ''
+                ].filter(Boolean);
+                if (omitted.length) showNotification(`ZIP support is unavailable; downloaded JSON separately from ${omitted.join(', ')}.`, 'warning');
             }
             result.style.display = 'block';
             confirm.style.display = 'none';
@@ -477,6 +562,8 @@ function openFeedbackDialog() {
     const form = document.getElementById('feedback-form');
     const cancelBtn = document.getElementById('cancel-feedback');
     const messageDiv = document.getElementById('feedback-message');
+    const existingFallback = document.getElementById('download-feedback-fallback');
+    if (existingFallback) existingFallback.style.display = 'none';
 
     if (form) {
         const firstField = form.querySelector('input, textarea, select');
@@ -549,6 +636,18 @@ function openFeedbackDialog() {
             messageDiv.textContent = `Error submitting feedback: ${error.message}`;
             messageDiv.style.display = 'block';
             messageDiv.style.color = 'crimson';
+
+            let fallbackButton = document.getElementById('download-feedback-fallback');
+            if (!fallbackButton) {
+                fallbackButton = document.createElement('button');
+                fallbackButton.id = 'download-feedback-fallback';
+                fallbackButton.type = 'button';
+                fallbackButton.textContent = 'Download Feedback';
+                fallbackButton.style.marginTop = '8px';
+                messageDiv.insertAdjacentElement('afterend', fallbackButton);
+            }
+            fallbackButton.onclick = () => downloadSimulationFile(JSON.stringify(payload, null, 2), 'uaw-feedback.json');
+            fallbackButton.style.display = 'inline-block';
         } finally {
             sendButton.disabled = false;
             sendButton.textContent = 'Send Feedback';

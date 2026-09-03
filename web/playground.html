@@ -940,8 +940,8 @@
                             </div>
                             <div class="form-group">
                                 <div id="duration-input-group">
-                                    <label for="task-duration-input">Minutes <span class="required-indicator">*</span></label>
-                                    <input type="number" id="task-duration-input" placeholder="30" min="1" required>
+                                    <label for="task-duration-input">Duration (<span id="task-duration-unit-label">minutes</span>) <span class="required-indicator">*</span></label>
+                                    <input type="number" id="task-duration-input" placeholder="30" min="1" step="1" required>
                                     <div class="field-error" id="task-duration-error"></div>
                                 </div>
                                 <div id="end-time-input-group" style="display: none;">
@@ -970,7 +970,9 @@
                                 <div class="field-error" id="task-depends-error"></div>
                                 <small class="field-help">Comma-separated task IDs</small>
                             </div>
-                            <div id="interactions-container" hidden></div>
+                            <div id="interactions-container"></div>
+                            <button type="button" class="btn-secondary" id="task-add-interaction-btn" style="width: 100%; margin-top: 0.5rem;">+ Add interaction</button>
+                            <small class="field-help">Optional state changes or lifecycle actions. Advanced fields stay in the source editor.</small>
                         </div>
                     </details>
                 </div>

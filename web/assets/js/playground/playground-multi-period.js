@@ -21,20 +21,26 @@ function parseDateExpression(expr, baseDate = null, startDate = null) {
     if (!expr) return null;
 
     // If it's already a Date object, return it
-    if (expr instanceof Date) return expr;
+    if (expr instanceof Date) return Number.isNaN(expr.getTime()) ? null : new Date(expr);
+
+    const trimmed = typeof expr === 'string' ? expr.trim() : '';
 
     // If it's a string in YYYY-MM-DD format, parse it directly
-    if (typeof expr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(expr)) {
-        return new Date(expr + 'T00:00:00');
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+        const date = new Date(`${trimmed}T00:00:00`);
+        const [year, month, day] = trimmed.split('-').map(Number);
+        if (Number.isNaN(date.getTime()) || date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) return null;
+        return date;
     }
 
     // If it's a string with date.start (refers to start_date from simulation_config)
-    if (typeof expr === 'string' && expr.includes('date.start')) {
-        const start = startDate || baseDate || new Date();
+    if (trimmed.startsWith('date.start')) {
+        const start = new Date(startDate || baseDate || new Date());
+        if (Number.isNaN(start.getTime())) return null;
         start.setHours(0, 0, 0, 0);
 
         // Check for arithmetic operations (date.start + 5, date.start - 3)
-        const match = expr.match(/date\.start\s*([+\-])\s*(\d+)/);
+        const match = trimmed.match(/^date\.start(?:\s*([+\-])\s*(\d+))?$/);
         if (match) {
             const operator = match[1];
             const days = parseInt(match[2]);
@@ -52,12 +58,13 @@ function parseDateExpression(expr, baseDate = null, startDate = null) {
     }
 
     // If it's a string with date.today
-    if (typeof expr === 'string' && expr.includes('date.today')) {
-        const today = baseDate || new Date();
+    if (trimmed.startsWith('date.today')) {
+        const today = new Date(baseDate || new Date());
+        if (Number.isNaN(today.getTime())) return null;
         today.setHours(0, 0, 0, 0);
 
         // Check for arithmetic operations (date.today + 5, date.today - 3)
-        const match = expr.match(/date\.today\s*([+\-])\s*(\d+)/);
+        const match = trimmed.match(/^date\.today(?:\s*([+\-])\s*(\d+))?$/);
         if (match) {
             const operator = match[1];
             const days = parseInt(match[2]);
@@ -146,8 +153,13 @@ class MultiDaySimulator {
      */
     getDayNumberFromDate(date) {
         if (!this.startDate || !date) return null;
-        const diffTime = date.getTime() - this.startDate.getTime();
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        const dateValue = date instanceof Date ? date : new Date(date);
+        if (Number.isNaN(dateValue.getTime())) return null;
+        // Compare civil dates rather than elapsed milliseconds so a DST
+        // transition cannot turn a calendar day into 23 or 25 hours.
+        const startCivil = Date.UTC(this.startDate.getFullYear(), this.startDate.getMonth(), this.startDate.getDate());
+        const dateCivil = Date.UTC(dateValue.getFullYear(), dateValue.getMonth(), dateValue.getDate());
+        const diffDays = Math.round((dateCivil - startCivil) / (1000 * 60 * 60 * 24));
         return diffDays + 1;
     }
 
@@ -236,8 +248,12 @@ class MultiDaySimulator {
             definition = { ...rest };
         }
 
-        // Merge global objects with day-type specific objects
-        const globalObjects = this.simulation?.objects || [];
+        // Merge global objects with day-type specific objects. Canonical v2
+        // objects live under simulation.world; only use the legacy alias when
+        // the canonical array is absent, not when it is intentionally empty.
+        const globalObjects = Array.isArray(this.simulation?.world?.objects)
+            ? this.simulation.world.objects
+            : (Array.isArray(this.simulation?.objects) ? this.simulation.objects : []);
         const dayTypeObjects = definition.objects || [];
 
         // Combine global objects with day-type objects
@@ -260,7 +276,9 @@ class MultiDaySimulator {
 
         // Merge global locations with day-type specific locations
         // Day-type locations completely override global locations if specified
-        const globalLocations = this.simulation?.locations || [];
+        const globalLocations = Array.isArray(this.simulation?.world?.layout?.locations)
+            ? this.simulation.world.layout.locations
+            : (Array.isArray(this.simulation?.locations) ? this.simulation.locations : []);
         const dayTypeLocations = dayTypeData.locations || definition.locations || [];
 
         if (dayTypeLocations.length > 0) {

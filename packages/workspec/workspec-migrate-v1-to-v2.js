@@ -1,10 +1,10 @@
-// WorkSpec v1.0 → v2.0 Migration Utilities
+// WorkSpec v1.0 → v2.1 Migration Utilities
 // Universal Automation Wiki
 
 (function() {
     'use strict';
 
-    const WORKSPEC_V2_SCHEMA_URL = 'https://universalautomation.wiki/workspec/v2.0.schema.json';
+    const WORKSPEC_V2_SCHEMA_URL = 'https://universalautomation.wiki/workspec/v2.1.schema.json';
 
     const DEFAULTS = Object.freeze({
         currency: 'USD',
@@ -179,7 +179,7 @@
         if (!safeTrim(meta.description)) {
             const fromSimDescription = safeTrim(simulation.description);
             const fromFallback = safeTrim(options.fallbackMetaDescription);
-            meta.description = fromSimDescription || fromFallback || 'Migrated from WorkSpec v1.0 to v2.0.';
+            meta.description = fromSimDescription || fromFallback || 'Migrated from WorkSpec v1.0 to v2.1.';
         }
 
         if (!safeTrim(meta.domain)) {
@@ -669,7 +669,7 @@
         const simulation = root.simulation;
 
         // Always declare v2
-        simulation.schema_version = '2.0';
+        simulation.schema_version = '2.1';
 
         // Convert truly legacy entity arrays (actors/resources/equipment/products) into world.objects
         migrateLegacyEntityArrays(simulation);

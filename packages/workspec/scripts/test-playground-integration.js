@@ -145,7 +145,8 @@ function run() {
     assert.doesNotMatch(scriptEditor, /new Function|\beval\s*\(/, 'Studio must not execute Script behaviour directly');
     assert.doesNotMatch(playgroundHtml, />Interactions</, 'Define must not expose legacy task interactions');
     assert.match(objectEditor, /depends_on: document\.getElementById\('task-depends-input'\)\.value/, 'Task dependencies are not persisted from Define');
-    assert.match(objectEditor, /delete newTask\.interactions/, 'Editing a task does not remove legacy behaviour from Define');
+    assert.doesNotMatch(objectEditor, /delete newTask\.interactions/, 'Editing a task must not discard declarative interactions');
+    assert.match(objectEditor, /document\.querySelectorAll\('\.interaction-group'\)/, 'Task interaction controls are not connected to task saving');
 
     const migrateCli = readText(migrateCliPath);
     assert.match(

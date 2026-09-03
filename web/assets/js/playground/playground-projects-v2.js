@@ -50,13 +50,18 @@
             this.isOpeningProject = false;
             this.writeChain = Promise.resolve();
             this.legacyProjects = [];
+            this.persistenceWarning = null;
             this.ready = this.openDatabase();
         }
 
         openDatabase() {
             return new Promise((resolve) => {
                 if (!window.indexedDB) {
-                    console.warn('IndexedDB is unavailable. Folder projects cannot be remembered between sessions.');
+                    this.persistenceWarning = {
+                        reason: 'indexeddb-unavailable',
+                        message: 'This browser cannot remember project folders between sessions. Keep the project folder somewhere safe and reopen it when needed.'
+                    };
+                    console.warn(this.persistenceWarning.message);
                     resolve(null);
                     return;
                 }
@@ -69,7 +74,14 @@
                     // Old stores stay in place until each record is safely migrated.
                 };
                 request.onsuccess = () => { this.db = request.result; resolve(this.db); };
-                request.onerror = () => { console.warn('Unable to open project registry:', request.error); resolve(null); };
+                request.onerror = () => {
+                    this.persistenceWarning = {
+                        reason: 'indexeddb-open-failed',
+                        message: 'The project registry could not be opened, so folders will not be remembered between sessions.'
+                    };
+                    console.warn(this.persistenceWarning.message, request.error);
+                    resolve(null);
+                };
             });
         }
 
@@ -489,7 +501,8 @@
         isValidWorkSpec(value) {
             if (!value?.trim()) return false;
             try {
-                const parsed = JSON.parse(value);
+                const cleaned = typeof stripJsonComments === 'function' ? stripJsonComments(value) : value;
+                const parsed = JSON.parse(cleaned);
                 return window.WorkSpecValidator?.validate ? Boolean(window.WorkSpecValidator.validate(parsed)?.ok) : true;
             } catch (_error) { return false; }
         }
@@ -710,6 +723,7 @@
         async attachEditor(editor) {
             if (!editor || this.editor === editor) return;
             this.editor = editor;
+            if (this.persistenceWarning) emit('uaw:project-persistence-degraded', this.persistenceWarning);
             editor.onDidChangeModelContent(() => this.scheduleSave());
             await this.discoverLegacyProjects();
             const registry = await this.registryGetAll();

@@ -11,16 +11,16 @@ const customValidationRunner = require(path.join(__dirname, '..', 'custom-valida
 
 function printHelp(exitCode = 0) {
     const lines = [
-        'workspec - WorkSpec v1.1.0 CLI',
+        'workspec - WorkSpec 2.1 CLI',
         '',
         'Usage:',
-        '  workspec validate <file.workspec.json> [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json] [-y]',
+        '  workspec validate <file.workspec.json> [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json] [--fail-on-warning] [-y]',
         '  workspec migrate <file.json> --out <output.json> [--schema]',
         '  workspec format <file.json> [--write] [--out <output.json>]',
         '',
         'Commands:',
         '  validate   Validate a WorkSpec document (RFC 7807 output model).',
-        '  migrate    Previous UAW Syntax -> WorkSpec v1.0.0.',
+        '  migrate    Previous UAW Syntax -> WorkSpec 2.1.',
         '  format     Pretty-print JSON (2-space).',
         '',
         'Flags:',
@@ -29,6 +29,7 @@ function printHelp(exitCode = 0) {
         '  --custom-catalog <path> Optional metrics-catalog JSON for custom metrics.',
         '  -y, --yes      Skip custom validation safety confirmation prompt.',
         '  --json          Print machine-readable problems JSON (validate only).',
+        '  --fail-on-warning Exit with status 1 when validation returns a warning.',
         '  --out <path>    Output path (migrate/format).',
         '  --write         Write output (format only; defaults to stdout).',
         '  --schema        Add top-level $schema on migrate (default: off).',
@@ -71,6 +72,10 @@ function parseArgs(argv) {
         }
         if (arg === '--json') {
             result.flags.json = true;
+            continue;
+        }
+        if (arg === '--fail-on-warning') {
+            result.flags.failOnWarning = true;
             continue;
         }
         if (arg === '--yes' || arg === '-y') {
@@ -123,6 +128,10 @@ function toPrettyJson(value) {
 
 function hasErrors(problems) {
     return problems.some((p) => p && p.severity === 'error');
+}
+
+function hasWarnings(problems) {
+    return problems.some((p) => p && p.severity === 'warning');
 }
 
 function promptConfirm(message) {
@@ -267,7 +276,7 @@ async function handleValidate(filePath, flags) {
         }
     }
 
-    process.exitCode = hasErrors(problems) ? 1 : 0;
+    process.exitCode = hasErrors(problems) || (flags.failOnWarning && hasWarnings(problems)) ? 1 : 0;
 }
 
 async function handleMigrate(filePath, flags) {
@@ -380,7 +389,11 @@ async function main() {
     }
 }
 
-main().catch((error) => {
-    process.stderr.write(`Unexpected error: ${error && error.message ? error.message : String(error)}\n`);
-    process.exitCode = 1;
-});
+if (require.main === module) {
+    main().catch((error) => {
+        process.stderr.write(`Unexpected error: ${error && error.message ? error.message : String(error)}\n`);
+        process.exitCode = 1;
+    });
+}
+
+module.exports = { parseArgs, printHelp, handleValidate, handleMigrate, handleFormat, main, hasErrors, hasWarnings };

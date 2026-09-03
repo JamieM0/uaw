@@ -25,10 +25,29 @@ class MultiPeriodViewController {
         this.simulationData = simulationData;
         this.simulator = new MultiDaySimulator(simulationData);
 
+        if (!this.simulator.isMultiPeriod()) {
+            this.currentView = 'calendar';
+            this.currentDay = 1;
+            this.currentWeek = 1;
+            this.currentMonthOffset = 0;
+            this.currentDayType = null;
+            return;
+        }
+
+        // The controller is constructed before a project is selected. Reload
+        // the project-owned navigation state here as well, then discard state
+        // that belongs to a previous document.
+        this.loadState();
+
         // Validate current day is within range
-        const totalDays = this.simulator.getTotalDays();
+        const totalDays = Math.max(1, Number(this.simulator.getTotalDays()) || 1);
         if (this.currentDay > totalDays) {
             this.currentDay = 1;
+        }
+        if (this.currentDay < 1) this.currentDay = 1;
+
+        if (this.currentDayType && !this.simulator.dayTypes?.[this.currentDayType]) {
+            this.currentDayType = null;
         }
 
         // Update current week based on current day
@@ -364,25 +383,45 @@ class MultiPeriodViewController {
                     // Update the day type in the original JSON
                     const currentJson = JSON.parse(stripJsonComments(originalEditor.getValue()));
                     if (currentJson.simulation && currentJson.simulation.day_types && currentJson.simulation.day_types[currentDayType]) {
-                        // Preserve the name, update everything else
-                        const name = currentJson.simulation.day_types[currentDayType].name;
+                        if (!editedDefinition || typeof editedDefinition !== 'object' || Array.isArray(editedDefinition)) {
+                            throw new Error('Day type editor must contain a simulation object.');
+                        }
 
-                        // Separate global objects from day-type specific objects
-                        const globalObjects = currentJson.simulation.objects || [];
-                        const globalObjectIds = new Set(globalObjects.map(o => o.id));
-
-                        // Filter out global objects from the edited definition
-                        // Only keep objects that are day-type specific (not in global list)
-                        const dayTypeOnlyObjects = (editedDefinition.objects || []).filter(
-                            obj => !globalObjectIds.has(obj.id)
-                        );
-
-                        // Update the day type with only day-type specific data
-                        currentJson.simulation.day_types[currentDayType] = {
-                            name: name,
-                            ...editedDefinition,
-                            objects: dayTypeOnlyObjects  // Only store day-type specific objects
+                        const existingDayType = currentJson.simulation.day_types[currentDayType];
+                        const world = currentJson.simulation.world || {};
+                        const globalObjects = Array.isArray(world.objects)
+                            ? world.objects
+                            : (Array.isArray(currentJson.simulation.objects) ? currentJson.simulation.objects : []);
+                        const globalLocations = Array.isArray(world.layout?.locations)
+                            ? world.layout.locations
+                            : (Array.isArray(currentJson.simulation.locations) ? currentJson.simulation.locations : []);
+                        const globalObjectsById = new Map(globalObjects.map(object => [object.id, object]));
+                        const globalLocationsById = new Map(globalLocations.map(location => [location.id, location]));
+                        const sameJson = (left, right) => JSON.stringify(left) === JSON.stringify(right);
+                        const dayTypeOnlyObjects = (Array.isArray(editedDefinition.objects) ? editedDefinition.objects : [])
+                            .filter(object => !globalObjectsById.has(object.id) || !sameJson(object, globalObjectsById.get(object.id)));
+                        const dayTypeOnlyLocations = (Array.isArray(editedDefinition.locations) ? editedDefinition.locations : [])
+                            .filter(location => !globalLocationsById.has(location.id) || !sameJson(location, globalLocationsById.get(location.id)));
+                        const dayTypeFields = {
+                            config: editedDefinition.config,
+                            locations: dayTypeOnlyLocations,
+                            objects: dayTypeOnlyObjects,
+                            tasks: Array.isArray(editedDefinition.tasks) ? editedDefinition.tasks : []
                         };
+                        const hasNestedDefinition = existingDayType && existingDayType.definition && typeof existingDayType.definition === 'object';
+                        if (hasNestedDefinition) {
+                            currentJson.simulation.day_types[currentDayType] = {
+                                ...existingDayType,
+                                name: existingDayType.name,
+                                definition: { ...existingDayType.definition, ...dayTypeFields }
+                            };
+                        } else {
+                            currentJson.simulation.day_types[currentDayType] = {
+                                ...existingDayType,
+                                name: existingDayType.name,
+                                ...dayTypeFields
+                            };
+                        }
 
                         // Write back to the actual editor
                         originalEditor.setValue(JSON.stringify(currentJson, null, 2));
@@ -437,7 +476,8 @@ class MultiPeriodViewController {
         const project = window.UAWProjectStore?.getCurrent?.();
         if (!project) return;
         project.settings = { ...(project.settings || {}), multiPeriod: {
-            view: this.currentView, day: this.currentDay, week: this.currentWeek, dayType: this.currentDayType || null
+            view: this.currentView, day: this.currentDay, week: this.currentWeek,
+            monthOffset: this.currentMonthOffset, dayType: this.currentDayType || null
         } };
         window.UAWProjectStore.put(project).catch(error => console.warn('Could not save multi-period state:', error));
     }
@@ -446,9 +486,10 @@ class MultiPeriodViewController {
     loadState() {
         const saved = window.UAWProjectStore?.getCurrent?.()?.settings?.multiPeriod;
         if (!saved) return;
-        if (saved.view) this.currentView = saved.view;
+        if (['calendar', 'week', 'day'].includes(saved.view)) this.currentView = saved.view;
         this.currentDay = parseInt(saved.day) || 1;
         this.currentWeek = parseInt(saved.week) || 1;
+        this.currentMonthOffset = Number.isInteger(Number(saved.monthOffset)) ? Number(saved.monthOffset) : 0;
         this.currentDayType = saved.dayType || null;
     }
 }

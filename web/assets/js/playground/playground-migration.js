@@ -1,4 +1,4 @@
-// Playground Migration - WorkSpec v1.0 → v2.0 helper UI
+// Playground Migration - WorkSpec v1.0 → v2.1 helper UI
 // Universal Automation Wiki - Simulation Playground
 
 (function() {
@@ -83,8 +83,8 @@
         }
 
         const sim = parsed?.simulation;
-        if (sim?.schema_version === '2.0' && sim?.world && sim?.process) {
-            alert('This document already looks like WorkSpec v2.0.');
+        if ((sim?.schema_version === '2.0' || sim?.schema_version === '2.1') && sim?.world && sim?.process) {
+            alert(`This document already looks like WorkSpec ${sim.schema_version}.`);
             return;
         }
 

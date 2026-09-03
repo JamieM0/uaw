@@ -40,6 +40,8 @@
     const OBJECT_ID_RE = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]{0,249}$/;
     const TIME_HHMM_RE = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
     const TIME_HHMMSS_RE = /^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/;
+    const ISO_DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+    const ISO_DATE_TIME_RE = /^(\d{4})-(\d{2})-(\d{2})T([01]\d|2[0-3]):([0-5]\d):([0-5]\d)(?:\.\d+)?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/;
     const ISO_DURATION_RE = /^P(?=[^0-9]*[0-9]*[1-9])(?:\d+Y)?(?:\d+M)?(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+S)?)?$/i;
     const SHORTHAND_DURATION_RE = /^([0-9]+(?:\.[0-9]+)?)([smhdwWM])$/;
 
@@ -53,6 +55,45 @@
 
     function safeTrim(value) {
         return ensureString(value).trim();
+    }
+
+    function isValidCalendarDate(year, month, day) {
+        if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) return false;
+        if (month < 1 || month > 12 || day < 1) return false;
+        return day <= new Date(Date.UTC(year, month, 0)).getUTCDate();
+    }
+
+    function parseStrictIsoDate(value) {
+        if (typeof value !== 'string') return null;
+        const match = value.trim().match(ISO_DATE_RE);
+        if (!match || !isValidCalendarDate(Number(match[1]), Number(match[2]), Number(match[3]))) return null;
+        return new Date(`${value.trim()}T00:00:00Z`);
+    }
+
+    function parseStrictIsoDateTime(value) {
+        if (typeof value !== 'string') return null;
+        const trimmed = value.trim();
+        const match = trimmed.match(ISO_DATE_TIME_RE);
+        if (!match || !isValidCalendarDate(Number(match[1]), Number(match[2]), Number(match[3]))) return null;
+        const millis = Date.parse(trimmed);
+        return Number.isFinite(millis) ? new Date(millis) : null;
+    }
+
+    function isValidDateExpressionString(value) {
+        if (typeof value !== 'string') return false;
+        const trimmed = value.trim();
+        if (parseStrictIsoDate(trimmed)) return true;
+        return /^date\.(?:today|start)(?:\s*[+-]\s*\d+)?$/.test(trimmed);
+    }
+
+    function isValidTimezone(value) {
+        if (typeof value !== 'string' || !value.trim()) return false;
+        try {
+            new Intl.DateTimeFormat('en-US', { timeZone: value.trim() }).format();
+            return true;
+        } catch (_error) {
+            return false;
+        }
     }
 
     function toJsonPointer(parts) {
@@ -220,11 +261,7 @@
     }
 
     function isIsoDateTimeString(value) {
-        if (typeof value !== 'string') return false;
-        const trimmed = value.trim();
-        if (!trimmed) return false;
-        const date = new Date(trimmed);
-        return !Number.isNaN(date.getTime());
+        return Boolean(parseStrictIsoDateTime(value));
     }
 
     function parseTaskStart(value) {
@@ -236,8 +273,9 @@
                 return { ok: true, kind: 'time', startMinutes: strictTime.minutes, raw: trimmed };
             }
 
-            if (isIsoDateTimeString(trimmed)) {
-                const ms = new Date(trimmed).getTime();
+            const isoDateTime = parseStrictIsoDateTime(trimmed);
+            if (isoDateTime) {
+                const ms = isoDateTime.getTime();
                 return { ok: true, kind: 'datetime', startMillis: ms, raw: trimmed };
             }
 
@@ -280,6 +318,264 @@
         }
 
         return { ok: false, kind: 'format' };
+    }
+
+    function validateMultiPeriodConfiguration(simulation, problems) {
+        const base = ['simulation'];
+        const dayTypes = simulation.day_types;
+        const knownDayTypes = new Set();
+
+        if (dayTypes !== undefined && !isPlainObject(dayTypes)) {
+            problems.push(buildProblem(
+                'calendar.integrity.invalid_day_types',
+                'error',
+                'Invalid Day Types',
+                'simulation.day_types must be an object keyed by day-type ID.',
+                toJsonPointer(base.concat(['day_types'])),
+                { value_type: typeof dayTypes },
+                ['Use an object such as { "weekday": { "name": "Weekday", "tasks": [] } }.']
+            ));
+        } else if (isPlainObject(dayTypes)) {
+            for (const [dayTypeId, dayType] of Object.entries(dayTypes)) {
+                const instance = toJsonPointer(base.concat(['day_types', dayTypeId]));
+                if (!PLAIN_ID_RE.test(dayTypeId)) {
+                    problems.push(buildProblem(
+                        'calendar.integrity.invalid_day_type_id',
+                        'error',
+                        'Invalid Day-Type ID',
+                        `Day-type ID '${dayTypeId}' must use lower snake_case (for example 'weekday').`,
+                        instance,
+                        { day_type: dayTypeId },
+                        ['Rename the day type to a lower snake_case ID.']
+                    ));
+                }
+                knownDayTypes.add(dayTypeId);
+                if (!isPlainObject(dayType) || !safeTrim(dayType.name)) {
+                    problems.push(buildProblem(
+                        'calendar.integrity.missing_day_type_name',
+                        'error',
+                        'Missing Day-Type Name',
+                        `Day type '${dayTypeId}' must be an object with a non-empty name.`,
+                        instance,
+                        { day_type: dayTypeId },
+                        ['Add a display name, for example "name": "Weekday".']
+                    ));
+                }
+            }
+        }
+
+        const multiPeriodConfig = simulation.simulation_config;
+        if (multiPeriodConfig !== undefined && !isPlainObject(multiPeriodConfig)) {
+            problems.push(buildProblem(
+                'calendar.integrity.invalid_simulation_config',
+                'error',
+                'Invalid Multi-Period Config',
+                'simulation.simulation_config must be an object when provided.',
+                toJsonPointer(base.concat(['simulation_config'])),
+                { value_type: typeof multiPeriodConfig },
+                ['Use an object with optional start_date and duration_days fields.']
+            ));
+        } else if (isPlainObject(multiPeriodConfig)) {
+            if (multiPeriodConfig.start_date !== undefined && !isValidDateExpressionString(multiPeriodConfig.start_date)) {
+                problems.push(buildProblem(
+                    'calendar.integrity.invalid_start_date',
+                    'error',
+                    'Invalid Simulation Start Date',
+                    'simulation.simulation_config.start_date must be YYYY-MM-DD or date.today/date.start with an optional whole-day offset.',
+                    toJsonPointer(base.concat(['simulation_config', 'start_date'])),
+                    { value: multiPeriodConfig.start_date },
+                    ['Use a real date such as "2026-09-03" or an expression such as "date.start + 1".']
+                ));
+            }
+            if (multiPeriodConfig.duration_days !== undefined && (!Number.isInteger(multiPeriodConfig.duration_days) || multiPeriodConfig.duration_days < 1)) {
+                problems.push(buildProblem(
+                    'calendar.integrity.invalid_duration_days',
+                    'error',
+                    'Invalid Duration Days',
+                    'simulation.simulation_config.duration_days must be a positive integer.',
+                    toJsonPointer(base.concat(['simulation_config', 'duration_days'])),
+                    { value: multiPeriodConfig.duration_days },
+                    ['Use a whole number such as 7 or 30.']
+                ));
+            }
+        }
+
+        const calendar = simulation.calendar;
+        if (calendar === undefined) return;
+        if (!isPlainObject(calendar)) {
+            problems.push(buildProblem(
+                'calendar.integrity.invalid_calendar',
+                'error',
+                'Invalid Calendar',
+                'simulation.calendar must be an object when provided.',
+                toJsonPointer(base.concat(['calendar'])),
+                { value_type: typeof calendar },
+                ['Use an object with cycle_length and pattern fields.']
+            ));
+            return;
+        }
+
+        if (!isPlainObject(dayTypes)) {
+            problems.push(buildProblem(
+                'calendar.integrity.missing_day_types',
+                'error',
+                'Missing Calendar Day Types',
+                'A calendar cannot resolve its pattern without simulation.day_types.',
+                toJsonPointer(base.concat(['day_types'])),
+                {},
+                ['Declare each referenced day type under simulation.day_types.']
+            ));
+        }
+
+        const cycleLength = calendar.cycle_length;
+        const validCycleLength = Number.isInteger(cycleLength) && cycleLength >= 1;
+        if (!validCycleLength) {
+            problems.push(buildProblem(
+                'calendar.integrity.invalid_cycle_length',
+                'error',
+                'Invalid Calendar Cycle Length',
+                'simulation.calendar.cycle_length must be a positive integer.',
+                toJsonPointer(base.concat(['calendar', 'cycle_length'])),
+                { value: cycleLength },
+                ['Set cycle_length to the number of entries in the repeating cycle, such as 7.']
+            ));
+        }
+
+        const pattern = calendar.pattern;
+        const patternDays = new Set();
+        if (!Array.isArray(pattern) || pattern.length === 0) {
+            problems.push(buildProblem(
+                'calendar.integrity.missing_pattern',
+                'error',
+                'Missing Calendar Pattern',
+                'simulation.calendar.pattern must be a non-empty array.',
+                toJsonPointer(base.concat(['calendar', 'pattern'])),
+                { value_type: Array.isArray(pattern) ? 'empty_array' : typeof pattern },
+                ['Add one entry for each cycle day, for example { "day": 1, "type": "weekday" }.']
+            ));
+        } else {
+            pattern.forEach((entry, index) => {
+                const instance = toJsonPointer(base.concat(['calendar', 'pattern', index]));
+                if (!isPlainObject(entry)) {
+                    problems.push(buildProblem(
+                        'calendar.integrity.invalid_pattern_entry',
+                        'error',
+                        'Invalid Calendar Pattern Entry',
+                        'Each calendar pattern entry must be an object with day and type fields.',
+                        instance,
+                        { index },
+                        ['Use an entry such as { "day": 1, "type": "weekday" }.']
+                    ));
+                    return;
+                }
+
+                const day = entry.day;
+                if (!Number.isInteger(day) || day < 1 || (validCycleLength && day > cycleLength)) {
+                    problems.push(buildProblem(
+                        'calendar.integrity.invalid_pattern_day',
+                        'error',
+                        'Invalid Calendar Pattern Day',
+                        `Pattern day must be an integer from 1 through ${validCycleLength ? cycleLength : 'cycle_length'}.`,
+                        toJsonPointer(base.concat(['calendar', 'pattern', index, 'day'])),
+                        { value: day, cycle_length: cycleLength },
+                        ['Keep pattern day numbers within the declared cycle, without using zero.']
+                    ));
+                } else if (patternDays.has(day)) {
+                    problems.push(buildProblem(
+                        'calendar.integrity.duplicate_pattern_day',
+                        'error',
+                        'Duplicate Calendar Pattern Day',
+                        `Calendar pattern day ${day} appears more than once.`,
+                        instance,
+                        { day },
+                        ['Keep one pattern entry per cycle day.']
+                    ));
+                } else {
+                    patternDays.add(day);
+                }
+
+                const type = safeTrim(entry.type);
+                if (!PLAIN_ID_RE.test(type)) {
+                    problems.push(buildProblem(
+                        'calendar.integrity.invalid_pattern_type',
+                        'error',
+                        'Invalid Calendar Day Type',
+                        'Calendar pattern type must be a lower snake_case day-type ID.',
+                        toJsonPointer(base.concat(['calendar', 'pattern', index, 'type'])),
+                        { value: entry.type },
+                        ['Set type to an ID declared in simulation.day_types.']
+                    ));
+                } else if (isPlainObject(dayTypes) && !knownDayTypes.has(type)) {
+                    problems.push(buildProblem(
+                        'calendar.integrity.unknown_day_type',
+                        'error',
+                        'Unknown Calendar Day Type',
+                        `Calendar pattern refers to day type '${type}', but simulation.day_types does not declare it.`,
+                        toJsonPointer(base.concat(['calendar', 'pattern', index, 'type'])),
+                        { day_type: type },
+                        ['Add the day type to simulation.day_types or correct the calendar reference.']
+                    ));
+                }
+            });
+
+            if (validCycleLength) {
+                const missingDays = [];
+                for (let day = 1; day <= cycleLength; day += 1) {
+                    if (!patternDays.has(day)) missingDays.push(day);
+                }
+                if (missingDays.length > 0) {
+                    problems.push(buildProblem(
+                        'calendar.integrity.incomplete_pattern',
+                        'error',
+                        'Incomplete Calendar Pattern',
+                        `Calendar pattern is missing cycle day(s): ${missingDays.join(', ')}.`,
+                        toJsonPointer(base.concat(['calendar', 'pattern'])),
+                        { missing_days: missingDays, cycle_length: cycleLength },
+                        ['Add one pattern entry for every day from 1 through cycle_length.']
+                    ));
+                }
+            }
+        }
+
+        if (calendar.overrides !== undefined && !Array.isArray(calendar.overrides)) {
+            problems.push(buildProblem(
+                'calendar.integrity.invalid_overrides',
+                'error',
+                'Invalid Calendar Overrides',
+                'simulation.calendar.overrides must be an array when provided.',
+                toJsonPointer(base.concat(['calendar', 'overrides'])),
+                { value_type: typeof calendar.overrides },
+                ['Use an array of { "date": "YYYY-MM-DD", "type": "..." } entries.']
+            ));
+        } else if (Array.isArray(calendar.overrides)) {
+            calendar.overrides.forEach((override, index) => {
+                const instance = toJsonPointer(base.concat(['calendar', 'overrides', index]));
+                if (!isPlainObject(override) || !isValidDateExpressionString(override.date)) {
+                    problems.push(buildProblem(
+                        'calendar.integrity.invalid_override_date',
+                        'error',
+                        'Invalid Calendar Override Date',
+                        'Each calendar override date must be YYYY-MM-DD or a supported relative date expression.',
+                        toJsonPointer(base.concat(['calendar', 'overrides', index, 'date'])),
+                        { value: override?.date },
+                        ['Use a real date such as "2026-12-25" or "date.start + 14".']
+                    ));
+                    return;
+                }
+                const type = safeTrim(override.type);
+                if (!PLAIN_ID_RE.test(type) || (isPlainObject(dayTypes) && !knownDayTypes.has(type))) {
+                    problems.push(buildProblem(
+                        'calendar.integrity.unknown_override_day_type',
+                        'error',
+                        'Unknown Calendar Override Day Type',
+                        `Calendar override refers to day type '${type}', but that type is not declared in simulation.day_types.`,
+                        `${instance}/type`,
+                        { day_type: override.type },
+                        ['Set the override type to an ID declared in simulation.day_types.']
+                    ));
+                }
+            });
+        }
     }
 
     function getBuiltInBaseType(type, typeDefinitions, seen = new Set()) {
@@ -376,24 +672,24 @@
             ));
         }
 
-        if (hasDelta && typeof operatorValue.delta !== 'number') {
+        if (hasDelta && (typeof operatorValue.delta !== 'number' || !Number.isFinite(operatorValue.delta))) {
             problems.push(buildProblem(
                 `${metricBase}.invalid_delta`,
                 'error',
                 'Invalid Delta',
-                'delta must be a number.',
+                'delta must be a finite number.',
                 toJsonPointer(instanceParts.concat(['delta'])),
                 { ...contextBase, delta: operatorValue.delta },
                 ['Use a numeric delta like { "delta": -1 } or { "delta": 2.5 }.']
             ));
         }
 
-        if (hasMultiply && typeof operatorValue.multiply !== 'number') {
+        if (hasMultiply && (typeof operatorValue.multiply !== 'number' || !Number.isFinite(operatorValue.multiply))) {
             problems.push(buildProblem(
                 `${metricBase}.invalid_multiply`,
                 'error',
                 'Invalid Multiply',
-                'multiply must be a number.',
+                'multiply must be a finite number.',
                 toJsonPointer(instanceParts.concat(['multiply'])),
                 { ...contextBase, multiply: operatorValue.multiply },
                 ['Use a numeric multiplier like { "multiply": 1.1 }.']
@@ -457,6 +753,19 @@
         }
 
         const schemaVersion = safeTrim(simulation.schema_version);
+        if (simulation === root && !isPlainObject(root.simulation) && schemaVersion) {
+            problems.push(buildProblem(
+                'schema.integrity.noncanonical_root',
+                'error',
+                'Non-Canonical Simulation Root',
+                "WorkSpec v2 documents must wrap their model in a top-level 'simulation' object.",
+                '/simulation',
+                { schema_version: schemaVersion },
+                ['Move the WorkSpec fields under { "simulation": { ... } } before validating the document.']
+            ));
+            return { ok: false, problems };
+        }
+
         if (!schemaVersion) {
             problems.push(buildProblem(
                 'schema.integrity.missing_version',
@@ -497,6 +806,20 @@
                 ['Use the supported schema version "2.1".']
             ));
             return { ok: false, problems };
+        }
+
+        const declaredSchemaUri = safeTrim(root.$schema);
+        const expectedSchemaSuffix = `/workspec/v${schemaVersion}.schema.json`;
+        if (declaredSchemaUri && !declaredSchemaUri.endsWith(expectedSchemaSuffix)) {
+            problems.push(buildProblem(
+                'schema.integrity.schema_uri_version_mismatch',
+                'warning',
+                'Schema URI Version Mismatch',
+                `The document declares schema_version '${schemaVersion}' but its $schema URI does not point to ${expectedSchemaSuffix}.`,
+                '/$schema',
+                { schema_version: schemaVersion, schema: declaredSchemaUri },
+                [`Set $schema to a matching URI such as "https://universalautomation.wiki/workspec/v${schemaVersion}.schema.json", or omit it.`]
+            ));
         }
 
         if (Object.prototype.hasOwnProperty.call(root, 'assets') || Object.prototype.hasOwnProperty.call(simulation, 'assets')) {
@@ -553,6 +876,44 @@
                     ['Remove meta.article_title.', 'Rename meta.article_title to meta.title.']
                 ));
             }
+
+            const createdAt = meta.created_at;
+            const updatedAt = meta.updated_at;
+            const createdDate = createdAt === undefined ? null : parseStrictIsoDateTime(createdAt);
+            const updatedDate = updatedAt === undefined ? null : parseStrictIsoDateTime(updatedAt);
+            if (createdAt !== undefined && !createdDate) {
+                problems.push(buildProblem(
+                    'schema.integrity.invalid_metadata_timestamp',
+                    'error',
+                    'Invalid Metadata Timestamp',
+                    'meta.created_at must be a real RFC 3339 date-time with an explicit timezone.',
+                    '/simulation/meta/created_at',
+                    { value: createdAt },
+                    ['Use a value such as "2026-09-03T09:30:00Z".']
+                ));
+            }
+            if (updatedAt !== undefined && !updatedDate) {
+                problems.push(buildProblem(
+                    'schema.integrity.invalid_metadata_timestamp',
+                    'error',
+                    'Invalid Metadata Timestamp',
+                    'meta.updated_at must be a real RFC 3339 date-time with an explicit timezone.',
+                    '/simulation/meta/updated_at',
+                    { value: updatedAt },
+                    ['Use a value such as "2026-09-03T09:30:00Z".']
+                ));
+            }
+            if (createdDate && updatedDate && updatedDate.getTime() < createdDate.getTime()) {
+                problems.push(buildProblem(
+                    'schema.integrity.metadata_order',
+                    'error',
+                    'Metadata Timestamps Out Of Order',
+                    'meta.updated_at cannot be earlier than meta.created_at.',
+                    '/simulation/meta',
+                    { created_at: createdAt, updated_at: updatedAt },
+                    ['Set updated_at to the same time or a later time than created_at.']
+                ));
+            }
         }
 
         const configRequired = schemaVersion === '2.0';
@@ -594,6 +955,16 @@
                     { field: key },
                     [`Add ${key} in HH:MM (or ISO 8601) format.`]
                 ));
+            } else if (raw !== undefined && !parseStrictTimeStringToMinutes(raw).ok && !isIsoDateTimeString(raw)) {
+                problems.push(buildProblem(
+                    'schema.integrity.invalid_config_value',
+                    'error',
+                    'Invalid Config Time',
+                    `simulation.config.${key} must be HH:MM, HH:MM:SS, or a strict ISO 8601 date-time.`,
+                    toJsonPointer(['simulation', 'config', key]),
+                    { field: key, value: raw },
+                    [`Use a value such as "08:00" or "2026-09-03T08:00:00Z" for ${key}.`]
+                ));
             }
         }
 
@@ -609,8 +980,37 @@
                     { field: key },
                     [`Add ${key} (currency: ISO 4217, locale: BCP 47).`]
                 ));
+            } else if (raw !== undefined) {
+                const valid = key === 'currency'
+                    ? /^[A-Z]{3}$/.test(raw.trim())
+                    : /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(raw.trim());
+                if (!valid) {
+                    problems.push(buildProblem(
+                        'schema.integrity.invalid_config_value',
+                        'error',
+                        'Invalid Config Value',
+                        `simulation.config.${key} is not a valid ${key === 'currency' ? 'ISO 4217 currency code' : 'BCP 47-style locale tag'}.`,
+                        toJsonPointer(['simulation', 'config', key]),
+                        { field: key, value: raw },
+                        [key === 'currency' ? 'Use a three-letter uppercase code such as "USD".' : 'Use a locale such as "en-US" or "zh-Hans-CN".']
+                    ));
+                }
             }
         }
+
+        if (config.timezone !== undefined && !isValidTimezone(config.timezone)) {
+            problems.push(buildProblem(
+                'schema.integrity.invalid_timezone',
+                'error',
+                'Invalid Timezone',
+                'simulation.config.timezone must be a valid IANA timezone identifier.',
+                '/simulation/config/timezone',
+                { value: config.timezone },
+                ['Use a value such as "UTC" or "Europe/London".']
+            ));
+        }
+
+        validateMultiPeriodConfiguration(simulation, problems);
 
         // world/process structure
         if (!isPlainObject(simulation.world)) {
@@ -649,12 +1049,8 @@
         const tasksFromProcess = Array.isArray(process.tasks) ? process.tasks : null;
         const layoutForLocations = isPlainObject(world.layout) ? world.layout : (legacyLayout || {});
 
-        const objects = (objectsFromWorld && objectsFromWorld.length > 0)
-            ? objectsFromWorld
-            : (legacyObjects || objectsFromWorld);
-        const tasks = (tasksFromProcess && tasksFromProcess.length > 0)
-            ? tasksFromProcess
-            : (legacyTasks || tasksFromProcess);
+        const objects = objectsFromWorld !== null ? objectsFromWorld : legacyObjects;
+        const tasks = tasksFromProcess !== null ? tasksFromProcess : legacyTasks;
 
         const objectsBasePtr = (objects === objectsFromWorld)
             ? ['simulation', 'world', 'objects']
