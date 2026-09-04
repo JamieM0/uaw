@@ -7108,6 +7108,57 @@ body[data-uaw-workspace="editor"] .uaw-workspace-grid {
 .uaw-editor-tabs button.active { color: var(--uaw-slate-950); background: var(--uaw-white); border-top-color: var(--uaw-blue); }
 .uaw-editor-host { min-width: 0; min-height: 0; }
 
+/* The split/dedicated Starting State pane is the Editor workspace's first
+   pane, reused as a single editor. A small lip below its tab strip holds the
+   contextual controls, leaving every source tab legible at narrow widths. */
+.uaw-source-pane .uaw-editor-pane--source {
+    display: grid !important;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    border: 0;
+}
+
+.uaw-source-pane .uaw-editor-pane--source .uaw-editor-tabs {
+    align-items: stretch;
+}
+
+.uaw-source-pane .uaw-editor-pane--source .uaw-editor-host {
+    width: 100%;
+    height: 100%;
+}
+
+.uaw-source-lip {
+    display: flex;
+    justify-content: flex-end;
+    min-height: 38px;
+    padding: 3px 8px;
+    background: #f6f8fa;
+    border-bottom: 1px solid var(--uaw-slate-300);
+}
+
+.uaw-source-scope {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: max-content;
+    padding: 0 2px;
+}
+
+.uaw-source-scope code {
+    max-width: min(22vw, 220px);
+    overflow: hidden;
+    color: var(--uaw-slate-600);
+    font: 500 10px/1 var(--uaw-font-code);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.uaw-source-scope .uaw-segmented { height: 34px; }
+.uaw-source-scope .uaw-product-command { min-height: 30px; }
+
 body[data-uaw-workspace="editor"] .uaw-editor-validation {
     display: block !important;
     position: relative;

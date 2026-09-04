@@ -159,34 +159,32 @@
             this.ready = true;
             this.buildCommandbar();
             this.bindEvents();
-            this.attachEditor(window.monacoEditor || window.editor);
+            this.attachEditor(window.UAWWorkSpecEditor?.sourceEditor || window.monacoEditor || window.editor);
             this.updateContext();
         }
 
         buildCommandbar() {
-            const panel = document.querySelector('#uaw-source-pane .json-editor-panel');
-            const header = panel?.querySelector('.panel-header');
-            if (!header || header.querySelector('#uaw-source-commandbar')) return;
-            header.innerHTML = `
-                <div class="uaw-commandbar" id="uaw-source-commandbar" aria-label="Starting State commands">
-                    <div class="uaw-commandbar__identity">
-                        <strong>Starting State</strong>
-                        <code id="uaw-source-path">WorkSpec</code>
-                    </div>
-                    <div class="uaw-commandbar__commands" role="group" aria-label="Starting State scope">
-                        <div class="uaw-segmented">
-                            <button type="button" class="uaw-product-command active" data-source-scope="context" aria-pressed="true">Context</button>
-                            <button type="button" class="uaw-product-command" data-source-scope="full" aria-pressed="false">Full JSON</button>
-                        </div>
-                    </div>
-                </div>`;
-            header.querySelectorAll('[data-source-scope]').forEach(button => {
+            const lip = document.querySelector('#uaw-source-pane [data-source-editor-lip]');
+            if (!lip || lip.querySelector('#uaw-source-commandbar')) return;
+            lip.insertAdjacentHTML('beforeend', `<div class="uaw-source-scope" id="uaw-source-commandbar" role="group" aria-label="Starting State scope">
+                <code id="uaw-source-path">WorkSpec</code>
+                <div class="uaw-segmented">
+                    <button type="button" class="uaw-product-command active" data-source-scope="context" aria-pressed="true">Context</button>
+                    <button type="button" class="uaw-product-command" data-source-scope="full" aria-pressed="false">Full JSON</button>
+                </div>
+            </div>`);
+            lip.querySelectorAll('[data-source-scope]').forEach(button => {
                 button.addEventListener('click', () => this.setScope(button.dataset.sourceScope));
             });
         }
 
         bindEvents() {
-            window.addEventListener('uaw:editor-ready', event => this.attachEditor(event.detail?.editor));
+            // Prefer the reusable docked pane once it exists; the legacy editor
+            // can announce readiness later because it is retained for canvas
+            // integrations.
+            window.addEventListener('uaw:editor-ready', event => this.attachEditor(window.UAWWorkSpecEditor?.sourceEditor || event.detail?.editor));
+            window.addEventListener('uaw:source-editor-ready', event => { this.buildCommandbar(); this.attachEditor(event.detail?.editor); });
+            window.addEventListener('uaw:source-editor-model-changed', () => this.applyScope());
             window.addEventListener('uaw:workspace-changed', () => this.updateContext());
             window.addEventListener('uaw:canvas-changed', () => this.updateContext());
             window.addEventListener('uaw:canvas-selection-changed', event => {
@@ -262,6 +260,14 @@
         applyScope(options = {}) {
             if (!this.editor?.getModel) return;
             const model = this.editor.getModel();
+            // Context filtering only has meaning for the Starting State model.
+            // Other tabs remain fully editable in the same shared pane.
+            if (model !== window.monacoEditor?.getModel?.()) {
+                this.editor.setHiddenAreas?.([]);
+                const pathElement = document.getElementById('uaw-source-path');
+                if (pathElement) pathElement.textContent = 'WorkSpec';
+                return;
+            }
             const path = this.resolveContextPath();
             const node = this.nodeForPath(path);
             const contextual = this.scope === 'context' && path.length && node;

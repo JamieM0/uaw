@@ -63,6 +63,7 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
                 pane.querySelectorAll('[data-editor-tab]').forEach((button) => button.addEventListener('click', () => this.select(index, button.dataset.editorTab)));
                 this.updateTabs(index);
             });
+            this.initializeSourcePane();
             this.models.get('changes').onDidChangeContent(() => { this.refreshAnalysis(); this.scheduleExecutionRefresh(); });
             this.models.get('generator').onDidChangeContent(() => this.scheduleExecutionRefresh());
             for (const id of ['custom-constraints', 'constraint-library']) this.models.get(id).onDidChangeContent(() => this.saveConstraintSource());
@@ -74,6 +75,56 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
             this.moveValidationPanel(host);
             this.refreshAnalysis();
             this.initializing = false;
+        }
+
+        // The docked Starting State view deliberately uses the same editor pane
+        // component as the Editor workspace.  Keeping it here means new tabs or
+        // editor options automatically arrive in both places.
+        initializeSourcePane() {
+            if (this.sourceEditor) return;
+            const sourcePane = document.getElementById('uaw-source-pane');
+            if (!sourcePane) return;
+
+            // The original Monaco host remains mounted for the legacy canvas
+            // integrations, but is no longer the split editor surface.
+            const legacyPanel = sourcePane.querySelector('.json-editor-panel');
+            const legacyHost = document.getElementById('uaw-legacy-host');
+            if (legacyPanel && legacyHost) legacyHost.appendChild(legacyPanel);
+
+            sourcePane.insertAdjacentHTML('beforeend', `<section class="uaw-editor-pane uaw-editor-pane--source" data-source-editor-pane>
+                <div class="uaw-editor-tabs" role="tablist" aria-label="Starting State editor">${TABS.map(([id, label]) => `<button type="button" role="tab" data-source-editor-tab="${id}">${label}</button>`).join('')}</div>
+                <div class="uaw-source-lip" data-source-editor-lip></div>
+                <div class="uaw-editor-host" data-source-editor-host></div>
+            </section>`);
+            const pane = sourcePane.querySelector('[data-source-editor-pane]');
+            this.sourceSelection = 'starting-state';
+            this.sourceEditor = window.monaco.editor.create(pane.querySelector('[data-source-editor-host]'), {
+                model: this.models.get(this.sourceSelection),
+                theme: document.documentElement.dataset.theme === 'dark' || document.body.dataset.theme === 'dark' ? 'vs-dark' : 'vs',
+                automaticLayout: true, minimap: { enabled: false }, scrollBeyondLastLine: false,
+                fontSize: 13, lineNumbers: 'on', folding: true, bracketMatching: 'always',
+                formatOnPaste: true, formatOnType: true, tabSize: 4, insertSpaces: true, wordWrap: 'off'
+            });
+            pane.querySelectorAll('[data-source-editor-tab]').forEach((button) => button.addEventListener('click', () => this.selectSource(button.dataset.sourceEditorTab)));
+            this.updateSourceTabs();
+            window.dispatchEvent(new CustomEvent('uaw:source-editor-ready', { detail: { editor: this.sourceEditor } }));
+        }
+
+        selectSource(id) {
+            if (!this.models.has(id) || !this.sourceEditor) return;
+            this.sourceSelection = id;
+            this.sourceEditor.setModel(this.models.get(id));
+            this.updateSourceTabs();
+            this.sourceEditor.focus();
+            window.dispatchEvent(new CustomEvent('uaw:source-editor-model-changed', { detail: { editor: this.sourceEditor, tab: id } }));
+        }
+
+        updateSourceTabs() {
+            document.querySelectorAll('[data-source-editor-tab]').forEach((button) => {
+                const selected = button.dataset.sourceEditorTab === this.sourceSelection;
+                button.classList.toggle('active', selected);
+                button.setAttribute('aria-selected', String(selected));
+            });
         }
 
         moveValidationPanel(host) {
@@ -126,7 +177,7 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
         activeEditor() { return this.editors.find((candidate) => candidate.hasTextFocus()) || this.editors[0]; }
         format() { this.activeEditor()?.getAction?.('editor.action.formatDocument')?.run(); }
         undo() { this.activeEditor()?.trigger?.('workspec-editor', 'undo', null); }
-        layout() { this.editors.forEach((editor) => editor.layout()); }
+        layout() { this.editors.forEach((editor) => editor.layout()); this.sourceEditor?.layout(); }
 
         taskIds() {
             try {
