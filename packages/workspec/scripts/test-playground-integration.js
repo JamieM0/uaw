@@ -22,6 +22,7 @@ const playgroundHtmlPath = path.join(repoRoot, 'web', 'playground.html');
 const playgroundShellPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-shell-v2.js');
 const playgroundProjectsPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-projects-v2.js');
 const playgroundScriptEditorPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-editor-workspace.js');
+const playgroundLegacyEditorPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-editor.js');
 const playgroundObjectsPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-objects.js');
 const migrateCliPath = path.join(repoRoot, 'web', 'scripts', 'workspec-migrate.js');
 
@@ -88,6 +89,44 @@ function normalizeResult(value) {
     return JSON.parse(JSON.stringify(value));
 }
 
+function assertPlaybackValidationObserverIsNonReentrant() {
+    const source = readText(playgroundLegacyEditorPath);
+    const start = source.indexOf('function updatePlaybackControlState');
+    const end = source.indexOf('// JSON validation function', start);
+    assert.ok(start >= 0 && end > start, 'Playback validation functions are not present');
+
+    let observerCallback;
+    let playerUpdates = 0;
+    const sandbox = {
+        window: {
+            player: { update: () => { playerUpdates += 1; } },
+            dispatchEvent() {}
+        },
+        document: {
+            body: { classList: { toggle() {} } },
+            querySelectorAll: () => []
+        },
+        MutationObserver: class {
+            constructor(callback) { observerCallback = callback; }
+            observe() {}
+        },
+        cancelAnimationFrame() {},
+        CustomEvent: class {},
+        console
+    };
+
+    vm.createContext(sandbox);
+    vm.runInContext(source.slice(start, end), sandbox, { filename: playgroundLegacyEditorPath });
+    sandbox.setPlaybackValidationBlocked([{
+        metric_id: 'temporal.scheduling.dependency_violation',
+        severity: 'error'
+    }]);
+    assert.equal(playerUpdates, 1, 'initial validation should update playback once');
+
+    observerCallback();
+    assert.equal(playerUpdates, 1, 'observer callback must not re-enter player.update');
+}
+
 function run() {
     const playgroundHtml = readText(playgroundHtmlPath);
     assert.match(
@@ -142,6 +181,7 @@ function run() {
     assert.doesNotMatch(scriptEditor, /new Function|\beval\s*\(/, 'Studio must not execute authored JavaScript directly');
     assert.doesNotMatch(playgroundHtml, />Interactions</, 'Model must not expose legacy task interactions');
     assert.match(objectEditor, /depends_on: document\.getElementById\('task-depends-input'\)\.value/, 'Task dependencies are not persisted from Model');
+    assertPlaybackValidationObserverIsNonReentrant();
 
     const migrateCli = readText(migrateCliPath);
     assert.match(

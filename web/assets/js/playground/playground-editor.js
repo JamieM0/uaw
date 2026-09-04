@@ -858,11 +858,8 @@ async function autoCollapseAssetsObject(moveToTop = false) {
     }
 }
 
-function setPlaybackValidationBlocked(problems) {
-    const blocked = (problems || []).some((problem) => problem?.metric_id === 'temporal.scheduling.dependency_violation' && problem?.severity === 'error');
-    window.__uawPlaybackBlocked = blocked;
-    document.body.classList.toggle('uaw-playback-blocked', blocked);
-    const updateControls = () => document.querySelectorAll('.playback-controls-group button, .playback-controls-group input, .playback-controls-group select, #workspec-time-range, [data-uaw-command="run.toggle"]').forEach((control) => {
+function updatePlaybackControlState(blocked) {
+    document.querySelectorAll('.playback-controls-group button, .playback-controls-group input, .playback-controls-group select, #workspec-time-range, [data-uaw-command="run.toggle"]').forEach((control) => {
         if (blocked) {
             if (!control.disabled) control.dataset.disabledByTiming = 'true';
             control.disabled = true;
@@ -873,10 +870,20 @@ function setPlaybackValidationBlocked(problems) {
             delete control.dataset.disabledByTiming;
         }
     });
-    updateControls();
+}
+
+function setPlaybackValidationBlocked(problems) {
+    const blocked = (problems || []).some((problem) => problem?.metric_id === 'temporal.scheduling.dependency_violation' && problem?.severity === 'error');
+    window.__uawPlaybackBlocked = blocked;
+    document.body.classList.toggle('uaw-playback-blocked', blocked);
+    updatePlaybackControlState(blocked);
     if (!window.__uawPlaybackControlObserver) {
         window.__uawPlaybackControlObserver = new MutationObserver(() => {
-            if (window.__uawPlaybackBlocked) setPlaybackValidationBlocked(window.__uawPlaybackBlockingProblems || []);
+            // The observer exists only to disable controls created by a later
+            // render. Re-entering this function here calls player.update(),
+            // which mutates the body and creates an infinite MutationObserver
+            // loop for documents with dependency violations.
+            if (window.__uawPlaybackBlocked) updatePlaybackControlState(true);
         });
         window.__uawPlaybackControlObserver.observe(document.body, { childList: true, subtree: true });
     }
