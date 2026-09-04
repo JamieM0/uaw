@@ -21,7 +21,7 @@ const webPlaybackStatePath = path.join(repoRoot, 'web', 'packages', 'workspec', 
 const playgroundHtmlPath = path.join(repoRoot, 'web', 'playground.html');
 const playgroundShellPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-shell-v2.js');
 const playgroundProjectsPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-projects-v2.js');
-const playgroundScriptEditorPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-script-editor.js');
+const playgroundScriptEditorPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-editor-workspace.js');
 const playgroundObjectsPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-objects.js');
 const migrateCliPath = path.join(repoRoot, 'web', 'scripts', 'workspec-migrate.js');
 
@@ -92,8 +92,8 @@ function run() {
     const playgroundHtml = readText(playgroundHtmlPath);
     assert.match(
         playgroundHtml,
-        /<script src="\/packages\/workspec\/workspec-runtime\.js" defer><\/script>/,
-        'Playground is not loading the WorkSpec 2.1 runtime'
+        /<script src="\/packages\/workspec\/workspec-runtime\.js(?:\?v=[^"]+)?" defer><\/script>/,
+        'Playground is not loading the WorkSpec 2.2 runtime'
     );
     assert.match(
         playgroundHtml,
@@ -102,7 +102,7 @@ function run() {
     );
     assert.match(
         playgroundHtml,
-        /<script src="\/packages\/workspec\/workspec-validator\.js" defer><\/script>/,
+        /<script src="\/packages\/workspec\/workspec-validator\.js(?:\?v=[^"]+)?" defer><\/script>/,
         'Playground is not loading the package-backed validator script'
     );
     assert.match(
@@ -117,36 +117,31 @@ function run() {
     );
     assert.match(
         playgroundHtml,
-        /<script src="\/assets\/js\/playground\/playground-script-editor\.js\?v=[^"]+" defer><\/script>/,
-        'Playground is not loading the WorkSpec Script editor'
+        /<script src="\/assets\/js\/playground\/playground-editor-workspace\.js\?v=[^"]+" defer><\/script>/,
+        'Playground is not loading the WorkSpec Editor'
     );
 
     const studioShell = readText(playgroundShellPath);
     const projectStore = readText(playgroundProjectsPath);
     const scriptEditor = readText(playgroundScriptEditorPath);
     const objectEditor = readText(playgroundObjectsPath);
-    for (const workspace of ['Projects', 'Define', 'Script', 'Simulate', 'Validation', 'Assets']) {
+    for (const workspace of ['Projects', 'Model', 'Editor', 'Simulate', 'Assets']) {
         assert.match(studioShell, new RegExp(`workspaceButton\\([^\\n]+['"]${workspace}['"]`), `Studio is missing the ${workspace} workspace`);
     }
-    assert.match(studioShell, /aria-label="Define views"/, 'Define views are not grouped under Define');
-    for (const [viewId, viewLabel] of [['process', 'Process'], ['objects', 'Objects'], ['physical', 'Physical'], ['digital', 'Digital'], ['displays', 'Displays'], ['source', 'Source']]) {
-        assert.match(studioShell, new RegExp(`\\['${viewId}',`), `Define is missing its ${viewLabel} view`);
+    assert.match(studioShell, /aria-label="Model views"/, 'Visual views are not grouped under Model');
+    for (const [viewId, viewLabel] of [['process', 'Process'], ['objects', 'Objects'], ['physical', 'Physical'], ['digital', 'Digital'], ['displays', 'Displays']]) {
+        assert.match(studioShell, new RegExp(`\\['${viewId}',`), `Model is missing its ${viewLabel} view`);
     }
-    assert.match(projectStore, /const SCRIPT_FILE = 'project\.workspec\.js'/, 'Project persistence does not define a Script file');
-    assert.match(projectStore, /await this\.writeText\(project\.directoryHandle, SCRIPT_FILE,/, 'Project persistence does not write Script');
-    assert.match(projectStore, /scriptDraft: scriptDraft === null/, 'Project persistence does not load Script');
-    assert.match(projectStore, /createFromTemplate\(name, workSpec, directoryHandle = null, script = null\)/, 'Template creation does not accept Script content');
-    assert.match(scriptEditor, /language: 'javascript'/, 'Script editor is not configured for JavaScript');
-    assert.match(scriptEditor, /declare function set/, 'Script editor does not declare ambient runtime helpers');
-    assert.match(scriptEditor, /WorkSpecRuntime\?\.analyzeScript/, 'Script editor is not using package-backed Script analysis');
-    assert.match(scriptEditor, /setModelMarkers/, 'Script diagnostics are not connected to the editor');
-    assert.match(studioShell, /data-open-script-task/, 'Process view does not expose Script handler references');
-    assert.match(studioShell, /data-open-script-object/, 'Object view does not expose Script helper references');
-    assert.doesNotMatch(scriptEditor, /new Function|\beval\s*\(/, 'Studio must not execute Script behaviour directly');
-    assert.doesNotMatch(playgroundHtml, />Interactions</, 'Define must not expose legacy task interactions');
-    assert.match(objectEditor, /depends_on: document\.getElementById\('task-depends-input'\)\.value/, 'Task dependencies are not persisted from Define');
-    assert.doesNotMatch(objectEditor, /delete newTask\.interactions/, 'Editing a task must not discard declarative interactions');
-    assert.match(objectEditor, /document\.querySelectorAll\('\.interaction-group'\)/, 'Task interaction controls are not connected to task saving');
+    for (const file of ['start.workspec.json', 'changes.workspec.js', 'generator.workspec.js']) assert.match(projectStore, new RegExp(file.replace(/\./g, '\\.')), `Project persistence is missing ${file}`);
+    for (const label of ['Starting State', 'Changes', 'Generator', 'Custom Constraints', 'Constraint Library']) assert.match(scriptEditor, new RegExp(`'${label}'`), `Editor is missing ${label}`);
+    assert.match(scriptEditor, /workSpecChangesEditor/, 'Changes are not project-backed');
+    assert.match(scriptEditor, /workSpecGeneratorEditor/, 'Generator is not project-backed');
+    assert.match(scriptEditor, /registerCodeActionProvider/, 'Starting State corrections are not exposed as code actions');
+    assert.match(studioShell, /data-open-changes-task/, 'Process view does not expose Changes handler references');
+    assert.match(studioShell, /data-open-changes-object/, 'Object view does not expose Changes helper references');
+    assert.doesNotMatch(scriptEditor, /new Function|\beval\s*\(/, 'Studio must not execute authored JavaScript directly');
+    assert.doesNotMatch(playgroundHtml, />Interactions</, 'Model must not expose legacy task interactions');
+    assert.match(objectEditor, /depends_on: document\.getElementById\('task-depends-input'\)\.value/, 'Task dependencies are not persisted from Model');
 
     const migrateCli = readText(migrateCliPath);
     assert.match(
@@ -164,8 +159,9 @@ function run() {
     const nodeValidator = require(packageValidatorPath);
     const browserValidator = loadBrowserValidator(webValidatorPath);
     const nodeRuntime = require(packageRuntimePath);
-    assert.equal(typeof nodeRuntime.analyzeScript, 'function', 'Package runtime does not expose Script analysis');
-    assert.equal(nodeRuntime.analyzeScript('WorkSpec.task("task_1").onStart(() => {});').handlers[0].taskId, 'task_1');
+    assert.equal(typeof nodeRuntime.analyzeChanges, 'function', 'Package runtime does not expose Changes analysis');
+    assert.equal(typeof nodeRuntime.compileGenerator, 'function', 'Package runtime does not expose Generator compilation');
+    assert.equal(nodeRuntime.analyzeChanges('WorkSpec.task("task_1").onStart(() => {});').handlers[0].taskId, 'task_1');
 
     const validDoc = baseDoc();
     const invalidDoc = baseDoc();
@@ -182,9 +178,9 @@ function run() {
     const templateLibrary = JSON.parse(readText(path.join(repoRoot, 'web', 'assets', 'static', 'simulation-library.json')));
     assert.equal(templateLibrary.simulations.length, 6, 'Studio template inventory changed unexpectedly');
     templateLibrary.simulations.forEach(template => {
-        assert.equal(template.simulation.schema_version, '2.1', `${template.id} is not WorkSpec 2.1`);
-        assert.equal(nodeValidator.validate({ simulation: template.simulation }).ok, true, `${template.id} Define is not WorkSpec-valid`);
-        assert.equal(typeof template.script, 'string', `${template.id} has no Script`);
+        assert.equal(template.simulation.schema_version, '2.2', `${template.id} is not WorkSpec 2.2`);
+        assert.equal(nodeValidator.validate({ simulation: template.simulation }).ok, true, `${template.id} Starting State is not WorkSpec-valid`);
+        assert.equal(typeof template.changes, 'string', `${template.id} has no Changes`);
     });
 
     process.stdout.write('✓ playground integration uses package-backed WorkSpec runtime\n');

@@ -61,6 +61,7 @@ function displayGroupedValidationResults(results) {
         suggestions: [],
         success: []
     };
+    window.__uawCorrectionProblems = new Map();
 
     const stats = {
         total: results.length,
@@ -177,13 +178,19 @@ function displayValidationGroup(groupId, results, icon, collapsedByDefault = fal
         });
 
         // Generate HTML for results
-        const html = sortedResults.map(result => {
+        const html = sortedResults.map((result, resultIndex) => {
             const metricName = sanitizeHTML(getMetricDisplayName(result.metricId, mergedCatalog));
             const sanitizedMessage = sanitizeHTML(result.message);
             const metric = mergedCatalog.find(m => m.id === result.metricId);
 
             // Add example and disable buttons for builtin metrics in Metrics Editor mode
             let actionButtons = '';
+            const correction = result.problem?.context?.correction;
+            if (correction) {
+                const correctionId = `${groupId}-${resultIndex}`;
+                window.__uawCorrectionProblems.set(correctionId, result.problem);
+                actionButtons += `<div class="validation-actions"><button class="apply-correction-btn" data-correction-id="${correctionId}" type="button">Apply ${sanitizeHTML(JSON.stringify(correction.value))}</button></div>`;
+            }
             if (isMetricsMode && metric && metric.source === 'builtin') {
                 const sanitizedMetricId = sanitizeHTML(result.metricId);
                 actionButtons = `
@@ -280,6 +287,13 @@ function setupValidationInteractions() {
     if (validationContainer) {
         // Delegated event listener for stat items and example buttons
         validationEventHandlers.clickHandler = (e) => {
+            if (e.target.closest('.apply-correction-btn')) {
+                const button = e.target.closest('.apply-correction-btn');
+                const problem = window.__uawCorrectionProblems?.get(button.dataset.correctionId);
+                window.UAWWorkSpecEditor?.applyCorrection?.(problem);
+                e.stopPropagation();
+                return;
+            }
             if (e.target.closest('.stat-item.clickable')) {
                 const statItem = e.target.closest('.stat-item.clickable');
                 const filterValue = statItem.dataset.filter;

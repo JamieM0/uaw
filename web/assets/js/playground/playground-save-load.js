@@ -7,9 +7,10 @@ const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 const MAX_ZIP_ENTRIES = 1000;
 const MAX_ZIP_ENTRY_BYTES = 25 * 1024 * 1024;
 const MAX_ZIP_UNCOMPRESSED_BYTES = 50 * 1024 * 1024;
-const WORKSPEC_FILE_EXTENSION = '.workspec.json';
 const WORKSPEC_ZIP_EXTENSION = '.workspec.zip';
-const WORKSPEC_SCRIPT_EXTENSION = '.workspec.js';
+const STARTING_STATE_FILE = 'start.workspec.json';
+const CHANGES_FILE = 'changes.workspec.js';
+const GENERATOR_FILE = 'generator.workspec.js';
 
 // Setup save/load buttons
 function setupSaveLoadButtons() {
@@ -77,7 +78,7 @@ function normalizeSimulationFileBaseName(rawName) {
     const fallbackName = 'simulation';
     let base = (rawName || fallbackName).trim();
     base = base
-        .replace(/\.workspec\.json$/i, '')
+        .replace(/\.start\.workspec\.json$/i, '')
         .replace(/\.json$/i, '')
         .replace(/\.workspec$/i, '')
         .trim();
@@ -107,7 +108,7 @@ function parseImportedWorkSpec(content, sourceLabel = 'file') {
     }
 
     const sim = data.simulation;
-    const isV2 = sim.schema_version === '2.0' || sim.schema_version === '2.1' || sim.world || sim.process;
+    const isV2 = ['2.0', '2.1', '2.2'].includes(sim.schema_version) || sim.world || sim.process;
     if (isV2 && window.WorkSpecValidator?.validate) {
         const result = window.WorkSpecValidator.validate(data);
         const errors = (result?.problems || []).filter(problem => problem?.severity === 'error');
@@ -150,7 +151,7 @@ function validateZipContents(zipContents) {
     }
 }
 
-async function createImportedProject(projectName, data, fileName, directoryHandle = null, script = null) {
+async function createImportedProject(projectName, data, fileName, directoryHandle = null, changes = null, generator = null, seed = 1) {
     const workSpec = JSON.stringify(data, null, 2);
     if (window.UAWPlaygroundShell?.requestProjectCreation) {
         return window.UAWPlaygroundShell.requestProjectCreation({
@@ -158,11 +159,15 @@ async function createImportedProject(projectName, data, fileName, directoryHandl
             name: projectName,
             sourceLabel: `Import · ${fileName}`,
             workSpec,
-            script: typeof script === 'string' ? script : ''
+            changes: typeof changes === 'string' ? changes : '',
+            generator: typeof generator === 'string' ? generator : '',
+            seed
         });
     }
     if (window.UAWProjectStore?.createFromTemplate) {
-        return window.UAWProjectStore.createFromTemplate(projectName, workSpec, directoryHandle, typeof script === 'string' ? script : null);
+        const project = await window.UAWProjectStore.createFromTemplate(projectName, workSpec, directoryHandle, typeof changes === 'string' ? changes : null, typeof generator === 'string' ? generator : null);
+        if (project && Number.isInteger(seed)) { project.seed = seed; await window.UAWProjectStore.put(project); }
+        return project;
     }
     editor?.setValue?.(workSpec);
     return true;
@@ -172,7 +177,7 @@ async function createImportedProject(projectName, data, fileName, directoryHandl
 function loadSimulationFromFileInput() {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.json,.workspec.json,.zip';
+    input.accept = '.json,.start.workspec.json,.workspec.zip,.zip';
 
     input.addEventListener('change', async function(event) {
         const file = event.target.files[0];
@@ -187,8 +192,8 @@ function loadSimulationFromFileInput() {
         try {
             const fileNameLower = file.name.toLowerCase();
             if (fileNameLower.endsWith('.zip')) await loadFromZipFile(file);
-            else if (fileNameLower.endsWith('.workspec.json') || fileNameLower.endsWith('.json')) await loadFromJsonFile(file);
-            else alert('Invalid file type. Please select a .workspec.json, .json, or .zip file.');
+            else if (fileNameLower.endsWith('.start.workspec.json') || fileNameLower.endsWith('.json')) await loadFromJsonFile(file);
+            else alert('Invalid file type. Please select start.workspec.json or a .workspec.zip project.');
         } catch (error) {
             if (error?.name !== 'AbortError') alert(`Import failed: ${error.message}`);
         }
@@ -216,7 +221,7 @@ async function loadFromJsonFile(file, directoryHandle = null) {
 
                 // Load into editor
                 if (typeof editor !== 'undefined' && editor) {
-                    const projectName = data.simulation?.meta?.title || file.name.replace(/\.workspec\.json$|\.json$/i, '');
+                    const projectName = data.simulation?.meta?.title || file.name.replace(/\.start\.workspec\.json$|\.json$/i, '');
                     const project = await createImportedProject(projectName, data, file.name, directoryHandle);
                     if (!project) {
                         resolve(null);
@@ -272,10 +277,9 @@ async function loadFromZipFile(file, directoryHandle = null) {
         const zipContents = await zip.loadAsync(file);
         validateZipContents(zipContents);
 
-        // Accept current and legacy package entry names.
-        const simulationFile = zipContents.file('simulation.workspec.json') || zipContents.file('simulation.json');
+        const simulationFile = zipContents.file(STARTING_STATE_FILE);
         if (!simulationFile) {
-            alert('Invalid ZIP file: missing simulation.workspec.json');
+            alert(`Invalid ZIP file: missing ${STARTING_STATE_FILE}`);
             return;
         }
 
@@ -284,19 +288,23 @@ async function loadFromZipFile(file, directoryHandle = null) {
         // Validate and load simulation
         let data;
         try {
-            data = parseImportedWorkSpec(simulationContent, `${file.name}:simulation.workspec.json`);
+            data = parseImportedWorkSpec(simulationContent, `${file.name}:${STARTING_STATE_FILE}`);
         } catch (error) {
             alert('Invalid simulation.json in ZIP: ' + error.message);
             return;
         }
 
-        const scriptFile = zipContents.file('project.workspec.js') || zipContents.file('simulation.workspec.js');
-        const script = scriptFile ? await scriptFile.async('text') : null;
+        const changesFile = zipContents.file(CHANGES_FILE);
+        const generatorFile = zipContents.file(GENERATOR_FILE);
+        const changes = changesFile ? await changesFile.async('text') : '';
+        const generator = generatorFile ? await generatorFile.async('text') : '';
+        const manifestFile = zipContents.file('workspec.manifest.json');
+        const manifest = manifestFile ? JSON.parse(await manifestFile.async('text')) : {};
 
         // Load into editor
         if (typeof editor !== 'undefined' && editor) {
             const projectName = data.simulation?.meta?.title || file.name.replace(/\.workspec\.zip$|\.zip$/i, '');
-            const importedProject = await createImportedProject(projectName, data, file.name, directoryHandle, script);
+            const importedProject = await createImportedProject(projectName, data, file.name, directoryHandle, changes, generator, Number.isInteger(manifest.seed) ? manifest.seed : 1);
             if (!importedProject) return;
 
             const assetEntries = [];
@@ -415,22 +423,30 @@ function openProjectImportDialog() {
     loadSimulationFromFileInput();
 }
 
-function getCurrentScriptForExport() {
+function getCurrentChangesForExport() {
     return String(
-        window.workSpecScriptEditor?.getValue?.()
-        ?? window.UAWProjectStore?.getCurrent?.()?.scriptDraft
+        window.workSpecChangesEditor?.getValue?.()
+        ?? window.UAWProjectStore?.getCurrent?.()?.changesDraft
         ?? ''
     );
 }
 
-function hasNonDefaultScript(script) {
-    const normalized = String(script || '').trim();
-    const defaultScript = [
-        '// WorkSpec 2.1 Script',
+function getCurrentGeneratorForExport() {
+    return String(
+        window.workSpecGeneratorEditor?.getValue?.()
+        ?? window.UAWProjectStore?.getCurrent?.()?.generatorDraft
+        ?? ''
+    );
+}
+
+function hasNonDefaultChanges(changes) {
+    const normalized = String(changes || '').trim();
+    const defaultChanges = [
+        '// WorkSpec 2.2 Changes',
         '// Register task behaviour with WorkSpec.task(...).',
         '// set, change, move, create and remove are available inside handlers.'
     ].join('\n');
-    return Boolean(normalized && normalized !== defaultScript);
+    return Boolean(normalized && normalized !== defaultChanges);
 }
 
 function exportAssetExtension(mimeType) {
@@ -478,15 +494,16 @@ function openProjectExportDialog() {
     confirm.onclick = async () => {
         try {
             const { parsed, content } = getExportableWorkSpec();
-            const script = getCurrentScriptForExport();
-            const includeScript = hasNonDefaultScript(script);
+            const changes = getCurrentChangesForExport();
+            const generator = getCurrentGeneratorForExport();
             const base = normalizeSimulationFileBaseName(nameInput.value);
             const assets = await window.UAWProjectStore?.listAssets?.() || [];
             const custom = Boolean(includeExtras.checked && hasCustomMetrics());
-            if ((assets.length || custom || includeScript) && window.JSZip) {
+            if (window.JSZip) {
                 const zip = new JSZip();
-                zip.file('simulation.workspec.json', content);
-                if (includeScript) zip.file('project.workspec.js', script);
+                zip.file(STARTING_STATE_FILE, content);
+                zip.file(CHANGES_FILE, changes);
+                zip.file(GENERATOR_FILE, generator);
                 const exportedAssets = assets.map(asset => {
                     const id = String(asset.id || 'asset').replace(/[^a-zA-Z0-9_-]/g, '_');
                     const extension = exportAssetExtension(asset.mimeType);
@@ -502,10 +519,12 @@ function openProjectExportDialog() {
                     if (metrics.validator) zip.file('simulation-validator-custom.js', metrics.validator);
                 }
                 zip.file('workspec.manifest.json', JSON.stringify({
-                    format_version: 1,
+                    format_version: 2,
                     workspec_version: parsed.simulation?.schema_version || null,
-                    definition_file: 'simulation.workspec.json',
-                    script_file: includeScript ? 'project.workspec.js' : null,
+                    starting_state_file: STARTING_STATE_FILE,
+                    changes_file: CHANGES_FILE,
+                    generator_file: GENERATOR_FILE,
+                    seed: window.UAWProjectStore?.getCurrent?.()?.seed ?? 1,
                     assets: exportedAssets.map(({ asset, file }) => ({
                         id: asset.id,
                         file,
@@ -523,18 +542,11 @@ function openProjectExportDialog() {
                 downloadSimulationFile(await zip.generateAsync({ type: 'blob' }), fileName);
                 savedName.textContent = fileName;
             } else {
-                const fileName = `${base}${WORKSPEC_FILE_EXTENSION}`;
-                downloadSimulationFile(new Blob([content], { type: 'application/json' }), fileName);
-                savedName.textContent = fileName;
-                if (includeScript) {
-                    downloadSimulationFile(new Blob([script], { type: 'text/javascript' }), `${base}${WORKSPEC_SCRIPT_EXTENSION}`);
-                }
-                const omitted = [
-                    includeScript ? 'Script' : '',
-                    assets.length ? 'assets' : '',
-                    custom ? 'custom metrics' : ''
-                ].filter(Boolean);
-                if (omitted.length) showNotification(`ZIP support is unavailable; downloaded JSON separately from ${omitted.join(', ')}.`, 'warning');
+                downloadSimulationFile(new Blob([content], { type: 'application/json' }), STARTING_STATE_FILE);
+                downloadSimulationFile(new Blob([changes], { type: 'text/javascript' }), CHANGES_FILE);
+                downloadSimulationFile(new Blob([generator], { type: 'text/javascript' }), GENERATOR_FILE);
+                savedName.textContent = `${STARTING_STATE_FILE}, ${CHANGES_FILE}, ${GENERATOR_FILE}`;
+                showNotification('ZIP support is unavailable; downloaded the three project files separately.', 'warning');
             }
             result.style.display = 'block';
             confirm.style.display = 'none';
@@ -546,10 +558,6 @@ function openProjectExportDialog() {
     dialog.style.display = 'flex';
     requestAnimationFrame(() => nameInput.focus());
 }
-
-// Backwards-compatible aliases for integrations that still call the old entry points.
-function openSaveDialog() { openProjectExportDialog(); }
-function openLoadDialog() { openProjectImportDialog(); }
 
 function openFeedbackDialog() {
     const dialog = document.getElementById('feedback-modal');

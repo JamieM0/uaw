@@ -92,36 +92,36 @@ async function run() {
 
     for (const template of library.simulations) {
         const documentValue = { simulation: template.simulation };
-        assert.equal(template.simulation.schema_version, '2.1', `${template.id} is not WorkSpec 2.1`);
-        assert.equal(forbiddenKey(documentValue, forbidden), null, `${template.id} Define contains legacy behaviour/configuration`);
+        assert.equal(template.simulation.schema_version, '2.2', `${template.id} is not WorkSpec 2.2`);
+        assert.equal(forbiddenKey(documentValue, forbidden), null, `${template.id} Starting State contains executable behaviour/configuration`);
         for (const task of template.simulation.process.tasks) {
             assert.match(String(task.duration), /^[0-9]+(?:\.[0-9]+)?[smhdwM]$/, `${template.id}/${task.id} duration is not self-describing`);
             if (task.depends_on !== undefined) assert.ok(Array.isArray(task.depends_on), `${template.id}/${task.id} depends_on is not a plain array`);
             if (task.depends_on?.length) assert.equal(task.start, undefined, `${template.id}/${task.id} has a redundant dependent start`);
         }
-        assert.equal(validate(documentValue).ok, true, `${template.id} Define is invalid`);
-        assert.equal(typeof template.script, 'string', `${template.id} has no Script content`);
-        assert.doesNotMatch(template.script, /\(\{\s*(?:set|change|move|create|remove)/, `${template.id} still requires helper destructuring`);
+        assert.equal(validate(documentValue).ok, true, `${template.id} Starting State is invalid`);
+        assert.equal(typeof template.changes, 'string', `${template.id} has no Changes content`);
+        assert.doesNotMatch(template.changes, /\(\{\s*(?:set|change|move|create|remove)/, `${template.id} still requires helper destructuring`);
         const taskIds = template.simulation.process.tasks.map(task => task.id);
-        const analysis = runtime.analyzeScript(template.script, { taskIds });
-        assert.equal(analysis.diagnostics.some(diagnostic => diagnostic.severity === 'error'), false, `${template.id} Script has unresolved task references`);
-        assert.ok(analysis.handlers.length > 0, `${template.id} Script has no indexed handlers`);
-        assert.equal(analysis.handlers.every(handler => taskIds.includes(handler.taskId)), true, `${template.id} Script handler is not linked to Define`);
+        const analysis = runtime.analyzeChanges(template.changes, { taskIds });
+        assert.equal(analysis.diagnostics.some(diagnostic => diagnostic.severity === 'error'), false, `${template.id} Changes has unresolved task references`);
+        assert.ok(analysis.handlers.length > 0, `${template.id} Changes has no indexed handlers`);
+        assert.equal(analysis.handlers.every(handler => taskIds.includes(handler.taskId)), true, `${template.id} Changes handler is not linked to Starting State`);
         if (template.id === 'breadmaking') assert.ok(analysis.handlers.some(handler => handler.form === 'grouped'), 'breadmaking does not demonstrate grouped task handlers');
-        const runtimeRun = runtime.runProject(documentValue, template.script);
-        assert.equal(runtimeRun.problems.some(problem => problem.severity === 'error'), false, `${template.id} does not run through WorkSpec 2.1`);
+        const runtimeRun = runtime.runProject(documentValue, template.changes, '', { seed: 1 });
+        assert.equal(runtimeRun.problems.some(problem => problem.severity === 'error'), false, `${template.id} does not run through WorkSpec 2.2`);
         assert.ok(runtimeRun.history.length > 0, `${template.id} generated no change history`);
         const [objectId, property, expected] = observableOutcomes[template.id];
         assert.equal(runtime.serialiseState(runtimeRun).objects[objectId].properties[property], expected, `${template.id} did not preserve its observable outcome`);
 
         const defineText = JSON.stringify(documentValue, null, 2);
-        const created = await store.createFromTemplate(template.name, defineText, root, template.script);
+        const created = await store.createFromTemplate(template.name, defineText, root, template.changes, '');
         assert.ok(created, `${template.id} could not be created`);
         const reloaded = await store.readProjectFromDirectory(created.directoryHandle, { id: created.id, name: created.name });
-        assert.deepEqual(JSON.parse(reloaded.workSpecDraft), documentValue, `${template.id} Define did not reload intact`);
-        assert.equal(reloaded.scriptDraft, template.script, `${template.id} Script did not reload intact`);
+        assert.deepEqual(JSON.parse(reloaded.workSpecDraft), documentValue, `${template.id} Starting State did not reload intact`);
+        assert.equal(reloaded.changesDraft, template.changes, `${template.id} Changes did not reload intact`);
     }
-    process.stdout.write(`✓ ${library.simulations.length} WorkSpec 2.1 Studio templates\n`);
+    process.stdout.write(`✓ ${library.simulations.length} WorkSpec 2.2 Studio templates\n`);
 }
 
 run().catch(error => { console.error(error); process.exitCode = 1; });

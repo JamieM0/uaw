@@ -1,4 +1,4 @@
-// WorkSpec 2.1 Validator (RFC 7807 Problem Details)
+// WorkSpec 2.2 Validator (RFC 7807 Problem Details)
 // Universal Automation Wiki
 //
 // Single-source validator intended to run in both:
@@ -11,7 +11,7 @@
     'use strict';
 
     const WORKSPEC_NAMESPACE = 'https://universalautomation.wiki/workspec';
-    const SUPPORTED_SCHEMA_VERSIONS = Object.freeze(['2.0', '2.1']);
+    const SUPPORTED_SCHEMA_VERSIONS = Object.freeze(['2.0', '2.1', '2.2']);
 
     const BUILTIN_TYPES = Object.freeze([
         'actor',
@@ -188,6 +188,22 @@
             + (seconds / 60);
 
         return totalMinutes;
+    }
+
+    function formatSuggestedStart(original, minutes) {
+        const whole = Math.max(0, Math.round(minutes));
+        const day = Math.floor(whole / 1440) + 1;
+        const clock = whole % 1440;
+        const hhmm = `${String(Math.floor(clock / 60)).padStart(2, '0')}:${String(clock % 60).padStart(2, '0')}`;
+        if (isPlainObject(original) && Number.isInteger(original.day)) return { day, time: hhmm };
+        if (typeof original === 'string' && original.includes('T')) {
+            const parsed = parseStrictIsoDateTime(original);
+            if (parsed) {
+                const replacement = new Date(minutes * 60000).toISOString();
+                return replacement.replace('.000Z', 'Z');
+            }
+        }
+        return hhmm;
     }
 
     function parseShorthandDurationToMinutes(value) {
@@ -775,7 +791,7 @@
                 '/simulation/schema_version',
                 { field: 'schema_version' },
                 [
-                    "Add \"schema_version\": \"2.1\" under simulation.",
+                    "Add \"schema_version\": \"2.2\" under simulation.",
                     'Run the migration tool (WorkSpec Studio: Tools → Migrate v1 → v2) or CLI: workspec migrate <file> --out <output>.'
                 ]
             ));
@@ -790,7 +806,7 @@
                 `simulation.schema_version must be in Major.Minor format (example: "2.0"). Received "${schemaVersion}".`,
                 '/simulation/schema_version',
                 { value: schemaVersion },
-                ['Change schema_version to "2.1".']
+                ['Change schema_version to "2.2".']
             ));
             return { ok: false, problems };
         }
@@ -803,7 +819,7 @@
                 `WorkSpec schema_version "${schemaVersion}" is not supported by this validator. Supported versions: ${SUPPORTED_SCHEMA_VERSIONS.join(', ')}.`,
                 '/simulation/schema_version',
                 { value: schemaVersion, supported: [...SUPPORTED_SCHEMA_VERSIONS] },
-                ['Use the supported schema version "2.1".']
+                ['Use the current schema version "2.2".']
             ));
             return { ok: false, problems };
         }
@@ -1559,7 +1575,8 @@
                 ));
             }
 
-            const hasDependencies = Array.isArray(task.depends_on) && task.depends_on.length > 0;
+            const hasDependencies = (Array.isArray(task.depends_on) && task.depends_on.length > 0)
+                || (isPlainObject(task.depends_on) && ['all', 'any'].some((key) => Array.isArray(task.depends_on[key]) && task.depends_on[key].length > 0));
             const startParse = task.start === undefined && hasDependencies
                 ? { ok: false, derived: true }
                 : parseTaskStart(task.start);
@@ -1666,6 +1683,18 @@
 
             // Interactions validation
             const interactions = task.interactions;
+            const executableFields = ['interactions', 'equipment_interactions', 'consumes', 'produces'].filter((field) => Object.prototype.hasOwnProperty.call(task, field));
+            if (schemaVersion === '2.2' && executableFields.length) {
+                problems.push(buildProblem(
+                    'starting_state.behaviour.disallowed',
+                    'error',
+                    'Executable Behaviour In Starting State',
+                    `Task '${rawId}' contains executable behaviour (${executableFields.join(', ')}). WorkSpec 2.2 Starting State is declarative; author effects in changes.workspec.js.`,
+                    toJsonPointer(taskPtr.concat([executableFields[0]])),
+                    { task_id: rawId, fields: executableFields },
+                    ['Move task effects to changes.workspec.js using WorkSpec.task(...).']
+                ));
+            }
             if (interactions !== undefined && !Array.isArray(interactions)) {
                 problems.push(buildProblem(
                     'task.integrity.invalid_interactions',
@@ -2128,6 +2157,7 @@
             if (!id) continue;
             const timing = taskTiming.get(id);
             if (!timing) continue;
+            if (!Object.prototype.hasOwnProperty.call(task, 'start')) continue;
 
             const depends = task.depends_on;
             const allDeps = [];
@@ -2152,14 +2182,15 @@
             }
 
             if (timing.startMinutes < requiredEnd) {
+                const suggestedStart = formatSuggestedStart(task.start, requiredEnd);
                 problems.push(buildProblem(
                     'temporal.scheduling.dependency_violation',
                     'error',
                     'Dependency Violation',
                     `Task '${id}' starts before its dependency condition is satisfied.`,
                     toJsonPointer(tasksBasePtr.concat([i, 'start'])),
-                    { task_id: id, start_minutes: timing.startMinutes, required_end_minutes: requiredEnd },
-                    ['Move the task start time later.', 'Shorten dependency durations or adjust dependencies.']
+                    { task_id: id, start_minutes: timing.startMinutes, required_end_minutes: requiredEnd, suggested_start: suggestedStart, correction: { pointer: toJsonPointer(tasksBasePtr.concat([i, 'start'])), value: suggestedStart } },
+                    [`Replace only the explicit start with ${JSON.stringify(suggestedStart)}. The source will change only if you apply this suggestion.`]
                 ));
             }
         }

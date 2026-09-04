@@ -11,10 +11,10 @@ const customValidationRunner = require(path.join(__dirname, '..', 'custom-valida
 
 function printHelp(exitCode = 0) {
     const lines = [
-        'workspec - WorkSpec 2.1 CLI',
+        'workspec - WorkSpec 2.2 CLI',
         '',
         'Usage:',
-        '  workspec validate <file.workspec.json> [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json] [--fail-on-warning] [-y]',
+        '  workspec validate <start.workspec.json> [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json] [--fail-on-warning] [-y]',
         '  workspec migrate <file.json> --out <output.json> [--schema]',
         '  workspec format <file.json> [--write] [--out <output.json>]',
         '',

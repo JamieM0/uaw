@@ -11,7 +11,7 @@ class SimulationPlayer {
         this.trackedEventListeners = [];
         this.currentObjectStates = new Map();
         this.sortedTasks = [...(simulationData.tasks || [])].sort((a, b) => a.start_minutes - b.start_minutes);
-        this.playbackModel = simulationData._workspec_document?.simulation?.schema_version === '2.1'
+        this.playbackModel = simulationData._workspec_document?.simulation?.schema_version === '2.2'
             ? null
             : window.WorkSpecPlaybackState?.createPlaybackModel?.(simulationData);
 
@@ -165,6 +165,11 @@ class SimulationPlayer {
     }
 
     togglePlay() {
+        if (window.__uawPlaybackBlocked) {
+            this.isPlaying = false;
+            this.update(0, { force: true });
+            return;
+        }
         this.isPlaying = !this.isPlaying;
         
         // CRITICAL FIX: Set global flag to prevent renderSimulation during playback
@@ -227,6 +232,7 @@ class SimulationPlayer {
     }
 
     update(timeInMinutes, options = {}) {
+        if (window.__uawPlaybackBlocked) timeInMinutes = 0;
         this.playheadTime = timeInMinutes;
 
         // 1. Update Playhead Position (always fast, no optimization needed)
@@ -334,11 +340,13 @@ class SimulationPlayer {
     }
 
     updateLiveObjectState() {
-        if (this.simData._workspec_document?.simulation?.schema_version === '2.1' && window.WorkSpecRuntime?.snapshotProjectAt) {
+        if (this.simData._workspec_document?.simulation?.schema_version === '2.2' && window.WorkSpecRuntime?.snapshotProjectAt) {
             const snapshot = window.WorkSpecRuntime.snapshotProjectAt(
                 this.simData._workspec_document,
-                this.simData._workspec_script || '',
-                this.playheadTime
+                this.simData._workspec_changes || '',
+                this.simData._workspec_generator || '',
+                this.playheadTime,
+                { seed: this.simData._workspec_seed ?? 1 }
             );
             const initial = this.simData._workspec_document.simulation.world?.objects || [];
             const initialIds = new Set(initial.map(object => object.id));

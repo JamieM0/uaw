@@ -28,6 +28,14 @@ const mappings = [
         destination: path.join(repoRoot, 'web', 'packages', 'workspec', 'state-visuals.js')
     },
     {
+        source: path.join(repoRoot, 'packages', 'workspec', 'v2.2.schema.json'),
+        destination: path.join(repoRoot, 'web', 'packages', 'workspec', 'v2.2.schema.json')
+    },
+    {
+        source: path.join(repoRoot, 'packages', 'workspec', 'v2.2.schema.json'),
+        destination: path.join(repoRoot, 'web', 'workspec', 'v2.2.schema.json')
+    },
+    {
         source: path.join(repoRoot, 'packages', 'workspec', 'v2.1.schema.json'),
         destination: path.join(repoRoot, 'web', 'packages', 'workspec', 'v2.1.schema.json')
     },

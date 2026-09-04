@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://universalautomation.wiki/workspec/v2.2.schema.json",
+  "title": "WorkSpec 2.2 Starting State",
+  "description": "Declarative WorkSpec Starting State. Canonical semantic validation is provided by workspec-validator.js.",
+  "type": "object",
+  "required": ["simulation"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "simulation": {
+      "type": "object",
+      "required": ["schema_version", "meta", "world", "process"],
+      "properties": {
+        "schema_version": { "const": "2.2" },
+        "meta": { "type": "object" },
+        "config": { "type": "object" },
+        "world": { "type": "object" },
+        "process": { "type": "object" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

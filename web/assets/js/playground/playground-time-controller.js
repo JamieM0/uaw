@@ -350,6 +350,12 @@
 
         toggleStandalonePlayback() {
             if (!this.model) return;
+            if (window.__uawPlaybackBlocked) {
+                this.standalonePlaying = false;
+                cancelAnimationFrame(this.standaloneFrame);
+                this.setTime(0, { source: 'validation', force: true });
+                return;
+            }
             this.standalonePlaying = !this.standalonePlaying;
             const button = document.getElementById('player-play-pause-btn');
             if (button) {
@@ -382,6 +388,7 @@
 
         setTime(value, options = {}) {
             if (!this.model) return;
+            if (window.__uawPlaybackBlocked) value = 0;
             const next = clamp(finite(value, this.currentTime), this.model.startMinutes, this.model.endMinutes);
             if (options.source !== 'player' && this.player && !this.syncingPlayer) {
                 const min = this.player.simData?.start_time_minutes;

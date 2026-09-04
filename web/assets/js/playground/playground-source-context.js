@@ -1,4 +1,4 @@
-// Context-aware WorkSpec Definitions navigation for the Playground shell.
+// Context-aware Starting State navigation for the Studio editor system.
 (function () {
     'use strict';
 
@@ -168,12 +168,12 @@
             const header = panel?.querySelector('.panel-header');
             if (!header || header.querySelector('#uaw-source-commandbar')) return;
             header.innerHTML = `
-                <div class="uaw-commandbar" id="uaw-source-commandbar" aria-label="WorkSpec Definitions commands">
+                <div class="uaw-commandbar" id="uaw-source-commandbar" aria-label="Starting State commands">
                     <div class="uaw-commandbar__identity">
-                        <strong>WorkSpec Definitions</strong>
+                        <strong>Starting State</strong>
                         <code id="uaw-source-path">WorkSpec</code>
                     </div>
-                    <div class="uaw-commandbar__commands" role="group" aria-label="WorkSpec Definitions scope">
+                    <div class="uaw-commandbar__commands" role="group" aria-label="Starting State scope">
                         <div class="uaw-segmented">
                             <button type="button" class="uaw-product-command active" data-source-scope="context" aria-pressed="true">Context</button>
                             <button type="button" class="uaw-product-command" data-source-scope="full" aria-pressed="false">Full JSON</button>

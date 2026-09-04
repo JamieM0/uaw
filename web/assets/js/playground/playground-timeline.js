@@ -286,11 +286,15 @@ function processSimulationData(simulationData) {
 
     const timeUnit = (typeof config.time_unit === 'string') ? config.time_unit : 'minutes';
 
-    const projectScript = window.workSpecScriptEditor?.getValue?.()
-        ?? window.UAWProjectStore?.getCurrent?.()?.scriptDraft
+    const projectChanges = window.workSpecChangesEditor?.getValue?.()
+        ?? window.UAWProjectStore?.getCurrent?.()?.changesDraft
         ?? '';
-    const authoritativeRun = sim.schema_version === '2.1' && window.WorkSpecRuntime?.runProject
-        ? window.WorkSpecRuntime.runProject(simulationData, projectScript)
+    const projectGenerator = window.workSpecGeneratorEditor?.getValue?.()
+        ?? window.UAWProjectStore?.getCurrent?.()?.generatorDraft
+        ?? '';
+    const projectSeed = window.UAWProjectStore?.getCurrent?.()?.seed ?? 1;
+    const authoritativeRun = sim.schema_version === '2.2' && window.WorkSpecRuntime?.runProject
+        ? window.WorkSpecRuntime.runProject(simulationData, projectChanges, projectGenerator, { seed: projectSeed })
         : null;
     const timelineTasks = authoritativeRun
         ? [...authoritativeRun.index.tasks.values()]
@@ -414,7 +418,9 @@ function processSimulationData(simulationData) {
 
     const result = {
         _workspec_document: simulationData,
-        _workspec_script: projectScript,
+        _workspec_changes: projectChanges,
+        _workspec_generator: projectGenerator,
+        _workspec_seed: projectSeed,
         _workspec_change_history: authoritativeRun?.history || [],
         start_time: visualStartTimeStr, // Use the dynamic visual start time
         end_time: visualEndTimeStr, // Use the new visual end time

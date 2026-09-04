@@ -55,7 +55,7 @@
         <link rel="stylesheet" href="/assets/css/emoji-picker.css" />
         <link rel="stylesheet" href="/assets/css/smart-actions.css" />
         <link rel="stylesheet" href="/assets/css/multi-period.css" />
-        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260829a" />
+        <link rel="stylesheet" href="/assets/css/playground-v2.css?v=20260904a" />
 
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
@@ -133,8 +133,8 @@
         />
 
         <script src="/assets/js/simulation-validator.js" defer></script>
-        <script src="/packages/workspec/workspec-runtime.js" defer></script>
-        <script src="/packages/workspec/workspec-validator.js" defer></script>
+        <script src="/packages/workspec/workspec-runtime.js?v=20260904a" defer></script>
+        <script src="/packages/workspec/workspec-validator.js?v=20260904a" defer></script>
         <script src="/packages/workspec/workspec-migrate-v1-to-v2.js" defer></script>
         <script src="/packages/workspec/playback-state.js" defer></script>
         <script src="/packages/workspec/state-visuals.js" defer></script>
@@ -143,8 +143,8 @@
 
         <script src="/assets/js/tutorial.js" defer></script>
         <script src="/assets/js/tutorial-validator.js" defer></script>
-        <script src="/assets/js/playground/playground-time-controller.js?v=20260822b" defer></script>
-        <script src="/assets/js/simulation-player.js?v=20260822b" defer></script>
+        <script src="/assets/js/playground/playground-time-controller.js?v=20260904a" defer></script>
+        <script src="/assets/js/simulation-player.js?v=20260904a" defer></script>
 
         <!-- Monaco Editor for JSON syntax highlighting -->
         <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
@@ -847,7 +847,7 @@
                 <div class="local-save-name" id="local-save-name">
                     <label for="local-file-name">File name</label>
                     <input type="text" id="local-file-name" placeholder="Enter simulation name..." maxlength="50">
-                    <small>Exports as <code>.workspec.json</code>, or <code>.workspec.zip</code> when project assets or custom rules are included.</small>
+                    <small>Exports a <code>.workspec.zip</code> project containing <code>start.workspec.json</code>, <code>changes.workspec.js</code>, and <code>generator.workspec.js</code>.</small>
                     
                     <div class="custom-metrics-save-option" id="custom-metrics-save-option" style="margin-top: 1rem;">
                         <label>
@@ -1259,10 +1259,10 @@
 
         <!-- Playground v2 application shell. These modules preserve the legacy
              component IDs while providing the project workspace around them. -->
-        <script src="/assets/js/playground/playground-projects-v2.js?v=20260829a" defer></script>
-        <script src="/assets/js/playground/playground-shell-v2.js?v=20260829a" defer></script>
-        <script src="/assets/js/playground/playground-script-editor.js?v=20260829a" defer></script>
-        <script src="/assets/js/playground/playground-source-context.js?v=20260821a" defer></script>
+        <script src="/assets/js/playground/playground-projects-v2.js?v=20260904a" defer></script>
+        <script src="/assets/js/playground/playground-shell-v2.js?v=20260904a" defer></script>
+        <script src="/assets/js/playground/playground-editor-workspace.js?v=20260904a" defer></script>
+        <script src="/assets/js/playground/playground-source-context.js?v=20260904a" defer></script>
         <script src="/assets/js/playground/playground-agent-v2.js?v=20260822a" defer></script>
         <script type="module" src="/assets/js/playground/playground-motion-v2.js?v=20260818a"></script>
 
@@ -1281,7 +1281,7 @@
         <!-- Playground modules in dependency order -->
         <script src="/assets/js/playground/playground-utils.js" defer></script>
         <script src="/assets/js/playground/playground-ui.js" defer></script>
-        <script src="/assets/js/playground/playground-validation.js?v=20260818c" defer></script>
+        <script src="/assets/js/playground/playground-validation.js?v=20260904a" defer></script>
 
         <!-- Multi-period simulation modules -->
         <script src="/assets/js/playground/playground-multi-period.js" defer></script>
@@ -1289,17 +1289,17 @@
         <script src="/assets/js/playground/playground-calendar-view.js?v=20260814g" defer></script>
         <script src="/assets/js/playground/playground-week-view.js?v=20260814g" defer></script>
 
-        <script src="/assets/js/playground/playground-timeline.js?v=20260821c" defer></script>
+        <script src="/assets/js/playground/playground-timeline.js?v=20260904a" defer></script>
         <script src="/assets/js/playground/playground-timeline-extensions.js" defer></script>
         <script src="/assets/js/playground/playground-digital-space.js?v=20260814g" defer></script>
         <script src="/assets/js/playground/playground-display-editor.js?v=20260814g" defer></script>
-        <script src="/assets/js/playground/playground-save-load.js?v=20260820a" defer></script>
+        <script src="/assets/js/playground/playground-save-load.js?v=20260904a" defer></script>
         <script src="/assets/js/playground/playground-metrics-editor.js?v=20260818c" defer></script>
         <script src="/assets/js/playground/playground-objects.js?v=20260829a" defer></script>
         <script src="/assets/js/playground/playground-features.js" defer></script>
-        <script src="/assets/js/playground/playground-editor.js?v=20260818c" defer></script>
+        <script src="/assets/js/playground/playground-editor.js?v=20260904a" defer></script>
         <script src="/assets/js/space-editor-actor-animation.js?v=20260822b" defer></script>
-        <script src="/assets/js/playground/playground-core.js?v=20260822b" defer></script>
+        <script src="/assets/js/playground/playground-core.js?v=20260904a" defer></script>
         <script src="/assets/js/playground/playground-canvas-v2.js?v=20260814h" defer></script>
         <script>
             document.addEventListener('DOMContentLoaded', () => {

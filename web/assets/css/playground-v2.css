@@ -1761,61 +1761,15 @@ body.uaw-inspector-open .uaw-inspector {
 }
 
 body[data-uaw-workspace="projects"] #uaw-projects-view,
-body[data-uaw-workspace="script"] #uaw-script-view,
 body[data-uaw-workspace="assets"] #uaw-assets-view,
 body[data-uaw-workspace="settings"] #uaw-settings-view {
     display: block;
 }
 
 body[data-uaw-workspace="projects"] .uaw-legacy-host,
-body[data-uaw-workspace="script"] .uaw-legacy-host,
 body[data-uaw-workspace="assets"] .uaw-legacy-host,
 body[data-uaw-workspace="settings"] .uaw-legacy-host {
     display: none;
-}
-
-body[data-uaw-workspace="script"] #uaw-script-view {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    padding: 0;
-    background: var(--uaw-white);
-}
-
-.uaw-script-heading {
-    display: flex;
-    flex: 0 0 39px;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 12px 0 15px;
-    border-bottom: 1px solid var(--uaw-slate-300);
-    color: var(--uaw-slate-700);
-    background: var(--uaw-slate-100);
-}
-
-.uaw-script-heading div {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-}
-
-.uaw-script-heading span,
-.uaw-script-heading small {
-    color: var(--uaw-slate-600);
-    font: 600 10px var(--uaw-font-code);
-    letter-spacing: .04em;
-    text-transform: uppercase;
-}
-
-.uaw-script-heading strong {
-    color: var(--uaw-slate-800);
-    font-size: 12px;
-}
-
-.uaw-script-editor {
-    flex: 1 1 auto;
-    min-width: 0;
-    min-height: 0;
 }
 
 .uaw-legacy-header {
@@ -2175,7 +2129,6 @@ body[data-uaw-workspace="validate"] #uaw-playback-commands {
 body[data-uaw-workspace="projects"] #uaw-edit-commands,
 body[data-uaw-workspace="projects"] #uaw-view-commands,
 body[data-uaw-workspace="projects"] #uaw-playback-commands,
-body[data-uaw-workspace="script"] #uaw-playback-commands,
 body[data-uaw-workspace="assets"] #uaw-edit-commands,
 body[data-uaw-workspace="assets"] #uaw-view-commands,
 body[data-uaw-workspace="assets"] #uaw-playback-commands,
@@ -2188,7 +2141,6 @@ body[data-uaw-workspace="settings"] #uaw-playback-commands {
 /* Product-only workspaces use the full stage; panel preferences are preserved
    and restored automatically when the user returns to Build or Run. */
 body[data-uaw-workspace="projects"] .uaw-workspace-grid,
-body[data-uaw-workspace="script"] .uaw-workspace-grid,
 body[data-uaw-workspace="assets"] .uaw-workspace-grid,
 body[data-uaw-workspace="settings"] .uaw-workspace-grid {
     grid-template-columns: 0 minmax(0, 1fr) 0 !important;
@@ -2196,8 +2148,6 @@ body[data-uaw-workspace="settings"] .uaw-workspace-grid {
 
 body[data-uaw-workspace="projects"] .uaw-explorer,
 body[data-uaw-workspace="projects"] .uaw-inspector,
-body[data-uaw-workspace="script"] .uaw-explorer,
-body[data-uaw-workspace="script"] .uaw-inspector,
 body[data-uaw-workspace="assets"] .uaw-explorer,
 body[data-uaw-workspace="assets"] .uaw-inspector,
 body[data-uaw-workspace="settings"] .uaw-explorer,
@@ -2208,8 +2158,6 @@ body[data-uaw-workspace="settings"] .uaw-inspector {
 
 body[data-uaw-workspace="projects"] #uaw-file-commands,
 body[data-uaw-workspace="projects"] #uaw-help-commands,
-body[data-uaw-workspace="script"] #uaw-file-commands,
-body[data-uaw-workspace="script"] #uaw-help-commands,
 body[data-uaw-workspace="assets"] #uaw-file-commands,
 body[data-uaw-workspace="assets"] #uaw-help-commands,
 body[data-uaw-workspace="settings"] #uaw-file-commands,
@@ -3961,7 +3909,7 @@ body.uaw-v2[data-uaw-workspace="build"][data-model-view="process"] .uaw-legacy-h
     display: none;
 }
 
-/* In a Process split the stage-level Definitions pane owns the editor, so the
+/* In a Process split the stage-level Starting State pane owns the editor, so the
    legacy host stays hidden — showing it would paint an opaque white
    .playground-main over the authoring register. */
 
@@ -6089,7 +6037,7 @@ body.uaw-resizing-agent { cursor: col-resize; user-select: none; }
 body.uaw-v2 .uaw-source-resizer { display: none !important; }
 body.uaw-v2[data-uaw-workspace="build"][data-model-view="process"][data-source-dock^="split-"] .uaw-source-resizer,
 body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock^="split-"] .uaw-source-resizer { display: block !important; }
-/* Objects split: the stage-level Definitions pane owns the editor, so the
+/* Objects split: the stage-level Starting State pane owns the editor, so the
    legacy host stays hidden — it would paint an opaque white .playground-main
    over the object catalogue. */
 body.uaw-v2[data-uaw-workspace="build"][data-model-view="objects"][data-source-dock="split-left"] .uaw-legacy-host { left: 0 !important; right: calc(100% - var(--uaw-source-split, 52%)) !important; }
@@ -6772,7 +6720,7 @@ body.uaw-v2 #uaw-playback-commands .player-time-display {
 .uaw-source-pane #json-editor { width: 100%; height: 100%; }
 .uaw-source-pane .resize-handle-vertical { display: none !important; }
 
-/* The Definitions pane hosts its own commandbar instance. It reuses the
+/* The Starting State pane hosts its own commandbar instance. It reuses the
    global commandbar theme, height and segmented controls verbatim; these
    id-scoped rules only cover pane-specific placement. The margin/border
    resets stop the split-dock insets — written for the workarea's main
@@ -6810,7 +6758,6 @@ body.uaw-v2 #uaw-source-pane .uaw-commandbar__commands {
 
 /* Source is available beside every document-facing workspace. */
 body.uaw-v2[data-uaw-workspace="build"][data-source-dock^="split-"] .uaw-source-pane,
-body.uaw-v2[data-uaw-workspace="script"][data-source-dock^="split-"] .uaw-source-pane,
 body.uaw-v2[data-uaw-workspace="run"][data-source-dock^="split-"] .uaw-source-pane,
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-source-pane,
 body.uaw-v2[data-uaw-workspace="source"] .uaw-source-pane { display: block !important; }
@@ -6845,11 +6792,10 @@ body.uaw-v2[data-source-dock="split-bottom"] .uaw-source-pane {
 }
 
 /* A side split owns the full height of the workarea — the command bar belongs
-   only to the product surface beside the Definitions pane, so it is inset to
+   only to the product surface beside the Starting State pane, so it is inset to
    make room for the pane instead of capping the pane below it. Applies only
    where the split pane is actually visible. */
 body.uaw-v2[data-uaw-workspace="build"][data-source-dock^="split-"] .uaw-workspace-grid,
-body.uaw-v2[data-uaw-workspace="script"][data-source-dock^="split-"] .uaw-workspace-grid,
 body.uaw-v2[data-uaw-workspace="run"][data-source-dock^="split-"] .uaw-workspace-grid,
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-workspace-grid {
     grid-row: 1 / -1;
@@ -6857,7 +6803,6 @@ body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-worksp
 }
 
 body.uaw-v2[data-uaw-workspace="build"][data-source-dock^="split-"] .uaw-commandbar,
-body.uaw-v2[data-uaw-workspace="script"][data-source-dock^="split-"] .uaw-commandbar,
 body.uaw-v2[data-uaw-workspace="run"][data-source-dock^="split-"] .uaw-commandbar,
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-commandbar {
     grid-row: 1;
@@ -6865,10 +6810,9 @@ body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-comman
     z-index: 41;
 }
 
-/* The main surface still starts below the command bar — only the Definitions
+/* The main surface still starts below the command bar — only the Starting State
    pane itself extends past it. */
 body.uaw-v2[data-uaw-workspace="build"][data-source-dock^="split-"] :is(.uaw-legacy-host, #uaw-process-view, #uaw-objects-view),
-body.uaw-v2[data-uaw-workspace="script"][data-source-dock^="split-"] #uaw-script-view,
 body.uaw-v2[data-uaw-workspace="run"][data-source-dock^="split-"] :is(.uaw-legacy-host, #uaw-simulate-view),
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] #uaw-assets-view {
     top: var(--uaw-commandbar-height);
@@ -6886,7 +6830,6 @@ body.uaw-explorer-open { --uaw-stage-inset-left: var(--uaw-explorer-width); }
 body.uaw-inspector-open { --uaw-stage-inset-right: var(--uaw-inspector-width); }
 
 body.uaw-v2[data-uaw-workspace="build"][data-source-dock="split-left"] .uaw-commandbar,
-body.uaw-v2[data-uaw-workspace="script"][data-source-dock="split-left"] .uaw-commandbar,
 body.uaw-v2[data-uaw-workspace="run"][data-source-dock="split-left"] .uaw-commandbar,
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-left"] .uaw-commandbar {
     margin-left: calc((100% - var(--uaw-stage-inset-left) - var(--uaw-stage-inset-right)) * var(--uaw-source-split-ratio, 0.52));
@@ -6895,7 +6838,6 @@ body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-left"] .uaw-com
 }
 
 body.uaw-v2[data-uaw-workspace="build"][data-source-dock="split-right"] .uaw-commandbar,
-body.uaw-v2[data-uaw-workspace="script"][data-source-dock="split-right"] .uaw-commandbar,
 body.uaw-v2[data-uaw-workspace="run"][data-source-dock="split-right"] .uaw-commandbar,
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-right"] .uaw-commandbar {
     margin-right: calc((100% - var(--uaw-stage-inset-left) - var(--uaw-stage-inset-right)) * var(--uaw-source-split-ratio, 0.52));
@@ -6906,7 +6848,6 @@ body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-right"] .uaw-co
 body.uaw-resizing-source .uaw-commandbar { transition: none; }
 
 body.uaw-v2[data-uaw-workspace="build"][data-source-dock="split-left"] :is(.uaw-legacy-host, #uaw-process-view, #uaw-objects-view),
-body.uaw-v2[data-uaw-workspace="script"][data-source-dock="split-left"] #uaw-script-view,
 body.uaw-v2[data-uaw-workspace="run"][data-source-dock="split-left"] .uaw-legacy-host,
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-left"] #uaw-assets-view {
     left: var(--uaw-source-split, 52%) !important;
@@ -6914,7 +6855,6 @@ body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-left"] #uaw-ass
 }
 
 body.uaw-v2[data-uaw-workspace="build"][data-source-dock="split-right"] :is(.uaw-legacy-host, #uaw-process-view, #uaw-objects-view),
-body.uaw-v2[data-uaw-workspace="script"][data-source-dock="split-right"] #uaw-script-view,
 body.uaw-v2[data-uaw-workspace="run"][data-source-dock="split-right"] .uaw-legacy-host,
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-right"] #uaw-assets-view {
     left: 0 !important;
@@ -6922,7 +6862,6 @@ body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-right"] #uaw-as
 }
 
 body.uaw-v2[data-uaw-workspace="build"][data-source-dock="split-bottom"] :is(.uaw-legacy-host, #uaw-process-view, #uaw-objects-view),
-body.uaw-v2[data-uaw-workspace="script"][data-source-dock="split-bottom"] #uaw-script-view,
 body.uaw-v2[data-uaw-workspace="run"][data-source-dock="split-bottom"] .uaw-legacy-host,
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock="split-bottom"] #uaw-assets-view {
     top: 0 !important;
@@ -6944,7 +6883,6 @@ body.uaw-v2 .uaw-legacy-host .simulation-panel { flex: 1 1 100% !important; }
 /* The separator only appears when both halves are visible. */
 body.uaw-v2 .uaw-source-resizer { display: none !important; }
 body.uaw-v2[data-uaw-workspace="build"][data-source-dock^="split-"] .uaw-source-resizer,
-body.uaw-v2[data-uaw-workspace="script"][data-source-dock^="split-"] .uaw-source-resizer,
 body.uaw-v2[data-uaw-workspace="run"][data-source-dock^="split-"] .uaw-source-resizer,
 body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-source-resizer { display: block !important; }
 
@@ -7107,6 +7045,93 @@ body.uaw-v2[data-uaw-workspace="run"][data-run-view="timeline"] .schedule-view-s
 
 body.uaw-v2 .uaw-period-commands { margin-left: 4px; }
 body.uaw-v2 .uaw-validation-commands { margin-left: 0; }
+
+/* WorkSpec 2.2 general editor: two independent source panes over diagnostics. */
+body[data-uaw-workspace="editor"] #uaw-editor-view {
+    display: grid;
+    grid-template-rows: minmax(0, 3fr) minmax(150px, 1fr);
+    overflow: hidden;
+    padding: 0;
+    background: #eef1f5;
+}
+
+body[data-uaw-workspace="editor"] .uaw-legacy-host,
+body[data-uaw-workspace="editor"] .uaw-inspector {
+    display: none;
+}
+
+body[data-uaw-workspace="editor"] .uaw-workspace-grid {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.uaw-editor-panes {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    min-height: 0;
+    border-bottom: 1px solid var(--uaw-slate-400);
+}
+
+.uaw-editor-pane {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    min-width: 0;
+    min-height: 0;
+    background: var(--uaw-white);
+}
+
+.uaw-editor-pane + .uaw-editor-pane { border-left: 1px solid var(--uaw-slate-400); }
+
+.uaw-editor-tabs {
+    display: flex;
+    min-width: 0;
+    overflow-x: auto;
+    background: #e9edf2;
+    border-bottom: 1px solid var(--uaw-slate-300);
+    scrollbar-width: thin;
+}
+
+.uaw-editor-tabs button {
+    flex: 0 0 auto;
+    min-height: 36px;
+    padding: 0 12px;
+    border: 0;
+    border-right: 1px solid var(--uaw-slate-300);
+    border-top: 2px solid transparent;
+    color: var(--uaw-slate-600);
+    background: transparent;
+    font: 600 11px var(--uaw-font-code);
+    letter-spacing: .01em;
+    cursor: pointer;
+}
+
+.uaw-editor-tabs button:hover { color: var(--uaw-slate-900); background: rgba(255, 255, 255, .55); }
+.uaw-editor-tabs button.active { color: var(--uaw-slate-950); background: var(--uaw-white); border-top-color: var(--uaw-blue); }
+.uaw-editor-host { min-width: 0; min-height: 0; }
+
+body[data-uaw-workspace="editor"] .uaw-editor-validation {
+    display: block !important;
+    position: relative;
+    width: 100%;
+    height: 100% !important;
+    min-height: 0;
+    overflow: hidden;
+    background: var(--uaw-white);
+}
+
+body[data-uaw-workspace="editor"] .uaw-editor-validation .validation-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+body[data-uaw-workspace="editor"] .uaw-editor-validation .validation-content {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+body:not([data-uaw-workspace="editor"]) .uaw-editor-validation { display: none !important; }
 body.uaw-v2 .uaw-commandbar-group-label {
     align-self: center;
     padding: 0 7px 0 4px;

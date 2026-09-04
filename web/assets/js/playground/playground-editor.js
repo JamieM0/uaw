@@ -393,14 +393,14 @@ const legacySampleSimulation = {
     }
 };
 
-// Sample WorkSpec v2.0 document (fallback when library isn't loaded)
+// Sample WorkSpec v2.2 Starting State (fallback when library isn't loaded)
 const sampleSimulation = {
-    "$schema": "https://universalautomation.wiki/workspec/v2.1.schema.json",
+    "$schema": "https://universalautomation.wiki/workspec/v2.2.schema.json",
     "simulation": {
-        "schema_version": "2.0",
+        "schema_version": "2.2",
         "meta": {
-            "title": "WorkSpec v2.0 Sample",
-            "description": "A minimal WorkSpec v2.0 simulation used as a WorkSpec Studio fallback.",
+            "title": "WorkSpec v2.2 Sample",
+            "description": "A minimal WorkSpec v2.2 Starting State used as a WorkSpec Studio fallback.",
             "domain": "Example"
         },
         "config": {
@@ -473,25 +473,11 @@ const sampleSimulation = {
                     "start": "06:00",
                     "duration": 30,
                     "location": "work_area",
-                    "depends_on": [],
-                    "interactions": [
-                        {
-                            "target_id": "material",
-                            "property_changes": { "quantity": { "delta": -1 } }
-                        },
-                        {
-                            "target_id": "output",
-                            "property_changes": { "quantity": { "delta": 1 } }
-                        }
-                    ]
+                    "depends_on": []
                 }
             ],
             "recipes": {}
         }
-    },
-    "assets": {
-        "image1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-        "document1": "data:text/plain;base64,SGVsbG8gV29ybGQ="
     }
 };
 
@@ -541,8 +527,8 @@ require(["vs/editor/editor.main"], function () {
     // Best-effort: wire WorkSpec v2 JSON Schema for autocomplete + validation.
     // Prefer the package mirror path, with legacy fallback.
     const schemaCandidates = [
-        '/packages/workspec/v2.1.schema.json',
-        '/workspec/v2.1.schema.json'
+        '/packages/workspec/v2.2.schema.json',
+        '/workspec/v2.2.schema.json'
     ];
 
     function fetchFirstSchema(urls) {
@@ -568,7 +554,7 @@ require(["vs/editor/editor.main"], function () {
                 allowComments: true,
                 schemas: [
                     {
-                        uri: 'https://universalautomation.wiki/workspec/v2.1.schema.json',
+                        uri: 'https://universalautomation.wiki/workspec/v2.2.schema.json',
                         fileMatch: ['*'],
                         schema: schema
                     }
@@ -872,6 +858,41 @@ async function autoCollapseAssetsObject(moveToTop = false) {
     }
 }
 
+function setPlaybackValidationBlocked(problems) {
+    const blocked = (problems || []).some((problem) => problem?.metric_id === 'temporal.scheduling.dependency_violation' && problem?.severity === 'error');
+    window.__uawPlaybackBlocked = blocked;
+    document.body.classList.toggle('uaw-playback-blocked', blocked);
+    const updateControls = () => document.querySelectorAll('.playback-controls-group button, .playback-controls-group input, .playback-controls-group select, #workspec-time-range, [data-uaw-command="run.toggle"]').forEach((control) => {
+        if (blocked) {
+            if (!control.disabled) control.dataset.disabledByTiming = 'true';
+            control.disabled = true;
+            control.setAttribute('aria-disabled', 'true');
+        } else if (control.dataset.disabledByTiming === 'true') {
+            control.disabled = false;
+            control.removeAttribute('aria-disabled');
+            delete control.dataset.disabledByTiming;
+        }
+    });
+    updateControls();
+    if (!window.__uawPlaybackControlObserver) {
+        window.__uawPlaybackControlObserver = new MutationObserver(() => {
+            if (window.__uawPlaybackBlocked) setPlaybackValidationBlocked(window.__uawPlaybackBlockingProblems || []);
+        });
+        window.__uawPlaybackControlObserver.observe(document.body, { childList: true, subtree: true });
+    }
+    window.__uawPlaybackBlockingProblems = blocked ? (problems || []) : [];
+    if (blocked) {
+        if (window.player) {
+            window.player.isPlaying = false;
+            cancelAnimationFrame(window.player.animationFrameId);
+            window.player.update?.(0, { force: true });
+        }
+        window.workSpecTimeController?.setTime?.(0, { source: 'validation', force: true });
+    }
+    window.dispatchEvent(new CustomEvent('uaw:playback-validation-state', { detail: { blocked, problems: problems || [] } }));
+}
+window.setPlaybackValidationBlocked = setPlaybackValidationBlocked;
+
 // JSON validation function
 function validateJSON() {
     if (!editor) {
@@ -926,8 +947,19 @@ function validateJSON() {
             if (window.WorkSpecValidator && typeof window.WorkSpecValidator.validate === 'function') {
                 semanticValidationRan = true;
                 const result = window.WorkSpecValidator.validate(parsed);
-                const problems = Array.isArray(result?.problems) ? result.problems : [];
+                const problems = Array.isArray(result?.problems) ? [...result.problems] : [];
+                if (parsed.simulation?.schema_version === '2.2' && window.WorkSpecRuntime?.runProject) {
+                    const project = window.UAWProjectStore?.getCurrent?.();
+                    const runtime = window.WorkSpecRuntime.runProject(
+                        parsed,
+                        window.workSpecChangesEditor?.getValue?.() ?? project?.changesDraft ?? '',
+                        window.workSpecGeneratorEditor?.getValue?.() ?? project?.generatorDraft ?? '',
+                        { seed: project?.seed ?? 1 }
+                    );
+                    runtime.problems.filter((problem) => problem.metric_id?.startsWith('generator.') || problem.metric_id?.startsWith('changes.')).forEach((problem) => problems.push(problem));
+                }
                 semanticProblems = problems;
+                setPlaybackValidationBlocked(problems);
                 const mapped = problems.map((problem) => ({
                     metricId: problem.metric_id || 'system.error',
                     status: problem.severity === 'warning' ? 'warning' : problem.severity === 'info' ? 'suggestion' : 'error',
@@ -954,9 +986,11 @@ function validateJSON() {
                 // every custom metric.
                 const validationResults = validator.runChecks(mergedCatalog);
                 semanticProblems = validationResults;
+                setPlaybackValidationBlocked(validationResults);
                 displayValidationResults(validationResults);
             } else {
                 displayValidationResults([]);
+                setPlaybackValidationBlocked([]);
             }
         } else {
             // Clear validation results when auto-validation is disabled
@@ -1052,7 +1086,8 @@ function runManualValidation() {
         // Prefer WorkSpec v2 validator (RFC 7807 Problem Details)
         if (window.WorkSpecValidator && typeof window.WorkSpecValidator.validate === 'function') {
             const result = window.WorkSpecValidator.validate(parsed);
-            const problems = Array.isArray(result?.problems) ? result.problems : [];
+            const problems = Array.isArray(result?.problems) ? [...result.problems] : [];
+            setPlaybackValidationBlocked(problems);
             const mapped = problems.map((problem) => ({
                 metricId: problem.metric_id || 'system.error',
                 status: problem.severity === 'warning' ? 'warning' : problem.severity === 'info' ? 'suggestion' : 'error',

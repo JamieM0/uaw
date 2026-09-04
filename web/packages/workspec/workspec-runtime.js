@@ -1,4 +1,4 @@
-// WorkSpec 2.1 authoritative evaluator/runtime.
+// WorkSpec 2.2 authoritative evaluator/runtime.
 // Dependency-free UMD module shared by Node, the CLI, Studio, playback and State Visuals.
 (function (root, factory) {
     const api = factory();
@@ -80,6 +80,16 @@
         }
         const minutes = parseTime(value);
         return minutes === null ? { ok: false } : { ok: true, startMinutes: minutes, kind: String(value).includes('T') ? 'datetime' : 'time' };
+    }
+
+    function formatTaskStartLike(value, minutes) {
+        const whole = Math.max(0, Math.round(minutes));
+        const day = Math.floor(whole / 1440) + 1;
+        const clock = whole % 1440;
+        const hhmm = `${String(Math.floor(clock / 60)).padStart(2, '0')}:${String(clock % 60).padStart(2, '0')}`;
+        if (plain(value) && Number.isInteger(value.day)) return { day, time: hhmm };
+        if (typeof value === 'string' && value.includes('T')) return new Date(whole * 60000).toISOString().replace('.000Z', 'Z');
+        return hhmm;
     }
 
     function parseOffset(value, unit) {
@@ -772,8 +782,9 @@
             if (timing.resolved && deps.values.length) {
                 const required = Math.max(...deps.values.map((entry) => entry.value));
                 if (timing.start < required) {
+                    const suggestedStart = formatTaskStartLike(task.start, required);
                     timing.error = { metric_id: 'temporal.scheduling.dependency_violation', detail: `Task '${id}' starts before its dependency condition is satisfied.` };
-                    problems.push(problem('temporal.scheduling.dependency_violation', timing.error.detail, `${index.tasksBase}/${taskIndex}/start`, { task_id: id, start_minutes: timing.start, required_end_minutes: required }));
+                    problems.push(problem('temporal.scheduling.dependency_violation', timing.error.detail, `${index.tasksBase}/${taskIndex}/start`, { task_id: id, start_minutes: timing.start, required_end_minutes: required, suggested_start: suggestedStart, correction: { pointer: `${index.tasksBase}/${taskIndex}/start`, value: suggestedStart } }, undefined, [`Replace only the explicit start with ${JSON.stringify(suggestedStart)}.`]));
                 }
             }
             (task.timing || []).forEach((constraint, constraintIndex) => {
@@ -1832,10 +1843,10 @@
 
     function validate(documentValue) { const run = replay(documentValue); return { valid: run.problems.every((entry) => entry.severity !== 'error'), problems: run.problems, state: serialiseState(run), timings: run.timings }; }
 
-    const SCRIPT_HANDLER_METHODS = new Set(['onStart', 'onComplete']);
-    const SCRIPT_HELPERS = new Set(['set', 'change', 'move', 'create', 'remove']);
+    const CHANGES_HANDLER_METHODS = new Set(['onStart', 'onComplete']);
+    const CHANGES_HELPERS = new Set(['set', 'change', 'move', 'create', 'remove']);
 
-    function tokenizeScript(source) {
+    function tokenizeChanges(source) {
         const tokens = [];
         let index = 0;
         while (index < source.length) {
@@ -1914,15 +1925,15 @@
         return -1;
     }
 
-    function scriptLocation(source, offset) {
+    function sourceLocation(source, offset) {
         const before = source.slice(0, offset);
         const lines = before.split('\n');
         return { offset, line: lines.length, column: lines[lines.length - 1].length + 1 };
     }
 
-    function analyzeScript(scriptSource, options) {
-        const source = typeof scriptSource === 'string' ? scriptSource : '';
-        const tokens = tokenizeScript(source);
+    function analyzeChanges(changesSource, options) {
+        const source = typeof changesSource === 'string' ? changesSource : '';
+        const tokens = tokenizeChanges(source);
         const taskIds = options?.taskIds ? new Set(options.taskIds) : null;
         const taskReferences = [];
         const handlers = [];
@@ -1932,21 +1943,21 @@
         const seenHandlers = new Set();
 
         const addTaskReference = (taskId, token, form) => {
-            const reference = { taskId, form, ...scriptLocation(source, token.start), endOffset: token.end };
+            const reference = { taskId, form, ...sourceLocation(source, token.start), endOffset: token.end };
             taskReferences.push(reference);
             if (taskIds && !taskIds.has(taskId)) diagnostics.push({
-                code: 'script.task.unknown', severity: 'error',
-                message: `Script refers to task '${taskId}', but Define has no task with that ID.`,
-                taskId, ...scriptLocation(source, token.start), endOffset: token.end
+                code: 'changes.task.unknown', severity: 'error',
+                message: `Changes refers to task '${taskId}', but Starting State has no task with that ID.`,
+                taskId, ...sourceLocation(source, token.start), endOffset: token.end
             });
             return reference;
         };
         const scanHandlerTargets = (openIndex, closeIndex, handler) => {
             for (let index = openIndex + 1; index < closeIndex; index += 1) {
-                if (!SCRIPT_HELPERS.has(tokens[index]?.value) || tokens[index + 1]?.value !== '(') continue;
+                if (!CHANGES_HELPERS.has(tokens[index]?.value) || tokens[index + 1]?.value !== '(') continue;
                 const argument = tokens[index + 2];
                 if (argument?.type !== 'string') continue;
-                targetReferences.push({ targetId: argument.value, helper: tokens[index].value, taskId: handler.taskId, phase: handler.phase, ...scriptLocation(source, argument.start), endOffset: argument.end });
+                targetReferences.push({ targetId: argument.value, helper: tokens[index].value, taskId: handler.taskId, phase: handler.phase, ...sourceLocation(source, argument.start), endOffset: argument.end });
             }
         };
         const addHandler = (taskId, methodToken, form) => {
@@ -1954,7 +1965,7 @@
             if (seenHandlers.has(key)) return;
             seenHandlers.add(key);
             const phase = methodToken.value === 'onStart' ? 'start' : 'completion';
-            const handler = { taskId, phase, method: methodToken.value, form, ...scriptLocation(source, methodToken.start), endOffset: methodToken.end };
+            const handler = { taskId, phase, method: methodToken.value, form, ...sourceLocation(source, methodToken.start), endOffset: methodToken.end };
             handlers.push(handler);
             const openIndex = tokens.indexOf(methodToken) + 1;
             const closeIndex = matchingToken(tokens, openIndex, '(', ')');
@@ -1966,7 +1977,7 @@
             const argument = tokens[index + 4];
             const closeIndex = matchingToken(tokens, index + 3, '(', ')');
             if (argument?.type !== 'string') {
-                diagnostics.push({ code: 'script.task.dynamic', severity: 'info', message: 'Dynamic WorkSpec.task(...) references are resolved only at runtime.', ...scriptLocation(source, argument?.start ?? tokens[index + 2].end), endOffset: argument?.end ?? tokens[index + 2].end });
+                diagnostics.push({ code: 'changes.task.dynamic', severity: 'info', message: 'Dynamic WorkSpec.task(...) references are resolved only at runtime.', ...sourceLocation(source, argument?.start ?? tokens[index + 2].end), endOffset: argument?.end ?? tokens[index + 2].end });
                 continue;
             }
             let form = 'chained';
@@ -1977,7 +1988,7 @@
                 aliases.set(previousPrevious.value, { taskId: argument.value, tokenIndex: index });
             }
             const reference = addTaskReference(argument.value, argument, form);
-            if (closeIndex !== -1 && tokens[closeIndex + 1]?.value === '.' && SCRIPT_HANDLER_METHODS.has(tokens[closeIndex + 2]?.value)) {
+            if (closeIndex !== -1 && tokens[closeIndex + 1]?.value === '.' && CHANGES_HANDLER_METHODS.has(tokens[closeIndex + 2]?.value)) {
                 addHandler(argument.value, tokens[closeIndex + 2], 'chained');
             }
             if (tokens[index + 5]?.value === ',') {
@@ -1999,17 +2010,17 @@
                     const braced = tokens[bodyOpen]?.value === '{';
                     const bodyClose = braced ? matchingToken(tokens, bodyOpen, '{', '}') : closeIndex;
                     for (let cursor = bodyOpen + (braced ? 1 : 0); cursor < bodyClose; cursor += 1) {
-                        if (tokens[cursor]?.value === parameter && tokens[cursor + 1]?.value === '.' && SCRIPT_HANDLER_METHODS.has(tokens[cursor + 2]?.value)) addHandler(argument.value, tokens[cursor + 2], 'grouped');
+                        if (tokens[cursor]?.value === parameter && tokens[cursor + 1]?.value === '.' && CHANGES_HANDLER_METHODS.has(tokens[cursor + 2]?.value)) addHandler(argument.value, tokens[cursor + 2], 'grouped');
                     }
                 }
             }
         }
         for (let index = 0; index < tokens.length - 2; index += 1) {
             const alias = aliases.get(tokens[index]?.value);
-            if (!alias || tokens[index + 1]?.value !== '.' || !SCRIPT_HANDLER_METHODS.has(tokens[index + 2]?.value)) continue;
+            if (!alias || tokens[index + 1]?.value !== '.' || !CHANGES_HANDLER_METHODS.has(tokens[index + 2]?.value)) continue;
             const reassigned = tokens.slice(alias.tokenIndex + 1, index).some((token, offset, candidates) => token.value === tokens[index].value && candidates[offset + 1]?.value === '=');
             if (reassigned) {
-                diagnostics.push({ code: 'script.task.alias_dynamic', severity: 'info', message: `Task handle '${tokens[index].value}' was reassigned; Studio leaves this handler to runtime resolution.`, ...scriptLocation(source, tokens[index].start), endOffset: tokens[index].end });
+                diagnostics.push({ code: 'changes.task.alias_dynamic', severity: 'info', message: `Task handle '${tokens[index].value}' was reassigned; Studio leaves this handler to runtime resolution.`, ...sourceLocation(source, tokens[index].start), endOffset: tokens[index].end });
                 continue;
             }
             addHandler(alias.taskId, tokens[index + 2], 'stored');
@@ -2020,17 +2031,17 @@
         return { taskReferences, handlers, targetReferences, diagnostics };
     }
 
-    function compileScript(scriptSource) {
+    function compileChanges(changesSource) {
         const effects = new Map();
         const taskHandles = new Map();
         let activeContext = null;
         const add = (taskId, phase, effect) => {
-            if (typeof taskId !== 'string' || !taskId) throw new TypeError('Script task IDs must be non-empty strings.');
+            if (typeof taskId !== 'string' || !taskId) throw new TypeError('Changes task IDs must be non-empty strings.');
             const key = `${taskId}:${phase}`;
             effects.set(key, [...(effects.get(key) || []), effect]);
         };
         const capture = (taskId, phase, callback) => {
-            if (typeof callback !== 'function') throw new TypeError('A WorkSpec Script task handler must be a function.');
+            if (typeof callback !== 'function') throw new TypeError('A WorkSpec Changes task handler must be a function.');
             const at = phase === 'start' ? { at: 'start' } : {};
             const context = Object.freeze({
                 taskId,
@@ -2047,11 +2058,11 @@
             finally { activeContext = previousContext; }
         };
         const ambient = (name) => (...args) => {
-            if (!activeContext) throw new Error(`WorkSpec Script helper '${name}' can only be used inside a task handler.`);
+            if (!activeContext) throw new Error(`WorkSpec Changes helper '${name}' can only be used inside a task handler.`);
             return activeContext[name](...args);
         };
         const task = (taskId, configure) => {
-            if (typeof taskId !== 'string' || !taskId) throw new TypeError('Script task IDs must be non-empty strings.');
+            if (typeof taskId !== 'string' || !taskId) throw new TypeError('Changes task IDs must be non-empty strings.');
             let handle = taskHandles.get(taskId);
             if (!handle) {
                 handle = Object.freeze({
@@ -2066,19 +2077,19 @@
             }
             return handle;
         };
-        if (typeof scriptSource === 'string' && scriptSource.trim()) {
-            const names = [...SCRIPT_HELPERS];
+        if (typeof changesSource === 'string' && changesSource.trim()) {
+            const names = [...CHANGES_HELPERS];
             const helpers = names.map(ambient);
-            Function('WorkSpec', ...names, `'use strict';\n${scriptSource}`)(Object.freeze({ task }), ...helpers);
+            Function('WorkSpec', ...names, `'use strict';\n${changesSource}`)(Object.freeze({ task }), ...helpers);
         }
         return effects;
     }
 
-    function defineWithScript(documentValue, scriptSource) {
+    function applyChanges(documentValue, changesSource) {
         const documentCopy = clone(documentValue);
         const tasks = simOf(documentCopy)?.process?.tasks;
         if (!Array.isArray(tasks)) return documentCopy;
-        const effects = compileScript(scriptSource);
+        const effects = compileChanges(changesSource);
         tasks.forEach((task) => {
             const interactions = [...(effects.get(`${task.id}:start`) || []), ...(effects.get(`${task.id}:completion`) || [])];
             if (interactions.length) task.interactions = [...(Array.isArray(task.interactions) ? task.interactions : []), ...interactions];
@@ -2086,27 +2097,190 @@
         return documentCopy;
     }
 
-    function runProject(documentValue, scriptSource, options) {
-        const run = replay(defineWithScript(documentValue, scriptSource), options);
-        const taskIds = (simOf(documentValue)?.process?.tasks || []).map(task => task?.id).filter(Boolean);
-        const scriptAnalysis = analyzeScript(scriptSource, { taskIds });
-        scriptAnalysis.diagnostics.filter(diagnostic => diagnostic.severity === 'error').forEach((diagnostic) => {
-            run.problems.push(problem(diagnostic.code, diagnostic.message, `/script:${diagnostic.line}:${diagnostic.column}`, { task_id: diagnostic.taskId }));
+    function seededRandom(seed) {
+        let value = 2166136261;
+        for (const character of String(seed ?? 'workspec')) {
+            value ^= character.charCodeAt(0);
+            value = Math.imul(value, 16777619);
+        }
+        return function random() {
+            value += 0x6D2B79F5;
+            let next = value;
+            next = Math.imul(next ^ (next >>> 15), next | 1);
+            next ^= next + Math.imul(next ^ (next >>> 7), next | 61);
+            return ((next ^ (next >>> 14)) >>> 0) / 4294967296;
+        };
+    }
+
+    function compileGenerator(generatorSource) {
+        const lifecycle = { onStart: [], onUpdate: [] };
+        const register = (name) => (callback) => {
+            if (typeof callback !== 'function') throw new TypeError(`Generator ${name} requires a function.`);
+            lifecycle[name].push(callback);
+        };
+        const WorkSpec = Object.freeze({
+            onStart: register('onStart'),
+            onUpdate: register('onUpdate'),
+            generator(definition) {
+                if (!plain(definition)) throw new TypeError('WorkSpec.generator(...) requires an object.');
+                if (definition.onStart !== undefined) register('onStart')(definition.onStart);
+                if (definition.onUpdate !== undefined) register('onUpdate')(definition.onUpdate);
+            }
         });
-        run.scriptAnalysis = scriptAnalysis;
-        run.define = documentValue;
-        run.script = scriptSource || '';
+        if (typeof generatorSource === 'string' && generatorSource.trim()) {
+            Function('WorkSpec', `'use strict';\n${generatorSource}`)(WorkSpec);
+        }
+        return lifecycle;
+    }
+
+    function historyStateAt(history, time) {
+        let selected = history[0]?.state;
+        for (const entry of history) {
+            if (entry.time > time) break;
+            selected = entry.state;
+        }
+        return selected ? cloneState(selected) : null;
+    }
+
+    function historyStateBefore(history, time) {
+        let selected = null;
+        for (const entry of history) {
+            if (entry.time >= time) break;
+            selected = entry.state;
+        }
+        return selected ? cloneState(selected) : null;
+    }
+
+    function changedObjectProperties(before, after) {
+        const keys = new Set();
+        const ids = new Set([...(before?.objects?.keys?.() || []), ...(after?.objects?.keys?.() || [])]);
+        ids.forEach((id) => {
+            const left = before?.objects?.get(id); const right = after?.objects?.get(id);
+            if (!left || !right) { keys.add(`${id}\u0000$lifecycle`); return; }
+            if (left.location !== right.location) keys.add(`${id}\u0000location`);
+            if (left.emoji !== right.emoji) keys.add(`${id}\u0000emoji`);
+            const names = new Set([...Object.keys(left.properties || {}), ...Object.keys(right.properties || {})]);
+            names.forEach((name) => {
+                if (JSON.stringify(left.properties?.[name]) !== JSON.stringify(right.properties?.[name])) keys.add(`${id}\u0000${name}`);
+            });
+        });
+        return keys;
+    }
+
+    function applyBaseObjectChanges(before, after, target) {
+        const keys = changedObjectProperties(before, after);
+        const ids = new Set([...keys].map((key) => key.split('\u0000')[0]));
+        ids.forEach((id) => {
+            const source = after.objects.get(id);
+            if (!source) { target.objects.delete(id); return; }
+            if (!before?.objects?.has(id)) { target.objects.set(id, clone(source)); return; }
+            const destination = target.objects.get(id);
+            if (!destination) { target.objects.set(id, clone(source)); return; }
+            [...keys].filter((key) => key.startsWith(`${id}\u0000`)).forEach((key) => {
+                const property = key.slice(id.length + 1);
+                if (property === '$lifecycle') target.objects.set(id, clone(source));
+                else writeProperty(destination, property, readProperty(source, property));
+            });
+        });
+        target.statuses = new Map(after.statuses);
+        target.taskRuntime = new Map([...after.taskRuntime].map(([id, value]) => [id, clone(value)]));
+        target.active = new Map(after.active);
+        target.reservations = clone(after.reservations);
+    }
+
+    function runGenerator(run, generatorSource, options) {
+        if (typeof generatorSource !== 'string' || !generatorSource.trim()) return run;
+        let lifecycle;
+        try { lifecycle = compileGenerator(generatorSource); }
+        catch (error) {
+            run.problems.push(problem('generator.compile.failed', error.message, '/generator', {}, 'error'));
+            return run;
+        }
+        const resolved = [...run.timings.values()].filter((timing) => timing.resolved);
+        const configuredStart = parseTaskStart((run.index.sim.config || {}).start_time);
+        const start = configuredStart.ok ? configuredStart.startMinutes : resolved.length ? Math.min(...resolved.map((timing) => timing.start)) : 0;
+        const naturalEnd = resolved.length ? Math.max(...resolved.map((timing) => timing.end)) : start;
+        const end = Number.isFinite(options?.until) ? Math.min(naturalEnd, options.until) : naturalEnd;
+        if (end < start) {
+            run.generator = generatorSource;
+            run.seed = options?.seed ?? 1;
+            return run;
+        }
+        const updateTimes = [];
+        for (let time = Math.floor(start) + 1; time <= end; time += 1) updateTimes.push(time);
+        const eventTimes = [...new Set(run.history.map((entry) => entry.time).filter((time) => Number.isFinite(time) && time >= start && time <= end).concat([start], updateTimes))].sort((a, b) => a - b);
+        const random = seededRandom(options?.seed ?? 1);
+        const generatedHistory = run.history.filter((entry) => !Number.isFinite(entry.time) || entry.time < start).map((entry) => ({ time: entry.time, state: cloneState(entry.state) }));
+        const startEntry = run.history.find((entry) => entry.time === start);
+        let previousBase = historyStateBefore(run.history, start) || (startEntry ? cloneState(startEntry.state) : historyStateAt(run.history, start));
+        let generatedState = null;
+
+        for (const time of eventTimes) {
+            const base = historyStateAt(run.history, time);
+            if (!base) continue;
+            const authoredKeys = changedObjectProperties(previousBase, base);
+            if (!generatedState) generatedState = cloneState(base);
+            else applyBaseObjectChanges(previousBase, base, generatedState);
+            const writes = [];
+            const addProperty = (targetId, property, operation, value) => writes.push({ kind: 'property', id: targetId, property, operation, value: clone(value), valueKind: kindOf(value), task: '$generator', instance: `/generator@${time}` });
+            const context = Object.freeze({
+                time,
+                delta: time === start ? 0 : 1,
+                random,
+                state: Object.freeze({
+                    objects: Object.fromEntries([...generatedState.objects].map(([id, value]) => [id, clone(value)])),
+                    locations: Object.fromEntries([...generatedState.locations].map(([id, value]) => [id, clone(value)]))
+                }),
+                get(targetId, property) { const entity = generatedState.objects.get(targetId) || generatedState.locations.get(targetId); return clone(entity ? readProperty(entity, property) : undefined); },
+                set(targetId, property, value) { addProperty(targetId, property, 'set', value); },
+                change(targetId, property, amount) { addProperty(targetId, property, 'delta', amount); },
+                move(targetId, locationId) { addProperty(targetId, 'location', 'set', locationId); },
+                create(object) { writes.push({ kind: 'create', id: object?.id, entity: clone(object), task: '$generator', instance: `/generator@${time}` }); },
+                remove(targetId) { writes.push({ kind: 'delete', id: targetId, task: '$generator', instance: `/generator@${time}` }); }
+            });
+            const callbacks = time === start ? lifecycle.onStart : lifecycle.onUpdate;
+            try { callbacks.forEach((callback) => callback(context)); }
+            catch (error) { run.problems.push(problem('generator.execution.failed', error.message, `/generator@${time}`, { time }, 'error')); }
+            writes.forEach((write) => {
+                const key = write.kind === 'property' ? `${write.id}\u0000${write.property}` : `${write.id}\u0000$lifecycle`;
+                if (authoredKeys.has(key)) {
+                    run.problems.push(problem('generator.changes.conflict', `Generator overrides Changes for '${write.id}.${write.property || '$lifecycle'}' at ${time}.`, write.instance, { target: write.id, property: write.property || '$lifecycle', time }, 'warning'));
+                }
+            });
+            commitWrites(generatedState, writes, run.problems);
+            generatedHistory.push({ time, state: cloneState(generatedState) });
+            previousBase = base;
+        }
+        if (generatedHistory.length) {
+            run.history = generatedHistory;
+            run.state = cloneState(generatedHistory[generatedHistory.length - 1].state);
+        }
+        run.generator = generatorSource;
+        run.seed = options?.seed ?? 1;
         return run;
     }
 
-    function snapshotProjectAt(documentValue, scriptSource, time) {
+    function runProject(documentValue, changesSource, generatorSource, options) {
+        const run = replay(applyChanges(documentValue, changesSource), options);
+        const taskIds = (simOf(documentValue)?.process?.tasks || []).map(task => task?.id).filter(Boolean);
+        const changesAnalysis = analyzeChanges(changesSource, { taskIds });
+        changesAnalysis.diagnostics.filter(diagnostic => diagnostic.severity === 'error').forEach((diagnostic) => {
+            run.problems.push(problem(diagnostic.code, diagnostic.message, `/changes:${diagnostic.line}:${diagnostic.column}`, { task_id: diagnostic.taskId }));
+        });
+        run.changesAnalysis = changesAnalysis;
+        run.startingState = documentValue;
+        run.changes = changesSource || '';
+        return runGenerator(run, generatorSource, options);
+    }
+
+    function snapshotProjectAt(documentValue, changesSource, generatorSource, time, options) {
         const parsed = typeof time === 'number' ? time : parseTaskStart(time);
         const valid = typeof parsed === 'number' ? Number.isFinite(parsed) : Boolean(parsed?.ok && Number.isFinite(parsed.startMinutes));
         const until = valid ? (typeof parsed === 'number' ? parsed : parsed.startMinutes) : 0;
-        const run = runProject(documentValue, scriptSource, { until });
+        const run = runProject(documentValue, changesSource, generatorSource, { ...(options || {}), until });
         if (!valid) run.problems.push(problem('snapshot.time.invalid', 'Snapshot time must be a finite minute value or a valid WorkSpec task start.', '/snapshot/time', { value: time }, 'error', ['Use minutes such as 540, HH:MM such as "09:00", or a strict ISO date-time.']));
         return serialiseState(run);
     }
 
-    return { parseDurationToMinutes, parseTaskStart, parseOffset, formatCompactReference, normalizeValueExpression, isValueReference, evaluateValue, evaluateCondition, buildIndex, resolveTimings, replay, serialiseState, snapshotAt, validate, analyzeScript, compileScript, defineWithScript, runProject, snapshotProjectAt, OBJECT_FIELDS: [...OBJECT_FIELDS], TASK_FIELDS: [...TASK_FIELDS], LOCATION_FIELDS: [...LOCATION_FIELDS] };
+    return { parseDurationToMinutes, parseTaskStart, parseOffset, formatCompactReference, normalizeValueExpression, isValueReference, evaluateValue, evaluateCondition, buildIndex, resolveTimings, replay, serialiseState, snapshotAt, validate, analyzeChanges, compileChanges, compileGenerator, applyChanges, runProject, snapshotProjectAt, seededRandom, OBJECT_FIELDS: [...OBJECT_FIELDS], TASK_FIELDS: [...TASK_FIELDS], LOCATION_FIELDS: [...LOCATION_FIELDS] };
 }));
