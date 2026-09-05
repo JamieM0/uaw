@@ -756,6 +756,7 @@
         }
 
         setWorkspace(workspace, options = {}) {
+            window.UAWWorkSpecEditor?.saveActiveStates?.();
             if (workspace === 'validate') {
                 workspace = 'run';
                 if (!options.fromSubview) {

@@ -31,8 +31,11 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
             this.editors = [];
             this.models = new Map();
             this.selections = ['starting-state', 'generator'];
+            this.sourceSelection = 'starting-state';
             this.initializing = false;
             this.analysis = { taskReferences: [], handlers: [], targetReferences: [], diagnostics: [] };
+            this.paneStates = {};
+            this.persistTimer = null;
         }
 
         initialize() {
@@ -45,6 +48,14 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
             const project = window.UAWProjectStore?.getCurrent?.();
             const saved = project?.settings?.workspace?.editorPanes;
             if (Array.isArray(saved) && saved.length === 2 && saved.every((id) => TABS.some(([tab]) => tab === id))) this.selections = saved;
+
+            try {
+                const sessionSaved = JSON.parse(sessionStorage.getItem('uaw:editor-scroll-positions') || 'null');
+                if (sessionSaved) this.loadSavedScrollPositions(sessionSaved);
+            } catch (_e) {}
+            const savedScroll = project?.settings?.workspace?.editorScrollPositions;
+            if (savedScroll) this.loadSavedScrollPositions(savedScroll);
+
             this.models.set('starting-state', window.monacoEditor.getModel());
             this.models.set('changes', window.monaco.editor.createModel(project?.changesDraft || '', 'javascript'));
             this.models.set('generator', window.monaco.editor.createModel(project?.generatorDraft || '', 'javascript'));
@@ -60,8 +71,10 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
                     formatOnPaste: true, formatOnType: true, tabSize: 4, insertSpaces: true, wordWrap: 'off'
                 });
                 this.editors[index] = editor;
+                this.bindScrollTracking(editor, `pane-${index}`, () => this.selections[index]);
                 pane.querySelectorAll('[data-editor-tab]').forEach((button) => button.addEventListener('click', () => this.select(index, button.dataset.editorTab)));
                 this.updateTabs(index);
+                this.restoreState(editor, this.selections[index]);
             });
             this.initializeSourcePane();
             this.models.get('changes').onDidChangeContent(() => { this.refreshAnalysis(); this.scheduleExecutionRefresh(); });
@@ -105,16 +118,182 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
                 fontSize: 13, lineNumbers: 'on', folding: true, bracketMatching: 'always',
                 formatOnPaste: true, formatOnType: true, tabSize: 4, insertSpaces: true, wordWrap: 'off'
             });
+            this.bindScrollTracking(this.sourceEditor, 'source', () => this.sourceSelection);
             pane.querySelectorAll('[data-source-editor-tab]').forEach((button) => button.addEventListener('click', () => this.selectSource(button.dataset.sourceEditorTab)));
             this.updateSourceTabs();
+            this.restoreState(this.sourceEditor, this.sourceSelection);
             window.dispatchEvent(new CustomEvent('uaw:source-editor-ready', { detail: { editor: this.sourceEditor } }));
+        }
+
+        saveState(editor, tabId) {
+            if (!editor || !tabId) return;
+            const key = editor._uawPaneKey;
+            if (!key) return;
+            const dom = editor.getDomNode?.();
+            if (!dom || dom.clientHeight === 0) return;
+            if (!this.paneStates[key]) this.paneStates[key] = {};
+            this.paneStates[key][tabId] = {
+                viewState: editor.saveViewState?.() || null,
+                scrollTop: editor.getScrollTop?.() ?? 0,
+                scrollLeft: editor.getScrollLeft?.() ?? 0
+            };
+            this.schedulePersistScrollPositions();
+        }
+
+        restoreState(editor, tabId) {
+            if (!editor || !tabId) return;
+            const key = editor._uawPaneKey;
+            if (!key) return;
+            const state = this.paneStates[key]?.[tabId];
+            if (!state) return;
+            editor._uawIgnoreScroll = true;
+            try {
+                if (state.viewState) {
+                    try {
+                        editor.restoreViewState(state.viewState);
+                    } catch (_e) {}
+                }
+                if (typeof state.scrollTop === 'number') {
+                    editor.setScrollTop(state.scrollTop);
+                }
+                if (typeof state.scrollLeft === 'number') {
+                    editor.setScrollLeft(state.scrollLeft);
+                }
+            } finally {
+                editor._uawIgnoreScroll = false;
+            }
+            requestAnimationFrame(() => {
+                if (typeof state.scrollTop === 'number' && Math.abs((editor.getScrollTop?.() ?? 0) - state.scrollTop) > 1) {
+                    editor._uawIgnoreScroll = true;
+                    try {
+                        editor.setScrollTop?.(state.scrollTop);
+                    } finally {
+                        editor._uawIgnoreScroll = false;
+                    }
+                }
+                if (typeof state.scrollLeft === 'number' && Math.abs((editor.getScrollLeft?.() ?? 0) - state.scrollLeft) > 1) {
+                    editor._uawIgnoreScroll = true;
+                    try {
+                        editor.setScrollLeft?.(state.scrollLeft);
+                    } finally {
+                        editor._uawIgnoreScroll = false;
+                    }
+                }
+            });
+        }
+
+        bindScrollTracking(editor, key, getTabId) {
+            editor._uawPaneKey = key;
+            editor.onDidScrollChange((event) => {
+                if (editor._uawIgnoreScroll) return;
+                const dom = editor.getDomNode?.();
+                if (!dom || dom.clientHeight === 0) return;
+                const tabId = getTabId();
+                if (!tabId) return;
+                if (!this.paneStates[key]) this.paneStates[key] = {};
+                this.paneStates[key][tabId] = {
+                    viewState: editor.saveViewState?.() || null,
+                    scrollTop: event.scrollTop,
+                    scrollLeft: event.scrollLeft
+                };
+                this.schedulePersistScrollPositions();
+            });
+            editor.onDidBlurEditorText?.(() => {
+                if (editor._uawIgnoreScroll) return;
+                const tabId = getTabId();
+                if (tabId) this.saveState(editor, tabId);
+            });
+        }
+
+        saveActiveStates() {
+            this.editors.forEach((editor, index) => {
+                const tabId = this.selections[index];
+                if (tabId) this.saveState(editor, tabId);
+            });
+            if (this.sourceEditor && this.sourceSelection) {
+                this.saveState(this.sourceEditor, this.sourceSelection);
+            }
+        }
+
+        restoreVisibleScrollPositions() {
+            this.editors.forEach((editor, index) => {
+                const dom = editor.getDomNode?.();
+                const tabId = this.selections[index];
+                if (dom && dom.clientHeight > 0 && tabId) {
+                    const state = this.paneStates[editor._uawPaneKey]?.[tabId];
+                    if (state) {
+                        this.restoreState(editor, tabId);
+                    }
+                }
+            });
+            if (this.sourceEditor) {
+                const dom = this.sourceEditor.getDomNode?.();
+                const tabId = this.sourceSelection;
+                if (dom && dom.clientHeight > 0 && tabId) {
+                    const state = this.paneStates[this.sourceEditor._uawPaneKey]?.[tabId];
+                    if (state) {
+                        this.restoreState(this.sourceEditor, tabId);
+                    }
+                }
+            }
+        }
+
+        serializeScrollPositions() {
+            const result = {};
+            for (const [key, tabs] of Object.entries(this.paneStates)) {
+                result[key] = {};
+                for (const [tabId, state] of Object.entries(tabs)) {
+                    if (!state) continue;
+                    result[key][tabId] = {
+                        scrollTop: Math.round(state.scrollTop || 0),
+                        scrollLeft: Math.round(state.scrollLeft || 0),
+                        viewState: state.viewState || null
+                    };
+                }
+            }
+            return result;
+        }
+
+        loadSavedScrollPositions(saved) {
+            if (!saved || typeof saved !== 'object') return;
+            for (const [key, tabs] of Object.entries(saved)) {
+                if (!tabs || typeof tabs !== 'object') continue;
+                if (!this.paneStates[key]) this.paneStates[key] = {};
+                for (const [tabId, state] of Object.entries(tabs)) {
+                    if (!state || typeof state !== 'object') continue;
+                    this.paneStates[key][tabId] = {
+                        scrollTop: typeof state.scrollTop === 'number' ? state.scrollTop : 0,
+                        scrollLeft: typeof state.scrollLeft === 'number' ? state.scrollLeft : 0,
+                        viewState: state.viewState || null
+                    };
+                }
+            }
+        }
+
+        schedulePersistScrollPositions() {
+            clearTimeout(this.persistTimer);
+            this.persistTimer = setTimeout(() => {
+                this.persistSelections();
+            }, 300);
         }
 
         selectSource(id) {
             if (!this.models.has(id) || !this.sourceEditor) return;
+            if (this.sourceSelection === id) {
+                this.sourceEditor.focus();
+                return;
+            }
+            const prevTab = this.sourceSelection;
+            if (prevTab) {
+                this.saveState(this.sourceEditor, prevTab);
+            }
             this.sourceSelection = id;
+            this.sourceEditor._uawIgnoreScroll = true;
             this.sourceEditor.setModel(this.models.get(id));
+            this.sourceEditor._uawIgnoreScroll = false;
+            this.restoreState(this.sourceEditor, id);
             this.updateSourceTabs();
+            this.persistSelections();
             this.sourceEditor.focus();
             window.dispatchEvent(new CustomEvent('uaw:source-editor-model-changed', { detail: { editor: this.sourceEditor, tab: id } }));
         }
@@ -135,12 +314,24 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
         }
 
         select(index, id) {
-            if (!this.models.has(id) || !this.editors[index]) return;
+            const editor = this.editors[index];
+            if (!this.models.has(id) || !editor) return;
+            if (this.selections[index] === id) {
+                editor.focus();
+                return;
+            }
+            const prevTab = this.selections[index];
+            if (prevTab) {
+                this.saveState(editor, prevTab);
+            }
             this.selections[index] = id;
-            this.editors[index].setModel(this.models.get(id));
+            editor._uawIgnoreScroll = true;
+            editor.setModel(this.models.get(id));
+            editor._uawIgnoreScroll = false;
+            this.restoreState(editor, id);
             this.updateTabs(index);
             this.persistSelections();
-            this.editors[index].focus();
+            editor.focus();
         }
 
         updateTabs(index) {
@@ -153,9 +344,20 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
         }
 
         persistSelections() {
+            const serialized = this.serializeScrollPositions();
+            try {
+                sessionStorage.setItem('uaw:editor-scroll-positions', JSON.stringify(serialized));
+            } catch (_e) {}
             const project = window.UAWProjectStore?.getCurrent?.();
             if (!project) return;
-            project.settings = { ...(project.settings || {}), workspace: { ...(project.settings?.workspace || {}), editorPanes: [...this.selections] } };
+            project.settings = {
+                ...(project.settings || {}),
+                workspace: {
+                    ...(project.settings?.workspace || {}),
+                    editorPanes: [...this.selections],
+                    editorScrollPositions: serialized
+                }
+            };
             window.UAWProjectStore?.scheduleSave?.();
         }
 
@@ -177,7 +379,11 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
         activeEditor() { return this.editors.find((candidate) => candidate.hasTextFocus()) || this.editors[0]; }
         format() { this.activeEditor()?.getAction?.('editor.action.formatDocument')?.run(); }
         undo() { this.activeEditor()?.trigger?.('workspec-editor', 'undo', null); }
-        layout() { this.editors.forEach((editor) => editor.layout()); this.sourceEditor?.layout(); }
+        layout() {
+            this.editors.forEach((editor) => editor.layout());
+            this.sourceEditor?.layout();
+            this.restoreVisibleScrollPositions();
+        }
 
         taskIds() {
             try {
@@ -262,7 +468,25 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
     window.UAWWorkSpecEditor = controller;
     window.addEventListener('uaw:shell-ready', () => controller.initialize());
     window.addEventListener('uaw:editor-ready', () => controller.initialize());
-    window.addEventListener('uaw:workspace-changed', (event) => { if (event.detail?.workspace === 'editor') { controller.initialize(); requestAnimationFrame(() => controller.layout()); } });
-    window.addEventListener('uaw:project-opened', () => controller.refreshAnalysis());
+    window.addEventListener('uaw:workspace-changed', (event) => {
+        if (event.detail?.workspace === 'editor') {
+            controller.initialize();
+            requestAnimationFrame(() => {
+                controller.layout();
+                controller.restoreVisibleScrollPositions();
+            });
+        } else {
+            requestAnimationFrame(() => {
+                controller.layout();
+                controller.restoreVisibleScrollPositions();
+            });
+        }
+    });
+    window.addEventListener('uaw:project-opened', () => {
+        const project = window.UAWProjectStore?.getCurrent?.();
+        const savedScroll = project?.settings?.workspace?.editorScrollPositions;
+        if (savedScroll) controller.loadSavedScrollPositions(savedScroll);
+        controller.refreshAnalysis();
+    });
     document.addEventListener('DOMContentLoaded', () => controller.initialize());
 }());
