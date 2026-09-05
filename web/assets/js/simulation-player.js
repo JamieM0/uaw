@@ -177,7 +177,7 @@ class SimulationPlayer {
         
         if (this.ui.playPauseBtn) {
             this.ui.playPauseBtn.innerHTML = this.isPlaying
-                ? '<span class="player-control-icon" aria-hidden="true">Ⅱ</span><span class="player-control-label">Pause</span>'
+                ? '<span class="player-control-icon" aria-hidden="true">⏸</span><span class="player-control-label">Pause</span>'
                 : '<span class="player-control-icon" aria-hidden="true">▶</span><span class="player-control-label">Play</span>';
             this.ui.playPauseBtn.setAttribute('aria-label', this.isPlaying ? 'Pause simulation' : 'Play simulation');
         }
@@ -320,8 +320,8 @@ class SimulationPlayer {
             this.lastStateCalculationTime === -1 || // First run
             options.force === true ||
             !this.isPlaying || // Direct click/scrub while paused
-            (boundaryChanged && refreshIntervalElapsed) ||
-            (!window.workSpecTimeController?.model && timeDelta >= this.stateCalculationThreshold && refreshIntervalElapsed)
+            boundaryChanged || // Task boundary crossed
+            (refreshIntervalElapsed && (this.isPlaying || timeDelta >= this.stateCalculationThreshold))
         );
 
         if (shouldRecalculateStates) {
@@ -330,6 +330,7 @@ class SimulationPlayer {
 
             // 4. Calculate and Render Live States
             this.updateAllObjectStates();
+            window.workSpecTimeController?.applyTemporalState?.();
 
             // Cache this calculation time
             this.lastStateCalculationTime = this.playheadTime;
@@ -957,26 +958,26 @@ class SimulationPlayer {
                     stateDisplay = indicatorProperty.map(prop => {
                         if (prop === 'quantity' && stocks[item.id] !== undefined) {
                             const unit = item.properties?.unit || '';
-                            return `${stocks[item.id].toFixed(2)} ${unit}`;
+                            return `${stocks[item.id].toFixed(2)} ${unit}`.trim();
                         } else if (prop === 'state') {
                             return states[item.id];
-                        } else if (propertyOverrides[item.id][prop] !== undefined) {
+                        } else if (propertyOverrides[item.id]?.[prop] !== undefined) {
                             return propertyOverrides[item.id][prop];
                         } else {
-                            return item.properties?.[prop] || '';
+                            return item.properties?.[prop] ?? '';
                         }
-                    }).filter(val => val).join(' • ');
+                    }).filter(val => val !== undefined && val !== null && val !== '').join(' • ');
                 } else {
                     // Single property to display
                     if (indicatorProperty === 'quantity' && stocks[item.id] !== undefined) {
                         const unit = item.properties?.unit || '';
-                        stateDisplay = `Stock: ${stocks[item.id].toFixed(2)} ${unit}`;
+                        stateDisplay = `Stock: ${stocks[item.id].toFixed(2)} ${unit}`.trim();
                     } else if (indicatorProperty === 'state') {
                         stateDisplay = states[item.id];
-                    } else if (propertyOverrides[item.id][indicatorProperty] !== undefined) {
+                    } else if (propertyOverrides[item.id]?.[indicatorProperty] !== undefined) {
                         stateDisplay = propertyOverrides[item.id][indicatorProperty];
                     } else {
-                        stateDisplay = item.properties?.[indicatorProperty] || '';
+                        stateDisplay = item.properties?.[indicatorProperty] ?? '';
                     }
                 }
             } else {
@@ -984,7 +985,7 @@ class SimulationPlayer {
                 if (stocks[item.id] !== undefined) {
                     // Resource-like objects with quantities
                     const unit = item.properties?.unit || '';
-                    stateDisplay = `Stock: ${stocks[item.id].toFixed(2)} ${unit}`;
+                    stateDisplay = `Stock: ${stocks[item.id].toFixed(2)} ${unit}`.trim();
                 } else {
                     // State-based objects (equipment, actors, products, etc.)
                     stateDisplay = states[item.id];

@@ -4391,6 +4391,12 @@ body.uaw-v2[data-uaw-workspace="run"][data-run-view="timeline"] .dropdown-checkb
 }
 
 body.uaw-v2[data-uaw-workspace="run"][data-run-view="timeline"] .dropdown-checkbox-item:hover { background: #f2f5fa; }
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="timeline"] .dropdown-divider {
+    height: 1px;
+    margin: 6px 4px;
+    background: #e6eaf0;
+    border: none;
+}
 
 body.uaw-v2[data-uaw-workspace="run"][data-run-view="timeline"] .simulation-timeline {
     position: relative;
@@ -6908,6 +6914,16 @@ body.uaw-v2 #uaw-playback-commands .player-speed-control select { width: 54px; h
 [data-temporal-state="inactive"] { opacity: .52 !important; filter: grayscale(.52) saturate(.58); }
 [data-temporal-state="completed"] { opacity: .66 !important; filter: grayscale(.32) saturate(.72); }
 [data-temporal-state="active"] { opacity: 1 !important; filter: none !important; }
+
+/* When "highlight active objects" is disabled, live object cards are not greyed out */
+body[data-highlight-active-objects="false"] .resources-panel .resource-item,
+body[data-highlight-active-objects="false"] #live-state-container .resource-item,
+body[data-highlight-active-objects="false"] .resource-grid .resource-item,
+body[data-highlight-active-objects="false"] [data-temporal-state].resource-item,
+#live-state-container[data-highlight-active-objects="false"] .resource-item {
+    opacity: 1 !important;
+    filter: none !important;
+}
 
 tr[data-temporal-state] { transition: opacity 140ms ease, background-color 140ms ease; }
 tr[data-temporal-state="active"] { background: #eef5ff; box-shadow: inset 3px 0 #2671d9; }

@@ -95,6 +95,13 @@ const MIN_TASK_DURATION = 1; // minimum task duration in minutes
 let renderTimeout;
 let currentSimulationData = null;
 let alwaysShowTimeIndicators = false;
+let highlightActiveObjects = true;
+try {
+    const savedHighlight = localStorage.getItem("uaw-highlight-active-objects");
+    if (savedHighlight !== null) {
+        highlightActiveObjects = savedHighlight === "true";
+    }
+} catch (e) {}
 
 // Multi-period view controller
 let multiPeriodViewController = null;
@@ -467,6 +474,41 @@ function processSimulationData(simulationData) {
     return result;
 }
 
+function toggleHighlightActiveObjects(enabled) {
+    highlightActiveObjects = enabled;
+    try {
+        localStorage.setItem("uaw-highlight-active-objects", enabled ? "true" : "false");
+    } catch (e) {}
+    const project = window.UAWProjectStore?.getCurrent?.();
+    if (project) {
+        project.settings = { ...(project.settings || {}), highlightActiveObjects: enabled };
+        window.UAWProjectStore.put(project).catch(error => console.warn("Could not save highlight active objects preference:", error));
+    }
+    applyHighlightActiveObjects(enabled);
+}
+
+function applyHighlightActiveObjects(enabled) {
+    if (typeof document === "undefined") return;
+    if (enabled) {
+        document.body.removeAttribute("data-highlight-active-objects");
+    } else {
+        document.body.setAttribute("data-highlight-active-objects", "false");
+    }
+    const liveContainer = document.getElementById("live-state-container");
+    if (liveContainer) {
+        if (enabled) {
+            liveContainer.removeAttribute("data-highlight-active-objects");
+        } else {
+            liveContainer.setAttribute("data-highlight-active-objects", "false");
+        }
+    }
+}
+
+if (typeof window !== "undefined") {
+    window.toggleHighlightActiveObjects = toggleHighlightActiveObjects;
+    window.applyHighlightActiveObjects = applyHighlightActiveObjects;
+}
+
 function toggleAllTimeIndicators(show) {
     alwaysShowTimeIndicators = show;
     const project = window.UAWProjectStore?.getCurrent?.();
@@ -610,6 +652,19 @@ function renderSimulation(skipJsonValidation = false) {
             spaceEditor.loadLayout(layout);
         }
 
+        const currentProject = window.UAWProjectStore?.getCurrent?.();
+        if (currentProject?.settings?.highlightActiveObjects !== undefined) {
+            highlightActiveObjects = currentProject.settings.highlightActiveObjects;
+        } else {
+            try {
+                const saved = localStorage.getItem("uaw-highlight-active-objects");
+                if (saved !== null) {
+                    highlightActiveObjects = saved === "true";
+                }
+            } catch (e) {}
+        }
+        applyHighlightActiveObjects(highlightActiveObjects);
+
         simulationContent.innerHTML = "";
         const container = document.createElement("div");
         container.className = "simulation-container";
@@ -653,6 +708,13 @@ function renderSimulation(skipJsonValidation = false) {
                     <input type="checkbox" id="view-toggle-always-show-time" ${alwaysShowTimeIndicators ? 'checked' : ''}>
                     <span>Always show start time indicators</span>
                 </label>
+                <div class="dropdown-divider" role="separator"></div>
+                <div class="dropdown-section">
+                    <label class="dropdown-checkbox-item">
+                        <input type="checkbox" id="view-toggle-highlight-active-objects" ${highlightActiveObjects ? 'checked' : ''}>
+                        <span>Highlight active objects</span>
+                    </label>
+                </div>
             </div>
         `;
 
@@ -703,6 +765,10 @@ function renderSimulation(skipJsonValidation = false) {
 
             document.getElementById('view-toggle-always-show-time')?.addEventListener('change', (e) => {
                 toggleAllTimeIndicators(e.target.checked);
+            });
+
+            document.getElementById('view-toggle-highlight-active-objects')?.addEventListener('change', (e) => {
+                toggleHighlightActiveObjects(e.target.checked);
             });
         }, 0);
 

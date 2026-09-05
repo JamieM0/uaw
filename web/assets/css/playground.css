@@ -2305,6 +2305,29 @@ body.tutorial-active #auto-render-toggle {
     flex: 1;
 }
 
+/* Dropdown divider */
+.dropdown-divider {
+    height: 1px;
+    margin: 4px 0;
+    overflow: hidden;
+    background-color: var(--border-color, #eee);
+    border: none;
+}
+
+.dropdown-checkbox-item:has(+ .dropdown-divider) {
+    border-bottom: none;
+}
+
+/* Highlight active objects control: when disabled, live object cards are not greyed out */
+body[data-highlight-active-objects="false"] .resources-panel .resource-item,
+body[data-highlight-active-objects="false"] #live-state-container .resource-item,
+body[data-highlight-active-objects="false"] .resource-grid .resource-item,
+body[data-highlight-active-objects="false"] [data-temporal-state].resource-item,
+#live-state-container[data-highlight-active-objects="false"] .resource-item {
+    opacity: 1 !important;
+    filter: none !important;
+}
+
 /* View controls positioning */
 .simulation-header {
     display: flex !important;
