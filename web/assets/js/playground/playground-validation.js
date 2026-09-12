@@ -62,6 +62,7 @@ function displayGroupedValidationResults(results) {
         success: []
     };
     window.__uawCorrectionProblems = new Map();
+    window.__uawValidationTargets = new Map();
 
     const stats = {
         total: results.length,
@@ -182,6 +183,8 @@ function displayValidationGroup(groupId, results, icon, collapsedByDefault = fal
             const metricName = sanitizeHTML(getMetricDisplayName(result.metricId, mergedCatalog));
             const sanitizedMessage = sanitizeHTML(result.message);
             const metric = mergedCatalog.find(m => m.id === result.metricId);
+            const targetId = `${groupId}-${resultIndex}`;
+            window.__uawValidationTargets.set(targetId, result);
 
             // Add example and disable buttons for builtin metrics in Metrics Editor mode
             let actionButtons = '';
@@ -206,9 +209,41 @@ function displayValidationGroup(groupId, results, icon, collapsedByDefault = fal
                                result.status === 'warning' ? 'Warning' :
                                result.status === 'suggestion' ? 'Suggestion' : 'Success';
 
+            // Runtime constraint violations carry their own evidence: where in
+            // the run the constraint failed and the observed vs expected state.
+            // Rendering it inline lets a human connect the diagnostic to what
+            // they see in the simulation without opening source files.
+            let evidenceHtml = '';
+            const violation = result.violation;
+            if (violation) {
+                const evidenceParts = [];
+                if (Number.isFinite(violation.time)) {
+                    try {
+                        evidenceParts.push(`at ${window.workSpecTimeController?.formatDate?.(violation.time, { short: true }) ?? `${violation.time} min`}`);
+                    } catch (_error) {
+                        evidenceParts.push(`at ${violation.time} min`);
+                    }
+                }
+                const summarise = (value) => {
+                    if (value === undefined) return null;
+                    let text;
+                    try { text = typeof value === 'string' ? value : JSON.stringify(value); }
+                    catch (_error) { text = String(value); }
+                    return text.length > 220 ? `${text.slice(0, 217)}...` : text;
+                };
+                const observedText = summarise(violation.observed);
+                const expectedText = summarise(violation.expected);
+                if (observedText !== null) evidenceParts.push(`observed: ${observedText}`);
+                if (expectedText !== null) evidenceParts.push(`expected: ${expectedText}`);
+                if (evidenceParts.length) {
+                    evidenceHtml = `<div class="validation-evidence">${sanitizeHTML(evidenceParts.join(' · '))}</div>`;
+                }
+            }
+
             return `
                 <div class="validation-result-item ${result.status}"
                      data-metric-id="${sanitizeHTML(result.metricId)}"
+                     data-validation-target-id="${targetId}"
                      data-clickable="true"
                      role="button"
                      tabindex="0"
@@ -218,6 +253,7 @@ function displayValidationGroup(groupId, results, icon, collapsedByDefault = fal
                         <div class="validation-result-name">
                             ${metricName} <span class="validation-message-inline">— ${sanitizedMessage}</span>
                         </div>
+                        ${evidenceHtml}
                     </div>
                     ${actionButtons}
                 </div>
@@ -331,12 +367,8 @@ function setupValidationInteractions() {
             // Handle validation result item clicks
             if (e.target.closest('.validation-result-item[data-clickable="true"]')) {
                 const resultItem = e.target.closest('.validation-result-item');
-                const message = resultItem.querySelector('.validation-message-inline');
-                if (message) {
-                    const messageText = message.textContent.replace('— ', '');
-                    jumpToValidationTarget(messageText);
-                    e.stopPropagation(); // Prevent event bubbling
-                }
+                jumpToValidationResult(resultItem);
+                e.stopPropagation(); // Prevent event bubbling
             }
 
             // Handle passed group collapsible
@@ -359,11 +391,7 @@ function setupValidationInteractions() {
             if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('.validation-result-item[data-clickable="true"]')) {
                 e.preventDefault();
                 const resultItem = e.target.closest('.validation-result-item');
-                const message = resultItem.querySelector('.validation-message-inline');
-                if (message) {
-                    const messageText = message.textContent.replace('— ', '');
-                    jumpToValidationTarget(messageText);
-                }
+                jumpToValidationResult(resultItem);
             }
 
             // Handle Enter or Space key on stat items
@@ -397,6 +425,38 @@ function setupValidationInteractions() {
         filterSelect.addEventListener('change', validationEventHandlers.filterChangeHandler);
         filterSelect.setAttribute('data-listener-attached', 'true');
     }
+}
+
+function jumpToValidationResult(resultItem) {
+    const result = window.__uawValidationTargets?.get(resultItem?.dataset?.validationTargetId);
+    const violation = result?.violation;
+    if (!violation) {
+        const message = resultItem?.querySelector('.validation-message-inline')?.textContent?.replace('— ', '');
+        if (message) jumpToValidationTarget(message);
+        return;
+    }
+
+    if (Number.isFinite(violation.time)) {
+        window.workSpecTimeController?.setTime?.(violation.time, { source: 'runtime-constraint', force: true });
+    }
+    const objectId = violation.objects?.[0];
+    if (!objectId) return;
+    const escaped = window.CSS?.escape ? CSS.escape(objectId) : String(objectId).replace(/["\\]/g, '\\$&');
+    const elements = [...document.querySelectorAll(`[data-object-id="${escaped}"], [data-context-object-id="${escaped}"], [data-element-id="${escaped}"]`)];
+    if (!elements.length) return;
+    clearTimeout(window.__uawConstraintHighlightTimer);
+    document.querySelectorAll('.uaw-runtime-constraint-linked').forEach((element) => element.classList.remove('uaw-runtime-constraint-linked'));
+    elements.forEach((element) => element.classList.add('uaw-runtime-constraint-linked'));
+    // The evidence lives on the simulation surfaces. When the current view
+    // hides them (for example the Problems list), follow the violation to the
+    // timeline so the jump and the highlight are both observable.
+    if (!elements.some((element) => element.offsetParent !== null)) {
+        window.UAWPlaygroundShell?.setRunView?.('timeline');
+    }
+    elements[0].scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
+    window.__uawConstraintHighlightTimer = setTimeout(() => {
+        elements.forEach((element) => element.classList.remove('uaw-runtime-constraint-linked'));
+    }, 3000);
 }
 
 function applyValidationFilter() {

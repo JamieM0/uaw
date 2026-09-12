@@ -2409,7 +2409,7 @@
                     `Resource '${id}' is defined but never used by any task.`,
                     toJsonPointer(objectsBasePtr.concat([i])),
                     { object_id: id },
-                    ['Remove the unused resource, or add tasks/interactions that consume it.']
+                    ['Remove the unused resource, or reference it from a task or explicit Change.']
                 ));
             }
         }

@@ -1,4 +1,39 @@
 const TutorialValidators = {
+    validatePartsQuantityThree: function(simulation) {
+        return this.getObjects(simulation).find(object => object.id === 'parts')?.properties?.quantity === 3;
+    },
+
+    validatePackKitChange: function(_simulation, sources) {
+        if (!window.WorkSpecRuntime?.runProject) return false;
+        const run = window.WorkSpecRuntime.runProject(sources.documentValue, sources.changes, sources.generator, { seed: 1 });
+        const state = window.WorkSpecRuntime.serialiseState(run);
+        return !run.problems.some(problem => problem.severity === 'error')
+            && state.objects?.parts?.properties?.quantity === 2
+            && state.objects?.kits?.properties?.quantity === 1;
+    },
+
+    validatePartsConstraintViolation: function(_simulation, sources) {
+        if (!window.WorkSpecRuntime?.runConstraints) return false;
+        const run = window.WorkSpecRuntime.runConstraints(
+            sources.documentValue,
+            sources.changes,
+            sources.generator,
+            sources.constraints,
+            { seed: 1 }
+        );
+        const hasExpectedViolation = run.violations?.some(violation => violation.constraint_id === 'inventory.parts_non_negative'
+            && violation.time === 550
+            && violation.objects?.includes('parts')
+            && violation.observed === -1);
+        if (hasExpectedViolation) {
+            window.__uawTutorialPartsViolationObserved = true;
+            return false;
+        }
+        const restored = sources.documentValue?.simulation?.world?.objects
+            ?.find(object => object.id === 'parts')?.properties?.quantity === 3;
+        return window.__uawTutorialPartsViolationObserved === true && restored;
+    },
+
     getLayout: function(simulation) {
         if (!simulation) return null;
         return simulation.world?.layout || simulation.layout || null;

@@ -380,7 +380,7 @@ class ActorAnimationManager {
     }
 
     updateActorVisual(actor, element) {
-        const resolvedObject = window.WorkSpecPlaybackState?.getObjectAtTime?.(this.playbackModel, actor.id, this.currentTime);
+        const resolvedObject = this.resolvedObjectAtTime(actor.id, this.currentTime);
         const state = resolvedObject?.properties?.state ?? actor.object?.properties?.state;
         const assetId = window.WorkSpecStateVisuals?.resolveStateVisualAssetId?.(this.simulationData, resolvedObject || actor.object, state);
         const normalizedAssetId = typeof assetId === 'string' ? assetId.replace(/^asset:/, '') : '';
@@ -642,6 +642,20 @@ class ActorAnimationManager {
         });
     }
 
+    // Resolve the observable object at a point in time. WorkSpec 2.2 projects
+    // resolve Changes and Generator through the shared runtime; the timeline
+    // player exposes that resolved snapshot, which is authoritative whenever
+    // it exists. Older interaction-based projects fall back to the package
+    // playback model resolved from Starting State alone.
+    resolvedObjectAtTime(actorId, time) {
+        const player = window.player;
+        if (player?.worldSnapshot?.runtime && player.liveObjectMap) {
+            if (Number.isFinite(player.playheadTime) && Math.abs(player.playheadTime - time) > 1e-6) return null;
+            return player.liveObjectMap.get(actorId) || null;
+        }
+        return window.WorkSpecPlaybackState?.getObjectAtTime?.(this.playbackModel, actorId, time) || null;
+    }
+
     getActorStateAtTime(actorId, time) {
         const actor = this.actors.get(actorId);
         const actorTransitions = this.transitions.get(actorId);
@@ -674,7 +688,7 @@ class ActorAnimationManager {
         }
 
         // Semantic location and lifecycle are resolved by the package layer.
-        const resolvedObject = window.WorkSpecPlaybackState?.getObjectAtTime?.(this.playbackModel, actorId, time);
+        const resolvedObject = this.resolvedObjectAtTime(actorId, time);
         if (!resolvedObject) return null;
         const location = resolvedObject.location || resolvedObject.properties?.location || actor.currentLocation;
         if (location) {

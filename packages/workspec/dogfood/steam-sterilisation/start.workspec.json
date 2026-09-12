@@ -1,0 +1,315 @@
+{
+  "$schema": "https://universalautomation.wiki/workspec/v2.2.schema.json",
+  "simulation": {
+    "schema_version": "2.2",
+    "meta": {
+      "id": "dogfood_steam_sterilisation_implant_load_v1",
+      "title": "Reusable Implant Tray Steam Sterilisation",
+      "description": "A two-tray implant load moves from contaminated receipt through cleaning, inspection, packaging, pre-vacuum steam processing, indicator review, quarantine, and release.",
+      "domain": "Hospital sterile processing"
+    },
+    "config": {
+      "time_unit": "minutes",
+      "start_time": "06:40"
+    },
+    "world": {
+      "layout": {
+        "meta": {
+          "units": "meters",
+          "pixels_per_unit": 20
+        },
+        "locations": [
+          {
+            "id": "receiving",
+            "name": "Contaminated Receiving",
+            "shape": { "type": "rect", "x": 20, "y": 30, "width": 150, "height": 100 }
+          },
+          {
+            "id": "decontamination",
+            "name": "Decontamination Area",
+            "shape": { "type": "rect", "x": 200, "y": 30, "width": 180, "height": 100 }
+          },
+          {
+            "id": "clean_assembly",
+            "name": "Clean Assembly Area",
+            "shape": { "type": "rect", "x": 410, "y": 30, "width": 180, "height": 100 }
+          },
+          {
+            "id": "steriliser_area",
+            "name": "Steam Steriliser Area",
+            "shape": { "type": "rect", "x": 620, "y": 30, "width": 180, "height": 100 }
+          },
+          {
+            "id": "quarantine",
+            "name": "Load Quarantine and BI Incubation",
+            "shape": { "type": "rect", "x": 410, "y": 170, "width": 200, "height": 100 }
+          },
+          {
+            "id": "sterile_storage",
+            "name": "Sterile Storage",
+            "shape": { "type": "rect", "x": 650, "y": 170, "width": 150, "height": 100 }
+          }
+        ]
+      },
+      "objects": [
+        {
+          "id": "decon_technician",
+          "type": "actor",
+          "name": "Decontamination Technician",
+          "location": "decontamination",
+          "properties": { "state": "available", "role": "decontamination_technician", "qualified_for": "decontamination" }
+        },
+        {
+          "id": "assembly_technician",
+          "type": "actor",
+          "name": "Assembly Technician",
+          "location": "clean_assembly",
+          "properties": { "state": "available", "role": "assembly_technician", "qualified_for": "inspection_and_packaging" }
+        },
+        {
+          "id": "steriliser_operator",
+          "type": "actor",
+          "name": "Qualified Steriliser Operator",
+          "location": "steriliser_area",
+          "properties": { "state": "available", "role": "steriliser_operator", "qualified_for": "steam_sterilisation" }
+        },
+        {
+          "id": "spd_supervisor",
+          "type": "actor",
+          "name": "Sterile Processing Supervisor",
+          "location": "quarantine",
+          "properties": { "state": "available", "role": "sterile_processing_supervisor", "release_authority": true }
+        },
+        {
+          "id": "ultrasonic_cleaner",
+          "type": "equipment",
+          "name": "Ultrasonic Cleaner",
+          "location": "decontamination",
+          "properties": { "state": "ready", "capacity": 2, "capacity_unit": "trays" }
+        },
+        {
+          "id": "steam_steriliser",
+          "type": "equipment",
+          "name": "Pre-vacuum Steam Steriliser",
+          "location": "steriliser_area",
+          "properties": {
+            "state": "available",
+            "capacity": 2,
+            "capacity_unit": "trays",
+            "cycle_type": "pre_vacuum",
+            "validated_cycle": "pre_vacuum_132c_wrapped_implants",
+            "daily_air_removal_test_result": "not_run",
+            "chamber_temperature_c": 22,
+            "chamber_pressure_kpa": 101.3,
+            "qualifying_exposure_minutes": 0,
+            "mechanical_result": "not_run"
+          }
+        },
+        {
+          "id": "bi_incubator",
+          "type": "equipment",
+          "name": "Biological Indicator Incubator",
+          "location": "quarantine",
+          "properties": { "state": "ready", "capacity": 4, "capacity_unit": "indicators" }
+        },
+        {
+          "id": "contaminated_trays",
+          "type": "resource",
+          "name": "Returned Contaminated Implant Trays",
+          "location": "receiving",
+          "properties": { "state": "awaiting_decontamination", "quantity": 2, "unit": "trays" }
+        },
+        {
+          "id": "cleaned_trays",
+          "type": "product",
+          "name": "Cleaned Trays",
+          "location": "decontamination",
+          "properties": { "state": "absent", "quantity": 0, "unit": "trays" }
+        },
+        {
+          "id": "inspected_trays",
+          "type": "product",
+          "name": "Inspected and Assembled Trays",
+          "location": "clean_assembly",
+          "properties": { "state": "absent", "quantity": 0, "unit": "trays" }
+        },
+        {
+          "id": "packaged_trays",
+          "type": "product",
+          "name": "Packaged Implant Trays",
+          "location": "clean_assembly",
+          "properties": { "state": "absent", "quantity": 0, "unit": "trays" }
+        },
+        {
+          "id": "processed_trays",
+          "type": "product",
+          "name": "Processed Trays Pending Release",
+          "location": "quarantine",
+          "properties": { "state": "absent", "quantity": 0, "unit": "trays" }
+        },
+        {
+          "id": "released_sterile_trays",
+          "type": "product",
+          "name": "Released Sterile Implant Trays",
+          "location": "sterile_storage",
+          "properties": { "state": "absent", "quantity": 0, "unit": "trays" }
+        },
+        {
+          "id": "detergent_doses",
+          "type": "resource",
+          "name": "Cleaning Detergent Doses",
+          "location": "decontamination",
+          "properties": { "quantity": 6, "unit": "doses" }
+        },
+        {
+          "id": "wrap_sets",
+          "type": "resource",
+          "name": "Sterilisation Wrap Sets",
+          "location": "clean_assembly",
+          "properties": { "quantity": 6, "unit": "sets" }
+        },
+        {
+          "id": "internal_chemical_indicators",
+          "type": "resource",
+          "name": "Internal Chemical Indicators",
+          "location": "clean_assembly",
+          "properties": { "quantity": 6, "unit": "indicators" }
+        },
+        {
+          "id": "biological_indicators",
+          "type": "resource",
+          "name": "Biological Indicators",
+          "location": "quarantine",
+          "properties": { "quantity": 3, "unit": "indicators" }
+        },
+        {
+          "id": "load_record",
+          "type": "digital_object",
+          "name": "Implant Load Record",
+          "location": "quarantine",
+          "properties": {
+            "state": "open",
+            "quantity": 1,
+            "load_id": "IMPLANT-2026-09-09-A",
+            "implant_load": true,
+            "tray_count": 2,
+            "selected_cycle": "pre_vacuum_132c_wrapped_implants",
+            "device_package_cycle_compatible": true,
+            "cycle_recorded": false,
+            "chemical_indicator_result": "pending",
+            "biological_indicator_result": "pending",
+            "release_status": "not_released",
+            "released_by_role": "none"
+          }
+        }
+      ]
+    },
+    "process": {
+      "tasks": [
+        {
+          "id": "daily_air_removal_test",
+          "actor_id": "steriliser_operator",
+          "start": "06:40",
+          "duration": "10m",
+          "location": "steriliser_area",
+          "reservations": [
+            { "resource": "steam_steriliser", "mode": "exclusive" }
+          ],
+          "description": "Run the daily air-removal test in the empty pre-vacuum chamber before its first processed load."
+        },
+        {
+          "id": "receive_and_sort",
+          "actor_id": "decon_technician",
+          "start": "07:00",
+          "duration": "10m",
+          "location": "receiving",
+          "description": "Receive the closed returned trays and sort them for decontamination."
+        },
+        {
+          "id": "ultrasonic_cleaning",
+          "actor_id": "decon_technician",
+          "duration": "20m",
+          "location": "decontamination",
+          "depends_on": ["receive_and_sort"],
+          "reservations": [
+            { "resource": "ultrasonic_cleaner", "mode": "capacity", "amount": 2 }
+          ],
+          "description": "Clean both trays using one detergent dose per tray."
+        },
+        {
+          "id": "rinse_and_dry",
+          "actor_id": "decon_technician",
+          "duration": "15m",
+          "location": "decontamination",
+          "depends_on": ["ultrasonic_cleaning"],
+          "description": "Rinse and dry the cleaned trays before transfer to the clean side."
+        },
+        {
+          "id": "inspect_and_assemble",
+          "actor_id": "assembly_technician",
+          "duration": "20m",
+          "location": "clean_assembly",
+          "depends_on": ["rinse_and_dry"],
+          "description": "Inspect cleanliness and function, then assemble each tray."
+        },
+        {
+          "id": "package_and_label",
+          "actor_id": "assembly_technician",
+          "duration": "15m",
+          "location": "clean_assembly",
+          "depends_on": ["inspect_and_assemble"],
+          "description": "Wrap each tray, add an internal chemical indicator, and label the package."
+        },
+        {
+          "id": "load_steriliser",
+          "actor_id": "steriliser_operator",
+          "duration": "10m",
+          "location": "steriliser_area",
+          "depends_on": ["package_and_label", "daily_air_removal_test"],
+          "reservations": [
+            { "resource": "steam_steriliser", "mode": "capacity", "amount": 2 }
+          ],
+          "description": "Load both packaged trays without exceeding chamber tray capacity."
+        },
+        {
+          "id": "run_pre_vacuum_cycle",
+          "actor_id": "steriliser_operator",
+          "duration": "20m",
+          "location": "steriliser_area",
+          "depends_on": ["load_steriliser"],
+          "reservations": [
+            { "resource": "steam_steriliser", "mode": "exclusive" }
+          ],
+          "description": "Run the pre-vacuum steam cycle; chamber behaviour is generated minute by minute."
+        },
+        {
+          "id": "unload_and_cool",
+          "actor_id": "steriliser_operator",
+          "duration": "30m",
+          "location": "quarantine",
+          "depends_on": ["run_pre_vacuum_cycle"],
+          "description": "Move the processed load to quarantine and allow packages to cool undisturbed."
+        },
+        {
+          "id": "incubate_biological_indicator",
+          "actor_id": "bi_incubator",
+          "duration": "60m",
+          "location": "quarantine",
+          "depends_on": ["unload_and_cool"],
+          "reservations": [
+            { "resource": "bi_incubator", "mode": "capacity", "amount": 1 }
+          ],
+          "description": "Incubate the biological indicator used for this implant load."
+        },
+        {
+          "id": "review_and_release",
+          "actor_id": "spd_supervisor",
+          "duration": "10m",
+          "location": "quarantine",
+          "depends_on": ["incubate_biological_indicator"],
+          "description": "Review mechanical, chemical, and biological monitoring before authorising release."
+        }
+      ]
+    }
+  }
+}

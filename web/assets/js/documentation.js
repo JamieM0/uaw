@@ -36,10 +36,14 @@ function generateDocsStructure() {
         makePage("Architecture Overview", "/docs/architecture-overview"),
 
         makeSection("WorkSpec", "workspec", [
-            makePage("Cheatsheet", "/docs/workspec/cheatsheet"),
+            makePage("Cheatsheet (2.2)", "/docs/workspec/cheatsheet"),
 
             makeSection("Guides", "workspec-guides", [
-                makePage("Quickstart", "/docs/workspec/guides/quickstart"),
+                makePage("Quickstart (2.2)", "/docs/workspec/guides/quickstart"),
+                makePage(
+                    "Authoring (2.2)",
+                    "/docs/workspec/guides/authoring",
+                ),
                 makePage(
                     "Custom Validation (CLI)",
                     "/docs/workspec/guides/custom-validation-cli",
@@ -49,18 +53,18 @@ function generateDocsStructure() {
                 makePage("Cookbook", "/docs/workspec/guides/cookbook"),
             ]),
 
-            makeSection("Reference", "workspec-reference", [
+            makeSection("Legacy reference (2.0)", "workspec-reference", [
                 makePage("Types", "/docs/workspec/reference/types"),
                 makePage("Properties", "/docs/workspec/reference/properties"),
                 makePage("Errors", "/docs/workspec/reference/errors"),
             ]),
 
-            makeSection("Specification", "workspec-specification", [
-                makeSection("v2.1", "workspec-specification-v2-1", [
+            makeSection("Historical specifications", "workspec-specification", [
+                makeSection("WorkSpec 2.1 (historical)", "workspec-specification-v2-1", [
                     makePage("Script", "/docs/workspec/specification/v2.1/script"),
                 ]),
 
-                makeSection("v2.0", "workspec-specification-v2", [
+                makeSection("WorkSpec 2.0 (historical)", "workspec-specification-v2", [
                     makePage(
                         "Overview",
                         "/docs/workspec/specification/v2.0/",
@@ -85,7 +89,7 @@ function generateDocsStructure() {
                     ),
                 ]),
 
-                makeSection("v1.0", "workspec-specification-v1", [
+                makeSection("WorkSpec 1.0 (historical)", "workspec-specification-v1", [
                     makePage(
                         "Overview",
                         "/docs/workspec/specification/v1.0/",
@@ -117,7 +121,7 @@ function generateDocsStructure() {
                 ),
             ]),
 
-            makeSection("Simulation & Validation", "playground-simulation", [
+            makeSection("Legacy simulation docs (2.0)", "playground-simulation", [
                 makePage(
                     "Universal Object Model (Simulation)",
                     "/docs/simulations/universal-object-model",

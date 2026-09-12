@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorkSpec v2.0 Cookbook (Common Patterns) - Universal Automation Wiki</title>
+    <title>WorkSpec 2.2 Cookbook - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
     <link rel="stylesheet" href="/assets/css/category.css">
@@ -50,7 +50,7 @@
                                         
                                     
                                         
-                                            <li aria-current="page">WorkSpec v2.0 Cookbook (Common Patterns)</li>
+                                            <li aria-current="page">WorkSpec 2.2 Cookbook</li>
                                         
                                     
                                 </ol>
@@ -58,109 +58,82 @@
                         </div>
                         
                         <div class="docs-title-section">
-                            <h1 class="docs-page-title">WorkSpec v2.0 Cookbook (Common Patterns)</h1>
+                            <h1 class="docs-page-title">WorkSpec 2.2 Cookbook</h1>
                             
-                            <p class="docs-page-subtitle">This cookbook shows common patterns for modeling work activities with WorkSpec v2.0.</p>
+                            <p class="docs-page-subtitle">Common authoring patterns for the frozen WorkSpec 2.2 model. See the</p>
                             
                         </div>
                     </header>
 
                     <div class="docs-content">
-                        <p>This cookbook shows common patterns for modeling work activities with WorkSpec v2.0.</p>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="pattern-consume-a-resource-and-produce-a-product">Pattern: Consume a resource and produce a product<a class="headerlink" href="#pattern-consume-a-resource-and-produce-a-product" title="Link to this section">¶</a></h2>
+                        <p>Common authoring patterns for the frozen WorkSpec 2.2 model. See the
+<a href="/docs/workspec/guides/authoring">Authoring Guide</a> for the concepts behind them.</p>
+<h2 class="docs-heading" id="consume-a-resource-and-produce-a-product">Consume a resource and produce a product<a class="headerlink" href="#consume-a-resource-and-produce-a-product" title="Link to this section">¶</a></h2>
+<p>Starting State schedules the task; Changes owns its effects.</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nx">WorkSpec</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s2">"make_item"</span><span class="p">).</span><span class="nx">onComplete</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">change</span><span class="p">(</span><span class="s2">"input"</span><span class="p">,</span><span class="w"> </span><span class="s2">"quantity"</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mf">2</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">change</span><span class="p">(</span><span class="s2">"output"</span><span class="p">,</span><span class="w"> </span><span class="s2">"quantity"</span><span class="p">,</span><span class="w"> </span><span class="mf">1</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div>
+<h2 class="docs-heading" id="change-equipment-only-while-a-task-runs">Change equipment only while a task runs<a class="headerlink" href="#change-equipment-only-while-a-task-runs" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nx">WorkSpec</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s2">"use_machine"</span><span class="p">).</span><span class="nx">onStart</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">set</span><span class="p">(</span><span class="s2">"machine"</span><span class="p">,</span><span class="w"> </span><span class="s2">"state"</span><span class="p">,</span><span class="w"> </span><span class="s2">"in_use"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">temporary</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>The temporary write reverts when the task completes.</p>
+<h2 class="docs-heading" id="order-tasks-with-a-dependency">Order tasks with a dependency<a class="headerlink" href="#order-tasks-with-a-dependency" title="Link to this section">¶</a></h2>
 <div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"make_item"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="s2">"30m"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"input"</span><span class="p">,</span><span class="w"> </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">-2</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"output"</span><span class="p">,</span><span class="w"> </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">]</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ship_order"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10m"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"depends_on"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"approve_order"</span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="pattern-equipment-state-transition">Pattern: Equipment state transition<a class="headerlink" href="#pattern-equipment-state-transition" title="Link to this section">¶</a></h2>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"use_machine"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"operator"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10:00"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"machine"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"available"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"in_use"</span><span class="w"> </span><span class="p">}</span>
-<span class="w">            </span><span class="p">},</span>
-<span class="w">            </span><span class="nt">"temporary"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">    </span><span class="p">]</span>
-<span class="p">}</span>
+<p>Omit <code class="docs-inline-code">start</code> when a task should begin as soon as its dependency completes.</p>
+<h2 class="docs-heading" id="move-an-object">Move an object<a class="headerlink" href="#move-an-object" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nx">WorkSpec</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s2">"deliver_order"</span><span class="p">).</span><span class="nx">onComplete</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">move</span><span class="p">(</span><span class="s2">"parcel"</span><span class="p">,</span><span class="w"> </span><span class="s2">"dispatch_bay"</span><span class="p">);</span>
+<span class="p">});</span>
 </code></pre></div>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="pattern-or-dependency-depends_onany">Pattern: OR-dependency (<code class="docs-inline-code">depends_on.any</code>)<a class="headerlink" href="#pattern-or-dependency-depends_onany" title="Link to this section">¶</a></h2>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ship_order"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"11:00"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"depends_on"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"any"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"auto_approval"</span><span class="p">,</span><span class="w"> </span><span class="s2">"manager_approval"</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
-<span class="p">}</span>
+<h2 class="docs-heading" id="create-and-remove-objects">Create and remove objects<a class="headerlink" href="#create-and-remove-objects" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nx">WorkSpec</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s2">"open_case"</span><span class="p">).</span><span class="nx">onComplete</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">create</span><span class="p">({</span><span class="w"> </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="s2">"case_001"</span><span class="p">,</span><span class="w"> </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s2">"product"</span><span class="p">,</span><span class="w"> </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s2">"Case 001"</span><span class="p">,</span><span class="w"> </span><span class="nx">properties</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">state</span><span class="o">:</span><span class="w"> </span><span class="s2">"open"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">});</span>
+<span class="p">});</span>
+
+<span class="nx">WorkSpec</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s2">"close_case"</span><span class="p">).</span><span class="nx">onComplete</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">remove</span><span class="p">(</span><span class="s2">"case_001"</span><span class="p">);</span>
+<span class="p">});</span>
 </code></pre></div>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="pattern-multi-day-start">Pattern: Multi-day start<a class="headerlink" href="#pattern-multi-day-start" title="Link to this section">¶</a></h2>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day_2_task"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"day"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:30"</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1h"</span>
-<span class="p">}</span>
-</code></pre></div>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="pattern-create-and-delete-objects-lifecycle">Pattern: Create and delete objects (lifecycle)<a class="headerlink" href="#pattern-create-and-delete-objects-lifecycle" title="Link to this section">¶</a></h2>
-<p>Create:</p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">    </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"create"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"object"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"batch_001"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"product"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Batch #001"</span><span class="w"> </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-<p>Delete:</p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">    </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"batch_001"</span>
-<span class="p">}</span>
-</code></pre></div>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="pattern-recipe-compliance-warnings">Pattern: Recipe compliance warnings<a class="headerlink" href="#pattern-recipe-compliance-warnings" title="Link to this section">¶</a></h2>
-<p>Define a recipe:</p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">    </span><span class="nt">"process"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"recipes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">"bread_loaf"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="nt">"inputs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"flour"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="nt">"water"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.3</span><span class="p">,</span><span class="w"> </span><span class="nt">"yeast"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.01</span><span class="w"> </span><span class="p">}</span>
-<span class="w">            </span><span class="p">}</span>
-<span class="w">        </span><span class="p">}</span>
+<h2 class="docs-heading" id="check-a-quantity-throughout-the-run">Check a quantity throughout the run<a class="headerlink" href="#check-a-quantity-throughout-the-run" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="s2">"inventory.non_negative"</span><span class="o">:</span><span class="w"> </span><span class="nx">ctx</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">time</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">times</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">quantity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">getAt</span><span class="p">(</span><span class="nx">time</span><span class="p">,</span><span class="w"> </span><span class="s2">"input"</span><span class="p">,</span><span class="w"> </span><span class="s2">"quantity"</span><span class="p">);</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">quantity</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">time</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">objects</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"input"</span><span class="p">],</span>
+<span class="w">        </span><span class="nx">property</span><span class="o">:</span><span class="w"> </span><span class="s2">"quantity"</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">observed</span><span class="o">:</span><span class="w"> </span><span class="nx">quantity</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">expected</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">min</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="s2">"Input stock must not be negative."</span>
+<span class="w">      </span><span class="p">};</span>
 <span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">};</span>
 </code></pre></div>
-<p>If a task produces <code class="docs-inline-code">bread_loaf</code> but does not consume all required inputs in the same task, recipe validation may produce a <strong>warning</strong>.</p>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="pattern-use-a-service-performer">Pattern: Use a <code class="docs-inline-code">service</code> performer<a class="headerlink" href="#pattern-use-a-service-performer" title="Link to this section">¶</a></h2>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"service:timer"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"service"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Timer Service"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"running"</span><span class="p">,</span><span class="w"> </span><span class="nt">"interval"</span><span class="p">:</span><span class="w"> </span><span class="s2">"5m"</span><span class="w"> </span><span class="p">}</span>
-<span class="p">}</span>
+<h2 class="docs-heading" id="add-optional-computed-behaviour">Add optional computed behaviour<a class="headerlink" href="#add-optional-computed-behaviour" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nx">WorkSpec</span><span class="p">.</span><span class="nx">onUpdate</span><span class="p">(({</span><span class="w"> </span><span class="nx">get</span><span class="p">,</span><span class="w"> </span><span class="nx">set</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">get</span><span class="p">(</span><span class="s2">"oven"</span><span class="p">,</span><span class="w"> </span><span class="s2">"state"</span><span class="p">)</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"heating"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">set</span><span class="p">(</span><span class="s2">"oven"</span><span class="p">,</span><span class="w"> </span><span class="s2">"temperature_c"</span><span class="p">,</span><span class="w"> </span><span class="nx">get</span><span class="p">(</span><span class="s2">"oven"</span><span class="p">,</span><span class="w"> </span><span class="s2">"temperature_c"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">4</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">});</span>
 </code></pre></div>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"proof_dough"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"service:timer"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"06:35"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1h"</span>
-<span class="p">}</span>
-</code></pre></div>
+<p>Use Generator for simulated computation. Use Changes when the effect is a known
+part of a task.</p>
+<h2 class="docs-heading" id="historical-pattern-warning">Historical pattern warning<a class="headerlink" href="#historical-pattern-warning" title="Link to this section">¶</a></h2>
+<p>WorkSpec 2.0/2.1 placed these effects in task <code class="docs-inline-code">interactions</code>. Do not copy that
+syntax into 2.2 Starting State.</p>
                     </div>
                     
                     <footer class="docs-footer">

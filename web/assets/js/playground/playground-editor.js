@@ -955,24 +955,39 @@ function validateJSON() {
                 semanticValidationRan = true;
                 const result = window.WorkSpecValidator.validate(parsed);
                 const problems = Array.isArray(result?.problems) ? [...result.problems] : [];
-                if (parsed.simulation?.schema_version === '2.2' && window.WorkSpecRuntime?.runProject) {
+                let runtimeViolations = [];
+                if (!problems.some((problem) => problem.severity === 'error') && parsed.simulation?.schema_version === '2.2' && window.WorkSpecRuntime?.runProject) {
                     const project = window.UAWProjectStore?.getCurrent?.();
-                    const runtime = window.WorkSpecRuntime.runProject(
-                        parsed,
-                        window.workSpecChangesEditor?.getValue?.() ?? project?.changesDraft ?? '',
-                        window.workSpecGeneratorEditor?.getValue?.() ?? project?.generatorDraft ?? '',
-                        { seed: project?.seed ?? 1 }
-                    );
-                    runtime.problems.filter((problem) => problem.metric_id?.startsWith('generator.') || problem.metric_id?.startsWith('changes.')).forEach((problem) => problems.push(problem));
+                    const changes = window.workSpecChangesEditor?.getValue?.() ?? project?.changesDraft ?? '';
+                    const generator = window.workSpecGeneratorEditor?.getValue?.() ?? project?.generatorDraft ?? '';
+                    const constraints = window.UAWWorkSpecEditor?.constraintSource?.() || '';
+                    const runtime = constraints.trim() && window.WorkSpecRuntime.runConstraints
+                        ? window.WorkSpecRuntime.runConstraints(parsed, changes, generator, constraints, { seed: project?.seed ?? 1 })
+                        : window.WorkSpecRuntime.runProject(parsed, changes, generator, { seed: project?.seed ?? 1 });
+                    runtime.problems.filter((problem) => problem.metric_id?.startsWith('generator.') || problem.metric_id?.startsWith('changes.') || problem.metric_id?.startsWith('constraint.')).forEach((problem) => problems.push(problem));
+                    runtimeViolations = runtime.violations || [];
                 }
-                semanticProblems = problems;
+                semanticProblems = problems.concat(runtimeViolations.map((violation) => ({
+                    // Runtime constraint violations participate in the status
+                    // chip counts even though they are not Starting State problems.
+                    severity: violation.severity === 'warning' ? 'warning' : violation.severity === 'info' ? 'info' : 'error',
+                    status: violation.severity === 'warning' ? 'warning' : violation.severity === 'info' ? 'suggestion' : 'error',
+                    detail: violation.message,
+                    metric_id: violation.constraint_id,
+                    violation
+                })));
                 setPlaybackValidationBlocked(problems);
                 const mapped = problems.map((problem) => ({
                     metricId: problem.metric_id || 'system.error',
                     status: problem.severity === 'warning' ? 'warning' : problem.severity === 'info' ? 'suggestion' : 'error',
                     message: problem.detail || problem.title || problem.metric_id || 'Validation error',
                     problem
-                }));
+                })).concat(runtimeViolations.map((violation) => ({
+                    metricId: violation.constraint_id,
+                    status: violation.severity === 'warning' ? 'warning' : violation.severity === 'info' ? 'suggestion' : 'error',
+                    message: violation.message,
+                    violation
+                })));
 
                 if (mapped.length === 0) {
                     displayValidationResults([{
@@ -1094,13 +1109,34 @@ function runManualValidation() {
         if (window.WorkSpecValidator && typeof window.WorkSpecValidator.validate === 'function') {
             const result = window.WorkSpecValidator.validate(parsed);
             const problems = Array.isArray(result?.problems) ? [...result.problems] : [];
+            let runtimeViolations = [];
+            if (!problems.some((problem) => problem.severity === 'error') && parsed.simulation?.schema_version === '2.2' && window.WorkSpecRuntime?.runConstraints) {
+                const project = window.UAWProjectStore?.getCurrent?.();
+                const constraints = window.UAWWorkSpecEditor?.constraintSource?.() || '';
+                if (constraints.trim()) {
+                    const runtime = window.WorkSpecRuntime.runConstraints(
+                        parsed,
+                        window.workSpecChangesEditor?.getValue?.() ?? project?.changesDraft ?? '',
+                        window.workSpecGeneratorEditor?.getValue?.() ?? project?.generatorDraft ?? '',
+                        constraints,
+                        { seed: project?.seed ?? 1 }
+                    );
+                    runtime.problems.filter((problem) => problem.metric_id?.startsWith('generator.') || problem.metric_id?.startsWith('changes.') || problem.metric_id?.startsWith('constraint.')).forEach((problem) => problems.push(problem));
+                    runtimeViolations = runtime.violations || [];
+                }
+            }
             setPlaybackValidationBlocked(problems);
             const mapped = problems.map((problem) => ({
                 metricId: problem.metric_id || 'system.error',
                 status: problem.severity === 'warning' ? 'warning' : problem.severity === 'info' ? 'suggestion' : 'error',
                 message: problem.detail || problem.title || problem.metric_id || 'Validation error',
                 problem
-            }));
+            })).concat(runtimeViolations.map((violation) => ({
+                metricId: violation.constraint_id,
+                status: violation.severity === 'warning' ? 'warning' : violation.severity === 'info' ? 'suggestion' : 'error',
+                message: violation.message,
+                violation
+            })));
 
             if (mapped.length === 0) {
                 displayValidationResults([{

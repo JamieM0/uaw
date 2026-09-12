@@ -1477,9 +1477,9 @@ function insertFunctionIntoValidator(functionCode) {
 window.addEventListener('uaw:project-opened', (event) => {
     const customMetrics = event.detail.project?.settings?.customMetrics || {};
     if (customMetrics.catalog && window.metricsCatalogEditor?.getValue?.() !== customMetrics.catalog) {
-        window.metricsCatalogEditor.setValue(customMetrics.catalog);
+        window.metricsCatalogEditor?.setValue(customMetrics.catalog);
     }
     if (customMetrics.validator && window.metricsValidatorEditor?.getValue?.() !== customMetrics.validator) {
-        window.metricsValidatorEditor.setValue(customMetrics.validator);
+        window.metricsValidatorEditor?.setValue(customMetrics.validator);
     }
 });

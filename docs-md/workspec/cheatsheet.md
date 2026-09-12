@@ -1,112 +1,104 @@
-# WorkSpec v2.0 Cheatsheet
+# WorkSpec 2.2 Cheatsheet
 
-One-page reference for authoring WorkSpec v2.0.
+Use this after the [WorkSpec 2.2 Authoring Guide](/docs/workspec/guides/authoring).
 
----
+## Mental model
 
-## Minimal skeleton
+```text
+Starting State    what exists initially
+Changes           explicit things that happen
+Constraints       things that must remain true
+Generator         optional computational behaviour
+Simulation        the resolved observable history
+```
+
+## Project files
+
+| File | Contains |
+| --- | --- |
+| `start.workspec.json` | Declarative `world` and `process` data |
+| `changes.workspec.js` | Task-linked `set`, `change`, `move`, `create`, and `remove` calls |
+| `constraints.workspec.js` | Rules over resolved history and their violation evidence |
+| `generator.workspec.js` | Optional `onStart` and per-minute `onUpdate` behaviour |
+
+## Minimal Starting State
 
 ```json
 {
-    "$schema": "https://universalautomation.wiki/workspec/v2.0.schema.json",
-    "simulation": {
-        "schema_version": "2.0",
-        "meta": { "title": "...", "description": "...", "domain": "..." },
-        "config": { "time_unit": "minutes", "start_time": "09:00", "end_time": "17:00", "currency": "USD", "locale": "en-US" },
-        "world": { "layout": { "locations": [] }, "objects": [] },
-        "process": { "tasks": [], "recipes": {} }
+  "$schema": "https://universalautomation.wiki/workspec/v2.2.schema.json",
+  "simulation": {
+    "schema_version": "2.2",
+    "meta": { "title": "Pack a kit", "description": "One small change", "domain": "Training" },
+    "config": { "time_unit": "minutes", "start_time": "09:00" },
+    "world": {
+      "layout": { "locations": [{ "id": "bench", "name": "Bench" }] },
+      "objects": [
+        { "id": "parts", "type": "resource", "name": "Parts", "location": "bench", "properties": { "quantity": 2 } },
+        { "id": "kits", "type": "product", "name": "Kits", "location": "bench", "properties": { "quantity": 0 } }
+      ]
+    },
+    "process": {
+      "tasks": [{ "id": "pack", "start": "09:00", "duration": "10m", "location": "bench" }]
     }
+  }
 }
 ```
 
----
+## Explicit Change
 
-## Required fields
-
-- `simulation.schema_version`
-- `simulation.meta.title`
-- `simulation.meta.description`
-- `simulation.meta.domain`
-- `simulation.config.time_unit`
-- `simulation.config.start_time`
-- `simulation.config.end_time`
-- `simulation.config.currency`
-- `simulation.config.locale`
-- `simulation.world.objects` (array)
-- `simulation.process.tasks` (array)
-
----
-
-## IDs
-
-- Plain: `^[a-z][a-z0-9_]{0,249}$`
-- Optional namespaced: `{type}:{id}` (namespace must equal `type`)
-
----
-
-## Time formats (strict)
-
-- `"HH:MM"` (zero-padded)
-- `"HH:MM:SS"` (zero-padded)
-- ISO 8601 date-time: `"2026-02-03T09:30:00Z"`
-- Multi-day: `{ "day": 2, "time": "09:30" }`
-
----
-
-## Duration formats
-
-- Integer: `30` (uses `simulation.config.time_unit`)
-- ISO 8601: `"PT30M"`, `"P1D"`
-- Shorthand: `"30m"`, `"1h"`, `"1d"`, `"10s"`, `"1w"`, `"1M"`
-
-If using months/years (`"1M"`, `"P1M"`, `"P1Y"`), use an ISO 8601 start timestamp.
-
----
-
-## Dependencies
-
-- Array (implicit AND): `["task_a","task_b"]`
-- Operators:
-
-```json
-{ "all": ["task_a"], "any": ["task_b","task_c"] }
+```javascript
+WorkSpec.task("pack").onComplete(() => {
+  change("parts", "quantity", -1);
+  change("kits", "quantity", 1);
+});
 ```
 
-Meaning: (ALL of `all`) AND (ANY of `any`).
+Use `{ temporary: true }` for a write that should revert when its task ends.
 
----
+## Constraint
 
-## Interactions
-
-Property change:
-
-```json
-{ "target_id": "flour", "property_changes": { "quantity": { "delta": -1 } } }
+```javascript
+module.exports = {
+  "inventory.non_negative": ctx => {
+    for (const time of ctx.times()) {
+      const quantity = ctx.getAt(time, "parts", "quantity");
+      if (quantity < 0) return {
+        time,
+        objects: ["parts"],
+        property: "quantity",
+        observed: quantity,
+        expected: { min: 0 },
+        message: "Parts must never become negative."
+      };
+    }
+    return null;
+  }
+};
 ```
 
-Create:
+Useful context calls: `times()`, `get()`, `getAt()`, `state()`, and `stateAt()`.
 
-```json
-{ "action": "create", "object": { "id": "x", "type": "product", "name": "X" } }
+## Optional Generator
+
+```javascript
+WorkSpec.onUpdate(({ get, set }) => {
+  set("sensor", "reading", get("sensor", "reading") + 1);
+});
 ```
 
-Delete:
+Use a Generator only for computed or simulated behaviour. Put known task effects
+in Changes.
 
-```json
-{ "action": "delete", "target_id": "x" }
+## Studio flow
+
+```text
+edit sources → Validate WorkSpec → Simulate → scrub time → inspect Problems
 ```
 
-Temporary:
+Selecting a runtime Constraint violation in **Problems** moves playback to its
+evidence time and highlights an affected object when that surface is available.
 
-```json
-{ "target_id": "machine", "property_changes": { "state": { "to": "in_use" } }, "temporary": true }
-```
+## Historical syntax
 
----
-
-## Links
-
-- v2.0 overview: [/docs/workspec/specification/v2.0/](/docs/workspec/specification/v2.0/)
-- Schema reference: [/docs/workspec/specification/v2.0/schema](/docs/workspec/specification/v2.0/schema)
-- Error reference: [/docs/workspec/reference/errors](/docs/workspec/reference/errors)
-- Migration: [/docs/workspec/guides/migration](/docs/workspec/guides/migration)
+Task `interactions` belong to WorkSpec 2.0/2.1 documents. They are not valid in
+2.2 Starting State.

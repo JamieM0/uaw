@@ -379,7 +379,12 @@ function processSimulationData(simulationData) {
 
     const processedTasks = tasksWithMinutes.map(task => {
         const taskId = task.id || "";
-        let displayName = taskId, emoji = "[TASK]";
+        // Tasks may omit a human name; a readable label beats a raw id, and no
+        // emoji should render as a placeholder token.
+        const humaniseTaskId = (value) => String(value)
+            .replace(/[_-]+/g, " ")
+            .replace(/\b\w/g, (character) => character.toUpperCase());
+        let displayName = task.name || (taskId ? humaniseTaskId(taskId) : taskId), emoji = "";
         
         // Check for new emoji field first
         if (task.emoji) {

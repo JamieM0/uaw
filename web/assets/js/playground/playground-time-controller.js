@@ -160,12 +160,40 @@
         };
     }
 
+    // WorkSpec 2.2 tasks frequently derive their start from dependencies and
+    // offsets instead of an explicit "start". The canonical resolver lives in
+    // the shared runtime package (the same one the timeline uses), so borrow
+    // its resolved timing graph rather than reimplementing scheduling here.
+    // Without this, dependency-scheduled tasks collapse onto the configured
+    // start time and the application clock range shrinks to a fraction of the
+    // real run.
+    function applyRuntimeTimings(documentValue, simulation, tasks) {
+        if (simulation?.schema_version !== '2.2' || !root.WorkSpecRuntime?.resolveTimings) return tasks;
+        try {
+            const timings = root.WorkSpecRuntime.resolveTimings(documentValue).timings;
+            if (!timings?.get) return tasks;
+            return tasks.map((task) => {
+                const timing = timings.get(task.source_id || task.id);
+                if (!timing?.resolved) return task;
+                return {
+                    ...task,
+                    start_minutes: timing.start,
+                    end_minutes: timing.end,
+                    duration_minutes: timing.duration
+                };
+            });
+        } catch (_error) {
+            return tasks;
+        }
+    }
+
     function normalizeDocument(documentValue, options = {}) {
         const simulation = documentValue?.simulation || documentValue || {};
         const canonicalTasks = simulation.process?.tasks || simulation.tasks || [];
         const clock = createClockContext(simulation, canonicalTasks, options.now);
         const unit = simulation.config?.time_unit || 'minutes';
         let tasks = canonicalTasks.map(task => normalizeTask(task, clock, unit));
+        tasks = applyRuntimeTimings(documentValue, simulation, tasks);
 
         // Legacy repeating calendars are expanded into the same absolute clock.
         if (!tasks.length && simulation.day_types && simulation.calendar && root.MultiDaySimulator) {

@@ -1789,9 +1789,9 @@ body[data-uaw-workspace="settings"] .uaw-legacy-host {
 }
 
 .uaw-v2 .tutorial-panel {
-    position: absolute;
+    position: fixed;
     right: 16px;
-    top: 16px;
+    top: calc(var(--uaw-titlebar-height) + var(--uaw-commandbar-height) + 16px);
     bottom: 16px;
     width: min(360px, 40%);
     z-index: 50;
@@ -4206,6 +4206,18 @@ body.uaw-v2[data-uaw-workspace="run"] .playground-bottom { display: none !import
 body.uaw-v2[data-uaw-workspace="run"][data-run-view="timeline"] .playground-top,
 body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] .playground-top { display: flex !important; height: 100% !important; }
 body.uaw-v2[data-uaw-workspace="run"][data-run-view="problems"] .playground-bottom { display: block !important; height: 100% !important; }
+/* The shared validation panel is hosted inside the Editor workspace view.
+   The Problems destination must therefore surface that view with its source
+   panes hidden, otherwise the panel renders inside a hidden ancestor and the
+   Problems stage appears empty. */
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="problems"] #uaw-editor-view {
+    display: block !important;
+    overflow: auto;
+    padding: 0;
+    background: var(--uaw-white);
+}
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="problems"] #uaw-editor-view .uaw-editor-panes { display: none !important; }
+body.uaw-v2[data-uaw-workspace="run"][data-run-view="problems"] .uaw-editor-validation { display: block !important; }
 body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] .metrics-mode-layout,
 body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] .metrics-editor-panel { display: flex !important; }
 body.uaw-v2[data-uaw-workspace="run"][data-run-view="rules"] .standard-mode-layout { display: none !important; }
@@ -6895,6 +6907,7 @@ body.uaw-v2[data-uaw-workspace="assets"][data-source-dock^="split-"] .uaw-source
 .monaco-editor .uaw-source-change-line { background: rgba(52, 211, 153, .16); box-shadow: inset 3px 0 #34d399; }
 .monaco-editor .uaw-source-change-gutter { border-left: 3px solid #34d399; }
 .uaw-source-linked { outline: 2px solid #2f78dd !important; outline-offset: 2px; }
+.uaw-runtime-constraint-linked { outline: 3px solid #d97706 !important; outline-offset: 3px; }
 
 @media (max-width: 900px) {
     #uaw-source-pane .uaw-commandbar__identity code { display: none; }

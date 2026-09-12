@@ -1,92 +1,70 @@
-# AI Authoring Guide for WorkSpec v2.0
+# AI Authoring Guide for WorkSpec 2.2
 
-This guide is for AI systems (and humans using AI) generating WorkSpec v2.0 documents.
+This guide is for AI systems, and humans using AI, that generate WorkSpec 2.2
+projects. The [Authoring Guide](/docs/workspec/guides/authoring) remains the
+canonical conceptual reference.
 
----
+## Output contract
 
-## Output contract (recommended)
+Generate separate project sources:
 
-When generating WorkSpec:
+- `start.workspec.json`: declarative Starting State with schema version `2.2`;
+- `changes.workspec.js`: known, explicit task effects;
+- `constraints.workspec.js`: rules over the resolved simulation;
+- `generator.workspec.js`: optional computed or simulated behaviour only.
 
-1. Output **valid JSON only**.
-2. Always include:
-   - `$schema: "https://universalautomation.wiki/workspec/v2.0.schema.json"`
-   - `simulation.schema_version: "2.0"`
-   - `simulation.meta.title`, `simulation.meta.description`, `simulation.meta.domain`
-   - `simulation.world.objects[]`
-   - `simulation.process.tasks[]`
-3. Use strict, predictable IDs:
-   - snake_case
-   - no spaces
-   - max 250 chars
-4. Put all type-specific object data in `properties`.
-5. Use `target_id` in interactions (never legacy `object_id`).
+Do not put task `interactions`, executable effects, recipes, or state libraries
+inside 2.2 Starting State. Do not invent a Generator when Changes are enough.
 
----
+## Starting State requirements
 
-## Common failure modes to avoid
-
-### Missing schema version
-
-Bad:
+Include `$schema`, `simulation.schema_version`, complete `meta`, `world`, and
+`process`. Use stable snake_case IDs. Keep object properties under `properties`,
+while `location` remains a top-level object field.
 
 ```json
-{ "simulation": { "meta": {} } }
+{
+  "$schema": "https://universalautomation.wiki/workspec/v2.2.schema.json",
+  "simulation": {
+    "schema_version": "2.2",
+    "meta": { "title": "...", "description": "...", "domain": "..." },
+    "config": { "time_unit": "minutes", "start_time": "08:00" },
+    "world": { "layout": { "locations": [] }, "objects": [] },
+    "process": { "tasks": [] }
+  }
+}
 ```
 
-Good:
+## Author explicit effects in Changes
 
-```json
-{ "simulation": { "schema_version": "2.0", "meta": { "title": "...", "description": "...", "domain": "..." }, "config": {}, "world": { "objects": [] }, "process": { "tasks": [] } } }
+```javascript
+WorkSpec.task("mix_dough", task => {
+  task.onStart(() => set("mixer", "state", "running", { temporary: true }));
+  task.onComplete(() => {
+    change("flour", "quantity", -2);
+    set("dough", "state", "mixed");
+  });
+});
 ```
 
-### Incorrect structure (v1.0 shape)
+The available helpers are `set`, `change`, `move`, `create`, and `remove`.
 
-Bad:
+## Generate useful Constraint evidence
 
-```json
-{ "simulation": { "objects": [], "tasks": [] } }
-```
+A failing Constraint should return a clear message plus the failure `time`,
+affected `objects`, `property`, `observed`, and `expected` values whenever those
+fields apply. Return `null` when the rule is satisfied.
 
-Good:
+Constraints read resolved state through `times()`, `get()`, `getAt()`, `state()`,
+and `stateAt()`. They do not read or rewrite authoring source.
 
-```json
-{ "simulation": { "world": { "objects": [] }, "process": { "tasks": [] } } }
-```
+## Validate generated projects
 
-### Legacy interaction fields
+1. Validate Starting State with the canonical validator.
+2. Run a snapshot with Changes and, if present, Generator.
+3. Run Constraints against the same resolved history.
+4. Reject output with source/runtime errors or unintended violations.
 
-Bad:
-
-```json
-{ "object_id": "mixer", "property_changes": { "state": { "to": "dirty" } } }
-```
-
-Good:
-
-```json
-{ "target_id": "mixer", "property_changes": { "state": { "to": "dirty" } } }
-```
-
----
-
-## Modeling tips
-
-- Prefer **short tasks** with explicit dependencies over overly long tasks.
-- Use `depends_on` operators (`all`/`any`) to express real gating conditions.
-- Prefer explicit `state` transitions with `from`/`to` when modeling equipment or actor states.
-- When modeling consumption/production, use `quantity.delta` interactions.
-
----
-
-## Validation-first generation
-
-Before finalizing output, ensure:
-
-- All referenced `actor_id`s exist and are performer types.
-- All `target_id`s exist (or are created before use).
-- All time strings are strict (`"09:30"`, not `"9:30"`).
-- Duration strings are valid (integer, ISO 8601, or shorthand).
-
-Error format details: [/docs/workspec/specification/v2.0/validation](/docs/workspec/specification/v2.0/validation)  
-Error code catalog: [/docs/workspec/reference/errors](/docs/workspec/reference/errors)
+Use strict times such as `"09:30"`, self-describing durations such as `"20m"`,
+valid performer and object references, and seeded `random()` instead of
+`Math.random()` in Generator code.

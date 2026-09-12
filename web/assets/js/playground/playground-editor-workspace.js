@@ -6,7 +6,7 @@
         ['starting-state', 'Starting State', 'json'],
         ['changes', 'Changes', 'javascript'],
         ['generator', 'Generator', 'javascript'],
-        ['custom-constraints', 'Custom Constraints', 'javascript'],
+        ['custom-constraints', 'Constraints', 'javascript'],
         ['constraint-library', 'Constraint Library', 'json']
     ];
     const CHANGES_TYPES = `
@@ -30,7 +30,9 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
         constructor() {
             this.editors = [];
             this.models = new Map();
-            this.selections = ['starting-state', 'generator'];
+            // Changes is the second core authoring surface; the Generator is
+            // optional and advanced, so it should not own a default pane.
+            this.selections = ['starting-state', 'changes'];
             this.sourceSelection = 'starting-state';
             this.initializing = false;
             this.analysis = { taskReferences: [], handlers: [], targetReferences: [], diagnostics: [] };
@@ -59,8 +61,8 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
             this.models.set('starting-state', window.monacoEditor.getModel());
             this.models.set('changes', window.monaco.editor.createModel(project?.changesDraft || '', 'javascript'));
             this.models.set('generator', window.monaco.editor.createModel(project?.generatorDraft || '', 'javascript'));
-            this.models.set('custom-constraints', window.monaco.editor.createModel(project?.settings?.customMetrics?.validator || '', 'javascript'));
-            this.models.set('constraint-library', window.monaco.editor.createModel(project?.settings?.customMetrics?.catalog || '[]', 'json'));
+            this.models.set('custom-constraints', window.monaco.editor.createModel(project?.constraintsDraft || '', 'javascript'));
+            this.models.set('constraint-library', window.monaco.editor.createModel(project?.settings?.constraintLibrary ?? project?.settings?.customMetrics?.catalog ?? '[]', 'json'));
             host.innerHTML = [0, 1].map((index) => `<section class="uaw-editor-pane" data-editor-pane="${index}"><div class="uaw-editor-tabs" role="tablist" aria-label="Editor ${index + 1}">${TABS.map(([id, label]) => `<button type="button" role="tab" data-editor-tab="${id}">${label}</button>`).join('')}</div><div class="uaw-editor-host" data-editor-host="${index}"></div></section>`).join('');
             host.querySelectorAll('[data-editor-pane]').forEach((pane, index) => {
                 const editor = window.monaco.editor.create(pane.querySelector('[data-editor-host]'), {
@@ -77,9 +79,21 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
                 this.restoreState(editor, this.selections[index]);
             });
             this.initializeSourcePane();
-            this.models.get('changes').onDidChangeContent(() => { this.refreshAnalysis(); this.scheduleExecutionRefresh(); });
-            this.models.get('generator').onDidChangeContent(() => this.scheduleExecutionRefresh());
-            for (const id of ['custom-constraints', 'constraint-library']) this.models.get(id).onDidChangeContent(() => this.saveConstraintSource());
+            const validateTutorialStep = () => window.tutorialManager?.runStepValidation?.();
+            this.models.get('changes').onDidChangeContent(() => {
+                this.refreshAnalysis();
+                this.scheduleExecutionRefresh();
+                validateTutorialStep();
+            });
+            this.models.get('generator').onDidChangeContent(() => {
+                this.scheduleExecutionRefresh();
+                validateTutorialStep();
+            });
+            for (const id of ['custom-constraints', 'constraint-library']) this.models.get(id).onDidChangeContent(() => {
+                this.saveConstraintSource();
+                if (id === 'custom-constraints') this.scheduleExecutionRefresh();
+                validateTutorialStep();
+            });
             window.workSpecChangesEditor = this.models.get('changes');
             window.workSpecGeneratorEditor = this.models.get('generator');
             window.dispatchEvent(new CustomEvent('uaw:changes-editor-ready', { detail: { editor: this.models.get('changes') } }));
@@ -364,9 +378,16 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
         saveConstraintSource() {
             const project = window.UAWProjectStore?.getCurrent?.();
             if (!project) return;
-            project.settings = { ...(project.settings || {}), customMetrics: { ...(project.settings?.customMetrics || {}), validator: this.models.get('custom-constraints').getValue(), catalog: this.models.get('constraint-library').getValue() } };
+            project.constraintsDraft = this.models.get('custom-constraints').getValue();
+            // The Constraint Library persists under its own settings slot. It
+            // previously shared settings.customMetrics.catalog with the Metrics
+            // Editor rule catalog, so the two features clobbered each other and
+            // every project open seeded an empty rule catalog.
+            project.settings = { ...(project.settings || {}), constraintLibrary: this.models.get('constraint-library').getValue() };
             window.UAWProjectStore?.scheduleSave?.();
         }
+
+        constraintSource() { return this.models.get('custom-constraints')?.getValue?.() || ''; }
 
         scheduleExecutionRefresh() {
             clearTimeout(this.executionRefreshTimer);
@@ -484,9 +505,17 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
     });
     window.addEventListener('uaw:project-opened', () => {
         const project = window.UAWProjectStore?.getCurrent?.();
+        const constraintSource = project?.constraintsDraft || '';
+        const constraintCatalog = project?.settings?.constraintLibrary ?? (project?.settings?.customMetrics?.catalog || '[]');
+        if (controller.models.get('custom-constraints')?.getValue() !== constraintSource) controller.models.get('custom-constraints')?.setValue(constraintSource);
+        if (controller.models.get('constraint-library')?.getValue() !== constraintCatalog) controller.models.get('constraint-library')?.setValue(constraintCatalog);
         const savedScroll = project?.settings?.workspace?.editorScrollPositions;
         if (savedScroll) controller.loadSavedScrollPositions(savedScroll);
         controller.refreshAnalysis();
+    });
+    window.addEventListener('uaw:constraints-restored', (event) => {
+        const source = event.detail?.constraints || '';
+        if (controller.models.get('custom-constraints')?.getValue() !== source) controller.models.get('custom-constraints')?.setValue(source);
     });
     document.addEventListener('DOMContentLoaded', () => controller.initialize());
 }());

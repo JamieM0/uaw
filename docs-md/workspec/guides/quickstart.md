@@ -1,83 +1,69 @@
-# WorkSpec v2.0 Quickstart (5 minutes)
+# WorkSpec 2.2 Quickstart
 
-Create a minimal valid WorkSpec v2.0 document, validate it, and iterate.
+Build and run a tiny WorkSpec project in Studio. The project packs one kit from
+one part, so every source has an obvious role.
 
----
+## 1. Learn the model
 
-## Step 1: Start from the minimal skeleton
-
-```json
-{
-    "$schema": "https://universalautomation.wiki/workspec/v2.0.schema.json",
-    "simulation": {
-        "schema_version": "2.0",
-        "meta": {
-            "title": "Hello WorkSpec",
-            "description": "A minimal example simulation",
-            "domain": "Example"
-        },
-        "config": {
-            "time_unit": "minutes",
-            "start_time": "09:00",
-            "end_time": "12:00",
-            "currency": "USD",
-            "locale": "en-US"
-        },
-        "world": {
-            "layout": {
-                "locations": [
-                    { "id": "work_area", "name": "Work Area" }
-                ]
-            },
-            "objects": [
-                { "id": "worker", "type": "actor", "name": "Worker", "location": "work_area", "properties": { "state": "available" } },
-                { "id": "tool", "type": "equipment", "name": "Tool", "location": "work_area", "properties": { "state": "ready" } },
-                { "id": "input", "type": "resource", "name": "Input", "location": "work_area", "properties": { "quantity": 10, "unit": "units" } },
-                { "id": "output", "type": "product", "name": "Output", "location": "work_area", "properties": { "quantity": 0, "unit": "units" } }
-            ]
-        },
-        "process": {
-            "tasks": [
-                {
-                    "id": "do_work",
-                    "actor_id": "worker",
-                    "start": "09:00",
-                    "duration": 30,
-                    "location": "work_area",
-                    "interactions": [
-                        { "target_id": "input", "property_changes": { "quantity": { "delta": -2 } } },
-                        { "target_id": "output", "property_changes": { "quantity": { "delta": 1 } } },
-                        { "target_id": "tool", "property_changes": { "state": { "from": "ready", "to": "in_use" } }, "temporary": true }
-                    ]
-                }
-            ]
-        }
-    }
-}
+```text
+Starting State    what exists initially
+Changes           explicit things that happen
+Constraints       things that must remain true
+Generator         optional computational behaviour
+Simulation        the resolved observable history
 ```
 
----
+You do not need a Generator for this project—or for ordinary WorkSpec
+authoring.
 
-## Step 2: Learn the three core concepts
+## 2. Start the guided tutorial
 
-1) **World vs process**
-- Static things in `simulation.world` (layout + objects)
-- Dynamic things in `simulation.process` (tasks + recipes)
+Open [WorkSpec Studio](/playground), choose **Start Tutorial**, and work through
+the eight short lessons. They use one small packing project to show the Starting
+State, an explicit Change, playback, a Constraint, and a traceable violation.
 
-2) **Objects**
-- Define entities once under `simulation.world.objects`
-- Keep type-specific fields in `properties`
+After the tutorial, use the Simulation Library templates as larger reference
+projects. They deliberately contain more objects and tasks than this first
+lesson, so inspect them only after the packing flow is familiar.
 
-3) **Interactions**
-- Tasks change objects via `interactions`
-- Use `target_id` (not legacy `object_id`)
+## 3. Inspect the project sources
 
----
+Studio projects contain:
 
-## Next steps
+| File | Studio tab | Purpose |
+| --- | --- | --- |
+| `start.workspec.json` | Starting State | Declarative locations, objects, tasks, timing, and dependencies |
+| `changes.workspec.js` | Changes | Explicit effects attached to task start or completion |
+| `constraints.workspec.js` | Constraints | Rules evaluated against the resolved simulation |
+| `generator.workspec.js` | Generator | Optional computed or simulated behaviour |
 
-- Custom validation via CLI: [/docs/workspec/guides/custom-validation-cli](/docs/workspec/guides/custom-validation-cli)
-- Object model: [/docs/workspec/specification/v2.0/objects](/docs/workspec/specification/v2.0/objects)
-- Task model: [/docs/workspec/specification/v2.0/tasks](/docs/workspec/specification/v2.0/tasks)
-- Interaction system: [/docs/workspec/specification/v2.0/interactions](/docs/workspec/specification/v2.0/interactions)
-- Cheatsheet: [/docs/workspec/cheatsheet](/docs/workspec/cheatsheet)
+The simulation is not a fifth source file. Studio resolves it from those
+sources.
+
+## 4. Edit, validate, and simulate
+
+1. In **Starting State**, change an initial object property such as a resource
+   quantity.
+2. Choose **Validate WorkSpec**. Fix errors before continuing; warnings and
+   informational results remain clearly distinguished in **Problems**.
+3. In **Changes**, inspect the handler attached to a task ID.
+4. Open **Simulate**, press Play, then drag the red playhead to compare the
+   initial state with a later state.
+5. In **Constraints**, inspect a rule. If it reports a runtime violation, open
+   **Problems** and select the result to jump to its time and affected object.
+
+## 5. Save and reopen
+
+Studio creates a folder-backed project. It writes the four files above and
+remembers the folder in the browser. Use **Export** for a portable
+`.workspec.zip`; imports restore Starting State, Changes, Constraints, Generator,
+and the project seed.
+
+Continue with the [WorkSpec 2.2 Authoring Guide](/docs/workspec/guides/authoring),
+then keep the [WorkSpec 2.2 Cheatsheet](/docs/workspec/cheatsheet) nearby.
+
+## Historical documents
+
+WorkSpec 2.0 and 2.1 placed effects in task `interactions`. Those versioned
+specifications remain available under **Historical specifications** in the docs
+navigation, but that is not the 2.2 authoring model.

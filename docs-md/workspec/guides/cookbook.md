@@ -1,134 +1,97 @@
-# WorkSpec v2.0 Cookbook (Common Patterns)
+# WorkSpec 2.2 Cookbook
 
-This cookbook shows common patterns for modeling work activities with WorkSpec v2.0.
+Common authoring patterns for the frozen WorkSpec 2.2 model. See the
+[Authoring Guide](/docs/workspec/guides/authoring) for the concepts behind them.
 
----
+## Consume a resource and produce a product
 
-## Pattern: Consume a resource and produce a product
+Starting State schedules the task; Changes owns its effects.
+
+```javascript
+WorkSpec.task("make_item").onComplete(() => {
+  change("input", "quantity", -2);
+  change("output", "quantity", 1);
+});
+```
+
+## Change equipment only while a task runs
+
+```javascript
+WorkSpec.task("use_machine").onStart(() => {
+  set("machine", "state", "in_use", { temporary: true });
+});
+```
+
+The temporary write reverts when the task completes.
+
+## Order tasks with a dependency
 
 ```json
 {
-    "id": "make_item",
-    "actor_id": "worker",
-    "start": "09:00",
-    "duration": "30m",
-    "interactions": [
-        { "target_id": "input", "property_changes": { "quantity": { "delta": -2 } } },
-        { "target_id": "output", "property_changes": { "quantity": { "delta": 1 } } }
-    ]
+  "id": "ship_order",
+  "actor_id": "worker",
+  "duration": "10m",
+  "depends_on": ["approve_order"]
 }
 ```
 
----
+Omit `start` when a task should begin as soon as its dependency completes.
 
-## Pattern: Equipment state transition
+## Move an object
 
-```json
-{
-    "id": "use_machine",
-    "actor_id": "operator",
-    "start": "10:00",
-    "duration": 15,
-    "interactions": [
-        {
-            "target_id": "machine",
-            "property_changes": {
-                "state": { "from": "available", "to": "in_use" }
-            },
-            "temporary": true
-        }
-    ]
-}
+```javascript
+WorkSpec.task("deliver_order").onComplete(() => {
+  move("parcel", "dispatch_bay");
+});
 ```
 
----
+## Create and remove objects
 
-## Pattern: OR-dependency (`depends_on.any`)
+```javascript
+WorkSpec.task("open_case").onComplete(() => {
+  create({ id: "case_001", type: "product", name: "Case 001", properties: { state: "open" } });
+});
 
-```json
-{
-    "id": "ship_order",
-    "actor_id": "worker",
-    "start": "11:00",
-    "duration": 10,
-    "depends_on": { "any": ["auto_approval", "manager_approval"] }
-}
+WorkSpec.task("close_case").onComplete(() => {
+  remove("case_001");
+});
 ```
 
----
+## Check a quantity throughout the run
 
-## Pattern: Multi-day start
-
-```json
-{
-    "id": "day_2_task",
-    "actor_id": "worker",
-    "start": { "day": 2, "time": "09:30" },
-    "duration": "1h"
-}
-```
-
----
-
-## Pattern: Create and delete objects (lifecycle)
-
-Create:
-
-```json
-{
-    "action": "create",
-    "object": { "id": "batch_001", "type": "product", "name": "Batch #001" }
-}
-```
-
-Delete:
-
-```json
-{
-    "action": "delete",
-    "target_id": "batch_001"
-}
-```
-
----
-
-## Pattern: Recipe compliance warnings
-
-Define a recipe:
-
-```json
-{
-    "process": {
-        "recipes": {
-            "bread_loaf": {
-                "inputs": { "flour": 0.5, "water": 0.3, "yeast": 0.01 }
-            }
-        }
+```javascript
+module.exports = {
+  "inventory.non_negative": ctx => {
+    for (const time of ctx.times()) {
+      const quantity = ctx.getAt(time, "input", "quantity");
+      if (quantity < 0) return {
+        time,
+        objects: ["input"],
+        property: "quantity",
+        observed: quantity,
+        expected: { min: 0 },
+        message: "Input stock must not be negative."
+      };
     }
-}
+    return null;
+  }
+};
 ```
 
-If a task produces `bread_loaf` but does not consume all required inputs in the same task, recipe validation may produce a **warning**.
+## Add optional computed behaviour
 
----
-
-## Pattern: Use a `service` performer
-
-```json
-{
-    "id": "service:timer",
-    "type": "service",
-    "name": "Timer Service",
-    "properties": { "state": "running", "interval": "5m" }
-}
+```javascript
+WorkSpec.onUpdate(({ get, set }) => {
+  if (get("oven", "state") === "heating") {
+    set("oven", "temperature_c", get("oven", "temperature_c") + 4);
+  }
+});
 ```
 
-```json
-{
-    "id": "proof_dough",
-    "actor_id": "service:timer",
-    "start": "06:35",
-    "duration": "1h"
-}
-```
+Use Generator for simulated computation. Use Changes when the effect is a known
+part of a task.
 
+## Historical pattern warning
+
+WorkSpec 2.0/2.1 placed these effects in task `interactions`. Do not copy that
+syntax into 2.2 Starting State.

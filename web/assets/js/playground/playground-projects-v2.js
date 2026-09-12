@@ -10,6 +10,7 @@
     const STARTING_STATE_FILE = 'start.workspec.json';
     const CHANGES_FILE = 'changes.workspec.js';
     const GENERATOR_FILE = 'generator.workspec.js';
+    const CONSTRAINTS_FILE = 'constraints.workspec.js';
     const UAW_DIRECTORY = '.uaw';
     const PROJECT_META_FILE = 'project.json';
     const LAST_VALID_FILE = 'last-valid-start.workspec.json';
@@ -22,6 +23,7 @@
     const LEGACY_SHARE_PREFIX = 'uaw-save-code-v1:';
 
     const blankWorkSpec = () => JSON.stringify({
+        $schema: 'https://universalautomation.wiki/workspec/v2.2.schema.json',
         simulation: {
             schema_version: '2.2',
             meta: { title: 'Untitled process', description: 'Describe what this process should accomplish.', domain: 'General' },
@@ -39,6 +41,10 @@
 // onUpdate runs once per whole simulation minute after execution starts.
 // WorkSpec.onStart(({ set, random, state }) => {});
 // WorkSpec.onUpdate(({ time, delta, change, random, state }) => {});
+`;
+
+    const blankConstraints = () => `// WorkSpec 2.2 Constraints
+// Rules inspect the resolved simulation with ctx.state(), ctx.stateAt(), ctx.get(), ctx.getAt(), and ctx.times().
 `;
 
     const createId = () => window.crypto?.randomUUID?.()
@@ -226,6 +232,7 @@
             if (workSpecDraft === null) throw new Error(`The folder does not contain ${STARTING_STATE_FILE}.`);
             const changesDraft = await this.readText(directoryHandle, CHANGES_FILE, true);
             const generatorDraft = await this.readText(directoryHandle, GENERATOR_FILE, true);
+            const constraintsDraft = await this.readText(directoryHandle, CONSTRAINTS_FILE, true);
             const lastValidWorkSpec = uawDirectory ? await this.readText(uawDirectory, LAST_VALID_FILE, true) || '' : '';
             const checkpoints = [];
             const checkpointMetadata = Array.isArray(metadata.checkpoints) ? metadata.checkpoints : [];
@@ -238,7 +245,8 @@
                     const workSpec = directory ? await this.readText(directory, `${item.id}.start.workspec.json`, true) : null;
                     const changes = directory ? await this.readText(directory, `${item.id}.changes.workspec.js`, true) : null;
                     const generator = directory ? await this.readText(directory, `${item.id}.generator.workspec.js`, true) : null;
-                    if (workSpec !== null) checkpoints.push({ ...item, workSpec, changes: changes ?? blankChanges(), generator: generator ?? blankGenerator() });
+                    const constraints = directory ? await this.readText(directory, `${item.id}.constraints.workspec.js`, true) : null;
+                    if (workSpec !== null) checkpoints.push({ ...item, workSpec, changes: changes ?? blankChanges(), generator: generator ?? blankGenerator(), constraints: constraints ?? blankConstraints() });
                 }
             }
             return {
@@ -254,6 +262,7 @@
                 workSpecDraft,
                 changesDraft: changesDraft === null ? blankChanges() : changesDraft,
                 generatorDraft: generatorDraft === null ? blankGenerator() : generatorDraft,
+                constraintsDraft: constraintsDraft === null ? blankConstraints() : constraintsDraft,
                 seed: Number.isInteger(metadata.seed) ? metadata.seed : 1,
                 lastValidWorkSpec,
                 directoryHandle
@@ -283,6 +292,7 @@
             await this.writeText(project.directoryHandle, STARTING_STATE_FILE, project.workSpecDraft || '');
             await this.writeText(project.directoryHandle, CHANGES_FILE, project.changesDraft ?? blankChanges());
             await this.writeText(project.directoryHandle, GENERATOR_FILE, project.generatorDraft ?? blankGenerator());
+            await this.writeText(project.directoryHandle, CONSTRAINTS_FILE, project.constraintsDraft ?? blankConstraints());
             if (project.lastValidWorkSpec) await this.writeText(uawDirectory, LAST_VALID_FILE, project.lastValidWorkSpec);
             await this.writeText(uawDirectory, PROJECT_META_FILE, JSON.stringify(this.projectMetadata(project), null, 2));
             await this.registryPut(project);
@@ -330,6 +340,7 @@
                 workSpecDraft: project.workSpecDraft || '',
                 changesDraft: project.changesDraft ?? blankChanges(),
                 generatorDraft: project.generatorDraft ?? blankGenerator(),
+                constraintsDraft: project.constraintsDraft ?? blankConstraints(),
                 seed: Number.isInteger(project.seed) ? project.seed : 1,
                 lastValidWorkSpec: project.lastValidWorkSpec || '',
                 checkpoints: Array.isArray(project.checkpoints) ? project.checkpoints.slice(-20) : [],
@@ -341,7 +352,7 @@
             return record;
         }
 
-        async create(name = 'Untitled project', initialWorkSpec = '', parentDirectoryHandle = null, initialChanges = null, initialGenerator = null) {
+        async create(name = 'Untitled project', initialWorkSpec = '', parentDirectoryHandle = null, initialChanges = null, initialGenerator = null, initialConstraints = null) {
             let parentHandle = parentDirectoryHandle;
             try { parentHandle = parentHandle || await this.chooseProjectDirectory('uaw-new-project'); }
             catch (error) { if (isAbortError(error)) return null; throw error; }
@@ -354,6 +365,7 @@
                 workSpecDraft: initialWorkSpec || blankWorkSpec(),
                 changesDraft: initialChanges ?? blankChanges(),
                 generatorDraft: initialGenerator ?? blankGenerator(),
+                constraintsDraft: initialConstraints ?? blankConstraints(),
                 seed: 1,
                 lastValidWorkSpec: this.isValidWorkSpec(initialWorkSpec) ? initialWorkSpec : '',
                 checkpoints: [], agentThreadId: null, settings: {}, directoryHandle: handle
@@ -364,12 +376,12 @@
             return project;
         }
 
-        async createFromTemplate(name, workSpec, directoryHandle = null, changes = null, generator = null) {
+        async createFromTemplate(name, workSpec, directoryHandle = null, changes = null, generator = null, constraints = null) {
             let handle = directoryHandle;
             try { handle = handle || await this.chooseProjectDirectory('uaw-template-project'); }
             catch (error) { if (isAbortError(error)) return null; throw error; }
             await this.saveCurrent();
-            const project = await this.create(name || handle.name, workSpec, handle, changes, generator);
+            const project = await this.create(name || handle.name, workSpec, handle, changes, generator, constraints);
             if (project) emit('uaw:project-created-from-template', { project });
             return project;
         }
@@ -402,6 +414,7 @@
             if (!duplicate) return null;
             duplicate.changesDraft = source.changesDraft ?? blankChanges();
             duplicate.generatorDraft = source.generatorDraft ?? blankGenerator();
+            duplicate.constraintsDraft = source.constraintsDraft ?? blankConstraints();
             duplicate.seed = source.seed ?? 1;
             this.currentProject = await this.put(duplicate);
             if (this.changesEditor) this.changesEditor.setValue(this.currentProject.changesDraft);
@@ -537,12 +550,14 @@
                 createdAt: new Date().toISOString(),
                 workSpec: this.editor.getValue(),
                 changes: this.changesEditor?.getValue?.() ?? this.currentProject.changesDraft ?? blankChanges(),
-                generator: this.generatorEditor?.getValue?.() ?? this.currentProject.generatorDraft ?? blankGenerator()
+                generator: this.generatorEditor?.getValue?.() ?? this.currentProject.generatorDraft ?? blankGenerator(),
+                constraints: this.currentProject.constraintsDraft ?? blankConstraints()
             };
             const directory = await (await this.getUawDirectory(this.currentProject.directoryHandle, true)).getDirectoryHandle(CHECKPOINT_DIRECTORY, { create: true });
             await this.writeText(directory, `${checkpoint.id}.start.workspec.json`, checkpoint.workSpec);
             await this.writeText(directory, `${checkpoint.id}.changes.workspec.js`, checkpoint.changes);
             await this.writeText(directory, `${checkpoint.id}.generator.workspec.js`, checkpoint.generator);
+            await this.writeText(directory, `${checkpoint.id}.constraints.workspec.js`, checkpoint.constraints);
             this.currentProject.checkpoints = [...(this.currentProject.checkpoints || []), checkpoint].slice(-20);
             this.currentProject = await this.put(this.currentProject);
             emit('uaw:checkpoint-created', { checkpoint });
@@ -556,6 +571,8 @@
             this.editor.setValue(checkpoint.workSpec);
             if (this.changesEditor && typeof checkpoint.changes === 'string') this.changesEditor.setValue(checkpoint.changes);
             if (this.generatorEditor && typeof checkpoint.generator === 'string') this.generatorEditor.setValue(checkpoint.generator);
+            this.currentProject.constraintsDraft = checkpoint.constraints ?? blankConstraints();
+            emit('uaw:constraints-restored', { constraints: this.currentProject.constraintsDraft });
             return true;
         }
 
@@ -739,6 +756,7 @@
                 if (checkpoint.id && checkpoint.workSpec) await this.writeText(checkpointDirectory, `${checkpoint.id}.start.workspec.json`, checkpoint.workSpec);
                 if (checkpoint.id && typeof checkpoint.changes === 'string') await this.writeText(checkpointDirectory, `${checkpoint.id}.changes.workspec.js`, checkpoint.changes);
                 if (checkpoint.id && typeof checkpoint.generator === 'string') await this.writeText(checkpointDirectory, `${checkpoint.id}.generator.workspec.js`, checkpoint.generator);
+                if (checkpoint.id && typeof checkpoint.constraints === 'string') await this.writeText(checkpointDirectory, `${checkpoint.id}.constraints.workspec.js`, checkpoint.constraints);
             }
             await this.put(this.currentProject);
             await this.deleteLegacyRecord(legacy);

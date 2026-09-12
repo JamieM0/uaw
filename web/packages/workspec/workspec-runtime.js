@@ -2200,7 +2200,7 @@
         const configuredStart = parseTaskStart((run.index.sim.config || {}).start_time);
         const start = configuredStart.ok ? configuredStart.startMinutes : resolved.length ? Math.min(...resolved.map((timing) => timing.start)) : 0;
         const naturalEnd = resolved.length ? Math.max(...resolved.map((timing) => timing.end)) : start;
-        const end = Number.isFinite(options?.until) ? Math.min(naturalEnd, options.until) : naturalEnd;
+        const end = Number.isFinite(options?.until) ? options.until : naturalEnd;
         if (end < start) {
             run.generator = generatorSource;
             run.seed = options?.seed ?? 1;
@@ -2282,5 +2282,137 @@
         return serialiseState(run);
     }
 
-    return { parseDurationToMinutes, parseTaskStart, parseOffset, formatCompactReference, normalizeValueExpression, isValueReference, evaluateValue, evaluateCondition, buildIndex, resolveTimings, replay, serialiseState, snapshotAt, validate, analyzeChanges, compileChanges, compileGenerator, applyChanges, runProject, snapshotProjectAt, seededRandom, OBJECT_FIELDS: [...OBJECT_FIELDS], TASK_FIELDS: [...TASK_FIELDS], LOCATION_FIELDS: [...LOCATION_FIELDS] };
+    function deepFreeze(value) {
+        if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
+        Object.freeze(value);
+        Object.values(value).forEach(deepFreeze);
+        return value;
+    }
+
+    function constraintTimeMinutes(value) {
+        if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+        const parsed = parseTaskStart(value);
+        return parsed.ok && Number.isFinite(parsed.startMinutes) ? parsed.startMinutes : null;
+    }
+
+    function compileConstraints(source) {
+        if (typeof source !== 'string' || !source.trim()) return [];
+        const registered = [];
+        const moduleValue = { exports: {} };
+        const WorkSpec = Object.freeze({
+            constraint(id, check) {
+                if (typeof id !== 'string' || !id.trim()) throw new TypeError('Constraint id must be a non-empty string.');
+                if (typeof check !== 'function') throw new TypeError(`Constraint '${id}' must be a function.`);
+                registered.push({ id: id.trim(), check });
+            }
+        });
+        const evaluate = new Function('WorkSpec', 'module', 'exports', `"use strict";\n${source}\n`); // eslint-disable-line no-new-func
+        evaluate(WorkSpec, moduleValue, moduleValue.exports);
+
+        const exported = moduleValue.exports && moduleValue.exports.default
+            ? moduleValue.exports.default
+            : moduleValue.exports;
+        const add = (candidate, id) => {
+            if (typeof candidate === 'function') {
+                registered.push({ id: String(id || candidate.constraint_id || candidate.constraintId || candidate.name || '').trim(), check: candidate });
+            } else if (plain(candidate) && typeof (candidate.check || candidate.run) === 'function') {
+                registered.push({ id: String(candidate.id || candidate.constraint_id || id || '').trim(), check: candidate.check || candidate.run });
+            }
+        };
+        if (typeof exported === 'function' || Array.isArray(exported)) {
+            (Array.isArray(exported) ? exported : [exported]).forEach((candidate) => add(candidate));
+        } else if (plain(exported)) {
+            if (Array.isArray(exported.constraints)) exported.constraints.forEach((candidate) => add(candidate));
+            else Object.entries(exported).forEach(([id, candidate]) => add(candidate, id));
+        }
+        return registered.map((entry, index) => ({ ...entry, id: entry.id || `runtime.constraint.${index + 1}` }));
+    }
+
+    function normalizeViolation(value, fallbackId, fallbackTime) {
+        if (value === null || value === undefined || value === false || value === true) return null;
+        const input = plain(value) ? value : { message: String(value) };
+        const constraintId = String(input.constraint_id || input.constraintId || fallbackId || 'runtime.constraint').trim();
+        const severity = ['error', 'warning', 'info'].includes(input.severity) ? input.severity : 'error';
+        const time = constraintTimeMinutes(input.time) ?? fallbackTime;
+        const objects = (Array.isArray(input.objects) ? input.objects : input.object ? [input.object] : [])
+            .filter((id) => typeof id === 'string' && id.trim()).map((id) => id.trim());
+        const violation = {
+            constraint_id: constraintId,
+            severity,
+            time,
+            objects,
+            message: String(input.message || input.detail || `Runtime constraint '${constraintId}' was violated.`)
+        };
+        if (typeof input.property === 'string' && input.property) violation.property = input.property;
+        if (own(input, 'observed')) violation.observed = clone(input.observed);
+        if (own(input, 'expected')) violation.expected = clone(input.expected);
+        return violation;
+    }
+
+    function normalizeViolations(value, fallbackId, fallbackTime) {
+        if (plain(value) && Array.isArray(value.violations)) value = value.violations;
+        const entries = Array.isArray(value) ? value : [value];
+        return entries.map((entry) => normalizeViolation(entry, fallbackId, fallbackTime)).filter(Boolean);
+    }
+
+    function runConstraints(documentValue, changesSource, generatorSource, constraintSource, options) {
+        const runtimeOptions = { seed: options?.seed ?? 1 };
+        const requestedTime = constraintTimeMinutes(options?.time);
+        if (requestedTime !== null) runtimeOptions.until = requestedTime;
+        const run = runProject(documentValue, changesSource, generatorSource, runtimeOptions);
+        const finiteTimes = run.history.map((entry) => entry.time).filter(Number.isFinite);
+        const configuredStart = parseTaskStart((run.index.sim.config || {}).start_time);
+        const time = requestedTime ?? (finiteTimes.length ? Math.max(...finiteTimes) : configuredStart.ok ? configuredStart.startMinutes : 0);
+        const problems = [...run.problems];
+        let constraints;
+        try {
+            constraints = compileConstraints(constraintSource);
+        } catch (error) {
+            problems.push(problem('constraint.compile.failed', error.message, '/constraints', {}, 'error'));
+            return { time, violations: [], problems };
+        }
+
+        const snapshots = new Map();
+        const snapshotFor = (queryTime) => {
+            const minutes = constraintTimeMinutes(queryTime);
+            if (minutes === null) throw new TypeError('Constraint query time must be finite minutes or a valid WorkSpec task start.');
+            if (!snapshots.has(minutes)) {
+                const snapshot = minutes === time
+                    ? serialiseState(run)
+                    : snapshotProjectAt(documentValue, changesSource, generatorSource, minutes, { seed: runtimeOptions.seed });
+                const { problems: _snapshotProblems, ...observable } = snapshot;
+                snapshots.set(minutes, deepFreeze(observable));
+            }
+            return snapshots.get(minutes);
+        };
+        const read = (queryTime, targetId, property) => {
+            const state = snapshotFor(queryTime);
+            const entity = state.objects[targetId] || state.locations[targetId];
+            if (!entity) return undefined;
+            const value = own(entity, property) ? entity[property] : entity.properties?.[property];
+            return deepFreeze(clone(value));
+        };
+        const queryTimes = deepFreeze([...new Set(finiteTimes.concat([time]))].sort((left, right) => left - right));
+        const context = deepFreeze({
+            time,
+            state: () => snapshotFor(time),
+            stateAt: (queryTime) => snapshotFor(queryTime),
+            get: (targetId, property) => read(time, targetId, property),
+            getAt: (queryTime, targetId, property) => read(queryTime, targetId, property),
+            times: () => queryTimes
+        });
+        const violations = [];
+        constraints.forEach((constraint) => {
+            try {
+                const resultValue = constraint.check(context);
+                if (resultValue && typeof resultValue.then === 'function') throw new TypeError('Async runtime constraints are not supported.');
+                violations.push(...normalizeViolations(resultValue, constraint.id, time));
+            } catch (error) {
+                problems.push(problem('constraint.execution.failed', error.message, `/constraints/${ptrEscape(constraint.id)}`, { constraint_id: constraint.id, time }, 'error'));
+            }
+        });
+        return { time, violations, problems };
+    }
+
+    return { parseDurationToMinutes, parseTaskStart, parseOffset, formatCompactReference, normalizeValueExpression, isValueReference, evaluateValue, evaluateCondition, buildIndex, resolveTimings, replay, serialiseState, snapshotAt, validate, analyzeChanges, compileChanges, compileGenerator, applyChanges, runProject, snapshotProjectAt, runConstraints, seededRandom, OBJECT_FIELDS: [...OBJECT_FIELDS], TASK_FIELDS: [...TASK_FIELDS], LOCATION_FIELDS: [...LOCATION_FIELDS] };
 }));

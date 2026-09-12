@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkSpec 2.2 Authoring Guide - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    
+                                        
+                                            <li><a href="/">Home</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/">Documentation</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/">Workspec</a></li>
+                                        
+                                    
+                                        
+                                            <li><a href="/docs/workspec/guides/">Guides</a></li>
+                                        
+                                    
+                                        
+                                            <li aria-current="page">WorkSpec 2.2 Authoring Guide</li>
+                                        
+                                    
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">WorkSpec 2.2 Authoring Guide</h1>
+                            
+                            <p class="docs-page-subtitle">WorkSpec 2.2 separates **what the world is** from **what happens**, **what must</p>
+                            
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>WorkSpec 2.2 separates <strong>what the world is</strong> from <strong>what happens</strong>, <strong>what must
+remain true</strong>, and <strong>optional computed behaviour</strong>. A project is four files;
+playback resolves them into one observable history.</p>
+<h2 class="docs-heading" id="the-mental-model">The mental model<a class="headerlink" href="#the-mental-model" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text">Starting State    what exists initially
+Changes           explicit things that happen
+Constraints       things that must remain true
+Generator         optional code that decides/simulates what happens
+Simulation        the resolved observable history you play back
+</code></pre></div>
+<p>Starting State, Changes, and Constraints are the main authoring surfaces. The
+Generator is optional and advanced: a project with only Starting State and
+Changes is complete. The simulation is produced by the runtime, never authored
+by hand.</p>
+<p>New to WorkSpec? Complete the <a href="/docs/workspec/guides/quickstart">WorkSpec 2.2 Quickstart</a>
+and the guided tutorial available from <strong>Start Tutorial</strong> in
+<a href="/playground">WorkSpec Studio</a> first.</p>
+<h2 class="docs-heading" id="starting-state-what-exists-initially">Starting State: what exists initially<a class="headerlink" href="#starting-state-what-exists-initially" title="Link to this section">¶</a></h2>
+<p><code class="docs-inline-code">start.workspec.json</code> is declarative JSON: locations, objects, people,
+equipment, stocks, the planned task schedule, capacities, and dependencies. It
+contains no executable effects. Tasks may pin an exact <code class="docs-inline-code">start</code> time or derive
+their timing from <code class="docs-inline-code">depends_on</code>.</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"$schema"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://universalautomation.wiki/workspec/v2.2.schema.json"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.2"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Morning Bake"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Mix and bake one batch of dough."</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"domain"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Food Production"</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"time_unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"minutes"</span><span class="p">,</span><span class="w"> </span><span class="nt">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"07:00"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"world"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"locations"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bakery"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Bakery"</span><span class="w"> </span><span class="p">}]</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Baker"</span><span class="p">,</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bakery"</span><span class="p">,</span><span class="w"> </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"available"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"flour"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Flour"</span><span class="p">,</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bakery"</span><span class="p">,</span><span class="w"> </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kg"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dough"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"product"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Dough"</span><span class="p">,</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bakery"</span><span class="p">,</span><span class="w"> </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"absent"</span><span class="p">,</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"process"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mix_dough"</span><span class="p">,</span><span class="w"> </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span><span class="w"> </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"07:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="s2">"20m"</span><span class="p">,</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bakery"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bake_batch"</span><span class="p">,</span><span class="w"> </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span><span class="w"> </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="s2">"45m"</span><span class="p">,</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bakery"</span><span class="p">,</span><span class="w"> </span><span class="nt">"depends_on"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"mix_dough"</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 class="docs-heading" id="changes-explicit-things-that-happen">Changes: explicit things that happen<a class="headerlink" href="#changes-explicit-things-that-happen" title="Link to this section">¶</a></h2>
+<p><code class="docs-inline-code">changes.workspec.js</code> registers authored effects for tasks. Inside handlers,
+<code class="docs-inline-code">set</code>, <code class="docs-inline-code">change</code>, and <code class="docs-inline-code">move</code> write observable state. A temporary write reverts
+when its task ends.</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nx">WorkSpec</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s2">"mix_dough"</span><span class="p">,</span><span class="w"> </span><span class="nx">task</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">task</span><span class="p">.</span><span class="nx">onStart</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">set</span><span class="p">(</span><span class="s2">"baker"</span><span class="p">,</span><span class="w"> </span><span class="s2">"state"</span><span class="p">,</span><span class="w"> </span><span class="s2">"working"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">temporary</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}));</span>
+<span class="w">  </span><span class="nx">task</span><span class="p">.</span><span class="nx">onComplete</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">change</span><span class="p">(</span><span class="s2">"flour"</span><span class="p">,</span><span class="w"> </span><span class="s2">"quantity"</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mf">2</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">change</span><span class="p">(</span><span class="s2">"dough"</span><span class="p">,</span><span class="w"> </span><span class="s2">"quantity"</span><span class="p">,</span><span class="w"> </span><span class="mf">1</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">set</span><span class="p">(</span><span class="s2">"dough"</span><span class="p">,</span><span class="w"> </span><span class="s2">"state"</span><span class="p">,</span><span class="w"> </span><span class="s2">"mixed"</span><span class="p">);</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div>
+<h2 class="docs-heading" id="constraints-things-that-must-remain-true">Constraints: things that must remain true<a class="headerlink" href="#constraints-things-that-must-remain-true" title="Link to this section">¶</a></h2>
+<p><code class="docs-inline-code">constraints.workspec.js</code> inspects the resolved history—not Changes or Generator
+source—through the constraint context. A constraint returns <code class="docs-inline-code">null</code> when
+satisfied, or a structured violation with a time and affected objects so Studio
+can show the evidence and jump to it.</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="s2">"flow.flour_never_negative"</span><span class="o">:</span><span class="w"> </span><span class="nx">ctx</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">time</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">times</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">quantity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">getAt</span><span class="p">(</span><span class="nx">time</span><span class="p">,</span><span class="w"> </span><span class="s2">"flour"</span><span class="p">,</span><span class="w"> </span><span class="s2">"quantity"</span><span class="p">);</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">quantity</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">time</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">objects</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"flour"</span><span class="p">],</span>
+<span class="w">        </span><span class="nx">property</span><span class="o">:</span><span class="w"> </span><span class="s2">"quantity"</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">observed</span><span class="o">:</span><span class="w"> </span><span class="nx">quantity</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">expected</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">min</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="s2">"Flour stock can never go negative."</span>
+<span class="w">      </span><span class="p">};</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div>
+<h2 class="docs-heading" id="generator-optional-simulated-behaviour">Generator: optional simulated behaviour<a class="headerlink" href="#generator-optional-simulated-behaviour" title="Link to this section">¶</a></h2>
+<p><code class="docs-inline-code">generator.workspec.js</code> is optional computational logic. <code class="docs-inline-code">onStart</code> runs once
+when execution starts; <code class="docs-inline-code">onUpdate</code> runs once per whole simulation minute.
+Randomness comes from the seeded <code class="docs-inline-code">random()</code> helper, so the same sources and seed
+produce the same history. Generator writes enter the same observable history as
+Changes.</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nx">WorkSpec</span><span class="p">.</span><span class="nx">onUpdate</span><span class="p">(({</span><span class="w"> </span><span class="nx">get</span><span class="p">,</span><span class="w"> </span><span class="nx">set</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">get</span><span class="p">(</span><span class="s2">"oven"</span><span class="p">,</span><span class="w"> </span><span class="s2">"state"</span><span class="p">)</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">"heating"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">set</span><span class="p">(</span><span class="s2">"oven"</span><span class="p">,</span><span class="w"> </span><span class="s2">"temperature_c"</span><span class="p">,</span><span class="w"> </span><span class="nx">get</span><span class="p">(</span><span class="s2">"oven"</span><span class="p">,</span><span class="w"> </span><span class="s2">"temperature_c"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">4</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div>
+<h2 class="docs-heading" id="simulation-the-resolved-observable-history">Simulation: the resolved observable history<a class="headerlink" href="#simulation-the-resolved-observable-history" title="Link to this section">¶</a></h2>
+<p>Playback resolves Starting State + Changes (+ Generator) into a deterministic
+movie of the world. Scrubbing to a time shows exactly what is true at that
+moment: object states, quantities, locations, and active work. Studio’s Simulate,
+Physical, and Problems views inspect this same resolved history.</p>
+<div class="codehilite"><pre><span></span><code class="language-text">workspec validate start.workspec.json --json
+
+workspec snapshot start.workspec.json \
+  --changes changes.workspec.js \
+  --generator generator.workspec.js \
+  --time 08:30 --seed 17 --json
+
+workspec constraints start.workspec.json \
+  --changes changes.workspec.js \
+  --generator generator.workspec.js \
+  --constraints constraints.workspec.js \
+  --time 08:30 --seed 17 --json --yes
+</code></pre></div>
+<h2 class="docs-heading" id="older-workspec-documents">Older WorkSpec documents<a class="headerlink" href="#older-workspec-documents" title="Link to this section">¶</a></h2>
+<p>WorkSpec 2.0 and 2.1 placed executable effects in task <code class="docs-inline-code">interactions</code>. That
+syntax remains documented for historical documents, but it is not the WorkSpec
+2.2 authoring model and must not be placed in 2.2 Starting State.</p>
+<h2 class="docs-heading" id="where-to-go-next">Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this section">¶</a></h2>
+<ul class="docs-list">
+<li><a href="/docs/playground/playground-guide">WorkSpec Studio Guide</a></li>
+<li><a href="/docs/workspec/guides/quickstart">WorkSpec 2.2 Quickstart</a></li>
+<li><a href="/docs/workspec/cheatsheet">WorkSpec 2.2 cheatsheet</a></li>
+<li><a href="/docs/workspec/guides/ai-generation">AI authoring guide</a></li>
+<li><a href="/docs/workspec/reference/types">Types, properties, and errors reference</a></li>
+</ul>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

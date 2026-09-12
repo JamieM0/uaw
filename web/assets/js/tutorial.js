@@ -18,6 +18,29 @@ class TutorialManager {
         return window.monacoEditor || this.editor || window.editor || null;
     }
 
+    resolveStepValue(step, field, visited = new Set()) {
+        if (!step || visited.has(step.id)) return undefined;
+        if (Object.prototype.hasOwnProperty.call(step, field)) return step[field];
+        visited.add(step.id);
+        const sourceId = step[`${field}_from`];
+        const sourceStep = this.tutorialData.steps.find(candidate => candidate.id === sourceId);
+        return this.resolveStepValue(sourceStep, field, visited);
+    }
+
+    loadProjectSources(step) {
+        const sourceMap = {
+            initial_changes: 'changes',
+            initial_generator: 'generator',
+            initial_constraints: 'custom-constraints'
+        };
+        Object.entries(sourceMap).forEach(([field, modelId]) => {
+            if (step.preserve_sources && !Object.prototype.hasOwnProperty.call(step, field)) return;
+            const value = this.resolveStepValue(step, field);
+            const model = window.UAWWorkSpecEditor?.models?.get?.(modelId);
+            if (typeof value === 'string' && model?.getValue?.() !== value) model?.setValue?.(value);
+        });
+    }
+
     normalizeLegacyStepDocument(rootDoc) {
         if (!rootDoc || typeof rootDoc !== 'object' || !rootDoc.simulation) return rootDoc;
 
@@ -79,7 +102,7 @@ class TutorialManager {
         }
 
         const sim = rootDoc?.simulation;
-        const isV2 = sim?.schema_version === '2.0' && sim?.world && sim?.process;
+        const isV2 = ['2.0', '2.1', '2.2'].includes(sim?.schema_version) && sim?.world && sim?.process;
         if (isV2) return this.applyTutorialDefaults(rootDoc);
 
         if (window.WorkSpecMigration && typeof window.WorkSpecMigration.migrate === 'function') {
@@ -100,6 +123,14 @@ class TutorialManager {
     }
 
     start() {
+        const activeEditor = this.getPrimaryEditor();
+        this.originalSources = {
+            startingState: activeEditor?.getValue?.() || '',
+            changes: window.UAWWorkSpecEditor?.models?.get?.('changes')?.getValue?.() || '',
+            generator: window.UAWWorkSpecEditor?.models?.get?.('generator')?.getValue?.() || '',
+            constraints: window.UAWWorkSpecEditor?.models?.get?.('custom-constraints')?.getValue?.() || ''
+        };
+        window.__uawTutorialPartsViolationObserved = false;
         this.isActive = true;
         this.elements.panel.style.display = 'flex';
         document.body.classList.add('tutorial-active'); // For hiding buttons via CSS
@@ -121,10 +152,17 @@ class TutorialManager {
         this.elements.panel.style.display = 'none';
         document.body.classList.remove('tutorial-active');
         
-        // Load the default sample simulation (from playground.js)
-        if (window.sampleSimulation) {
-            this.editor.setValue(JSON.stringify(window.sampleSimulation, null, 2));
+        // The tutorial is a temporary learning workspace. Restore the project
+        // exactly as it was so starting or exiting a lesson never overwrites it.
+        const activeEditor = this.getPrimaryEditor();
+        if (this.originalSources && activeEditor?.setValue) {
+            activeEditor.setValue(this.originalSources.startingState);
+            const sourceMap = { changes: 'changes', generator: 'generator', constraints: 'custom-constraints' };
+            Object.entries(sourceMap).forEach(([field, modelId]) => {
+                window.UAWWorkSpecEditor?.models?.get?.(modelId)?.setValue?.(this.originalSources[field]);
+            });
         }
+        this.originalSources = null;
 
         // Menu buttons remain enabled throughout tutorial
 
@@ -132,6 +170,7 @@ class TutorialManager {
             window.debounceRender();
         }
         window.validateJSON();
+        window.__uawTutorialPartsViolationObserved = false;
     }
 
     enableMenuButtons() {
@@ -231,11 +270,15 @@ class TutorialManager {
             header.setAttribute('data-step', `Step ${index + 1} of ${totalSteps}`);
         }
 
-        const stepDocument = this.ensureWorkSpecV2Document(step.initial_json);
+        const shouldLoadStartingState = !step.preserve_sources || Object.prototype.hasOwnProperty.call(step, 'initial_json');
+        const stepDocument = shouldLoadStartingState
+            ? this.ensureWorkSpecV2Document(this.resolveStepValue(step, 'initial_json'))
+            : null;
         const activeEditor = this.getPrimaryEditor();
-        if (activeEditor && typeof activeEditor.setValue === 'function') {
+        if (stepDocument && activeEditor && typeof activeEditor.setValue === 'function') {
             activeEditor.setValue(JSON.stringify(stepDocument, null, 2));
         }
+        this.loadProjectSources(step);
 
         this.updateNavButtons();
         
@@ -287,7 +330,12 @@ class TutorialManager {
                 const funcName = validationConfig.function_name;
                 if (typeof TutorialValidators[funcName] === 'function') {
                     // The custom validator for this step determines if the user can proceed.
-                    isSuccess = TutorialValidators[funcName](currentJson.simulation);
+                    isSuccess = TutorialValidators[funcName](currentJson.simulation, {
+                        documentValue: currentJson,
+                        changes: window.UAWWorkSpecEditor?.models?.get?.('changes')?.getValue?.() || '',
+                        generator: window.UAWWorkSpecEditor?.models?.get?.('generator')?.getValue?.() || '',
+                        constraints: window.UAWWorkSpecEditor?.models?.get?.('custom-constraints')?.getValue?.() || ''
+                    });
                 } else {
                     console.error(`Tutorial validation function not found: ${funcName}`);
                 }

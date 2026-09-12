@@ -23,7 +23,9 @@ const playgroundShellPath = path.join(repoRoot, 'web', 'assets', 'js', 'playgrou
 const playgroundProjectsPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-projects-v2.js');
 const playgroundScriptEditorPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-editor-workspace.js');
 const playgroundLegacyEditorPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-editor.js');
+const playgroundValidationPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-validation.js');
 const playgroundObjectsPath = path.join(repoRoot, 'web', 'assets', 'js', 'playground', 'playground-objects.js');
+const tutorialContentPath = path.join(repoRoot, 'web', 'assets', 'static', 'tutorial-content.json');
 const migrateCliPath = path.join(repoRoot, 'web', 'scripts', 'workspec-migrate.js');
 
 function readText(filePath) {
@@ -163,6 +165,8 @@ function run() {
     const studioShell = readText(playgroundShellPath);
     const projectStore = readText(playgroundProjectsPath);
     const scriptEditor = readText(playgroundScriptEditorPath);
+    const legacyEditor = readText(playgroundLegacyEditorPath);
+    const validationPanel = readText(playgroundValidationPath);
     const objectEditor = readText(playgroundObjectsPath);
     for (const workspace of ['Projects', 'Model', 'Editor', 'Simulate', 'Assets']) {
         assert.match(studioShell, new RegExp(`workspaceButton\\([^\\n]+['"]${workspace}['"]`), `Studio is missing the ${workspace} workspace`);
@@ -171,17 +175,33 @@ function run() {
     for (const [viewId, viewLabel] of [['process', 'Process'], ['objects', 'Objects'], ['physical', 'Physical'], ['digital', 'Digital'], ['displays', 'Displays']]) {
         assert.match(studioShell, new RegExp(`\\['${viewId}',`), `Model is missing its ${viewLabel} view`);
     }
-    for (const file of ['start.workspec.json', 'changes.workspec.js', 'generator.workspec.js']) assert.match(projectStore, new RegExp(file.replace(/\./g, '\\.')), `Project persistence is missing ${file}`);
-    for (const label of ['Starting State', 'Changes', 'Generator', 'Custom Constraints', 'Constraint Library']) assert.match(scriptEditor, new RegExp(`'${label}'`), `Editor is missing ${label}`);
+    for (const file of ['start.workspec.json', 'changes.workspec.js', 'constraints.workspec.js', 'generator.workspec.js']) assert.match(projectStore, new RegExp(file.replace(/\./g, '\\.')), `Project persistence is missing ${file}`);
+    for (const label of ['Starting State', 'Changes', 'Generator', 'Constraints', 'Constraint Library']) assert.match(scriptEditor, new RegExp(`'${label}'`), `Editor is missing ${label}`);
     assert.match(scriptEditor, /workSpecChangesEditor/, 'Changes are not project-backed');
     assert.match(scriptEditor, /workSpecGeneratorEditor/, 'Generator is not project-backed');
+    assert.match(scriptEditor, /constraintSource/, 'Runtime constraint source is not available to Studio');
+    assert.match(legacyEditor, /WorkSpecRuntime\.runConstraints/, 'Studio validation does not execute package runtime constraints');
+    assert.match(validationPanel, /workSpecTimeController\?\.setTime/, 'Runtime violations cannot move the Studio playback clock');
+    assert.match(validationPanel, /violation\.objects/, 'Runtime violations cannot identify affected Studio objects');
     assert.match(scriptEditor, /registerCodeActionProvider/, 'Starting State corrections are not exposed as code actions');
     assert.match(studioShell, /data-open-changes-task/, 'Process view does not expose Changes handler references');
     assert.match(studioShell, /data-open-changes-object/, 'Object view does not expose Changes helper references');
+    assert.match(studioShell, /help\.tutorial/, 'The current Studio shell does not expose the guided tutorial');
     assert.doesNotMatch(scriptEditor, /new Function|\beval\s*\(/, 'Studio must not execute authored JavaScript directly');
     assert.doesNotMatch(playgroundHtml, />Interactions</, 'Model must not expose legacy task interactions');
+    assert.doesNotMatch(playgroundHtml, /task-add-interaction-btn/, 'Task editor must not offer legacy interactions in Starting State');
     assert.match(objectEditor, /depends_on: document\.getElementById\('task-depends-input'\)\.value/, 'Task dependencies are not persisted from Model');
     assertPlaybackValidationObserverIsNonReentrant();
+
+    const tutorial = JSON.parse(readText(tutorialContentPath));
+    assert.equal(tutorial.steps.length, 8, 'The first-run tutorial should remain a short progressive path');
+    assert.deepEqual(tutorial.steps.map(step => step.id), [
+        'starting_state', 'edit_starting_state', 'validate_starting_state', 'add_change',
+        'simulate', 'inspect_constraint', 'violate_constraint', 'generator_optional'
+    ]);
+    assert.equal(tutorial.steps[0].initial_json.simulation.schema_version, '2.2', 'Tutorial is not WorkSpec 2.2');
+    assert.doesNotMatch(JSON.stringify(tutorial), /\"interactions\"\s*:/, 'Tutorial teaches legacy task interactions');
+    assert.match(tutorial.steps.at(-1).instructions, /Generator[\s\S]*optional|optional[\s\S]*Generator/, 'Tutorial does not explain that Generator is optional');
 
     const migrateCli = readText(migrateCliPath);
     assert.match(
@@ -201,6 +221,7 @@ function run() {
     const nodeRuntime = require(packageRuntimePath);
     assert.equal(typeof nodeRuntime.analyzeChanges, 'function', 'Package runtime does not expose Changes analysis');
     assert.equal(typeof nodeRuntime.compileGenerator, 'function', 'Package runtime does not expose Generator compilation');
+    assert.equal(typeof nodeRuntime.runConstraints, 'function', 'Package runtime does not expose runtime constraints');
     assert.equal(nodeRuntime.analyzeChanges('WorkSpec.task("task_1").onStart(() => {});').handlers[0].taskId, 'task_1');
 
     const validDoc = baseDoc();
@@ -216,12 +237,17 @@ function run() {
     assert.deepEqual(browserInvalid, nodeInvalid, 'Validator mismatch on invalid document');
 
     const templateLibrary = JSON.parse(readText(path.join(repoRoot, 'web', 'assets', 'static', 'simulation-library.json')));
-    assert.equal(templateLibrary.simulations.length, 6, 'Studio template inventory changed unexpectedly');
+    assert.equal(templateLibrary.simulations.length, 7, 'Studio template inventory changed unexpectedly');
     templateLibrary.simulations.forEach(template => {
         assert.equal(template.simulation.schema_version, '2.2', `${template.id} is not WorkSpec 2.2`);
         assert.equal(nodeValidator.validate({ simulation: template.simulation }).ok, true, `${template.id} Starting State is not WorkSpec-valid`);
         assert.equal(typeof template.changes, 'string', `${template.id} has no Changes`);
+        assert.equal(typeof template.constraints, 'string', `${template.id} has no Constraints`);
     });
+    const sterilisation = templateLibrary.simulations.find(template => template.id === 'steam_sterilisation');
+    assert.ok(sterilisation, 'steam_sterilisation template is missing');
+    assert.equal(typeof sterilisation.generator, 'string', 'steam_sterilisation has no Generator');
+    assert.match(sterilisation.generator, /WorkSpec\.onUpdate/, 'steam_sterilisation Generator is not computational');
 
     process.stdout.write('✓ playground integration uses package-backed WorkSpec runtime\n');
 }

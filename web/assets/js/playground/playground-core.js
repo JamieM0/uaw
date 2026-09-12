@@ -412,7 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * Data fetching and initialization with comprehensive error handling
  */
 Promise.all([
-  fetch("/assets/static/tutorial-content.json")
+  fetch("/assets/static/tutorial-content.json?v=20260911a")
     .then((res) => {
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${res.statusText}`);
@@ -968,11 +968,12 @@ async function loadSimulationFromLibrary(simulationId) {
         sourceLabel: `Template · ${simulation.name}`,
         workSpec: content,
         changes: simulation.changes || '',
-        generator: simulation.generator || ''
+        generator: simulation.generator || '',
+        constraints: simulation.constraints || ''
       });
       return true;
     } else if (window.UAWProjectStore?.createFromTemplate) {
-      const project = await window.UAWProjectStore.createFromTemplate(simulation.name, content, null, simulation.changes || '', simulation.generator || '');
+      const project = await window.UAWProjectStore.createFromTemplate(simulation.name, content, null, simulation.changes || '', simulation.generator || '', simulation.constraints || '');
       if (!project) return false;
       window.UAWPlaygroundShell?.setWorkspace('build');
     } else {

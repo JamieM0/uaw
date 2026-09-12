@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Authoring Guide for WorkSpec v2.0 - Universal Automation Wiki</title>
+    <title>AI Authoring Guide for WorkSpec 2.2 - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
     <link rel="stylesheet" href="/assets/css/category.css">
@@ -50,7 +50,7 @@
                                         
                                     
                                         
-                                            <li aria-current="page">AI Authoring Guide for WorkSpec v2.0</li>
+                                            <li aria-current="page">AI Authoring Guide for WorkSpec 2.2</li>
                                         
                                     
                                 </ol>
@@ -58,75 +58,68 @@
                         </div>
                         
                         <div class="docs-title-section">
-                            <h1 class="docs-page-title">AI Authoring Guide for WorkSpec v2.0</h1>
+                            <h1 class="docs-page-title">AI Authoring Guide for WorkSpec 2.2</h1>
                             
-                            <p class="docs-page-subtitle">This guide is for AI systems (and humans using AI) generating WorkSpec v2.0 documents.</p>
+                            <p class="docs-page-subtitle">This guide is for AI systems, and humans using AI, that generate WorkSpec 2.2</p>
                             
                         </div>
                     </header>
 
                     <div class="docs-content">
-                        <p>This guide is for AI systems (and humans using AI) generating WorkSpec v2.0 documents.</p>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="output-contract-recommended">Output contract (recommended)<a class="headerlink" href="#output-contract-recommended" title="Link to this section">¶</a></h2>
-<p>When generating WorkSpec:</p>
+                        <p>This guide is for AI systems, and humans using AI, that generate WorkSpec 2.2
+projects. The <a href="/docs/workspec/guides/authoring">Authoring Guide</a> remains the
+canonical conceptual reference.</p>
+<h2 class="docs-heading" id="output-contract">Output contract<a class="headerlink" href="#output-contract" title="Link to this section">¶</a></h2>
+<p>Generate separate project sources:</p>
+<ul class="docs-list">
+<li><code class="docs-inline-code">start.workspec.json</code>: declarative Starting State with schema version <code class="docs-inline-code">2.2</code>;</li>
+<li><code class="docs-inline-code">changes.workspec.js</code>: known, explicit task effects;</li>
+<li><code class="docs-inline-code">constraints.workspec.js</code>: rules over the resolved simulation;</li>
+<li><code class="docs-inline-code">generator.workspec.js</code>: optional computed or simulated behaviour only.</li>
+</ul>
+<p>Do not put task <code class="docs-inline-code">interactions</code>, executable effects, recipes, or state libraries
+inside 2.2 Starting State. Do not invent a Generator when Changes are enough.</p>
+<h2 class="docs-heading" id="starting-state-requirements">Starting State requirements<a class="headerlink" href="#starting-state-requirements" title="Link to this section">¶</a></h2>
+<p>Include <code class="docs-inline-code">$schema</code>, <code class="docs-inline-code">simulation.schema_version</code>, complete <code class="docs-inline-code">meta</code>, <code class="docs-inline-code">world</code>, and
+<code class="docs-inline-code">process</code>. Use stable snake_case IDs. Keep object properties under <code class="docs-inline-code">properties</code>,
+while <code class="docs-inline-code">location</code> remains a top-level object field.</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"$schema"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://universalautomation.wiki/workspec/v2.2.schema.json"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.2"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"domain"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"time_unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"minutes"</span><span class="p">,</span><span class="w"> </span><span class="nt">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"08:00"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"world"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"locations"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"process"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 class="docs-heading" id="author-explicit-effects-in-changes">Author explicit effects in Changes<a class="headerlink" href="#author-explicit-effects-in-changes" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nx">WorkSpec</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s2">"mix_dough"</span><span class="p">,</span><span class="w"> </span><span class="nx">task</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">task</span><span class="p">.</span><span class="nx">onStart</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">set</span><span class="p">(</span><span class="s2">"mixer"</span><span class="p">,</span><span class="w"> </span><span class="s2">"state"</span><span class="p">,</span><span class="w"> </span><span class="s2">"running"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">temporary</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}));</span>
+<span class="w">  </span><span class="nx">task</span><span class="p">.</span><span class="nx">onComplete</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">change</span><span class="p">(</span><span class="s2">"flour"</span><span class="p">,</span><span class="w"> </span><span class="s2">"quantity"</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mf">2</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">set</span><span class="p">(</span><span class="s2">"dough"</span><span class="p">,</span><span class="w"> </span><span class="s2">"state"</span><span class="p">,</span><span class="w"> </span><span class="s2">"mixed"</span><span class="p">);</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>The available helpers are <code class="docs-inline-code">set</code>, <code class="docs-inline-code">change</code>, <code class="docs-inline-code">move</code>, <code class="docs-inline-code">create</code>, and <code class="docs-inline-code">remove</code>.</p>
+<h2 class="docs-heading" id="generate-useful-constraint-evidence">Generate useful Constraint evidence<a class="headerlink" href="#generate-useful-constraint-evidence" title="Link to this section">¶</a></h2>
+<p>A failing Constraint should return a clear message plus the failure <code class="docs-inline-code">time</code>,
+affected <code class="docs-inline-code">objects</code>, <code class="docs-inline-code">property</code>, <code class="docs-inline-code">observed</code>, and <code class="docs-inline-code">expected</code> values whenever those
+fields apply. Return <code class="docs-inline-code">null</code> when the rule is satisfied.</p>
+<p>Constraints read resolved state through <code class="docs-inline-code">times()</code>, <code class="docs-inline-code">get()</code>, <code class="docs-inline-code">getAt()</code>, <code class="docs-inline-code">state()</code>,
+and <code class="docs-inline-code">stateAt()</code>. They do not read or rewrite authoring source.</p>
+<h2 class="docs-heading" id="validate-generated-projects">Validate generated projects<a class="headerlink" href="#validate-generated-projects" title="Link to this section">¶</a></h2>
 <ol class="docs-list docs-list-ordered">
-<li>Output <strong>valid JSON only</strong>.</li>
-<li>Always include:
-   - <code class="docs-inline-code">$schema: "https://universalautomation.wiki/workspec/v2.0.schema.json"</code>
-   - <code class="docs-inline-code">simulation.schema_version: "2.0"</code>
-   - <code class="docs-inline-code">simulation.meta.title</code>, <code class="docs-inline-code">simulation.meta.description</code>, <code class="docs-inline-code">simulation.meta.domain</code>
-   - <code class="docs-inline-code">simulation.world.objects[]</code>
-   - <code class="docs-inline-code">simulation.process.tasks[]</code></li>
-<li>Use strict, predictable IDs:
-   - snake_case
-   - no spaces
-   - max 250 chars</li>
-<li>Put all type-specific object data in <code class="docs-inline-code">properties</code>.</li>
-<li>Use <code class="docs-inline-code">target_id</code> in interactions (never legacy <code class="docs-inline-code">object_id</code>).</li>
+<li>Validate Starting State with the canonical validator.</li>
+<li>Run a snapshot with Changes and, if present, Generator.</li>
+<li>Run Constraints against the same resolved history.</li>
+<li>Reject output with source/runtime errors or unintended violations.</li>
 </ol>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="common-failure-modes-to-avoid">Common failure modes to avoid<a class="headerlink" href="#common-failure-modes-to-avoid" title="Link to this section">¶</a></h2>
-<h3 class="docs-heading" id="missing-schema-version">Missing schema version<a class="headerlink" href="#missing-schema-version" title="Link to this section">¶</a></h3>
-<p>Bad:</p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
-</code></pre></div>
-<p>Good:</p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.0"</span><span class="p">,</span><span class="w"> </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"domain"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="nt">"world"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nt">"process"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
-</code></pre></div>
-<h3 class="docs-heading" id="incorrect-structure-v10-shape">Incorrect structure (v1.0 shape)<a class="headerlink" href="#incorrect-structure-v10-shape" title="Link to this section">¶</a></h3>
-<p>Bad:</p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
-</code></pre></div>
-<p>Good:</p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"world"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nt">"process"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
-</code></pre></div>
-<h3 class="docs-heading" id="legacy-interaction-fields">Legacy interaction fields<a class="headerlink" href="#legacy-interaction-fields" title="Link to this section">¶</a></h3>
-<p>Bad:</p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixer"</span><span class="p">,</span><span class="w"> </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dirty"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
-</code></pre></div>
-<p>Good:</p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixer"</span><span class="p">,</span><span class="w"> </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dirty"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
-</code></pre></div>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="modeling-tips">Modeling tips<a class="headerlink" href="#modeling-tips" title="Link to this section">¶</a></h2>
-<ul class="docs-list">
-<li>Prefer <strong>short tasks</strong> with explicit dependencies over overly long tasks.</li>
-<li>Use <code class="docs-inline-code">depends_on</code> operators (<code class="docs-inline-code">all</code>/<code class="docs-inline-code">any</code>) to express real gating conditions.</li>
-<li>Prefer explicit <code class="docs-inline-code">state</code> transitions with <code class="docs-inline-code">from</code>/<code class="docs-inline-code">to</code> when modeling equipment or actor states.</li>
-<li>When modeling consumption/production, use <code class="docs-inline-code">quantity.delta</code> interactions.</li>
-</ul>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="validation-first-generation">Validation-first generation<a class="headerlink" href="#validation-first-generation" title="Link to this section">¶</a></h2>
-<p>Before finalizing output, ensure:</p>
-<ul class="docs-list">
-<li>All referenced <code class="docs-inline-code">actor_id</code>s exist and are performer types.</li>
-<li>All <code class="docs-inline-code">target_id</code>s exist (or are created before use).</li>
-<li>All time strings are strict (<code class="docs-inline-code">"09:30"</code>, not <code class="docs-inline-code">"9:30"</code>).</li>
-<li>Duration strings are valid (integer, ISO 8601, or shorthand).</li>
-</ul>
-<p>Error format details: <a href="/docs/workspec/specification/v2.0/validation">/docs/workspec/specification/v2.0/validation</a><br/>
-Error code catalog: <a href="/docs/workspec/reference/errors">/docs/workspec/reference/errors</a></p>
+<p>Use strict times such as <code class="docs-inline-code">"09:30"</code>, self-describing durations such as <code class="docs-inline-code">"20m"</code>,
+valid performer and object references, and seeded <code class="docs-inline-code">random()</code> instead of
+<code class="docs-inline-code">Math.random()</code> in Generator code.</p>
                     </div>
                     
                     <footer class="docs-footer">

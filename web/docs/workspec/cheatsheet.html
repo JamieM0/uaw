@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorkSpec v2.0 Cheatsheet - Universal Automation Wiki</title>
+    <title>WorkSpec 2.2 Cheatsheet - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
     <link rel="stylesheet" href="/assets/css/category.css">
@@ -46,7 +46,7 @@
                                         
                                     
                                         
-                                            <li aria-current="page">WorkSpec v2.0 Cheatsheet</li>
+                                            <li aria-current="page">WorkSpec 2.2 Cheatsheet</li>
                                         
                                     
                                 </ol>
@@ -54,96 +54,110 @@
                         </div>
                         
                         <div class="docs-title-section">
-                            <h1 class="docs-page-title">WorkSpec v2.0 Cheatsheet</h1>
+                            <h1 class="docs-page-title">WorkSpec 2.2 Cheatsheet</h1>
                             
-                            <p class="docs-page-subtitle">One-page reference for authoring WorkSpec v2.0.</p>
+                            <p class="docs-page-subtitle">Use this after the [WorkSpec 2.2 Authoring Guide](/docs/workspec/guides/authoring).</p>
                             
                         </div>
                     </header>
 
                     <div class="docs-content">
-                        <p>One-page reference for authoring WorkSpec v2.0.</p>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="minimal-skeleton">Minimal skeleton<a class="headerlink" href="#minimal-skeleton" title="Link to this section">¶</a></h2>
+                        <p>Use this after the <a href="/docs/workspec/guides/authoring">WorkSpec 2.2 Authoring Guide</a>.</p>
+<h2 class="docs-heading" id="mental-model">Mental model<a class="headerlink" href="#mental-model" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text">Starting State    what exists initially
+Changes           explicit things that happen
+Constraints       things that must remain true
+Generator         optional computational behaviour
+Simulation        the resolved observable history
+</code></pre></div>
+<h2 class="docs-heading" id="project-files">Project files<a class="headerlink" href="#project-files" title="Link to this section">¶</a></h2>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>File</th>
+<th>Contains</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">start.workspec.json</code></td>
+<td>Declarative <code class="docs-inline-code">world</code> and <code class="docs-inline-code">process</code> data</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">changes.workspec.js</code></td>
+<td>Task-linked <code class="docs-inline-code">set</code>, <code class="docs-inline-code">change</code>, <code class="docs-inline-code">move</code>, <code class="docs-inline-code">create</code>, and <code class="docs-inline-code">remove</code> calls</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">constraints.workspec.js</code></td>
+<td>Rules over resolved history and their violation evidence</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">generator.workspec.js</code></td>
+<td>Optional <code class="docs-inline-code">onStart</code> and per-minute <code class="docs-inline-code">onUpdate</code> behaviour</td>
+</tr>
+</tbody>
+</table></div>
+<h2 class="docs-heading" id="minimal-starting-state">Minimal Starting State<a class="headerlink" href="#minimal-starting-state" title="Link to this section">¶</a></h2>
 <div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">    </span><span class="nt">"$schema"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://universalautomation.wiki/workspec/v2.0.schema.json"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.0"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"domain"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"time_unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"minutes"</span><span class="p">,</span><span class="w"> </span><span class="nt">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"end_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"17:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"USD"</span><span class="p">,</span><span class="w"> </span><span class="nt">"locale"</span><span class="p">:</span><span class="w"> </span><span class="s2">"en-US"</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">"world"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"locations"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">"process"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="nt">"recipes"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="nt">"$schema"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://universalautomation.wiki/workspec/v2.2.schema.json"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.2"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Pack a kit"</span><span class="p">,</span><span class="w"> </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"One small change"</span><span class="p">,</span><span class="w"> </span><span class="nt">"domain"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Training"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"time_unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"minutes"</span><span class="p">,</span><span class="w"> </span><span class="nt">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"world"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"locations"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bench"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Bench"</span><span class="w"> </span><span class="p">}]</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"parts"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Parts"</span><span class="p">,</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bench"</span><span class="p">,</span><span class="w"> </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kits"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"product"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Kits"</span><span class="p">,</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bench"</span><span class="p">,</span><span class="w"> </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"process"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pack"</span><span class="p">,</span><span class="w"> </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span><span class="w"> </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10m"</span><span class="p">,</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bench"</span><span class="w"> </span><span class="p">}]</span>
 <span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="required-fields">Required fields<a class="headerlink" href="#required-fields" title="Link to this section">¶</a></h2>
-<ul class="docs-list">
-<li><code class="docs-inline-code">simulation.schema_version</code></li>
-<li><code class="docs-inline-code">simulation.meta.title</code></li>
-<li><code class="docs-inline-code">simulation.meta.description</code></li>
-<li><code class="docs-inline-code">simulation.meta.domain</code></li>
-<li><code class="docs-inline-code">simulation.config.time_unit</code></li>
-<li><code class="docs-inline-code">simulation.config.start_time</code></li>
-<li><code class="docs-inline-code">simulation.config.end_time</code></li>
-<li><code class="docs-inline-code">simulation.config.currency</code></li>
-<li><code class="docs-inline-code">simulation.config.locale</code></li>
-<li><code class="docs-inline-code">simulation.world.objects</code> (array)</li>
-<li><code class="docs-inline-code">simulation.process.tasks</code> (array)</li>
-</ul>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="ids">IDs<a class="headerlink" href="#ids" title="Link to this section">¶</a></h2>
-<ul class="docs-list">
-<li>Plain: <code class="docs-inline-code">^[a-z][a-z0-9_]{0,249}$</code></li>
-<li>Optional namespaced: <code class="docs-inline-code">{type}:{id}</code> (namespace must equal <code class="docs-inline-code">type</code>)</li>
-</ul>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="time-formats-strict">Time formats (strict)<a class="headerlink" href="#time-formats-strict" title="Link to this section">¶</a></h2>
-<ul class="docs-list">
-<li><code class="docs-inline-code">"HH:MM"</code> (zero-padded)</li>
-<li><code class="docs-inline-code">"HH:MM:SS"</code> (zero-padded)</li>
-<li>ISO 8601 date-time: <code class="docs-inline-code">"2026-02-03T09:30:00Z"</code></li>
-<li>Multi-day: <code class="docs-inline-code">{ "day": 2, "time": "09:30" }</code></li>
-</ul>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="duration-formats">Duration formats<a class="headerlink" href="#duration-formats" title="Link to this section">¶</a></h2>
-<ul class="docs-list">
-<li>Integer: <code class="docs-inline-code">30</code> (uses <code class="docs-inline-code">simulation.config.time_unit</code>)</li>
-<li>ISO 8601: <code class="docs-inline-code">"PT30M"</code>, <code class="docs-inline-code">"P1D"</code></li>
-<li>Shorthand: <code class="docs-inline-code">"30m"</code>, <code class="docs-inline-code">"1h"</code>, <code class="docs-inline-code">"1d"</code>, <code class="docs-inline-code">"10s"</code>, <code class="docs-inline-code">"1w"</code>, <code class="docs-inline-code">"1M"</code></li>
-</ul>
-<p>If using months/years (<code class="docs-inline-code">"1M"</code>, <code class="docs-inline-code">"P1M"</code>, <code class="docs-inline-code">"P1Y"</code>), use an ISO 8601 start timestamp.</p>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Link to this section">¶</a></h2>
-<ul class="docs-list">
-<li>Array (implicit AND): <code class="docs-inline-code">["task_a","task_b"]</code></li>
-<li>Operators:</li>
-</ul>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"all"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"task_a"</span><span class="p">],</span><span class="w"> </span><span class="nt">"any"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"task_b"</span><span class="p">,</span><span class="s2">"task_c"</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+<h2 class="docs-heading" id="explicit-change">Explicit Change<a class="headerlink" href="#explicit-change" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nx">WorkSpec</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s2">"pack"</span><span class="p">).</span><span class="nx">onComplete</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">change</span><span class="p">(</span><span class="s2">"parts"</span><span class="p">,</span><span class="w"> </span><span class="s2">"quantity"</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mf">1</span><span class="p">);</span>
+<span class="w">  </span><span class="nx">change</span><span class="p">(</span><span class="s2">"kits"</span><span class="p">,</span><span class="w"> </span><span class="s2">"quantity"</span><span class="p">,</span><span class="w"> </span><span class="mf">1</span><span class="p">);</span>
+<span class="p">});</span>
 </code></pre></div>
-<p>Meaning: (ALL of <code class="docs-inline-code">all</code>) AND (ANY of <code class="docs-inline-code">any</code>).</p>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="interactions">Interactions<a class="headerlink" href="#interactions" title="Link to this section">¶</a></h2>
-<p>Property change:</p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"flour"</span><span class="p">,</span><span class="w"> </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">-1</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<p>Use <code class="docs-inline-code">{ temporary: true }</code> for a write that should revert when its task ends.</p>
+<h2 class="docs-heading" id="constraint">Constraint<a class="headerlink" href="#constraint" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="s2">"inventory.non_negative"</span><span class="o">:</span><span class="w"> </span><span class="nx">ctx</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">time</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">times</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">quantity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">getAt</span><span class="p">(</span><span class="nx">time</span><span class="p">,</span><span class="w"> </span><span class="s2">"parts"</span><span class="p">,</span><span class="w"> </span><span class="s2">"quantity"</span><span class="p">);</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">quantity</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">time</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">objects</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"parts"</span><span class="p">],</span>
+<span class="w">        </span><span class="nx">property</span><span class="o">:</span><span class="w"> </span><span class="s2">"quantity"</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">observed</span><span class="o">:</span><span class="w"> </span><span class="nx">quantity</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">expected</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">min</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="s2">"Parts must never become negative."</span>
+<span class="w">      </span><span class="p">};</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">};</span>
 </code></pre></div>
-<p>Create:</p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"create"</span><span class="p">,</span><span class="w"> </span><span class="nt">"object"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"x"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"product"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"X"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<p>Useful context calls: <code class="docs-inline-code">times()</code>, <code class="docs-inline-code">get()</code>, <code class="docs-inline-code">getAt()</code>, <code class="docs-inline-code">state()</code>, and <code class="docs-inline-code">stateAt()</code>.</p>
+<h2 class="docs-heading" id="optional-generator">Optional Generator<a class="headerlink" href="#optional-generator" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="nx">WorkSpec</span><span class="p">.</span><span class="nx">onUpdate</span><span class="p">(({</span><span class="w"> </span><span class="nx">get</span><span class="p">,</span><span class="w"> </span><span class="nx">set</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">set</span><span class="p">(</span><span class="s2">"sensor"</span><span class="p">,</span><span class="w"> </span><span class="s2">"reading"</span><span class="p">,</span><span class="w"> </span><span class="nx">get</span><span class="p">(</span><span class="s2">"sensor"</span><span class="p">,</span><span class="w"> </span><span class="s2">"reading"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">1</span><span class="p">);</span>
+<span class="p">});</span>
 </code></pre></div>
-<p>Delete:</p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="p">,</span><span class="w"> </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"x"</span><span class="w"> </span><span class="p">}</span>
+<p>Use a Generator only for computed or simulated behaviour. Put known task effects
+in Changes.</p>
+<h2 class="docs-heading" id="studio-flow">Studio flow<a class="headerlink" href="#studio-flow" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text">edit sources → Validate WorkSpec → Simulate → scrub time → inspect Problems
 </code></pre></div>
-<p>Temporary:</p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span><span class="w"> </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"machine"</span><span class="p">,</span><span class="w"> </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"in_use"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nt">"temporary"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
-</code></pre></div>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="links">Links<a class="headerlink" href="#links" title="Link to this section">¶</a></h2>
-<ul class="docs-list">
-<li>v2.0 overview: <a href="/docs/workspec/specification/v2.0/">/docs/workspec/specification/v2.0/</a></li>
-<li>Schema reference: <a href="/docs/workspec/specification/v2.0/schema">/docs/workspec/specification/v2.0/schema</a></li>
-<li>Error reference: <a href="/docs/workspec/reference/errors">/docs/workspec/reference/errors</a></li>
-<li>Migration: <a href="/docs/workspec/guides/migration">/docs/workspec/guides/migration</a></li>
-</ul>
+<p>Selecting a runtime Constraint violation in <strong>Problems</strong> moves playback to its
+evidence time and highlights an affected object when that surface is available.</p>
+<h2 class="docs-heading" id="historical-syntax">Historical syntax<a class="headerlink" href="#historical-syntax" title="Link to this section">¶</a></h2>
+<p>Task <code class="docs-inline-code">interactions</code> belong to WorkSpec 2.0/2.1 documents. They are not valid in
+2.2 Starting State.</p>
                     </div>
                     
                     <footer class="docs-footer">

@@ -19,9 +19,9 @@
     const WORKSPACE_META = {
         projects: { title: 'Projects', description: 'Local WorkSpec projects' },
         build: { title: 'Model', description: 'Author the visual and declarative model' },
-        editor: { title: 'Editor', description: 'Starting State, Changes, Generator and constraints' },
-        run: { title: 'Simulate', description: 'Run and inspect the current WorkSpec' },
-        validate: { title: 'Validation', description: 'Inspect problems and manage rules' },
+        editor: { title: 'Editor', description: 'Edit Starting State, explicit Changes, Constraints, and the optional Generator' },
+        run: { title: 'Simulate', description: 'Inspect the resolved WorkSpec history through time' },
+        validate: { title: 'Validation', description: 'Inspect source errors and runtime Constraint evidence' },
         assets: { title: 'Assets', description: 'Project media stored outside Starting State' },
         settings: { title: 'Settings', description: 'Workspace preferences and integrations' },
         source: { title: 'Starting State', description: 'Edit the declarative Starting State directly' }
@@ -283,6 +283,8 @@
 
         rehomeLegacyComponents() {
             const host = this.shell.querySelector('#uaw-legacy-host');
+            const tutorialPanel = this.legacyMain.querySelector('#tutorial-panel');
+            if (tutorialPanel) this.shell.appendChild(tutorialPanel);
             host.appendChild(this.legacyMain);
             const sourcePane = this.shell.querySelector('#uaw-source-pane');
             const sourcePanel = this.legacyMain.querySelector('.json-editor-panel');
@@ -417,6 +419,7 @@
                 { id: 'review.add-rule', label: 'Add validation rule', run: () => click('add-metric-btn') },
                 { id: 'review.run-custom', label: 'Run custom validation', run: () => click('run-custom-validation') },
                 { id: 'agent.open', label: 'Open Agent', run: () => this.toggleAgent(true) },
+                { id: 'help.tutorial', label: 'Start WorkSpec 2.2 tutorial', run: () => typeof window.startTutorial === 'function' ? window.startTutorial() : click('start-tutorial-btn') },
                 { id: 'help.shortcuts', label: 'Show keyboard shortcuts', shortcut: '?', run: () => this.openShortcuts() }
             ].forEach((command) => this.registerCommand(command));
         }
@@ -641,7 +644,8 @@
                 primary.innerHTML = this.commandButton('project.new', 'New project', { primary: true })
                     + this.commandButton('project.templates', 'From template')
                     + this.commandButton('project.import', 'Import WorkSpec')
-                    + this.commandButton('project.open-folder', 'Open project folder');
+                    + this.commandButton('project.open-folder', 'Open project folder')
+                    + this.commandButton('help.tutorial', 'Start tutorial');
                 return;
             }
 
@@ -667,7 +671,8 @@
             }
 
             if (this.workspace === 'editor') {
-                primary.innerHTML = '<span class="uaw-mode-label">Project source</span>';
+                primary.innerHTML = '<span class="uaw-mode-label">Project source</span>'
+                    + this.commandButton('validate.run', 'Validate WorkSpec', { primary: true });
                 context.innerHTML = this.commandButton('editor.format', 'Format') + this.commandButton('editor.undo', 'Undo');
                 return;
             }
@@ -680,12 +685,8 @@
                         ['month', 'Month', 'run.period.month']
                     ].map(([id, label, command]) => this.commandButton(command, label, { active: this.getSimulationPeriodView() === id, pressed: this.getSimulationPeriodView() === id })).join('')}</div>`
                     : '';
-                const validationViews = ['problems', 'rules'].includes(this.runView)
-                    ? `<div class="uaw-segmented uaw-validation-commands" role="tablist" aria-label="Validation views">${this.commandButton('review.problems', 'Problems', { active: this.runView === 'problems', pressed: this.runView === 'problems' })}${this.commandButton('review.rules', 'Rules', { active: this.runView === 'rules', pressed: this.runView === 'rules' })}</div>`
-                    : '';
-                primary.innerHTML = this.runView === 'timeline'
-                    ? this.commandButton('run.timeline', 'Timeline', { active: true, pressed: true }) + periodViews
-                    : validationViews;
+                const runViews = `<div class="uaw-segmented uaw-validation-commands" role="tablist" aria-label="Simulation views">${this.commandButton('run.timeline', 'Timeline', { active: this.runView === 'timeline', pressed: this.runView === 'timeline' })}${this.commandButton('review.problems', 'Problems', { active: this.runView === 'problems', pressed: this.runView === 'problems' })}${this.commandButton('review.rules', 'Rules', { active: this.runView === 'rules', pressed: this.runView === 'rules' })}</div>`;
+                primary.innerHTML = runViews + (this.runView === 'timeline' ? periodViews : '');
                 context.innerHTML = this.runView === 'rules'
                     ? this.commandButton('review.add-rule', 'New rule', { primary: true }) + this.commandButton('review.run-custom', 'Run rules')
                     : this.runView === 'problems' ? this.commandButton('validate.run', 'Run validation', { primary: true }) : '';
@@ -832,7 +833,7 @@
         prepareProblemsWorkspace() {
             const panel = document.querySelector('.validation-panel');
             if (!panel || panel.querySelector('.uaw-problems-overview')) return;
-            panel.insertAdjacentHTML('afterbegin', `<header class="uaw-problems-overview"><div><h1>Problems</h1><p>Validation errors, warnings, suggestions and passed checks for the current WorkSpec.</p></div><span>WorkSpec health</span></header>`);
+            panel.insertAdjacentHTML('afterbegin', `<header class="uaw-problems-overview"><div><h1>Problems</h1><p>Starting State errors, source diagnostics, and runtime Constraint evidence for the current project.</p></div><span>WorkSpec health</span></header>`);
         }
 
         prepareRulesWorkspace() {
@@ -1350,7 +1351,7 @@
         onboardingMarkup() {
             return `<section class="uaw-project-journey">
                 <div class="uaw-project-journey__intro"><p>Your workflow</p><h2>From project to verified run</h2></div>
-                <ol><li class="done"><span>1</span><div><small>Project</small><strong>Create or open</strong></div></li><li><span>2</span><div><small>Model</small><strong>Describe the process</strong></div></li><li><span>3</span><div><small>Editor</small><strong>Author changes and generation</strong></div></li><li><span>4</span><div><small>Simulate</small><strong>Run and validate</strong></div></li></ol>
+                <ol><li class="done"><span>1</span><div><small>Project</small><strong>Create or open</strong></div></li><li><span>2</span><div><small>Starting State</small><strong>Describe what exists</strong></div></li><li><span>3</span><div><small>Changes</small><strong>Say what happens</strong></div></li><li><span>4</span><div><small>Simulate</small><strong>Check Constraints</strong></div></li></ol>
                 <button class="uaw-icon-button" type="button" data-dismiss-onboarding title="Dismiss">${this.icon('close')}</button>
             </section>`;
         }
@@ -1758,6 +1759,7 @@
                     workSpec: options.workSpec || '',
                     changes: options.changes || '',
                     generator: options.generator || '',
+                    constraints: options.constraints || '',
                     seed: Number.isInteger(options.seed) ? options.seed : 1,
                     resolve
                 };
@@ -1790,7 +1792,7 @@
             submit.textContent = 'Choose location…';
             try {
                 const project = pending.kind === 'template'
-                    ? await this.projectStore?.createFromTemplate(name, pending.workSpec, null, pending.changes, pending.generator)
+                    ? await this.projectStore?.createFromTemplate(name, pending.workSpec, null, pending.changes, pending.generator, pending.constraints)
                     : await this.projectStore?.createBlank(name);
                 if (!project) return;
                 if (pending.kind === 'template' && Number.isInteger(pending.seed)) {

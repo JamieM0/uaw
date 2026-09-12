@@ -11,6 +11,7 @@ const WORKSPEC_ZIP_EXTENSION = '.workspec.zip';
 const STARTING_STATE_FILE = 'start.workspec.json';
 const CHANGES_FILE = 'changes.workspec.js';
 const GENERATOR_FILE = 'generator.workspec.js';
+const CONSTRAINTS_FILE = 'constraints.workspec.js';
 
 // Setup save/load buttons
 function setupSaveLoadButtons() {
@@ -151,7 +152,7 @@ function validateZipContents(zipContents) {
     }
 }
 
-async function createImportedProject(projectName, data, fileName, directoryHandle = null, changes = null, generator = null, seed = 1) {
+async function createImportedProject(projectName, data, fileName, directoryHandle = null, changes = null, generator = null, constraints = null, seed = 1) {
     const workSpec = JSON.stringify(data, null, 2);
     if (window.UAWPlaygroundShell?.requestProjectCreation) {
         return window.UAWPlaygroundShell.requestProjectCreation({
@@ -161,11 +162,12 @@ async function createImportedProject(projectName, data, fileName, directoryHandl
             workSpec,
             changes: typeof changes === 'string' ? changes : '',
             generator: typeof generator === 'string' ? generator : '',
+            constraints: typeof constraints === 'string' ? constraints : '',
             seed
         });
     }
     if (window.UAWProjectStore?.createFromTemplate) {
-        const project = await window.UAWProjectStore.createFromTemplate(projectName, workSpec, directoryHandle, typeof changes === 'string' ? changes : null, typeof generator === 'string' ? generator : null);
+        const project = await window.UAWProjectStore.createFromTemplate(projectName, workSpec, directoryHandle, typeof changes === 'string' ? changes : null, typeof generator === 'string' ? generator : null, typeof constraints === 'string' ? constraints : null);
         if (project && Number.isInteger(seed)) { project.seed = seed; await window.UAWProjectStore.put(project); }
         return project;
     }
@@ -296,15 +298,17 @@ async function loadFromZipFile(file, directoryHandle = null) {
 
         const changesFile = zipContents.file(CHANGES_FILE);
         const generatorFile = zipContents.file(GENERATOR_FILE);
+        const constraintsFile = zipContents.file(CONSTRAINTS_FILE);
         const changes = changesFile ? await changesFile.async('text') : '';
         const generator = generatorFile ? await generatorFile.async('text') : '';
+        const constraints = constraintsFile ? await constraintsFile.async('text') : '';
         const manifestFile = zipContents.file('workspec.manifest.json');
         const manifest = manifestFile ? JSON.parse(await manifestFile.async('text')) : {};
 
         // Load into editor
         if (typeof editor !== 'undefined' && editor) {
             const projectName = data.simulation?.meta?.title || file.name.replace(/\.workspec\.zip$|\.zip$/i, '');
-            const importedProject = await createImportedProject(projectName, data, file.name, directoryHandle, changes, generator, Number.isInteger(manifest.seed) ? manifest.seed : 1);
+            const importedProject = await createImportedProject(projectName, data, file.name, directoryHandle, changes, generator, constraints, Number.isInteger(manifest.seed) ? manifest.seed : 1);
             if (!importedProject) return;
 
             const assetEntries = [];
@@ -496,6 +500,7 @@ function openProjectExportDialog() {
             const { parsed, content } = getExportableWorkSpec();
             const changes = getCurrentChangesForExport();
             const generator = getCurrentGeneratorForExport();
+            const constraints = window.UAWWorkSpecEditor?.constraintSource?.() || window.UAWProjectStore?.getCurrent?.()?.constraintsDraft || '';
             const base = normalizeSimulationFileBaseName(nameInput.value);
             const assets = await window.UAWProjectStore?.listAssets?.() || [];
             const custom = Boolean(includeExtras.checked && hasCustomMetrics());
@@ -504,6 +509,7 @@ function openProjectExportDialog() {
                 zip.file(STARTING_STATE_FILE, content);
                 zip.file(CHANGES_FILE, changes);
                 zip.file(GENERATOR_FILE, generator);
+                zip.file(CONSTRAINTS_FILE, constraints);
                 const exportedAssets = assets.map(asset => {
                     const id = String(asset.id || 'asset').replace(/[^a-zA-Z0-9_-]/g, '_');
                     const extension = exportAssetExtension(asset.mimeType);
@@ -524,6 +530,7 @@ function openProjectExportDialog() {
                     starting_state_file: STARTING_STATE_FILE,
                     changes_file: CHANGES_FILE,
                     generator_file: GENERATOR_FILE,
+                    constraints_file: CONSTRAINTS_FILE,
                     seed: window.UAWProjectStore?.getCurrent?.()?.seed ?? 1,
                     assets: exportedAssets.map(({ asset, file }) => ({
                         id: asset.id,

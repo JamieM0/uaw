@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorkSpec v2.0 Quickstart (5 minutes) - Universal Automation Wiki</title>
+    <title>WorkSpec 2.2 Quickstart - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
     <link rel="stylesheet" href="/assets/css/category.css">
@@ -50,7 +50,7 @@
                                         
                                     
                                         
-                                            <li aria-current="page">WorkSpec v2.0 Quickstart (5 minutes)</li>
+                                            <li aria-current="page">WorkSpec 2.2 Quickstart</li>
                                         
                                     
                                 </ol>
@@ -58,85 +58,90 @@
                         </div>
                         
                         <div class="docs-title-section">
-                            <h1 class="docs-page-title">WorkSpec v2.0 Quickstart (5 minutes)</h1>
+                            <h1 class="docs-page-title">WorkSpec 2.2 Quickstart</h1>
                             
-                            <p class="docs-page-subtitle">Create a minimal valid WorkSpec v2.0 document, validate it, and iterate.</p>
+                            <p class="docs-page-subtitle">Build and run a tiny WorkSpec project in Studio. The project packs one kit from</p>
                             
                         </div>
                     </header>
 
                     <div class="docs-content">
-                        <p>Create a minimal valid WorkSpec v2.0 document, validate it, and iterate.</p>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="step-1-start-from-the-minimal-skeleton">Step 1: Start from the minimal skeleton<a class="headerlink" href="#step-1-start-from-the-minimal-skeleton" title="Link to this section">¶</a></h2>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">    </span><span class="nt">"$schema"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://universalautomation.wiki/workspec/v2.0.schema.json"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.0"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Hello WorkSpec"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"A minimal example simulation"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"domain"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Example"</span>
-<span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">"time_unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"minutes"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"end_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"12:00"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"USD"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"locale"</span><span class="p">:</span><span class="w"> </span><span class="s2">"en-US"</span>
-<span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">"world"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="nt">"locations"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">                    </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"work_area"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Work Area"</span><span class="w"> </span><span class="p">}</span>
-<span class="w">                </span><span class="p">]</span>
-<span class="w">            </span><span class="p">},</span>
-<span class="w">            </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">                </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Worker"</span><span class="p">,</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"work_area"</span><span class="p">,</span><span class="w"> </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"available"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
-<span class="w">                </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tool"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equipment"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Tool"</span><span class="p">,</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"work_area"</span><span class="p">,</span><span class="w"> </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ready"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
-<span class="w">                </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"input"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Input"</span><span class="p">,</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"work_area"</span><span class="p">,</span><span class="w"> </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"units"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
-<span class="w">                </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"output"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"product"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Output"</span><span class="p">,</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"work_area"</span><span class="p">,</span><span class="w"> </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"units"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
-<span class="w">            </span><span class="p">]</span>
-<span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">"process"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">                </span><span class="p">{</span>
-<span class="w">                    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"do_work"</span><span class="p">,</span>
-<span class="w">                    </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
-<span class="w">                    </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
-<span class="w">                    </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span>
-<span class="w">                    </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"work_area"</span><span class="p">,</span>
-<span class="w">                    </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">                        </span><span class="p">{</span><span class="w"> </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"input"</span><span class="p">,</span><span class="w"> </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">-2</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
-<span class="w">                        </span><span class="p">{</span><span class="w"> </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"output"</span><span class="p">,</span><span class="w"> </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delta"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
-<span class="w">                        </span><span class="p">{</span><span class="w"> </span><span class="nt">"target_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tool"</span><span class="p">,</span><span class="w"> </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ready"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"in_use"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nt">"temporary"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
-<span class="w">                    </span><span class="p">]</span>
-<span class="w">                </span><span class="p">}</span>
-<span class="w">            </span><span class="p">]</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
+                        <p>Build and run a tiny WorkSpec project in Studio. The project packs one kit from
+one part, so every source has an obvious role.</p>
+<h2 class="docs-heading" id="1-learn-the-model">1. Learn the model<a class="headerlink" href="#1-learn-the-model" title="Link to this section">¶</a></h2>
+<div class="codehilite"><pre><span></span><code class="language-text">Starting State    what exists initially
+Changes           explicit things that happen
+Constraints       things that must remain true
+Generator         optional computational behaviour
+Simulation        the resolved observable history
 </code></pre></div>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="step-2-learn-the-three-core-concepts">Step 2: Learn the three core concepts<a class="headerlink" href="#step-2-learn-the-three-core-concepts" title="Link to this section">¶</a></h2>
-<p>1) <strong>World vs process</strong>
-- Static things in <code class="docs-inline-code">simulation.world</code> (layout + objects)
-- Dynamic things in <code class="docs-inline-code">simulation.process</code> (tasks + recipes)</p>
-<p>2) <strong>Objects</strong>
-- Define entities once under <code class="docs-inline-code">simulation.world.objects</code>
-- Keep type-specific fields in <code class="docs-inline-code">properties</code></p>
-<p>3) <strong>Interactions</strong>
-- Tasks change objects via <code class="docs-inline-code">interactions</code>
-- Use <code class="docs-inline-code">target_id</code> (not legacy <code class="docs-inline-code">object_id</code>)</p>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Link to this section">¶</a></h2>
-<ul class="docs-list">
-<li>Custom validation via CLI: <a href="/docs/workspec/guides/custom-validation-cli">/docs/workspec/guides/custom-validation-cli</a></li>
-<li>Object model: <a href="/docs/workspec/specification/v2.0/objects">/docs/workspec/specification/v2.0/objects</a></li>
-<li>Task model: <a href="/docs/workspec/specification/v2.0/tasks">/docs/workspec/specification/v2.0/tasks</a></li>
-<li>Interaction system: <a href="/docs/workspec/specification/v2.0/interactions">/docs/workspec/specification/v2.0/interactions</a></li>
-<li>Cheatsheet: <a href="/docs/workspec/cheatsheet">/docs/workspec/cheatsheet</a></li>
-</ul>
+<p>You do not need a Generator for this project—or for ordinary WorkSpec
+authoring.</p>
+<h2 class="docs-heading" id="2-start-the-guided-tutorial">2. Start the guided tutorial<a class="headerlink" href="#2-start-the-guided-tutorial" title="Link to this section">¶</a></h2>
+<p>Open <a href="/playground">WorkSpec Studio</a>, choose <strong>Start Tutorial</strong>, and work through
+the eight short lessons. They use one small packing project to show the Starting
+State, an explicit Change, playback, a Constraint, and a traceable violation.</p>
+<p>After the tutorial, use the Simulation Library templates as larger reference
+projects. They deliberately contain more objects and tasks than this first
+lesson, so inspect them only after the packing flow is familiar.</p>
+<h2 class="docs-heading" id="3-inspect-the-project-sources">3. Inspect the project sources<a class="headerlink" href="#3-inspect-the-project-sources" title="Link to this section">¶</a></h2>
+<p>Studio projects contain:</p>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>File</th>
+<th>Studio tab</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">start.workspec.json</code></td>
+<td>Starting State</td>
+<td>Declarative locations, objects, tasks, timing, and dependencies</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">changes.workspec.js</code></td>
+<td>Changes</td>
+<td>Explicit effects attached to task start or completion</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">constraints.workspec.js</code></td>
+<td>Constraints</td>
+<td>Rules evaluated against the resolved simulation</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">generator.workspec.js</code></td>
+<td>Generator</td>
+<td>Optional computed or simulated behaviour</td>
+</tr>
+</tbody>
+</table></div>
+<p>The simulation is not a fifth source file. Studio resolves it from those
+sources.</p>
+<h2 class="docs-heading" id="4-edit-validate-and-simulate">4. Edit, validate, and simulate<a class="headerlink" href="#4-edit-validate-and-simulate" title="Link to this section">¶</a></h2>
+<ol class="docs-list docs-list-ordered">
+<li>In <strong>Starting State</strong>, change an initial object property such as a resource
+   quantity.</li>
+<li>Choose <strong>Validate WorkSpec</strong>. Fix errors before continuing; warnings and
+   informational results remain clearly distinguished in <strong>Problems</strong>.</li>
+<li>In <strong>Changes</strong>, inspect the handler attached to a task ID.</li>
+<li>Open <strong>Simulate</strong>, press Play, then drag the red playhead to compare the
+   initial state with a later state.</li>
+<li>In <strong>Constraints</strong>, inspect a rule. If it reports a runtime violation, open
+   <strong>Problems</strong> and select the result to jump to its time and affected object.</li>
+</ol>
+<h2 class="docs-heading" id="5-save-and-reopen">5. Save and reopen<a class="headerlink" href="#5-save-and-reopen" title="Link to this section">¶</a></h2>
+<p>Studio creates a folder-backed project. It writes the four files above and
+remembers the folder in the browser. Use <strong>Export</strong> for a portable
+<code class="docs-inline-code">.workspec.zip</code>; imports restore Starting State, Changes, Constraints, Generator,
+and the project seed.</p>
+<p>Continue with the <a href="/docs/workspec/guides/authoring">WorkSpec 2.2 Authoring Guide</a>,
+then keep the <a href="/docs/workspec/cheatsheet">WorkSpec 2.2 Cheatsheet</a> nearby.</p>
+<h2 class="docs-heading" id="historical-documents">Historical documents<a class="headerlink" href="#historical-documents" title="Link to this section">¶</a></h2>
+<p>WorkSpec 2.0 and 2.1 placed effects in task <code class="docs-inline-code">interactions</code>. Those versioned
+specifications remain available under <strong>Historical specifications</strong> in the docs
+navigation, but that is not the 2.2 authoring model.</p>
                     </div>
                     
                     <footer class="docs-footer">

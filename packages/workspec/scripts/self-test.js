@@ -224,6 +224,19 @@ function run() {
         assert.equal(hasMetric(res.problems, 'temporal.scheduling.dependency_violation'), false);
     }
 
+    // Starting State-only analysis cannot prove whether a 2.2 resource is used
+    // by Changes. Keep the existing informational diagnostic until a separate
+    // cross-file validator policy is designed; do not silently suppress it.
+    {
+        const doc = baseDoc();
+        doc.simulation.schema_version = '2.2';
+        doc.simulation.world.objects = [
+            { id: 'consumable', type: 'resource', name: 'Consumable', properties: { quantity: 1 } }
+        ];
+        const result = validator.validate(doc);
+        assert.equal(hasMetric(result.problems, 'object.optimization.unused_resource'), true);
+    }
+
     // 4) CLI custom validation (Metrics Editor style + explicit catalog)
     {
         const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'workspec-selftest-'));

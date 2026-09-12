@@ -51,6 +51,7 @@ function initializeTutorial() {
 
         // Initialize tutorial manager
         tutorialManager = new TutorialManager(tutorialData, editor, playgroundElements);
+        window.tutorialManager = tutorialManager;
         window.startTutorial = startTutorialFlow;
 
         // Set up event listener

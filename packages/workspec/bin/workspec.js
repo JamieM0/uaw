@@ -8,6 +8,7 @@ const readline = require('readline');
 const validator = require(path.join(__dirname, '..', 'workspec-validator.js'));
 const migrator = require(path.join(__dirname, '..', 'workspec-migrate-v1-to-v2.js'));
 const customValidationRunner = require(path.join(__dirname, '..', 'custom-validation-runner.js'));
+const runtime = require(path.join(__dirname, '..', 'workspec-runtime.js'));
 
 function printHelp(exitCode = 0) {
     const lines = [
@@ -15,11 +16,15 @@ function printHelp(exitCode = 0) {
         '',
         'Usage:',
         '  workspec validate <start.workspec.json> [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json] [--fail-on-warning] [-y]',
+        '  workspec snapshot <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] --time <time> [--seed <seed>] [--json]',
+        '  workspec constraints <start.workspec.json> --constraints <constraints.workspec.js> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] [--time <time>] [--seed <seed>] [--json] [-y]',
         '  workspec migrate <file.json> --out <output.json> [--schema]',
         '  workspec format <file.json> [--write] [--out <output.json>]',
         '',
         'Commands:',
         '  validate   Validate a WorkSpec document (RFC 7807 output model).',
+        '  snapshot   Run a project and resolve its observable world state at a time.',
+        '  constraints Run a project and execute runtime constraints over resolved state.',
         '  migrate    Previous UAW Syntax -> WorkSpec 2.1.',
         '  format     Pretty-print JSON (2-space).',
         '',
@@ -27,8 +32,13 @@ function printHelp(exitCode = 0) {
         '  -custom <path>  Run custom validator code (Metrics Editor compatible).',
         '  --custom <path> Same as -custom.',
         '  --custom-catalog <path> Optional metrics-catalog JSON for custom metrics.',
-        '  -y, --yes      Skip custom validation safety confirmation prompt.',
-        '  --json          Print machine-readable problems JSON (validate only).',
+        '  -y, --yes      Acknowledge trusted custom validation/constraint JavaScript.',
+        '  --json          Print machine-readable JSON (validate/snapshot/constraints).',
+        '  --changes <path> Optional WorkSpec Changes source (snapshot/constraints).',
+        '  --generator <path> Optional WorkSpec Generator source (snapshot/constraints).',
+        '  --constraints <path> Runtime constraint functions (constraints only).',
+        '  --time <time>   Runtime time as minutes, HH:MM, day/time JSON, or ISO date-time.',
+        '  --seed <seed>   Deterministic integer Generator seed (default: 1).',
         '  --fail-on-warning Exit with status 1 when validation returns a warning.',
         '  --out <path>    Output path (migrate/format).',
         '  --write         Write output (format only; defaults to stdout).',
@@ -88,6 +98,26 @@ function parseArgs(argv) {
         }
         if (arg === '--custom-catalog') {
             result.flags.customCatalog = args.shift() || '';
+            continue;
+        }
+        if (arg === '--changes') {
+            result.flags.changes = args.shift() || '';
+            continue;
+        }
+        if (arg === '--generator') {
+            result.flags.generator = args.shift() || '';
+            continue;
+        }
+        if (arg === '--constraints') {
+            result.flags.constraints = args.shift() || '';
+            continue;
+        }
+        if (arg === '--time') {
+            result.flags.time = args.shift() || '';
+            continue;
+        }
+        if (arg === '--seed') {
+            result.flags.seed = args.shift() || '';
             continue;
         }
         if (arg === '--write') {
@@ -279,6 +309,165 @@ async function handleValidate(filePath, flags) {
     process.exitCode = hasErrors(problems) || (flags.failOnWarning && hasWarnings(problems)) ? 1 : 0;
 }
 
+function parseSnapshotTime(value) {
+    if (typeof value !== 'string' || !value) return { ok: false };
+    if (/^-?(?:\d+\.?\d*|\.\d+)$/.test(value)) {
+        const minutes = Number(value);
+        return { ok: Number.isFinite(minutes), value: minutes, minutes };
+    }
+    if (value.startsWith('{')) {
+        try {
+            const parsed = JSON.parse(value);
+            const result = runtime.parseTaskStart(parsed);
+            return result.ok ? { ok: true, value: parsed, minutes: result.startMinutes } : { ok: false };
+        } catch (_error) {
+            return { ok: false };
+        }
+    }
+    const result = runtime.parseTaskStart(value);
+    return result.ok ? { ok: true, value, minutes: result.startMinutes } : { ok: false };
+}
+
+function readOptionalSource(sourcePath, label) {
+    if (!sourcePath) return '';
+    try {
+        return fs.readFileSync(resolvePath(sourcePath), 'utf8');
+    } catch (error) {
+        throw new Error(`Failed to read ${label}: ${error.message}`);
+    }
+}
+
+async function handleSnapshot(filePath, flags) {
+    if (!filePath) {
+        process.stderr.write('Missing Starting State file path.\n');
+        printHelp(2);
+        return;
+    }
+    if (!flags.time) {
+        process.stderr.write('Missing --time <time>.\n');
+        printHelp(2);
+        return;
+    }
+    if (Object.prototype.hasOwnProperty.call(flags, 'changes') && !flags.changes) {
+        process.stderr.write('Missing path after --changes.\n');
+        printHelp(2);
+        return;
+    }
+    if (Object.prototype.hasOwnProperty.call(flags, 'generator') && !flags.generator) {
+        process.stderr.write('Missing path after --generator.\n');
+        printHelp(2);
+        return;
+    }
+    if (Object.prototype.hasOwnProperty.call(flags, 'seed') && !flags.seed) {
+        process.stderr.write('Missing value after --seed.\n');
+        printHelp(2);
+        return;
+    }
+
+    const time = parseSnapshotTime(flags.time);
+    if (!time.ok) {
+        process.stderr.write(`Invalid snapshot time: ${flags.time}\n`);
+        process.exitCode = 2;
+        return;
+    }
+    const seed = flags.seed === undefined ? 1 : Number(flags.seed);
+    if (!Number.isSafeInteger(seed)) {
+        process.stderr.write(`Invalid seed: ${flags.seed}. Expected a safe integer.\n`);
+        process.exitCode = 2;
+        return;
+    }
+
+    let documentValue;
+    let changesSource;
+    let generatorSource;
+    try {
+        documentValue = JSON.parse(await readInput(filePath));
+        changesSource = readOptionalSource(flags.changes, 'Changes source');
+        generatorSource = readOptionalSource(flags.generator, 'Generator source');
+    } catch (error) {
+        process.stderr.write(`Failed to read project: ${error.message}\n`);
+        process.exitCode = 2;
+        return;
+    }
+
+    const snapshot = runtime.snapshotProjectAt(documentValue, changesSource, generatorSource, time.value, { seed });
+    const { problems = [], ...state } = snapshot;
+    const output = {
+        time: flags.time,
+        time_minutes: time.minutes,
+        seed,
+        state,
+        problems
+    };
+
+    if (flags.json) {
+        process.stdout.write(toPrettyJson(output));
+    } else {
+        const objectCount = Object.keys(state.objects || {}).length;
+        const errorCount = problems.filter((entry) => entry?.severity === 'error').length;
+        process.stdout.write(`Snapshot ${flags.time} (seed ${seed}): ${objectCount} objects, ${problems.length} problems (${errorCount} errors)\n`);
+    }
+    process.exitCode = hasErrors(problems) ? 1 : 0;
+}
+
+async function handleConstraints(filePath, flags) {
+    if (!filePath || !flags.constraints) {
+        process.stderr.write(!filePath ? 'Missing Starting State file path.\n' : 'Missing --constraints <path>.\n');
+        printHelp(2);
+        return;
+    }
+    if (!flags.yes) {
+        process.stderr.write('Runtime constraints execute JavaScript. Re-run with -y/--yes after reviewing the constraint source.\n');
+        process.exitCode = 2;
+        return;
+    }
+    if (Object.prototype.hasOwnProperty.call(flags, 'time') && !flags.time) {
+        process.stderr.write('Missing value after --time.\n');
+        process.exitCode = 2;
+        return;
+    }
+    const time = flags.time === undefined ? null : parseSnapshotTime(flags.time);
+    if (time && !time.ok) {
+        process.stderr.write(`Invalid constraint time: ${flags.time}\n`);
+        process.exitCode = 2;
+        return;
+    }
+    const seed = flags.seed === undefined ? 1 : Number(flags.seed);
+    if (!Number.isSafeInteger(seed)) {
+        process.stderr.write(`Invalid seed: ${flags.seed}. Expected a safe integer.\n`);
+        process.exitCode = 2;
+        return;
+    }
+
+    let documentValue;
+    let changesSource;
+    let generatorSource;
+    let constraintSource;
+    try {
+        documentValue = JSON.parse(await readInput(filePath));
+        changesSource = readOptionalSource(flags.changes, 'Changes source');
+        generatorSource = readOptionalSource(flags.generator, 'Generator source');
+        constraintSource = readOptionalSource(flags.constraints, 'constraint source');
+    } catch (error) {
+        process.stderr.write(`Failed to read project: ${error.message}\n`);
+        process.exitCode = 2;
+        return;
+    }
+
+    const validation = validator.validate(documentValue);
+    const validationProblems = Array.isArray(validation?.problems) ? validation.problems : [];
+    const result = hasErrors(validationProblems)
+        ? { time: time?.minutes ?? null, violations: [], problems: validationProblems }
+        : runtime.runConstraints(documentValue, changesSource, generatorSource, constraintSource, { seed, ...(time ? { time: time.value } : {}) });
+    const output = { time: result.time, seed, violations: result.violations, problems: result.problems };
+    if (flags.json) process.stdout.write(toPrettyJson(output));
+    else {
+        const errors = result.violations.filter((entry) => entry.severity === 'error').length;
+        process.stdout.write(`Runtime constraints at ${result.time}: ${result.violations.length} violations (${errors} errors), ${result.problems.length} runtime problems\n`);
+    }
+    process.exitCode = hasErrors(result.problems) || result.violations.some((entry) => entry.severity === 'error') ? 1 : 0;
+}
+
 async function handleMigrate(filePath, flags) {
     if (!filePath) {
         process.stderr.write('Missing file path.\n');
@@ -377,6 +566,12 @@ async function main() {
         case 'validate':
             await handleValidate(positionals[0], flags);
             return;
+        case 'snapshot':
+            await handleSnapshot(positionals[0], flags);
+            return;
+        case 'constraints':
+            await handleConstraints(positionals[0], flags);
+            return;
         case 'migrate':
             await handleMigrate(positionals[0], flags);
             return;
@@ -396,4 +591,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { parseArgs, printHelp, handleValidate, handleMigrate, handleFormat, main, hasErrors, hasWarnings };
+module.exports = { parseArgs, printHelp, handleValidate, handleSnapshot, handleConstraints, handleMigrate, handleFormat, main, hasErrors, hasWarnings };

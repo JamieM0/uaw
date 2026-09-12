@@ -917,12 +917,18 @@ class SimulationPlayer {
         const stocks = {};
         
         liveObjects.forEach(obj => { 
-            states[obj.id] = obj.properties?.state || 'available';
+            states[obj.id] = typeof obj.properties?.state === 'string' ? obj.properties.state : '';
             propertyOverrides[obj.id] = { ...obj.properties, emoji: obj.emoji, location: obj.location };
             if (obj.properties?.quantity !== undefined) {
                 stocks[obj.id] = obj.properties.quantity;
             }
         });
+
+        // Quantities are counts of discrete things in almost every model;
+        // "2.00 trays" reads like a measurement rather than a count.
+        const formatQuantity = (value) => Number.isFinite(value)
+            ? (Number.isInteger(value) ? String(value) : String(Math.round(value * 100) / 100))
+            : '—';
 
         // Sort objects chronologically by their creation time, then by their id
         const sortedObjects = [...liveObjects].sort((a, b) => {
@@ -951,18 +957,20 @@ class SimulationPlayer {
             // Handle different display formats based on indicator_property
             let stateDisplay;
             const indicatorProperty = item.indicator_property || item.properties?.indicator_property;
+            const quantityText = stocks[item.id] !== undefined
+                ? `${formatQuantity(stocks[item.id])}${item.properties?.unit ? ` ${item.properties.unit}` : ''}`
+                : '';
             
             if (indicatorProperty) {
                 if (Array.isArray(indicatorProperty)) {
                     // Multiple properties to display
                     stateDisplay = indicatorProperty.map(prop => {
                         if (prop === 'quantity' && stocks[item.id] !== undefined) {
-                            const unit = item.properties?.unit || '';
-                            return `${stocks[item.id].toFixed(2)} ${unit}`.trim();
+                            return quantityText;
                         } else if (prop === 'state') {
                             return states[item.id];
                         } else if (propertyOverrides[item.id]?.[prop] !== undefined) {
-                            return propertyOverrides[item.id][prop];
+                            return String(propertyOverrides[item.id][prop]);
                         } else {
                             return item.properties?.[prop] ?? '';
                         }
@@ -970,30 +978,43 @@ class SimulationPlayer {
                 } else {
                     // Single property to display
                     if (indicatorProperty === 'quantity' && stocks[item.id] !== undefined) {
-                        const unit = item.properties?.unit || '';
-                        stateDisplay = `Stock: ${stocks[item.id].toFixed(2)} ${unit}`.trim();
+                        stateDisplay = quantityText;
                     } else if (indicatorProperty === 'state') {
                         stateDisplay = states[item.id];
                     } else if (propertyOverrides[item.id]?.[indicatorProperty] !== undefined) {
-                        stateDisplay = propertyOverrides[item.id][indicatorProperty];
+                        stateDisplay = String(propertyOverrides[item.id][indicatorProperty]);
                     } else {
-                        stateDisplay = item.properties?.[indicatorProperty] ?? '';
+                        stateDisplay = String(item.properties?.[indicatorProperty] ?? '');
                     }
                 }
             } else {
-                // Fallback to legacy behavior
-                if (stocks[item.id] !== undefined) {
-                    // Resource-like objects with quantities
-                    const unit = item.properties?.unit || '';
-                    stateDisplay = `Stock: ${stocks[item.id].toFixed(2)} ${unit}`.trim();
-                } else {
-                    // State-based objects (equipment, actors, products, etc.)
-                    stateDisplay = states[item.id];
-                }
+                // An object can carry both a lifecycle state and a quantity
+                // (for example packaged trays: "wrapped… · 2 trays"). Hiding the
+                // state behind the stock count hides the process story.
+                stateDisplay = [states[item.id], quantityText]
+                    .filter(part => part !== '')
+                    .join(' · ');
             }
+
+            // The resolved tooltip is the one place every observable property
+            // is inspectable during playback (temperature, results, release
+            // status, ...), so keep it current with the rendered state.
+            const resolvedProperties = propertyOverrides[item.id] || {};
+            const tooltipLines = [
+                item.name || item.id,
+                `Location: ${resolvedProperties.location ?? item.location ?? '—'}`,
+                ...Object.entries(resolvedProperties)
+                    .filter(([key, value]) => key !== 'emoji' && key !== 'location' && value !== undefined && value !== null && typeof value !== 'object')
+                    .map(([key, value]) => `${key}: ${String(value)}`)
+            ];
+            if (isCreated) tooltipLines.splice(1, 0, createdTitle);
+            const tooltipText = tooltipLines.join('\n')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/"/g, '&quot;');
             
             return `
-            <div class="resource-item ${createdClass}" title="${createdTitle}" data-object-id="${item.id}" style="cursor: pointer;">
+            <div class="resource-item ${createdClass}" title="${tooltipText}" data-object-id="${item.id}" style="cursor: pointer;">
                 ${emojiMarkup}
                 <div class="resource-info">
                     <div class="resource-name">${item.name || item.id}${isCreated ? ' ✨' : ''}</div>

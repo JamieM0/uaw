@@ -6,6 +6,7 @@
       "description": "A simple bakery process showing basic resource transformation and timing dependencies",
       "complexity": "Basic",
       "domain": "Food Production",
+      "constraints": "// Four artisan loaves require 3 kg flour, 2 L water, and 15 g yeast.\n// Dough must pass through mixed, risen, and shaped stages without stranded work in progress.\nconst close = (a, b) => Math.abs(a - b) < 1e-9;\nmodule.exports = {\n  'bread.recipe': (ctx) => { const t0 = Math.min(...ctx.times()), loaves = ctx.get('baked_bread', 'quantity'), used = { flour: ctx.getAt(t0, 'flour', 'quantity') - ctx.get('flour', 'quantity'), water: ctx.getAt(t0, 'water', 'quantity') - ctx.get('water', 'quantity'), yeast: ctx.getAt(t0, 'yeast', 'quantity') - ctx.get('yeast', 'quantity') }; return close(used.flour * 4, loaves * 3) && close(used.water * 2, loaves) && close(used.yeast * 4, loaves * 15) ? null : { objects: ['flour', 'water', 'yeast', 'baked_bread'], property: 'quantity', observed: used, expected: { per_four_loaves: { flour: 3, water: 2, yeast: 15 } }, message: 'Bread ingredient use must follow the artisan recipe.' }; },\n  'bread.transformation_yield': (ctx) => { const seen = { mixed: false, risen: false, shaped: false }; ctx.times().forEach((t) => { seen.mixed ||= ctx.getAt(t, 'mixed_dough', 'quantity') >= 1; seen.risen ||= ctx.getAt(t, 'risen_dough', 'quantity') >= 1; seen.shaped ||= ctx.getAt(t, 'shaped_loaves', 'quantity') >= 4; }); const finalWip = ['mixed_dough', 'risen_dough', 'shaped_loaves'].map((id) => ctx.get(id, 'quantity')); return seen.mixed && seen.risen && seen.shaped && finalWip.every((q) => q === 0) ? null : { objects: ['mixed_dough', 'risen_dough', 'shaped_loaves'], property: 'quantity', observed: { seen, finalWip }, expected: 'mixed then risen then four shaped loaves, with no final WIP', message: 'Bread must pass through every transformation stage.' }; }\n};\n",
       "simulation": {
         "meta": {
           "id": "sim_breadmaking_v3_full",
@@ -319,6 +320,7 @@
       "description": "Online retail order fulfillment with digital infrastructure and UI interactions",
       "complexity": "Advanced",
       "domain": "Online Retail Operations",
+      "constraints": "// Each packed order consumes one stock item and one box, and closes its pending order.\n// Packing may occur only after validation, payment, confirmation, inventory update, and picking.\nmodule.exports = {\n  'order.fulfilment_balance': (ctx) => { const t0 = Math.min(...ctx.times()), packed = ctx.get('packed_order', 'quantity'), observed = { inventory: ctx.getAt(t0, 'inventory_stock', 'quantity') - ctx.get('inventory_stock', 'quantity'), boxes: ctx.getAt(t0, 'packing_supplies', 'quantity') - ctx.get('packing_supplies', 'quantity'), packed, pending: ctx.get('pending_order', 'quantity') }; return observed.inventory === packed && observed.boxes === packed && observed.pending === 0 ? null : { objects: ['inventory_stock', 'packing_supplies', 'pending_order', 'packed_order'], property: 'quantity', observed, expected: 'one item and one box per packed order; no pending remainder', message: 'Packed orders must balance stock, packaging, and pending orders.' }; },\n  'order.payment_gate': (ctx) => { const required = ['validate_order', 'process_payment', 'confirm_order', 'update_inventory', 'pick_items'], times = ctx.times(); for (let i = 1; i < times.length; i += 1) { const before = ctx.getAt(times[i - 1], 'packed_order', 'quantity'), after = ctx.getAt(times[i], 'packed_order', 'quantity'); if (after > before) { const statuses = ctx.stateAt(times[i]).task_statuses, missing = required.filter((id) => statuses[id] !== 'completed'); if (missing.length) return { time: times[i], objects: ['packed_order'], observed: missing, expected: required, message: 'Orders may be packed only after commercial and fulfilment gates complete.' }; } } return null; }\n};\n",
       "simulation": {
         "meta": {
           "id": "sim_ecommerce_order_v1",
@@ -1263,6 +1265,7 @@
       "description": "Complex electronics manufacturing with multiple parallel assembly stations, quality control checkpoints, and inventory management",
       "complexity": "Advanced",
       "domain": "Electronics Manufacturing",
+      "constraints": "// Every phone kit uses one PCB, processor, display, battery and housing, plus two memory chips.\n// Only QA-passed phones may be packaged, using one packaging set per finished phone.\nmodule.exports = {\n  'phone.bom': (ctx) => { const t0 = Math.min(...ctx.times()), used = {}; ['pcb_blanks', 'processors', 'memory_chips', 'displays', 'batteries', 'housings'].forEach((id) => { used[id] = ctx.getAt(t0, id, 'quantity') - ctx.get(id, 'quantity'); }); const base = used.pcb_blanks; return used.processors === base && used.displays === base && used.batteries === base && used.housings === base && used.memory_chips === 2 * base ? null : { objects: Object.keys(used), property: 'quantity', observed: used, expected: '1:1:2:1:1:1 smartphone BOM', message: 'Smartphone component use must follow the product BOM.' }; },\n  'phone.qa_packaging_gate': (ctx) => { const times = ctx.times(); for (let i = 1; i < times.length; i += 1) { const p = times[i - 1], t = times[i], made = ctx.getAt(t, 'finished_phones', 'quantity') - ctx.getAt(p, 'finished_phones', 'quantity'); if (made > 0) { const testedBefore = ctx.getAt(p, 'tested_phones', 'quantity'), testedDrop = testedBefore - ctx.getAt(t, 'tested_phones', 'quantity'); if (testedBefore < made || testedDrop !== made) return { time: t, objects: ['tested_phones', 'finished_phones'], property: 'quantity', observed: { made, testedBefore, testedDrop }, expected: 'finished increase equals tested stock consumed', message: 'Only QA-passed phones may be packaged.' }; } } const t0 = Math.min(...times), packages = ctx.getAt(t0, 'packaging_materials', 'quantity') - ctx.get('packaging_materials', 'quantity'), finished = ctx.get('finished_phones', 'quantity'); return packages === finished ? null : { objects: ['packaging_materials', 'finished_phones'], property: 'quantity', observed: { packages, finished }, expected: 'one packaging set per phone', message: 'Each finished phone requires one packaging set.' }; }\n};\n",
       "simulation": {
         "meta": {
           "id": "sim_smartphone_assembly_v2",
@@ -1775,6 +1778,7 @@
       "description": "Highly regulated pharmaceutical production with strict quality controls, batch tracking, environmental monitoring, and multi-stage chemical synthesis",
       "complexity": "Expert",
       "domain": "Pharmaceutical Manufacturing",
+      "constraints": "// Tablet-blend mass must equal released API plus excipients.\n// API identity and purity testing gate formulation. Each package contains 20 tablets and its specified packaging.\nconst close = (a, b) => Math.abs(a - b) < 1e-9;\nmodule.exports = {\n  'drug.formulation_mass_balance': (ctx) => { const times = ctx.times(), t0 = Math.min(...times); for (let i = 1; i < times.length; i += 1) { const p = times[i - 1], t = times[i], blend = ctx.getAt(t, 'tablet_blend', 'quantity') - ctx.getAt(p, 'tablet_blend', 'quantity'); if (blend > 0) { const api = ctx.getAt(p, 'tested_api', 'quantity') - ctx.getAt(t, 'tested_api', 'quantity'), cellulose = ctx.getAt(t0, 'microcrystalline_cellulose', 'quantity') - ctx.getAt(t, 'microcrystalline_cellulose', 'quantity'), stearate = ctx.getAt(t0, 'magnesium_stearate', 'quantity') - ctx.getAt(t, 'magnesium_stearate', 'quantity'); if (!close(api + cellulose + stearate, blend)) return { time: t, objects: ['tested_api', 'microcrystalline_cellulose', 'magnesium_stearate', 'tablet_blend'], property: 'quantity', observed: { api, cellulose, stearate, blend }, expected: 'input mass equals blend mass', message: 'Tablet formulation must conserve released API and excipient mass.' }; } } return null; },\n  'drug.release_gate': (ctx) => { const times = ctx.times(); for (let i = 1; i < times.length; i += 1) { const t = times[i]; if (ctx.getAt(t, 'tablet_blend', 'quantity') > ctx.getAt(times[i - 1], 'tablet_blend', 'quantity')) { const s = ctx.stateAt(t).task_statuses, missing = ['api_identity_testing', 'api_purity_assay'].filter((id) => s[id] !== 'completed'); if (missing.length) return { time: t, objects: ['tested_api', 'tablet_blend'], observed: missing, expected: 'identity and purity tests completed', message: 'Only released API may enter formulation.' }; } } return null; },\n  'drug.packaging_bom': (ctx) => { const times = ctx.times(), t0 = Math.min(...times), packages = ctx.get('finished_drug_product', 'quantity'), pvc = ctx.getAt(t0, 'pvc_sheets', 'quantity') - ctx.get('pvc_sheets', 'quantity'), foil = ctx.getAt(t0, 'blister_foil', 'quantity') - ctx.get('blister_foil', 'quantity'); let tablets = 0; for (let i = 1; i < times.length; i += 1) { const made = ctx.getAt(times[i], 'finished_drug_product', 'quantity') - ctx.getAt(times[i - 1], 'finished_drug_product', 'quantity'); if (made > 0) tablets += ctx.getAt(times[i - 1], 'coated_tablets', 'quantity') - ctx.getAt(times[i], 'coated_tablets', 'quantity'); } return close(tablets, packages * 20) && close(pvc, packages) && close(foil, packages * 0.1) ? null : { objects: ['coated_tablets', 'pvc_sheets', 'blister_foil', 'finished_drug_product'], property: 'quantity', observed: { tablets, pvc, foil, packages }, expected: { tablets_per_package: 20, pvc_per_package: 1, foil_per_package: 0.1 }, message: 'Drug packages must follow the dose and packaging BOM.' }; }\n};\n",
       "simulation": {
         "meta": {
           "id": "sim_pharmaceutical_production_v1",
@@ -2466,6 +2470,7 @@
       "description": "Complex commercial kitchen operations with multiple cooking stations, inventory management, food safety protocols, and synchronized meal service",
       "complexity": "Advanced",
       "domain": "Food Service",
+      "constraints": "// Refrigeration and raw chilled food stay at or below 4 C throughout prep and service.\n// Every entree consumes one prepared protein portion and one pan-sauce portion.\nmodule.exports = {\n  'kitchen.cold_chain': (ctx) => { const ids = ['walk_in_refrigeration', 'salad_station_cooler', 'beef_tenderloin', 'salmon_filets', 'duck_breast', 'seasonal_vegetables', 'artisanal_greens', 'premium_butter']; for (const t of ctx.times()) for (const id of ids) { const value = ctx.getAt(t, id, 'temperature'); if (typeof value === 'number' && value > 4) return { time: t, objects: [id], property: 'temperature', observed: value, expected: { max: 4 }, message: 'Chilled food and refrigeration must remain at a safe temperature.' }; } return null; },\n  'entree.material_balance': (ctx) => { const times = ctx.times(); let peakPrep = 0, sauceMade = 0; for (let i = 0; i < times.length; i += 1) { peakPrep = Math.max(peakPrep, ctx.getAt(times[i], 'prepped_proteins', 'quantity')); if (i) sauceMade += Math.max(0, ctx.getAt(times[i], 'pan_sauces', 'quantity') - ctx.getAt(times[i - 1], 'pan_sauces', 'quantity')); } const observed = { prepared: peakPrep, remainingPrep: ctx.get('prepped_proteins', 'quantity'), remainingCooked: ctx.get('cooked_proteins', 'quantity'), entrees: ctx.get('finished_entrees', 'quantity'), sauceMade, remainingSauce: ctx.get('pan_sauces', 'quantity') }; return peakPrep === observed.remainingPrep + observed.remainingCooked + observed.entrees && sauceMade === observed.remainingSauce + observed.entrees ? null : { objects: ['prepped_proteins', 'cooked_proteins', 'pan_sauces', 'finished_entrees'], property: 'quantity', observed, expected: 'one prepared protein and one sauce per entree, with remainder conserved', message: 'Entree production must conserve proteins and pan sauces.' }; }\n};\n",
       "simulation": {
         "meta": {
           "id": "sim_restaurant_kitchen_v1",
@@ -3207,6 +3212,7 @@
       "description": "A 14-day coffee shop simulation demonstrating multi-period operations with weekdays, weekends, maintenance, and delivery days",
       "complexity": "Advanced",
       "domain": "Food Service",
+      "constraints": "// Service closes with an intentional ingredient reserve (thresholds inferred from the current operating plan).\n// Service, maintenance, and stock work require qualified roles; service never overlaps machine maintenance.\nmodule.exports = {\n  'coffee.stock_reserve': (ctx) => { const closes = [{ times: [755, 2195, 3635, 5075, 6515, 12275, 13715, 16595], beans: 25, milk: 13 }, { times: [8100, 18180], beans: 10, milk: 5 }]; for (const t of ctx.times()) for (const id of ['coffee_beans', 'milk']) if (ctx.getAt(t, id, 'quantity') < 0) return { time: t, objects: [id], property: 'quantity', observed: ctx.getAt(t, id, 'quantity'), expected: { min: 0 }, message: 'Coffee service may not exhaust ingredient stock.' }; for (const policy of closes) for (const t of policy.times) { const beans = ctx.getAt(t, 'coffee_beans', 'quantity'), milk = ctx.getAt(t, 'milk', 'quantity'); if (beans < policy.beans || milk < policy.milk) return { time: t, objects: ['coffee_beans', 'milk'], property: 'quantity', observed: { beans, milk }, expected: { minBeans: policy.beans, minMilk: policy.milk }, message: 'Closing stock must retain the operating reserve.' }; } return null; },\n  'coffee.role_qualification': (ctx) => { for (const t of ctx.times()) { const state = ctx.stateAt(t); for (const reservation of state.reservations) { const task = reservation.task, role = state.objects[reservation.resource]?.properties?.role || ''; let ok = true; if (/weekend_service/.test(task)) ok = role === 'Lead Barista'; else if (/(rush|midday_service|bob_afternoon)/.test(task)) ok = /Barista/.test(role); else if (/(deep_clean|equipment_service|inventory_check)/.test(task)) ok = role === 'Equipment Technician'; else if (/(receive_delivery|stock_storage|quality_check)/.test(task)) ok = role === 'Shop Manager'; if (!ok) return { time: t, objects: [reservation.resource], property: 'role', observed: { task, role }, expected: 'role qualified for assigned work', message: 'Coffee-shop work must be assigned to a qualified role.' }; } } return null; },\n  'coffee.maintenance_isolation': (ctx) => { for (const t of ctx.times()) { const state = ctx.stateAt(t), machine = state.objects.espresso_machine?.properties?.state; if (machine === 'maintenance' || machine === 'repairing') { const service = Object.keys(state.active_tasks).filter((id) => /(open_shop|rush|midday_service|weekend_service)/.test(id)); if (service.length) return { time: t, objects: ['espresso_machine'], property: 'state', observed: { machine, service }, expected: 'no service during maintenance', message: 'Customer service cannot run while the espresso machine is under maintenance.' }; } } return null; }\n};\n",
       "simulation": {
         "schema_version": "2.2",
         "meta": {
@@ -4232,6 +4238,457 @@
         }
       },
       "changes": "// WorkSpec 2.2 Changes\nWorkSpec.task(\"day_1_open_shop\").onStart(() => {\n    set(\"coffee_beans\", \"quantity\", 100);\n    set(\"milk\", \"quantity\", 50);\n    set(\"latte\", \"quantity\", 0);\n    set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_2_open_shop\").onStart(() => {\n    set(\"coffee_beans\", \"quantity\", 100);\n    set(\"milk\", \"quantity\", 50);\n    set(\"latte\", \"quantity\", 0);\n    set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_3_open_shop\").onStart(() => {\n    set(\"coffee_beans\", \"quantity\", 100);\n    set(\"milk\", \"quantity\", 50);\n    set(\"latte\", \"quantity\", 0);\n    set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_4_open_shop\").onStart(() => {\n    set(\"coffee_beans\", \"quantity\", 100);\n    set(\"milk\", \"quantity\", 50);\n    set(\"latte\", \"quantity\", 0);\n    set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_5_open_shop\").onStart(() => {\n    set(\"coffee_beans\", \"quantity\", 100);\n    set(\"milk\", \"quantity\", 50);\n    set(\"latte\", \"quantity\", 0);\n    set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_9_open_shop\").onStart(() => {\n    set(\"coffee_beans\", \"quantity\", 100);\n    set(\"milk\", \"quantity\", 50);\n    set(\"latte\", \"quantity\", 0);\n    set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_10_open_shop\").onStart(() => {\n    set(\"coffee_beans\", \"quantity\", 100);\n    set(\"milk\", \"quantity\", 50);\n    set(\"latte\", \"quantity\", 0);\n    set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_12_open_shop\").onStart(() => {\n    set(\"coffee_beans\", \"quantity\", 100);\n    set(\"milk\", \"quantity\", 50);\n    set(\"latte\", \"quantity\", 0);\n    set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_6_open_shop\").onStart(() => {\n    set(\"coffee_beans\", \"quantity\", 50);\n    set(\"milk\", \"quantity\", 30);\n    set(\"latte\", \"quantity\", 0);\n    set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_13_open_shop\").onStart(() => {\n    set(\"coffee_beans\", \"quantity\", 50);\n    set(\"milk\", \"quantity\", 30);\n    set(\"latte\", \"quantity\", 0);\n    set(\"cappuccino\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_11_receive_delivery\").onStart(() => {\n    set(\"coffee_beans\", \"quantity\", 0);\n    set(\"milk\", \"quantity\", 0);\n});\n\nWorkSpec.task(\"day_1_morning_rush_1\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -20);\n    change(\"milk\", \"quantity\", -10);\n    change(\"latte\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"day_1_morning_rush_2\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -15);\n    change(\"milk\", \"quantity\", -8);\n    change(\"cappuccino\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"day_1_midday_service\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -25);\n    change(\"milk\", \"quantity\", -12);\n    change(\"latte\", \"quantity\", 18);\n    change(\"cappuccino\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_1_bob_afternoon\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -15);\n    change(\"milk\", \"quantity\", -7);\n    change(\"latte\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_2_morning_rush_1\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -20);\n    change(\"milk\", \"quantity\", -10);\n    change(\"latte\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"day_2_morning_rush_2\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -15);\n    change(\"milk\", \"quantity\", -8);\n    change(\"cappuccino\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"day_2_midday_service\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -25);\n    change(\"milk\", \"quantity\", -12);\n    change(\"latte\", \"quantity\", 18);\n    change(\"cappuccino\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_2_bob_afternoon\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -15);\n    change(\"milk\", \"quantity\", -7);\n    change(\"latte\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_3_morning_rush_1\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -20);\n    change(\"milk\", \"quantity\", -10);\n    change(\"latte\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"day_3_morning_rush_2\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -15);\n    change(\"milk\", \"quantity\", -8);\n    change(\"cappuccino\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"day_3_midday_service\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -25);\n    change(\"milk\", \"quantity\", -12);\n    change(\"latte\", \"quantity\", 18);\n    change(\"cappuccino\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_3_bob_afternoon\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -15);\n    change(\"milk\", \"quantity\", -7);\n    change(\"latte\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_4_morning_rush_1\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -20);\n    change(\"milk\", \"quantity\", -10);\n    change(\"latte\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"day_4_morning_rush_2\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -15);\n    change(\"milk\", \"quantity\", -8);\n    change(\"cappuccino\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"day_4_midday_service\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -25);\n    change(\"milk\", \"quantity\", -12);\n    change(\"latte\", \"quantity\", 18);\n    change(\"cappuccino\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_4_bob_afternoon\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -15);\n    change(\"milk\", \"quantity\", -7);\n    change(\"latte\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_5_morning_rush_1\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -20);\n    change(\"milk\", \"quantity\", -10);\n    change(\"latte\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"day_5_morning_rush_2\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -15);\n    change(\"milk\", \"quantity\", -8);\n    change(\"cappuccino\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"day_5_midday_service\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -25);\n    change(\"milk\", \"quantity\", -12);\n    change(\"latte\", \"quantity\", 18);\n    change(\"cappuccino\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_5_bob_afternoon\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -15);\n    change(\"milk\", \"quantity\", -7);\n    change(\"latte\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_6_weekend_service\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -40);\n    change(\"milk\", \"quantity\", -25);\n    change(\"latte\", \"quantity\", 35);\n});\n\nWorkSpec.task(\"day_8_deep_clean\").onStart(() => {\n    set(\"espresso_machine\", \"state\", \"maintenance\", { temporary: true });\n});\n\nWorkSpec.task(\"day_8_equipment_service\").onStart(() => {\n    set(\"espresso_machine\", \"state\", \"repairing\", { temporary: true });\n});\n\nWorkSpec.task(\"day_9_morning_rush_1\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -20);\n    change(\"milk\", \"quantity\", -10);\n    change(\"latte\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"day_9_morning_rush_2\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -15);\n    change(\"milk\", \"quantity\", -8);\n    change(\"cappuccino\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"day_9_midday_service\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -25);\n    change(\"milk\", \"quantity\", -12);\n    change(\"latte\", \"quantity\", 18);\n    change(\"cappuccino\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_9_bob_afternoon\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -15);\n    change(\"milk\", \"quantity\", -7);\n    change(\"latte\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_10_morning_rush_1\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -20);\n    change(\"milk\", \"quantity\", -10);\n    change(\"latte\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"day_10_morning_rush_2\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -15);\n    change(\"milk\", \"quantity\", -8);\n    change(\"cappuccino\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"day_10_midday_service\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -25);\n    change(\"milk\", \"quantity\", -12);\n    change(\"latte\", \"quantity\", 18);\n    change(\"cappuccino\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_10_bob_afternoon\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -15);\n    change(\"milk\", \"quantity\", -7);\n    change(\"latte\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_11_receive_delivery\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", 200);\n    change(\"milk\", \"quantity\", 100);\n});\n\nWorkSpec.task(\"day_12_morning_rush_1\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -20);\n    change(\"milk\", \"quantity\", -10);\n    change(\"latte\", \"quantity\", 15);\n});\n\nWorkSpec.task(\"day_12_morning_rush_2\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -15);\n    change(\"milk\", \"quantity\", -8);\n    change(\"cappuccino\", \"quantity\", 12);\n});\n\nWorkSpec.task(\"day_12_midday_service\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -25);\n    change(\"milk\", \"quantity\", -12);\n    change(\"latte\", \"quantity\", 18);\n    change(\"cappuccino\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_12_bob_afternoon\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -15);\n    change(\"milk\", \"quantity\", -7);\n    change(\"latte\", \"quantity\", 10);\n});\n\nWorkSpec.task(\"day_13_weekend_service\").onComplete(() => {\n    change(\"coffee_beans\", \"quantity\", -40);\n    change(\"milk\", \"quantity\", -25);\n    change(\"latte\", \"quantity\", 35);\n});\n"
+    },
+    {
+      "id": "steam_sterilisation",
+      "name": "Implant Tray Steam Sterilisation",
+      "description": "A hospital sterile-processing department reprocesses two returned implant trays: cleaning, inspection, packaging, a pre-vacuum steam cycle with generated chamber behaviour, indicator review, quarantine, and authorised release.",
+      "complexity": "Expert",
+      "domain": "Healthcare",
+      "simulation": {
+        "schema_version": "2.2",
+        "meta": {
+          "id": "dogfood_steam_sterilisation_implant_load_v1",
+          "title": "Reusable Implant Tray Steam Sterilisation",
+          "description": "A two-tray implant load moves from contaminated receipt through cleaning, inspection, packaging, pre-vacuum steam processing, indicator review, quarantine, and release.",
+          "domain": "Hospital sterile processing"
+        },
+        "world": {
+          "layout": {
+            "meta": {
+              "units": "meters",
+              "pixels_per_unit": 20
+            },
+            "locations": [
+              {
+                "id": "receiving",
+                "name": "Contaminated Receiving",
+                "shape": {
+                  "type": "rect",
+                  "x": 20,
+                  "y": 30,
+                  "width": 150,
+                  "height": 100
+                }
+              },
+              {
+                "id": "decontamination",
+                "name": "Decontamination Area",
+                "shape": {
+                  "type": "rect",
+                  "x": 200,
+                  "y": 30,
+                  "width": 180,
+                  "height": 100
+                }
+              },
+              {
+                "id": "clean_assembly",
+                "name": "Clean Assembly Area",
+                "shape": {
+                  "type": "rect",
+                  "x": 410,
+                  "y": 30,
+                  "width": 180,
+                  "height": 100
+                }
+              },
+              {
+                "id": "steriliser_area",
+                "name": "Steam Steriliser Area",
+                "shape": {
+                  "type": "rect",
+                  "x": 620,
+                  "y": 30,
+                  "width": 180,
+                  "height": 100
+                }
+              },
+              {
+                "id": "quarantine",
+                "name": "Load Quarantine and BI Incubation",
+                "shape": {
+                  "type": "rect",
+                  "x": 410,
+                  "y": 170,
+                  "width": 200,
+                  "height": 100
+                }
+              },
+              {
+                "id": "sterile_storage",
+                "name": "Sterile Storage",
+                "shape": {
+                  "type": "rect",
+                  "x": 650,
+                  "y": 170,
+                  "width": 150,
+                  "height": 100
+                }
+              }
+            ]
+          },
+          "objects": [
+            {
+              "id": "decon_technician",
+              "type": "actor",
+              "name": "Decontamination Technician",
+              "location": "decontamination",
+              "properties": {
+                "state": "available",
+                "role": "decontamination_technician",
+                "qualified_for": "decontamination"
+              }
+            },
+            {
+              "id": "assembly_technician",
+              "type": "actor",
+              "name": "Assembly Technician",
+              "location": "clean_assembly",
+              "properties": {
+                "state": "available",
+                "role": "assembly_technician",
+                "qualified_for": "inspection_and_packaging"
+              }
+            },
+            {
+              "id": "steriliser_operator",
+              "type": "actor",
+              "name": "Qualified Steriliser Operator",
+              "location": "steriliser_area",
+              "properties": {
+                "state": "available",
+                "role": "steriliser_operator",
+                "qualified_for": "steam_sterilisation"
+              }
+            },
+            {
+              "id": "spd_supervisor",
+              "type": "actor",
+              "name": "Sterile Processing Supervisor",
+              "location": "quarantine",
+              "properties": {
+                "state": "available",
+                "role": "sterile_processing_supervisor",
+                "release_authority": true
+              }
+            },
+            {
+              "id": "ultrasonic_cleaner",
+              "type": "equipment",
+              "name": "Ultrasonic Cleaner",
+              "location": "decontamination",
+              "properties": {
+                "state": "ready",
+                "capacity": 2,
+                "capacity_unit": "trays"
+              }
+            },
+            {
+              "id": "steam_steriliser",
+              "type": "equipment",
+              "name": "Pre-vacuum Steam Steriliser",
+              "location": "steriliser_area",
+              "properties": {
+                "state": "available",
+                "capacity": 2,
+                "capacity_unit": "trays",
+                "cycle_type": "pre_vacuum",
+                "validated_cycle": "pre_vacuum_132c_wrapped_implants",
+                "daily_air_removal_test_result": "not_run",
+                "chamber_temperature_c": 22,
+                "chamber_pressure_kpa": 101.3,
+                "qualifying_exposure_minutes": 0,
+                "mechanical_result": "not_run"
+              }
+            },
+            {
+              "id": "bi_incubator",
+              "type": "equipment",
+              "name": "Biological Indicator Incubator",
+              "location": "quarantine",
+              "properties": {
+                "state": "ready",
+                "capacity": 4,
+                "capacity_unit": "indicators"
+              }
+            },
+            {
+              "id": "contaminated_trays",
+              "type": "resource",
+              "name": "Returned Contaminated Implant Trays",
+              "location": "receiving",
+              "properties": {
+                "state": "awaiting_decontamination",
+                "quantity": 2,
+                "unit": "trays"
+              }
+            },
+            {
+              "id": "cleaned_trays",
+              "type": "product",
+              "name": "Cleaned Trays",
+              "location": "decontamination",
+              "properties": {
+                "state": "absent",
+                "quantity": 0,
+                "unit": "trays"
+              }
+            },
+            {
+              "id": "inspected_trays",
+              "type": "product",
+              "name": "Inspected and Assembled Trays",
+              "location": "clean_assembly",
+              "properties": {
+                "state": "absent",
+                "quantity": 0,
+                "unit": "trays"
+              }
+            },
+            {
+              "id": "packaged_trays",
+              "type": "product",
+              "name": "Packaged Implant Trays",
+              "location": "clean_assembly",
+              "properties": {
+                "state": "absent",
+                "quantity": 0,
+                "unit": "trays"
+              }
+            },
+            {
+              "id": "processed_trays",
+              "type": "product",
+              "name": "Processed Trays Pending Release",
+              "location": "quarantine",
+              "properties": {
+                "state": "absent",
+                "quantity": 0,
+                "unit": "trays"
+              }
+            },
+            {
+              "id": "released_sterile_trays",
+              "type": "product",
+              "name": "Released Sterile Implant Trays",
+              "location": "sterile_storage",
+              "properties": {
+                "state": "absent",
+                "quantity": 0,
+                "unit": "trays"
+              }
+            },
+            {
+              "id": "detergent_doses",
+              "type": "resource",
+              "name": "Cleaning Detergent Doses",
+              "location": "decontamination",
+              "properties": {
+                "quantity": 6,
+                "unit": "doses"
+              }
+            },
+            {
+              "id": "wrap_sets",
+              "type": "resource",
+              "name": "Sterilisation Wrap Sets",
+              "location": "clean_assembly",
+              "properties": {
+                "quantity": 6,
+                "unit": "sets"
+              }
+            },
+            {
+              "id": "internal_chemical_indicators",
+              "type": "resource",
+              "name": "Internal Chemical Indicators",
+              "location": "clean_assembly",
+              "properties": {
+                "quantity": 6,
+                "unit": "indicators"
+              }
+            },
+            {
+              "id": "biological_indicators",
+              "type": "resource",
+              "name": "Biological Indicators",
+              "location": "quarantine",
+              "properties": {
+                "quantity": 3,
+                "unit": "indicators"
+              }
+            },
+            {
+              "id": "load_record",
+              "type": "digital_object",
+              "name": "Implant Load Record",
+              "location": "quarantine",
+              "properties": {
+                "state": "open",
+                "quantity": 1,
+                "load_id": "IMPLANT-2026-09-09-A",
+                "implant_load": true,
+                "tray_count": 2,
+                "selected_cycle": "pre_vacuum_132c_wrapped_implants",
+                "device_package_cycle_compatible": true,
+                "cycle_recorded": false,
+                "chemical_indicator_result": "pending",
+                "biological_indicator_result": "pending",
+                "release_status": "not_released",
+                "released_by_role": "none"
+              }
+            }
+          ]
+        },
+        "process": {
+          "tasks": [
+            {
+              "id": "daily_air_removal_test",
+              "actor_id": "steriliser_operator",
+              "start": "06:40",
+              "duration": "10m",
+              "location": "steriliser_area",
+              "reservations": [
+                {
+                  "resource": "steam_steriliser",
+                  "mode": "exclusive"
+                }
+              ],
+              "description": "Run the daily air-removal test in the empty pre-vacuum chamber before its first processed load."
+            },
+            {
+              "id": "receive_and_sort",
+              "actor_id": "decon_technician",
+              "start": "07:00",
+              "duration": "10m",
+              "location": "receiving",
+              "description": "Receive the closed returned trays and sort them for decontamination."
+            },
+            {
+              "id": "ultrasonic_cleaning",
+              "actor_id": "decon_technician",
+              "duration": "20m",
+              "location": "decontamination",
+              "depends_on": [
+                "receive_and_sort"
+              ],
+              "reservations": [
+                {
+                  "resource": "ultrasonic_cleaner",
+                  "mode": "capacity",
+                  "amount": 2
+                }
+              ],
+              "description": "Clean both trays using one detergent dose per tray."
+            },
+            {
+              "id": "rinse_and_dry",
+              "actor_id": "decon_technician",
+              "duration": "15m",
+              "location": "decontamination",
+              "depends_on": [
+                "ultrasonic_cleaning"
+              ],
+              "description": "Rinse and dry the cleaned trays before transfer to the clean side."
+            },
+            {
+              "id": "inspect_and_assemble",
+              "actor_id": "assembly_technician",
+              "duration": "20m",
+              "location": "clean_assembly",
+              "depends_on": [
+                "rinse_and_dry"
+              ],
+              "description": "Inspect cleanliness and function, then assemble each tray."
+            },
+            {
+              "id": "package_and_label",
+              "actor_id": "assembly_technician",
+              "duration": "15m",
+              "location": "clean_assembly",
+              "depends_on": [
+                "inspect_and_assemble"
+              ],
+              "description": "Wrap each tray, add an internal chemical indicator, and label the package."
+            },
+            {
+              "id": "load_steriliser",
+              "actor_id": "steriliser_operator",
+              "duration": "10m",
+              "location": "steriliser_area",
+              "depends_on": [
+                "package_and_label",
+                "daily_air_removal_test"
+              ],
+              "reservations": [
+                {
+                  "resource": "steam_steriliser",
+                  "mode": "capacity",
+                  "amount": 2
+                }
+              ],
+              "description": "Load both packaged trays without exceeding chamber tray capacity."
+            },
+            {
+              "id": "run_pre_vacuum_cycle",
+              "actor_id": "steriliser_operator",
+              "duration": "20m",
+              "location": "steriliser_area",
+              "depends_on": [
+                "load_steriliser"
+              ],
+              "reservations": [
+                {
+                  "resource": "steam_steriliser",
+                  "mode": "exclusive"
+                }
+              ],
+              "description": "Run the pre-vacuum steam cycle; chamber behaviour is generated minute by minute."
+            },
+            {
+              "id": "unload_and_cool",
+              "actor_id": "steriliser_operator",
+              "duration": "30m",
+              "location": "quarantine",
+              "depends_on": [
+                "run_pre_vacuum_cycle"
+              ],
+              "description": "Move the processed load to quarantine and allow packages to cool undisturbed."
+            },
+            {
+              "id": "incubate_biological_indicator",
+              "actor_id": "bi_incubator",
+              "duration": "60m",
+              "location": "quarantine",
+              "depends_on": [
+                "unload_and_cool"
+              ],
+              "reservations": [
+                {
+                  "resource": "bi_incubator",
+                  "mode": "capacity",
+                  "amount": 1
+                }
+              ],
+              "description": "Incubate the biological indicator used for this implant load."
+            },
+            {
+              "id": "review_and_release",
+              "actor_id": "spd_supervisor",
+              "duration": "10m",
+              "location": "quarantine",
+              "depends_on": [
+                "incubate_biological_indicator"
+              ],
+              "description": "Review mechanical, chemical, and biological monitoring before authorising release."
+            }
+          ]
+        }
+      },
+      "changes": "// WorkSpec 2.2 Changes — explicit authored work and decisions.\n\nWorkSpec.task('daily_air_removal_test', task => {\n    task.onStart(() => {\n        set('steriliser_operator', 'state', 'testing_steriliser', { temporary: true });\n        set('steam_steriliser', 'state', 'air_removal_test');\n    });\n    task.onComplete(() => {\n        set('steam_steriliser', 'daily_air_removal_test_result', 'pass');\n        set('steam_steriliser', 'state', 'available');\n    });\n});\n\nWorkSpec.task('receive_and_sort', task => {\n    task.onStart(() => set('decon_technician', 'state', 'working', { temporary: true }));\n    task.onComplete(() => set('contaminated_trays', 'state', 'sorted_for_decontamination'));\n});\n\nWorkSpec.task('ultrasonic_cleaning', task => {\n    task.onStart(() => {\n        set('decon_technician', 'state', 'working', { temporary: true });\n        set('ultrasonic_cleaner', 'state', 'running', { temporary: true });\n        set('contaminated_trays', 'state', 'being_cleaned', { temporary: true });\n    });\n    task.onComplete(() => {\n        change('contaminated_trays', 'quantity', -2);\n        set('contaminated_trays', 'state', 'depleted');\n        change('detergent_doses', 'quantity', -2);\n        change('cleaned_trays', 'quantity', 2);\n        set('cleaned_trays', 'state', 'wet');\n    });\n});\n\nWorkSpec.task('rinse_and_dry', task => {\n    task.onStart(() => {\n        set('decon_technician', 'state', 'working', { temporary: true });\n        set('cleaned_trays', 'state', 'rinsing_and_drying', { temporary: true });\n    });\n    task.onComplete(() => {\n        set('cleaned_trays', 'state', 'dry');\n        move('cleaned_trays', 'clean_assembly');\n    });\n});\n\nWorkSpec.task('inspect_and_assemble', task => {\n    task.onStart(() => {\n        set('assembly_technician', 'state', 'working', { temporary: true });\n        set('cleaned_trays', 'state', 'under_inspection', { temporary: true });\n    });\n    task.onComplete(() => {\n        change('cleaned_trays', 'quantity', -2);\n        set('cleaned_trays', 'state', 'depleted');\n        change('inspected_trays', 'quantity', 2);\n        set('inspected_trays', 'state', 'clean_dry_functional');\n    });\n});\n\nWorkSpec.task('package_and_label', task => {\n    task.onStart(() => {\n        set('assembly_technician', 'state', 'working', { temporary: true });\n        set('inspected_trays', 'state', 'being_packaged', { temporary: true });\n    });\n    task.onComplete(() => {\n        change('inspected_trays', 'quantity', -2);\n        set('inspected_trays', 'state', 'depleted');\n        change('wrap_sets', 'quantity', -2);\n        change('internal_chemical_indicators', 'quantity', -2);\n        change('packaged_trays', 'quantity', 2);\n        set('packaged_trays', 'state', 'wrapped_labelled_with_internal_indicator');\n    });\n});\n\nWorkSpec.task('load_steriliser', task => {\n    task.onStart(() => set('steriliser_operator', 'state', 'working', { temporary: true }));\n    task.onComplete(() => {\n        move('packaged_trays', 'steriliser_area');\n        set('packaged_trays', 'state', 'loaded');\n        set('load_record', 'state', 'loaded');\n    });\n});\n\nWorkSpec.task('run_pre_vacuum_cycle', task => {\n    task.onStart(() => {\n        set('steriliser_operator', 'state', 'monitoring_cycle', { temporary: true });\n        set('steam_steriliser', 'state', 'running');\n        set('steam_steriliser', 'mechanical_result', 'running');\n    });\n    task.onComplete(() => {\n        change('packaged_trays', 'quantity', -2);\n        set('packaged_trays', 'state', 'depleted');\n        change('processed_trays', 'quantity', 2);\n        set('processed_trays', 'state', 'hot_pending_cooling');\n        move('processed_trays', 'quarantine');\n        set('steam_steriliser', 'state', 'cooling');\n        set('steam_steriliser', 'mechanical_result', 'pass');\n        set('load_record', 'cycle_recorded', true);\n        set('load_record', 'chemical_indicator_result', 'pass');\n        set('load_record', 'state', 'processed_pending_release');\n    });\n});\n\nWorkSpec.task('unload_and_cool', task => {\n    task.onStart(() => {\n        set('steriliser_operator', 'state', 'handling_hot_load', { temporary: true });\n        set('processed_trays', 'state', 'cooling_undisturbed', { temporary: true });\n    });\n    task.onComplete(() => {\n        set('processed_trays', 'state', 'cool_dry_intact');\n        set('steam_steriliser', 'state', 'available');\n    });\n});\n\nWorkSpec.task('incubate_biological_indicator', task => {\n    task.onStart(() => {\n        change('biological_indicators', 'quantity', -1);\n        set('bi_incubator', 'state', 'incubating', { temporary: true });\n        set('load_record', 'biological_indicator_result', 'incubating');\n    });\n    task.onComplete(() => set('load_record', 'biological_indicator_result', 'negative'));\n});\n\nWorkSpec.task('review_and_release', task => {\n    task.onStart(() => set('spd_supervisor', 'state', 'reviewing_load', { temporary: true }));\n    task.onComplete(() => {\n        change('processed_trays', 'quantity', -2);\n        set('processed_trays', 'state', 'depleted');\n        change('released_sterile_trays', 'quantity', 2);\n        set('released_sterile_trays', 'state', 'released_for_use');\n        set('load_record', 'release_status', 'released');\n        set('load_record', 'released_by_role', 'sterile_processing_supervisor');\n        set('load_record', 'state', 'closed');\n    });\n});\n",
+      "generator": "// WorkSpec 2.2 Generator — computational chamber behaviour.\n// The deterministic seed controls small in-band temperature variation after heat-up.\n\nWorkSpec.onStart(({ set }) => {\n    set('steam_steriliser', 'chamber_temperature_c', 22);\n    set('steam_steriliser', 'chamber_pressure_kpa', 101.3);\n    set('steam_steriliser', 'qualifying_exposure_minutes', 0);\n});\n\nWorkSpec.onUpdate(({ get, set, change, random }) => {\n    const state = get('steam_steriliser', 'state');\n    const current = get('steam_steriliser', 'chamber_temperature_c');\n\n    if (state === 'running') {\n        const next = current < 132\n            ? Math.min(132, current + 22)\n            : Math.round((132 + random() * 2) * 10) / 10;\n        set('steam_steriliser', 'chamber_temperature_c', next);\n        set('steam_steriliser', 'chamber_pressure_kpa', Math.round((101.3 + (next - 22) * 1.8) * 10) / 10);\n        if (next >= 132) change('steam_steriliser', 'qualifying_exposure_minutes', 1);\n    } else if (state === 'cooling') {\n        const next = Math.max(22, current - 4);\n        set('steam_steriliser', 'chamber_temperature_c', next);\n        set('steam_steriliser', 'chamber_pressure_kpa', Math.round((101.3 + (next - 22) * 1.8) * 10) / 10);\n    }\n});\n",
+      "constraints": "// WorkSpec 2.2 runtime constraints. Each comment states the retained domain intent.\n\nconst close = (left, right) => Math.abs(left - right) < 1e-9;\nconst firstTime = (ctx, predicate) => ctx.times().find(time => predicate(ctx.stateAt(time)));\nconst previousTime = (ctx, time) => ctx.times().filter(candidate => candidate < time).at(-1);\n\nmodule.exports = {\n    // Intent: tray identity is conserved through every processing stage; no stage may create, lose, or borrow trays.\n    'flow.tray_conservation': (ctx) => {\n        const ids = ['contaminated_trays', 'cleaned_trays', 'inspected_trays', 'packaged_trays', 'processed_trays', 'released_sterile_trays'];\n        const start = Math.min(...ctx.times());\n        const expected = ids.reduce((sum, id) => sum + ctx.getAt(start, id, 'quantity'), 0);\n        for (const time of ctx.times()) {\n            const quantities = Object.fromEntries(ids.map(id => [id, ctx.getAt(time, id, 'quantity')]));\n            const total = Object.values(quantities).reduce((sum, quantity) => sum + quantity, 0);\n            if (Object.values(quantities).some(quantity => !Number.isFinite(quantity) || quantity < 0) || !close(total, expected)) {\n                return { time, objects: ids, property: 'quantity', observed: { quantities, total }, expected: { conserved_total: expected, minimum_each: 0 }, message: 'Tray quantities must remain non-negative and conserved across processing stages.' };\n            }\n        }\n        if (!close(ctx.get('released_sterile_trays', 'quantity'), expected)) {\n            return { objects: ids, property: 'quantity', observed: ctx.get('released_sterile_trays', 'quantity'), expected, message: 'The completed healthy run must account for every received tray at release.' };\n        }\n        return null;\n    },\n\n    // Intent: this scenario consumes one cleaning dose, wrap set, and internal indicator per tray, plus one BI for its implant load.\n    'flow.load_consumables': (ctx) => {\n        const start = Math.min(...ctx.times());\n        const trays = ctx.get('released_sterile_trays', 'quantity');\n        const used = {\n            detergent_doses: ctx.getAt(start, 'detergent_doses', 'quantity') - ctx.get('detergent_doses', 'quantity'),\n            wrap_sets: ctx.getAt(start, 'wrap_sets', 'quantity') - ctx.get('wrap_sets', 'quantity'),\n            internal_chemical_indicators: ctx.getAt(start, 'internal_chemical_indicators', 'quantity') - ctx.get('internal_chemical_indicators', 'quantity'),\n            biological_indicators: ctx.getAt(start, 'biological_indicators', 'quantity') - ctx.get('biological_indicators', 'quantity')\n        };\n        const expected = { detergent_doses: trays, wrap_sets: trays, internal_chemical_indicators: trays, biological_indicators: 1 };\n        return Object.keys(expected).every(id => close(used[id], expected[id])) ? null : {\n            objects: Object.keys(used), property: 'quantity', observed: used, expected,\n            message: 'Consumed cleaning, packaging, and monitoring supplies must match the processed implant load.'\n        };\n    },\n\n    // Intent: trays must be observably cleaned, inspected, packaged, processed, and released in that order, with no final WIP.\n    'workflow.required_stages': (ctx) => {\n        const ids = ['cleaned_trays', 'inspected_trays', 'packaged_trays', 'processed_trays', 'released_sterile_trays'];\n        const observed = Object.fromEntries(ids.map(id => [id, firstTime(ctx, state => state.objects[id].properties.quantity > 0)]));\n        const ordered = ids.every((id, index) => Number.isFinite(observed[id]) && (index === 0 || observed[id] > observed[ids[index - 1]]));\n        const stranded = ids.slice(0, -1).filter(id => ctx.get(id, 'quantity') !== 0);\n        return ordered && stranded.length === 0 ? null : {\n            objects: ids, property: 'quantity', observed: { first_positive_time: observed, stranded }, expected: 'cleaned < inspected < packaged < processed < released; no final work in progress',\n            message: 'Every tray must pass through the required observable stages in order.'\n        };\n    },\n\n    // Intent: a pre-vacuum steriliser is not used for the first load until its daily empty-chamber air-removal test has passed.\n    'sterilisation.daily_air_removal_gate': (ctx) => {\n        for (const time of ctx.times()) {\n            const state = ctx.stateAt(time);\n            if (state.task_statuses.run_pre_vacuum_cycle !== 'active') continue;\n            const result = state.objects.steam_steriliser.properties.daily_air_removal_test_result;\n            const testStatus = state.task_statuses.daily_air_removal_test;\n            if (result !== 'pass' || testStatus !== 'completed') return {\n                time, objects: ['steam_steriliser'], property: 'daily_air_removal_test_result', observed: { result, testStatus }, expected: { result: 'pass', testStatus: 'completed' },\n                message: 'The daily air-removal test must pass before the pre-vacuum processing cycle starts.'\n            };\n        }\n        return null;\n    },\n\n    // Intent: the two-tray load fits both batch machines and uses a device/package/steriliser-compatible validated cycle.\n    'sterilisation.capacity_and_compatibility': (ctx) => {\n        const load = ctx.get('load_record', 'tray_count');\n        const start = Math.min(...ctx.times());\n        const received = ctx.getAt(start, 'contaminated_trays', 'quantity');\n        const released = ctx.get('released_sterile_trays', 'quantity');\n        const observed = {\n            load,\n            received,\n            released,\n            cleaner_capacity: ctx.get('ultrasonic_cleaner', 'capacity'),\n            steriliser_capacity: ctx.get('steam_steriliser', 'capacity'),\n            selected_cycle: ctx.get('load_record', 'selected_cycle'),\n            validated_cycle: ctx.get('steam_steriliser', 'validated_cycle'),\n            compatible: ctx.get('load_record', 'device_package_cycle_compatible')\n        };\n        const ok = load === received && load === released && load <= observed.cleaner_capacity && load <= observed.steriliser_capacity && observed.compatible === true && observed.selected_cycle === observed.validated_cycle;\n        return ok ? null : {\n            objects: ['load_record', 'ultrasonic_cleaner', 'steam_steriliser'], observed,\n            expected: 'recorded count equals received and released count, load within both capacities, and selected_cycle === validated_cycle with compatibility confirmed',\n            message: 'The recorded load must match physical tray flow, fit its equipment, and use one mutually compatible validated cycle.'\n        };\n    },\n\n    // Intent: the observed exposure meets the selected equipment protocol (pre-vacuum 132 C/4m or gravity 121 C/30m) and records mechanical parameters.\n    'sterilisation.minimum_exposure': (ctx) => {\n        const cycleType = ctx.get('steam_steriliser', 'cycle_type');\n        const protocol = {\n            pre_vacuum: { temperature: 132, minutes: 4 },\n            gravity_displacement: { temperature: 121, minutes: 30 }\n        }[cycleType];\n        const cycleTimes = ctx.times().filter(time => ctx.stateAt(time).task_statuses.run_pre_vacuum_cycle === 'active');\n        const qualifying = cycleTimes.filter(time => {\n            const state = ctx.stateAt(time);\n            return protocol && state.task_statuses.run_pre_vacuum_cycle === 'active' && state.objects.steam_steriliser.properties.chamber_temperature_c >= protocol.temperature;\n        });\n        const final = ctx.state();\n        const steriliser = final.objects.steam_steriliser.properties;\n        const startPressure = ctx.getAt(Math.min(...ctx.times()), 'steam_steriliser', 'chamber_pressure_kpa');\n        const pressures = cycleTimes.map(time => ctx.getAt(time, 'steam_steriliser', 'chamber_pressure_kpa'));\n        const pressureRecorded = pressures.length > 0 && pressures.every(Number.isFinite) && Math.max(...pressures) > startPressure;\n        const recorded = ctx.get('load_record', 'cycle_recorded') === true && steriliser.mechanical_result === 'pass' && pressureRecorded;\n        return protocol && qualifying.length >= protocol.minutes && recorded ? null : {\n            objects: ['steam_steriliser', 'load_record'], property: 'chamber_temperature_c', observed: { qualifying_minutes: qualifying, cycle_recorded: ctx.get('load_record', 'cycle_recorded'), mechanical_result: steriliser.mechanical_result, pressure_samples: pressures },\n            expected: protocol ? { cycle_type: cycleType, minimum_temperature_c: protocol.temperature, minimum_exposure_minutes: protocol.minutes, mechanical_monitoring: 'recorded pass including pressure' } : { supported_cycle_types: ['pre_vacuum', 'gravity_displacement'] },\n            message: 'The load must meet its declared steam-cycle protocol and have an acceptable mechanical record.'\n        };\n    },\n\n    // Intent: cleaned trays cross to the clean assembly area before inspection; sterile output ends in protected storage.\n    'workflow.processing_zones': (ctx) => {\n        const inspectionTime = firstTime(ctx, state => state.objects.inspected_trays.properties.quantity > 0);\n        if (!Number.isFinite(inspectionTime)) return {\n            objects: ['cleaned_trays', 'inspected_trays'], observed: { inspectionTime }, expected: 'an observable clean-side inspection stage',\n            message: 'Cleaned trays must cross to clean assembly before inspection.'\n        };\n        const beforeInspection = ctx.stateAt(previousTime(ctx, inspectionTime));\n        const observed = {\n            cleaned_state: beforeInspection.objects.cleaned_trays.properties.state,\n            cleaned_location: beforeInspection.objects.cleaned_trays.location,\n            released_location: ctx.state().objects.released_sterile_trays.location\n        };\n        return observed.cleaned_location === 'clean_assembly' && observed.released_location === 'sterile_storage' ? null : {\n            time: inspectionTime, objects: ['cleaned_trays', 'released_sterile_trays'], observed,\n            expected: { cleaned_location: 'clean_assembly', released_location: 'sterile_storage' },\n            message: 'Only dry cleaned trays may enter clean-side inspection, and released trays must remain in sterile storage.'\n        };\n    },\n\n    // Intent: an implant load remains quarantined until cycle, indicator, cooling/package, and authorised-review gates all pass.\n    'release.implant_load_gates': (ctx) => {\n        const releaseTime = firstTime(ctx, state => state.objects.released_sterile_trays.properties.quantity > 0);\n        if (!Number.isFinite(releaseTime)) return {\n            objects: ['released_sterile_trays', 'load_record'], property: 'quantity', observed: ctx.get('released_sterile_trays', 'quantity'), expected: 'released implant trays after completed review',\n            message: 'The completed load must reach an observable authorised release decision.'\n        };\n        const before = previousTime(ctx, releaseTime);\n        const prior = ctx.stateAt(before);\n        const atRelease = ctx.stateAt(releaseTime);\n        const reviewResources = prior.reservations.filter(reservation => reservation.task === 'review_and_release').map(reservation => reservation.resource);\n        const authorised = reviewResources.some(id => prior.objects[id]?.properties?.release_authority === true);\n        const observed = {\n            releaseTime,\n            prior_package_state: prior.objects.processed_trays.properties.state,\n            cycle_recorded: prior.objects.load_record.properties.cycle_recorded,\n            mechanical_result: prior.objects.steam_steriliser.properties.mechanical_result,\n            chemical_indicator_result: prior.objects.load_record.properties.chemical_indicator_result,\n            biological_indicator_result: prior.objects.load_record.properties.biological_indicator_result,\n            authorised_review: authorised,\n            final_record_state: ctx.get('load_record', 'state'),\n            final_release_status: ctx.get('load_record', 'release_status'),\n            released_by_role: ctx.get('load_record', 'released_by_role')\n        };\n        const reviewerRoles = reviewResources.map(id => prior.objects[id]?.properties?.role);\n        const ok = prior.objects.load_record.properties.implant_load === true && observed.prior_package_state === 'cool_dry_intact' && observed.cycle_recorded === true && observed.mechanical_result === 'pass' && observed.chemical_indicator_result === 'pass' && observed.biological_indicator_result === 'negative' && authorised && observed.final_record_state === 'closed' && observed.final_release_status === 'released' && reviewerRoles.includes(observed.released_by_role);\n        return ok ? null : {\n            time: releaseTime, objects: ['processed_trays', 'load_record', 'steam_steriliser', ...reviewResources], observed,\n            expected: 'implant load held until cool/dry/intact, all monitoring passes, BI is negative, and the authorised reviewer closes a released audit record',\n            message: 'Implant trays may be released only after every quarantine and monitoring gate passes.'\n        };\n    },\n\n    // Intent: dirty-side, clean-side, steriliser, and release work is performed by personnel qualified for that responsibility.\n    'staffing.role_qualification': (ctx) => {\n        const required = {\n            receive_and_sort: ['qualified_for', 'decontamination'],\n            ultrasonic_cleaning: ['qualified_for', 'decontamination'],\n            rinse_and_dry: ['qualified_for', 'decontamination'],\n            inspect_and_assemble: ['qualified_for', 'inspection_and_packaging'],\n            package_and_label: ['qualified_for', 'inspection_and_packaging'],\n            daily_air_removal_test: ['qualified_for', 'steam_sterilisation'],\n            load_steriliser: ['qualified_for', 'steam_sterilisation'],\n            run_pre_vacuum_cycle: ['qualified_for', 'steam_sterilisation'],\n            unload_and_cool: ['qualified_for', 'steam_sterilisation'],\n            review_and_release: ['release_authority', true]\n        };\n        for (const time of ctx.times()) {\n            const state = ctx.stateAt(time);\n            for (const reservation of state.reservations.filter(item => item.implicit && required[item.task])) {\n                const [property, expected] = required[reservation.task];\n                const observed = state.objects[reservation.resource]?.properties?.[property];\n                if (observed !== expected) return {\n                    time, objects: [reservation.resource], property, observed, expected,\n                    message: `Task '${reservation.task}' requires personnel with the modelled qualification.`\n                };\n            }\n        }\n        return null;\n    }\n};\n"
     }
   ]
 }

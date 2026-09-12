@@ -1011,6 +1011,17 @@ body {
     line-height: 1.4;
 }
 
+/* Inline evidence for runtime constraint violations (time, observed, expected) */
+.validation-evidence {
+    margin-top: 0.25rem;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    color: var(--text-light);
+    font-family: var(--font-mono, 'SF Mono', Menlo, Consolas, monospace);
+    word-break: break-word;
+    opacity: 0.9;
+}
+
 /* Action buttons container for builtin metrics in Metrics Editor mode */
 .validation-actions {
     position: absolute;

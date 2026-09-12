@@ -87,7 +87,8 @@ async function run() {
         electronics_assembly: ['finished_phones', 'quantity', 12],
         pharmaceutical_production: ['finished_drug_product', 'quantity', 380],
         restaurant_kitchen: ['finished_entrees', 'quantity', 21],
-        'coffee-shop-multiperiod': ['latte', 'quantity', 35]
+        'coffee-shop-multiperiod': ['latte', 'quantity', 35],
+        steam_sterilisation: ['released_sterile_trays', 'quantity', 2]
     };
 
     for (const template of library.simulations) {
@@ -101,6 +102,7 @@ async function run() {
         }
         assert.equal(validate(documentValue).ok, true, `${template.id} Starting State is invalid`);
         assert.equal(typeof template.changes, 'string', `${template.id} has no Changes content`);
+        assert.equal(typeof template.constraints, 'string', `${template.id} has no Constraints content`);
         assert.doesNotMatch(template.changes, /\(\{\s*(?:set|change|move|create|remove)/, `${template.id} still requires helper destructuring`);
         const taskIds = template.simulation.process.tasks.map(task => task.id);
         const analysis = runtime.analyzeChanges(template.changes, { taskIds });
@@ -113,13 +115,17 @@ async function run() {
         assert.ok(runtimeRun.history.length > 0, `${template.id} generated no change history`);
         const [objectId, property, expected] = observableOutcomes[template.id];
         assert.equal(runtime.serialiseState(runtimeRun).objects[objectId].properties[property], expected, `${template.id} did not preserve its observable outcome`);
+        const constraintRun = runtime.runConstraints(documentValue, template.changes, template.generator || '', template.constraints, { seed: 1 });
+        assert.deepEqual(constraintRun.problems.filter(problem => problem.severity === 'error'), [], `${template.id} Constraints failed to execute`);
+        assert.deepEqual(constraintRun.violations, [], `${template.id} healthy model violates its Constraints`);
 
         const defineText = JSON.stringify(documentValue, null, 2);
-        const created = await store.createFromTemplate(template.name, defineText, root, template.changes, '');
+        const created = await store.createFromTemplate(template.name, defineText, root, template.changes, '', template.constraints);
         assert.ok(created, `${template.id} could not be created`);
         const reloaded = await store.readProjectFromDirectory(created.directoryHandle, { id: created.id, name: created.name });
         assert.deepEqual(JSON.parse(reloaded.workSpecDraft), documentValue, `${template.id} Starting State did not reload intact`);
         assert.equal(reloaded.changesDraft, template.changes, `${template.id} Changes did not reload intact`);
+        assert.equal(reloaded.constraintsDraft, template.constraints, `${template.id} Constraints did not reload intact`);
     }
     process.stdout.write(`✓ ${library.simulations.length} WorkSpec 2.2 Studio templates\n`);
 }

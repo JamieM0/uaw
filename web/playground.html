@@ -134,15 +134,15 @@
 
         <script src="/assets/js/simulation-validator.js" defer></script>
         <script src="/packages/workspec/workspec-runtime.js?v=20260904a" defer></script>
-        <script src="/packages/workspec/workspec-validator.js?v=20260904a" defer></script>
+        <script src="/packages/workspec/workspec-validator.js?v=20260911a" defer></script>
         <script src="/packages/workspec/workspec-migrate-v1-to-v2.js" defer></script>
         <script src="/packages/workspec/playback-state.js" defer></script>
         <script src="/packages/workspec/state-visuals.js" defer></script>
         <script src="/assets/js/space-editor.js?v=20260814g" defer></script>
         <script src="/assets/js/emoji-picker.js" defer></script>
 
-        <script src="/assets/js/tutorial.js" defer></script>
-        <script src="/assets/js/tutorial-validator.js" defer></script>
+        <script src="/assets/js/tutorial.js?v=20260911a" defer></script>
+        <script src="/assets/js/tutorial-validator.js?v=20260910a" defer></script>
         <script src="/assets/js/playground/playground-time-controller.js?v=20260904a" defer></script>
         <script src="/assets/js/simulation-player.js?v=20260904a" defer></script>
 
@@ -291,9 +291,9 @@
         <div id="welcome-overlay" class="dialog-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
             <div class="dialog">
                 <h2 id="welcome-title" class="special-subtitle">Welcome to WorkSpec Studio!</h2>
-                <p>Build and validate WorkSpec simulations with live feedback in the editor and timeline.</p>
+                <p>Learn and build WorkSpec 2.2 projects: Starting State, explicit Changes, Constraints, an optional Generator, and the resolved Simulation.</p>
                 <p>UAW is open source. Project and issues: <a href="https://github.com/JamieM0/uaw" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
-                <p><strong>Before you start:</strong> save regularly, especially when editing custom metrics and validators.</p>
+                <p><strong>First visit?</strong> The short tutorial uses one small project and restores your current project when you exit.</p>
                 <ul>
                     <li><strong>Emoji picker:</strong> <strong>Ctrl + .</strong> or <strong>Cmd + .</strong></li>
                     <li><strong>Space editors:</strong> tap <strong>Space</strong> to fit, hold <strong>Space</strong> to pan</li>
@@ -847,7 +847,7 @@
                 <div class="local-save-name" id="local-save-name">
                     <label for="local-file-name">File name</label>
                     <input type="text" id="local-file-name" placeholder="Enter simulation name..." maxlength="50">
-                    <small>Exports a <code>.workspec.zip</code> project containing <code>start.workspec.json</code>, <code>changes.workspec.js</code>, and <code>generator.workspec.js</code>.</small>
+                    <small>Exports a <code>.workspec.zip</code> project containing <code>start.workspec.json</code>, <code>changes.workspec.js</code>, <code>generator.workspec.js</code>, and <code>constraints.workspec.js</code>.</small>
                     
                     <div class="custom-metrics-save-option" id="custom-metrics-save-option" style="margin-top: 1rem;">
                         <label>
@@ -970,9 +970,8 @@
                                 <div class="field-error" id="task-depends-error"></div>
                                 <small class="field-help">Comma-separated task IDs</small>
                             </div>
-                            <div id="interactions-container"></div>
-                            <button type="button" class="btn-secondary" id="task-add-interaction-btn" style="width: 100%; margin-top: 0.5rem;">+ Add interaction</button>
-                            <small class="field-help">Optional state changes or lifecycle actions. Advanced fields stay in the source editor.</small>
+                            <div id="interactions-container" hidden aria-hidden="true"></div>
+                            <small class="field-help">Task effects are authored in the <strong>Changes</strong> tab, not in Starting State.</small>
                         </div>
                     </details>
                 </div>
@@ -1259,9 +1258,9 @@
 
         <!-- Playground v2 application shell. These modules preserve the legacy
              component IDs while providing the project workspace around them. -->
-        <script src="/assets/js/playground/playground-projects-v2.js?v=20260904a" defer></script>
-        <script src="/assets/js/playground/playground-shell-v2.js?v=20260905a" defer></script>
-        <script src="/assets/js/playground/playground-editor-workspace.js?v=20260905a" defer></script>
+        <script src="/assets/js/playground/playground-projects-v2.js?v=20260910a" defer></script>
+        <script src="/assets/js/playground/playground-shell-v2.js?v=20260911c" defer></script>
+        <script src="/assets/js/playground/playground-editor-workspace.js?v=20260911b" defer></script>
         <script src="/assets/js/playground/playground-source-context.js?v=20260904a" defer></script>
         <script src="/assets/js/playground/playground-agent-v2.js?v=20260822a" defer></script>
         <script type="module" src="/assets/js/playground/playground-motion-v2.js?v=20260818a"></script>
@@ -1281,7 +1280,7 @@
         <!-- Playground modules in dependency order -->
         <script src="/assets/js/playground/playground-utils.js" defer></script>
         <script src="/assets/js/playground/playground-ui.js" defer></script>
-        <script src="/assets/js/playground/playground-validation.js?v=20260904a" defer></script>
+        <script src="/assets/js/playground/playground-validation.js?v=20260911a" defer></script>
 
         <!-- Multi-period simulation modules -->
         <script src="/assets/js/playground/playground-multi-period.js" defer></script>
@@ -1296,10 +1295,10 @@
         <script src="/assets/js/playground/playground-save-load.js?v=20260904a" defer></script>
         <script src="/assets/js/playground/playground-metrics-editor.js?v=20260818c" defer></script>
         <script src="/assets/js/playground/playground-objects.js?v=20260829a" defer></script>
-        <script src="/assets/js/playground/playground-features.js" defer></script>
+        <script src="/assets/js/playground/playground-features.js?v=20260911b" defer></script>
         <script src="/assets/js/playground/playground-editor.js?v=20260904a" defer></script>
         <script src="/assets/js/space-editor-actor-animation.js?v=20260822b" defer></script>
-        <script src="/assets/js/playground/playground-core.js?v=20260904a" defer></script>
+        <script src="/assets/js/playground/playground-core.js?v=20260911a" defer></script>
         <script src="/assets/js/playground/playground-canvas-v2.js?v=20260814h" defer></script>
         <script>
             document.addEventListener('DOMContentLoaded', () => {
