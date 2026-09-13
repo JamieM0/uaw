@@ -160,7 +160,7 @@
         };
     }
 
-    // WorkSpec 2.2 tasks frequently derive their start from dependencies and
+    // WorkSpec 2 tasks frequently derive their start from dependencies and
     // offsets instead of an explicit "start". The canonical resolver lives in
     // the shared runtime package (the same one the timeline uses), so borrow
     // its resolved timing graph rather than reimplementing scheduling here.

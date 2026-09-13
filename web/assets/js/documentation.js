@@ -36,12 +36,12 @@ function generateDocsStructure() {
         makePage("Architecture Overview", "/docs/architecture-overview"),
 
         makeSection("WorkSpec", "workspec", [
-            makePage("Cheatsheet (2.2)", "/docs/workspec/cheatsheet"),
+            makePage("WorkSpec 2 Cheatsheet", "/docs/workspec/cheatsheet"),
 
             makeSection("Guides", "workspec-guides", [
-                makePage("Quickstart (2.2)", "/docs/workspec/guides/quickstart"),
+                makePage("WorkSpec 2 Quickstart", "/docs/workspec/guides/quickstart"),
                 makePage(
-                    "Authoring (2.2)",
+                    "WorkSpec 2 Authoring",
                     "/docs/workspec/guides/authoring",
                 ),
                 makePage(

@@ -6,23 +6,24 @@ const path = require('path');
 const readline = require('readline');
 
 const validator = require(path.join(__dirname, '..', 'workspec-validator.js'));
+const projectValidator = require(path.join(__dirname, '..', 'workspec-project-validator.js'));
 const migrator = require(path.join(__dirname, '..', 'workspec-migrate-v1-to-v2.js'));
 const customValidationRunner = require(path.join(__dirname, '..', 'custom-validation-runner.js'));
 const runtime = require(path.join(__dirname, '..', 'workspec-runtime.js'));
 
 function printHelp(exitCode = 0) {
     const lines = [
-        'workspec - WorkSpec 2.2 CLI',
+        'workspec - WorkSpec 2 CLI',
         '',
         'Usage:',
-        '  workspec validate <start.workspec.json> [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json] [--fail-on-warning] [-y]',
+        '  workspec validate <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] [--constraints <constraints.workspec.js>] [--time <time>] [--seed <seed>] [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json] [--fail-on-warning] [-y]',
         '  workspec snapshot <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] --time <time> [--seed <seed>] [--json]',
         '  workspec constraints <start.workspec.json> --constraints <constraints.workspec.js> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] [--time <time>] [--seed <seed>] [--json] [-y]',
         '  workspec migrate <file.json> --out <output.json> [--schema]',
         '  workspec format <file.json> [--write] [--out <output.json>]',
         '',
         'Commands:',
-        '  validate   Validate a WorkSpec document (RFC 7807 output model).',
+        '  validate   Validate a Starting State document, or a full project when project-source flags are supplied.',
         '  snapshot   Run a project and resolve its observable world state at a time.',
         '  constraints Run a project and execute runtime constraints over resolved state.',
         '  migrate    Previous UAW Syntax -> WorkSpec 2.1.',
@@ -34,9 +35,9 @@ function printHelp(exitCode = 0) {
         '  --custom-catalog <path> Optional metrics-catalog JSON for custom metrics.',
         '  -y, --yes      Acknowledge trusted custom validation/constraint JavaScript.',
         '  --json          Print machine-readable JSON (validate/snapshot/constraints).',
-        '  --changes <path> Optional WorkSpec Changes source (snapshot/constraints).',
-        '  --generator <path> Optional WorkSpec Generator source (snapshot/constraints).',
-        '  --constraints <path> Runtime constraint functions (constraints only).',
+        '  --changes <path> Optional WorkSpec Changes source (validate/snapshot/constraints).',
+        '  --generator <path> Optional WorkSpec Generator source (validate/snapshot/constraints).',
+        '  --constraints <path> Runtime constraint functions (validate/constraints).',
         '  --time <time>   Runtime time as minutes, HH:MM, day/time JSON, or ISO date-time.',
         '  --seed <seed>   Deterministic integer Generator seed (default: 1).',
         '  --fail-on-warning Exit with status 1 when validation returns a warning.',
@@ -227,6 +228,26 @@ async function handleValidate(filePath, flags) {
         return;
     }
 
+    for (const [flag, label] of [['changes', '--changes'], ['generator', '--generator'], ['constraints', '--constraints']]) {
+        if (Object.prototype.hasOwnProperty.call(flags, flag) && !flags[flag]) {
+            process.stderr.write(`Missing path after ${label}.\n`);
+            printHelp(2);
+            return;
+        }
+    }
+
+    if (Object.prototype.hasOwnProperty.call(flags, 'time') && !flags.time) {
+        process.stderr.write('Missing value after --time.\n');
+        process.exitCode = 2;
+        return;
+    }
+
+    if (flags.constraints && !flags.yes) {
+        process.stderr.write('Runtime constraints execute JavaScript. Re-run with -y/--yes after reviewing the constraint source.\n');
+        process.exitCode = 2;
+        return;
+    }
+
     if (!filePath) {
         process.stderr.write('Missing file path.\n');
         printHelp(2);
@@ -255,8 +276,43 @@ async function handleValidate(filePath, flags) {
         return;
     }
 
-    const result = validator.validate(parsed);
-    const builtinProblems = Array.isArray(result?.problems) ? result.problems : [];
+    const projectMode = ['changes', 'generator', 'constraints', 'time', 'seed'].some((flag) => Object.prototype.hasOwnProperty.call(flags, flag));
+    const time = flags.time === undefined ? null : parseSnapshotTime(flags.time);
+    if (time && !time.ok) {
+        process.stderr.write(`Invalid validation time: ${flags.time}\n`);
+        process.exitCode = 2;
+        return;
+    }
+    const seed = flags.seed === undefined ? 1 : Number(flags.seed);
+    if (!Number.isSafeInteger(seed)) {
+        process.stderr.write(`Invalid seed: ${flags.seed}. Expected a safe integer.\n`);
+        process.exitCode = 2;
+        return;
+    }
+
+    let result;
+    try {
+        result = projectMode
+            ? projectValidator.validateProject(parsed, {
+                changesSource: readOptionalSource(flags.changes, 'Changes source'),
+                generatorSource: readOptionalSource(flags.generator, 'Generator source'),
+                constraintsSource: readOptionalSource(flags.constraints, 'constraint source'),
+                seed,
+                ...(time ? { until: time.minutes } : {})
+            })
+            : validator.validate(parsed);
+    } catch (error) {
+        process.stderr.write(`Failed to validate project: ${error.message}\n`);
+        process.exitCode = 2;
+        return;
+    }
+    const builtinProblems = Array.isArray(result?.problems)
+        ? result.problems.map((problem) => projectMode ? problem : ({
+            ...problem,
+            scope: problem.scope || 'document',
+            provenance: { layer: 'document', source: 'start.workspec.json', ...(problem.provenance || {}), validation_mode: 'document' }
+        }))
+        : [];
 
     let customProblems = [];
     if (flags.custom) {
@@ -277,12 +333,19 @@ async function handleValidate(filePath, flags) {
     if (flags.json) {
         process.stdout.write(toPrettyJson(problems));
     } else {
+        const horizonLabel = projectMode
+            ? (Number.isFinite(result?.horizon?.until) ? `through ${result.horizon.until} minutes` : 'through natural end')
+            : 'not applicable';
+        process.stdout.write(`Validation mode: ${projectMode ? 'project' : 'document'}${projectMode ? ` | seed: ${seed} | horizon: ${horizonLabel}` : ''}\n`);
         for (const problem of problems) {
             const severity = problem.severity || 'error';
             const metricId = problem.metric_id || 'system.error';
             const instance = problem.instance || '/';
             const detail = problem.detail || problem.title || metricId;
-            process.stdout.write(`${filePath}:${instance} - ${severity}: ${detail} (${metricId})\n`);
+            const provenance = problem.scope || problem.provenance?.layer;
+            const source = problem.provenance?.source;
+            const provenanceLabel = provenance ? ` [${provenance}${source ? `:${source}` : ''}]` : '';
+            process.stdout.write(`${filePath}:${instance} - ${severity}: ${detail} (${metricId})${provenanceLabel}\n`);
             if (Array.isArray(problem.suggestions) && problem.suggestions.length > 0) {
                 for (const suggestion of problem.suggestions) {
                     process.stdout.write(`  - ${suggestion}\n`);
@@ -454,18 +517,21 @@ async function handleConstraints(filePath, flags) {
         return;
     }
 
-    const validation = validator.validate(documentValue);
-    const validationProblems = Array.isArray(validation?.problems) ? validation.problems : [];
-    const result = hasErrors(validationProblems)
-        ? { time: time?.minutes ?? null, violations: [], problems: validationProblems }
-        : runtime.runConstraints(documentValue, changesSource, generatorSource, constraintSource, { seed, ...(time ? { time: time.value } : {}) });
-    const output = { time: result.time, seed, violations: result.violations, problems: result.problems };
+    const result = projectValidator.validateProject(documentValue, {
+        changesSource,
+        generatorSource,
+        constraintsSource: constraintSource,
+        seed,
+        ...(time ? { until: time.minutes } : {})
+    });
+    const constraintProblems = result.problems.filter((problem) => !problem.violation);
+    const output = { time: result.time, seed, violations: result.violations, problems: constraintProblems };
     if (flags.json) process.stdout.write(toPrettyJson(output));
     else {
         const errors = result.violations.filter((entry) => entry.severity === 'error').length;
-        process.stdout.write(`Runtime constraints at ${result.time}: ${result.violations.length} violations (${errors} errors), ${result.problems.length} runtime problems\n`);
+        process.stdout.write(`Runtime constraints at ${output.time}: ${result.violations.length} violations (${errors} errors), ${constraintProblems.length} validation problems\n`);
     }
-    process.exitCode = hasErrors(result.problems) || result.violations.some((entry) => entry.severity === 'error') ? 1 : 0;
+    process.exitCode = hasErrors(constraintProblems) || result.violations.some((entry) => entry.severity === 'error') ? 1 : 0;
 }
 
 async function handleMigrate(filePath, flags) {

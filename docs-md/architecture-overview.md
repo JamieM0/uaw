@@ -4,7 +4,7 @@ This page is a map of the Universal Automation Wiki (UAW) docs and the major sys
 
 ## Start Here
 
-- **WorkSpec (canonical schema + guides):** [WorkSpec 2.2 Authoring Guide](/docs/workspec/guides/authoring), [Quickstart (2.0/2.1)](/docs/workspec/guides/quickstart), [Specification v2.0](/docs/workspec/specification/v2.0/)
+- **WorkSpec (canonical schema + guides):** [WorkSpec 2 Authoring Guide](/docs/workspec/guides/authoring), [Quickstart (2.0/2.1)](/docs/workspec/guides/quickstart), [Specification v2.0](/docs/workspec/specification/v2.0/)
 - **WorkSpec Studio (build + validate simulations):** [WorkSpec Studio Guide](/docs/playground/playground-guide)
 - **Developer tooling (generators + doc build):** [Docs Translator](/docs/routines/docs-translator)
 
@@ -16,7 +16,7 @@ This page is a map of the Universal Automation Wiki (UAW) docs and the major sys
 
 ## WorkSpec Studio (High Level)
 
-WorkSpec Studio is a browser-based editor for simulation JSON. It renders timelines/layouts and runs a client-side validation engine driven by a metrics catalog.
+WorkSpec Studio is a browser-based editor for WorkSpec projects. It renders the authoritative resolved history and uses the package-backed document, source, runtime, and Constraint validation layers. The Metrics Catalog remains a legacy/custom-workflow facility, not the WorkSpec 2.2 validation source of truth.
 
 **Guides**
 - [Space Editor Guide](/docs/playground/space-editor-guide)

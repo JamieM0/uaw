@@ -419,7 +419,7 @@
                 { id: 'review.add-rule', label: 'Add validation rule', run: () => click('add-metric-btn') },
                 { id: 'review.run-custom', label: 'Run custom validation', run: () => click('run-custom-validation') },
                 { id: 'agent.open', label: 'Open Agent', run: () => this.toggleAgent(true) },
-                { id: 'help.tutorial', label: 'Start WorkSpec 2.2 tutorial', run: () => typeof window.startTutorial === 'function' ? window.startTutorial() : click('start-tutorial-btn') },
+                { id: 'help.tutorial', label: 'Start WorkSpec 2 tutorial', run: () => typeof window.startTutorial === 'function' ? window.startTutorial() : click('start-tutorial-btn') },
                 { id: 'help.shortcuts', label: 'Show keyboard shortcuts', shortcut: '?', run: () => this.openShortcuts() }
             ].forEach((command) => this.registerCommand(command));
         }

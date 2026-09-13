@@ -1,4 +1,4 @@
-# Adversarial WorkSpec 2.2 review
+# Adversarial WorkSpec 2 review
 
 Scope was limited to the healthy `start.workspec.json`, `changes.workspec.js`,
 `generator.workspec.js`, `constraints.workspec.js`, and the canonical CLI. Each

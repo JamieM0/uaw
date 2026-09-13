@@ -1,4 +1,4 @@
-# WorkSpec 2.2 headless simulation-library dogfood
+# WorkSpec 2 headless simulation-library dogfood
 
 Run on 2026-09-08 against all six entries in `web/assets/static/simulation-library.json` using the packaged CLI as a subprocess. Each Starting State was written to a temporary project, validated with `workspec validate --json`, and executed with `workspec snapshot --changes ... --time ... --seed 1 --json`. Each broken variant used the same validator, CLI, and runtime path.
 
@@ -21,7 +21,7 @@ Additional runtime coverage exercises capacity, temperature range, impossible tr
 
 ## Validator output observed
 
-The five single-day simulations report `economic.profitability.negative_margin` warnings. Starting State validation also reports `object.optimization.unused_resource` info for resources whose consumption is authored in Changes: flour/water/yeast; packing supplies/inventory; seven electronics inputs; nine pharmaceutical inputs; ten restaurant inputs; and coffee beans/milk. This is expected from validating the declarative Starting State alone and is useful evidence for the still-open question of what future runtime constraints can access.
+Historical note: this run exposed stale pre-2.2 behavior. The five single-day simulations reported `economic.profitability.negative_margin` warnings and Starting State validation reported `object.optimization.unused_resource` for resources used in Changes. Current 2.2 document validation no longer makes either project-wide claim. Bounded resource utilization is now a project/history result with an explicit horizon; domain profitability belongs in a Constraint unless explicit runtime semantics are supplied.
 
 ## Generator and determinism coverage
 

@@ -446,7 +446,7 @@ function getCurrentGeneratorForExport() {
 function hasNonDefaultChanges(changes) {
     const normalized = String(changes || '').trim();
     const defaultChanges = [
-        '// WorkSpec 2.2 Changes',
+        '// WorkSpec 2 Changes',
         '// Register task behaviour with WorkSpec.task(...).',
         '// set, change, move, create and remove are available inside handlers.'
     ].join('\n');

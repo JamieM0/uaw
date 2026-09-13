@@ -93,7 +93,7 @@ async function run() {
 
     for (const template of library.simulations) {
         const documentValue = { simulation: template.simulation };
-        assert.equal(template.simulation.schema_version, '2.2', `${template.id} is not WorkSpec 2.2`);
+        assert.equal(template.simulation.schema_version, '2.2', `${template.id} is not WorkSpec 2`);
         assert.equal(forbiddenKey(documentValue, forbidden), null, `${template.id} Starting State contains executable behaviour/configuration`);
         for (const task of template.simulation.process.tasks) {
             assert.match(String(task.duration), /^[0-9]+(?:\.[0-9]+)?[smhdwM]$/, `${template.id}/${task.id} duration is not self-describing`);
@@ -111,7 +111,7 @@ async function run() {
         assert.equal(analysis.handlers.every(handler => taskIds.includes(handler.taskId)), true, `${template.id} Changes handler is not linked to Starting State`);
         if (template.id === 'breadmaking') assert.ok(analysis.handlers.some(handler => handler.form === 'grouped'), 'breadmaking does not demonstrate grouped task handlers');
         const runtimeRun = runtime.runProject(documentValue, template.changes, '', { seed: 1 });
-        assert.equal(runtimeRun.problems.some(problem => problem.severity === 'error'), false, `${template.id} does not run through WorkSpec 2.2`);
+        assert.equal(runtimeRun.problems.some(problem => problem.severity === 'error'), false, `${template.id} does not run through WorkSpec 2`);
         assert.ok(runtimeRun.history.length > 0, `${template.id} generated no change history`);
         const [objectId, property, expected] = observableOutcomes[template.id];
         assert.equal(runtime.serialiseState(runtimeRun).objects[objectId].properties[property], expected, `${template.id} did not preserve its observable outcome`);
@@ -127,7 +127,7 @@ async function run() {
         assert.equal(reloaded.changesDraft, template.changes, `${template.id} Changes did not reload intact`);
         assert.equal(reloaded.constraintsDraft, template.constraints, `${template.id} Constraints did not reload intact`);
     }
-    process.stdout.write(`✓ ${library.simulations.length} WorkSpec 2.2 Studio templates\n`);
+    process.stdout.write(`✓ ${library.simulations.length} WorkSpec 2 Studio templates\n`);
 }
 
 run().catch(error => { console.error(error); process.exitCode = 1; });

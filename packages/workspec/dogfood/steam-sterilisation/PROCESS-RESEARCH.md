@@ -1,6 +1,6 @@
 # Process research: reusable surgical-instrument steam sterilisation
 
-Research date: 2026-09-09. This note identifies process facts suitable for a fresh WorkSpec 2.2 modelling dogfood. It deliberately does **not** design a WorkSpec model.
+Research date: 2026-09-09. This note identifies process facts suitable for a fresh WorkSpec 2 modelling dogfood. It deliberately does **not** design a WorkSpec model.
 
 ## Novelty and scope
 

@@ -224,9 +224,8 @@ function run() {
         assert.equal(hasMetric(res.problems, 'temporal.scheduling.dependency_violation'), false);
     }
 
-    // Starting State-only analysis cannot prove whether a 2.2 resource is used
-    // by Changes. Keep the existing informational diagnostic until a separate
-    // cross-file validator policy is designed; do not silently suppress it.
+    // WorkSpec 2.2 document validation cannot claim a resource is unused because
+    // effects live in project sources and actual usage is a bounded runtime fact.
     {
         const doc = baseDoc();
         doc.simulation.schema_version = '2.2';
@@ -234,7 +233,7 @@ function run() {
             { id: 'consumable', type: 'resource', name: 'Consumable', properties: { quantity: 1 } }
         ];
         const result = validator.validate(doc);
-        assert.equal(hasMetric(result.problems, 'object.optimization.unused_resource'), true);
+        assert.equal(hasMetric(result.problems, 'object.optimization.unused_resource'), false);
     }
 
     // 4) CLI custom validation (Metrics Editor style + explicit catalog)

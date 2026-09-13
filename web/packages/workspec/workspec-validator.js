@@ -1,4 +1,4 @@
-// WorkSpec 2.2 Validator (RFC 7807 Problem Details)
+// WorkSpec 2 Validator (RFC 7807 Problem Details)
 // Universal Automation Wiki
 //
 // Single-source validator intended to run in both:
@@ -122,6 +122,8 @@
             detail: safeDetail,
             instance: safeInstance,
             metric_id: safeMetricId,
+            scope: 'document',
+            provenance: { layer: 'document', source: 'start.workspec.json' },
             context: safeContext,
             suggestions: safeSuggestions
         };
@@ -608,9 +610,16 @@
         return getBuiltInBaseType(extendsType, typeDefinitions, seen);
     }
 
-    function isPerformerType(type, typeDefinitions) {
+    function isPerformerType(type, typeDefinitions, typeTraits, seen = new Set()) {
+        const raw = safeTrim(type);
+        if (!raw || seen.has(raw)) return false;
+        seen.add(raw);
         const base = getBuiltInBaseType(type, typeDefinitions) || safeTrim(type);
-        return base === 'actor' || base === 'equipment' || base === 'service';
+        if (base === 'actor' || base === 'equipment' || base === 'service') return true;
+        const definition = isPlainObject(typeDefinitions?.[raw]) ? typeDefinitions[raw] : null;
+        if (!definition) return false;
+        if (Array.isArray(definition.traits) && definition.traits.some((trait) => typeTraits?.[trait]?.can_be_actor_id === true)) return true;
+        return isPerformerType(definition.extends, typeDefinitions, typeTraits, seen);
     }
 
     function isQuantifiableType(type, typeDefinitions) {
@@ -621,6 +630,23 @@
     function isStatefulType(type, typeDefinitions) {
         const base = getBuiltInBaseType(type, typeDefinitions) || safeTrim(type);
         return base === 'actor' || base === 'equipment' || base === 'service' || base === 'display' || base === 'screen_element' || base === 'digital_object';
+    }
+
+    function isValidPerformerExpressionShape(value) {
+        if (typeof value === 'string') {
+            const trimmed = value.trim();
+            if (!trimmed) return false;
+            if (!trimmed.startsWith('@') || trimmed.startsWith('@@')) return true;
+            return /^@[a-z][a-z0-9_]*(?::[a-z][a-z0-9_]*)?\.[a-z][a-z0-9_]*$/.test(trimmed);
+        }
+        if (!isPlainObject(value)) return false;
+        const keys = Object.keys(value);
+        if (keys.length === 1 && isPlainObject(value.select_member)) return true;
+        if (keys.length === 1 && typeof value.literal === 'string' && value.literal.trim()) return true;
+        if (keys.length !== 2) return false;
+        const selector = ['object', 'task', 'location'].find((key) => Object.prototype.hasOwnProperty.call(value, key));
+        const member = ['field', 'property'].find((key) => Object.prototype.hasOwnProperty.call(value, key));
+        return Boolean(selector && member && typeof value[selector] === 'string' && value[selector] && typeof value[member] === 'string' && value[member] && !value[member].includes('.'));
     }
 
     function validatePropertyOperator(metricBase, operatorValue, instanceParts, problems, contextBase) {
@@ -1106,6 +1132,7 @@
         }
 
         const typeDefinitions = isPlainObject(simulation.type_definitions) ? simulation.type_definitions : null;
+        const typeTraits = isPlainObject(simulation.type_traits) ? simulation.type_traits : {};
         const stateLibraries = isPlainObject(simulation.state_libraries) ? simulation.state_libraries : {};
         const stateLibraryStates = new Map();
 
@@ -1500,6 +1527,9 @@
 
             const rawId = safeTrim(task.id);
             const rawActorId = ensureString(task.actor_id);
+            const hasActorExpression = task.actor_id !== undefined
+                && task.actor_id !== null
+                && !(typeof task.actor_id === 'string' && !safeTrim(task.actor_id));
 
             if (!rawId) {
                 problems.push(buildProblem(
@@ -1543,7 +1573,7 @@
             taskById.set(rawId, task);
             taskIndexById.set(rawId, i);
 
-            if (!rawActorId) {
+            if (!hasActorExpression) {
                 problems.push(buildProblem(
                     'task.reference.invalid_actor',
                     'error',
@@ -1553,7 +1583,17 @@
                     { task_id: rawId },
                     ['Set actor_id to an existing performer object id (actor, equipment, or service).']
                 ));
-            } else if (!knownObjectIds.has(rawActorId)) {
+            } else if (schemaVersion === '2.2' && !isValidPerformerExpressionShape(task.actor_id)) {
+                problems.push(buildProblem(
+                    'task.reference.invalid_actor',
+                    'error',
+                    'Invalid Performer Expression',
+                    `Task '${rawId}' has a malformed actor_id performer expression.`,
+                    toJsonPointer(taskPtr.concat(['actor_id'])),
+                    { task_id: rawId },
+                    ['Use a literal performer ID, compact string reference, structured string reference, or select_member expression.']
+                ));
+            } else if (typeof task.actor_id === 'string' && !knownObjectIds.has(rawActorId) && schemaVersion !== '2.2') {
                 problems.push(buildProblem(
                     'task.reference.invalid_actor',
                     'error',
@@ -1563,7 +1603,7 @@
                     { task_id: rawId, actor_id: rawActorId },
                     ['Fix the actor_id to match an object id in simulation.world.objects.', 'Add the missing object to world.objects.', 'Or create the object earlier via action:create.']
                 ));
-            } else if (objectTypeById.has(rawActorId) && !isPerformerType(objectTypeById.get(rawActorId), typeDefinitions)) {
+            } else if (typeof task.actor_id === 'string' && objectTypeById.has(rawActorId) && !isPerformerType(objectTypeById.get(rawActorId), typeDefinitions, typeTraits)) {
                 problems.push(buildProblem(
                     'task.reference.invalid_actor',
                     'error',
@@ -1689,13 +1729,13 @@
                     'starting_state.behaviour.disallowed',
                     'error',
                     'Executable Behaviour In Starting State',
-                    `Task '${rawId}' contains executable behaviour (${executableFields.join(', ')}). WorkSpec 2.2 Starting State is declarative; author effects in changes.workspec.js.`,
+                    `Task '${rawId}' contains executable behaviour (${executableFields.join(', ')}). WorkSpec 2 Starting State is declarative; author effects in changes.workspec.js.`,
                     toJsonPointer(taskPtr.concat([executableFields[0]])),
                     { task_id: rawId, fields: executableFields },
                     ['Move task effects to changes.workspec.js using WorkSpec.task(...).']
                 ));
             }
-            if (interactions !== undefined && !Array.isArray(interactions)) {
+            if (schemaVersion !== '2.2' && interactions !== undefined && !Array.isArray(interactions)) {
                 problems.push(buildProblem(
                     'task.integrity.invalid_interactions',
                     'error',
@@ -1707,7 +1747,7 @@
                 ));
             }
 
-            if (Array.isArray(interactions)) {
+            if (schemaVersion !== '2.2' && Array.isArray(interactions)) {
                 for (let j = 0; j < interactions.length; j += 1) {
                     const interaction = interactions[j];
                     const interactionPtr = taskPtr.concat(['interactions', j]);
@@ -1874,6 +1914,13 @@
 
             // Track actor_id as object reference for unused-resource detection
             if (rawActorId) referencedObjectIds.add(rawActorId);
+            if (Array.isArray(task.reservations)) {
+                task.reservations.forEach((reservation) => {
+                    if (isPlainObject(reservation) && typeof reservation.resource === 'string' && safeTrim(reservation.resource)) {
+                        referencedObjectIds.add(safeTrim(reservation.resource));
+                    }
+                });
+            }
         }
 
         // Validate dependency references now that we have taskIds
@@ -1965,12 +2012,12 @@
             if ((visitState.get(id) || 0) === 0) dfs(id);
         }
 
-        // Object lifecycle semantics (best-effort):
+        // Object lifecycle semantics (best-effort, legacy inline-interaction documents only):
         // - Objects created via action:create become valid targets after the create interaction runs.
         // - References to objects after action:delete must error.
         //
         // Evaluated by replaying create/delete interactions in chronological order (task start time).
-        try {
+        if (schemaVersion !== '2.2') try {
             const tasksInOrderForLifecycle = [...taskTiming.entries()]
                 .map(([taskId, timing]) => ({ taskId, ...timing }))
                 .sort((a, b) => (a.startMinutes - b.startMinutes) || (a.index - b.index));
@@ -2118,38 +2165,40 @@
             ));
         }
 
-        // Temporal scheduling checks (only for time/daytime tasks where we have minutes)
-        // 1) actor overlap
-        const tasksByActor = new Map(); // actorId -> [{taskId, start, end}]
-        for (const [taskId, timing] of taskTiming.entries()) {
-            const task = taskById.get(taskId);
-            if (!task) continue;
-            const actorId = ensureString(task.actor_id);
-            if (!safeTrim(actorId)) continue;
-            if (!tasksByActor.has(actorId)) tasksByActor.set(actorId, []);
-            tasksByActor.get(actorId).push({ taskId, start: timing.startMinutes, end: timing.endMinutes, index: timing.index });
-        }
+        // Temporal actor overlap is a runtime claim in 2.2. Preserve the
+        // authored inline schedule check for 2.0/2.1 documents.
+        if (schemaVersion !== '2.2') {
+            const tasksByActor = new Map(); // actorId -> [{taskId, start, end}]
+            for (const [taskId, timing] of taskTiming.entries()) {
+                const task = taskById.get(taskId);
+                if (!task) continue;
+                const actorId = ensureString(task.actor_id);
+                if (!safeTrim(actorId)) continue;
+                if (!tasksByActor.has(actorId)) tasksByActor.set(actorId, []);
+                tasksByActor.get(actorId).push({ taskId, start: timing.startMinutes, end: timing.endMinutes, index: timing.index });
+            }
 
-        for (const [actorId, items] of tasksByActor.entries()) {
-            items.sort((a, b) => (a.start - b.start) || (a.index - b.index));
-            for (let i = 1; i < items.length; i += 1) {
-                const prev = items[i - 1];
-                const cur = items[i];
-                if (cur.start < prev.end) {
-                    problems.push(buildProblem(
-                        'temporal.scheduling.actor_overlap',
-                        'error',
-                        'Actor Overlap',
-                        `Actor '${actorId}' has overlapping tasks: '${prev.taskId}' overlaps '${cur.taskId}'.`,
-                        tasksBaseInstance,
-                        { actor_id: actorId, task_a: prev.taskId, task_b: cur.taskId },
-                        ['Adjust start times/durations to remove the overlap.', 'Assign one task to a different performer object.']
-                    ));
+            for (const [actorId, items] of tasksByActor.entries()) {
+                items.sort((a, b) => (a.start - b.start) || (a.index - b.index));
+                for (let i = 1; i < items.length; i += 1) {
+                    const prev = items[i - 1];
+                    const cur = items[i];
+                    if (cur.start < prev.end) {
+                        problems.push(buildProblem(
+                            'temporal.scheduling.actor_overlap',
+                            'error',
+                            'Actor Overlap',
+                            `Actor '${actorId}' has overlapping tasks: '${prev.taskId}' overlaps '${cur.taskId}'.`,
+                            tasksBaseInstance,
+                            { actor_id: actorId, task_a: prev.taskId, task_b: cur.taskId },
+                            ['Adjust start times/durations to remove the overlap.', 'Assign one task to a different performer object.']
+                        ));
+                    }
                 }
             }
         }
 
-        // 2) dependency timing violations (best-effort)
+        // Authored dependency timing contradictions remain document-local.
         for (let i = 0; i < tasks.length; i += 1) {
             const task = tasks[i];
             if (!isPlainObject(task)) continue;
@@ -2195,6 +2244,10 @@
             }
         }
 
+        // The remaining checks replay inline interactions and are truthful only
+        // for 2.0/2.1. WorkSpec 2.2 effects live in Changes/Generator and are
+        // validated by the project/runtime layer.
+        if (schemaVersion !== '2.2') {
         // Recipe validation (optional warnings)
         if (recipeDefinitions) {
             for (let i = 0; i < tasks.length; i += 1) {
@@ -2409,9 +2462,10 @@
                     `Resource '${id}' is defined but never used by any task.`,
                     toJsonPointer(objectsBasePtr.concat([i])),
                     { object_id: id },
-                    ['Remove the unused resource, or reference it from a task or explicit Change.']
+                    ['Remove the unused resource, or reference it from a task actor, reservation, recipe, or inline interaction.']
                 ));
             }
+        }
         }
 
         const ok = problems.every((p) => p.severity !== 'error');

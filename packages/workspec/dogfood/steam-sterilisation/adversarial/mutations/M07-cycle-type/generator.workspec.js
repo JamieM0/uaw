@@ -1,4 +1,4 @@
-// WorkSpec 2.2 Generator — computational chamber behaviour.
+// WorkSpec 2 Generator — computational chamber behaviour.
 // The deterministic seed controls small in-band temperature variation after heat-up.
 
 WorkSpec.onStart(({ set }) => {

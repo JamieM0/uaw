@@ -1,4 +1,4 @@
-# WorkSpec 2.2 constraint-completeness dogfood
+# WorkSpec 2 constraint-completeness dogfood
 
 > Historical baseline: this report describes library coverage before constraints were retained. See [AI-CONSTRAINT-AUTHORING-DOGFOOD.md](AI-CONSTRAINT-AUTHORING-DOGFOOD.md) for the subsequent authored-constraint experiment and current representation.
 
@@ -25,7 +25,7 @@ These are the independent CLI results for every library entry. Each Starting Sta
 | `restaurant_kitchen` | 1 / 10 | 1320 (22:00) | `finished_entrees.quantity = 21` |
 | `coffee-shop-multiperiod` | 0 / 2 | 18180 (day 13, 15:00) | `coffee_beans.quantity = 10` |
 
-The warning/info counts are Starting State diagnostics: resource use is authored in Changes, so the validator reports unused resources while validating declarative state alone. This is documented by the existing headless dogfood ([baseline notes](SIMULATION-LIBRARY-DOGFOOD.md:9-24)).
+The warning/info counts are historical Starting State diagnostics from before the validation-layer correction. Current 2.2 document validation does not report resources as unused based only on declarative state; bounded utilization is evaluated by project/history validation. See the corrected context in the [baseline notes](SIMULATION-LIBRARY-DOGFOOD.md:9-24).
 
 ## Primary adversarial set: current checked-in coverage
 

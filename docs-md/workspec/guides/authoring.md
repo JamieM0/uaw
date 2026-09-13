@@ -1,6 +1,6 @@
-# WorkSpec 2.2 Authoring Guide
+# WorkSpec 2 Authoring Guide
 
-WorkSpec 2.2 separates **what the world is** from **what happens**, **what must
+WorkSpec 2 separates **what the world is** from **what happens**, **what must
 remain true**, and **optional computed behaviour**. A project is four files;
 playback resolves them into one observable history.
 
@@ -19,7 +19,7 @@ Generator is optional and advanced: a project with only Starting State and
 Changes is complete. The simulation is produced by the runtime, never authored
 by hand.
 
-New to WorkSpec? Complete the [WorkSpec 2.2 Quickstart](/docs/workspec/guides/quickstart)
+New to WorkSpec? Complete the [WorkSpec 2 Quickstart](/docs/workspec/guides/quickstart)
 and the guided tutorial available from **Start Tutorial** in
 [WorkSpec Studio](/playground) first.
 
@@ -118,12 +118,25 @@ WorkSpec.onUpdate(({ get, set }) => {
 });
 ```
 
+Generator is causal, not a final-state overlay. At each logical time the runtime
+applies task completions and their Changes, then Generator, then evaluates new
+task conditions, actor selection, and reservations, then applies task-start
+Changes. Generator wins a same-property conflict at that time and the run records
+a warning.
+
 ## Simulation: the resolved observable history
 
 Playback resolves Starting State + Changes (+ Generator) into a deterministic
 movie of the world. Scrubbing to a time shows exactly what is true at that
-moment: object states, quantities, locations, and active work. Studio's Simulate,
-Physical, and Problems views inspect this same resolved history.
+moment: object states, quantities, locations, and active work. Studio's Simulate
+and Physical views inspect this resolved history. Problems combines four clearly
+labelled layers: Starting-State document facts, cross-file source facts, runtime
+history facts, and user-authored Constraints.
+
+The resolved run is authoritative: task statuses, diagnostics, snapshots, and
+Constraints all inspect that same execution. Constraints do not execute the
+project again. A requested horizon means “resolve through T”; future tasks remain
+pending and tasks crossing T remain active without being treated as failures.
 
 ```text
 workspec validate start.workspec.json --json
@@ -144,12 +157,12 @@ workspec constraints start.workspec.json \
 
 WorkSpec 2.0 and 2.1 placed executable effects in task `interactions`. That
 syntax remains documented for historical documents, but it is not the WorkSpec
-2.2 authoring model and must not be placed in 2.2 Starting State.
+WorkSpec 2 authoring model and must not be placed in WorkSpec 2 Starting State.
 
 ## Where to go next
 
 - [WorkSpec Studio Guide](/docs/playground/playground-guide)
-- [WorkSpec 2.2 Quickstart](/docs/workspec/guides/quickstart)
-- [WorkSpec 2.2 cheatsheet](/docs/workspec/cheatsheet)
+- [WorkSpec 2 Quickstart](/docs/workspec/guides/quickstart)
+- [WorkSpec 2 cheatsheet](/docs/workspec/cheatsheet)
 - [AI authoring guide](/docs/workspec/guides/ai-generation)
 - [Types, properties, and errors reference](/docs/workspec/reference/types)

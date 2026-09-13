@@ -1,4 +1,4 @@
-# WorkSpec 2.2 Quickstart
+# WorkSpec 2 Quickstart
 
 Build and run a tiny WorkSpec project in Studio. The project packs one kit from
 one part, so every source has an obvious role.
@@ -59,11 +59,11 @@ remembers the folder in the browser. Use **Export** for a portable
 `.workspec.zip`; imports restore Starting State, Changes, Constraints, Generator,
 and the project seed.
 
-Continue with the [WorkSpec 2.2 Authoring Guide](/docs/workspec/guides/authoring),
-then keep the [WorkSpec 2.2 Cheatsheet](/docs/workspec/cheatsheet) nearby.
+Continue with the [WorkSpec 2 Authoring Guide](/docs/workspec/guides/authoring),
+then keep the [WorkSpec 2 Cheatsheet](/docs/workspec/cheatsheet) nearby.
 
 ## Historical documents
 
 WorkSpec 2.0 and 2.1 placed effects in task `interactions`. Those versioned
 specifications remain available under **Historical specifications** in the docs
-navigation, but that is not the 2.2 authoring model.
+navigation, but that is not the WorkSpec 2 authoring model.

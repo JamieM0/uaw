@@ -1,4 +1,4 @@
-# WorkSpec 2.2 AI repair dogfood
+# WorkSpec 2 AI repair dogfood
 
 Run on 2026-09-08 with three existing projects from `web/assets/static/simulation-library.json`. Each project was exported to an isolated temporary directory and exercised through the packaged `workspec validate`, `workspec snapshot`, and `workspec constraints` commands with seed `1`. The faults remained structurally valid, executed without runtime errors, and preserved the simulation's principal output before repair.
 

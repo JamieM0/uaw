@@ -1,6 +1,6 @@
-# WorkSpec 2.2 Cheatsheet
+# WorkSpec 2 Cheatsheet
 
-Use this after the [WorkSpec 2.2 Authoring Guide](/docs/workspec/guides/authoring).
+Use this after the [WorkSpec 2 Authoring Guide](/docs/workspec/guides/authoring).
 
 ## Mental model
 
@@ -101,4 +101,4 @@ evidence time and highlights an affected object when that surface is available.
 ## Historical syntax
 
 Task `interactions` belong to WorkSpec 2.0/2.1 documents. They are not valid in
-2.2 Starting State.
+WorkSpec 2 Starting State.

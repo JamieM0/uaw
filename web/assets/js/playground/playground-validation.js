@@ -239,6 +239,12 @@ function displayValidationGroup(groupId, results, icon, collapsedByDefault = fal
                     evidenceHtml = `<div class="validation-evidence">${sanitizeHTML(evidenceParts.join(' · '))}</div>`;
                 }
             }
+            const provenance = result.problem?.provenance;
+            if (provenance?.layer || provenance?.source) {
+                const label = [provenance.layer, provenance.source].filter(Boolean).join(' · ');
+                const provenanceHtml = `<div class="validation-evidence">${sanitizeHTML(label)}</div>`;
+                evidenceHtml = evidenceHtml ? `${evidenceHtml}${provenanceHtml}` : provenanceHtml;
+            }
 
             return `
                 <div class="validation-result-item ${result.status}"

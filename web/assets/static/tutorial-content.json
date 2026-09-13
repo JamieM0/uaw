@@ -1,6 +1,6 @@
 {
-  "title": "WorkSpec 2.2 Studio Tutorial",
-  "introduction": "Learn the WorkSpec 2.2 mental model with one small packing project.",
+  "title": "WorkSpec 2 Studio Tutorial",
+  "introduction": "Learn the WorkSpec 2 mental model with one small packing project.",
   "steps": [
     {
       "id": "starting_state",
@@ -23,9 +23,9 @@
           "process": { "tasks": [{ "id": "pack_kit", "actor_id": "packer", "start": "09:00", "duration": "10m", "location": "bench" }] }
         }
       },
-      "initial_changes": "// WorkSpec 2.2 Changes\n// Explicit effects for tasks belong here.\n",
-      "initial_generator": "// WorkSpec 2.2 Generator (optional)\n// You do not need a Generator for this project.\n",
-      "initial_constraints": "// WorkSpec 2.2 Constraints\n// Rules inspect the resolved simulation history.\n",
+      "initial_changes": "// WorkSpec 2 Changes\n// Explicit effects for tasks belong here.\n",
+      "initial_generator": "// WorkSpec 2 Generator (optional)\n// You do not need a Generator for this project.\n",
+      "initial_constraints": "// WorkSpec 2 Constraints\n// Rules inspect the resolved simulation history.\n",
       "validation": { "type": "none" },
       "success_message": "You have identified the Starting State."
     },
@@ -50,7 +50,7 @@
       "title": "4. Add an explicit Change",
       "instructions": "<p><strong>Changes are explicit things that happen.</strong></p><p>Open the <strong>Changes</strong> tab and add this handler:</p><pre><code>WorkSpec.task(\"pack_kit\").onComplete(() =&gt; {\n    change(\"parts\", \"quantity\", -1);\n    change(\"kits\", \"quantity\", 1);\n});</code></pre><p>The handler is connected to the task by its ID. It runs when that task completes.</p>",
       "preserve_sources": true,
-      "initial_changes": "// WorkSpec 2.2 Changes\n// Add the pack_kit completion handler below.\n",
+      "initial_changes": "// WorkSpec 2 Changes\n// Add the pack_kit completion handler below.\n",
       "validation": { "type": "custom_function", "function_name": "validatePackKitChange" },
       "success_message": "The explicit Change produces one kit and consumes one part."
     },
@@ -67,7 +67,7 @@
       "title": "6. Inspect a Constraint",
       "instructions": "<p><strong>Constraints are things that must remain true.</strong></p><p>Open the <strong>Constraints</strong> tab. The rule checks every recorded time and reports evidence if parts become negative.</p><p>A Constraint observes the resolved simulation. It does not perform a Change and it does not repair the project.</p>",
       "preserve_sources": true,
-      "initial_constraints": "// WorkSpec 2.2 Constraints\nmodule.exports = {\n    \"inventory.parts_non_negative\": ctx => {\n        for (const time of ctx.times()) {\n            const quantity = ctx.getAt(time, \"parts\", \"quantity\");\n            if (quantity < 0) return {\n                time,\n                objects: [\"parts\"],\n                property: \"quantity\",\n                observed: quantity,\n                expected: { min: 0 },\n                message: \"Parts must never become negative.\"\n            };\n        }\n        return null;\n    }\n};\n",
+      "initial_constraints": "// WorkSpec 2 Constraints\nmodule.exports = {\n    \"inventory.parts_non_negative\": ctx => {\n        for (const time of ctx.times()) {\n            const quantity = ctx.getAt(time, \"parts\", \"quantity\");\n            if (quantity < 0) return {\n                time,\n                objects: [\"parts\"],\n                property: \"quantity\",\n                observed: quantity,\n                expected: { min: 0 },\n                message: \"Parts must never become negative.\"\n            };\n        }\n        return null;\n    }\n};\n",
       "validation": { "type": "none" },
       "success_message": "The Constraint describes a rule about the result."
     },

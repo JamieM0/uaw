@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorkSpec v2.0 Error Reference (All Error Codes) - Universal Automation Wiki</title>
+    <title>WorkSpec 2 error reference - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
     <link rel="stylesheet" href="/assets/css/category.css">
@@ -50,7 +50,7 @@
                                         
                                     
                                         
-                                            <li aria-current="page">WorkSpec v2.0 Error Reference (All Error Codes)</li>
+                                            <li aria-current="page">WorkSpec 2 error reference</li>
                                         
                                     
                                 </ol>
@@ -58,357 +58,217 @@
                         </div>
                         
                         <div class="docs-title-section">
-                            <h1 class="docs-page-title">WorkSpec v2.0 Error Reference (All Error Codes)</h1>
+                            <h1 class="docs-page-title">WorkSpec 2 error reference</h1>
                             
-                            <p class="docs-page-subtitle">This page lists validation error codes (`metric_id`) used for WorkSpec v2.0 validation.</p>
+                            <p class="docs-page-subtitle">WorkSpec problems use an RFC-7807-style structure:</p>
                             
                         </div>
                     </header>
 
                     <div class="docs-content">
-                        <p>This page lists validation error codes (<code class="docs-inline-code">metric_id</code>) used for WorkSpec v2.0 validation.</p>
-<p>If you are looking for the error format and severity semantics, see:</p>
-<ul class="docs-list">
-<li><a href="/docs/workspec/specification/v2.0/validation">/docs/workspec/specification/v2.0/validation</a></li>
-</ul>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="error-identifier-fields">Error identifier fields<a class="headerlink" href="#error-identifier-fields" title="Link to this section">¶</a></h2>
-<h3 class="docs-heading" id="metric_id"><code class="docs-inline-code">metric_id</code><a class="headerlink" href="#metric_id" title="Link to this section">¶</a></h3>
-<p>Every problem includes a <code class="docs-inline-code">metric_id</code>:</p>
-<div class="codehilite"><pre><span></span><code class="language-text">{domain}.{category}.{specific}
+                        <p>WorkSpec problems use an RFC-7807-style structure:</p>
+<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://universalautomation.wiki/workspec/errors/task.integrity.invalid_duration"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Invalid Task Duration"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"severity"</span><span class="p">:</span><span class="w"> </span><span class="s2">"error"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"detail"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Task 'mix' has invalid duration."</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"instance"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/simulation/process/tasks/0/duration"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"metric_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"task.integrity.invalid_duration"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"scope"</span><span class="p">:</span><span class="w"> </span><span class="s2">"document"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"provenance"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"layer"</span><span class="p">:</span><span class="w"> </span><span class="s2">"document"</span><span class="p">,</span><span class="w"> </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"start.workspec.json"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"context"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"task_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mix"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"suggestions"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="p">}</span>
 </code></pre></div>
-<p>Example: <code class="docs-inline-code">task.integrity.invalid_start_time</code></p>
-<h3 class="docs-heading" id="type"><code class="docs-inline-code">type</code><a class="headerlink" href="#type" title="Link to this section">¶</a></h3>
-<p><code class="docs-inline-code">type</code> is a URI identifier for the kind of problem.</p>
-<p>In the WorkSpec specification, <code class="docs-inline-code">type</code> is expected to be within the WorkSpec namespace, for example:</p>
-<div class="codehilite"><pre><span></span><code class="language-text">https://universalautomation.wiki/workspec/errors/...
-</code></pre></div>
-<p>In the WorkSpec Studio validator implementation, the default is currently:</p>
-<div class="codehilite"><pre><span></span><code class="language-text">https://universalautomation.wiki/workspec/errors/{metric_id}
-</code></pre></div>
-<h3 class="docs-heading" id="instance"><code class="docs-inline-code">instance</code><a class="headerlink" href="#instance" title="Link to this section">¶</a></h3>
-<p><code class="docs-inline-code">instance</code> is a JSON Pointer to the exact location in the document.</p>
-<p>Common pointer shapes in WorkSpec v2.0:</p>
-<ul class="docs-list">
-<li><code class="docs-inline-code">/simulation/schema_version</code></li>
-<li><code class="docs-inline-code">/simulation/meta</code></li>
-<li><code class="docs-inline-code">/simulation/world/objects/{index}</code></li>
-<li><code class="docs-inline-code">/simulation/process/tasks/{index}</code></li>
-</ul>
-<hr class="docs-hr"/>
-<h2 class="docs-heading" id="error-code-catalog">Error code catalog<a class="headerlink" href="#error-code-catalog" title="Link to this section">¶</a></h2>
-<p>This catalog includes:</p>
-<ul class="docs-list">
-<li>WorkSpec v2.0 schema/versioning errors emitted by the validator</li>
-<li>Built-in UAW validation metrics for WorkSpec documents</li>
-</ul>
+<h2 class="docs-heading" id="scope-and-provenance">Scope and provenance<a class="headerlink" href="#scope-and-provenance" title="Link to this section">¶</a></h2>
 <div class="table-container"><table class="docs-table">
 <thead>
 <tr>
-<th>metric_id</th>
-<th>severity</th>
-<th>title</th>
-<th>Description (what it checks)</th>
-<th>Typical fix</th>
+<th>Scope</th>
+<th>Source of truth</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">document</code></td>
+<td><code class="docs-inline-code">start.workspec.json</code></td>
+<td>Schema, IDs, initial objects/properties/references, task syntax, dependency graph.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">source</code></td>
+<td>Relationships among project source files</td>
+<td>Unknown Changes task IDs and JavaScript compilation errors.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">runtime</code></td>
+<td>A resolved run</td>
+<td>Actor liveness, reservations/capacity, lifecycle, timing, movement, state writes.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">constraint</code></td>
+<td>User-authored invariants over resolved history</td>
+<td>Domain stock, recipe, economic, safety, and service-level policy.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 class="docs-heading" id="common-current-metric-ids">Common current metric IDs<a class="headerlink" href="#common-current-metric-ids" title="Link to this section">¶</a></h2>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Metric</th>
+<th>Scope</th>
+<th>Meaning</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code class="docs-inline-code">schema.integrity.missing_root</code></td>
-<td>error</td>
-<td>Simulation Root Check</td>
-<td>Ensures the top-level <code class="docs-inline-code">simulation</code> object exists.</td>
-<td>Wrap the document in <code class="docs-inline-code">{ "simulation": { ... } }</code>.</td>
-</tr>
-<tr>
-<td><code class="docs-inline-code">schema.integrity.missing_version</code></td>
-<td>error</td>
-<td>Missing Schema Version</td>
-<td>Missing required <code class="docs-inline-code">simulation.schema_version</code> (WorkSpec v2 requires version declaration).</td>
-<td>Add <code class="docs-inline-code">simulation.schema_version: "2.0"</code>.</td>
-</tr>
-<tr>
-<td><code class="docs-inline-code">schema.integrity.invalid_version</code></td>
-<td>error</td>
-<td>Invalid Schema Version</td>
-<td><code class="docs-inline-code">simulation.schema_version</code> is not Major.Minor (e.g., <code class="docs-inline-code">"2.0"</code>).</td>
-<td>Use <code class="docs-inline-code">"2.0"</code> and keep Major.Minor format.</td>
+<td>document</td>
+<td>The canonical <code class="docs-inline-code">simulation</code> root is missing.</td>
 </tr>
 <tr>
 <td><code class="docs-inline-code">schema.integrity.unsupported_version</code></td>
-<td>error</td>
-<td>Unsupported Schema Version</td>
-<td><code class="docs-inline-code">simulation.schema_version</code> is not supported by the validator.</td>
-<td>Use the supported version (<code class="docs-inline-code">"2.0"</code>).</td>
-</tr>
-<tr>
-<td><code class="docs-inline-code">schema.integrity.missing_world</code></td>
-<td>error</td>
-<td>Missing World Section</td>
-<td>Missing required section <code class="docs-inline-code">simulation.world</code>.</td>
-<td>Add <code class="docs-inline-code">simulation.world</code> with <code class="docs-inline-code">objects</code> (required) and optional <code class="docs-inline-code">layout</code>.</td>
-</tr>
-<tr>
-<td><code class="docs-inline-code">schema.integrity.missing_process</code></td>
-<td>error</td>
-<td>Missing Process Section</td>
-<td>Missing required section <code class="docs-inline-code">simulation.process</code>.</td>
-<td>Add <code class="docs-inline-code">simulation.process</code> with <code class="docs-inline-code">tasks</code> (required) and optional <code class="docs-inline-code">recipes</code>.</td>
-</tr>
-<tr>
-<td><code class="docs-inline-code">schema.integrity.invalid_world_objects</code></td>
-<td>error</td>
-<td>Invalid World Objects</td>
-<td><code class="docs-inline-code">simulation.world.objects</code> must be an array.</td>
-<td>Set <code class="docs-inline-code">simulation.world.objects</code> to <code class="docs-inline-code">[]</code> or an array of objects.</td>
-</tr>
-<tr>
-<td><code class="docs-inline-code">schema.integrity.invalid_process_tasks</code></td>
-<td>error</td>
-<td>Invalid Process Tasks</td>
-<td><code class="docs-inline-code">simulation.process.tasks</code> must be an array.</td>
-<td>Set <code class="docs-inline-code">simulation.process.tasks</code> to <code class="docs-inline-code">[]</code> or an array of tasks.</td>
-</tr>
-<tr>
-<td><code class="docs-inline-code">schema.integrity.missing_meta</code></td>
-<td>error</td>
-<td>Missing Meta Section</td>
-<td>Missing required section <code class="docs-inline-code">simulation.meta</code>.</td>
-<td>Add <code class="docs-inline-code">simulation.meta</code> with required fields.</td>
-</tr>
-<tr>
-<td><code class="docs-inline-code">schema.integrity.missing_meta_fields</code></td>
-<td>error</td>
-<td>Missing Meta Fields</td>
-<td>Missing required meta fields: <code class="docs-inline-code">title</code>, <code class="docs-inline-code">description</code>, <code class="docs-inline-code">domain</code>.</td>
-<td>Add required fields to <code class="docs-inline-code">simulation.meta</code>.</td>
-</tr>
-<tr>
-<td><code class="docs-inline-code">schema.integrity.disallowed_meta_field</code></td>
-<td>error</td>
-<td>Disallowed Meta Field</td>
-<td>Legacy field <code class="docs-inline-code">meta.article_title</code> is not allowed in WorkSpec v2.0.</td>
-<td>Remove <code class="docs-inline-code">meta.article_title</code> and use <code class="docs-inline-code">meta.title</code>.</td>
-</tr>
-<tr>
-<td><code class="docs-inline-code">schema.integrity.disallowed_types</code></td>
-<td>error</td>
-<td>Disallowed Object Types</td>
-<td>Ensures no objects use internally reserved types that could cause system conflicts.</td>
-<td>Use allowed types; avoid reserved names (e.g., <code class="docs-inline-code">_internal</code>, <code class="docs-inline-code">timeline_actors</code>).</td>
+<td>document</td>
+<td><code class="docs-inline-code">schema_version</code> is not supported.</td>
 </tr>
 <tr>
 <td><code class="docs-inline-code">object.integrity.invalid_object_id</code></td>
-<td>error</td>
-<td>Invalid Object ID</td>
-<td>Ensures object IDs are unique strings and not empty/null.</td>
-<td>Use unique, non-empty snake_case IDs (max 250 chars).</td>
+<td>document</td>
+<td>An initial object ID is malformed.</td>
 </tr>
 <tr>
 <td><code class="docs-inline-code">object.integrity.missing_required_properties</code></td>
-<td>error</td>
-<td>Missing Required Properties</td>
-<td>Check that objects have required properties based on their type.</td>
-<td>Add the missing properties (e.g., <code class="docs-inline-code">quantity</code> for resources/products).</td>
+<td>document</td>
+<td>An initial object lacks properties required by its type.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">object.integrity.invalid_property_types</code></td>
-<td>error</td>
-<td>Invalid Property Types</td>
-<td>Validate that object properties match expected data types.</td>
-<td>Fix property value types (number vs string vs boolean).</td>
+<td><code class="docs-inline-code">object.reference.invalid_location</code></td>
+<td>document/runtime</td>
+<td>An initial reference or executed move names an undeclared location; provenance distinguishes the case.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">object.spatial.location_undefined</code></td>
-<td>error</td>
-<td>Undefined Location</td>
-<td>Ensures every object with a location property references a valid layout location.</td>
-<td>Add the location to <code class="docs-inline-code">world.layout.locations</code> or fix the ID.</td>
+<td><code class="docs-inline-code">state_visuals.reference.invalid_state</code></td>
+<td>document</td>
+<td>An object’s initial state is outside its State Library.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">resource.flow.negative_stock</code></td>
-<td>error</td>
-<td>Negative Stock Check</td>
-<td>Verifies that no consumable resource stock level drops below zero.</td>
-<td>Increase starting stock or reduce consumption.</td>
-</tr>
-<tr>
-<td><code class="docs-inline-code">resource.flow.recipe_violation</code></td>
-<td>warning</td>
-<td>Recipe Ingredients Check</td>
-<td>If a task produces a product with a recipe, checks required inputs are consumed in that task. Missing inputs produce warnings.</td>
-<td>Add missing input consumption interactions or adjust/remove the recipe.</td>
-</tr>
-<tr>
-<td><code class="docs-inline-code">resource.integrity.invalid_quantity</code></td>
-<td>error</td>
-<td>Invalid Quantity Values</td>
-<td>Ensure resource quantities are non-negative numbers.</td>
-<td>Use numeric <code class="docs-inline-code">quantity &gt;= 0</code>.</td>
-</tr>
-<tr>
-<td><code class="docs-inline-code">resource.integrity.type_consistency</code></td>
-<td>error</td>
-<td>Resource Type Consistency</td>
-<td>Ensure resources maintain consistent types throughout interactions.</td>
-<td>Keep <code class="docs-inline-code">quantity</code> numeric; avoid switching types across tasks.</td>
-</tr>
-<tr>
-<td><code class="docs-inline-code">resource.definition.unused</code></td>
-<td>info</td>
-<td>Unused Resource</td>
-<td>Flags resources defined but never consumed or produced.</td>
-<td>Remove unused resources or add tasks that use them.</td>
+<td><code class="docs-inline-code">state_visuals.reference.invalid_runtime_state</code></td>
+<td>runtime</td>
+<td>An executed write would assign a state outside the object’s State Library.</td>
 </tr>
 <tr>
 <td><code class="docs-inline-code">task.integrity.invalid_task_id</code></td>
-<td>error</td>
-<td>Invalid Task ID</td>
-<td>Ensures task IDs are unique strings and not empty/null.</td>
-<td>Use unique snake_case task IDs.</td>
-</tr>
-<tr>
-<td><code class="docs-inline-code">task.integrity.unassigned_actor</code></td>
-<td>error</td>
-<td>Unassigned Task Actor</td>
-<td>Ensures every task is assigned to a valid performer object.</td>
-<td>Set <code class="docs-inline-code">actor_id</code> to an existing performer (<code class="docs-inline-code">actor</code>, <code class="docs-inline-code">equipment</code>, <code class="docs-inline-code">service</code>).</td>
+<td>document</td>
+<td>A planned task ID is missing, malformed, or duplicated.</td>
 </tr>
 <tr>
 <td><code class="docs-inline-code">task.integrity.invalid_start_time</code></td>
-<td>error</td>
-<td>Invalid Start Time Format</td>
-<td>Ensures task start times follow strict WorkSpec formats (time-of-day, ISO date-time, or <code class="docs-inline-code">{day,time}</code>).</td>
-<td>Use <code class="docs-inline-code">"HH:MM"</code> (zero-padded), <code class="docs-inline-code">"HH:MM:SS"</code>, ISO date-time, or <code class="docs-inline-code">{ "day": N, "time": "HH:MM" }</code>.</td>
+<td>document</td>
+<td>A task start is malformed.</td>
 </tr>
 <tr>
 <td><code class="docs-inline-code">task.integrity.invalid_duration</code></td>
-<td>error</td>
-<td>Invalid Task Duration</td>
-<td>Ensures task durations are valid (positive integer, ISO 8601 duration, or shorthand).</td>
-<td>Use <code class="docs-inline-code">30</code>, <code class="docs-inline-code">"PT30M"</code>, <code class="docs-inline-code">"30m"</code>, <code class="docs-inline-code">"1h"</code>, etc.</td>
+<td>document</td>
+<td>A task duration is malformed.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">task.integrity.invalid_object_reference</code></td>
-<td>error</td>
-<td>Invalid Object Reference</td>
-<td>Ensures tasks and interactions reference valid object IDs.</td>
-<td>Fix IDs; ensure objects are created before use and not deleted before use.</td>
+<td><code class="docs-inline-code">task.reference.invalid_dependency</code></td>
+<td>document</td>
+<td>A declared dependency is malformed or unknown.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">task.integrity.end_time_overflow</code></td>
-<td>error</td>
-<td>Task End Time Overflow</td>
-<td>Checks if <code class="docs-inline-code">start + duration</code> causes invalid day boundary handling.</td>
-<td>Use multi-day start objects or adjust times/durations.</td>
+<td><code class="docs-inline-code">task.reference.invalid_actor</code></td>
+<td>document/runtime</td>
+<td>An initial literal performer is incapable, or runtime selection did not resolve to a live performer.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">task.dependency.unreachable</code></td>
-<td>error</td>
-<td>Unreachable Task Dependency</td>
-<td>Ensures every <code class="docs-inline-code">depends_on</code> reference points to an existing task.</td>
-<td>Fix typos; add missing tasks; remove invalid dependencies.</td>
+<td><code class="docs-inline-code">temporal.scheduling.circular_dependency</code></td>
+<td>document</td>
+<td>The authored dependency graph contains a cycle.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">task.dependency.self_reference</code></td>
-<td>error</td>
-<td>Self-Referencing Dependencies</td>
-<td>Catches tasks that depend on themselves.</td>
-<td>Remove the self-reference.</td>
+<td><code class="docs-inline-code">temporal.scheduling.dependency_violation</code></td>
+<td>document/runtime</td>
+<td>An authored timing bound or actual executed dependency is violated.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">task.dependency.missing_reference</code></td>
-<td>error</td>
-<td>Missing Task Dependencies</td>
-<td>Validates referenced dependency IDs exist.</td>
-<td>Fix dependency IDs.</td>
+<td><code class="docs-inline-code">changes.task.unknown</code></td>
+<td>source</td>
+<td>Changes names a task absent from Starting State.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">task.dependency.circular_reference</code></td>
-<td>error</td>
-<td>Circular Dependencies</td>
-<td>Detects cycles in task dependency chains.</td>
-<td>Break cycles by removing/rewriting dependencies.</td>
+<td><code class="docs-inline-code">changes.compile.failed</code></td>
+<td>source</td>
+<td>Changes could not compile.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">temporal.dependency.violation</code></td>
-<td>warning</td>
-<td>Task Dependency Timing</td>
-<td>Ensures no task starts before its dependency condition is met.</td>
-<td>Move task start later or fix dependencies.</td>
+<td><code class="docs-inline-code">generator.compile.failed</code></td>
+<td>source</td>
+<td>Generator could not compile.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">actor.scheduling.overlap</code></td>
-<td>error</td>
-<td>Actor Task Overlap</td>
-<td>Checks if an actor is assigned overlapping tasks.</td>
-<td>Adjust times/durations or assign a different performer.</td>
+<td><code class="docs-inline-code">generator.execution.failed</code></td>
+<td>runtime</td>
+<td>Generator threw during execution.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">equipment.state.logic</code></td>
-<td>error</td>
-<td>Equipment State Logic</td>
-<td>Checks for logical consistency in equipment usage (e.g., using dirty equipment).</td>
-<td>Fix state transitions; add cleaning tasks; adjust <code class="docs-inline-code">from/to</code>.</td>
+<td><code class="docs-inline-code">generator.changes.conflict</code></td>
+<td>runtime</td>
+<td>Generator won a same-time write over Changes.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">equipment.state.invalid_transitions</code></td>
-<td>error</td>
-<td>Invalid State Transitions</td>
-<td>Validates state transitions are logically valid.</td>
-<td>Use sensible <code class="docs-inline-code">from</code>/<code class="docs-inline-code">to</code> sequences or <code class="docs-inline-code">set</code> when appropriate.</td>
+<td><code class="docs-inline-code">runtime.execution.event_limit</code></td>
+<td>runtime</td>
+<td>Execution exceeded the bounded event safety limit.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">equipment.integrity.invalid_capacity</code></td>
-<td>error</td>
-<td>Equipment Capacity Validation</td>
-<td>Checks equipment <code class="docs-inline-code">capacity</code> values are positive integers.</td>
-<td>Set <code class="docs-inline-code">capacity</code> to a positive integer.</td>
+<td><code class="docs-inline-code">reservation.capacity.exceeded</code></td>
+<td>runtime</td>
+<td>Actual reservations exceed declared capacity.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">task.spatial.unmet_proximity_requirement</code></td>
-<td>error</td>
-<td>Task Proximity Check</td>
-<td>Checks actors and required objects are in the same location as the task.</td>
-<td>Align locations or add movement/location-change tasks/interactions as needed.</td>
+<td><code class="docs-inline-code">reservation.exclusive.conflict</code></td>
+<td>runtime</td>
+<td>Actually executing tasks attempted conflicting exclusive reservations.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">display.spatial.elements_outside_bounds</code></td>
-<td>warning</td>
-<td>Display Elements Outside Bounds</td>
-<td>Checks if display elements extend beyond the display viewport.</td>
-<td>Resize or reposition UI elements.</td>
+<td><code class="docs-inline-code">state_visuals.reference.unknown_library</code></td>
+<td>runtime</td>
+<td>A runtime-created object named an unknown State Library.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">scheduling.optimization.missing_buffer</code></td>
-<td>info</td>
-<td>Missing Buffer Time</td>
-<td>Suggests adding buffers between consecutive tasks for realism.</td>
-<td>Add small gaps between tasks (same performer).</td>
+<td><code class="docs-inline-code">task.lifecycle.transition.invalid</code></td>
+<td>runtime</td>
+<td>A task attempted an invalid status transition; failed effects use the explicit <code class="docs-inline-code">failed</code> status.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">economic.profitability.negative_margin</code></td>
-<td>warning</td>
-<td>Negative Profitability</td>
-<td>Computes total revenue minus labor and resource costs; warns on negative results.</td>
-<td>Adjust costs/revenue, productivity, or resource consumption.</td>
+<td><code class="docs-inline-code">object.optimization.unused_resource</code></td>
+<td>runtime</td>
+<td>An initial resource was unused through an explicit finite horizon.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">system.error</code></td>
-<td>error</td>
-<td>System Error</td>
-<td>Validator internal error (configuration or execution failure).</td>
-<td>Inspect validator logs/config; simplify document and retry.</td>
+<td><code class="docs-inline-code">constraint.compile.failed</code></td>
+<td>constraint</td>
+<td>Constraints could not compile.</td>
 </tr>
 <tr>
-<td><code class="docs-inline-code">system.info</code></td>
-<td>info</td>
-<td>System Info</td>
-<td>Validator informational message.</td>
-<td>No action required.</td>
+<td><code class="docs-inline-code">constraint.execution.failed</code></td>
+<td>constraint</td>
+<td>A Constraint threw during execution.</td>
 </tr>
 </tbody>
 </table></div>
+<h2 class="docs-heading" id="workspec-22-exclusions">WorkSpec 2.2 exclusions<a class="headerlink" href="#workspec-22-exclusions" title="Link to this section">¶</a></h2>
+<p>Document validation does not emit unqualified 2.2 claims for unused resources,
+profitability, stock history, recipe fulfillment, actor overlap, lifecycle, or
+interaction effects. Those facts depend on Changes, optional Generator behavior,
+runtime conditions, and a finite analysis horizon, or they express domain policy
+that belongs in Constraints.</p>
+<p>WorkSpec 2.0/2.1 retain their version-gated inline-interaction diagnostics.
+Legacy flat-model catalog IDs such as <code class="docs-inline-code">resource.definition.unused</code>,
+<code class="docs-inline-code">actor.scheduling.overlap</code>, and <code class="docs-inline-code">resource.flow.recipe_violation</code> are not canonical
+WorkSpec 2.2 metric IDs.</p>
                     </div>
                     
                     <footer class="docs-footer">

@@ -393,14 +393,14 @@ const legacySampleSimulation = {
     }
 };
 
-// Sample WorkSpec v2.2 Starting State (fallback when library isn't loaded)
+// Sample WorkSpec 2 Starting State (fallback when library isn't loaded)
 const sampleSimulation = {
     "$schema": "https://universalautomation.wiki/workspec/v2.2.schema.json",
     "simulation": {
         "schema_version": "2.2",
         "meta": {
-            "title": "WorkSpec v2.2 Sample",
-            "description": "A minimal WorkSpec v2.2 Starting State used as a WorkSpec Studio fallback.",
+            "title": "WorkSpec 2 Sample",
+            "description": "A minimal WorkSpec 2 Starting State used as a WorkSpec Studio fallback.",
             "domain": "Example"
         },
         "config": {
@@ -953,41 +953,26 @@ function validateJSON() {
             // Prefer WorkSpec v2 validator (RFC 7807 Problem Details)
             if (window.WorkSpecValidator && typeof window.WorkSpecValidator.validate === 'function') {
                 semanticValidationRan = true;
-                const result = window.WorkSpecValidator.validate(parsed);
+                const project = window.UAWProjectStore?.getCurrent?.();
+                const projectOptions = {
+                    changesSource: window.workSpecChangesEditor?.getValue?.() ?? project?.changesDraft ?? '',
+                    generatorSource: window.workSpecGeneratorEditor?.getValue?.() ?? project?.generatorDraft ?? '',
+                    constraintsSource: window.UAWWorkSpecEditor?.constraintSource?.() || '',
+                    seed: project?.seed ?? 1
+                };
+                const result = parsed.simulation?.schema_version === '2.2' && window.WorkSpecProjectValidator?.validateProject
+                    ? window.WorkSpecProjectValidator.validateProject(parsed, projectOptions)
+                    : window.WorkSpecValidator.validate(parsed);
                 const problems = Array.isArray(result?.problems) ? [...result.problems] : [];
-                let runtimeViolations = [];
-                if (!problems.some((problem) => problem.severity === 'error') && parsed.simulation?.schema_version === '2.2' && window.WorkSpecRuntime?.runProject) {
-                    const project = window.UAWProjectStore?.getCurrent?.();
-                    const changes = window.workSpecChangesEditor?.getValue?.() ?? project?.changesDraft ?? '';
-                    const generator = window.workSpecGeneratorEditor?.getValue?.() ?? project?.generatorDraft ?? '';
-                    const constraints = window.UAWWorkSpecEditor?.constraintSource?.() || '';
-                    const runtime = constraints.trim() && window.WorkSpecRuntime.runConstraints
-                        ? window.WorkSpecRuntime.runConstraints(parsed, changes, generator, constraints, { seed: project?.seed ?? 1 })
-                        : window.WorkSpecRuntime.runProject(parsed, changes, generator, { seed: project?.seed ?? 1 });
-                    runtime.problems.filter((problem) => problem.metric_id?.startsWith('generator.') || problem.metric_id?.startsWith('changes.') || problem.metric_id?.startsWith('constraint.')).forEach((problem) => problems.push(problem));
-                    runtimeViolations = runtime.violations || [];
-                }
-                semanticProblems = problems.concat(runtimeViolations.map((violation) => ({
-                    // Runtime constraint violations participate in the status
-                    // chip counts even though they are not Starting State problems.
-                    severity: violation.severity === 'warning' ? 'warning' : violation.severity === 'info' ? 'info' : 'error',
-                    status: violation.severity === 'warning' ? 'warning' : violation.severity === 'info' ? 'suggestion' : 'error',
-                    detail: violation.message,
-                    metric_id: violation.constraint_id,
-                    violation
-                })));
+                semanticProblems = problems;
                 setPlaybackValidationBlocked(problems);
                 const mapped = problems.map((problem) => ({
                     metricId: problem.metric_id || 'system.error',
                     status: problem.severity === 'warning' ? 'warning' : problem.severity === 'info' ? 'suggestion' : 'error',
                     message: problem.detail || problem.title || problem.metric_id || 'Validation error',
-                    problem
-                })).concat(runtimeViolations.map((violation) => ({
-                    metricId: violation.constraint_id,
-                    status: violation.severity === 'warning' ? 'warning' : violation.severity === 'info' ? 'suggestion' : 'error',
-                    message: violation.message,
-                    violation
-                })));
+                    problem,
+                    ...(problem.violation ? { violation: problem.violation } : {})
+                }));
 
                 if (mapped.length === 0) {
                     displayValidationResults([{
@@ -998,7 +983,7 @@ function validateJSON() {
                 } else {
                     displayValidationResults(mapped);
                 }
-            } else if (mergedCatalog && mergedCatalog.length > 0 && window.SimulationValidator) {
+            } else if (parsed.simulation?.schema_version !== '2.2' && mergedCatalog && mergedCatalog.length > 0 && window.SimulationValidator) {
                 semanticValidationRan = true;
                 // Fallback: legacy metrics validator
                 const validator = new window.SimulationValidator(parsed);
@@ -1010,6 +995,21 @@ function validateJSON() {
                 semanticProblems = validationResults;
                 setPlaybackValidationBlocked(validationResults);
                 displayValidationResults(validationResults);
+            } else if (parsed.simulation?.schema_version === '2.2') {
+                semanticValidationRan = true;
+                semanticProblems = [{
+                    metric_id: 'workspec.validation.project_validator_unavailable',
+                    severity: 'error',
+                    status: 'error',
+                    detail: 'WorkSpec 2.2 project validation is unavailable; legacy flat-model checks were not substituted.'
+                }];
+                displayValidationResults(semanticProblems.map((problem) => ({
+                    metricId: problem.metric_id,
+                    status: problem.status,
+                    message: problem.detail,
+                    problem
+                })));
+                setPlaybackValidationBlocked(semanticProblems);
             } else {
                 displayValidationResults([]);
                 setPlaybackValidationBlocked([]);
@@ -1107,36 +1107,25 @@ function runManualValidation() {
         
         // Prefer WorkSpec v2 validator (RFC 7807 Problem Details)
         if (window.WorkSpecValidator && typeof window.WorkSpecValidator.validate === 'function') {
-            const result = window.WorkSpecValidator.validate(parsed);
+            const project = window.UAWProjectStore?.getCurrent?.();
+            const projectOptions = {
+                changesSource: window.workSpecChangesEditor?.getValue?.() ?? project?.changesDraft ?? '',
+                generatorSource: window.workSpecGeneratorEditor?.getValue?.() ?? project?.generatorDraft ?? '',
+                constraintsSource: window.UAWWorkSpecEditor?.constraintSource?.() || '',
+                seed: project?.seed ?? 1
+            };
+            const result = parsed.simulation?.schema_version === '2.2' && window.WorkSpecProjectValidator?.validateProject
+                ? window.WorkSpecProjectValidator.validateProject(parsed, projectOptions)
+                : window.WorkSpecValidator.validate(parsed);
             const problems = Array.isArray(result?.problems) ? [...result.problems] : [];
-            let runtimeViolations = [];
-            if (!problems.some((problem) => problem.severity === 'error') && parsed.simulation?.schema_version === '2.2' && window.WorkSpecRuntime?.runConstraints) {
-                const project = window.UAWProjectStore?.getCurrent?.();
-                const constraints = window.UAWWorkSpecEditor?.constraintSource?.() || '';
-                if (constraints.trim()) {
-                    const runtime = window.WorkSpecRuntime.runConstraints(
-                        parsed,
-                        window.workSpecChangesEditor?.getValue?.() ?? project?.changesDraft ?? '',
-                        window.workSpecGeneratorEditor?.getValue?.() ?? project?.generatorDraft ?? '',
-                        constraints,
-                        { seed: project?.seed ?? 1 }
-                    );
-                    runtime.problems.filter((problem) => problem.metric_id?.startsWith('generator.') || problem.metric_id?.startsWith('changes.') || problem.metric_id?.startsWith('constraint.')).forEach((problem) => problems.push(problem));
-                    runtimeViolations = runtime.violations || [];
-                }
-            }
             setPlaybackValidationBlocked(problems);
             const mapped = problems.map((problem) => ({
                 metricId: problem.metric_id || 'system.error',
                 status: problem.severity === 'warning' ? 'warning' : problem.severity === 'info' ? 'suggestion' : 'error',
                 message: problem.detail || problem.title || problem.metric_id || 'Validation error',
-                problem
-            })).concat(runtimeViolations.map((violation) => ({
-                metricId: violation.constraint_id,
-                status: violation.severity === 'warning' ? 'warning' : violation.severity === 'info' ? 'suggestion' : 'error',
-                message: violation.message,
-                violation
-            })));
+                problem,
+                ...(problem.violation ? { violation: problem.violation } : {})
+            }));
 
             if (mapped.length === 0) {
                 displayValidationResults([{
@@ -1150,7 +1139,13 @@ function runManualValidation() {
         } else {
             // Fallback: legacy metrics validator
             const mergedCatalog = getMergedMetricsCatalog();
-            if (mergedCatalog && mergedCatalog.length > 0 && window.SimulationValidator) {
+            if (parsed.simulation?.schema_version === '2.2') {
+                displayValidationResults([{
+                    metricId: 'workspec.validation.project_validator_unavailable',
+                    status: 'error',
+                    message: 'WorkSpec 2.2 project validation is unavailable; legacy flat-model checks were not substituted.'
+                }]);
+            } else if (mergedCatalog && mergedCatalog.length > 0 && window.SimulationValidator) {
                 const validator = new window.SimulationValidator(parsed);
                 // See the auto-validation fallback above: custom checks use
                 // the asynchronous Metrics Editor workflow.

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Authoring Guide for WorkSpec 2.2 - Universal Automation Wiki</title>
+    <title>AI Authoring Guide for WorkSpec 2 - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
     <link rel="stylesheet" href="/assets/css/category.css">
@@ -50,7 +50,7 @@
                                         
                                     
                                         
-                                            <li aria-current="page">AI Authoring Guide for WorkSpec 2.2</li>
+                                            <li aria-current="page">AI Authoring Guide for WorkSpec 2</li>
                                         
                                     
                                 </ol>
@@ -58,27 +58,27 @@
                         </div>
                         
                         <div class="docs-title-section">
-                            <h1 class="docs-page-title">AI Authoring Guide for WorkSpec 2.2</h1>
+                            <h1 class="docs-page-title">AI Authoring Guide for WorkSpec 2</h1>
                             
-                            <p class="docs-page-subtitle">This guide is for AI systems, and humans using AI, that generate WorkSpec 2.2</p>
+                            <p class="docs-page-subtitle">This guide is for AI systems, and humans using AI, that generate WorkSpec 2</p>
                             
                         </div>
                     </header>
 
                     <div class="docs-content">
-                        <p>This guide is for AI systems, and humans using AI, that generate WorkSpec 2.2
+                        <p>This guide is for AI systems, and humans using AI, that generate WorkSpec 2
 projects. The <a href="/docs/workspec/guides/authoring">Authoring Guide</a> remains the
 canonical conceptual reference.</p>
 <h2 class="docs-heading" id="output-contract">Output contract<a class="headerlink" href="#output-contract" title="Link to this section">¶</a></h2>
 <p>Generate separate project sources:</p>
 <ul class="docs-list">
-<li><code class="docs-inline-code">start.workspec.json</code>: declarative Starting State with schema version <code class="docs-inline-code">2.2</code>;</li>
+<li><code class="docs-inline-code">start.workspec.json</code>: declarative WorkSpec 2 Starting State (machine schema version <code class="docs-inline-code">2.2</code>);</li>
 <li><code class="docs-inline-code">changes.workspec.js</code>: known, explicit task effects;</li>
 <li><code class="docs-inline-code">constraints.workspec.js</code>: rules over the resolved simulation;</li>
 <li><code class="docs-inline-code">generator.workspec.js</code>: optional computed or simulated behaviour only.</li>
 </ul>
 <p>Do not put task <code class="docs-inline-code">interactions</code>, executable effects, recipes, or state libraries
-inside 2.2 Starting State. Do not invent a Generator when Changes are enough.</p>
+inside WorkSpec 2 Starting State. Do not invent a Generator when Changes are enough.</p>
 <h2 class="docs-heading" id="starting-state-requirements">Starting State requirements<a class="headerlink" href="#starting-state-requirements" title="Link to this section">¶</a></h2>
 <p>Include <code class="docs-inline-code">$schema</code>, <code class="docs-inline-code">simulation.schema_version</code>, complete <code class="docs-inline-code">meta</code>, <code class="docs-inline-code">world</code>, and
 <code class="docs-inline-code">process</code>. Use stable snake_case IDs. Keep object properties under <code class="docs-inline-code">properties</code>,

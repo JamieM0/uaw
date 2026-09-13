@@ -1,4 +1,4 @@
-# WorkSpec 2.2 AI constraint-authoring dogfood
+# WorkSpec 2 AI constraint-authoring dogfood
 
 Run date: 2026-09-09. This is a small executable experiment, not a benchmark. Constraint design was completed from the six healthy Simulation Library models before a separate role designed mutations. The mutation role was not shown the authored constraints. Every run used the packaged CLI, seed `1`, and isolated temporary project files; no browser automation was used.
 

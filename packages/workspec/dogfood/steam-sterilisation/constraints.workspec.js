@@ -1,4 +1,4 @@
-// WorkSpec 2.2 runtime constraints. Each comment states the retained domain intent.
+// WorkSpec 2 runtime constraints. Each comment states the retained domain intent.
 
 const close = (left, right) => Math.abs(left - right) < 1e-9;
 const firstTime = (ctx, predicate) => ctx.times().find(time => predicate(ctx.stateAt(time)));

@@ -1,8 +1,8 @@
 # WorkSpec Studio Guide
 
-WorkSpec Studio is the visual editor and runner for WorkSpec 2.2 projects. Start
+WorkSpec Studio is the visual editor and runner for WorkSpec 2 projects. Start
 with the [guided tutorial](/playground), then use the
-[WorkSpec 2.2 Authoring Guide](/docs/workspec/guides/authoring) as the canonical
+[WorkSpec 2 Authoring Guide](/docs/workspec/guides/authoring) as the canonical
 conceptual reference.
 
 ## What each workspace answers
@@ -33,7 +33,7 @@ fifth WorkSpec language concept.
 ## Create or open a project
 
 Choose **New project from template** for a working example, **New blank project**
-for empty 2.2 sources, or **Open project folder** to reconnect an existing
+for empty WorkSpec 2 sources, or **Open project folder** to reconnect an existing
 folder. Studio writes each source as a visible file in that folder.
 
 The guided packing tutorial is the beginner example. Simulation Library
@@ -78,4 +78,4 @@ same sources and Generator seed.
 
 Versioned WorkSpec 2.0/2.1 pages document the older task `interactions` model.
 They remain available under **Historical specifications** but should not be used
-to author a 2.2 project.
+to author a WorkSpec 2 project.

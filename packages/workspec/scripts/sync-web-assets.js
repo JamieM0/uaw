@@ -7,6 +7,10 @@ const path = require('path');
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 
 const mappings = [
+    ...['workspec-changes.d.ts', 'workspec-constraints.d.ts', 'workspec-generator.d.ts'].map((filename) => ({
+        source: path.join(repoRoot, 'packages', 'workspec', filename),
+        destination: path.join(repoRoot, 'web', 'packages', 'workspec', filename)
+    })),
     {
         source: path.join(repoRoot, 'packages', 'workspec', 'workspec-runtime.js'),
         destination: path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-runtime.js')
@@ -14,6 +18,10 @@ const mappings = [
     {
         source: path.join(repoRoot, 'packages', 'workspec', 'workspec-validator.js'),
         destination: path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-validator.js')
+    },
+    {
+        source: path.join(repoRoot, 'packages', 'workspec', 'workspec-project-validator.js'),
+        destination: path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-project-validator.js')
     },
     {
         source: path.join(repoRoot, 'packages', 'workspec', 'workspec-migrate-v1-to-v2.js'),

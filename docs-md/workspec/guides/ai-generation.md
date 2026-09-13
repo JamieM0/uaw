@@ -1,6 +1,6 @@
-# AI Authoring Guide for WorkSpec 2.2
+# AI Authoring Guide for WorkSpec 2
 
-This guide is for AI systems, and humans using AI, that generate WorkSpec 2.2
+This guide is for AI systems, and humans using AI, that generate WorkSpec 2
 projects. The [Authoring Guide](/docs/workspec/guides/authoring) remains the
 canonical conceptual reference.
 
@@ -8,13 +8,13 @@ canonical conceptual reference.
 
 Generate separate project sources:
 
-- `start.workspec.json`: declarative Starting State with schema version `2.2`;
+- `start.workspec.json`: declarative WorkSpec 2 Starting State (machine schema version `2.2`);
 - `changes.workspec.js`: known, explicit task effects;
 - `constraints.workspec.js`: rules over the resolved simulation;
 - `generator.workspec.js`: optional computed or simulated behaviour only.
 
 Do not put task `interactions`, executable effects, recipes, or state libraries
-inside 2.2 Starting State. Do not invent a Generator when Changes are enough.
+inside WorkSpec 2 Starting State. Do not invent a Generator when Changes are enough.
 
 ## Starting State requirements
 

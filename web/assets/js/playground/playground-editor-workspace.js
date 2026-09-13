@@ -1,4 +1,4 @@
-// WorkSpec Studio 2.2 - general two-pane project editor
+// WorkSpec 2 Studio - general two-pane project editor
 (function () {
     'use strict';
 
@@ -9,22 +9,22 @@
         ['custom-constraints', 'Constraints', 'javascript'],
         ['constraint-library', 'Constraint Library', 'json']
     ];
-    const CHANGES_TYPES = `
-interface WorkSpecEffectOptions { temporary?: boolean; }
-interface WorkSpecTaskContext { readonly taskId: string; readonly phase: 'start' | 'completion'; set: typeof set; change: typeof change; move: typeof move; create: typeof create; remove: typeof remove; }
-interface WorkSpecTaskHandle { onStart(handler: (context: WorkSpecTaskContext) => void): WorkSpecTaskHandle; onComplete(handler: (context: WorkSpecTaskContext) => void): WorkSpecTaskHandle; }
-declare const WorkSpec: { task(id: string, configure?: (task: WorkSpecTaskHandle) => void): WorkSpecTaskHandle; };
-declare function set(targetId: string, property: string, value: unknown, options?: WorkSpecEffectOptions): void;
-declare function change(targetId: string, property: string, amount: number, options?: WorkSpecEffectOptions): void;
-declare function move(targetId: string, locationId: string, options?: WorkSpecEffectOptions): void;
-declare function create(object: Record<string, unknown>): void;
-declare function remove(targetId: string): void;
-`;
-    const GENERATOR_TYPES = `
-interface WorkSpecGeneratorState { readonly objects: Readonly<Record<string, unknown>>; readonly locations: Readonly<Record<string, unknown>>; }
-interface WorkSpecGeneratorContext { readonly time: number; readonly delta: number; readonly state: WorkSpecGeneratorState; random(): number; get(targetId: string, property: string): unknown; set(targetId: string, property: string, value: unknown): void; change(targetId: string, property: string, amount: number): void; move(targetId: string, locationId: string): void; create(object: Record<string, unknown>): void; remove(targetId: string): void; }
-declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) => void): void; onUpdate(handler: (context: WorkSpecGeneratorContext) => void): void; generator(definition: { onStart?: (context: WorkSpecGeneratorContext) => void; onUpdate?: (context: WorkSpecGeneratorContext) => void }): void; };
-`;
+    const LANGUAGE_DECLARATIONS = [
+        'workspec-changes.d.ts',
+        'workspec-constraints.d.ts',
+        'workspec-generator.d.ts'
+    ];
+
+    async function installLanguageDeclarations() {
+        const declarations = await Promise.all(LANGUAGE_DECLARATIONS.map(async (filename) => {
+            const response = await fetch(`/packages/workspec/${filename}`);
+            if (!response.ok) throw new Error(`Unable to load ${filename}: HTTP ${response.status}`);
+            return [filename, await response.text()];
+        }));
+        declarations.forEach(([filename, source]) => {
+            window.monaco.languages?.typescript?.javascriptDefaults?.addExtraLib?.(source, filename);
+        });
+    }
 
     class WorkSpecEditor {
         constructor() {
@@ -38,15 +38,20 @@ declare const WorkSpec: { onStart(handler: (context: WorkSpecGeneratorContext) =
             this.analysis = { taskReferences: [], handlers: [], targetReferences: [], diagnostics: [] };
             this.paneStates = {};
             this.persistTimer = null;
+            this.languageDeclarations = null;
         }
 
-        initialize() {
+        async initialize() {
             if (this.editors.length || this.initializing) return;
             const host = document.getElementById('uaw-editor-panes');
             if (!host || !window.monaco?.editor || !window.monacoEditor?.getModel?.()) return;
             this.initializing = true;
-            window.monaco.languages?.typescript?.javascriptDefaults?.addExtraLib?.(CHANGES_TYPES, 'workspec-changes.d.ts');
-            window.monaco.languages?.typescript?.javascriptDefaults?.addExtraLib?.(GENERATOR_TYPES, 'workspec-generator.d.ts');
+            this.languageDeclarations ||= installLanguageDeclarations();
+            try {
+                await this.languageDeclarations;
+            } catch (error) {
+                console.error('WorkSpec language declarations could not be loaded.', error);
+            }
             const project = window.UAWProjectStore?.getCurrent?.();
             const saved = project?.settings?.workspace?.editorPanes;
             if (Array.isArray(saved) && saved.length === 2 && saved.every((id) => TABS.some(([tab]) => tab === id))) this.selections = saved;

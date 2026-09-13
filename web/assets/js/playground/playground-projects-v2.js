@@ -32,18 +32,18 @@
         }
     }, null, 2);
 
-    const blankChanges = () => `// WorkSpec 2.2 Changes
+    const blankChanges = () => `// WorkSpec 2 Changes
 // Register task behaviour with WorkSpec.task(...).
 // set, change, move, create and remove are available inside handlers.
 `;
 
-    const blankGenerator = () => `// WorkSpec 2.2 Generator (optional)
+    const blankGenerator = () => `// WorkSpec 2 Generator (optional)
 // onUpdate runs once per whole simulation minute after execution starts.
 // WorkSpec.onStart(({ set, random, state }) => {});
 // WorkSpec.onUpdate(({ time, delta, change, random, state }) => {});
 `;
 
-    const blankConstraints = () => `// WorkSpec 2.2 Constraints
+    const blankConstraints = () => `// WorkSpec 2 Constraints
 // Rules inspect the resolved simulation with ctx.state(), ctx.stateAt(), ctx.get(), ctx.getAt(), and ctx.times().
 `;
 

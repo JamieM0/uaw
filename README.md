@@ -166,7 +166,7 @@ WorkSpec.onUpdate(({ get, set, random }) => {
 
 The current runtime uses deterministic minute-based updates and a seeded `random()` helper. The seed is runtime metadata, so a simulation can be reproduced without pretending randomness is part of the world state.
 
-When Changes and Generator write to the same property at the same time, Changes resolve first, Generator resolves second, and the runtime reports a warning.
+At one logical time, completion Changes resolve first, Generator resolves second, task decisions observe the generated state, and task-start Changes resolve last. Generator owns any same-property cross-source conflict and the runtime reports a warning.
 
 ## Constraints and validation
 
@@ -322,7 +322,7 @@ uaw/
 └── README.md
 ```
 
-The repository still contains earlier UAW systems and historical WorkSpec versions. Those are useful context, but new WorkSpec development should target the current 2.2 architecture rather than treating the older executable-workflow model as the foundation.
+The repository still contains earlier UAW systems and historical WorkSpec versions. Those are useful context, but new WorkSpec development should target the current WorkSpec 2 architecture rather than treating the older executable-workflow model as the foundation.
 
 ## Design principles
 
@@ -377,4 +377,3 @@ Unless explicitly stated otherwise, this project is licensed under the **GNU Aff
 See [`LICENSE`](LICENSE) and the licence information in individual packages for details.
 
 Thank you for your interest in the Universal Automation Wiki! Join us in building the future of interactive automation simulation.
-

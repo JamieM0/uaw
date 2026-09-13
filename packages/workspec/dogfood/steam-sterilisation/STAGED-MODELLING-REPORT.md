@@ -1,4 +1,4 @@
-# WorkSpec 2.2 staged AI-modelling dogfood
+# WorkSpec 2 staged AI-modelling dogfood
 
 Run date: 2026-09-09. This is one fresh end-to-end case study, not a benchmark. The model follows two reusable implant trays through hospital sterile processing. It was built from a process description and primary-source research rather than copied from the six Simulation Library models.
 
@@ -33,7 +33,7 @@ Starting State validation found two useful construction errors:
 - custom object type `record` lacked a type definition;
 - changing it to built-in `digital_object` exposed that this built-in requires numeric `quantity` and string `state`.
 
-The final choice was a single stateful/quantifiable `digital_object`, avoiding an unnecessary custom type. Validation then exited 0 with five expected informational `object.optimization.unused_resource` notices: the declarative validator cannot see later consumption authored in Changes.
+The final choice was a single stateful/quantifiable `digital_object`, avoiding an unnecessary custom type. At the time, validation exited 0 with five `object.optimization.unused_resource` notices caused by document validation overlooking later Changes consumption. The validation-layer correction removes those false 2.2 document diagnostics; bounded project validation now observes the actual runtime use.
 
 Approximate change: **28 world-model lines and 315 Starting State lines**. The constraint pass later added about 16 of those lines for the sourced daily air-removal test and explicit cycle compatibility/pressure state.
 

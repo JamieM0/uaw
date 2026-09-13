@@ -642,7 +642,7 @@ class ActorAnimationManager {
         });
     }
 
-    // Resolve the observable object at a point in time. WorkSpec 2.2 projects
+    // Resolve the observable object at a point in time. WorkSpec 2 projects
     // resolve Changes and Generator through the shared runtime; the timeline
     // player exposes that resolved snapshot, which is authoritative whenever
     // it exists. Older interaction-based projects fall back to the package

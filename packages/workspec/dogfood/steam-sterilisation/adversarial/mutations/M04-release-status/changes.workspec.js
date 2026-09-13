@@ -1,4 +1,4 @@
-// WorkSpec 2.2 Changes — explicit authored work and decisions.
+// WorkSpec 2 Changes — explicit authored work and decisions.
 
 WorkSpec.task('daily_air_removal_test', task => {
     task.onStart(() => {

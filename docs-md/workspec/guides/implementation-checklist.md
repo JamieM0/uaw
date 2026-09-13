@@ -57,7 +57,7 @@ It intentionally focuses on: **document shape**, **validator correctness**, **Wo
 - ✅ **2.1 Top-level object fields** (`id|type|name` required; `location` references validated)
   - Validator enforces required fields + location references
   - Object creation uses `properties` bag (including UI-only hints under `properties.*`)
-- ✅ **2.2 Namespaced IDs** (`{type}:{id}` optional; namespace must match `type`)
+- ✅ **WorkSpec 2 namespaced IDs** (`{type}:{id}` optional; namespace must match `type`)
   - Validator enforces namespace/type match
 - ✅ **2.3 Remove type aliases** (`material|ingredient|tool` rejected; migration maps)
 - ✅ **2.4 `service` type** (performer allowed in `actor_id`)

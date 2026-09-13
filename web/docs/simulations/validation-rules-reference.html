@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validation Rules Reference - Universal Automation Wiki</title>
+    <title>WorkSpec validation rules reference - Universal Automation Wiki</title>
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/components.css">
     <link rel="stylesheet" href="/assets/css/category.css">
@@ -46,7 +46,7 @@
                                         
                                     
                                         
-                                            <li aria-current="page">Validation Rules Reference</li>
+                                            <li aria-current="page">WorkSpec validation rules reference</li>
                                         
                                     
                                 </ol>
@@ -54,802 +54,174 @@
                         </div>
                         
                         <div class="docs-title-section">
-                            <h1 class="docs-page-title">Validation Rules Reference</h1>
+                            <h1 class="docs-page-title">WorkSpec validation rules reference</h1>
                             
-                            <p class="docs-page-subtitle">This comprehensive guide covers all validation rules in the UAW system. Each rule is automatically checked when you edit your simulation in WorkSpec Studio, helping ensure your process models are structurally sound, logically consistent, and ready for business analysis.</p>
+                            <p class="docs-page-subtitle">This reference describes current WorkSpec 2.2 validation. WorkSpec 2.0 and 2.1</p>
                             
                         </div>
                     </header>
 
                     <div class="docs-content">
-                        <p>This comprehensive guide covers all validation rules in the UAW system. Each rule is automatically checked when you edit your simulation in WorkSpec Studio, helping ensure your process models are structurally sound, logically consistent, and ready for business analysis.</p>
-<h2 class="docs-heading" id="validation-categories">Validation Categories<a class="headerlink" href="#validation-categories" title="Link to this section">¶</a></h2>
-<p>The validation system organizes rules into logical categories:</p>
-<ul class="docs-list">
-<li><strong>Structural Integrity</strong>: Basic schema and data consistency checks</li>
-<li><strong>Resource Flow</strong>: Resource consumption and production validation</li>
-<li><strong>Scheduling</strong>: Task timing, dependencies, and actor assignments</li>
-<li><strong>Economic</strong>: Financial analysis and profitability checks</li>
-<li><strong>Optimization</strong>: Performance improvement suggestions</li>
-</ul>
-<h2 class="docs-heading" id="structural-integrity">Structural Integrity<a class="headerlink" href="#structural-integrity" title="Link to this section">¶</a></h2>
-<p>These rules ensure your simulation data is properly formatted and internally consistent.</p>
-<h3 class="docs-heading" id="simulation-root-check">Simulation Root Check<a class="headerlink" href="#simulation-root-check" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">schema.integrity.missing_root</code>
-<strong>Severity</strong>: Error</p>
-<p>Ensures the top-level ‘simulation’ object exists in your JSON.</p>
-<p><strong>What it checks:</strong>
-- Root JSON contains a “simulation” key
-- Simulation object is properly structured</p>
-<p><strong>Common failure:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>Correct format:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">]</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-<h3 class="docs-heading" id="unassigned-task-actor">Unassigned Task Actor<a class="headerlink" href="#unassigned-task-actor" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">task.integrity.unassigned_actor</code>
-<strong>Severity</strong>: Error</p>
-<p>Ensures every task is assigned to a valid, defined actor.</p>
-<p><strong>What it checks:</strong>
-- All tasks have an <code class="docs-inline-code">actor_id</code> property
-- Each <code class="docs-inline-code">actor_id</code> corresponds to an existing object
-- The referenced object exists in the simulation</p>
-<p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bake_bread"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"missing_baker"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actual_baker"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Real Baker"</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>How to fix:</strong>
-- Ensure <code class="docs-inline-code">actor_id</code> matches an existing object ID
-- Add the missing actor object
-- Check for typos in actor IDs</p>
-<h3 class="docs-heading" id="unreachable-task-dependency">Unreachable Task Dependency<a class="headerlink" href="#unreachable-task-dependency" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">task.dependency.unreachable</code>
-<strong>Severity</strong>: Error</p>
-<p>Ensures every task listed in a ‘depends_on’ array corresponds to a valid, defined task ID.</p>
-<p><strong>What it checks:</strong>
-- All dependency references point to existing tasks
-- No circular dependencies exist
-- Dependency graph is resolvable</p>
-<p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mix_dough"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"depends_on"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"nonexistent_task"</span><span class="p">],</span>
-<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>How to fix:</strong>
-- Verify all task IDs in <code class="docs-inline-code">depends_on</code> arrays exist
-- Remove invalid dependencies
-- Check for typos in task names</p>
-<h3 class="docs-heading" id="undefined-location">Undefined Location<a class="headerlink" href="#undefined-location" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">object.spatial.location_undefined</code>
-<strong>Severity</strong>: Error</p>
-<p>Ensures every object with a location property is assigned to a valid, defined location from the layout.</p>
-<p><strong>What it checks:</strong>
-- Objects with <code class="docs-inline-code">location</code> properties reference valid layout locations
-- Layout contains all referenced locations
-- Location IDs match exactly</p>
-<p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">"areas"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"kitchen"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_area"</span>
-<span class="w">      </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>How to fix:</strong>
-- Add missing locations to the layout
-- Correct location ID spelling
-- Remove invalid location references</p>
-<h3 class="docs-heading" id="disallowed-object-types">Disallowed Object Types<a class="headerlink" href="#disallowed-object-types" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">schema.integrity.disallowed_types</code>
-<strong>Severity</strong>: Error</p>
-<p>Ensures no objects use internally reserved types that could cause system conflicts.</p>
-<p><strong>What it checks:</strong>
-- Objects don’t use reserved type names
-- Custom types don’t conflict with system types
-- Type names follow conventions</p>
-<p><strong>Reserved types:</strong>
-- <code class="docs-inline-code">timeline_actors</code> (used internally by the system)</p>
-<p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"special_object"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"timeline_actors"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Invalid Type"</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>How to fix:</strong>
-- Use standard types: <code class="docs-inline-code">actor</code>, <code class="docs-inline-code">equipment</code>, <code class="docs-inline-code">resource</code>, <code class="docs-inline-code">product</code>
-- Create custom types that don’t conflict with reserved names
-- Choose descriptive, unique type names</p>
-<h3 class="docs-heading" id="invalid-task-duration">Invalid Task Duration<a class="headerlink" href="#invalid-task-duration" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">task.integrity.invalid_duration</code>
-<strong>Severity</strong>: Error</p>
-<p>Ensures all task durations are positive integers.</p>
-<p><strong>What it checks:</strong>
-- Duration values are numbers
-- Duration is greater than 0
-- Duration is a reasonable value</p>
-<p><strong>Example failures:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"invalid_task_1"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">-30</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"invalid_task_2"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sixty minutes"</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"invalid_task_3"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>How to fix:</strong>
-- Use positive numbers for duration
-- Duration should be in minutes
-- Remove or correct invalid duration values</p>
-<h3 class="docs-heading" id="invalid-start-time-format">Invalid Start Time Format<a class="headerlink" href="#invalid-start-time-format" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">task.integrity.invalid_start_time</code>
-<strong>Severity</strong>: Error</p>
-<p>Ensures all task start times follow HH:MM string format.</p>
-<p><strong>What it checks:</strong>
-- Start times are in “HH:MM” format
-- Hours are 00-23, minutes are 00-59
-- Values are properly zero-padded</p>
-<p><strong>Example failures:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bad_time_1"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"9:30"</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bad_time_2"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"25:00"</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bad_time_3"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="mi">930</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>Correct format:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"good_time"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:30"</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<h3 class="docs-heading" id="invalid-object-reference">Invalid Object Reference<a class="headerlink" href="#invalid-object-reference" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">task.integrity.invalid_object_reference</code>
-<strong>Severity</strong>: Error</p>
-<p>Ensures all tasks reference valid object IDs that exist in the simulation.</p>
-<p><strong>What it checks:</strong>
-- Task interactions reference existing objects
-- Consumes/produces reference existing resources
-- Equipment interactions reference existing equipment</p>
-<p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mix_dough"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"consumes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"nonexistent_flour"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"missing_mixer"</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">}</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="p">]</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>How to fix:</strong>
-- Verify all object IDs exist in the objects array
-- Check for typos in object references
-- Add missing objects to the simulation</p>
-<h3 class="docs-heading" id="display-elements-outside-bounds">Display Elements Outside Bounds<a class="headerlink" href="#display-elements-outside-bounds" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">display.spatial.elements_outside_bounds</code>
-<strong>Severity</strong>: Warning</p>
-<p>Checks if any display elements extend beyond the viewport boundaries of their display.</p>
-<p><strong>What it checks:</strong>
-- Screen elements fit within their display’s viewport
-- Position + dimensions don’t exceed display bounds
-- Elements are properly positioned</p>
-<p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"small_display"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"display"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"resolution"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">800</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w"> </span><span class="p">}</span>
-<span class="w">      </span><span class="p">}</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oversized_button"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"screen_element"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"display_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"small_display"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">700</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="w"> </span><span class="p">}</span>
-<span class="w">      </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>How to fix:</strong>
-- Resize elements to fit within display bounds
-- Adjust element positions
-- Increase display resolution if needed</p>
-<h2 class="docs-heading" id="resource-flow">Resource Flow<a class="headerlink" href="#resource-flow" title="Link to this section">¶</a></h2>
-<p>These rules validate resource consumption, production, and recipe compliance.</p>
-<h3 class="docs-heading" id="negative-stock-check">Negative Stock Check<a class="headerlink" href="#negative-stock-check" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">resource.flow.negative_stock</code>
-<strong>Severity</strong>: Error</p>
-<p>Verifies that no consumable resource stock level drops below zero during simulation execution.</p>
-<p><strong>What it checks:</strong>
-- Resource quantities remain non-negative throughout
-- Consumption tasks don’t exceed available stock
-- Production and consumption are balanced</p>
-<p><strong>Example failure scenario:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"flour"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"big_batch"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"consumes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"flour"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>How to fix:</strong>
-- Increase initial resource quantities
-- Reduce consumption amounts
-- Add production tasks to replenish resources
-- Reorder tasks to produce before consuming</p>
-<h3 class="docs-heading" id="recipe-ingredients-check">Recipe Ingredients Check<a class="headerlink" href="#recipe-ingredients-check" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">resource.flow.recipe_violation</code>
-<strong>Severity</strong>: Warning</p>
-<p>Checks if tasks producing a composite resource consume all the ingredients defined in the simulation’s ‘production_recipes’ section.</p>
-<p><strong>What it checks:</strong>
-- Production tasks follow defined recipes
-- All required ingredients are consumed
-- Recipe ratios are maintained</p>
-<p><strong>Example recipe definition:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">"production_recipes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"bread"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"ingredients"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">"flour"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">"water"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">"yeast"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="p">}</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"make_bread"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"produces"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"bread"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">"consumes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"flour"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">}</span>
-<span class="w">      </span><span class="p">}</span>
-<span class="w">    </span><span class="p">]</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>Issue</strong>: Missing water and yeast consumption</p>
-<p><strong>How to fix:</strong>
-- Include all recipe ingredients in task consumption
-- Update recipe definitions to match actual processes
-- Add separate tasks for ingredient preparation</p>
-<h3 class="docs-heading" id="unused-resource">Unused Resource<a class="headerlink" href="#unused-resource" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">resource.definition.unused</code>
-<strong>Severity</strong>: Info</p>
-<p>Flags consumable resources that are defined in the simulation but are never consumed or produced by any task.</p>
-<p><strong>What it checks:</strong>
-- All defined resources are used in at least one task
-- Resources appear in consumes, produces, or interactions
-- No orphaned resource definitions exist</p>
-<p><strong>Example warning:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"salt"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"flour"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bake_bread"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"consumes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"flour"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>Issue</strong>: Salt is defined but never used</p>
-<p><strong>How to fix:</strong>
-- Remove unused resource definitions
-- Add tasks that use the resource
-- Include in existing task consumption</p>
-<h2 class="docs-heading" id="scheduling">Scheduling<a class="headerlink" href="#scheduling" title="Link to this section">¶</a></h2>
-<p>These rules ensure tasks are properly scheduled and don’t conflict with each other.</p>
-<h3 class="docs-heading" id="actor-task-overlap">Actor Task Overlap<a class="headerlink" href="#actor-task-overlap" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">actor.scheduling.overlap</code>
-<strong>Severity</strong>: Error</p>
-<p>Checks if any single actor is assigned to multiple tasks that overlap in time.</p>
-<p><strong>What it checks:</strong>
-- Actors aren’t double-booked
-- Task time ranges don’t overlap for the same actor
-- Schedule conflicts are identified</p>
-<p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"task_1"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"task_2"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:30"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">45</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>Issue</strong>: Worker has overlapping tasks from 09:30-10:00</p>
-<p><strong>How to fix:</strong>
-- Adjust task start times to prevent overlap
-- Assign tasks to different actors
-- Reduce task durations
-- Add task dependencies to sequence properly</p>
-<h3 class="docs-heading" id="task-dependency-timing">Task Dependency Timing<a class="headerlink" href="#task-dependency-timing" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">temporal.dependency.violation</code>
-<strong>Severity</strong>: Warning</p>
-<p>Ensures that no task starts before its declared dependencies have finished.</p>
-<p><strong>What it checks:</strong>
-- Dependent tasks start after prerequisites complete
-- Dependency timing is logically consistent
-- No temporal paradoxes exist</p>
-<p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_ingredients"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mix_dough"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"depends_on"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"prep_ingredients"</span><span class="p">],</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:15"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>Issue</strong>: mix_dough starts before prep_ingredients finishes</p>
-<p><strong>How to fix:</strong>
-- Adjust start times to respect dependencies
-- Update dependency relationships
-- Modify task durations appropriately</p>
-<h3 class="docs-heading" id="task-proximity-check">Task Proximity Check<a class="headerlink" href="#task-proximity-check" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">task.spatial.unmet_proximity_requirement</code>
-<strong>Severity</strong>: Error</p>
-<p>Checks if the actor and all required equipment/resources for a task are in the same location as the task itself. This validation is <strong>timeline-aware</strong>, meaning it simulates actor movement throughout the timeline to track location changes.</p>
-<p><strong>What it checks:</strong>
-- Task location matches actor location at task start time
-- Required equipment is in the same location
-- Resources are accessible from task location
-- Spatial consistency is maintained
-- Actor location changes via movement tasks or property_changes are tracked</p>
-<p><strong>Timeline Simulation:</strong>
-The validator simulates the entire timeline to track where actors are at any given time:
-1. Starts with each actor’s initial location from their properties
-2. Updates actor locations when movement tasks complete
-3. Updates actor locations when property_changes modify location
-4. Validates each task against the simulated location at its start time</p>
-<p><strong>Example failure (without movement):</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_area"</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equipment"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven_area"</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bake_bread"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven_area"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven"</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ready"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baking"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="p">]</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>Issue</strong>: Baker is in prep_area but task is in oven_area</p>
-<p><strong>Example success (with movement task):</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_area"</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equipment"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven_area"</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"walk_to_oven"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"movement"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"08:55"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"from_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prep_area"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"to_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven_area"</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bake_bread"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven_area"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oven"</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ready"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baking"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="p">]</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>Success</strong>: Movement task completes at 08:57, so baker is in oven_area when bake_bread starts at 09:00</p>
-<p><strong>Example success (with property_changes):</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"move_to_storage"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10:00"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"loading_dock"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span><span class="w"> </span><span class="p">}</span>
-<span class="w">          </span><span class="p">}</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="p">]</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"retrieve_parts"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse_worker"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10:05"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"storage_area"</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>Success</strong>: Property change completes at 10:03, so worker is in storage_area when retrieve_parts starts at 10:05</p>
-<p><strong>Movement Methods:</strong></p>
-<p>The validator recognizes two methods for actor movement:</p>
-<ol class="docs-list docs-list-ordered">
-<li>
-<p><strong>Movement Task Type</strong> (<code class="docs-inline-code">type: "movement"</code>)
-   - Dedicated task for explicit movement
-   - Must have <code class="docs-inline-code">from_location</code> and <code class="docs-inline-code">to_location</code> fields
-   - Actor location updates when movement task completes
-   - Best for showing travel as a distinct activity</p>
-</li>
-<li>
-<p><strong>Property Changes</strong> (<code class="docs-inline-code">property_changes.location</code>)
-   - Location change within a task’s interactions
-   - Uses <code class="docs-inline-code">from</code>/<code class="docs-inline-code">to</code> structure
-   - Actor location updates when task completes
-   - Best for incidental movement within a larger action</p>
-</li>
-</ol>
-<p><strong>Common Timing Issues:</strong></p>
-<p><strong>Problem</strong>: Task starts before movement completes</p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"walk_to_kitchen"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"movement"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"from_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dining_room"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"to_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kitchen"</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cook_meal"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:03"</span><span class="p">,</span><span class="w">  </span><span class="c1">// TOO EARLY! Movement completes at 09:05</span>
-<span class="w">      </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kitchen"</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>Solution</strong>: Ensure movement completes before next task</p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"walk_to_kitchen"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"movement"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"from_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dining_room"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"to_location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kitchen"</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cook_meal"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:05"</span><span class="p">,</span><span class="w">  </span><span class="c1">// Correct! Movement completes at 09:05</span>
-<span class="w">      </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kitchen"</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>How to fix location mismatches:</strong>
-- Add movement tasks to transport actor between locations
-- Use property_changes to update actor location within a task
-- Ensure movement tasks complete before dependent tasks start
-- Verify task timing: movement_end_time ≤ next_task_start_time
-- Check that from_location matches actor’s current simulated location
-- Update object initial locations in properties</p>
-<h3 class="docs-heading" id="missing-buffer-time">Missing Buffer Time<a class="headerlink" href="#missing-buffer-time" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">scheduling.optimization.missing_buffer</code>
-<strong>Severity</strong>: Info</p>
-<p>Suggests adding a small buffer between consecutive tasks for the same actor to improve realism.</p>
-<p><strong>What it checks:</strong>
-- Time gaps between consecutive actor tasks
-- Minimum buffer time (default: 5 minutes)
-- Realistic scheduling practices</p>
-<p><strong>Example suggestion:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"task_1"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:00"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"task_2"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"worker"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09:30"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>Suggestion</strong>: Add 5-minute buffer between tasks</p>
-<p><strong>How to improve:</strong>
-- Add buffer time between consecutive tasks
-- Account for setup/cleanup time
-- Include travel time between locations
-- Make scheduling more realistic</p>
-<h2 class="docs-heading" id="equipment-state-logic">Equipment State Logic<a class="headerlink" href="#equipment-state-logic" title="Link to this section">¶</a></h2>
-<h3 class="docs-heading" id="equipment-state-logic_1">Equipment State Logic<a class="headerlink" href="#equipment-state-logic_1" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">equipment.state.logic</code>
-<strong>Severity</strong>: Error</p>
-<p>Checks for logical consistency in equipment usage, such as using a ‘dirty’ mixer or equipment that is already in use.</p>
-<p><strong>What it checks:</strong>
-- Equipment state transitions are logical
-- Equipment isn’t used in impossible states
-- State changes follow realistic patterns
-- No conflicting equipment usage</p>
-<p><strong>Example failure:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixer"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"equipment"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dirty"</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mix_ingredients"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"interactions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">"object_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixer"</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">"property_changes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"clean"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"in_use"</span><span class="w"> </span><span class="p">}</span>
-<span class="w">          </span><span class="p">}</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="p">]</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>Issue</strong>: Trying to use mixer as “clean” when it’s actually “dirty”</p>
-<p><strong>How to fix:</strong>
-- Add cleaning tasks before use
-- Update initial equipment states
-- Correct state transition logic
-- Add maintenance workflows</p>
-<h2 class="docs-heading" id="economic">Economic<a class="headerlink" href="#economic" title="Link to this section">¶</a></h2>
-<p>Economic validation ensures your simulation is financially realistic and profitable.</p>
-<h3 class="docs-heading" id="negative-profitability">Negative Profitability<a class="headerlink" href="#negative-profitability" title="Link to this section">¶</a></h3>
-<p><strong>Rule ID</strong>: <code class="docs-inline-code">economic.profitability.negative_margin</code>
-<strong>Severity</strong>: Warning</p>
-<p>Calculates total revenue from final products and subtracts total costs of labor and consumed resources. Flags if the result is negative.</p>
-<p><strong>What it checks:</strong>
-- Total revenue from products with <code class="docs-inline-code">revenue_per_unit</code>
-- Labor costs from actor <code class="docs-inline-code">cost_per_hour</code>
-- Resource costs from <code class="docs-inline-code">cost_per_unit</code>
-- Overall profitability calculation</p>
-<p><strong>Calculation:</strong>
-- <strong>Revenue</strong>: Σ(product_quantity × revenue_per_unit) for final products
-- <strong>Labor Cost</strong>: Σ(task_duration_hours × actor_cost_per_hour)
-- <strong>Resource Cost</strong>: Σ(consumed_quantity × resource_cost_per_unit)
-- <strong>Profit</strong>: Revenue - (Labor Cost + Resource Cost)</p>
-<p><strong>Example profitable setup:</strong></p>
-<div class="codehilite"><pre><span></span><code class="language-text"><span class="p">{</span>
-<span class="w">  </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"cost_per_hour"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"flour"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resource"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"cost_per_unit"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.50</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bread"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"product"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"revenue_per_unit"</span><span class="p">:</span><span class="w"> </span><span class="mf">8.00</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bake_bread"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"baker"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"consumes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"flour"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">"produces"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"bread"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>Analysis:</strong>
-- Revenue: 4 × $8.00 = $32.00
-- Labor: 1 hour × $20.00 = $20.00
-- Materials: 2 × $0.50 = $1.00
-- <strong>Profit: $32.00 - $21.00 = $11.00</strong> ✓</p>
-<p><strong>How to improve profitability:</strong>
-- Increase product prices (<code class="docs-inline-code">revenue_per_unit</code>)
-- Reduce labor costs or improve efficiency
-- Find cheaper material suppliers
-- Optimize production processes
-- Increase production volume</p>
-<h2 class="docs-heading" id="validation-best-practices">Validation Best Practices<a class="headerlink" href="#validation-best-practices" title="Link to this section">¶</a></h2>
-<h3 class="docs-heading" id="regular-validation">Regular Validation<a class="headerlink" href="#regular-validation" title="Link to this section">¶</a></h3>
-<ul class="docs-list">
-<li>Run validation frequently during simulation development</li>
-<li>Address errors before warnings</li>
-<li>Use info-level suggestions to improve realism</li>
-</ul>
-<h3 class="docs-heading" id="error-resolution-priority">Error Resolution Priority<a class="headerlink" href="#error-resolution-priority" title="Link to this section">¶</a></h3>
-<ol class="docs-list docs-list-ordered">
-<li><strong>Structural Integrity Errors</strong>: Fix data format issues first</li>
-<li><strong>Resource Flow Errors</strong>: Ensure resource balance</li>
-<li><strong>Scheduling Errors</strong>: Resolve timing conflicts</li>
-<li><strong>Equipment Logic Errors</strong>: Fix state inconsistencies</li>
-<li><strong>Warnings and Info</strong>: Improve optimization and realism</li>
-</ol>
-<h3 class="docs-heading" id="common-validation-workflows">Common Validation Workflows<a class="headerlink" href="#common-validation-workflows" title="Link to this section">¶</a></h3>
-<h4 class="docs-heading" id="starting-a-new-simulation">Starting a New Simulation<a class="headerlink" href="#starting-a-new-simulation" title="Link to this section">¶</a></h4>
-<ol class="docs-list docs-list-ordered">
-<li>Create basic structure and validate schema</li>
-<li>Add objects and check for invalid references</li>
-<li>Add tasks and resolve scheduling conflicts</li>
-<li>Balance resource flow</li>
-<li>Optimize for economic viability</li>
-</ol>
-<h4 class="docs-heading" id="debugging-validation-errors">Debugging Validation Errors<a class="headerlink" href="#debugging-validation-errors" title="Link to this section">¶</a></h4>
-<ol class="docs-list docs-list-ordered">
-<li>Read the specific error message carefully</li>
-<li>Locate the problematic object or task</li>
-<li>Check for typos in IDs and references</li>
-<li>Verify data types and formats</li>
-<li>Test incremental changes</li>
-</ol>
-<h4 class="docs-heading" id="performance-optimization">Performance Optimization<a class="headerlink" href="#performance-optimization" title="Link to this section">¶</a></h4>
-<ol class="docs-list docs-list-ordered">
-<li>Address all error-level issues first</li>
-<li>Review warning-level suggestions</li>
-<li>Implement info-level optimizations</li>
-<li>Test economic viability</li>
-<li>Validate realistic scheduling</li>
-</ol>
-<p>The validation system is designed to guide you toward creating accurate, realistic, and business-ready process simulations. Use these rules as a checklist to ensure your simulations meet professional standards.</p>
+                        <p>This reference describes current WorkSpec 2.2 validation. WorkSpec 2.0 and 2.1
+inline-interaction checks remain supported for legacy documents, but are not
+applied as project-wide conclusions to a 2.2 Starting State.</p>
+<p>Every structured problem includes <code class="docs-inline-code">metric_id</code>, <code class="docs-inline-code">severity</code>, <code class="docs-inline-code">instance</code>, <code class="docs-inline-code">scope</code>,
+and <code class="docs-inline-code">provenance</code>. Scope is one of <code class="docs-inline-code">document</code>, <code class="docs-inline-code">source</code>, <code class="docs-inline-code">runtime</code>, or
+<code class="docs-inline-code">constraint</code>.</p>
+<h2 class="docs-heading" id="document-rules">Document rules<a class="headerlink" href="#document-rules" title="Link to this section">¶</a></h2>
+<p>Document validation reads only <code class="docs-inline-code">start.workspec.json</code>.</p>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Rule family</th>
+<th>What it establishes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">schema.integrity.*</code></td>
+<td>Canonical root, supported version, required sections, configuration, and Starting State boundaries.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">calendar.integrity.*</code></td>
+<td>Calendar and day-type declarations are internally valid.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">object.integrity.*</code></td>
+<td>Initial object IDs, types, type definitions, and required properties are valid.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">object.reference.invalid_location</code></td>
+<td>An initial object or planned task names a declared initial location.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">state_visuals.integrity.*</code></td>
+<td>State Library declarations are well formed.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">state_visuals.reference.*</code></td>
+<td>Initial object state and appearance references are declared.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.integrity.*</code></td>
+<td>Planned task IDs, starts, durations, dependencies, and other declarative syntax are valid.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">task.reference.invalid_dependency</code></td>
+<td>Declared dependency IDs exist.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">temporal.scheduling.circular_dependency</code></td>
+<td>The authored dependency graph is acyclic.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">temporal.scheduling.dependency_violation</code></td>
+<td>An explicit authored start contradicts the declared dependency timing bound.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">starting_state.behaviour.disallowed</code></td>
+<td>A 2.2 Starting State contains executable effects that belong in Changes.</td>
+</tr>
+</tbody>
+</table></div>
+<p>For 2.2, a literal <code class="docs-inline-code">actor_id</code> that names an initial object is checked for
+performer capability, including inherited traits with <code class="docs-inline-code">can_be_actor_id: true</code>.
+Missing performer expressions are document errors. General performer liveness is
+a runtime fact because Changes or Generator may create the performer before use.</p>
+<h2 class="docs-heading" id="source-rules">Source rules<a class="headerlink" href="#source-rules" title="Link to this section">¶</a></h2>
+<p>Project validation reports lightweight source facts such as:</p>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Metric</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">changes.task.unknown</code></td>
+<td>A statically known <code class="docs-inline-code">WorkSpec.task("...")</code> ID is absent from Starting State.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">changes.task.dynamic</code></td>
+<td>A dynamic Changes task reference is deferred to runtime.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">changes.compile.failed</code></td>
+<td>Changes source could not compile.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">generator.compile.failed</code></td>
+<td>Generator source could not compile.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Source analysis is deliberately limited. It does not pretend to prove behavior
+for arbitrary JavaScript.</p>
+<h2 class="docs-heading" id="runtime-and-history-rules">Runtime and history rules<a class="headerlink" href="#runtime-and-history-rules" title="Link to this section">¶</a></h2>
+<p>Runtime validation executes the project and reports actual or deliberately
+bounded behavior. Important families include:</p>
+<div class="table-container"><table class="docs-table">
+<thead>
+<tr>
+<th>Rule family</th>
+<th>What it establishes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="docs-inline-code">task.*</code></td>
+<td>Runtime actor selection, conditions, lifecycle, and continuation are valid.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">timing.*</code>, <code class="docs-inline-code">temporal.scheduling.*</code>, <code class="docs-inline-code">dependency.*</code></td>
+<td>Resolved timing and executed scheduling constraints hold.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">reservation.*</code></td>
+<td>Reservations acquired by tasks that actually execute satisfy target, exclusivity, and capacity rules.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">interaction.*</code>, <code class="docs-inline-code">object.lifecycle.*</code></td>
+<td>Executed effects target live objects and compatible properties.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">object.reference.invalid_location</code></td>
+<td>An executed move targets a location that exists at that point in the run.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">state_visuals.reference.invalid_runtime_state</code></td>
+<td>An executed state write uses a state declared by the object’s State Library.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">generator.*</code></td>
+<td>Generator compilation, execution, or precedence produced a problem.</td>
+</tr>
+</tbody>
+</table></div>
+<p><code class="docs-inline-code">object.optimization.unused_resource</code> has special bounded semantics in 2.2. It is
+not emitted by document validation. Project validation emits it only when the
+caller supplies a finite horizon, and the problem context includes
+<code class="docs-inline-code">horizon_minutes</code>. A resource read by a task condition or Generator <code class="docs-inline-code">get()</code>,
+written, reserved, created, or removed during the run is considered used.</p>
+<p>The built-in 2.2 validator does not emit <code class="docs-inline-code">economic.profitability.negative_margin</code>,
+<code class="docs-inline-code">resource.flow.negative_stock</code>, or <code class="docs-inline-code">recipe.compliance.missing_inputs</code> as generic
+project policy. Their meaning depends on domain semantics and belongs in a
+Constraint unless a future runtime metric defines explicit semantics and a
+finite horizon.</p>
+<h2 class="docs-heading" id="constraints">Constraints<a class="headerlink" href="#constraints" title="Link to this section">¶</a></h2>
+<p>Constraint IDs are user-authored. A violation is converted to the same structured
+problem model with <code class="docs-inline-code">scope: "constraint"</code> while retaining its time, objects,
+property, observed value, and expected value.</p>
+<h2 class="docs-heading" id="legacy-workspec-2021-rules">Legacy WorkSpec 2.0/2.1 rules<a class="headerlink" href="#legacy-workspec-2021-rules" title="Link to this section">¶</a></h2>
+<p>The canonical document validator preserves inline-interaction validation for
+2.0/2.1, including interaction operators/actions, interaction targets and state,
+inline lifecycle, recipe compliance, negative stock, profitability, actor
+overlap, and unused resources. These rules inspect the behavior embedded in the
+legacy document and are version-gated off for 2.2.</p>
+<p>The older flat-model <code class="docs-inline-code">SimulationValidator</code> and <code class="docs-inline-code">metrics-catalog.json</code> use metric
+IDs such as <code class="docs-inline-code">resource.definition.unused</code> and <code class="docs-inline-code">actor.scheduling.overlap</code>. Those IDs
+are legacy catalog IDs, not current canonical WorkSpec 2.2 IDs.</p>
                     </div>
                     
                     <footer class="docs-footer">

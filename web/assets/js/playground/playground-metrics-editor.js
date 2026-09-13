@@ -857,17 +857,27 @@ function runCustomValidation() {
 
             const mergedCatalog = getMergedMetricsCatalog();
             const customValidator = getCustomValidatorCode();
+            const isWorkSpec22 = simulationData.simulation?.schema_version === '2.2';
+            const activeCatalog = isWorkSpec22
+                ? mergedCatalog.filter((metric) => metric.source === 'custom')
+                : mergedCatalog;
 
-            if (mergedCatalog && mergedCatalog.length > 0) {
+            if (activeCatalog && activeCatalog.length > 0) {
                 const startTime = performance.now();
                 const validator = new SimulationValidator(simulationData);
-                const results = await validator.runChecksAsync(mergedCatalog, customValidator);
+                const results = await validator.runChecksAsync(activeCatalog, customValidator);
                 const duration = Math.round(performance.now() - startTime);
 
                 displayCompactValidationResults(results);
 
                 // Show success message
                 console.log(`✅ Validation completed in ${duration}ms - ${results.length} checks`);
+            } else if (isWorkSpec22) {
+                displayCompactValidationResults([{
+                    metricId: 'workspec.validation.project_validator_required',
+                    status: 'info',
+                    message: 'Legacy built-in Metrics Catalog checks are not authoritative for WorkSpec 2.2. Use the Problems panel for document and project validation, or add an explicit custom metric here.'
+                }]);
             } else {
                 displayValidationError('No metrics catalog available');
             }

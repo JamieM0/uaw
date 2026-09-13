@@ -7,6 +7,11 @@ const path = require('path');
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 
 const pairs = [
+    ...['workspec-changes.d.ts', 'workspec-constraints.d.ts', 'workspec-generator.d.ts'].map((filename) => ({
+        a: path.join(repoRoot, 'packages', 'workspec', filename),
+        b: path.join(repoRoot, 'web', 'packages', 'workspec', filename),
+        label: filename
+    })),
     {
         a: path.join(repoRoot, 'packages', 'workspec', 'workspec-runtime.js'),
         b: path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-runtime.js'),
@@ -16,6 +21,11 @@ const pairs = [
         a: path.join(repoRoot, 'packages', 'workspec', 'workspec-validator.js'),
         b: path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-validator.js'),
         label: 'workspec-validator.js'
+    },
+    {
+        a: path.join(repoRoot, 'packages', 'workspec', 'workspec-project-validator.js'),
+        b: path.join(repoRoot, 'web', 'packages', 'workspec', 'workspec-project-validator.js'),
+        label: 'workspec-project-validator.js'
     },
     {
         a: path.join(repoRoot, 'packages', 'workspec', 'workspec-migrate-v1-to-v2.js'),

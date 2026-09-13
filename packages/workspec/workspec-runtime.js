@@ -1,4 +1,4 @@
-// WorkSpec 2.2 authoritative evaluator/runtime.
+// WorkSpec 2 authoritative evaluator/runtime.
 // Dependency-free UMD module shared by Node, the CLI, Studio, playback and State Visuals.
 (function (root, factory) {
     const api = factory();
@@ -13,8 +13,9 @@
     const MEMBER_QUANTIFIERS = new Set(['all_members', 'any_members', 'no_members']);
     const OBJECT_FIELDS = new Set(['id', 'type', 'name', 'emoji', 'location', 'state_library', 'appearance']);
     const TASK_FIELDS = new Set(['id', 'actor_id', 'start', 'end', 'duration', 'location', 'description', 'priority', 'tags', 'status', 'actual_end', 'progress']);
-    const TERMINAL_TASK_STATES = new Set(['completed', 'skipped', 'blocked', 'interrupted', 'cancelled']);
+    const TERMINAL_TASK_STATES = new Set(['completed', 'failed', 'skipped', 'blocked', 'interrupted', 'cancelled']);
     const LOCATION_FIELDS = new Set(['id', 'name', 'parent_id', 'shape', 'coordinates', 'position', 'emoji']);
+    const BUILTIN_OBJECT_TYPES = new Set(['actor', 'equipment', 'resource', 'product', 'service', 'display', 'screen_element', 'digital_object']);
     const COMPACT_ENTITY_ID = /^(?=.{1,250}$)[a-z][a-z0-9_]*(?::[a-z][a-z0-9_]{0,249})?$/;
 
     const own = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
@@ -29,6 +30,18 @@
     const simOf = (documentValue) => plain(documentValue && documentValue.simulation) ? documentValue.simulation : documentValue;
 
     function problem(metricId, detail, instance, context, severity, suggestions) {
+        const scope = metricId.startsWith('constraint.')
+            ? 'constraint'
+            : (metricId.startsWith('changes.') || metricId === 'generator.compile.failed')
+                ? 'source'
+                : 'runtime';
+        const source = scope === 'constraint'
+            ? 'constraints.workspec.js'
+            : metricId.startsWith('changes.')
+                ? 'changes.workspec.js'
+                : metricId === 'generator.compile.failed'
+                    ? 'generator.workspec.js'
+                    : 'resolved-history';
         return {
             type: `${NS}/errors/${metricId}`,
             title: metricId.split('.').map((part) => part.replace(/_/g, ' ')).join(' '),
@@ -36,6 +49,8 @@
             detail,
             instance: instance || '/',
             metric_id: metricId,
+            scope,
+            provenance: { layer: scope, source },
             context: context || {},
             suggestions: Array.isArray(suggestions) ? suggestions : []
         };
@@ -288,7 +303,10 @@
             taskRuntime: new Map([...index.tasks.keys()].map((id) => [id, { actual_end: undefined, progress: undefined }])),
             active: new Map(),
             reservations: [],
-            temporary: new Map()
+            temporary: new Map(),
+            usage: new Set(),
+            stateLibraries: clone(index.sim.state_libraries || {}),
+            typeDefinitions: clone(index.sim.type_definitions || {})
         };
     }
 
@@ -298,8 +316,55 @@
             locations: new Map([...state.locations].map(([id, value]) => [id, clone(value)])),
             kinds: new Map(state.kinds), statuses: new Map(state.statuses), active: new Map(state.active),
             taskRuntime: new Map([...state.taskRuntime].map(([id, value]) => [id, clone(value)])),
-            reservations: clone(state.reservations), temporary: new Map([...state.temporary].map(([id, value]) => [id, clone(value)]))
+            reservations: clone(state.reservations),
+            temporary: new Map([...state.temporary].map(([id, value]) => [id, clone(value)])),
+            usage: new Set(state.usage || []),
+            stateLibraries: clone(state.stateLibraries || {}),
+            typeDefinitions: clone(state.typeDefinitions || {})
         };
+    }
+
+    function runtimeBaseType(type, definitions, seen = new Set()) {
+        if (BUILTIN_OBJECT_TYPES.has(type)) return type;
+        if (typeof type !== 'string' || !type || seen.has(type)) return '';
+        seen.add(type);
+        const definition = definitions?.[type];
+        return plain(definition) ? runtimeBaseType(definition.extends, definitions, seen) : '';
+    }
+
+    function validateRuntimeCreatedObject(created, state, instance) {
+        const problems = [];
+        if (!plain(created)) return [problem('object.integrity.invalid_object', 'Runtime create requires an object value.', instance)];
+        const missing = ['id', 'type', 'name'].filter((field) => typeof created[field] !== 'string' || !created[field].trim());
+        if (missing.length) problems.push(problem('object.integrity.missing_required_fields', `Runtime-created object is missing required field(s): ${missing.join(', ')}.`, instance, { missing }));
+        if (typeof created.id !== 'string' || !COMPACT_ENTITY_ID.test(created.id)) {
+            problems.push(problem('object.integrity.invalid_object_id', `Runtime-created object id '${String(created.id)}' is invalid.`, `${instance}/object/id`, { object_id: created.id }));
+        } else if (created.id.includes(':') && created.id.split(':')[0] !== created.type) {
+            problems.push(problem('object.integrity.namespace_mismatch', `Runtime-created object id '${created.id}' does not match type '${created.type}'.`, `${instance}/object/id`, { object_id: created.id, type: created.type }));
+        }
+        const baseType = runtimeBaseType(created.type, state.typeDefinitions);
+        if (!baseType) problems.push(problem('object.integrity.missing_type_definition', `Runtime-created object '${String(created.id)}' uses unknown type '${String(created.type)}'.`, `${instance}/object/type`, { object_id: created.id, type: created.type }));
+        const properties = plain(created.properties) ? created.properties : {};
+        if (['resource', 'product', 'digital_object'].includes(baseType)
+            && (typeof properties.quantity !== 'number' || !Number.isFinite(properties.quantity) || properties.quantity < 0)) {
+            problems.push(problem('object.integrity.missing_required_properties', `Runtime-created quantifiable object '${String(created.id)}' requires numeric properties.quantity >= 0.`, `${instance}/object/properties/quantity`, { object_id: created.id, type: created.type, quantity: properties.quantity }));
+        }
+        if (['actor', 'equipment', 'service', 'display', 'screen_element', 'digital_object'].includes(baseType)
+            && (typeof properties.state !== 'string' || !properties.state.trim())) {
+            problems.push(problem('object.integrity.missing_required_properties', `Runtime-created stateful object '${String(created.id)}' requires string properties.state.`, `${instance}/object/properties/state`, { object_id: created.id, type: created.type }));
+        }
+        if (created.location !== undefined && (typeof created.location !== 'string' || !state.locations.has(created.location))) {
+            problems.push(problem('object.reference.invalid_location', `Runtime create would place '${String(created.id)}' in undeclared location '${String(created.location)}'.`, instance, { object_id: created.id, location: created.location }));
+        }
+        if (created.state_library !== undefined) {
+            if (typeof created.state_library !== 'string' || !plain(state.stateLibraries?.[created.state_library])) {
+                problems.push(problem('state_visuals.reference.unknown_library', `Runtime-created object '${String(created.id)}' references unknown State Library '${String(created.state_library)}'.`, `${instance}/object/state_library`, { object_id: created.id, state_library: created.state_library }));
+            } else if (!Array.isArray(state.stateLibraries[created.state_library].states)
+                || !state.stateLibraries[created.state_library].states.includes(properties.state)) {
+                problems.push(problem('state_visuals.reference.invalid_runtime_state', `Runtime create would assign '${String(created.id)}' state '${String(properties.state)}', which is not declared by State Library '${created.state_library}'.`, instance, { object_id: created.id, state_library: created.state_library, state: properties.state }));
+            }
+        }
+        return problems;
     }
 
     function entityFor(reference, context) {
@@ -320,9 +385,13 @@
         }
 
         if (!kind) {
-            const declared = context.index.ids.get(id);
-            if (!declared) return failure('reference.entity.unknown', `Unknown entity '${id}'.`, context.instance, { entity_id: id }, [`Declare '${id}' or use a reference such as "${compactReference(id, reference.member)}" with an existing entity ID.`]);
-            kind = declared.kind;
+            if (context.state.objects.has(id)) kind = 'object';
+            else if (context.state.locations.has(id)) kind = 'location';
+            else {
+                const declared = context.index.ids.get(id);
+                if (!declared) return failure('reference.entity.unknown', `Unknown entity '${id}'.`, context.instance, { entity_id: id }, [`Declare '${id}' or use a reference such as "${compactReference(id, reference.member)}" with an existing entity ID.`]);
+                kind = declared.kind;
+            }
         }
 
         let entity = null; let allowlist = null;
@@ -369,6 +438,7 @@
         if (reference.clock === 'now') return result(context.now, 'instant');
         const selected = entityFor(reference, context);
         if (!selected.ok) return selected;
+        if ((selected.kind === 'object' || selected.kind === 'location') && context.state.usage) context.state.usage.add(selected.id);
         const member = reference.member;
         const useBuiltIn = reference.mode === 'field' || (reference.mode === 'auto' && selected.allowlist.has(member));
         if (useBuiltIn) {
@@ -631,53 +701,6 @@
         return problems;
     }
 
-    function boundedClaimProblems(index) {
-        const problems = [];
-        const resolution = resolveTimingGraph(index.sim, { index });
-        const initial = makeInitialState(index);
-        const entries = [...index.tasks.entries()].filter(([, task]) => !task.__runtime_instance);
-        const claimsFor = (task, taskIndex, timing) => {
-            const claims = [];
-            const actor = normalizeValueExpression(task.actor_id);
-            if (actor.ok && actor.kind === 'literal' && typeof actor.value === 'string') claims.push({ resource: actor.value, mode: 'exclusive', amount: 1, kind: 'actor', instance: `${index.tasksBase}/${taskIndex}/actor_id` });
-            (task.reservations || []).forEach((reservation, reservationIndex) => {
-                const context = expressionContext(index, initial, resolution.timings, { ...task, __selected_actor_id: typeof task.actor_id === 'string' ? task.actor_id : undefined }, timing.start, [], `${index.tasksBase}/${taskIndex}/reservations/${reservationIndex}`);
-                const resource = evaluateValue(reservation.resource, context);
-                const amount = reservation.mode === 'capacity' ? evaluateValue(reservation.amount, context) : result(1, 'number');
-                if (resource.ok && resource.kind === 'string' && amount.ok && amount.kind === 'number') claims.push({ resource: resource.value, mode: reservation.mode, amount: amount.value, kind: 'reservation', instance: context.instance });
-            });
-            return claims;
-        };
-        for (let leftIndex = 0; leftIndex < entries.length; leftIndex += 1) {
-            const [leftId, leftTask] = entries[leftIndex]; const leftTiming = resolution.timings.get(leftId);
-            if (!leftTiming?.resolved) continue;
-            for (let rightIndex = leftIndex + 1; rightIndex < entries.length; rightIndex += 1) {
-                const [rightId, rightTask] = entries[rightIndex]; const rightTiming = resolution.timings.get(rightId);
-                if (!rightTiming?.resolved || !(leftTiming.start < rightTiming.end && rightTiming.start < leftTiming.end)) continue;
-                if (guardsConflict(leftTask.when, rightTask.when)) continue;
-                const leftActor = normalizeValueExpression(leftTask.actor_id); const rightActor = normalizeValueExpression(rightTask.actor_id);
-                const leftActorKnown = leftActor.ok && leftActor.kind === 'literal' && typeof leftActor.value === 'string';
-                const rightActorKnown = rightActor.ok && rightActor.kind === 'literal' && typeof rightActor.value === 'string';
-                if (!leftActorKnown || !rightActorKnown) {
-                    problems.push(problem('temporal.scheduling.actor_overlap_possible', `Potentially co-timed tasks '${leftId}' and '${rightId}' use runtime actor bindings whose distinctness cannot be proven statically.`, `${index.tasksBase}/${rightIndex}/actor_id`, { task_a: leftId, task_b: rightId }, 'warning', ['Use mutually exclusive when guards or candidate collections that make the assignments observably distinct.']));
-                }
-                const claimsLeft = claimsFor(leftTask, leftIndex, leftTiming); const claimsRight = claimsFor(rightTask, rightIndex, rightTiming);
-                claimsLeft.forEach((left) => claimsRight.forEach((right) => {
-                    if (left.resource !== right.resource) return;
-                    const entity = initial.objects.get(left.resource) || initial.locations.get(left.resource);
-                    const capacity = entity?.properties?.capacity;
-                    const conflicts = left.mode === 'exclusive' || right.mode === 'exclusive' || (left.mode === 'capacity' && right.mode === 'capacity' && typeof capacity === 'number' && left.amount + right.amount > capacity);
-                    if (!conflicts) return;
-                    const definite = (leftTask.when === undefined || leftTask.when === true) && (rightTask.when === undefined || rightTask.when === true);
-                    const actorConflict = left.kind === 'actor' && right.kind === 'actor';
-                    const metric = actorConflict ? (definite ? 'temporal.scheduling.actor_overlap' : 'temporal.scheduling.actor_overlap_possible') : (definite ? 'reservation.conflict.authored' : 'reservation.conflict.possible');
-                    problems.push(problem(metric, `${definite ? 'Co-timed' : 'Potentially co-timed'} tasks '${leftId}' and '${rightId}' claim '${left.resource}' and are not provably mutually exclusive.`, right.instance, { resource: left.resource, task_a: leftId, task_b: rightId }, definite ? 'error' : 'warning', definite ? [] : ['Use simple mutually exclusive when guards when these tasks are authored alternatives.']));
-                }));
-            }
-        }
-        return problems;
-    }
-
     function resolveTimingGraph(documentValue, options) {
         const index = options && options.index ? options.index : buildIndex(documentValue);
         const statuses = options && options.statuses instanceof Map ? options.statuses : null;
@@ -751,7 +774,7 @@
                 if (!timing || timing.duration === null) return;
                 const deps = dependencyBounds(task); const lower = [...deps.values]; let unresolvedLower = false;
                 if (Number.isFinite(task.__runtime_start)) lower.push({ value: task.__runtime_start, kind: 'appearance', correlation_id: task.__correlation_id });
-                (task.timing || []).forEach((constraint, constraintIndex) => {
+                (Array.isArray(task.timing) ? task.timing : []).forEach((constraint, constraintIndex) => {
                     if (!plain(constraint) || constraint.relation !== 'offset') return;
                     const reference = taskTimingReference(constraint.relative_to, index);
                     if (!reference) return;
@@ -787,7 +810,7 @@
                     problems.push(problem('temporal.scheduling.dependency_violation', timing.error.detail, `${index.tasksBase}/${taskIndex}/start`, { task_id: id, start_minutes: timing.start, required_end_minutes: required, suggested_start: suggestedStart, correction: { pointer: `${index.tasksBase}/${taskIndex}/start`, value: suggestedStart } }, undefined, [`Replace only the explicit start with ${JSON.stringify(suggestedStart)}.`]));
                 }
             }
-            (task.timing || []).forEach((constraint, constraintIndex) => {
+            (Array.isArray(task.timing) ? task.timing : []).forEach((constraint, constraintIndex) => {
                 if (!plain(constraint) || constraint.relation !== 'offset') return;
                 const base = boundFor(constraint.relative_to, true);
                 if (base === null || !timing.resolved) return;
@@ -810,7 +833,7 @@
             if (timing.resolved || timing.duration === null || timing.explicit) return;
             let metricId = 'timing.resolution.missing_anchor';
             let detail = `Task '${id}' omits start but has no deterministic dependency or lower timing anchor.`;
-            if ((task.timing || []).some((constraint) => constraint && constraint.relation === 'not_overlap') && !groups.all.length && !groups.any.length) {
+            if ((Array.isArray(task.timing) ? task.timing : []).some((constraint) => constraint && constraint.relation === 'not_overlap') && !groups.all.length && !groups.any.length) {
                 metricId = 'timing.resolution.ambiguous_not_overlap';
                 detail = `Task '${id}' cannot derive a unique start from not_overlap; that constraint does not choose an ordering.`;
             } else if (groups.any.length && (!statuses || !groups.any.some((depId) => statuses.get(depId) === 'completed'))) {
@@ -819,11 +842,11 @@
             } else if (groups.all.length || groups.any.length) {
                 metricId = 'timing.resolution.dependency_unresolved';
                 detail = `Task '${id}' cannot derive a start because a required predecessor is unresolved, skipped, or blocked.`;
-            } else if ((task.timing || []).some((constraint) => taskTimingReference(constraint && constraint.relative_to, index)?.field === 'actual_end')) {
+            } else if ((Array.isArray(task.timing) ? task.timing : []).some((constraint) => taskTimingReference(constraint && constraint.relative_to, index)?.field === 'actual_end')) {
                 timing.runtime_unresolved = true;
                 timing.error = null;
                 return;
-            } else if ((task.timing || []).some((constraint) => constraint && constraint.relation === 'offset' && own(constraint, 'min_offset'))) {
+            } else if ((Array.isArray(task.timing) ? task.timing : []).some((constraint) => constraint && constraint.relation === 'offset' && own(constraint, 'min_offset'))) {
                 metricId = 'timing.resolution.reference_unresolved';
                 detail = `Task '${id}' cannot derive a start because its lower timing anchor is unresolved.`;
             }
@@ -836,7 +859,7 @@
         const unresolvedEdges = (id) => {
             const task = index.tasks.get(id); if (!task) return [];
             const deps = dependencyGroups(task); const edges = [...deps.all, ...deps.any];
-            (task.timing || []).forEach((constraint) => {
+            (Array.isArray(task.timing) ? task.timing : []).forEach((constraint) => {
                 if (constraint && constraint.relation === 'offset' && own(constraint, 'min_offset')) {
                     const ref = taskTimingReference(constraint.relative_to, index); if (ref) edges.push(ref.task);
                 }
@@ -915,7 +938,7 @@
 
     function propertyMayChangeType(index, id, member) {
         let uncertain = false;
-        const visit = (task) => (task.interactions || []).forEach((interaction) => {
+        const visit = (task) => (Array.isArray(task.interactions) ? task.interactions : []).forEach((interaction) => {
             if (!plain(interaction) || !plain(interaction.property_changes) || !own(interaction.property_changes, member)) return;
             const target = normalizeValueExpression(interaction.target_id);
             if (!target.ok || target.kind !== 'literal' || typeof target.value !== 'string' || target.value === id) uncertain = true;
@@ -992,6 +1015,7 @@
         }
         const selected = staticReferenceEntity(reference, index, currentTask, bindings);
         if (!selected) {
+            if (index.sim.schema_version === '2.2' && (!reference.selector || reference.selector === 'object')) return [];
             return [problem('reference.entity.unknown', `Unknown entity '${reference.entity}'.`, instance, { entity_id: reference.entity }, undefined, [`Use "${compactReference(reference.entity, reference.member)}" with an existing entity ID.`])];
         }
         const allowlist = referenceableFields(selected.kind);
@@ -1190,6 +1214,12 @@
         [...index.tasks.values()].forEach((task, taskIndex) => {
             if (task.__runtime_instance) return;
             const base = `${index.tasksBase}/${taskIndex}`;
+            const taskTiming = Array.isArray(task.timing) ? task.timing : [];
+            const taskReservations = Array.isArray(task.reservations) ? task.reservations : [];
+            const taskInteractions = Array.isArray(task.interactions) ? task.interactions : [];
+            if (task.timing !== undefined && !Array.isArray(task.timing)) problems.push(problem('timing.declaration.shape.invalid', `Task '${task.id}' timing must be an array.`, `${base}/timing`, { task_id: task.id }));
+            if (task.reservations !== undefined && !Array.isArray(task.reservations)) problems.push(problem('reservation.declaration.shape.invalid', `Task '${task.id}' reservations must be an array.`, `${base}/reservations`, { task_id: task.id }));
+            if (task.interactions !== undefined && !Array.isArray(task.interactions)) problems.push(problem('task.integrity.invalid_interactions', `Task '${task.id}' interactions must be an array.`, `${base}/interactions`, { task_id: task.id }));
             problems.push(...validateExpressionShape(task.actor_id, index, `${base}/actor_id`, task));
             const actorKind = staticExpressionKind(task.actor_id, index, task);
             if (actorKind && actorKind !== 'string') problems.push(problem('task.actor.type', `Task '${task.id}' actor_id is definitely ${actorKind}, not an object id string.`, `${base}/actor_id`, { task_id: task.id }));
@@ -1206,7 +1236,7 @@
                     problems.push(problem('task.progress.invalid', 'progress must be one compact reference to a world object or location member.', `${base}/progress`, { task_id: task.id }, undefined, ['Use compact syntax such as "@blood_unit_42.infused_ml".']));
                 }
             }
-            (task.timing || []).forEach((constraint, i) => {
+            taskTiming.forEach((constraint, i) => {
                 const at = `${base}/timing/${i}`;
                 if (!plain(constraint) || !['offset', 'not_overlap'].includes(constraint.relation)) { problems.push(problem('timing.constraint.invalid', 'Unknown or malformed timing constraint.', at)); return; }
                 if (constraint.relation === 'offset') {
@@ -1219,7 +1249,7 @@
                     if (min?.ok && max?.ok && min.minutes > max.minutes) problems.push(problem('timing.offset.range_invalid', 'min_offset cannot exceed max_offset.', at));
                 } else if (!plain(constraint.with) || typeof constraint.with.task !== 'string' || !index.tasks.has(constraint.with.task)) problems.push(problem('timing.not_overlap.reference', 'not_overlap requires an existing task reference.', `${at}/with`));
             });
-            (task.reservations || []).forEach((reservation, i) => {
+            taskReservations.forEach((reservation, i) => {
                 const at = `${base}/reservations/${i}`;
                 if (!plain(reservation) || !['exclusive', 'capacity'].includes(reservation.mode)) { problems.push(problem('reservation.shape.invalid', 'Reservation mode must be exclusive or capacity.', at)); return; }
                 problems.push(...validateExpressionShape(reservation.resource, index, `${at}/resource`, task));
@@ -1232,7 +1262,7 @@
                     }
                 } else if (own(reservation, 'amount')) problems.push(problem('reservation.amount.invalid', 'Exclusive reservation does not use amount.', `${at}/amount`));
             });
-            (task.interactions || []).forEach((interaction, i) => {
+            taskInteractions.forEach((interaction, i) => {
                 const at = `${base}/interactions/${i}`; if (!plain(interaction)) return;
                 if (interaction.when !== undefined) problems.push(...validateConditionShape(interaction.when, index, `${at}/when`, task));
                 if (interaction.at !== undefined && !['start', 'completion'].includes(interaction.at)) problems.push(problem('interaction.timing.invalid', "Interaction at must be 'start' or 'completion'.", `${at}/at`));
@@ -1250,6 +1280,7 @@
                 }
             });
         });
+        if (index.sim.collections !== undefined && !plain(index.sim.collections)) problems.push(problem('collection.declaration.shape.invalid', 'simulation.collections must be an object keyed by collection id.', '/simulation/collections'));
         const collections = plain(index.sim.collections) ? index.sim.collections : {};
         Object.entries(collections).forEach(([collectionId, definition]) => {
             const base = `/simulation/collections/${ptrEscape(collectionId)}`;
@@ -1260,6 +1291,7 @@
             if (definition.where !== undefined && descriptor) problems.push(...validateConditionShape(definition.where, index, `${base}/where`, null, { [definition.as]: descriptor }));
             if (definition.open === true && !parseTaskStart(definition.closes_at).ok) problems.push(problem('collection.cutoff.invalid', `Open collection '${collectionId}' requires a valid closes_at boundary.`, `${base}/closes_at`));
         });
+        if (index.sim.process?.work_definitions !== undefined && !Array.isArray(index.sim.process.work_definitions)) problems.push(problem('work_definition.declaration.shape.invalid', 'simulation.process.work_definitions must be an array.', '/simulation/process/work_definitions'));
         const definitions = Array.isArray(index.sim.process?.work_definitions) ? index.sim.process.work_definitions : [];
         const definitionIds = new Set();
         definitions.forEach((definition, definitionIndex) => {
@@ -1275,6 +1307,12 @@
             if (own(trigger, 'offset') && !parseOffset(trigger.offset, unit).ok) problems.push(problem('instance.trigger.offset.invalid', `Work definition '${definition.id}' has invalid offset.`, `${base}/instantiate/offset`));
             if (own(definition.task, 'id') || own(definition.task, 'start')) problems.push(problem('work_definition.task.identity.invalid', 'A reusable task template cannot declare id or start; runtime supplies deterministic identity and appearance timing.', `${base}/task`));
             const template = { ...definition.task, id: `${definition.id}:runtime` };
+            const templateTiming = Array.isArray(template.timing) ? template.timing : [];
+            const templateReservations = Array.isArray(template.reservations) ? template.reservations : [];
+            const templateInteractions = Array.isArray(template.interactions) ? template.interactions : [];
+            if (template.timing !== undefined && !Array.isArray(template.timing)) problems.push(problem('timing.declaration.shape.invalid', `Work definition '${definition.id}' task timing must be an array.`, `${base}/task/timing`, { definition_id: definition.id }));
+            if (template.reservations !== undefined && !Array.isArray(template.reservations)) problems.push(problem('reservation.declaration.shape.invalid', `Work definition '${definition.id}' task reservations must be an array.`, `${base}/task/reservations`, { definition_id: definition.id }));
+            if (template.interactions !== undefined && !Array.isArray(template.interactions)) problems.push(problem('task.integrity.invalid_interactions', `Work definition '${definition.id}' task interactions must be an array.`, `${base}/task/interactions`, { definition_id: definition.id }));
             const bindings = descriptor ? { [trigger.as]: descriptor } : {};
             if (!parseDurationToMinutes(template.duration, unit).ok) problems.push(problem('task.integrity.invalid_duration', `Work definition '${definition.id}' has invalid task duration.`, `${base}/task/duration`));
             problems.push(...validateExpressionShape(template.actor_id, index, `${base}/task/actor_id`, template, bindings));
@@ -1295,7 +1333,7 @@
                 if (typeof sourceId !== 'string' || !source) problems.push(problem('task.continues.unknown', `Work definition '${definition.id}' references unknown continuation source '${sourceId}'.`, `${base}/task/continues/task`));
                 else if (source.while === undefined) problems.push(problem('task.continues.source_not_interruptible', `Continuation source '${sourceId}' has no modeled while rule that can interrupt it.`, `${base}/task/continues/task`, { source_task_id: sourceId }, 'warning'));
             }
-            (template.timing || []).forEach((constraint, i) => {
+            templateTiming.forEach((constraint, i) => {
                 const at = `${base}/task/timing/${i}`;
                 if (!plain(constraint) || !['offset', 'not_overlap'].includes(constraint.relation)) { problems.push(problem('timing.constraint.invalid', 'Unknown or malformed timing constraint.', at)); return; }
                 if (constraint.relation === 'offset') {
@@ -1305,7 +1343,7 @@
                     if (own(constraint, 'max_offset') && !parseOffset(constraint.max_offset, unit).ok) problems.push(problem('timing.offset.invalid', 'Invalid maximum timing offset.', `${at}/max_offset`));
                 } else if (!index.tasks.has(constraint.with?.task)) problems.push(problem('timing.not_overlap.reference', 'not_overlap requires an existing authored task reference.', `${at}/with/task`));
             });
-            (template.reservations || []).forEach((reservation, i) => {
+            templateReservations.forEach((reservation, i) => {
                 problems.push(...validateExpressionShape(reservation.resource, index, `${base}/task/reservations/${i}/resource`, template, bindings));
                 if (reservation.mode === 'capacity') {
                     problems.push(...validateExpressionShape(reservation.amount, index, `${base}/task/reservations/${i}/amount`, template, bindings));
@@ -1313,7 +1351,7 @@
                     if (amountKind && amountKind !== 'number') problems.push(problem('reservation.amount.type', `Capacity reservation amount is definitely ${amountKind}, not number.`, `${base}/task/reservations/${i}/amount`));
                 }
             });
-            (template.interactions || []).forEach((interaction, i) => {
+            templateInteractions.forEach((interaction, i) => {
                 const at = `${base}/task/interactions/${i}`;
                 if (interaction.when !== undefined) problems.push(...validateConditionShape(interaction.when, index, `${at}/when`, template, bindings));
                 if (interaction.action === 'create') {
@@ -1331,9 +1369,19 @@
         problems.push(...validateReferenceablePropertyNames(index));
         problems.push(...validateDeclaredPropertyTypes(index));
         problems.push(...boundedDependencyProblems(index));
-        problems.push(...boundedClaimProblems(index));
         problems.push(...continuationProblems(index));
         return problems;
+    }
+
+    function validateSource(documentValue) {
+        const index = buildIndex(documentValue);
+        const seen = new Set();
+        return [...index.problems, ...validateStatic(index)].filter((entry) => {
+            const key = `${entry.metric_id}|${entry.instance}|${entry.detail}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
     }
 
     function expressionContext(index, state, timings, task, now, history, instance) {
@@ -1355,7 +1403,7 @@
 
     function prepareInteractions(task, at, context, runtimeProblems, temporaryOnly) {
         const writes = [];
-        (task.interactions || []).forEach((interaction, index) => {
+        (Array.isArray(task.interactions) ? task.interactions : []).forEach((interaction, index) => {
             const instance = `${task.__instance || `/simulation/process/tasks/${task.__index}`}/interactions/${index}`;
             if (!plain(interaction)) return;
             const isTemporary = interaction.temporary === true;
@@ -1426,10 +1474,15 @@
 
     function commitWrites(state, writes, runtimeProblems) {
         const groups = new Map();
+        const failedTasks = new Set();
+        const markFailed = (group) => group.forEach((write) => {
+            if (write.task) failedTasks.add(write.task);
+        });
         const lifecycleIds = new Set(writes.filter((write) => write.kind === 'create' || write.kind === 'delete').map((write) => write.id));
         const lifecycleConflicts = new Set(writes.filter((write) => write.kind === 'property' && lifecycleIds.has(write.id)).map((write) => write.id));
         lifecycleConflicts.forEach((id) => {
             const conflicting = writes.filter((write) => write.id === id);
+            markFailed(conflicting);
             conflicting.forEach((write) => runtimeProblems.push(problem('interaction.write.conflict', `A lifecycle action and property write conflict on '${id}'.`, write.instance, { object_id: id, writers: conflicting.map((entry) => entry.task) })));
         });
         writes.filter((write) => !lifecycleConflicts.has(write.id)).forEach((write) => {
@@ -1438,31 +1491,50 @@
         });
         groups.forEach((group) => {
             if (group.length > 1 && !(group.every((write) => write.kind === 'property' && write.operation === 'delta'))) {
+                markFailed(group);
                 group.forEach((write) => runtimeProblems.push(problem('interaction.write.conflict', `Simultaneous writes conflict on '${write.id}'.`, write.instance, { object_id: write.id, writers: group.map((entry) => entry.task) })));
                 return;
             }
             const first = group[0];
-            if (first.kind === 'create') { state.objects.set(first.id, clone(first.entity)); return; }
-            if (first.kind === 'delete') { state.objects.delete(first.id); return; }
-            const entity = state.objects.get(first.id); if (!entity) return;
+            if (first.kind === 'create') {
+                const created = first.entity;
+                if (state.objects.has(first.id)) {
+                    markFailed(group);
+                    runtimeProblems.push(problem('object.lifecycle.create_existing', `Object '${first.id}' is already live.`, first.instance, { object_id: first.id }));
+                    return;
+                }
+                const creationProblems = validateRuntimeCreatedObject(created, state, first.instance);
+                if (creationProblems.length) { markFailed(group); runtimeProblems.push(...creationProblems); return; }
+                state.objects.set(first.id, clone(created));
+                state.usage.add(first.id);
+                return;
+            }
+            if (first.kind === 'delete') { state.objects.delete(first.id); state.usage.add(first.id); return; }
+            const entity = state.objects.get(first.id);
+            if (!entity) {
+                markFailed(group);
+                runtimeProblems.push(problem('object.lifecycle.target_not_live', `Object '${first.id}' is not live.`, first.instance, { object_id: first.id }));
+                return;
+            }
             const before = readProperty(entity, first.property);
             const hasActiveTemporary = [...state.temporary.entries()].some(([taskId, captures]) => taskId !== first.task && captures.some((capture) => capture.id === first.id && capture.property === first.property));
-            if (group.some((write) => write.temporary) && hasActiveTemporary) { runtimeProblems.push(problem('interaction.temporary.overlap', `Temporary writes overlap on '${first.property}'.`, first.instance)); return; }
+            if (group.some((write) => write.temporary) && hasActiveTemporary) { markFailed(group); runtimeProblems.push(problem('interaction.temporary.overlap', `Temporary writes overlap on '${first.property}'.`, first.instance)); return; }
             if (group.every((write) => write.operation === 'delta')) {
-                if (typeof before !== 'number' || !Number.isFinite(before) || group.some((write) => typeof write.value !== 'number' || !Number.isFinite(write.value))) { runtimeProblems.push(problem('interaction.operator.type', `Delta on '${first.property}' requires finite numeric values.`, first.instance)); return; }
+                if (typeof before !== 'number' || !Number.isFinite(before) || group.some((write) => typeof write.value !== 'number' || !Number.isFinite(write.value))) { markFailed(group); runtimeProblems.push(problem('interaction.operator.type', `Delta on '${first.property}' requires finite numeric values.`, first.instance)); return; }
                 const temporaryDeltas = group.filter((write) => write.temporary);
-                if (temporaryDeltas.length > 1) { temporaryDeltas.forEach((write) => runtimeProblems.push(problem('interaction.temporary.overlap', `Temporary writes overlap on '${first.property}'.`, write.instance))); return; }
+                if (temporaryDeltas.length > 1) { markFailed(group); temporaryDeltas.forEach((write) => runtimeProblems.push(problem('interaction.temporary.overlap', `Temporary writes overlap on '${first.property}'.`, write.instance))); return; }
                 if (temporaryDeltas.length === 1) {
                     const write = temporaryDeltas[0]; const captures = state.temporary.get(write.task) || [];
                     captures.push({ id: write.id, property: write.property, value: clone(before), existed: before !== undefined });
                     state.temporary.set(write.task, captures);
                 }
                 const after = before + group.reduce((sum, write) => sum + write.value, 0);
-                if (!Number.isFinite(after)) { runtimeProblems.push(problem('interaction.operator.non_finite', `Delta on '${first.property}' produced a non-finite number.`, first.instance)); return; }
+                if (!Number.isFinite(after)) { markFailed(group); runtimeProblems.push(problem('interaction.operator.non_finite', `Delta on '${first.property}' produced a non-finite number.`, first.instance)); return; }
                 writeProperty(entity, first.property, after);
+                state.usage.add(first.id);
                 return;
             }
-            if (first.from && equalValues(result(before), first.from) !== true) { runtimeProblems.push(problem('interaction.from.mismatch', `Property '${first.property}' does not equal the required from value.`, first.instance)); return; }
+            if (first.from && equalValues(result(before), first.from) !== true) { markFailed(group); runtimeProblems.push(problem('interaction.from.mismatch', `Property '${first.property}' does not equal the required from value.`, first.instance)); return; }
             if (first.temporary) {
                 const captures = state.temporary.get(first.task) || [];
                 captures.push({ id: first.id, property: first.property, value: clone(before), existed: before !== undefined });
@@ -1471,13 +1543,50 @@
             let after = first.value;
             if (first.operation === 'delta') after = typeof before === 'number' && Number.isFinite(before) && typeof first.value === 'number' && Number.isFinite(first.value) ? before + first.value : undefined;
             if (first.operation === 'multiply') after = typeof before === 'number' && Number.isFinite(before) && typeof first.value === 'number' && Number.isFinite(first.value) ? before * first.value : undefined;
-            if (['delta', 'multiply'].includes(first.operation) && !Number.isFinite(after)) { runtimeProblems.push(problem('interaction.operator.non_finite', `Operator '${first.operation}' on '${first.property}' produced a non-finite number.`, first.instance)); return; }
+            if (['delta', 'multiply'].includes(first.operation) && !Number.isFinite(after)) { markFailed(group); runtimeProblems.push(problem('interaction.operator.non_finite', `Operator '${first.operation}' on '${first.property}' produced a non-finite number.`, first.instance)); return; }
             if (first.operation === 'append') after = Array.isArray(before) ? before.concat([clone(first.value)]) : typeof before === 'string' && typeof first.value === 'string' ? before + first.value : undefined;
             if (first.operation === 'remove') after = Array.isArray(before) ? before.filter((entry) => JSON.stringify(entry) !== JSON.stringify(first.value)) : undefined;
-            if (after === undefined && first.operation !== 'set' && first.operation !== 'to') { runtimeProblems.push(problem('interaction.operator.type', `Operator '${first.operation}' is incompatible with '${first.property}'.`, first.instance)); return; }
+            if (after === undefined && first.operation !== 'set' && first.operation !== 'to') { markFailed(group); runtimeProblems.push(problem('interaction.operator.type', `Operator '${first.operation}' is incompatible with '${first.property}'.`, first.instance)); return; }
+            if (first.property === 'location' && (typeof after !== 'string' || !state.locations.has(after))) {
+                markFailed(group);
+                runtimeProblems.push(problem('object.reference.invalid_location', `Runtime write would move '${first.id}' to undeclared location '${String(after)}'.`, first.instance, { object_id: first.id, location: after }));
+                return;
+            }
+            if (first.property === 'state' && entity.state_library) {
+                const allowedStates = state.stateLibraries?.[entity.state_library]?.states;
+                if (Array.isArray(allowedStates) && !allowedStates.includes(after)) {
+                    markFailed(group);
+                    runtimeProblems.push(problem('state_visuals.reference.invalid_runtime_state', `Runtime write would set '${first.id}' to state '${String(after)}', which is not declared by State Library '${entity.state_library}'.`, first.instance, { object_id: first.id, state_library: entity.state_library, state: after }));
+                    return;
+                }
+            }
             writeProperty(entity, first.property, after);
+            state.usage.add(first.id);
             state.kinds.set(`object:${first.id}:${first.property}`, first.valueKind);
         });
+        return failedTasks;
+    }
+
+    function replaceState(target, source) {
+        Object.assign(target, cloneState(source));
+    }
+
+    function commitTaskWrites(state, writes, runtimeProblems) {
+        const trial = cloneState(state);
+        const trialProblems = [];
+        const failedTasks = commitWrites(trial, writes, trialProblems);
+        runtimeProblems.push(...trialProblems);
+        if (!failedTasks.size) {
+            replaceState(state, trial);
+            return failedTasks;
+        }
+        const successfulWrites = writes.filter((write) => !failedTasks.has(write.task));
+        const successfulState = cloneState(state);
+        const unexpectedProblems = [];
+        commitWrites(successfulState, successfulWrites, unexpectedProblems);
+        runtimeProblems.push(...unexpectedProblems);
+        replaceState(state, successfulState);
+        return failedTasks;
     }
 
     function dependencyReady(task, statuses) {
@@ -1491,7 +1600,7 @@
 
     function reservationClaims(task, context, runtimeProblems) {
         const claims = [{ task: task.id, resource: task.__selected_actor_id, mode: 'exclusive', amount: 1, implicit: true, instance: `${context.instance}/actor_id` }];
-        (task.reservations || []).forEach((reservation, index) => {
+        (Array.isArray(task.reservations) ? task.reservations : []).forEach((reservation, index) => {
             const local = { ...context, instance: `${task.__instance || `/simulation/process/tasks/${task.__index}`}/reservations/${index}/resource` };
             const evaluated = evaluateValue(reservation.resource, local);
             if (!evaluated.ok) { runtimeProblems.push(evaluated.problem); return; }
@@ -1503,12 +1612,14 @@
         return claims;
     }
 
-    function performerType(type, index) {
+    function performerType(type, index, seen = new Set()) {
         if (['actor', 'equipment', 'service'].includes(type)) return true;
+        if (!type || seen.has(type)) return false;
+        seen.add(type);
         const definition = (index.sim.type_definitions || {})[type];
         if (!definition) return false;
-        if (['actor', 'equipment', 'service'].includes(definition.extends)) return true;
-        return (definition.traits || []).some((trait) => index.sim.type_traits?.[trait]?.can_be_actor_id === true);
+        if ((definition.traits || []).some((trait) => index.sim.type_traits?.[trait]?.can_be_actor_id === true)) return true;
+        return performerType(definition.extends, index, seen);
     }
 
     function bindTaskActor(task, context, runtimeProblems) {
@@ -1567,7 +1678,7 @@
         return suffix ? `${base}/${suffix}` : base;
     }
 
-    function replayWithTimings(index, initialTimings, until, timingProblems) {
+    function replayWithTimings(index, initialTimings, until, timingProblems, generatorRuntime, options) {
         const runtimeProblems = [];
         const state = makeInitialState(index); const history = [];
         const tasks = [...index.tasks.values()].map((task, indexValue) => ({ ...task, __index: indexValue }));
@@ -1577,9 +1688,62 @@
         const initialStart = parseTaskStart((index.sim.config || {}).start_time);
         history.push({ time: initialStart.ok ? initialStart.startMinutes : -Infinity, state: cloneState(state) });
 
+        const generatorStart = initialStart.ok ? initialStart.startMinutes : 0;
+        let nextGeneratorTime = generatorRuntime ? generatorStart : Infinity;
+        const generatorRandom = generatorRuntime ? seededRandom(options?.seed ?? 1) : null;
+        const maxEvents = Number.isInteger(options?.maxEvents) && options.maxEvents > 0
+            ? Math.min(options.maxEvents, 1000000)
+            : 10000;
+
+        function generatorWritesAt(time) {
+            if (!generatorRuntime) return [];
+            const writes = [];
+            const addProperty = (targetId, property, operation, value) => writes.push({
+                kind: 'property', id: targetId, property, operation, value: clone(value),
+                valueKind: kindOf(value), task: '$generator', instance: `/generator@${time}`
+            });
+            const context = Object.freeze({
+                time,
+                delta: time === generatorStart ? 0 : 1,
+                random: generatorRandom,
+                state: Object.freeze({
+                    objects: Object.fromEntries([...state.objects].map(([id, value]) => [id, clone(value)])),
+                    locations: Object.fromEntries([...state.locations].map(([id, value]) => [id, clone(value)]))
+                }),
+                get(targetId, property) {
+                    const entity = state.objects.get(targetId) || state.locations.get(targetId);
+                    if (entity) state.usage.add(targetId);
+                    return clone(entity ? readProperty(entity, property) : undefined);
+                },
+                set(targetId, property, value) { addProperty(targetId, property, 'set', value); },
+                change(targetId, property, amount) { addProperty(targetId, property, 'delta', amount); },
+                move(targetId, locationId) { addProperty(targetId, 'location', 'set', locationId); },
+                create(object) { writes.push({ kind: 'create', id: object?.id, entity: clone(object), task: '$generator', instance: `/generator@${time}` }); },
+                remove(targetId) { writes.push({ kind: 'delete', id: targetId, task: '$generator', instance: `/generator@${time}` }); }
+            });
+            const callbacks = time === generatorStart ? generatorRuntime.onStart : generatorRuntime.onUpdate;
+            try { callbacks.forEach((callback) => callback(context)); }
+            catch (error) { runtimeProblems.push(problem('generator.execution.failed', error.message, `/generator@${time}`, { time }, 'error')); }
+            return writes;
+        }
+
+        const writeKey = (write) => write.kind === 'property'
+            ? `${write.id}\u0000${write.property}`
+            : `${write.id}\u0000$lifecycle`;
+
+        function reportGeneratorConflict(write, time) {
+            runtimeProblems.push(problem(
+                'generator.changes.conflict',
+                `Generator overrides Changes for '${write.id}.${write.property || '$lifecycle'}' at ${time}.`,
+                `/generator@${time}`,
+                { target: write.id, property: write.property || '$lifecycle', time },
+                'warning'
+            ));
+        }
+
         function transition(task, next, time) {
             const current = state.statuses.get(task.id);
-            const allowed = (current === 'pending' && ['skipped', 'blocked', 'active', 'cancelled'].includes(next)) || (current === 'active' && ['completed', 'interrupted'].includes(next));
+            const allowed = (current === 'pending' && ['skipped', 'blocked', 'failed', 'active', 'cancelled'].includes(next)) || (current === 'active' && ['completed', 'failed', 'interrupted'].includes(next));
             if (!allowed) {
                 runtimeProblems.push(problem('task.lifecycle.transition.invalid', `Illegal task lifecycle transition '${current}' to '${next}' for '${task.id}'.`, taskInstance(task, index), { task_id: task.id, from: current, to: next, time }));
                 return false;
@@ -1690,7 +1854,9 @@
 
         let currentTime = -Infinity;
         synchronizeInstances(initialStart.ok ? initialStart.startMinutes : 0);
-        for (let eventCount = 0; eventCount <= tasks.length * 4 + Object.keys(index.sim.collections || {}).length + 4; eventCount += 1) {
+        let eventCount = 0;
+        let eventLimitReached = false;
+        for (;; eventCount += 1) {
             const resolution = refreshTimings();
             const invalidTimingTasks = new Set([...(timingProblems || []), ...resolution.problems]
                 .filter((entry) => ['temporal.scheduling.dependency_violation', 'timing.offset.violation'].includes(entry.metric_id))
@@ -1706,21 +1872,49 @@
                 .map((definition) => parseTaskStart(definition.closes_at))
                 .filter((parsed) => parsed.ok && parsed.startMinutes > currentTime)
                 .map((parsed) => parsed.startMinutes);
-            const next = Math.min(...nextCompletion, ...nextStart, ...nextCutoff);
+            const naturalEnd = [...timings.values()].filter((timing) => timing?.resolved && Number.isFinite(timing.end))
+                .reduce((latest, timing) => Math.max(latest, timing.end), generatorStart);
+            const generatorEnd = Number.isFinite(until) ? until : naturalEnd;
+            const nextGenerator = nextGeneratorTime <= generatorEnd ? nextGeneratorTime : Infinity;
+            const next = Math.min(...nextCompletion, ...nextStart, ...nextCutoff, nextGenerator);
             if (!Number.isFinite(next) || next > until) break;
+            if (eventCount >= maxEvents) { eventLimitReached = true; break; }
             currentTime = next;
 
             // A. Planned completions. Completion wins over any same-time invariant change.
+            const beforeCompletion = cloneState(state);
             const finishing = tasks.filter((task) => state.statuses.get(task.id) === 'active' && timings.get(task.id)?.end === currentTime);
             restoreTemporary(finishing);
             const finishSnapshot = cloneState(state);
-            const finishWrites = finishing.flatMap((task) => prepareInteractions(task, 'completion', expressionContext(index, finishSnapshot, timings, task, currentTime, history), runtimeProblems, false));
-            commitWrites(state, finishWrites, runtimeProblems);
+            const completionFailures = new Set();
+            const finishWrites = finishing.flatMap((task) => {
+                const problemCount = runtimeProblems.length;
+                const writes = prepareInteractions(task, 'completion', expressionContext(index, finishSnapshot, timings, task, currentTime, history), runtimeProblems, false);
+                if (runtimeProblems.slice(problemCount).some((entry) => entry.severity === 'error')) completionFailures.add(task.id);
+                return writes;
+            }).filter((write) => !completionFailures.has(write.task));
+            commitTaskWrites(state, finishWrites, runtimeProblems).forEach((taskId) => completionFailures.add(taskId));
             const postCompletion = cloneState(state);
             finishing.forEach((task) => {
-                transition(task, 'completed', currentTime); captureProgress(task, currentTime, postCompletion);
+                transition(task, completionFailures.has(task.id) ? 'failed' : 'completed', currentTime); captureProgress(task, currentTime, postCompletion);
                 state.active.delete(task.id); state.reservations = state.reservations.filter((claim) => claim.task !== task.id);
             });
+
+            // Generator observes completed task effects and then wins any
+            // same-target Changes conflict at this logical time. Task decisions
+            // below observe the resulting Generator state.
+            const completionKeys = changedObjectProperties(beforeCompletion, state);
+            const generatedWrites = currentTime === nextGeneratorTime ? generatorWritesAt(currentTime) : [];
+            const generatorFailures = commitTaskWrites(state, generatedWrites, runtimeProblems);
+            const generatorKeys = generatorFailures.has('$generator') ? new Set() : new Set(generatedWrites.map(writeKey));
+            if (!generatorFailures.has('$generator')) {
+                generatedWrites.forEach((write) => {
+                    if (completionKeys.has(writeKey(write))) reportGeneratorConflict(write, currentTime);
+                });
+            }
+            if (currentTime === nextGeneratorTime) {
+                nextGeneratorTime = currentTime === generatorStart ? Math.floor(generatorStart) + 1 : nextGeneratorTime + 1;
+            }
 
             // B-D can expose a same-time actual_end anchor, start recovery work,
             // and then interrupt more work. Iterate without inventing a new time.
@@ -1748,16 +1942,44 @@
                 const starting = candidates.filter((task) => !blocked.has(task.id));
                 candidates.filter((task) => blocked.has(task.id)).forEach((task) => transition(task, 'blocked', currentTime));
                 const startSnapshot = cloneState(state);
-                const startWrites = starting.flatMap((task) => prepareInteractions(task, 'start', expressionContext(index, startSnapshot, timings, task, currentTime, history), runtimeProblems, false).concat(prepareInteractions(task, 'start', expressionContext(index, startSnapshot, timings, task, currentTime, history), runtimeProblems, true)));
-                commitWrites(state, startWrites, runtimeProblems);
-                starting.forEach((task) => { transition(task, 'active', currentTime); state.active.set(task.id, clone(timings.get(task.id))); state.reservations.push(...(claimMap.get(task.id) || [])); });
+                const startFailures = new Set();
+                const startWrites = starting.flatMap((task) => {
+                    const problemCount = runtimeProblems.length;
+                    const writes = prepareInteractions(task, 'start', expressionContext(index, startSnapshot, timings, task, currentTime, history), runtimeProblems, false)
+                        .concat(prepareInteractions(task, 'start', expressionContext(index, startSnapshot, timings, task, currentTime, history), runtimeProblems, true));
+                    if (runtimeProblems.slice(problemCount).some((entry) => entry.severity === 'error')) startFailures.add(task.id);
+                    return writes;
+                }).filter((write) => !startFailures.has(write.task));
+                const acceptedStartWrites = startWrites.filter((write) => {
+                    if (!generatorKeys.has(writeKey(write))) return true;
+                    reportGeneratorConflict(write, currentTime);
+                    return false;
+                });
+                commitTaskWrites(state, acceptedStartWrites, runtimeProblems).forEach((taskId) => startFailures.add(taskId));
+                starting.forEach((task) => {
+                    if (startFailures.has(task.id)) {
+                        transition(task, 'failed', currentTime);
+                        captureProgress(task, currentTime, state);
+                        return;
+                    }
+                    transition(task, 'active', currentTime);
+                    state.active.set(task.id, clone(timings.get(task.id)));
+                    const claims = claimMap.get(task.id) || [];
+                    state.reservations.push(...claims);
+                    claims.forEach((claim) => state.usage.add(claim.resource));
+                });
                 interruptUntilStable(currentTime);
                 synchronizeInstances(currentTime);
             }
-            history.push({ time: currentTime, state: cloneState(state) });
+            const historyPoint = { time: currentTime, state: cloneState(state) };
+            if (history[history.length - 1]?.time === currentTime) history[history.length - 1] = historyPoint;
+            else history.push(historyPoint);
+        }
+        if (eventLimitReached) {
+            runtimeProblems.push(problem('runtime.execution.event_limit', `Resolved execution exceeded the ${maxEvents} event safety limit.`, '/simulation', { max_events: maxEvents, time: currentTime }, 'error', ['Use a nearer horizon or explicitly raise maxEvents for a trusted long-running project.']));
         }
         // not_overlap applies only to tasks that actually ran.
-        tasks.forEach((task) => (task.timing || []).forEach((constraint, indexValue) => {
+        tasks.forEach((task) => (Array.isArray(task.timing) ? task.timing : []).forEach((constraint, indexValue) => {
             if (!plain(constraint) || constraint.relation !== 'not_overlap') return;
             const otherId = constraint.with && constraint.with.task; const other = index.tasks.get(otherId);
             if (!other || !['active', 'completed', 'interrupted'].includes(state.statuses.get(task.id)) || !['active', 'completed', 'interrupted'].includes(state.statuses.get(otherId))) return;
@@ -1777,10 +1999,30 @@
         const index = buildIndex(documentValue);
         const resolution = resolveTimingGraph(documentValue, { index });
         const until = options && Number.isFinite(options.until) ? options.until : Infinity;
-        const selectedRun = replayWithTimings(index, resolution.timings, until, resolution.problems);
+        let generatorRuntime = null;
+        const generatorProblems = [];
+        if (typeof options?.generatorSource === 'string' && options.generatorSource.trim()) {
+            try { generatorRuntime = compileGenerator(options.generatorSource); }
+            catch (error) { generatorProblems.push(problem('generator.compile.failed', error.message, '/generator', {}, 'error')); }
+        }
+        const selectedRun = replayWithTimings(index, resolution.timings, until, resolution.problems, generatorRuntime, options);
         const finalResolution = resolveTimingGraph(documentValue, { index, statuses: selectedRun.state.statuses, taskRuntime: selectedRun.state.taskRuntime });
-        selectedRun.timings = finalResolution.timings;
-        const runtimeProblems = [...index.problems, ...validateStatic(index), ...finalResolution.problems, ...selectedRun.problems];
+        const authoritativeTimings = new Map(finalResolution.timings);
+        const horizonDeferredTasks = new Set();
+        if (Number.isFinite(until)) {
+            resolution.timings.forEach((initialTiming, taskId) => {
+                if (selectedRun.state.statuses.get(taskId) !== 'pending' || !initialTiming?.resolved || initialTiming.start <= until) return;
+                authoritativeTimings.set(taskId, clone(initialTiming));
+                horizonDeferredTasks.add(taskId);
+            });
+        }
+        selectedRun.timings = authoritativeTimings;
+        const finalProblems = finalResolution.problems.filter((entry) => !(
+            horizonDeferredTasks.has(entry.context?.task_id)
+            && ['timing.resolution.dependency_unresolved', 'timing.resolution.any_unsatisfied', 'timing.resolution.reference_unresolved'].includes(entry.metric_id)
+        ));
+        const sourceProblems = [...index.problems, ...validateStatic(index)];
+        const runtimeProblems = [...sourceProblems, ...generatorProblems, ...finalProblems, ...selectedRun.problems];
         const seenProblems = new Set();
         const uniqueProblems = runtimeProblems.filter((entry) => {
             const key = `${entry.metric_id}|${entry.instance}|${entry.detail}`;
@@ -1788,7 +2030,16 @@
             seenProblems.add(key);
             return true;
         });
-        return { index, timings: finalResolution.timings, state: selectedRun.state, problems: uniqueProblems, history: selectedRun.history };
+        return {
+            index,
+            timings: authoritativeTimings,
+            state: selectedRun.state,
+            problems: uniqueProblems,
+            sourceProblems,
+            history: selectedRun.history,
+            seed: options?.seed ?? 1,
+            horizon: Number.isFinite(until) ? until : null
+        };
     }
 
     function serialiseState(run) {
@@ -1823,6 +2074,7 @@
             collection_boundaries: collectionBoundaries,
             work_definitions: clone(run.index.sim.process?.work_definitions || []),
             task_instances: taskInstances,
+            usage: [...(run.state.usage || [])].sort(),
             problems: run.problems
         };
     }
@@ -2142,15 +2394,6 @@
         return selected ? cloneState(selected) : null;
     }
 
-    function historyStateBefore(history, time) {
-        let selected = null;
-        for (const entry of history) {
-            if (entry.time >= time) break;
-            selected = entry.state;
-        }
-        return selected ? cloneState(selected) : null;
-    }
-
     function changedObjectProperties(before, after) {
         const keys = new Set();
         const ids = new Set([...(before?.objects?.keys?.() || []), ...(after?.objects?.keys?.() || [])]);
@@ -2167,101 +2410,8 @@
         return keys;
     }
 
-    function applyBaseObjectChanges(before, after, target) {
-        const keys = changedObjectProperties(before, after);
-        const ids = new Set([...keys].map((key) => key.split('\u0000')[0]));
-        ids.forEach((id) => {
-            const source = after.objects.get(id);
-            if (!source) { target.objects.delete(id); return; }
-            if (!before?.objects?.has(id)) { target.objects.set(id, clone(source)); return; }
-            const destination = target.objects.get(id);
-            if (!destination) { target.objects.set(id, clone(source)); return; }
-            [...keys].filter((key) => key.startsWith(`${id}\u0000`)).forEach((key) => {
-                const property = key.slice(id.length + 1);
-                if (property === '$lifecycle') target.objects.set(id, clone(source));
-                else writeProperty(destination, property, readProperty(source, property));
-            });
-        });
-        target.statuses = new Map(after.statuses);
-        target.taskRuntime = new Map([...after.taskRuntime].map(([id, value]) => [id, clone(value)]));
-        target.active = new Map(after.active);
-        target.reservations = clone(after.reservations);
-    }
-
-    function runGenerator(run, generatorSource, options) {
-        if (typeof generatorSource !== 'string' || !generatorSource.trim()) return run;
-        let lifecycle;
-        try { lifecycle = compileGenerator(generatorSource); }
-        catch (error) {
-            run.problems.push(problem('generator.compile.failed', error.message, '/generator', {}, 'error'));
-            return run;
-        }
-        const resolved = [...run.timings.values()].filter((timing) => timing.resolved);
-        const configuredStart = parseTaskStart((run.index.sim.config || {}).start_time);
-        const start = configuredStart.ok ? configuredStart.startMinutes : resolved.length ? Math.min(...resolved.map((timing) => timing.start)) : 0;
-        const naturalEnd = resolved.length ? Math.max(...resolved.map((timing) => timing.end)) : start;
-        const end = Number.isFinite(options?.until) ? options.until : naturalEnd;
-        if (end < start) {
-            run.generator = generatorSource;
-            run.seed = options?.seed ?? 1;
-            return run;
-        }
-        const updateTimes = [];
-        for (let time = Math.floor(start) + 1; time <= end; time += 1) updateTimes.push(time);
-        const eventTimes = [...new Set(run.history.map((entry) => entry.time).filter((time) => Number.isFinite(time) && time >= start && time <= end).concat([start], updateTimes))].sort((a, b) => a - b);
-        const random = seededRandom(options?.seed ?? 1);
-        const generatedHistory = run.history.filter((entry) => !Number.isFinite(entry.time) || entry.time < start).map((entry) => ({ time: entry.time, state: cloneState(entry.state) }));
-        const startEntry = run.history.find((entry) => entry.time === start);
-        let previousBase = historyStateBefore(run.history, start) || (startEntry ? cloneState(startEntry.state) : historyStateAt(run.history, start));
-        let generatedState = null;
-
-        for (const time of eventTimes) {
-            const base = historyStateAt(run.history, time);
-            if (!base) continue;
-            const authoredKeys = changedObjectProperties(previousBase, base);
-            if (!generatedState) generatedState = cloneState(base);
-            else applyBaseObjectChanges(previousBase, base, generatedState);
-            const writes = [];
-            const addProperty = (targetId, property, operation, value) => writes.push({ kind: 'property', id: targetId, property, operation, value: clone(value), valueKind: kindOf(value), task: '$generator', instance: `/generator@${time}` });
-            const context = Object.freeze({
-                time,
-                delta: time === start ? 0 : 1,
-                random,
-                state: Object.freeze({
-                    objects: Object.fromEntries([...generatedState.objects].map(([id, value]) => [id, clone(value)])),
-                    locations: Object.fromEntries([...generatedState.locations].map(([id, value]) => [id, clone(value)]))
-                }),
-                get(targetId, property) { const entity = generatedState.objects.get(targetId) || generatedState.locations.get(targetId); return clone(entity ? readProperty(entity, property) : undefined); },
-                set(targetId, property, value) { addProperty(targetId, property, 'set', value); },
-                change(targetId, property, amount) { addProperty(targetId, property, 'delta', amount); },
-                move(targetId, locationId) { addProperty(targetId, 'location', 'set', locationId); },
-                create(object) { writes.push({ kind: 'create', id: object?.id, entity: clone(object), task: '$generator', instance: `/generator@${time}` }); },
-                remove(targetId) { writes.push({ kind: 'delete', id: targetId, task: '$generator', instance: `/generator@${time}` }); }
-            });
-            const callbacks = time === start ? lifecycle.onStart : lifecycle.onUpdate;
-            try { callbacks.forEach((callback) => callback(context)); }
-            catch (error) { run.problems.push(problem('generator.execution.failed', error.message, `/generator@${time}`, { time }, 'error')); }
-            writes.forEach((write) => {
-                const key = write.kind === 'property' ? `${write.id}\u0000${write.property}` : `${write.id}\u0000$lifecycle`;
-                if (authoredKeys.has(key)) {
-                    run.problems.push(problem('generator.changes.conflict', `Generator overrides Changes for '${write.id}.${write.property || '$lifecycle'}' at ${time}.`, write.instance, { target: write.id, property: write.property || '$lifecycle', time }, 'warning'));
-                }
-            });
-            commitWrites(generatedState, writes, run.problems);
-            generatedHistory.push({ time, state: cloneState(generatedState) });
-            previousBase = base;
-        }
-        if (generatedHistory.length) {
-            run.history = generatedHistory;
-            run.state = cloneState(generatedHistory[generatedHistory.length - 1].state);
-        }
-        run.generator = generatorSource;
-        run.seed = options?.seed ?? 1;
-        return run;
-    }
-
     function runProject(documentValue, changesSource, generatorSource, options) {
-        const run = replay(applyChanges(documentValue, changesSource), options);
+        const run = replay(applyChanges(documentValue, changesSource), { ...(options || {}), generatorSource: generatorSource || '' });
         const taskIds = (simOf(documentValue)?.process?.tasks || []).map(task => task?.id).filter(Boolean);
         const changesAnalysis = analyzeChanges(changesSource, { taskIds });
         changesAnalysis.diagnostics.filter(diagnostic => diagnostic.severity === 'error').forEach((diagnostic) => {
@@ -2270,7 +2420,8 @@
         run.changesAnalysis = changesAnalysis;
         run.startingState = documentValue;
         run.changes = changesSource || '';
-        return runGenerator(run, generatorSource, options);
+        run.generator = generatorSource || '';
+        return run;
     }
 
     function snapshotProjectAt(documentValue, changesSource, generatorSource, time, options) {
@@ -2279,7 +2430,7 @@
         const until = valid ? (typeof parsed === 'number' ? parsed : parsed.startMinutes) : 0;
         const run = runProject(documentValue, changesSource, generatorSource, { ...(options || {}), until });
         if (!valid) run.problems.push(problem('snapshot.time.invalid', 'Snapshot time must be a finite minute value or a valid WorkSpec task start.', '/snapshot/time', { value: time }, 'error', ['Use minutes such as 540, HH:MM such as "09:00", or a strict ISO date-time.']));
-        return serialiseState(run);
+        return snapshotRunAt(run, until);
     }
 
     function deepFreeze(value) {
@@ -2293,6 +2444,21 @@
         if (typeof value === 'number') return Number.isFinite(value) ? value : null;
         const parsed = parseTaskStart(value);
         return parsed.ok && Number.isFinite(parsed.startMinutes) ? parsed.startMinutes : null;
+    }
+
+    function snapshotRunAt(run, time) {
+        if (!run || !Array.isArray(run.history) || !run.index) throw new TypeError('snapshotRunAt requires an authoritative run.');
+        const minutes = constraintTimeMinutes(time);
+        if (minutes === null) throw new TypeError('Snapshot time must be finite minutes or a valid WorkSpec task start.');
+        const finiteTimes = run.history.map((entry) => entry.time).filter(Number.isFinite);
+        const resolvedThrough = Number.isFinite(run.horizon)
+            ? run.horizon
+            : (finiteTimes.length ? Math.max(...finiteTimes) : -Infinity);
+        if (minutes > resolvedThrough) throw new RangeError(`Authoritative run is resolved only through ${resolvedThrough}; cannot inspect ${minutes}.`);
+        const state = historyStateAt(run.history, minutes);
+        if (!state) throw new RangeError(`Authoritative run has no state at ${minutes}.`);
+        const history = run.history.filter((entry) => entry.time <= minutes).map((entry) => ({ time: entry.time, state: cloneState(entry.state) }));
+        return serialiseState({ ...run, state, history });
     }
 
     function compileConstraints(source) {
@@ -2355,11 +2521,9 @@
         return entries.map((entry) => normalizeViolation(entry, fallbackId, fallbackTime)).filter(Boolean);
     }
 
-    function runConstraints(documentValue, changesSource, generatorSource, constraintSource, options) {
-        const runtimeOptions = { seed: options?.seed ?? 1 };
+    function runConstraintsOnResult(run, constraintSource, options) {
+        if (!run || !Array.isArray(run.history) || !run.index) throw new TypeError('runConstraintsOnResult requires an authoritative run.');
         const requestedTime = constraintTimeMinutes(options?.time);
-        if (requestedTime !== null) runtimeOptions.until = requestedTime;
-        const run = runProject(documentValue, changesSource, generatorSource, runtimeOptions);
         const finiteTimes = run.history.map((entry) => entry.time).filter(Number.isFinite);
         const configuredStart = parseTaskStart((run.index.sim.config || {}).start_time);
         const time = requestedTime ?? (finiteTimes.length ? Math.max(...finiteTimes) : configuredStart.ok ? configuredStart.startMinutes : 0);
@@ -2377,9 +2541,7 @@
             const minutes = constraintTimeMinutes(queryTime);
             if (minutes === null) throw new TypeError('Constraint query time must be finite minutes or a valid WorkSpec task start.');
             if (!snapshots.has(minutes)) {
-                const snapshot = minutes === time
-                    ? serialiseState(run)
-                    : snapshotProjectAt(documentValue, changesSource, generatorSource, minutes, { seed: runtimeOptions.seed });
+                const snapshot = snapshotRunAt(run, minutes);
                 const { problems: _snapshotProblems, ...observable } = snapshot;
                 snapshots.set(minutes, deepFreeze(observable));
             }
@@ -2414,5 +2576,13 @@
         return { time, violations, problems };
     }
 
-    return { parseDurationToMinutes, parseTaskStart, parseOffset, formatCompactReference, normalizeValueExpression, isValueReference, evaluateValue, evaluateCondition, buildIndex, resolveTimings, replay, serialiseState, snapshotAt, validate, analyzeChanges, compileChanges, compileGenerator, applyChanges, runProject, snapshotProjectAt, runConstraints, seededRandom, OBJECT_FIELDS: [...OBJECT_FIELDS], TASK_FIELDS: [...TASK_FIELDS], LOCATION_FIELDS: [...LOCATION_FIELDS] };
+    function runConstraints(documentValue, changesSource, generatorSource, constraintSource, options) {
+        const runtimeOptions = { seed: options?.seed ?? 1 };
+        const requestedTime = constraintTimeMinutes(options?.time);
+        if (requestedTime !== null) runtimeOptions.until = requestedTime;
+        const run = runProject(documentValue, changesSource, generatorSource, runtimeOptions);
+        return runConstraintsOnResult(run, constraintSource, requestedTime === null ? {} : { time: requestedTime });
+    }
+
+    return { parseDurationToMinutes, parseTaskStart, parseOffset, formatCompactReference, normalizeValueExpression, isValueReference, evaluateValue, evaluateCondition, buildIndex, resolveTimings, replay, serialiseState, snapshotAt, validate, validateSource, analyzeChanges, compileChanges, compileGenerator, applyChanges, runProject, snapshotRunAt, snapshotProjectAt, runConstraintsOnResult, runConstraints, seededRandom, OBJECT_FIELDS: [...OBJECT_FIELDS], TASK_FIELDS: [...TASK_FIELDS], LOCATION_FIELDS: [...LOCATION_FIELDS] };
 }));

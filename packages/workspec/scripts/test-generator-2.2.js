@@ -50,4 +50,4 @@ const declarative = startingState();
 declarative.simulation.process.tasks[0].interactions = [];
 assert.ok(validate(declarative).problems.some((problem) => problem.metric_id === 'starting_state.behaviour.disallowed'), 'Starting State accepted executable behaviour');
 
-process.stdout.write('✓ WorkSpec 2.2 Generator and timing contracts\n');
+process.stdout.write('✓ WorkSpec 2 Generator and timing contracts\n');

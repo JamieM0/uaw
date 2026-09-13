@@ -129,4 +129,4 @@ assert.equal(unknownRun.problems.some(problem => problem.metric_id === 'changes.
 const legacy = runtime.compileChanges('WorkSpec.task("first").onComplete(({ set }) => set("item", "state", "legacy"));');
 assert.equal(legacy.get('first:completion').length, 1);
 
-process.stdout.write('✓ WorkSpec 2.2 ambient Changes API and analysis\n');
+process.stdout.write('✓ WorkSpec 2 ambient Changes API and analysis\n');

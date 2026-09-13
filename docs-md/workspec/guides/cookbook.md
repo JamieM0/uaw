@@ -1,6 +1,6 @@
-# WorkSpec 2.2 Cookbook
+# WorkSpec 2 Cookbook
 
-Common authoring patterns for the frozen WorkSpec 2.2 model. See the
+Common authoring patterns for the frozen WorkSpec 2 model. See the
 [Authoring Guide](/docs/workspec/guides/authoring) for the concepts behind them.
 
 ## Consume a resource and produce a product
@@ -94,4 +94,4 @@ part of a task.
 ## Historical pattern warning
 
 WorkSpec 2.0/2.1 placed these effects in task `interactions`. Do not copy that
-syntax into 2.2 Starting State.
+syntax into WorkSpec 2 Starting State.
