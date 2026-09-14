@@ -44,13 +44,13 @@ WorkSpec.onUpdate(({ get, set, random }) => {
 
 The deterministic tick rule is: `onStart` runs at execution start, then `onUpdate` runs once at each whole minute strictly after that start through the last resolved task completion (or the requested horizon), in ascending order. `delta` is one minute. Random values come from the seeded `random()` helper; do not use `Math.random()`. The seed is project/runtime metadata, not world state.
 
-`runProject()` produces one authoritative resolved run. At a logical time the runtime completes active tasks and applies their `onComplete` Changes, applies Generator writes, evaluates task dependencies/conditions/actor selection/reservations against that post-Generator state, then applies accepted tasks' `onStart` Changes. Generator owns a same-target/property conflict at that time: completion Changes are overwritten, conflicting start Changes are suppressed, and a non-blocking `generator.changes.conflict` warning is emitted. Numeric deltas from simultaneous Changes combine; other simultaneous Changes writes conflict transactionally.
+`runProject()` produces one authoritative resolved run. At a logical time the runtime completes active tasks and applies their `onComplete` Changes, applies Generator writes, evaluates task dependencies and guards, selects an actor only for work whose guards passed, checks reservations, then applies accepted tasks' `onStart` Changes. Generator owns a same-target/property conflict at that time: completion Changes are overwritten, conflicting start Changes are suppressed, and a non-blocking `generator.changes.conflict` warning is emitted. Numeric deltas from simultaneous Changes combine; other simultaneous Changes writes conflict transactionally.
 
 Use `runtime.runProject(startingState, changesSource, generatorSource, { seed, until })` to produce the single observable history consumed by playback, snapshots, and Constraints. `runtime.snapshotRunAt(run, time)` and `runtime.runConstraintsOnResult(run, constraintsSource, { time })` inspect that existing execution without rerunning Generator or Changes. `runtime.analyzeChanges(source, { taskIds })` provides lightweight Changes indexing. Runtime execution remains authoritative for dynamic JavaScript.
 
-A finite `until` is a horizon: resolve the project through T. It is not a demand that all planned work finish by T. Later tasks remain `pending`, tasks crossing T remain `active`, and dependencies waiting only on future completion are not failures.
+A finite `until` is a requested horizon: resolve the project through T. It is not a demand that all planned work finish by T. Later tasks remain `pending`, tasks crossing T remain `active`, and dependencies waiting only on future completion are not failures. A run separately reports `requestedHorizon`, `resolvedThrough`, and `complete`. If the work budget stops execution early, snapshots and Constraints refuse to inspect times after `resolvedThrough`.
 
-Execution is incremental and defaults to a 10,000-event safety limit; trusted API callers can raise `maxEvents` (up to 1,000,000). This prevents minute-driven Generator runs from allocating through pathological horizons. Because callbacks are synchronous JavaScript, the shared runtime cannot pre-empt a callback that never returns; untrusted hosts must still use worker/process isolation with a wall-clock timeout.
+Execution is incremental and defaults to a 10,000-work-unit safety limit; trusted callers can set `maxEvents`/`--max-events` (up to 1,000,000). Work units count task starts/completions, Generator callbacks and writes, Changes interactions, reservation evaluation, active guards, and dynamic-collection work instead of counting only timestamps. Invalid or clamped limits produce configuration diagnostics. This prevents a large same-minute workload or minute-driven Generator run from silently escaping the budget. Because callbacks are synchronous JavaScript, the package runtime cannot pre-empt a callback that never returns. The CLI therefore requires executable project sources to be trusted; hosts that accept untrusted sources must use worker/process isolation with a wall-clock timeout.
 
 Validation is deliberately layered:
 
@@ -58,7 +58,7 @@ Validation is deliberately layered:
 - `validateProject(startingState, { changesSource, generatorSource, constraintsSource, seed, until })` composes document, source, runtime/history, and optional Constraint results.
 - Every built-in problem includes `scope` and `provenance`; the scope is `document`, `source`, `runtime`, or `constraint`.
 
-For WorkSpec 2.2, document validation does not infer resource utilization, profitability, actor execution overlap, lifecycle, or resource flow from Starting State. A bounded “unused during this run” diagnostic requires an explicit finite `until`; other domain conclusions such as profitability belong in Constraints unless their runtime semantics and horizon are explicitly defined.
+For WorkSpec 2.2, document validation does not infer resource utilization, profitability, actor execution overlap, lifecycle, or resource flow from Starting State. A bounded “unused during this run” diagnostic requires an explicit finite `until`; other domain conclusions such as profitability belong in Constraints unless their runtime semantics and horizon are explicitly defined. “Used through T” means read by an expression or Generator `get()`, written, created, removed, or named by a resolved reservation attempt through T. Boolean `all`/`any` expressions short-circuit, so unreachable branches do not count. Constraint reads are evidence queries over the completed execution and deliberately do not change execution-usage accounting.
 
 ## State-driven visuals
 
@@ -130,7 +130,7 @@ workspec validate -custom path/to/simulation-validator-custom.js path/to/start.w
 workspec validate path/to/start.workspec.json --custom path/to/custom-validator.js --custom-catalog path/to/metrics-catalog-custom.json -y
 ```
 
-Without project-source flags, `validate` performs document validation. Supplying `--changes`, `--generator`, `--constraints`, `--seed`, or `--time` selects the package's project validation path. `--time` is optional, but it is required for claims whose truth depends on a finite horizon, such as a resource being unused during the run. `--constraints` executes JavaScript and therefore requires `--yes` in non-interactive use.
+Without project-source flags, `validate` performs document validation. Supplying `--changes`, `--generator`, `--constraints`, `--seed`, `--time`, or `--max-events` selects the package's project validation path. `--time` is optional, but it is required for claims whose truth depends on a finite horizon, such as a resource being unused during the run. `--constraints` executes JavaScript and therefore requires `--yes` in non-interactive use. JSON validation output is always an envelope with `validation`, `run`, and `problems`; `run` is `null` for document-only validation and contains seed, requested horizon, actual resolved-through time, completion status, and work-budget accounting for project validation.
 
 Run a project and inspect its resolved observable state:
 
@@ -143,9 +143,9 @@ workspec snapshot path/to/start.workspec.json \
   --json
 ```
 
-`--changes` and `--generator` are optional. `--time` accepts elapsed minutes, `HH:MM`, a strict ISO date-time, or a JSON day/time value such as `'{"day":2,"time":"09:42"}'`. `--seed` defaults to `1` and controls the Generator's deterministic `random()` helper. With `--json`, stdout is a stable envelope containing `time`, `time_minutes`, `seed`, the resolved `state`, and runtime `problems`. The command exits `1` when runtime problems contain an error and `2` for CLI usage or file-reading errors.
+`--changes` and `--generator` are optional. `--time` accepts elapsed minutes, `HH:MM`, a strict ISO date-time, or a JSON day/time value such as `'{"day":2,"time":"09:42"}'`. `--seed` defaults to `1` and controls the Generator's deterministic `random()` helper. `--max-events` sets the work-unit budget. With `--json`, stdout is a stable envelope containing `time`, `time_minutes`, `seed`, `run`, the resolved `state`, and runtime `problems`. When execution does not reach the requested time, `state` is `null`, `run.resolved_through` reports the safe boundary, and `snapshot.time.unresolved` is returned. The command exits `1` when runtime problems contain an error and `2` for CLI usage or file-reading errors.
 
-The snapshot command calls the package runtime's `snapshotProjectAt(...)`; it does not replay authored behavior independently and does not expose runtime history. Validate Starting State separately with `workspec validate` when using the edit → validate → snapshot loop.
+The snapshot command creates one `runProject(...)` result and passes that same object to `snapshotRunAt(...)`; it does not replay authored behavior independently and does not expose runtime history. Validate Starting State separately with `workspec validate` when using the edit → validate → snapshot loop.
 
 ## Authoring language declarations
 
@@ -174,7 +174,7 @@ workspec constraints path/to/start.workspec.json \
   --json --yes
 ```
 
-`--time` is optional and defaults to the resolved run's final time. The command validates Starting State before execution, emits separate `violations` and runtime `problems` arrays, and exits `1` for an error violation or runtime problem. `--yes` acknowledges that the constraint file is ordinary JavaScript.
+`--time` is optional and defaults to the resolved run's final time. The command validates Starting State before execution, emits `run`, `violations`, and runtime `problems`, and exits `1` for an error violation or runtime problem. A requested time beyond `run.resolved_through` returns `runtime.execution.unresolved_time` without invoking Constraint callbacks. `--yes` acknowledges that the constraint file is ordinary JavaScript.
 
 A constraint may be registered directly or exported with CommonJS:
 

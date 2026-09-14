@@ -16,6 +16,8 @@
     const TERMINAL_TASK_STATES = new Set(['completed', 'failed', 'skipped', 'blocked', 'interrupted', 'cancelled']);
     const LOCATION_FIELDS = new Set(['id', 'name', 'parent_id', 'shape', 'coordinates', 'position', 'emoji']);
     const BUILTIN_OBJECT_TYPES = new Set(['actor', 'equipment', 'resource', 'product', 'service', 'display', 'screen_element', 'digital_object']);
+    const RESERVED_TYPE_NAMES = new Set(['timeline_actors', 'any', 'unknown']);
+    const DISALLOWED_TYPE_ALIASES = new Set(['machine', 'person', 'tool', 'material', 'location', 'ui']);
     const COMPACT_ENTITY_ID = /^(?=.{1,250}$)[a-z][a-z0-9_]*(?::[a-z][a-z0-9_]{0,249})?$/;
 
     const own = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
@@ -295,16 +297,25 @@
     }
 
     function makeInitialState(index) {
+        const createDeclarations = new Map();
+        collectEntities(index.sim).forEach((entry) => {
+            if (entry.kind !== 'object' || entry.parts.at(-1) !== 'object' || !entry.parts.includes('interactions')) return;
+            const declaredAt = pointer(entry.parts.slice(0, -1));
+            if (!createDeclarations.has(entry.entity.id)) createDeclarations.set(entry.entity.id, new Set());
+            createDeclarations.get(entry.entity.id).add(declaredAt);
+        });
         return {
             objects: new Map([...index.objects].map(([id, value]) => [id, clone(value)])),
             locations: new Map([...index.locations].map(([id, value]) => [id, clone(value)])),
             kinds: new Map(),
             statuses: new Map([...index.tasks.keys()].map((id) => [id, 'pending'])),
-            taskRuntime: new Map([...index.tasks.keys()].map((id) => [id, { actual_end: undefined, progress: undefined }])),
+            taskRuntime: new Map([...index.tasks.keys()].map((id) => [id, { actual_end: undefined, progress: undefined, assignment_history: [] }])),
             active: new Map(),
             reservations: [],
             temporary: new Map(),
             usage: new Set(),
+            entityKinds: new Map([...index.ids].map(([id, entry]) => [id, entry.kind])),
+            createDeclarations,
             stateLibraries: clone(index.sim.state_libraries || {}),
             typeDefinitions: clone(index.sim.type_definitions || {})
         };
@@ -319,6 +330,8 @@
             reservations: clone(state.reservations),
             temporary: new Map([...state.temporary].map(([id, value]) => [id, clone(value)])),
             usage: new Set(state.usage || []),
+            entityKinds: new Map(state.entityKinds || []),
+            createDeclarations: new Map([...(state.createDeclarations || [])].map(([id, instances]) => [id, new Set(instances)])),
             stateLibraries: clone(state.stateLibraries || {}),
             typeDefinitions: clone(state.typeDefinitions || {})
         };
@@ -342,6 +355,20 @@
         } else if (created.id.includes(':') && created.id.split(':')[0] !== created.type) {
             problems.push(problem('object.integrity.namespace_mismatch', `Runtime-created object id '${created.id}' does not match type '${created.type}'.`, `${instance}/object/id`, { object_id: created.id, type: created.type }));
         }
+        if (created.id === 'current') {
+            problems.push(problem('reference.id.reserved_current', "The exact entity id 'current' is reserved.", `${instance}/object/id`, { id: 'current', kind: 'object' }));
+        } else if (typeof created.id === 'string' && state.entityKinds?.has(created.id)
+            && !(state.entityKinds.get(created.id) === 'object'
+                && !state.objects.has(created.id)
+                && state.createDeclarations?.get(created.id)?.has(instance))) {
+            problems.push(problem('reference.id.duplicate', `Runtime-created object id '${created.id}' collides with an existing ${state.entityKinds.get(created.id)} id.`, `${instance}/object/id`, { id: created.id, first_kind: state.entityKinds.get(created.id), second_kind: 'object' }));
+        }
+        if (typeof created.type === 'string' && (created.type.startsWith('_') || RESERVED_TYPE_NAMES.has(created.type))) {
+            problems.push(problem('schema.integrity.disallowed_types', `Runtime-created object '${String(created.id)}' uses reserved type '${created.type}'.`, `${instance}/object/type`, { object_id: created.id, type: created.type }));
+        }
+        if (DISALLOWED_TYPE_ALIASES.has(created.type)) {
+            problems.push(problem('object.integrity.disallowed_type_alias', `Runtime-created object '${String(created.id)}' uses disallowed legacy type alias '${created.type}'.`, `${instance}/object/type`, { object_id: created.id, type: created.type }));
+        }
         const baseType = runtimeBaseType(created.type, state.typeDefinitions);
         if (!baseType) problems.push(problem('object.integrity.missing_type_definition', `Runtime-created object '${String(created.id)}' uses unknown type '${String(created.type)}'.`, `${instance}/object/type`, { object_id: created.id, type: created.type }));
         const properties = plain(created.properties) ? created.properties : {};
@@ -364,6 +391,26 @@
                 problems.push(problem('state_visuals.reference.invalid_runtime_state', `Runtime create would assign '${String(created.id)}' state '${String(properties.state)}', which is not declared by State Library '${created.state_library}'.`, instance, { object_id: created.id, state_library: created.state_library, state: properties.state }));
             }
         }
+        if (created.appearance !== undefined) {
+            if (typeof created.appearance !== 'string' || !created.appearance.trim()) {
+                problems.push(problem('state_visuals.reference.invalid_appearance', `Runtime-created object '${String(created.id)}' has an empty appearance reference.`, `${instance}/object/appearance`, { object_id: created.id }));
+            } else if (!created.state_library) {
+                problems.push(problem('state_visuals.reference.appearance_without_library', `Runtime-created object '${String(created.id)}' sets an appearance without a State Library.`, `${instance}/object/appearance`, { object_id: created.id, appearance: created.appearance }));
+            } else if (!plain(state.stateLibraries?.[created.state_library]?.appearances?.[created.appearance])) {
+                problems.push(problem('state_visuals.reference.unknown_appearance', `Runtime-created object '${String(created.id)}' references unknown appearance '${created.appearance}'.`, `${instance}/object/appearance`, { object_id: created.id, state_library: created.state_library, appearance: created.appearance }));
+            }
+        }
+        const definition = state.typeDefinitions?.[created.type];
+        Object.entries(definition?.additional_properties || {}).forEach(([member, declaration]) => {
+            if (!own(properties, member)) return;
+            const value = properties[member]; const expected = declaration?.type;
+            const valid = expected === 'integer' ? Number.isInteger(value)
+                : expected === 'number' ? typeof value === 'number' && Number.isFinite(value)
+                    : expected === 'array' ? Array.isArray(value)
+                        : expected === 'object' ? plain(value)
+                            : typeof value === expected;
+            if (!valid) problems.push(problem('object.property.type.declared', `Property '${member}' on runtime-created '${String(created.id)}' is ${kindOf(value)} but custom type '${created.type}' declares ${String(expected)}.`, `${instance}/object/properties/${ptrEscape(member)}`, { object_id: created.id, property: member, expected, actual: kindOf(value) }));
+        });
         return problems;
     }
 
@@ -495,7 +542,10 @@
         }
         const source = definition.from === 'objects' ? context.state.objects : context.state.locations;
         const kind = definition.from === 'objects' ? 'object' : 'location';
-        const snapshot = [...source.keys()].sort().map((id) => ({ id, kind }));
+        const snapshot = [...source.keys()].sort().map((id) => {
+            context.consumeWork?.();
+            return { id, kind };
+        });
         if (definition.where === undefined) return { ok: true, members: snapshot };
         const alias = definition.as;
         if (typeof alias !== 'string' || !alias || alias === 'current') return failure('collection.binding.invalid', `Collection '${collectionId}' requires a non-current member alias.`, context.instance, { collection: collectionId });
@@ -576,9 +626,13 @@
         }
         if (operator === 'all' || operator === 'any') {
             if (!Array.isArray(operands) || operands.length === 0) return failure('condition.operator.arity', `Operator '${operator}' requires a non-empty array.`, context.instance);
-            const values = operands.map((entry) => evaluateCondition(entry, context));
-            const failed = values.find((entry) => !entry.ok); if (failed) return failed;
-            return result(operator === 'all' ? values.every((entry) => entry.value) : values.some((entry) => entry.value), 'boolean');
+            for (const operand of operands) {
+                const value = evaluateCondition(operand, context);
+                if (!value.ok) return value;
+                if (operator === 'all' && !value.value) return result(false, 'boolean');
+                if (operator === 'any' && value.value) return result(true, 'boolean');
+            }
+            return result(operator === 'all', 'boolean');
         }
         if (MEMBER_QUANTIFIERS.has(operator)) {
             const evaluated = evaluateCollectionPredicate(operands, context, 'satisfy');
@@ -1386,7 +1440,7 @@
 
     function expressionContext(index, state, timings, task, now, history, instance) {
         const parsedStart = parseTaskStart((index.sim.config || {}).start_time);
-        return { index, state, timings, currentTask: task, bindings: task && task.__bindings ? task.__bindings : {}, now, history, instance: instance || '/', timeUnit: (index.sim.config || {}).time_unit, simulationStart: parsedStart.ok ? parsedStart.startMinutes : -Infinity };
+        return { index, state, timings, currentTask: task, bindings: task && task.__bindings ? task.__bindings : {}, now, history, instance: instance || '/', timeUnit: (index.sim.config || {}).time_unit, simulationStart: parsedStart.ok ? parsedStart.startMinutes : -Infinity, consumeWork: index.__consumeWork };
     }
 
     function resolveTarget(target, context) {
@@ -1404,6 +1458,7 @@
     function prepareInteractions(task, at, context, runtimeProblems, temporaryOnly) {
         const writes = [];
         (Array.isArray(task.interactions) ? task.interactions : []).forEach((interaction, index) => {
+            context.consumeWork?.();
             const instance = `${task.__instance || `/simulation/process/tasks/${task.__index}`}/interactions/${index}`;
             if (!plain(interaction)) return;
             const isTemporary = interaction.temporary === true;
@@ -1506,6 +1561,7 @@
                 const creationProblems = validateRuntimeCreatedObject(created, state, first.instance);
                 if (creationProblems.length) { markFailed(group); runtimeProblems.push(...creationProblems); return; }
                 state.objects.set(first.id, clone(created));
+                state.entityKinds?.set(first.id, 'object');
                 state.usage.add(first.id);
                 return;
             }
@@ -1601,6 +1657,7 @@
     function reservationClaims(task, context, runtimeProblems) {
         const claims = [{ task: task.id, resource: task.__selected_actor_id, mode: 'exclusive', amount: 1, implicit: true, instance: `${context.instance}/actor_id` }];
         (Array.isArray(task.reservations) ? task.reservations : []).forEach((reservation, index) => {
+            context.consumeWork?.();
             const local = { ...context, instance: `${task.__instance || `/simulation/process/tasks/${task.__index}`}/reservations/${index}/resource` };
             const evaluated = evaluateValue(reservation.resource, local);
             if (!evaluated.ok) { runtimeProblems.push(evaluated.problem); return; }
@@ -1647,6 +1704,7 @@
         const blocked = new Set();
         const allNew = candidateTasks.flatMap((task) => claimMap.get(task.id) || []);
         allNew.forEach((claim) => {
+            state.usage.add(claim.resource);
             const entity = state.objects.get(claim.resource) || state.locations.get(claim.resource);
             if (!entity) { runtimeProblems.push(problem('reservation.resource.invalid', `Reservation target '${claim.resource}' is not a live world object or location.`, claim.instance, { resource: claim.resource })); blocked.add(claim.task); return; }
             const active = state.reservations.filter((entry) => entry.resource === claim.resource);
@@ -1686,14 +1744,46 @@
         const instancesByPair = new Map();
         let timings = initialTimings;
         const initialStart = parseTaskStart((index.sim.config || {}).start_time);
-        history.push({ time: initialStart.ok ? initialStart.startMinutes : -Infinity, state: cloneState(state) });
+        const initialHistoryTime = Number.isFinite(until) && initialStart.ok && until < initialStart.startMinutes
+            ? until
+            : (initialStart.ok ? initialStart.startMinutes : -Infinity);
+        history.push({ time: initialHistoryTime, state: cloneState(state) });
 
         const generatorStart = initialStart.ok ? initialStart.startMinutes : 0;
         let nextGeneratorTime = generatorRuntime ? generatorStart : Infinity;
         const generatorRandom = generatorRuntime ? seededRandom(options?.seed ?? 1) : null;
-        const maxEvents = Number.isInteger(options?.maxEvents) && options.maxEvents > 0
-            ? Math.min(options.maxEvents, 1000000)
-            : 10000;
+        const hasConfiguredMaxEvents = options && own(options, 'maxEvents');
+        const configuredMaxEvents = options?.maxEvents;
+        let maxEvents = 10000;
+        if (hasConfiguredMaxEvents && (!Number.isInteger(configuredMaxEvents) || configuredMaxEvents <= 0)) {
+            runtimeProblems.push(problem(
+                'runtime.configuration.max_events_invalid',
+                `maxEvents must be a positive integer; received ${String(configuredMaxEvents)}. The default 10000 work-unit limit was used.`,
+                '/runtime/maxEvents',
+                { requested_max_events: configuredMaxEvents, applied_max_events: maxEvents },
+                'error'
+            ));
+        } else if (hasConfiguredMaxEvents && configuredMaxEvents > 1000000) {
+            maxEvents = 1000000;
+            runtimeProblems.push(problem(
+                'runtime.configuration.max_events_clamped',
+                `maxEvents ${configuredMaxEvents} exceeds the supported maximum and was clamped to 1000000 work units.`,
+                '/runtime/maxEvents',
+                { requested_max_events: configuredMaxEvents, applied_max_events: maxEvents },
+                'warning'
+            ));
+        } else if (hasConfiguredMaxEvents) {
+            maxEvents = configuredMaxEvents;
+        }
+        const eventBudgetExhausted = Object.freeze({ code: 'WORKSPEC_EVENT_BUDGET_EXHAUSTED' });
+        let eventCount = 0;
+        let eventLimitReached = false;
+        function consumeWork(amount = 1) {
+            const units = Number.isInteger(amount) && amount > 0 ? amount : 1;
+            if (eventCount + units > maxEvents) throw eventBudgetExhausted;
+            eventCount += units;
+        }
+        index.__consumeWork = consumeWork;
 
         function generatorWritesAt(time) {
             if (!generatorRuntime) return [];
@@ -1715,15 +1805,20 @@
                     if (entity) state.usage.add(targetId);
                     return clone(entity ? readProperty(entity, property) : undefined);
                 },
-                set(targetId, property, value) { addProperty(targetId, property, 'set', value); },
-                change(targetId, property, amount) { addProperty(targetId, property, 'delta', amount); },
-                move(targetId, locationId) { addProperty(targetId, 'location', 'set', locationId); },
-                create(object) { writes.push({ kind: 'create', id: object?.id, entity: clone(object), task: '$generator', instance: `/generator@${time}` }); },
-                remove(targetId) { writes.push({ kind: 'delete', id: targetId, task: '$generator', instance: `/generator@${time}` }); }
+                set(targetId, property, value) { consumeWork(); addProperty(targetId, property, 'set', value); },
+                change(targetId, property, amount) { consumeWork(); addProperty(targetId, property, 'delta', amount); },
+                move(targetId, locationId) { consumeWork(); addProperty(targetId, 'location', 'set', locationId); },
+                create(object) { consumeWork(); writes.push({ kind: 'create', id: object?.id, entity: clone(object), task: '$generator', instance: `/generator@${time}` }); },
+                remove(targetId) { consumeWork(); writes.push({ kind: 'delete', id: targetId, task: '$generator', instance: `/generator@${time}` }); }
             });
             const callbacks = time === generatorStart ? generatorRuntime.onStart : generatorRuntime.onUpdate;
-            try { callbacks.forEach((callback) => callback(context)); }
-            catch (error) { runtimeProblems.push(problem('generator.execution.failed', error.message, `/generator@${time}`, { time }, 'error')); }
+            try {
+                if (!callbacks.length) consumeWork();
+                callbacks.forEach((callback) => { consumeWork(); callback(context); });
+            } catch (error) {
+                if (error === eventBudgetExhausted) throw error;
+                runtimeProblems.push(problem('generator.execution.failed', error.message, `/generator@${time}`, { time }, 'error'));
+            }
             return writes;
         }
 
@@ -1775,6 +1870,7 @@
                 const snapshot = cloneState(state); const failing = [];
                 tasks.forEach((task) => {
                     if (state.statuses.get(task.id) !== 'active' || task.while === undefined) return;
+                    consumeWork();
                     const condition = evaluateCondition(task.while, expressionContext(index, snapshot, timings, task, time, history, taskInstance(task, index, 'while')));
                     if (!condition.ok) { runtimeProblems.push(condition.problem); failing.push(task); }
                     else if (!condition.value) failing.push(task);
@@ -1800,6 +1896,7 @@
         function synchronizeInstances(time) {
             const definitions = Array.isArray(index.sim.process?.work_definitions) ? index.sim.process.work_definitions : [];
             definitions.forEach((definition, definitionIndex) => {
+                consumeWork();
                 if (!plain(definition) || !plain(definition.instantiate) || !plain(definition.task)) return;
                 const trigger = definition.instantiate;
                 const definitionBase = `/simulation/process/work_definitions/${definitionIndex}`;
@@ -1831,6 +1928,7 @@
                     };
                     tasks.push(instance); index.tasks.set(id, instance);
                     index.ids.set(id, { entity: instance, kind: 'task', parts: ['simulation', 'process', 'work_definitions', definitionIndex, 'task'] });
+                    state.entityKinds.set(id, 'task');
                     state.statuses.set(id, 'pending');
                     state.taskRuntime.set(id, {
                         actual_end: undefined, progress: undefined,
@@ -1853,10 +1951,15 @@
         }
 
         let currentTime = -Infinity;
-        synchronizeInstances(initialStart.ok ? initialStart.startMinutes : 0);
-        let eventCount = 0;
-        let eventLimitReached = false;
-        for (;; eventCount += 1) {
+        const stateBeforeInitialSync = cloneState(state);
+        try {
+            synchronizeInstances(initialStart.ok ? initialStart.startMinutes : 0);
+        } catch (error) {
+            if (error !== eventBudgetExhausted) throw error;
+            replaceState(state, stateBeforeInitialSync);
+            eventLimitReached = true;
+        }
+        for (; !eventLimitReached;) {
             const resolution = refreshTimings();
             const invalidTimingTasks = new Set([...(timingProblems || []), ...resolution.problems]
                 .filter((entry) => ['temporal.scheduling.dependency_violation', 'timing.offset.violation'].includes(entry.metric_id))
@@ -1878,12 +1981,16 @@
             const nextGenerator = nextGeneratorTime <= generatorEnd ? nextGeneratorTime : Infinity;
             const next = Math.min(...nextCompletion, ...nextStart, ...nextCutoff, nextGenerator);
             if (!Number.isFinite(next) || next > until) break;
-            if (eventCount >= maxEvents) { eventLimitReached = true; break; }
-            currentTime = next;
+            const stateBeforeStep = cloneState(state);
+            const previousTime = currentTime;
+            const problemCountBeforeStep = runtimeProblems.length;
+            try {
+                currentTime = next;
 
             // A. Planned completions. Completion wins over any same-time invariant change.
             const beforeCompletion = cloneState(state);
             const finishing = tasks.filter((task) => state.statuses.get(task.id) === 'active' && timings.get(task.id)?.end === currentTime);
+            finishing.forEach(() => consumeWork());
             restoreTemporary(finishing);
             const finishSnapshot = cloneState(state);
             const completionFailures = new Set();
@@ -1926,15 +2033,16 @@
                 if (!scheduled.length) break;
                 const candidates = [];
                 scheduled.forEach((task) => {
+                    consumeWork();
                     const base = taskInstance(task, index);
                     if (!dependencyReady(task, state.statuses)) { transition(task, 'blocked', currentTime); runtimeProblems.push(problem('temporal.scheduling.dependency_violation', `Dependencies for task '${task.id}' are not completed at its scheduled start.`, `${base}/start`, { task_id: task.id })); return; }
                     const context = expressionContext(index, state, timings, task, currentTime, history, base);
-                    if (!bindTaskActor(task, context, runtimeProblems)) { transition(task, 'blocked', currentTime); return; }
                     if (task.when !== undefined) { const condition = evaluateCondition(task.when, context); if (!condition.ok) { runtimeProblems.push(condition.problem); transition(task, 'blocked', currentTime); return; } if (!condition.value) { transition(task, 'skipped', currentTime); return; } }
                     if (task.requires !== undefined) { const condition = evaluateCondition(task.requires, context); if (!condition.ok || !condition.value) { runtimeProblems.push(condition.ok ? problem('task.requires.failed', `Required condition for task '${task.id}' is false.`, context.instance) : condition.problem); transition(task, 'blocked', currentTime); return; } }
                     if (task.while !== undefined) { const condition = evaluateCondition(task.while, context); if (!condition.ok || !condition.value) { if (!condition.ok) runtimeProblems.push(condition.problem); else runtimeProblems.push(problem('task.while.failed_at_start', `Active invariant for task '${task.id}' is false before activation.`, `${base}/while`, { task_id: task.id })); transition(task, 'blocked', currentTime); return; } }
                     if (task.continues && state.statuses.get(task.continues.task) !== 'interrupted') { runtimeProblems.push(problem('task.continues.source_not_interrupted', `Task '${task.id}' can start only after '${task.continues.task}' is interrupted.`, `${base}/continues/task`, { task_id: task.id, source_task_id: task.continues.task })); transition(task, 'blocked', currentTime); return; }
                     if (invalidTimingTasks.has(task.id) || sameResolution.problems.some((entry) => ['temporal.scheduling.dependency_violation', 'timing.offset.violation'].includes(entry.metric_id) && entry.context?.task_id === task.id)) { transition(task, 'blocked', currentTime); return; }
+                    if (!bindTaskActor(task, context, runtimeProblems)) { transition(task, 'blocked', currentTime); return; }
                     candidates.push(task);
                 });
                 const claimMap = new Map(candidates.map((task) => [task.id, reservationClaims(task, expressionContext(index, state, timings, task, currentTime, history), runtimeProblems)]));
@@ -1974,9 +2082,16 @@
             const historyPoint = { time: currentTime, state: cloneState(state) };
             if (history[history.length - 1]?.time === currentTime) history[history.length - 1] = historyPoint;
             else history.push(historyPoint);
+            } catch (error) {
+                if (error !== eventBudgetExhausted) throw error;
+                replaceState(state, stateBeforeStep);
+                runtimeProblems.splice(problemCountBeforeStep);
+                currentTime = previousTime;
+                eventLimitReached = true;
+            }
         }
         if (eventLimitReached) {
-            runtimeProblems.push(problem('runtime.execution.event_limit', `Resolved execution exceeded the ${maxEvents} event safety limit.`, '/simulation', { max_events: maxEvents, time: currentTime }, 'error', ['Use a nearer horizon or explicitly raise maxEvents for a trusted long-running project.']));
+            runtimeProblems.push(problem('runtime.execution.event_limit', `Resolved execution exceeded the ${maxEvents} work-unit safety limit.`, '/simulation', { max_events: maxEvents, processed_work_units: eventCount, resolved_through: currentTime, requested_horizon: Number.isFinite(until) ? until : null }, 'error', ['Use a nearer horizon or explicitly raise maxEvents for a trusted long-running project.']));
         }
         // not_overlap applies only to tasks that actually ran.
         tasks.forEach((task) => (Array.isArray(task.timing) ? task.timing : []).forEach((constraint, indexValue) => {
@@ -1988,7 +2103,12 @@
             const bEnd = state.taskRuntime.get(otherId)?.actual_end ?? b.end;
             if (a.start < bEnd && b.start < aEnd) runtimeProblems.push(problem('timing.not_overlap.violation', `Tasks '${task.id}' and '${otherId}' overlap.`, taskInstance(task, index, `timing/${indexValue}`)));
         }));
-        return { index, timings, state, problems: runtimeProblems, history };
+        const finiteHistoryTimes = history.map((entry) => entry.time).filter(Number.isFinite);
+        const resolvedThrough = eventLimitReached
+            ? currentTime
+            : (Number.isFinite(until) ? until : (finiteHistoryTimes.length ? Math.max(...finiteHistoryTimes) : -Infinity));
+        delete index.__consumeWork;
+        return { index, timings, state, problems: runtimeProblems, history, eventLimitReached, resolvedThrough, processedWorkUnits: eventCount, maxEvents };
     }
 
     function timingSignature(timings) {
@@ -2038,7 +2158,12 @@
             sourceProblems,
             history: selectedRun.history,
             seed: options?.seed ?? 1,
-            horizon: Number.isFinite(until) ? until : null
+            horizon: Number.isFinite(until) ? until : null,
+            requestedHorizon: Number.isFinite(until) ? until : null,
+            resolvedThrough: selectedRun.resolvedThrough,
+            complete: !selectedRun.eventLimitReached,
+            maxEvents: selectedRun.maxEvents,
+            processedWorkUnits: selectedRun.processedWorkUnits
         };
     }
 
@@ -2053,16 +2178,22 @@
             const cutoff = definition?.open === true ? parseTaskStart(definition.closes_at) : null;
             collectionBoundaries[collectionId] = cutoff?.ok ? { open: now < cutoff.startMinutes, closes_at: cutoff.startMinutes } : { open: false };
         });
-        const taskInstances = [...run.index.tasks.values()].filter((task) => task.__runtime_instance).map((task) => ({
-            id: task.id,
-            definition_id: task.__definition_id,
-            correlation_id: task.__correlation_id,
-            correlation_collection: task.__correlation_collection,
-            selected_actor_id: run.state.taskRuntime.get(task.id)?.selected_actor_id,
-            status: run.state.statuses.get(task.id),
-            timing: clone(run.timings.get(task.id)),
-            assignment_history: clone(run.state.taskRuntime.get(task.id)?.assignment_history || [])
-        }));
+        const taskInstances = [...run.state.taskRuntime.entries()].flatMap(([taskId, record]) => {
+            if (!record?.definition_id) return [];
+            const task = run.index.tasks.get(taskId);
+            if (!task?.__runtime_instance) return [];
+            return [{
+                id: task.id,
+                definition_id: record.definition_id,
+                correlation_id: record.correlation_id,
+                correlation_collection: record.correlation_collection,
+                instantiated_at: record.instantiated_at,
+                selected_actor_id: record.selected_actor_id,
+                status: run.state.statuses.get(task.id),
+                timing: clone(run.timings.get(task.id)),
+                assignment_history: clone(record.assignment_history || [])
+            }];
+        });
         return {
             objects: Object.fromEntries([...run.state.objects].map(([id, value]) => [id, clone(value)])),
             locations: Object.fromEntries([...run.state.locations].map(([id, value]) => [id, clone(value)])),
@@ -2451,8 +2582,8 @@
         const minutes = constraintTimeMinutes(time);
         if (minutes === null) throw new TypeError('Snapshot time must be finite minutes or a valid WorkSpec task start.');
         const finiteTimes = run.history.map((entry) => entry.time).filter(Number.isFinite);
-        const resolvedThrough = Number.isFinite(run.horizon)
-            ? run.horizon
+        const resolvedThrough = typeof run.resolvedThrough === 'number'
+            ? run.resolvedThrough
             : (finiteTimes.length ? Math.max(...finiteTimes) : -Infinity);
         if (minutes > resolvedThrough) throw new RangeError(`Authoritative run is resolved only through ${resolvedThrough}; cannot inspect ${minutes}.`);
         const state = historyStateAt(run.history, minutes);
@@ -2526,13 +2657,27 @@
         const requestedTime = constraintTimeMinutes(options?.time);
         const finiteTimes = run.history.map((entry) => entry.time).filter(Number.isFinite);
         const configuredStart = parseTaskStart((run.index.sim.config || {}).start_time);
-        const time = requestedTime ?? (finiteTimes.length ? Math.max(...finiteTimes) : configuredStart.ok ? configuredStart.startMinutes : 0);
+        const resolvedThrough = typeof run.resolvedThrough === 'number'
+            ? run.resolvedThrough
+            : (finiteTimes.length ? Math.max(...finiteTimes) : configuredStart.ok ? configuredStart.startMinutes : -Infinity);
+        const time = requestedTime ?? resolvedThrough;
         const problems = [...run.problems];
         let constraints;
         try {
             constraints = compileConstraints(constraintSource);
         } catch (error) {
             problems.push(problem('constraint.compile.failed', error.message, '/constraints', {}, 'error'));
+            return { time, violations: [], problems };
+        }
+        if (time > resolvedThrough) {
+            problems.push(problem(
+                'runtime.execution.unresolved_time',
+                `Constraints requested minute ${time}, but the authoritative run resolved only through ${resolvedThrough}.`,
+                '/constraints',
+                { requested_time: time, resolved_through: resolvedThrough },
+                'error',
+                ['Use a time at or before resolved_through, or raise maxEvents for a trusted project.']
+            ));
             return { time, violations: [], problems };
         }
 
@@ -2554,7 +2699,7 @@
             const value = own(entity, property) ? entity[property] : entity.properties?.[property];
             return deepFreeze(clone(value));
         };
-        const queryTimes = deepFreeze([...new Set(finiteTimes.concat([time]))].sort((left, right) => left - right));
+        const queryTimes = deepFreeze([...new Set(finiteTimes.filter((entry) => entry <= resolvedThrough).concat([time]))].sort((left, right) => left - right));
         const context = deepFreeze({
             time,
             state: () => snapshotFor(time),

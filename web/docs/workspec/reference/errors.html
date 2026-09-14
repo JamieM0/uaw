@@ -220,7 +220,27 @@
 <tr>
 <td><code class="docs-inline-code">runtime.execution.event_limit</code></td>
 <td>runtime</td>
-<td>Execution exceeded the bounded event safety limit.</td>
+<td>Execution exceeded the bounded work-unit safety limit before the requested horizon.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">runtime.configuration.max_events_invalid</code></td>
+<td>runtime</td>
+<td><code class="docs-inline-code">maxEvents</code> was not a positive integer, so the default budget was applied and execution is invalid.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">runtime.configuration.max_events_clamped</code></td>
+<td>runtime</td>
+<td><code class="docs-inline-code">maxEvents</code> exceeded the supported maximum and was clamped with a warning.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">runtime.execution.unresolved_time</code></td>
+<td>runtime</td>
+<td>A Constraint requested a time later than the authoritative run’s <code class="docs-inline-code">resolvedThrough</code> boundary.</td>
+</tr>
+<tr>
+<td><code class="docs-inline-code">snapshot.time.unresolved</code></td>
+<td>runtime</td>
+<td>A CLI snapshot requested a time later than the authoritative run’s <code class="docs-inline-code">resolvedThrough</code> boundary.</td>
 </tr>
 <tr>
 <td><code class="docs-inline-code">reservation.capacity.exceeded</code></td>

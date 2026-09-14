@@ -16,9 +16,9 @@ function printHelp(exitCode = 0) {
         'workspec - WorkSpec 2 CLI',
         '',
         'Usage:',
-        '  workspec validate <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] [--constraints <constraints.workspec.js>] [--time <time>] [--seed <seed>] [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json] [--fail-on-warning] [-y]',
-        '  workspec snapshot <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] --time <time> [--seed <seed>] [--json]',
-        '  workspec constraints <start.workspec.json> --constraints <constraints.workspec.js> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] [--time <time>] [--seed <seed>] [--json] [-y]',
+        '  workspec validate <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] [--constraints <constraints.workspec.js>] [--time <time>] [--seed <seed>] [--max-events <count>] [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json] [--fail-on-warning] [-y]',
+        '  workspec snapshot <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] --time <time> [--seed <seed>] [--max-events <count>] [--json]',
+        '  workspec constraints <start.workspec.json> --constraints <constraints.workspec.js> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] [--time <time>] [--seed <seed>] [--max-events <count>] [--json] [-y]',
         '  workspec migrate <file.json> --out <output.json> [--schema]',
         '  workspec format <file.json> [--write] [--out <output.json>]',
         '',
@@ -40,6 +40,7 @@ function printHelp(exitCode = 0) {
         '  --constraints <path> Runtime constraint functions (validate/constraints).',
         '  --time <time>   Runtime time as minutes, HH:MM, day/time JSON, or ISO date-time.',
         '  --seed <seed>   Deterministic integer Generator seed (default: 1).',
+        '  --max-events <count> Maximum runtime work units (default: 10000; maximum: 1000000).',
         '  --fail-on-warning Exit with status 1 when validation returns a warning.',
         '  --out <path>    Output path (migrate/format).',
         '  --write         Write output (format only; defaults to stdout).',
@@ -121,6 +122,10 @@ function parseArgs(argv) {
             result.flags.seed = args.shift() || '';
             continue;
         }
+        if (arg === '--max-events') {
+            result.flags.maxEvents = args.shift() || '';
+            continue;
+        }
         if (arg === '--write') {
             result.flags.write = true;
             continue;
@@ -163,6 +168,35 @@ function hasErrors(problems) {
 
 function hasWarnings(problems) {
     return problems.some((p) => p && p.severity === 'warning');
+}
+
+function parseMaxEvents(flags) {
+    if (!Object.prototype.hasOwnProperty.call(flags, 'maxEvents')) return { ok: true, value: undefined };
+    const value = Number(flags.maxEvents);
+    return { ok: Number.isSafeInteger(value), value };
+}
+
+function runMetadata(run, fallback = {}) {
+    if (!run) {
+        return {
+            executed: false,
+            seed: fallback.seed ?? 1,
+            requested_horizon: fallback.requestedHorizon ?? null,
+            resolved_through: null,
+            complete: false,
+            max_events: fallback.maxEvents ?? 10000,
+            processed_work_units: 0
+        };
+    }
+    return {
+        executed: true,
+        seed: run.seed ?? fallback.seed ?? 1,
+        requested_horizon: run.requestedHorizon ?? fallback.requestedHorizon ?? null,
+        resolved_through: Number.isFinite(run.resolvedThrough) ? run.resolvedThrough : null,
+        complete: run.complete !== false,
+        max_events: run.maxEvents ?? fallback.maxEvents ?? 10000,
+        processed_work_units: run.processedWorkUnits ?? 0
+    };
 }
 
 function promptConfirm(message) {
@@ -276,7 +310,7 @@ async function handleValidate(filePath, flags) {
         return;
     }
 
-    const projectMode = ['changes', 'generator', 'constraints', 'time', 'seed'].some((flag) => Object.prototype.hasOwnProperty.call(flags, flag));
+    const projectMode = ['changes', 'generator', 'constraints', 'time', 'seed', 'maxEvents'].some((flag) => Object.prototype.hasOwnProperty.call(flags, flag));
     const time = flags.time === undefined ? null : parseSnapshotTime(flags.time);
     if (time && !time.ok) {
         process.stderr.write(`Invalid validation time: ${flags.time}\n`);
@@ -289,6 +323,12 @@ async function handleValidate(filePath, flags) {
         process.exitCode = 2;
         return;
     }
+    const maxEvents = parseMaxEvents(flags);
+    if (!maxEvents.ok) {
+        process.stderr.write(`Invalid --max-events value: ${flags.maxEvents}. Expected an integer.\n`);
+        process.exitCode = 2;
+        return;
+    }
 
     let result;
     try {
@@ -298,6 +338,7 @@ async function handleValidate(filePath, flags) {
                 generatorSource: readOptionalSource(flags.generator, 'Generator source'),
                 constraintsSource: readOptionalSource(flags.constraints, 'constraint source'),
                 seed,
+                ...(maxEvents.value === undefined ? {} : { maxEvents: maxEvents.value }),
                 ...(time ? { until: time.minutes } : {})
             })
             : validator.validate(parsed);
@@ -331,10 +372,20 @@ async function handleValidate(filePath, flags) {
     const problems = [...builtinProblems, ...customProblems];
 
     if (flags.json) {
-        process.stdout.write(toPrettyJson(problems));
+        process.stdout.write(toPrettyJson({
+            validation: {
+                mode: projectMode ? 'project' : 'document',
+                source: filePath,
+                custom: Boolean(flags.custom)
+            },
+            run: projectMode ? runMetadata(result.run, { seed, requestedHorizon: time?.minutes, maxEvents: maxEvents.value }) : null,
+            problems
+        }));
     } else {
         const horizonLabel = projectMode
-            ? (Number.isFinite(result?.horizon?.until) ? `through ${result.horizon.until} minutes` : 'through natural end')
+            ? (Number.isFinite(result?.horizon?.until)
+                ? `requested through ${result.horizon.until} minutes; resolved through ${result.run?.resolvedThrough}`
+                : `through natural end; resolved through ${result.run?.resolvedThrough}`)
             : 'not applicable';
         process.stdout.write(`Validation mode: ${projectMode ? 'project' : 'document'}${projectMode ? ` | seed: ${seed} | horizon: ${horizonLabel}` : ''}\n`);
         for (const problem of problems) {
@@ -439,6 +490,12 @@ async function handleSnapshot(filePath, flags) {
         process.exitCode = 2;
         return;
     }
+    const maxEvents = parseMaxEvents(flags);
+    if (!maxEvents.ok) {
+        process.stderr.write(`Invalid --max-events value: ${flags.maxEvents}. Expected an integer.\n`);
+        process.exitCode = 2;
+        return;
+    }
 
     let documentValue;
     let changesSource;
@@ -453,12 +510,35 @@ async function handleSnapshot(filePath, flags) {
         return;
     }
 
-    const snapshot = runtime.snapshotProjectAt(documentValue, changesSource, generatorSource, time.value, { seed });
-    const { problems = [], ...state } = snapshot;
+    const run = runtime.runProject(documentValue, changesSource, generatorSource, {
+        seed,
+        until: time.minutes,
+        ...(maxEvents.value === undefined ? {} : { maxEvents: maxEvents.value })
+    });
+    let state = null;
+    let problems = [...run.problems];
+    try {
+        const snapshot = runtime.snapshotRunAt(run, time.value);
+        ({ problems = [], ...state } = snapshot);
+    } catch (error) {
+        problems.push({
+            type: 'https://universalautomation.wiki/workspec/errors/snapshot.time.unresolved',
+            title: 'snapshot time unresolved',
+            severity: 'error',
+            detail: error.message,
+            instance: '/snapshot/time',
+            metric_id: 'snapshot.time.unresolved',
+            scope: 'runtime',
+            provenance: { layer: 'runtime', source: 'resolved-history' },
+            context: { requested_time: time.minutes, resolved_through: run.resolvedThrough },
+            suggestions: ['Use a time at or before resolved_through, or raise --max-events for a trusted project.']
+        });
+    }
     const output = {
         time: flags.time,
         time_minutes: time.minutes,
         seed,
+        run: runMetadata(run, { seed, requestedHorizon: time.minutes, maxEvents: maxEvents.value }),
         state,
         problems
     };
@@ -466,9 +546,9 @@ async function handleSnapshot(filePath, flags) {
     if (flags.json) {
         process.stdout.write(toPrettyJson(output));
     } else {
-        const objectCount = Object.keys(state.objects || {}).length;
+        const objectCount = Object.keys(state?.objects || {}).length;
         const errorCount = problems.filter((entry) => entry?.severity === 'error').length;
-        process.stdout.write(`Snapshot ${flags.time} (seed ${seed}): ${objectCount} objects, ${problems.length} problems (${errorCount} errors)\n`);
+        process.stdout.write(`Snapshot ${flags.time} (seed ${seed}, resolved through ${run.resolvedThrough}): ${objectCount} objects, ${problems.length} problems (${errorCount} errors)\n`);
     }
     process.exitCode = hasErrors(problems) ? 1 : 0;
 }
@@ -501,6 +581,12 @@ async function handleConstraints(filePath, flags) {
         process.exitCode = 2;
         return;
     }
+    const maxEvents = parseMaxEvents(flags);
+    if (!maxEvents.ok) {
+        process.stderr.write(`Invalid --max-events value: ${flags.maxEvents}. Expected an integer.\n`);
+        process.exitCode = 2;
+        return;
+    }
 
     let documentValue;
     let changesSource;
@@ -522,14 +608,21 @@ async function handleConstraints(filePath, flags) {
         generatorSource,
         constraintsSource: constraintSource,
         seed,
+        ...(maxEvents.value === undefined ? {} : { maxEvents: maxEvents.value }),
         ...(time ? { until: time.minutes } : {})
     });
     const constraintProblems = result.problems.filter((problem) => !problem.violation);
-    const output = { time: result.time, seed, violations: result.violations, problems: constraintProblems };
+    const output = {
+        time: result.time,
+        seed,
+        run: runMetadata(result.run, { seed, requestedHorizon: time?.minutes, maxEvents: maxEvents.value }),
+        violations: result.violations,
+        problems: constraintProblems
+    };
     if (flags.json) process.stdout.write(toPrettyJson(output));
     else {
         const errors = result.violations.filter((entry) => entry.severity === 'error').length;
-        process.stdout.write(`Runtime constraints at ${output.time}: ${result.violations.length} violations (${errors} errors), ${constraintProblems.length} validation problems\n`);
+        process.stdout.write(`Runtime constraints at ${output.time} (resolved through ${result.run?.resolvedThrough}): ${result.violations.length} violations (${errors} errors), ${constraintProblems.length} validation problems\n`);
     }
     process.exitCode = hasErrors(constraintProblems) || result.violations.some((entry) => entry.severity === 'error') ? 1 : 0;
 }

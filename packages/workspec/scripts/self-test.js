@@ -294,7 +294,7 @@ function run() {
 
         assert.equal(result.status, 1);
         const output = JSON.parse(result.stdout);
-        assert.equal(output.some((p) => p.metric_id === 'custom.minimum_task_count'), true);
+        assert.equal(output.problems.some((p) => p.metric_id === 'custom.minimum_task_count'), true);
     }
 
     // 5) CLI custom validation (auto-discovered validate* function; no catalog)
@@ -339,7 +339,7 @@ function run() {
 
         assert.equal(result.status, 0);
         const output = JSON.parse(result.stdout);
-        assert.equal(output.some((p) => p.metric_id === 'custom.task_limit' && p.severity === 'warning'), true);
+        assert.equal(output.problems.some((p) => p.metric_id === 'custom.task_limit' && p.severity === 'warning'), true);
     }
 
     // 6) CLI custom validation (exported constraints API)
@@ -392,7 +392,7 @@ function run() {
 
         assert.equal(result.status, 1);
         const output = JSON.parse(result.stdout);
-        assert.equal(output.some((p) => p.metric_id === 'custom.constraint.utc_timezone' && p.severity === 'error'), true);
+        assert.equal(output.problems.some((p) => p.metric_id === 'custom.constraint.utc_timezone' && p.severity === 'error'), true);
     }
 
     // 7) Security: malicious custom code calling process.exit() must not kill parent process
@@ -487,7 +487,7 @@ function run() {
 
         assert.equal(result.status, 1);
         const output = JSON.parse(result.stdout);
-        assert.equal(output.some((p) => p.metric_id === 'custom.bad_function_name' && p.detail.includes('Invalid custom validation function name')), true);
+        assert.equal(output.problems.some((p) => p.metric_id === 'custom.bad_function_name' && p.detail.includes('Invalid custom validation function name')), true);
     }
 
     // 10) Security: reject relative path traversal in --custom and --custom-catalog

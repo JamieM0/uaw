@@ -97,6 +97,8 @@
         const objects = Array.isArray(sim.world?.objects) ? sim.world.objects : [];
         const definitions = plain(sim.type_definitions) ? sim.type_definitions : {};
         const used = run?.state?.usage instanceof Set ? run.state.usage : new Set();
+        const resolvedThrough = typeof run?.resolvedThrough === 'number' ? run.resolvedThrough : until;
+        if (!Number.isFinite(resolvedThrough)) return [];
         return objects.flatMap((object, index) => {
             if (!plain(object) || baseType(object.type, definitions) !== 'resource' || used.has(object.id)) return [];
             const metricId = 'object.optimization.unused_resource';
@@ -104,10 +106,10 @@
                 type: `${NS}/errors/${metricId}`,
                 title: 'Resource Unused During Bounded Run',
                 severity: 'info',
-                detail: `Resource '${object.id}' was not used during the resolved run through minute ${until}.`,
+                detail: `Resource '${object.id}' was not used during the resolved run through minute ${resolvedThrough}.`,
                 instance: `/simulation/world/objects/${index}`,
                 metric_id: metricId,
-                context: { object_id: object.id, horizon_minutes: until },
+                context: { object_id: object.id, horizon_minutes: resolvedThrough, requested_horizon_minutes: until },
                 suggestions: ['Confirm the validation horizon covers the intended process, or reference the resource from an executed task effect or reservation.']
             }, 'runtime', 'resolved-history')];
         });
@@ -177,7 +179,8 @@
                 ...(entry.provenance || {}),
                 validation_mode: 'project',
                 seed,
-                horizon: until === undefined ? 'natural_end' : until
+                horizon: until === undefined ? 'natural_end' : until,
+                resolved_through: run?.resolvedThrough ?? null
             }
         }));
         return {
@@ -192,7 +195,14 @@
             usage: run?.state?.usage instanceof Set ? [...run.state.usage].sort() : [],
             violations: constraintResult?.violations || [],
             time: constraintResult?.time ?? until ?? null,
-            horizon: until === undefined ? null : { until, unit: 'minutes', explicit: true },
+            horizon: until === undefined ? null : {
+                until,
+                requested: until,
+                resolvedThrough: run?.resolvedThrough ?? null,
+                complete: run?.complete !== false,
+                unit: 'minutes',
+                explicit: true
+            },
             seed
         };
     }

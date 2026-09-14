@@ -218,7 +218,7 @@ for (const version of ['2.0', '2.1']) {
     const cliPath = path.join(__dirname, '..', 'bin', 'workspec.js');
     const result = spawnSync(process.execPath, [cliPath, 'validate', startPath, '--changes', changesPath, '--time', '09:02', '--json'], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr || result.stdout);
-    const problems = JSON.parse(result.stdout);
+    const { problems } = JSON.parse(result.stdout);
     assert.equal(hasMetric(problems, 'object.optimization.unused_resource'), false);
     assert.ok(problems.every((problem) => problem.scope && problem.provenance));
 }

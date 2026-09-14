@@ -49,7 +49,11 @@ WorkSpec problems use an RFC-7807-style structure:
 | `generator.compile.failed` | source | Generator could not compile. |
 | `generator.execution.failed` | runtime | Generator threw during execution. |
 | `generator.changes.conflict` | runtime | Generator won a same-time write over Changes. |
-| `runtime.execution.event_limit` | runtime | Execution exceeded the bounded event safety limit. |
+| `runtime.execution.event_limit` | runtime | Execution exceeded the bounded work-unit safety limit before the requested horizon. |
+| `runtime.configuration.max_events_invalid` | runtime | `maxEvents` was not a positive integer, so the default budget was applied and execution is invalid. |
+| `runtime.configuration.max_events_clamped` | runtime | `maxEvents` exceeded the supported maximum and was clamped with a warning. |
+| `runtime.execution.unresolved_time` | runtime | A Constraint requested a time later than the authoritative run’s `resolvedThrough` boundary. |
+| `snapshot.time.unresolved` | runtime | A CLI snapshot requested a time later than the authoritative run’s `resolvedThrough` boundary. |
 | `reservation.capacity.exceeded` | runtime | Actual reservations exceed declared capacity. |
 | `reservation.exclusive.conflict` | runtime | Actually executing tasks attempted conflicting exclusive reservations. |
 | `state_visuals.reference.unknown_library` | runtime | A runtime-created object named an unknown State Library. |

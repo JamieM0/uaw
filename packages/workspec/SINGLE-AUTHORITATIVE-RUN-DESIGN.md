@@ -56,8 +56,8 @@ At each logical time the order is:
    its writes, with Generator winning a same-target conflict and a deterministic
    warning;
 3. evaluate active-task invariants and create runtime task instances;
-4. evaluate scheduled task dependencies, conditions, actor selection, and
-   reservations against that post-Generator state;
+4. evaluate scheduled task dependencies and guards, then actor selection and
+   reservations, against that post-Generator state;
 5. apply accepted tasks' Changes `onStart` writes, acquire reservations, and make
    those tasks active;
 6. record one authoritative post-event history point.
@@ -78,17 +78,21 @@ attempted by the resolved run. Constraints inspect an existing run and never
 cause Starting State, Changes, or Generator to execute again.
 
 “Used through T” means read by a resolved expression or Generator `get()`,
-written, reserved, created, or removed through T. It does not mean that merely
-appearing in authored work outside the horizon counts as use.
+written, created, removed, or named by a resolved reservation attempt through
+T. Boolean operators short-circuit, so unreachable operands do not count.
+Constraint reads query evidence after execution and do not change this execution
+usage set. Merely appearing in authored work outside the horizon does not count.
 
 ## Bounded execution
 
-The evaluator schedules events incrementally and no longer allocates an array
-for every minute up to `until`. A run stops with
-`runtime.execution.event_limit` after 10,000 events by default; trusted callers
-may supply `maxEvents` up to 1,000,000. This bounds enormous explicit horizons,
-far-future natural ends with minute Generator updates, and excessive event
-counts while leaving event-sparse long-range schedules cheap.
+The evaluator schedules work incrementally and no longer allocates an array for
+every minute up to `until`. A run stops with `runtime.execution.event_limit`
+after 10,000 work units by default; trusted callers may supply `maxEvents` up to
+1,000,000. Work units include task starts/completions, Generator callbacks and
+writes, Changes interactions, reservations, active guards, and dynamic
+collection work. Invalid or clamped limits produce explicit configuration
+diagnostics. The run records both the requested horizon and its actual
+`resolvedThrough` boundary. Snapshots and Constraints refuse later times.
 
 Generator and Constraint callbacks are synchronous ordinary JavaScript. The
 shared browser/Node runtime can reject thrown and async callbacks, and the event

@@ -149,7 +149,7 @@ test('all simulation-library projects expose healthy and deliberately broken sta
         fs.writeFileSync(constraintsPath, quantityConstraintSource, 'utf8');
         const validation = runCli(['validate', startPath, '--json']);
         assert.equal(validation.status, 0, `${entry.id} should validate: ${validation.stderr || validation.stdout}`);
-        assertNoErrors(JSON.parse(validation.stdout), `${entry.id} validation should have no errors`);
+        assertNoErrors(JSON.parse(validation.stdout).problems, `${entry.id} validation should have no errors`);
 
         const snapshot = runCli(['snapshot', startPath, '--changes', changesPath, '--time', String(scenario.time), '--seed', '1', '--json']);
         assert.equal(snapshot.status, 0, `${entry.id} should run: ${snapshot.stderr || snapshot.stdout}`);
@@ -167,7 +167,7 @@ test('all simulation-library projects expose healthy and deliberately broken sta
         fs.writeFileSync(brokenChangesPath, brokenChanges, 'utf8');
         const brokenValidation = runCli(['validate', brokenStartPath, '--json']);
         assert.equal(brokenValidation.status, 0, `${entry.id} broken variant should remain structurally valid`);
-        assertNoErrors(JSON.parse(brokenValidation.stdout), `${entry.id} broken validation should have no errors`);
+        assertNoErrors(JSON.parse(brokenValidation.stdout).problems, `${entry.id} broken validation should have no errors`);
 
         const brokenSnapshot = runCli(['snapshot', brokenStartPath, '--changes', brokenChangesPath, '--time', String(scenario.time), '--seed', '1', '--json']);
         assert.equal(brokenSnapshot.status, 0, `${entry.id} broken variant should execute`);
