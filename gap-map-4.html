@@ -143,7 +143,7 @@ main { max-width: 1500px; margin: auto; padding: 0 clamp(20px, 4vw, 64px) 96px; 
         <p class="deck">A clean-sheet gap map across course delivery, the cut-scene research model, Perspectives, an AI meeting participant, and the DAO ideas raised with John.</p>
     </div>
     <aside class="stamp" aria-label="Audit metadata">
-        <div><b>Evidence point</b><strong>e8a8275</strong></div>
+        <div><b>Evidence point</b><strong>1.2.4 parity pass</strong></div>
         <div><b>Repository</b><strong>main synchronized</strong></div>
         <div><b>Audit date</b><strong>15 Sep 2026</strong></div>
         <div><b>Course target</b><strong>23 Sep 2026</strong></div>
@@ -167,8 +167,9 @@ main { max-width: 1500px; margin: auto; padding: 0 clamp(20px, 4vw, 64px) 96px; 
             <article class="closed-card"><span class="tag">Closed</span><h3>Installed-build identity</h3><p><code>workspec --version</code> now reports the package version, giving support and screenshots a concrete build identifier.</p></article>
             <article class="closed-card"><span class="tag">Closed</span><h3>Exact-tarball release proof</h3><p>CI and the publish workflow now run the full suite, pack, clean-install, and smoke-test the same tarball the release job will publish.</p></article>
             <article class="closed-card"><span class="tag">Closed</span><h3>One canonical test command</h3><p>The previously ignored Node suite is now tracked, repaired for current 2.2 goldens, and included in <code>npm test</code>: all 24 Node tests pass.</p></article>
-            <article class="closed-card"><span class="tag">Closed</span><h3>Coherent package identity</h3><p>The package and parent lock now agree on <code>workspec@1.3.0</code>; the release workflow rejects mismatched tags and unrelated repository tags.</p></article>
+            <article class="closed-card"><span class="tag">Closed</span><h3>Coherent package identity</h3><p>The package and parent lock now agree on <code>workspec@1.2.4</code>; the release workflow rejects mismatched tags and unrelated repository tags.</p></article>
             <article class="closed-card"><span class="tag">Closed</span><h3>Visual assets + error JSON</h3><p>Render can embed state-library PNG, JPEG, WebP, GIF, and SVG assets, falls back to typed glyphs, and returns stable JSON problems on failure.</p></article>
+            <article class="closed-card"><span class="tag">Verified</span><h3>Studio ↔ CLI state visuals</h3><p>Both paths use the shared State Library resolver. Folder assets retain their IDs in Studio and render through the CLI; the CLI also accepts Studio’s optional <code>asset:</code> prefix.</p></article>
             <article class="closed-card"><span class="tag">Closed</span><h3>Typed, supported package API</h3><p>The tarball contains <code>index.d.ts</code>, publishes the type entrypoint, and its clean-installed API is smoke-tested across the supported Node range.</p></article>
         </div>
     </section>
@@ -212,7 +213,7 @@ main { max-width: 1500px; margin: auto; padding: 0 clamp(20px, 4vw, 64px) 96px; 
     <section>
         <div class="section-head"><span class="number">05 / ORDER</span><h2>Five lanes; only one is urgent</h2></div>
         <div class="lanes">
-            <article class="lane"><div class="lane-no">01</div><h3>Finish course materials</h3><ul><li>Write the separate CLI-first docs</li><li>Create discoverable Practical 1/2 fixtures</li><li>Rerun both against the packed 1.3.0 build</li><li>Keep implementation scope frozen unless a practical fails</li></ul></article>
+            <article class="lane"><div class="lane-no">01</div><h3>Finish course materials</h3><ul><li>Write the separate CLI-first docs</li><li>Create discoverable Practical 1/2 fixtures</li><li>Rerun both against the packed 1.2.4 build</li><li>Keep implementation scope frozen unless a practical fails</li></ul></article>
             <article class="lane"><div class="lane-no">02</div><h3>Frame the final-year project</h3><ul><li>Resolve curve semantics</li><li>Write research question</li><li>Build bakery benchmark</li><li>Recruit domain evaluator</li><li>Choose solver baselines</li></ul></article>
             <article class="lane"><div class="lane-no">03</div><h3>Re-found Perspectives</h3><ul><li>Inventory public data</li><li>Define evidence product</li><li>Prevent temporal leakage</li><li>Score sources historically</li><li>Calibrate uncertainty</li></ul></article>
             <article class="lane"><div class="lane-no">04</div><h3>Prototype meeting AI</h3><ul><li>Listen-only first</li><li>Rank questions</li><li>Human-trigger interventions</li><li>Consent and retention controls</li><li>Measure useful disagreement</li></ul></article>
@@ -221,7 +222,7 @@ main { max-width: 1500px; margin: auto; padding: 0 clamp(20px, 4vw, 64px) 96px; 
     </section>
 
     <footer class="foot">
-        <span>Basis: meeting notes supplied 15 Sep 2026 + repository at e8a8275 + local audits + successful remote CI on Node 18/20/22.</span>
+        <span>Basis: meeting notes supplied 15 Sep 2026 + WorkSpec 1.2.4 parity audit + local full-suite verification + prior remote CI on Node 18/20/22.</span>
         <span>Scope note: documentation is mapped but intentionally not implemented.</span>
     </footer>
 </main>

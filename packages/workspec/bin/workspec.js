@@ -491,7 +491,10 @@ function assetResolverFromDirectory(directoryPath) {
         const encoded = fs.readFileSync(filePath).toString('base64');
         assets.set(assetId, `data:${mimeTypes[extension]};base64,${encoded}`);
     }
-    return (assetId) => assets.get(assetId) || null;
+    return (assetId) => {
+        const normalizedAssetId = typeof assetId === 'string' ? assetId.replace(/^asset:/, '') : '';
+        return assets.get(normalizedAssetId) || null;
+    };
 }
 
 async function handleSnapshot(filePath, flags) {

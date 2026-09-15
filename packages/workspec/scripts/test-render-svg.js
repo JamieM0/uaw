@@ -67,6 +67,13 @@ assert.match(cliSvg, /<svg /);
 assert.match(cliSvg, /data:image\/png;base64,/);
 assert.match(cli.stdout, /Rendered 09:05/);
 
+documentValue.simulation.state_libraries.bread_states.appearances.main.fresh = 'asset:bread_fresh';
+fs.writeFileSync(startPath, JSON.stringify(documentValue), 'utf8');
+const prefixedOutputPath = path.join(fixtureDirectory, 'world-prefixed.svg');
+const prefixedCli = spawnSync(process.execPath, [cliPath, 'render', startPath, '--changes', changesPath, '--time', '09:05', '--assets', assetDirectory, '--out', prefixedOutputPath], { encoding: 'utf8' });
+assert.equal(prefixedCli.status, 0, prefixedCli.stderr || prefixedCli.stdout);
+assert.match(fs.readFileSync(prefixedOutputPath, 'utf8'), /data:image\/png;base64,/, 'CLI should resolve the asset: prefix accepted by Studio');
+
 const failed = spawnSync(process.execPath, [cliPath, 'render', path.join(fixtureDirectory, 'missing.json'), '--time', '09:05', '--json'], { encoding: 'utf8' });
 assert.equal(failed.status, 2);
 assert.equal(failed.stderr, '');
