@@ -213,6 +213,12 @@ const AssetManager = {
     return this.thumbnailCache.get(this.thumbnailKey(assetId, maxDimension)) || null;
   },
 
+  isSvgAsset(record) {
+    const mimeType = String(record?.mimeType || record?.file?.type || '').split(';', 1)[0].trim().toLowerCase();
+    const fileName = String(record?.fileName || record?.name || record?.file?.name || '');
+    return mimeType === 'image/svg+xml' || /\.svg$/i.test(fileName);
+  },
+
   async ensureAssetThumbnail(assetId, maxDimension = 256) {
     const id = this.normalizeId(assetId);
     const size = Math.max(32, Math.round(maxDimension));
@@ -226,6 +232,21 @@ const AssetManager = {
       if (generation !== this.cacheGeneration) return null;
       const record = await window.UAWProjectStore?.readAsset?.(id);
       if (!record?.file || generation !== this.cacheGeneration) return null;
+      if (this.isSvgAsset(record)) {
+        const fileType = String(record.file.type || '').split(';', 1)[0].trim().toLowerCase();
+        const source = fileType === 'image/svg+xml'
+          ? record.file
+          : new Blob([record.file], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(source);
+        if (generation !== this.cacheGeneration) {
+          URL.revokeObjectURL(url);
+          return null;
+        }
+        this.thumbnailCache.set(key, url);
+        this.thumbnailObjectUrls.set(key, url);
+        window.dispatchEvent(new CustomEvent('uaw:asset-thumbnail-loaded', { detail: { assetId: id, size } }));
+        return url;
+      }
       let bitmap;
       try {
         bitmap = await createImageBitmap(record.file);
@@ -348,8 +369,8 @@ window.addEventListener('uaw:project-opened', () => {
   AssetManager.loadProjectAssets().then(() => AssetManager.migrateEmbeddedAssets());
 });
 window.addEventListener('uaw:assets-changed', event => {
-  const removedId = event.detail?.removedAssetId;
-  if (removedId) AssetManager.releaseAsset(removedId);
+  const changedId = event.detail?.removedAssetId || event.detail?.asset?.id;
+  if (changedId) AssetManager.releaseAsset(changedId);
 });
 
 // Initialization state tracking
