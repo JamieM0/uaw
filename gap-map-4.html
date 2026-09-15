@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UAW / WorkSpec — Fresh Gap Map, 15 September 2026</title>
+<style>
+:root {
+    --ink: #17201d;
+    --paper: #f3efe3;
+    --paper-deep: #e7dfcd;
+    --line: rgba(23, 32, 29, .2);
+    --quiet: #69716b;
+    --orange: #ed5f31;
+    --teal: #087f78;
+    --acid: #dce63d;
+    --blue: #2c5aa0;
+    --red: #a52c2c;
+    --white: #fffdf6;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+    margin: 0;
+    color: var(--ink);
+    background:
+        linear-gradient(rgba(23, 32, 29, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(23, 32, 29, .035) 1px, transparent 1px),
+        var(--paper);
+    background-size: 24px 24px;
+    font: 15px/1.5 "Avenir Next", Avenir, "Century Gothic", sans-serif;
+}
+a { color: inherit; }
+.masthead {
+    min-height: 72vh;
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(290px, .55fr);
+    border-bottom: 2px solid var(--ink);
+}
+.title-block { padding: clamp(32px, 7vw, 104px); align-self: end; }
+.eyebrow { font: 700 12px/1.2 Menlo, Consolas, monospace; letter-spacing: .16em; text-transform: uppercase; color: var(--teal); }
+h1, h2, h3 { font-family: Charter, "Iowan Old Style", Georgia, serif; }
+h1 { max-width: 890px; margin: 18px 0 24px; font-size: clamp(52px, 8.5vw, 126px); line-height: .84; letter-spacing: -.065em; }
+.deck { max-width: 760px; margin: 0; font-size: clamp(18px, 2vw, 25px); line-height: 1.35; }
+.stamp {
+    display: grid;
+    align-content: end;
+    gap: 0;
+    padding: 30px;
+    background: var(--ink);
+    color: var(--white);
+}
+.stamp div { padding: 18px 0; border-top: 1px solid rgba(255,255,255,.22); }
+.stamp b { display: block; color: var(--acid); font: 700 11px/1.4 Menlo, monospace; letter-spacing: .13em; text-transform: uppercase; }
+.stamp strong { display: block; margin-top: 4px; font: 600 22px/1.2 Charter, Georgia, serif; }
+main { max-width: 1500px; margin: auto; padding: 0 clamp(20px, 4vw, 64px) 96px; }
+.band { display: grid; grid-template-columns: repeat(4, 1fr); border: 2px solid var(--ink); border-top: 0; background: var(--white); }
+.metric { min-height: 150px; padding: 24px; border-right: 1px solid var(--ink); }
+.metric:last-child { border-right: 0; }
+.metric small { display: block; font: 700 10px Menlo, monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--quiet); }
+.metric strong { display: block; margin: 10px 0 4px; font: 700 35px/.95 Charter, Georgia, serif; }
+.metric span { color: var(--quiet); font-size: 13px; }
+.section-head { display: grid; grid-template-columns: 110px 1fr; gap: 22px; align-items: end; margin: 82px 0 25px; border-bottom: 2px solid var(--ink); padding-bottom: 13px; }
+.section-head .number { font: 700 12px Menlo, monospace; color: var(--orange); letter-spacing: .12em; }
+.section-head h2 { margin: 0; font-size: clamp(31px, 4vw, 56px); line-height: 1; letter-spacing: -.035em; }
+.section-intro { max-width: 880px; margin: -8px 0 28px 132px; color: var(--quiet); }
+.closed-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.closed-card { position: relative; min-height: 230px; padding: 22px; border: 1px solid var(--ink); background: var(--white); overflow: hidden; }
+.closed-card::after { content: "✓"; position: absolute; right: 10px; bottom: -34px; color: rgba(8,127,120,.13); font: 800 130px/1 Georgia, serif; }
+.closed-card h3 { margin: 28px 0 9px; font-size: 24px; line-height: 1.05; }
+.tag { display: inline-block; padding: 5px 8px; background: var(--teal); color: white; font: 700 10px Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; }
+.closed-card p { position: relative; z-index: 1; color: var(--quiet); }
+.ledger { border-top: 2px solid var(--ink); }
+.gap {
+    display: grid;
+    grid-template-columns: 110px minmax(210px, .72fr) minmax(300px, 1.28fr) 180px;
+    gap: 22px;
+    padding: 25px 12px;
+    border-bottom: 1px solid var(--ink);
+    background: rgba(255,253,246,.62);
+}
+.gap:hover { background: var(--white); }
+.priority { align-self: start; font: 800 11px Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; }
+.p0 { color: var(--red); } .p1 { color: var(--orange); } .p2 { color: var(--blue); } .later { color: var(--teal); }
+.gap h3 { margin: 0 0 6px; font-size: 22px; line-height: 1.08; }
+.gap p { margin: 0; color: var(--quiet); }
+.evidence { font: 12px/1.5 Menlo, Consolas, monospace; color: var(--ink); }
+.owner { font-size: 12px; color: var(--quiet); text-transform: uppercase; letter-spacing: .06em; }
+.owner b { display: block; color: var(--ink); }
+.lanes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; border: 2px solid var(--ink); background: var(--white); }
+.lane { min-height: 340px; padding: 22px; border-right: 1px solid var(--ink); }
+.lane:last-child { border-right: 0; }
+.lane .lane-no { font: 700 50px/.9 Charter, Georgia, serif; color: var(--orange); }
+.lane h3 { margin: 28px 0 10px; font-size: 23px; }
+.lane ul { margin: 0; padding-left: 18px; color: var(--quiet); }
+.lane li { margin-bottom: 9px; }
+.decision {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    margin-top: 22px;
+    border: 2px solid var(--ink);
+    background: var(--acid);
+}
+.decision h3 { margin: 0; padding: 28px; font-size: 31px; line-height: 1.05; }
+.decision p { margin: 0; padding: 28px; border-left: 2px solid var(--ink); font-size: 17px; }
+.foot { margin-top: 70px; padding-top: 20px; border-top: 1px solid var(--ink); display: flex; justify-content: space-between; gap: 20px; color: var(--quiet); font: 11px/1.5 Menlo, monospace; }
+@media (max-width: 1050px) {
+    .masthead, .decision { grid-template-columns: 1fr; }
+    .stamp { grid-template-columns: repeat(2, 1fr); align-content: center; }
+    .stamp div { margin-right: 20px; }
+    .band, .closed-grid { grid-template-columns: repeat(2, 1fr); }
+    .metric:nth-child(2) { border-right: 0; }
+    .metric:nth-child(-n+2) { border-bottom: 1px solid var(--ink); }
+    .gap { grid-template-columns: 80px 1fr 1.4fr; }
+    .owner { grid-column: 2 / -1; }
+    .lanes { grid-template-columns: repeat(2, 1fr); }
+    .lane { border-bottom: 1px solid var(--ink); }
+    .decision p { border-left: 0; border-top: 2px solid var(--ink); }
+}
+@media (max-width: 680px) {
+    .masthead { min-height: auto; }
+    .title-block { padding: 54px 22px; }
+    .stamp, .band, .closed-grid, .lanes { grid-template-columns: 1fr; }
+    .metric, .lane { border-right: 0; border-bottom: 1px solid var(--ink); }
+    .section-head { grid-template-columns: 1fr; gap: 5px; }
+    .section-intro { margin-left: 0; }
+    .gap { grid-template-columns: 1fr; gap: 8px; }
+    .owner { grid-column: auto; }
+    .foot { display: block; }
+}
+@media print {
+    body { background: white; }
+    .masthead { min-height: auto; }
+    .closed-card, .gap, .lane { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<header class="masthead">
+    <div class="title-block">
+        <div class="eyebrow">Fresh repository audit · after two implementation passes</div>
+        <h1>What remains?</h1>
+        <p class="deck">A clean-sheet gap map across course delivery, the cut-scene research model, Perspectives, an AI meeting participant, and the DAO ideas raised with John.</p>
+    </div>
+    <aside class="stamp" aria-label="Audit metadata">
+        <div><b>Evidence point</b><strong>e8a8275</strong></div>
+        <div><b>Repository</b><strong>main synchronized</strong></div>
+        <div><b>Audit date</b><strong>15 Sep 2026</strong></div>
+        <div><b>Course target</b><strong>23 Sep 2026</strong></div>
+    </aside>
+</header>
+
+<main>
+    <section class="band" aria-label="Summary">
+        <div class="metric"><small>Closed in two passes</small><strong>All code</strong><span>runtime surface, packaging, tests, types, rendering, release gates</span></div>
+        <div class="metric"><small>Immediate code gaps</small><strong>0</strong><span>Section 2 now contains only deliberately excluded course materials</span></div>
+        <div class="metric"><small>Research/product fronts</small><strong>4</strong><span>WorkSpec FYP, Perspectives, meeting AI, DAO</span></div>
+        <div class="metric"><small>Remote WorkSpec CI</small><strong>3 / 3</strong><span>Node 18, 20, and 22 passed from clean packed installs</span></div>
+    </section>
+
+    <section>
+        <div class="section-head"><span class="number">01 / CLOSED</span><h2>The old map is no longer the baseline</h2></div>
+        <p class="section-intro">These claims were verified in code, committed, pushed, and—where applicable—proved again in remote CI.</p>
+        <div class="closed-grid">
+            <article class="closed-card"><span class="tag">Closed</span><h3>JSON + time → SVG</h3><p>Library functions and <code>workspec render</code> resolve one authoritative run, then render its snapshot without a second simulation path.</p></article>
+            <article class="closed-card"><span class="tag">Verified</span><h3>Restricted Changes context</h3><p>Changes callbacks compile to static effects. Their frozen context exposes writes plus task/phase—not prior state, current state, or ticks.</p></article>
+            <article class="closed-card"><span class="tag">Closed</span><h3>Installed-build identity</h3><p><code>workspec --version</code> now reports the package version, giving support and screenshots a concrete build identifier.</p></article>
+            <article class="closed-card"><span class="tag">Closed</span><h3>Exact-tarball release proof</h3><p>CI and the publish workflow now run the full suite, pack, clean-install, and smoke-test the same tarball the release job will publish.</p></article>
+            <article class="closed-card"><span class="tag">Closed</span><h3>One canonical test command</h3><p>The previously ignored Node suite is now tracked, repaired for current 2.2 goldens, and included in <code>npm test</code>: all 24 Node tests pass.</p></article>
+            <article class="closed-card"><span class="tag">Closed</span><h3>Coherent package identity</h3><p>The package and parent lock now agree on <code>workspec@1.3.0</code>; the release workflow rejects mismatched tags and unrelated repository tags.</p></article>
+            <article class="closed-card"><span class="tag">Closed</span><h3>Visual assets + error JSON</h3><p>Render can embed state-library PNG, JPEG, WebP, GIF, and SVG assets, falls back to typed glyphs, and returns stable JSON problems on failure.</p></article>
+            <article class="closed-card"><span class="tag">Closed</span><h3>Typed, supported package API</h3><p>The tarball contains <code>index.d.ts</code>, publishes the type entrypoint, and its clean-installed API is smoke-tested across the supported Node range.</p></article>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-head"><span class="number">02 / MATERIALS</span><h2>Only the explicit exclusions remain</h2></div>
+        <p class="section-intro">A fresh post-CI audit found no remaining Section 2 code, package, renderer, type, test, or delivery gap. The two entries below are retained because this pass was expressly told not to close practical or documentation work.</p>
+        <div class="ledger">
+            <article class="gap"><div class="priority p0">P0 · separate</div><div><h3>CLI-first practical and reference docs</h3><p>The canonical beginner material remains Studio-first and does not teach <code>render</code>. This is deliberately not changed in this pass.</p></div><div class="evidence">quickstart.md<br>cheatsheet.md<br>package README</div><div class="owner"><b>Separate docs effort</b>explicitly deferred</div></article>
+            <article class="gap"><div class="priority p2">P2 · proof</div><div><h3>Make practical reruns reproducible</h3><p>The repository contains no clearly named Practical 1/2 harness. The clean tarball smoke succeeds, but the claimed student exercises cannot be rerun from a discoverable fixture.</p></div><div class="evidence">no tracked practical-1 / practical-2 artifacts found</div><div class="owner"><b>Course setup</b>pair with docs effort</div></article>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-head"><span class="number">03 / MODEL</span><h2>WorkSpec research gaps, freshly framed</h2></div>
+        <p class="section-intro">The current package is a credible evaluator of authored histories. It is not yet the jigsaw-solving or simulator-inference system described in the meeting.</p>
+        <div class="ledger">
+            <article class="gap"><div class="priority p1">Decision</div><div><h3>Define “simple curve” precisely</h3><p>Today’s Changes are discrete task-start/task-completion effects. They cannot inspect world state, which is good; however, there is no first-class <em>f(parameters, time) → value</em> curve, and <code>change()</code> applies a delta to prior value.</p></div><div class="evidence">Strong restriction: proven<br>Continuous curve model: absent<br>Delta semantics: state-relative</div><div class="owner"><b>John + research design</b>settle before API expansion</div></article>
+            <article class="gap"><div class="priority p1">Architecture</div><div><h3>Random access still replays</h3><p>Snapshot and render call <code>runProject(... until: T)</code> and then sample history. They answer the query truthfully, but do not yet provide direct evaluation at T without prior execution.</p></div><div class="evidence">runProject → replay<br>snapshotRunAt samples completed run</div><div class="owner"><b>Research milestone</b>after curve semantics</div></article>
+            <article class="gap"><div class="priority later">FYP core</div><div><h3>No optimiser/search loop</h3><p>Constraints report invalidity and Changes/Generator can create, move, mutate, or remove objects, but nothing proposes edits, scores candidate histories, or searches until all constraints pass.</p></div><div class="evidence">Evaluator primitives: present<br>Search/objective/repair protocol: absent</div><div class="owner"><b>Final-year project</b>primary technical contribution</div></article>
+            <article class="gap"><div class="priority later">FYP core</div><div><h3>No bakery benchmark world</h3><p>The repository has breadmaking legacy data and a strong steam-sterilisation dogfood project, but not a realistic bakery constraint benchmark designed for solver evaluation.</p></div><div class="evidence">Need sparse facts, hard constraints, gold checks, difficulty tiers</div><div class="owner"><b>Final-year project</b>with bakery domain expert</div></article>
+            <article class="gap"><div class="priority later">Evaluation</div><div><h3>No research evaluation protocol</h3><p>“Produces a valid timeline” is necessary but insufficient. The project needs baselines, validity rate, solve time, diversity, edit cost, plausibility, and blinded expert assessment.</p></div><div class="evidence">Domain expert not identified<br>no benchmark metrics or baseline solver</div><div class="owner"><b>Project proposal</b>agree with supervisor</div></article>
+            <article class="gap"><div class="priority later">Stretch</div><div><h3>Dense timeline → causal simulator is absent</h3><p>There is no inference layer that learns inspectable rules from completed histories or tests those rules on unseen situations. This remains correctly outside near-term course scope.</p></div><div class="evidence">Generator is hand-authored<br>no rule induction or holdout scenarios</div><div class="owner"><b>Stretch goal</b>protect core project first</div></article>
+        </div>
+        <div class="decision"><h3>The key semantic fork</h3><p>If a Change is a discrete immutable fact attached to a task boundary, the current model is already strong. If it must be a continuously evaluable mathematical shape, the repository needs a new declarative curve abstraction—not more freedom inside today’s callbacks.</p></div>
+    </section>
+
+    <section>
+        <div class="section-head"><span class="number">04 / BEYOND</span><h2>Meeting ideas with no repository implementation</h2></div>
+        <p class="section-intro">Absence is not automatically a defect. These are separate product/research fronts and should not be smuggled into the course-release milestone.</p>
+        <div class="ledger">
+            <article class="gap"><div class="priority p1">Perspectives</div><div><h3>Pivot from price oracle to evidence product</h3><p>No Perspectives or TimesFM code is tracked. The next system should ingest multiple evidence sources, explain historical moves, score sources/people without leakage, and calibrate uncertainty—not promise market direction.</p></div><div class="evidence">Required foundations:<br>data provenance · event alignment · walk-forward backtest · calibration · source scoring</div><div class="owner"><b>Separate product</b>discovery before build</div></article>
+            <article class="gap"><div class="priority p1">Perspectives</div><div><h3>Define the buyer-facing output</h3><p>The meeting provides a promising framing—valuable information rather than magic predictions—but the repository has no report schema, alternative-signal contract, explanation UI, or evidence-quality measure.</p></div><div class="evidence">Compare against AlphaSense/Bloomberg slice<br>decide what “30% of value” means</div><div class="owner"><b>Product research</b>validate before modelling</div></article>
+            <article class="gap"><div class="priority p2">Meeting AI</div><div><h3>No live meeting participant prototype</h3><p>There is no transcription loop, speaker model, question policy, latency budget, meeting memory, or integration surface for an AI that listens and challenges John.</p></div><div class="evidence">Prototype sequence:<br>transcript → issue extraction → question ranking → timed intervention</div><div class="owner"><b>Separate prototype</b>start listen-only</div></article>
+            <article class="gap"><div class="priority p2">Meeting AI</div><div><h3>Consent and evaluation are undefined</h3><p>A useful challenger can also be intrusive. The design needs participant consent, retention policy, visible listening state, interruption rules, and measures for question value versus disruption.</p></div><div class="evidence">Privacy boundary<br>false challenge rate<br>questions accepted / ignored<br>meeting interruption cost</div><div class="owner"><b>Human factors</b>define before live deployment</div></article>
+            <article class="gap"><div class="priority later">DAO</div><div><h3>The oracle problem is the project</h3><p>No DAO code exists. The hard gap is not payment release itself; it is specifying measurable outcomes, resisting manipulation, handling ambiguity/appeal, and deciding who controls the judging algorithm.</p></div><div class="evidence">Threat model · dispute path · escrow rules · oracle governance</div><div class="owner"><b>Research parking lot</b>do not mix with WorkSpec release</div></article>
+            <article class="gap"><div class="priority later">Perpetual funds</div><div><h3>No defensible capital model</h3><p>“Fund food or an AI forever” requires explicit inflation, return, fee, tax, failure, replacement, energy, and tail-risk assumptions. A deterministic number without uncertainty would be false precision.</p></div><div class="evidence">Model distributions and ruin probability<br>legal wrapper remains jurisdiction-specific</div><div class="owner"><b>Quant + legal research</b>concept stage</div></article>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-head"><span class="number">05 / ORDER</span><h2>Five lanes; only one is urgent</h2></div>
+        <div class="lanes">
+            <article class="lane"><div class="lane-no">01</div><h3>Finish course materials</h3><ul><li>Write the separate CLI-first docs</li><li>Create discoverable Practical 1/2 fixtures</li><li>Rerun both against the packed 1.3.0 build</li><li>Keep implementation scope frozen unless a practical fails</li></ul></article>
+            <article class="lane"><div class="lane-no">02</div><h3>Frame the final-year project</h3><ul><li>Resolve curve semantics</li><li>Write research question</li><li>Build bakery benchmark</li><li>Recruit domain evaluator</li><li>Choose solver baselines</li></ul></article>
+            <article class="lane"><div class="lane-no">03</div><h3>Re-found Perspectives</h3><ul><li>Inventory public data</li><li>Define evidence product</li><li>Prevent temporal leakage</li><li>Score sources historically</li><li>Calibrate uncertainty</li></ul></article>
+            <article class="lane"><div class="lane-no">04</div><h3>Prototype meeting AI</h3><ul><li>Listen-only first</li><li>Rank questions</li><li>Human-trigger interventions</li><li>Consent and retention controls</li><li>Measure useful disagreement</li></ul></article>
+            <article class="lane"><div class="lane-no">05</div><h3>Park DAO research</h3><ul><li>Formalise outcome/oracle model</li><li>Threat-model incentives</li><li>Quantify perpetual funding risk</li><li>Investigate legal constraints</li><li>No production money movement</li></ul></article>
+        </div>
+    </section>
+
+    <footer class="foot">
+        <span>Basis: meeting notes supplied 15 Sep 2026 + repository at e8a8275 + local audits + successful remote CI on Node 18/20/22.</span>
+        <span>Scope note: documentation is mapped but intentionally not implemented.</span>
+    </footer>
+</main>
+</body>
+</html>
