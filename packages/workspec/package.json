@@ -1,10 +1,11 @@
 {
   "name": "workspec",
   "private": false,
-  "version": "1.2.3",
+  "version": "1.3.0",
   "description": "WorkSpec 2 runtime, validator and CLI.",
   "license": "AGPL-3.0",
   "main": "index.js",
+  "types": "index.d.ts",
   "bin": {
     "workspec": "bin/workspec.js"
   },
@@ -13,11 +14,13 @@
     "sync:web": "node scripts/sync-web-assets.js",
     "test:headless": "node --test scripts/test-headless-snapshot.js",
     "test:integration": "node scripts/sync-web-assets.js && node scripts/test-playground-integration.js && node scripts/test-studio-templates-2.2.js",
-    "test": "node scripts/self-test.js && node scripts/test-playback-state.js && node scripts/test-changes-api-2.2.js && node scripts/test-render-svg.js && node scripts/test-generator-2.2.js && node scripts/test-validation-layers-2.2.js && node scripts/test-authoritative-run-2.2.js && node scripts/test-cli-course-readiness-2.2.js && node scripts/test-authoritative-run-goldens-2.2.js && npm run test:headless && npm run test:integration"
+    "test:node": "node --test test/*.test.js",
+    "test": "node scripts/self-test.js && node scripts/test-playback-state.js && node scripts/test-changes-api-2.2.js && node scripts/test-render-svg.js && node scripts/test-generator-2.2.js && node scripts/test-validation-layers-2.2.js && node scripts/test-authoritative-run-2.2.js && node scripts/test-cli-course-readiness-2.2.js && node scripts/test-authoritative-run-goldens-2.2.js && npm run test:headless && npm run test:integration && npm run test:node"
   },
   "files": [
     "bin/",
     "index.js",
+    "index.d.ts",
     "custom-validation-runner.js",
     "custom-validation-worker.js",
     "workspec-validator.js",

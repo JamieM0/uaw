@@ -1,0 +1,40 @@
+{
+  "simulation": {
+    "schema_version": "2.1",
+    "meta": {
+      "title": "Simple Passing WorkSpec",
+      "description": "A minimal WorkSpec document that should pass built-in and custom validation.",
+      "domain": "testing"
+    },
+    "config": {
+      "time_unit": "minutes",
+      "start_time": "08:00",
+      "end_time": "18:00",
+      "currency": "USD",
+      "locale": "en-US",
+      "timezone": "UTC"
+    },
+    "world": {
+      "objects": [
+        {
+          "id": "operator_a",
+          "type": "actor",
+          "name": "Operator A",
+          "properties": {
+            "state": "idle"
+          }
+        }
+      ]
+    },
+    "process": {
+      "tasks": [
+        {
+          "id": "task_1",
+          "actor_id": "operator_a",
+          "start": "09:00",
+          "duration": 30
+        }
+      ]
+    }
+  }
+}

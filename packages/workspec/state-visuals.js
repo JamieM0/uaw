@@ -145,6 +145,20 @@
         return details.join(' · ');
     }
 
+    function objectGlyph(object) {
+        if (typeof object?.emoji === 'string' && object.emoji.trim()) return object.emoji.trim();
+        return ({
+            actor: '●',
+            equipment: '◆',
+            resource: '■',
+            product: '▲',
+            service: '✦',
+            display: '▣',
+            screen_element: '▤',
+            digital_object: '⬡'
+        })[object?.type] || '●';
+    }
+
     /**
      * Render an already-resolved WorkSpec snapshot as deterministic, standalone SVG.
      * This function is deliberately presentation-only: it never advances or mutates state.
@@ -178,7 +192,14 @@
                 const label = object.name || object.id;
                 const subtitle = objectSubtitle(object);
                 const centreX = slot.x + (slot.size / 2);
-                return `<g data-object-id="${escapeXml(id)}"><rect x="${slot.x}" y="${slot.y}" width="${slot.size}" height="${slot.size}" rx="8" fill="#ffffff" stroke="#526173"/><text x="${centreX}" y="${slot.y + slot.size + 14}" text-anchor="middle" class="object-label">${escapeXml(label)}</text>${subtitle ? `<text x="${centreX}" y="${slot.y + slot.size + 27}" text-anchor="middle" class="object-detail">${escapeXml(subtitle)}</text>` : ''}</g>`;
+                const assetId = resolveStateVisualAssetId(documentValue, object);
+                const assetHref = assetId && typeof options.assetResolver === 'function'
+                    ? options.assetResolver(assetId, object)
+                    : null;
+                const visual = typeof assetHref === 'string' && assetHref
+                    ? `<image href="${escapeXml(assetHref)}" x="${slot.x + 3}" y="${slot.y + 3}" width="${slot.size - 6}" height="${slot.size - 6}" preserveAspectRatio="xMidYMid meet"/>`
+                    : `<text x="${centreX}" y="${slot.y + (slot.size * .68)}" text-anchor="middle" class="object-glyph">${escapeXml(objectGlyph(object))}</text>`;
+                return `<g data-object-id="${escapeXml(id)}"${assetId ? ` data-asset-id="${escapeXml(assetId)}"` : ''}><rect x="${slot.x}" y="${slot.y}" width="${slot.size}" height="${slot.size}" rx="8" fill="#ffffff" stroke="#526173"/>${visual}<text x="${centreX}" y="${slot.y + slot.size + 14}" text-anchor="middle" class="object-label">${escapeXml(label)}</text>${subtitle ? `<text x="${centreX}" y="${slot.y + slot.size + 27}" text-anchor="middle" class="object-detail">${escapeXml(subtitle)}</text>` : ''}</g>`;
             }).join('');
             locationMarkup.push(`<g data-location-id="${escapeXml(location.id)}"><rect x="${location.x}" y="${location.y}" width="${location.width}" height="${location.height}" rx="12" fill="#eef4f7" stroke="#8293a5" stroke-width="1.5"/><text x="${location.x + 12}" y="${location.y + 20}" class="location-label">${escapeXml(location.emoji ? `${location.emoji} ${location.name}` : location.name)}</text>${objectMarkup}</g>`);
         }
@@ -189,7 +210,7 @@
             : '';
         const title = options.title || getSimulation(documentValue)?.meta?.title || 'WorkSpec world state';
         const timeLabel = options.timeLabel === undefined ? '' : ` at ${options.timeLabel}`;
-        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minLeft - padding} ${minTop - padding} ${width} ${height}" width="${width}" height="${height}" role="img" aria-labelledby="workspec-svg-title"><title id="workspec-svg-title">${escapeXml(title + timeLabel)}</title><style>.location-label{font:600 13px ui-sans-serif,system-ui,sans-serif;fill:#263746}.object-label{font:11px ui-sans-serif,system-ui,sans-serif;fill:#263746}.object-detail{font:9px ui-sans-serif,system-ui,sans-serif;fill:#657587}</style><rect x="${minLeft - padding}" y="${minTop - padding}" width="${width}" height="${height}" fill="#f8fafb"/>${locationMarkup.join('')}${unplacedMarkup}</svg>`;
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minLeft - padding} ${minTop - padding} ${width} ${height}" width="${width}" height="${height}" role="img" aria-labelledby="workspec-svg-title"><title id="workspec-svg-title">${escapeXml(title + timeLabel)}</title><style>.location-label{font:600 13px ui-sans-serif,system-ui,sans-serif;fill:#263746}.object-label{font:11px ui-sans-serif,system-ui,sans-serif;fill:#263746}.object-detail{font:9px ui-sans-serif,system-ui,sans-serif;fill:#657587}.object-glyph{font:700 20px ui-sans-serif,system-ui,sans-serif;fill:#2c5f65}</style><rect x="${minLeft - padding}" y="${minTop - padding}" width="${width}" height="${height}" fill="#f8fafb"/>${locationMarkup.join('')}${unplacedMarkup}</svg>`;
     }
 
     /** Resolve one authoritative run through time, then render that immutable snapshot. */

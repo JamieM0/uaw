@@ -22,12 +22,16 @@ permissions:
 jobs:
   test-packed-package:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18, 20, 22]
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ matrix.node-version }}
 
       - name: Verify synced browser assets
         run: node packages/workspec/scripts/check-sync.js

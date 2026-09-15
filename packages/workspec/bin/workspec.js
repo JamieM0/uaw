@@ -20,7 +20,7 @@ function printHelp(exitCode = 0) {
         'Usage:',
         '  workspec validate <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] [--constraints <constraints.workspec.js>] [--time <time>] [--seed <seed>] [--max-events <count>] [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json] [--fail-on-warning] [-y]',
         '  workspec snapshot <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] --time <time> [--seed <seed>] [--max-events <count>] [--json]',
-        '  workspec render <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] --time <time> [--seed <seed>] [--max-events <count>] [--out <world.svg>] [--json]',
+        '  workspec render <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] --time <time> [--assets <directory>] [--seed <seed>] [--max-events <count>] [--out <world.svg>] [--json]',
         '  workspec constraints <start.workspec.json> --constraints <constraints.workspec.js> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] [--time <time>] [--seed <seed>] [--max-events <count>] [--json] [-y]',
         '  workspec migrate <file.json> --out <output.json> [--schema]',
         '  workspec format <file.json> [--write] [--out <output.json>]',
@@ -39,10 +39,11 @@ function printHelp(exitCode = 0) {
         '  --custom-catalog <path> Optional metrics-catalog JSON for custom metrics.',
         '  -y, --yes      Acknowledge trusted custom validation/constraint JavaScript.',
         '  --json          Print machine-readable JSON (validate/snapshot/constraints).',
-        '  --changes <path> Optional WorkSpec Changes source (validate/snapshot/constraints).',
-        '  --generator <path> Optional WorkSpec Generator source (validate/snapshot/constraints).',
+        '  --changes <path> Optional WorkSpec Changes source (validate/snapshot/render/constraints).',
+        '  --generator <path> Optional WorkSpec Generator source (validate/snapshot/render/constraints).',
         '  --constraints <path> Runtime constraint functions (validate/constraints).',
         '  --time <time>   Runtime time as minutes, HH:MM, day/time JSON, or ISO date-time.',
+        '  --assets <path>  Asset directory for state-library visuals embedded by render.',
         '  --seed <seed>   Deterministic integer Generator seed (default: 1).',
         '  --max-events <count> Maximum runtime work units (default: 10000; maximum: 1000000).',
         '  --fail-on-warning Exit with status 1 when validation returns a warning.',
@@ -125,6 +126,10 @@ function parseArgs(argv) {
         }
         if (arg === '--time') {
             result.flags.time = args.shift() || '';
+            continue;
+        }
+        if (arg === '--assets') {
+            result.flags.assets = args.shift() || '';
             continue;
         }
         if (arg === '--seed') {
@@ -460,6 +465,35 @@ function readOptionalSource(sourcePath, label) {
     }
 }
 
+function assetResolverFromDirectory(directoryPath) {
+    if (!directoryPath) return undefined;
+    const resolvedDirectory = resolvePath(directoryPath);
+    const stat = fs.statSync(resolvedDirectory);
+    if (!stat.isDirectory()) throw new Error(`Asset path is not a directory: ${resolvedDirectory}`);
+    const mimeTypes = {
+        '.gif': 'image/gif',
+        '.jpeg': 'image/jpeg',
+        '.jpg': 'image/jpeg',
+        '.png': 'image/png',
+        '.svg': 'image/svg+xml',
+        '.webp': 'image/webp'
+    };
+    const assets = new Map();
+    const filenames = fs.readdirSync(resolvedDirectory).sort();
+    for (const filename of filenames) {
+        const extension = path.extname(filename).toLowerCase();
+        if (!mimeTypes[extension]) continue;
+        const assetId = stateVisuals.assetIdFromFilename(filename);
+        if (!assetId) continue;
+        if (assets.has(assetId)) throw new Error(`Multiple asset files resolve to '${assetId}' in ${resolvedDirectory}.`);
+        const filePath = path.join(resolvedDirectory, filename);
+        if (!fs.statSync(filePath).isFile()) continue;
+        const encoded = fs.readFileSync(filePath).toString('base64');
+        assets.set(assetId, `data:${mimeTypes[extension]};base64,${encoded}`);
+    }
+    return (assetId) => assets.get(assetId) || null;
+}
+
 async function handleSnapshot(filePath, flags) {
     if (!filePath) {
         process.stderr.write('Missing Starting State file path.\n');
@@ -573,7 +607,7 @@ async function handleRender(filePath, flags) {
         printHelp(2);
         return;
     }
-    for (const [flag, label] of [['changes', '--changes'], ['generator', '--generator'], ['out', '--out']]) {
+    for (const [flag, label] of [['changes', '--changes'], ['generator', '--generator'], ['assets', '--assets'], ['out', '--out']]) {
         if (Object.prototype.hasOwnProperty.call(flags, flag) && !flags[flag]) {
             process.stderr.write(`Missing value after ${label}.\n`);
             printHelp(2);
@@ -605,18 +639,72 @@ async function handleRender(filePath, flags) {
         result = stateVisuals.renderProjectToSvg(documentValue, time.value, {
             changesSource: readOptionalSource(flags.changes, 'Changes source'),
             generatorSource: readOptionalSource(flags.generator, 'Generator source'),
+            assetResolver: assetResolverFromDirectory(flags.assets),
             seed,
             ...(maxEvents.value === undefined ? {} : { maxEvents: maxEvents.value }),
             timeLabel: flags.time
         });
     } catch (error) {
-        process.stderr.write(`Failed to render project: ${error.message}\n`);
+        const problems = [{
+            type: 'https://universalautomation.wiki/workspec/errors/render.failed',
+            title: 'render failed',
+            severity: 'error',
+            detail: error.message,
+            instance: '/render',
+            metric_id: 'render.failed',
+            scope: 'runtime',
+            provenance: { layer: 'runtime', source: 'render' },
+            context: { requested_time: time.minutes },
+            suggestions: ['Check the project sources, render time, work budget, and asset directory.']
+        }];
+        if (flags.json) {
+            process.stdout.write(toPrettyJson({
+                time: flags.time,
+                time_minutes: time.minutes,
+                seed,
+                output: flags.out || null,
+                svg: null,
+                run: null,
+                problems
+            }));
+        } else {
+            process.stderr.write(`Failed to render project: ${error.message}\n`);
+        }
         process.exitCode = 2;
         return;
     }
 
     const problems = Array.isArray(result.run?.problems) ? result.run.problems : [];
-    if (flags.out) fs.writeFileSync(resolvePath(flags.out), result.svg + '\n', 'utf8');
+    if (flags.out) {
+        try {
+            fs.writeFileSync(resolvePath(flags.out), result.svg + '\n', 'utf8');
+        } catch (error) {
+            if (flags.json) {
+                process.stdout.write(toPrettyJson({
+                    time: flags.time,
+                    time_minutes: result.time,
+                    seed,
+                    output: flags.out,
+                    svg: null,
+                    run: runMetadata(result.run, { seed, requestedHorizon: result.time, maxEvents: maxEvents.value }),
+                    problems: [{
+                        severity: 'error',
+                        detail: error.message,
+                        instance: '/render/output',
+                        metric_id: 'render.output.failed',
+                        scope: 'runtime',
+                        provenance: { layer: 'runtime', source: 'render' },
+                        context: { output: flags.out },
+                        suggestions: ['Choose a writable --out path.']
+                    }]
+                }));
+            } else {
+                process.stderr.write(`Failed to write rendered SVG: ${error.message}\n`);
+            }
+            process.exitCode = 2;
+            return;
+        }
+    }
     if (flags.json) {
         process.stdout.write(toPrettyJson({
             time: flags.time,
