@@ -58,6 +58,18 @@ assert.equal(compiled.get('second:start').length, 1, 'grouped start handler was 
 assert.equal(compiled.get('second:completion').length, 2, 'grouped completion handler was not captured');
 assert.equal(compiled.get('first:start')[0].temporary, true, 'temporary start effect was not preserved');
 
+let observedContext;
+runtime.compileChanges('WorkSpec.task("first").onStart(context => { globalThis.__workspecObservedContext = context; });');
+try {
+    observedContext = globalThis.__workspecObservedContext;
+    assert.deepEqual(Object.keys(observedContext).sort(), ['change', 'create', 'move', 'phase', 'remove', 'set', 'taskId']);
+    assert.equal(observedContext.state, undefined, 'Changes callbacks must not receive evolving world state');
+    assert.equal(observedContext.time, undefined, 'Changes callbacks must not run as a hidden tick simulation');
+    assert.equal(Object.isFrozen(observedContext), true, 'Changes callback context must remain immutable');
+} finally {
+    delete globalThis.__workspecObservedContext;
+}
+
 const run = runtime.runProject(documentValue(), changes, '', { seed: 1 });
 assert.equal(run.problems.some(problem => problem.severity === 'error'), false, 'Changes project did not execute cleanly');
 const state = runtime.serialiseState(run);

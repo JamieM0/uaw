@@ -1,41 +1,47 @@
-name: Publish WorkSpec CLI (npm)
+name: WorkSpec CI
 
 on:
+  pull_request:
+    paths:
+      - "packages/workspec/**"
+      - "web/packages/workspec/**"
+      - "web/workspec/**"
+      - ".github/workflows/workspec-ci.yml"
   push:
-    tags:
-      - "workspec-v*"
-      - "v*"
-  workflow_dispatch:
+    branches:
+      - main
+    paths:
+      - "packages/workspec/**"
+      - "web/packages/workspec/**"
+      - "web/workspec/**"
+      - ".github/workflows/workspec-ci.yml"
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
-  publish:
+  test-packed-package:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: "https://registry.npmjs.org"
 
-      - name: Verify web assets in sync
+      - name: Verify synced browser assets
         run: node packages/workspec/scripts/check-sync.js
 
       - name: Test WorkSpec
         working-directory: packages/workspec
         run: npm test
 
-      - name: Pack tested source
+      - name: Pack the tested source
         id: pack
         working-directory: packages/workspec
         run: echo "tarball=$(npm pack --silent)" >> "$GITHUB_OUTPUT"
 
-      - name: Smoke-test clean tarball install
+      - name: Smoke-test a clean tarball install
         env:
           WORKSPEC_TARBALL: ${{ github.workspace }}/packages/workspec/${{ steps.pack.outputs.tarball }}
         run: |
@@ -45,9 +51,3 @@ jobs:
           npm install "$WORKSPEC_TARBALL"
           ./node_modules/.bin/workspec --version
           ./node_modules/.bin/workspec --help >/dev/null
-
-      - name: Publish tested tarball
-        env:
-          WORKSPEC_TARBALL: ${{ github.workspace }}/packages/workspec/${{ steps.pack.outputs.tarball }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish "$WORKSPEC_TARBALL" --access public

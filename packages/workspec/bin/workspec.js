@@ -10,6 +10,8 @@ const projectValidator = require(path.join(__dirname, '..', 'workspec-project-va
 const migrator = require(path.join(__dirname, '..', 'workspec-migrate-v1-to-v2.js'));
 const customValidationRunner = require(path.join(__dirname, '..', 'custom-validation-runner.js'));
 const runtime = require(path.join(__dirname, '..', 'workspec-runtime.js'));
+const stateVisuals = require(path.join(__dirname, '..', 'state-visuals.js'));
+const packageMetadata = require(path.join(__dirname, '..', 'package.json'));
 
 function printHelp(exitCode = 0) {
     const lines = [
@@ -18,6 +20,7 @@ function printHelp(exitCode = 0) {
         'Usage:',
         '  workspec validate <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] [--constraints <constraints.workspec.js>] [--time <time>] [--seed <seed>] [--max-events <count>] [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json] [--fail-on-warning] [-y]',
         '  workspec snapshot <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] --time <time> [--seed <seed>] [--max-events <count>] [--json]',
+        '  workspec render <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] --time <time> [--seed <seed>] [--max-events <count>] [--out <world.svg>] [--json]',
         '  workspec constraints <start.workspec.json> --constraints <constraints.workspec.js> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] [--time <time>] [--seed <seed>] [--max-events <count>] [--json] [-y]',
         '  workspec migrate <file.json> --out <output.json> [--schema]',
         '  workspec format <file.json> [--write] [--out <output.json>]',
@@ -25,6 +28,7 @@ function printHelp(exitCode = 0) {
         'Commands:',
         '  validate   Validate a Starting State document, or a full project when project-source flags are supplied.',
         '  snapshot   Run a project and resolve its observable world state at a time.',
+        '  render     Run a project and render its observable world state as SVG.',
         '  constraints Run a project and execute runtime constraints over resolved state.',
         '  migrate    Previous UAW Syntax -> WorkSpec 2.1.',
         '  format     Pretty-print JSON (2-space).',
@@ -42,10 +46,11 @@ function printHelp(exitCode = 0) {
         '  --seed <seed>   Deterministic integer Generator seed (default: 1).',
         '  --max-events <count> Maximum runtime work units (default: 10000; maximum: 1000000).',
         '  --fail-on-warning Exit with status 1 when validation returns a warning.',
-        '  --out <path>    Output path (migrate/format).',
+        '  --out <path>    Output path (render/migrate/format).',
         '  --write         Write output (format only; defaults to stdout).',
         '  --schema        Add top-level $schema on migrate (default: off).',
         '  -h, --help      Show help.',
+        '  -v, --version   Show the installed WorkSpec version.',
         ''
     ];
     process.stdout.write(lines.join('\n') + '\n');
@@ -80,6 +85,10 @@ function parseArgs(argv) {
         }
         if (arg === '--help' || arg === '-h') {
             result.flags.help = true;
+            continue;
+        }
+        if (arg === '--version' || arg === '-v') {
+            result.flags.version = true;
             continue;
         }
         if (arg === '--json') {
@@ -553,6 +562,79 @@ async function handleSnapshot(filePath, flags) {
     process.exitCode = hasErrors(problems) ? 1 : 0;
 }
 
+async function handleRender(filePath, flags) {
+    if (!filePath) {
+        process.stderr.write('Missing Starting State file path.\n');
+        printHelp(2);
+        return;
+    }
+    if (!flags.time) {
+        process.stderr.write('Missing --time <time>.\n');
+        printHelp(2);
+        return;
+    }
+    for (const [flag, label] of [['changes', '--changes'], ['generator', '--generator'], ['out', '--out']]) {
+        if (Object.prototype.hasOwnProperty.call(flags, flag) && !flags[flag]) {
+            process.stderr.write(`Missing value after ${label}.\n`);
+            printHelp(2);
+            return;
+        }
+    }
+    const time = parseSnapshotTime(flags.time);
+    if (!time.ok) {
+        process.stderr.write(`Invalid render time: ${flags.time}\n`);
+        process.exitCode = 2;
+        return;
+    }
+    const seed = flags.seed === undefined ? 1 : Number(flags.seed);
+    if (!Number.isSafeInteger(seed)) {
+        process.stderr.write(`Invalid seed: ${flags.seed}. Expected a safe integer.\n`);
+        process.exitCode = 2;
+        return;
+    }
+    const maxEvents = parseMaxEvents(flags);
+    if (!maxEvents.ok) {
+        process.stderr.write(`Invalid --max-events value: ${flags.maxEvents}. Expected an integer.\n`);
+        process.exitCode = 2;
+        return;
+    }
+
+    let result;
+    try {
+        const documentValue = JSON.parse(await readInput(filePath));
+        result = stateVisuals.renderProjectToSvg(documentValue, time.value, {
+            changesSource: readOptionalSource(flags.changes, 'Changes source'),
+            generatorSource: readOptionalSource(flags.generator, 'Generator source'),
+            seed,
+            ...(maxEvents.value === undefined ? {} : { maxEvents: maxEvents.value }),
+            timeLabel: flags.time
+        });
+    } catch (error) {
+        process.stderr.write(`Failed to render project: ${error.message}\n`);
+        process.exitCode = 2;
+        return;
+    }
+
+    const problems = Array.isArray(result.run?.problems) ? result.run.problems : [];
+    if (flags.out) fs.writeFileSync(resolvePath(flags.out), result.svg + '\n', 'utf8');
+    if (flags.json) {
+        process.stdout.write(toPrettyJson({
+            time: flags.time,
+            time_minutes: result.time,
+            seed,
+            output: flags.out || null,
+            svg: flags.out ? null : result.svg,
+            run: runMetadata(result.run, { seed, requestedHorizon: result.time, maxEvents: maxEvents.value }),
+            problems
+        }));
+    } else if (flags.out) {
+        process.stdout.write(`✓ Rendered ${flags.time} to ${resolvePath(flags.out)}\n`);
+    } else {
+        process.stdout.write(result.svg + '\n');
+    }
+    process.exitCode = hasErrors(problems) ? 1 : 0;
+}
+
 async function handleConstraints(filePath, flags) {
     if (!filePath || !flags.constraints) {
         process.stderr.write(!filePath ? 'Missing Starting State file path.\n' : 'Missing --constraints <path>.\n');
@@ -705,6 +787,12 @@ async function handleFormat(filePath, flags) {
 async function main() {
     const { command, positionals, flags } = parseArgs(process.argv.slice(2));
 
+    if (command === '--version' || command === '-v' || command === 'version' || flags.version) {
+        process.stdout.write(`${packageMetadata.version}\n`);
+        process.exitCode = 0;
+        return;
+    }
+
     if (command === '--help' || command === '-h') {
         printHelp(0);
         return;
@@ -728,6 +816,9 @@ async function main() {
         case 'snapshot':
             await handleSnapshot(positionals[0], flags);
             return;
+        case 'render':
+            await handleRender(positionals[0], flags);
+            return;
         case 'constraints':
             await handleConstraints(positionals[0], flags);
             return;
@@ -750,4 +841,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { parseArgs, printHelp, handleValidate, handleSnapshot, handleConstraints, handleMigrate, handleFormat, main, hasErrors, hasWarnings };
+module.exports = { parseArgs, printHelp, handleValidate, handleSnapshot, handleRender, handleConstraints, handleMigrate, handleFormat, main, hasErrors, hasWarnings };
