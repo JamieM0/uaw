@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Validation and Problems | WorkSpec documentation</title>
+    <meta name="description" content="Run Studio project validation, filter Problems, inspect provenance, and follow runtime Constraint evidence.">
+    <link rel="canonical" href="https://universalautomation.wiki/docs/studio/problems/">
+    <link rel="icon" href="/assets/images/favicon.png">
+    <link rel="stylesheet" href="/docs/assets/docs.css">
+    <link rel="stylesheet" href="/docs/assets/syntax.css">
+    <script>try{document.documentElement.dataset.theme=localStorage.getItem('workspec-docs-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(error){}</script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-65XT8ZJM5X"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-65XT8ZJM5X');</script>
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    
+    <header class="site-header">
+        <a class="brand" href="/docs/" aria-label="WorkSpec documentation home">
+            <img class="brand-mark" src="/assets/images/workspec-logo.cleaned.png" alt="">
+            <span>WorkSpec</span><span class="brand-label">Docs</span>
+        </a>
+        <button class="header-search" type="button" data-search-trigger>
+            <span class="search-placeholder">Search WorkSpec</span><kbd>⌘ K</kbd>
+        </button>
+        <div class="header-actions">
+            <a class="icon-button" href="/playground.html" aria-label="Open WorkSpec Studio" title="Open WorkSpec Studio">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="M14 18h7m-3-3 3 3-3 3"></path></svg>
+            </a>
+            <button class="icon-button theme-button" type="button" data-theme-toggle aria-label="Use dark theme" title="Use dark theme">
+                <svg class="theme-icon theme-icon-moon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4a8.5 8.5 0 1 0 11.2 11.2Z"></path></svg>
+                <svg class="theme-icon theme-icon-sun" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+            </button>
+            <button class="mobile-menu" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">Menu</button>
+        </div>
+    </header>
+    <div class="docs-shell">
+        <aside class="sidebar" aria-label="Documentation navigation"><nav><details class="nav-section"><summary>Start here</summary><ul class="nav-list"><li><a href="/docs/">WorkSpec documentation</a></li><li><a href="/docs/start/what-is-workspec/">What is WorkSpec?</a></li><li><a href="/docs/start/install/">Install and verify</a></li><li><a href="/docs/start/first-project/">Your first WorkSpec project</a></li><li><a href="/docs/start/project-files/">The files in a WorkSpec project</a></li><li><a href="/docs/start/where-next/">Choose your path</a></li></ul></details><details class="nav-section"><summary>Learn WorkSpec</summary><ul class="nav-list"><li><a href="/docs/learn/world-state/">1. World state</a></li><li><a href="/docs/learn/tasks-and-time/">2. Tasks and time</a></li><li><a href="/docs/learn/changes/">3. Changes</a></li><li><a href="/docs/learn/constraints/">4. Constraints</a></li><li><a href="/docs/learn/inspect-state/">5. Inspect and debug</a></li><li><a href="/docs/learn/render-world/">6. Render the world</a></li><li><a href="/docs/learn/collections-and-dynamic-work/">7. Collections and dynamic work</a></li><li><a href="/docs/learn/generators/">8. Generator logic</a></li><li><a href="/docs/learn/capstone/">9. Capstone project</a></li></ul></details><details class="nav-section"><summary>WorkSpec</summary><details class="nav-subsection"><summary>Fundamentals</summary><ul class="nav-list"><li><a href="/docs/workspec/overview/">WorkSpec language overview</a></li><li><a href="/docs/workspec/project-model/">Project model</a></li><li><a href="/docs/workspec/terminology/">Terminology and glossary</a></li><li><a href="/docs/workspec/versioning-compatibility/">Versions and compatibility</a></li></ul></details><details class="nav-subsection"><summary>Shared language</summary><ul class="nav-list"><li><a href="/docs/workspec/language/identifiers/">Identifiers and naming</a></li><li><a href="/docs/workspec/language/time-durations/">Time, dates, durations, and offsets</a></li><li><a href="/docs/workspec/language/values-references-expressions/">Values, references, and expressions</a></li><li><a href="/docs/workspec/language/conditions/">Conditions and boolean logic</a></li><li><a href="/docs/workspec/problems/">Problems and diagnostics</a></li></ul></details><details class="nav-subsection"><summary>Executable sources</summary><ul class="nav-list"><li><a href="/docs/workspec/sources/authoring/">Executable source files</a></li><li><a href="/docs/workspec/sources/security/">Trusted code and execution security</a></li></ul></details><details class="nav-subsection"><summary>Starting State</summary><ul class="nav-list"><li><a href="/docs/workspec/starting-state/overview/">Starting State overview</a></li><li><a href="/docs/workspec/starting-state/root-meta-config/">Root, metadata, and configuration</a></li><li><a href="/docs/workspec/starting-state/objects/">Objects and properties</a></li><li><a href="/docs/workspec/starting-state/types-traits/">Type definitions and traits</a></li><li><a href="/docs/workspec/starting-state/locations-layout/">Locations and layout</a></li><li><a href="/docs/workspec/starting-state/state-libraries/">State Libraries and appearance</a></li><li><a href="/docs/workspec/starting-state/collections/">Collections</a></li><li><a href="/docs/workspec/starting-state/tasks/">Tasks</a></li><li><a href="/docs/workspec/starting-state/scheduling/">Scheduling and dependencies</a></li><li><a href="/docs/workspec/starting-state/actors-performers/">Actors and performers</a></li><li><a href="/docs/workspec/starting-state/reservations/">Reservations</a></li><li><a href="/docs/workspec/starting-state/work-definitions/">Work definitions</a></li><li><a href="/docs/workspec/starting-state/multi-period/">Calendars and multi-period models</a></li><li><a href="/docs/workspec/starting-state/field-index/">Starting State field index</a></li></ul></details><details class="nav-subsection"><summary>Changes</summary><ul class="nav-list"><li><a href="/docs/workspec/changes/overview/">Changes overview</a></li><li><a href="/docs/workspec/changes/authoring/">Authoring Changes</a></li><li><a href="/docs/workspec/changes/lifecycle/">Task start and completion Changes</a></li><li><a href="/docs/workspec/changes/operations/">Change operations</a></li><li><a href="/docs/workspec/changes/conflicts-transactions/">Same-time writes, conflicts, and transactions</a></li><li><a href="/docs/workspec/changes/boundaries/">What does not belong in Changes</a></li></ul></details><details class="nav-subsection"><summary>Constraints</summary><ul class="nav-list"><li><a href="/docs/workspec/constraints/overview/">Constraints overview</a></li><li><a href="/docs/workspec/constraints/authoring/">Authoring Constraints</a></li><li><a href="/docs/workspec/constraints/context/">Constraint context and history queries</a></li><li><a href="/docs/workspec/constraints/violations/">Constraint violations</a></li><li><a href="/docs/workspec/constraints/boundaries/">What belongs in a Constraint</a></li></ul></details><details class="nav-subsection"><summary>Generators</summary><ul class="nav-list"><li><a href="/docs/workspec/generators/overview/">Generator overview</a></li><li><a href="/docs/workspec/generators/authoring/">Authoring Generators</a></li><li><a href="/docs/workspec/generators/context-operations/">Generator context and operations</a></li><li><a href="/docs/workspec/generators/execution-order/">Generator execution order</a></li><li><a href="/docs/workspec/generators/determinism/">Seeds and determinism</a></li><li><a href="/docs/workspec/generators/dynamic-work-relationship/">Generator and dynamic work</a></li></ul></details><details class="nav-subsection"><summary>Runtime</summary><ul class="nav-list"><li><a href="/docs/workspec/runtime/execution-model/">Execution model and authoritative run</a></li><li><a href="/docs/workspec/runtime/horizons/">Requested horizons and resolved-through time</a></li><li><a href="/docs/workspec/runtime/snapshots/">Snapshots and resolved state</a></li><li><a href="/docs/workspec/runtime/task-instances/">Runtime task instances</a></li><li><a href="/docs/workspec/runtime/task-status/">Task status and failure propagation</a></li><li><a href="/docs/workspec/runtime/work-budget/">Work-unit budget and bounded execution</a></li><li><a href="/docs/workspec/runtime/usage/">Runtime usage accounting</a></li></ul></details><details class="nav-subsection"><summary>Rendering</summary><ul class="nav-list"><li><a href="/docs/workspec/rendering/overview/">Rendering model</a></li><li><a href="/docs/workspec/rendering/svg/">SVG renderer</a></li><li><a href="/docs/workspec/rendering/state-visuals/">State visuals and assets</a></li><li><a href="/docs/workspec/rendering/layout/">Visual layout</a></li></ul></details><details class="nav-subsection"><summary>Compatibility</summary><ul class="nav-list"><li><a href="/docs/workspec/compatibility/overview/">Compatibility policy</a></li><li><a href="/docs/workspec/compatibility/historical-versions/">Historical WorkSpec versions</a></li><li><a href="/docs/workspec/compatibility/legacy-syntax/">Compatibility-only fields and syntax</a></li><li><a href="/docs/workspec/compatibility/migration/">Migration behavior</a></li></ul></details></details><details class="nav-section"><summary>CLI</summary><ul class="nav-list"><li><a href="/docs/cli/overview/">CLI overview</a></li><li><a href="/docs/cli/install/">CLI installation and environment</a></li><li><a href="/docs/cli/project-inputs/">Project source inputs</a></li><li><a href="/docs/cli/validate/">workspec validate</a></li><li><a href="/docs/cli/snapshot/">workspec snapshot</a></li><li><a href="/docs/cli/constraints/">workspec constraints</a></li><li><a href="/docs/cli/render/">workspec render</a></li><li><a href="/docs/cli/format/">workspec format</a></li><li><a href="/docs/cli/migrate/">workspec migrate</a></li><li><a href="/docs/cli/json-output/">JSON output and automation</a></li><li><a href="/docs/cli/exit-codes/">Exit codes and failure policy</a></li><li><a href="/docs/cli/security/">Executing project JavaScript from the CLI</a></li><li><a href="/docs/cli/reference/">CLI command and option index</a></li></ul></details><details class="nav-section" open><summary>WorkSpec Studio</summary><ul class="nav-list"><li><a href="/docs/studio/overview/">WorkSpec Studio overview</a></li><li><a href="/docs/studio/projects/">Projects and source files</a></li><li><a href="/docs/studio/editors/">Source editors</a></li><li><a href="/docs/studio/problems/" aria-current="page">Validation and Problems</a></li><li><a href="/docs/studio/timeline/">Timeline and playback</a></li><li><a href="/docs/studio/visualiser/">World visualiser</a></li><li><a href="/docs/studio/assets/">Assets and State Libraries</a></li><li><a href="/docs/studio/export-share/">Export and sharing</a></li></ul></details><details class="nav-section"><summary>JavaScript API</summary><ul class="nav-list"><li><a href="/docs/api/overview/">JavaScript API overview</a></li><li><a href="/docs/api/stability/">API stability and support policy</a></li><li><a href="/docs/api/validation/">Validation APIs</a></li><li><a href="/docs/api/runtime/">Project execution</a></li><li><a href="/docs/api/snapshots/">Snapshot APIs</a></li><li><a href="/docs/api/constraints/">Constraint execution APIs</a></li><li><a href="/docs/api/rendering/">Rendering APIs</a></li><li><a href="/docs/api/migration/">Migration API</a></li><li><a href="/docs/api/state-visuals/">State visual helpers</a></li><li><a href="/docs/api/playback/">Playback model APIs</a></li><li><a href="/docs/api/custom-validation/">Custom validation APIs</a></li><li><a href="/docs/api/types/">Types and data structures</a></li><li><a href="/docs/api/tooling/">Tooling and analysis APIs</a></li><li><a href="/docs/api/reference/">JavaScript API index</a></li></ul></details><details class="nav-section"><summary>Guides</summary><ul class="nav-list"><li><a href="/docs/guides/model-real-process/">Model a real process</a></li><li><a href="/docs/guides/changes-vs-generator/">Choose Changes or Generator</a></li><li><a href="/docs/guides/design-constraints/">Design useful Constraints</a></li><li><a href="/docs/guides/debug-project/">Debug a broken project</a></li><li><a href="/docs/guides/reproducible-runs/">Make runs reproducible</a></li><li><a href="/docs/guides/dynamic-work/">Model dynamic work</a></li><li><a href="/docs/guides/embed-workspec/">Embed WorkSpec in another application</a></li><li><a href="/docs/guides/author-with-ai/">Author WorkSpec with AI tools</a></li></ul></details><details class="nav-section"><summary>Concepts</summary><ul class="nav-list"><li><a href="/docs/concepts/timeline-vs-simulator/">Timeline versus simulator</a></li><li><a href="/docs/concepts/valid-file-valid-world/">A valid file is not necessarily a valid world</a></li><li><a href="/docs/concepts/authoritative-run/">Why one authoritative run matters</a></li><li><a href="/docs/concepts/jigsaw-model/">The jigsaw model</a></li><li><a href="/docs/concepts/world-modelling/">WorkSpec as inspectable world modelling</a></li></ul></details><details class="nav-section"><summary>Troubleshooting</summary><ul class="nav-list"><li><a href="/docs/troubleshooting/validation/">Validation and source errors</a></li><li><a href="/docs/troubleshooting/tasks/">Tasks do not start or finish as expected</a></li><li><a href="/docs/troubleshooting/constraints/">Constraint surprises</a></li><li><a href="/docs/troubleshooting/unresolved-time/">Requested time was not resolved</a></li><li><a href="/docs/troubleshooting/rendering/">Rendered world looks wrong</a></li><li><a href="/docs/troubleshooting/security/">Executable source fails or the CLI requires confirmation</a></li></ul></details></nav></aside>
+        
+        <main class="docs-stage" id="main-content">
+            <div class="article-layout">
+                <article class="article">
+                    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/docs/">Docs</a><span aria-hidden="true">/</span><a href="/docs/studio/">WorkSpec Studio</a><span aria-hidden="true">/</span><span aria-current="page">Validation and Problems</span></nav>
+                    <header class="article-header"><h1>Validation and Problems</h1><p class="lead">Run Studio project validation, filter Problems, inspect provenance, and follow runtime Constraint evidence.</p></header>
+                    
+                    <div class="article-body"><p>Studio validates the current Starting State and executable sources as one project. It presents diagnostics in <strong>Simulate</strong> &gt; <strong>Problems</strong>.</p>
+<h2 id="run-validation">Run validation</h2>
+<p>Select <strong>Run validation</strong> in <strong>Problems</strong>. You can also select <strong>Validate WorkSpec</strong> in <strong>Editor</strong> or press <strong>Cmd/Ctrl+Enter</strong>.</p>
+<p>Automatic validation runs after source edits unless you disable it. The status indicator reports one of these results:</p>
+<ul>
+<li><strong>✓ Valid WorkSpec</strong></li>
+<li><strong>⚠ WorkSpec warnings (N)</strong></li>
+<li><strong>✗ WorkSpec errors (N)</strong></li>
+<li><strong>✓ JSON syntax valid · WorkSpec checks off</strong></li>
+<li><strong>✗ Invalid JSON: MESSAGE</strong></li>
+</ul>
+<p>Studio uses the package project validator for WorkSpec 2.2. It does not substitute legacy flat-model checks when that validator is unavailable.</p>
+<h2 id="understand-diagnostic-layers">Understand diagnostic layers</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Evidence</th>
+<th>Typical Studio source</th>
+<th>What to inspect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Document</td>
+<td><code>start.workspec.json</code></td>
+<td>JSON shape, fields, references, and schedule.</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>Changes, Generator, or Constraints</td>
+<td>Compilation and source references.</td>
+</tr>
+<tr>
+<td>Runtime</td>
+<td>Resolved execution</td>
+<td>Reservations, effects, and execution state.</td>
+</tr>
+<tr>
+<td>Constraint</td>
+<td>Constraint execution</td>
+<td>Constraint source failures or domain violations.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Each displayed Problem can include its producing layer and source. Runtime Constraint results can also show time, observed values, and expected values.</p>
+<p>The <a href="/docs/workspec/problems/">Problems reference</a> defines Problem fields, scopes, provenance, and stable metric IDs. The <a href="/docs/workspec/constraints/violations/">Constraint violations reference</a> defines domain violation results.</p>
+<h2 id="filter-problems">Filter Problems</h2>
+<p>Use the <strong>Show:</strong> menu or the count buttons.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Filter</th>
+<th>Displayed results</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>All Metrics</strong></td>
+<td>All reported results.</td>
+</tr>
+<tr>
+<td><strong>Errors Only</strong></td>
+<td>Errors.</td>
+</tr>
+<tr>
+<td><strong>Warnings Only</strong></td>
+<td>Warnings.</td>
+</tr>
+<tr>
+<td><strong>Suggestions Only</strong></td>
+<td>Informational suggestions.</td>
+</tr>
+<tr>
+<td><strong>Passed Only</strong></td>
+<td>Passed checks.</td>
+</tr>
+<tr>
+<td><strong>Custom Only</strong></td>
+<td>Custom rule results.</td>
+</tr>
+<tr>
+<td><strong>Built-in Only</strong></td>
+<td>Built-in results.</td>
+</tr>
+</tbody>
+</table></div>
+<p>The summary counts show <strong>Total</strong>, <strong>Errors</strong>, <strong>Warnings</strong>, <strong>Suggestions</strong>, and <strong>Passed</strong>.</p>
+<h2 id="follow-a-runtime-constraint-violation">Follow a runtime Constraint violation</h2>
+<p>Select a runtime Constraint Problem with time and object evidence. Studio moves the application clock to the violation time and highlights the affected object.</p>
+<p>Studio opens <strong>Timeline</strong> when the affected object is not visible in <strong>Problems</strong>. The temporary highlight remains for three seconds.</p>
+<p>This workflow reports evidence only. Studio does not provide automatic remediation or a Constraint query language.</p>
+<h2 id="apply-an-available-correction">Apply an available correction</h2>
+<p>Some dependency-scheduling Problems contain a structured correction. Select the <strong>Apply VALUE</strong> action to update the explicit task start.</p>
+<p>The Starting State editor also exposes the same timing correction as a code action. Run validation again after applying it.</p>
+<h2 id="playback-blocking">Playback blocking</h2>
+<p>A <code>temporal.scheduling.dependency_violation</code> error disables playback controls. Studio stops playback and resets the clock while that Problem remains.</p>
+<p>Other Problem types remain visible but do not use this specific playback block. Fix the dependency schedule, then run validation again.</p>
+<h2 id="security-boundary">Security boundary</h2>
+<p>Project validation can compile or execute project JavaScript. Do not validate an untrusted project in Studio.</p>
+<p>Use the <a href="/docs/workspec/sources/security/">trusted-code security contract</a> for the complete execution and isolation model.</p>
+</div>
+                    
+                    
+                </article>
+                <aside class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ol><li class="toc-level-2"><a href="#run-validation">Run validation</a></li><li class="toc-level-2"><a href="#understand-diagnostic-layers">Understand diagnostic layers</a></li><li class="toc-level-2"><a href="#filter-problems">Filter Problems</a></li><li class="toc-level-2"><a href="#follow-a-runtime-constraint-violation">Follow a runtime Constraint violation</a></li><li class="toc-level-2"><a href="#apply-an-available-correction">Apply an available correction</a></li><li class="toc-level-2"><a href="#playback-blocking">Playback blocking</a></li><li class="toc-level-2"><a href="#security-boundary">Security boundary</a></li></ol></aside>
+            </div>
+        </main>
+    </div>
+    
+    <dialog class="search-dialog" data-search-dialog>
+        <div class="search-panel">
+            <div class="search-input-wrap"><input class="search-input" data-search-input type="search" placeholder="Search WorkSpec documentation" aria-label="Search documentation"><kbd>Esc</kbd></div>
+            <ul class="search-results" data-search-results></ul>
+        </div>
+    </dialog>
+    <script src="/docs/assets/docs.js"></script>
+    
+</body>
+</html>

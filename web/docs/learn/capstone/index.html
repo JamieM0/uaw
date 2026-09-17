@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>9. Capstone project | WorkSpec documentation</title>
+    <meta name="description" content="Build and verify a complete WorkSpec 2.2 project with dynamic work and one authoritative run.">
+    <link rel="canonical" href="https://universalautomation.wiki/docs/learn/capstone/">
+    <link rel="icon" href="/assets/images/favicon.png">
+    <link rel="stylesheet" href="/docs/assets/docs.css">
+    <link rel="stylesheet" href="/docs/assets/syntax.css">
+    <script>try{document.documentElement.dataset.theme=localStorage.getItem('workspec-docs-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(error){}</script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-65XT8ZJM5X"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-65XT8ZJM5X');</script>
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    
+    <header class="site-header">
+        <a class="brand" href="/docs/" aria-label="WorkSpec documentation home">
+            <img class="brand-mark" src="/assets/images/workspec-logo.cleaned.png" alt="">
+            <span>WorkSpec</span><span class="brand-label">Docs</span>
+        </a>
+        <button class="header-search" type="button" data-search-trigger>
+            <span class="search-placeholder">Search WorkSpec</span><kbd>⌘ K</kbd>
+        </button>
+        <div class="header-actions">
+            <a class="icon-button" href="/playground.html" aria-label="Open WorkSpec Studio" title="Open WorkSpec Studio">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="M14 18h7m-3-3 3 3-3 3"></path></svg>
+            </a>
+            <button class="icon-button theme-button" type="button" data-theme-toggle aria-label="Use dark theme" title="Use dark theme">
+                <svg class="theme-icon theme-icon-moon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4a8.5 8.5 0 1 0 11.2 11.2Z"></path></svg>
+                <svg class="theme-icon theme-icon-sun" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+            </button>
+            <button class="mobile-menu" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">Menu</button>
+        </div>
+    </header>
+    <div class="docs-shell">
+        <aside class="sidebar" aria-label="Documentation navigation"><nav><details class="nav-section"><summary>Start here</summary><ul class="nav-list"><li><a href="/docs/">WorkSpec documentation</a></li><li><a href="/docs/start/what-is-workspec/">What is WorkSpec?</a></li><li><a href="/docs/start/install/">Install and verify</a></li><li><a href="/docs/start/first-project/">Your first WorkSpec project</a></li><li><a href="/docs/start/project-files/">The files in a WorkSpec project</a></li><li><a href="/docs/start/where-next/">Choose your path</a></li></ul></details><details class="nav-section" open><summary>Learn WorkSpec</summary><ul class="nav-list"><li><a href="/docs/learn/world-state/">1. World state</a></li><li><a href="/docs/learn/tasks-and-time/">2. Tasks and time</a></li><li><a href="/docs/learn/changes/">3. Changes</a></li><li><a href="/docs/learn/constraints/">4. Constraints</a></li><li><a href="/docs/learn/inspect-state/">5. Inspect and debug</a></li><li><a href="/docs/learn/render-world/">6. Render the world</a></li><li><a href="/docs/learn/collections-and-dynamic-work/">7. Collections and dynamic work</a></li><li><a href="/docs/learn/generators/">8. Generator logic</a></li><li><a href="/docs/learn/capstone/" aria-current="page">9. Capstone project</a></li></ul></details><details class="nav-section"><summary>WorkSpec</summary><details class="nav-subsection"><summary>Fundamentals</summary><ul class="nav-list"><li><a href="/docs/workspec/overview/">WorkSpec language overview</a></li><li><a href="/docs/workspec/project-model/">Project model</a></li><li><a href="/docs/workspec/terminology/">Terminology and glossary</a></li><li><a href="/docs/workspec/versioning-compatibility/">Versions and compatibility</a></li></ul></details><details class="nav-subsection"><summary>Shared language</summary><ul class="nav-list"><li><a href="/docs/workspec/language/identifiers/">Identifiers and naming</a></li><li><a href="/docs/workspec/language/time-durations/">Time, dates, durations, and offsets</a></li><li><a href="/docs/workspec/language/values-references-expressions/">Values, references, and expressions</a></li><li><a href="/docs/workspec/language/conditions/">Conditions and boolean logic</a></li><li><a href="/docs/workspec/problems/">Problems and diagnostics</a></li></ul></details><details class="nav-subsection"><summary>Executable sources</summary><ul class="nav-list"><li><a href="/docs/workspec/sources/authoring/">Executable source files</a></li><li><a href="/docs/workspec/sources/security/">Trusted code and execution security</a></li></ul></details><details class="nav-subsection"><summary>Starting State</summary><ul class="nav-list"><li><a href="/docs/workspec/starting-state/overview/">Starting State overview</a></li><li><a href="/docs/workspec/starting-state/root-meta-config/">Root, metadata, and configuration</a></li><li><a href="/docs/workspec/starting-state/objects/">Objects and properties</a></li><li><a href="/docs/workspec/starting-state/types-traits/">Type definitions and traits</a></li><li><a href="/docs/workspec/starting-state/locations-layout/">Locations and layout</a></li><li><a href="/docs/workspec/starting-state/state-libraries/">State Libraries and appearance</a></li><li><a href="/docs/workspec/starting-state/collections/">Collections</a></li><li><a href="/docs/workspec/starting-state/tasks/">Tasks</a></li><li><a href="/docs/workspec/starting-state/scheduling/">Scheduling and dependencies</a></li><li><a href="/docs/workspec/starting-state/actors-performers/">Actors and performers</a></li><li><a href="/docs/workspec/starting-state/reservations/">Reservations</a></li><li><a href="/docs/workspec/starting-state/work-definitions/">Work definitions</a></li><li><a href="/docs/workspec/starting-state/multi-period/">Calendars and multi-period models</a></li><li><a href="/docs/workspec/starting-state/field-index/">Starting State field index</a></li></ul></details><details class="nav-subsection"><summary>Changes</summary><ul class="nav-list"><li><a href="/docs/workspec/changes/overview/">Changes overview</a></li><li><a href="/docs/workspec/changes/authoring/">Authoring Changes</a></li><li><a href="/docs/workspec/changes/lifecycle/">Task start and completion Changes</a></li><li><a href="/docs/workspec/changes/operations/">Change operations</a></li><li><a href="/docs/workspec/changes/conflicts-transactions/">Same-time writes, conflicts, and transactions</a></li><li><a href="/docs/workspec/changes/boundaries/">What does not belong in Changes</a></li></ul></details><details class="nav-subsection"><summary>Constraints</summary><ul class="nav-list"><li><a href="/docs/workspec/constraints/overview/">Constraints overview</a></li><li><a href="/docs/workspec/constraints/authoring/">Authoring Constraints</a></li><li><a href="/docs/workspec/constraints/context/">Constraint context and history queries</a></li><li><a href="/docs/workspec/constraints/violations/">Constraint violations</a></li><li><a href="/docs/workspec/constraints/boundaries/">What belongs in a Constraint</a></li></ul></details><details class="nav-subsection"><summary>Generators</summary><ul class="nav-list"><li><a href="/docs/workspec/generators/overview/">Generator overview</a></li><li><a href="/docs/workspec/generators/authoring/">Authoring Generators</a></li><li><a href="/docs/workspec/generators/context-operations/">Generator context and operations</a></li><li><a href="/docs/workspec/generators/execution-order/">Generator execution order</a></li><li><a href="/docs/workspec/generators/determinism/">Seeds and determinism</a></li><li><a href="/docs/workspec/generators/dynamic-work-relationship/">Generator and dynamic work</a></li></ul></details><details class="nav-subsection"><summary>Runtime</summary><ul class="nav-list"><li><a href="/docs/workspec/runtime/execution-model/">Execution model and authoritative run</a></li><li><a href="/docs/workspec/runtime/horizons/">Requested horizons and resolved-through time</a></li><li><a href="/docs/workspec/runtime/snapshots/">Snapshots and resolved state</a></li><li><a href="/docs/workspec/runtime/task-instances/">Runtime task instances</a></li><li><a href="/docs/workspec/runtime/task-status/">Task status and failure propagation</a></li><li><a href="/docs/workspec/runtime/work-budget/">Work-unit budget and bounded execution</a></li><li><a href="/docs/workspec/runtime/usage/">Runtime usage accounting</a></li></ul></details><details class="nav-subsection"><summary>Rendering</summary><ul class="nav-list"><li><a href="/docs/workspec/rendering/overview/">Rendering model</a></li><li><a href="/docs/workspec/rendering/svg/">SVG renderer</a></li><li><a href="/docs/workspec/rendering/state-visuals/">State visuals and assets</a></li><li><a href="/docs/workspec/rendering/layout/">Visual layout</a></li></ul></details><details class="nav-subsection"><summary>Compatibility</summary><ul class="nav-list"><li><a href="/docs/workspec/compatibility/overview/">Compatibility policy</a></li><li><a href="/docs/workspec/compatibility/historical-versions/">Historical WorkSpec versions</a></li><li><a href="/docs/workspec/compatibility/legacy-syntax/">Compatibility-only fields and syntax</a></li><li><a href="/docs/workspec/compatibility/migration/">Migration behavior</a></li></ul></details></details><details class="nav-section"><summary>CLI</summary><ul class="nav-list"><li><a href="/docs/cli/overview/">CLI overview</a></li><li><a href="/docs/cli/install/">CLI installation and environment</a></li><li><a href="/docs/cli/project-inputs/">Project source inputs</a></li><li><a href="/docs/cli/validate/">workspec validate</a></li><li><a href="/docs/cli/snapshot/">workspec snapshot</a></li><li><a href="/docs/cli/constraints/">workspec constraints</a></li><li><a href="/docs/cli/render/">workspec render</a></li><li><a href="/docs/cli/format/">workspec format</a></li><li><a href="/docs/cli/migrate/">workspec migrate</a></li><li><a href="/docs/cli/json-output/">JSON output and automation</a></li><li><a href="/docs/cli/exit-codes/">Exit codes and failure policy</a></li><li><a href="/docs/cli/security/">Executing project JavaScript from the CLI</a></li><li><a href="/docs/cli/reference/">CLI command and option index</a></li></ul></details><details class="nav-section"><summary>WorkSpec Studio</summary><ul class="nav-list"><li><a href="/docs/studio/overview/">WorkSpec Studio overview</a></li><li><a href="/docs/studio/projects/">Projects and source files</a></li><li><a href="/docs/studio/editors/">Source editors</a></li><li><a href="/docs/studio/problems/">Validation and Problems</a></li><li><a href="/docs/studio/timeline/">Timeline and playback</a></li><li><a href="/docs/studio/visualiser/">World visualiser</a></li><li><a href="/docs/studio/assets/">Assets and State Libraries</a></li><li><a href="/docs/studio/export-share/">Export and sharing</a></li></ul></details><details class="nav-section"><summary>JavaScript API</summary><ul class="nav-list"><li><a href="/docs/api/overview/">JavaScript API overview</a></li><li><a href="/docs/api/stability/">API stability and support policy</a></li><li><a href="/docs/api/validation/">Validation APIs</a></li><li><a href="/docs/api/runtime/">Project execution</a></li><li><a href="/docs/api/snapshots/">Snapshot APIs</a></li><li><a href="/docs/api/constraints/">Constraint execution APIs</a></li><li><a href="/docs/api/rendering/">Rendering APIs</a></li><li><a href="/docs/api/migration/">Migration API</a></li><li><a href="/docs/api/state-visuals/">State visual helpers</a></li><li><a href="/docs/api/playback/">Playback model APIs</a></li><li><a href="/docs/api/custom-validation/">Custom validation APIs</a></li><li><a href="/docs/api/types/">Types and data structures</a></li><li><a href="/docs/api/tooling/">Tooling and analysis APIs</a></li><li><a href="/docs/api/reference/">JavaScript API index</a></li></ul></details><details class="nav-section"><summary>Guides</summary><ul class="nav-list"><li><a href="/docs/guides/model-real-process/">Model a real process</a></li><li><a href="/docs/guides/changes-vs-generator/">Choose Changes or Generator</a></li><li><a href="/docs/guides/design-constraints/">Design useful Constraints</a></li><li><a href="/docs/guides/debug-project/">Debug a broken project</a></li><li><a href="/docs/guides/reproducible-runs/">Make runs reproducible</a></li><li><a href="/docs/guides/dynamic-work/">Model dynamic work</a></li><li><a href="/docs/guides/embed-workspec/">Embed WorkSpec in another application</a></li><li><a href="/docs/guides/author-with-ai/">Author WorkSpec with AI tools</a></li></ul></details><details class="nav-section"><summary>Concepts</summary><ul class="nav-list"><li><a href="/docs/concepts/timeline-vs-simulator/">Timeline versus simulator</a></li><li><a href="/docs/concepts/valid-file-valid-world/">A valid file is not necessarily a valid world</a></li><li><a href="/docs/concepts/authoritative-run/">Why one authoritative run matters</a></li><li><a href="/docs/concepts/jigsaw-model/">The jigsaw model</a></li><li><a href="/docs/concepts/world-modelling/">WorkSpec as inspectable world modelling</a></li></ul></details><details class="nav-section"><summary>Troubleshooting</summary><ul class="nav-list"><li><a href="/docs/troubleshooting/validation/">Validation and source errors</a></li><li><a href="/docs/troubleshooting/tasks/">Tasks do not start or finish as expected</a></li><li><a href="/docs/troubleshooting/constraints/">Constraint surprises</a></li><li><a href="/docs/troubleshooting/unresolved-time/">Requested time was not resolved</a></li><li><a href="/docs/troubleshooting/rendering/">Rendered world looks wrong</a></li><li><a href="/docs/troubleshooting/security/">Executable source fails or the CLI requires confirmation</a></li></ul></details></nav></aside>
+        
+        <main class="docs-stage" id="main-content">
+            <div class="article-layout">
+                <article class="article">
+                    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/docs/">Docs</a><span aria-hidden="true">/</span><a href="/docs/learn/">Learn WorkSpec</a><span aria-hidden="true">/</span><span aria-current="page">9. Capstone project</span></nav>
+                    <header class="article-header"><h1>9. Capstone project</h1><p class="lead">Build and verify a complete WorkSpec 2.2 project with dynamic work and one authoritative run.</p></header>
+                    
+                    <div class="article-body"><p>You will combine Starting State, Changes, a Constraint, and Generator logic in one inspection-depot project.</p>
+<h2 id="create-the-starting-state">Create the Starting State</h2>
+<p>Create <code>start.workspec.json</code>:</p>
+<div class="code-block"><div class="code-head"><span>JSON</span><button aria-label="Copy code" class="copy-button" type="button">Copy</button></div><pre><code class="highlight language-json"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"$schema"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://universalautomation.wiki/workspec/v2.2.schema.json"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"simulation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.2"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Inspection depot"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Open a depot and inspect pumps that arrive before closing."</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"domain"</span><span class="p">:</span><span class="w"> </span><span class="s2">"maintenance"</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"time_unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"minutes"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"08:00"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"end_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"08:10"</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"world"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"layout"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"locations"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"intake"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Intake"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"shape"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rect"</span><span class="p">,</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">140</span><span class="w"> </span><span class="p">}</span>
+<span class="w">          </span><span class="p">},</span>
+<span class="w">          </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"workshop"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Workshop"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"shape"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rect"</span><span class="p">,</span><span class="w"> </span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mi">260</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">140</span><span class="w"> </span><span class="p">}</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"objects"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"manager"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Depot manager"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"workshop"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"available"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"inspector"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"actor"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Inspector"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"workshop"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"available"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pump_a"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"product"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Pump A"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"intake"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"awaiting_inspection"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"collections"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"waiting_pumps"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"objects"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"as"</span><span class="p">:</span><span class="w"> </span><span class="s2">"item"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"where"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"all"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="nt">"=="</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"@item.type"</span><span class="p">,</span><span class="w"> </span><span class="s2">"product"</span><span class="p">]</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="nt">"=="</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"@item.state"</span><span class="p">,</span><span class="w"> </span><span class="s2">"awaiting_inspection"</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+<span class="w">          </span><span class="p">]</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"open"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"closes_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"08:10"</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"process"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"open_depot"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"manager"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"08:00"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1m"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"workshop"</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">"work_definitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"inspect_arrival"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"instantiate"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"for_each"</span><span class="p">:</span><span class="w"> </span><span class="s2">"waiting_pumps"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"as"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pump"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"on_appearance"</span>
+<span class="w">          </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"task"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"actor_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"inspector"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"duration"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2m"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"location"</span><span class="p">:</span><span class="w"> </span><span class="s2">"workshop"</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+<h2 id="create-the-changes-source">Create the Changes source</h2>
+<p>Create <code>changes.workspec.js</code>:</p>
+<div class="code-block"><div class="code-head"><span>JavaScript</span><button aria-label="Copy code" class="copy-button" type="button">Copy</button></div><pre><code class="highlight language-js"><span class="c1">// @ts-check</span>
+<span class="c1">/// &lt;reference types="workspec/workspec-changes" /&gt;</span>
+
+<span class="nx">WorkSpec</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s2">"open_depot"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">task</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">task</span><span class="p">.</span><span class="nx">onStart</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">set</span><span class="p">(</span><span class="s2">"manager"</span><span class="p">,</span><span class="w"> </span><span class="s2">"state"</span><span class="p">,</span><span class="w"> </span><span class="s2">"opening"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">temporary</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="p">});</span>
+
+<span class="w">  </span><span class="nx">task</span><span class="p">.</span><span class="nx">onComplete</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">set</span><span class="p">(</span><span class="s2">"manager"</span><span class="p">,</span><span class="w"> </span><span class="s2">"state"</span><span class="p">,</span><span class="w"> </span><span class="s2">"available"</span><span class="p">);</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">});</span></code></pre></div>
+<h2 id="create-the-generator-source">Create the Generator source</h2>
+<p>Create <code>generator.workspec.js</code>:</p>
+<div class="code-block"><div class="code-head"><span>JavaScript</span><button aria-label="Copy code" class="copy-button" type="button">Copy</button></div><pre><code class="highlight language-js"><span class="c1">// @ts-check</span>
+<span class="c1">/// &lt;reference types="workspec/workspec-generator" /&gt;</span>
+
+<span class="nx">WorkSpec</span><span class="p">.</span><span class="nx">onUpdate</span><span class="p">(({</span><span class="w"> </span><span class="nx">time</span><span class="p">,</span><span class="w"> </span><span class="nx">create</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">time</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">483</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">create</span><span class="p">({</span>
+<span class="w">      </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="s2">"pump_b"</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s2">"product"</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s2">"Pump B"</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">location</span><span class="o">:</span><span class="w"> </span><span class="s2">"intake"</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">properties</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">quantity</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="nx">state</span><span class="o">:</span><span class="w"> </span><span class="s2">"awaiting_inspection"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">});</span></code></pre></div>
+<p>The Generator changes the world. The collection and work definition remain the only task-instantiation path.</p>
+<h2 id="create-the-constraint-source">Create the Constraint source</h2>
+<p>Create <code>constraints.workspec.js</code>:</p>
+<div class="code-block"><div class="code-head"><span>JavaScript</span><button aria-label="Copy code" class="copy-button" type="button">Copy</button></div><pre><code class="highlight language-js"><span class="c1">// @ts-check</span>
+<span class="c1">/// &lt;reference types="workspec/workspec-constraints" /&gt;</span>
+
+<span class="nx">WorkSpec</span><span class="p">.</span><span class="nx">constraint</span><span class="p">(</span><span class="s2">"inspection.all_arrivals_complete"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">context</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">instances</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Object</span><span class="p">.</span><span class="nx">values</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nx">state</span><span class="p">().</span><span class="nx">task_instances</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">incomplete</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">instances</span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">instance</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">instance</span><span class="p">.</span><span class="nx">status</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="s2">"completed"</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">instances</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">incomplete</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">severity</span><span class="o">:</span><span class="w"> </span><span class="s2">"error"</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">observed</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">instance_count</span><span class="o">:</span><span class="w"> </span><span class="nx">instances</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">incomplete</span><span class="o">:</span><span class="w"> </span><span class="nx">incomplete</span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">instance</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">instance</span><span class="p">.</span><span class="nx">id</span><span class="p">)</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nx">expected</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">instance_count</span><span class="o">:</span><span class="w"> </span><span class="mf">2</span><span class="p">,</span><span class="w"> </span><span class="nx">incomplete</span><span class="o">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="s2">"Both pump inspection instances must complete."</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="p">});</span></code></pre></div>
+<h2 id="validate-the-complete-project">Validate the complete project</h2>
+<aside class="callout warning" role="note"><strong>Warning</strong>
+<p>Review every executable source before you run it. WorkSpec project sources contain ordinary JavaScript.</p>
+</aside>
+<p>Run project validation with the Constraint:</p>
+<div class="code-block"><div class="code-head"><span>Terminal</span><button aria-label="Copy code" class="copy-button" type="button">Copy</button></div><pre><code class="highlight language-console"><span class="go">npx workspec validate start.workspec.json \</span>
+<span class="go">  --changes changes.workspec.js \</span>
+<span class="go">  --generator generator.workspec.js \</span>
+<span class="go">  --constraints constraints.workspec.js \</span>
+<span class="go">  --time 08:05 \</span>
+<span class="go">  --seed 7 \</span>
+<span class="go">  --json \</span>
+<span class="go">  --yes</span></code></pre></div>
+<p>The result has an empty <code>problems</code> array. Its <code>run</code> object records seed <code>7</code> and a resolved-through time of <code>485</code>.</p>
+<h2 id="inspect-the-resolved-state">Inspect the resolved state</h2>
+<p>Run a snapshot with the same project inputs:</p>
+<div class="code-block"><div class="code-head"><span>Terminal</span><button aria-label="Copy code" class="copy-button" type="button">Copy</button></div><pre><code class="highlight language-console"><span class="go">npx workspec snapshot start.workspec.json \</span>
+<span class="go">  --changes changes.workspec.js \</span>
+<span class="go">  --generator generator.workspec.js \</span>
+<span class="go">  --time 08:05 \</span>
+<span class="go">  --seed 7 \</span>
+<span class="go">  --json</span></code></pre></div>
+<p>Check these results:</p>
+<ul>
+<li><code>state.objects</code> contains <code>pump_a</code> and <code>pump_b</code>.</li>
+<li><code>state.task_statuses.open_depot</code> is <code>completed</code>.</li>
+<li><code>state.task_instances</code> contains two completed inspection instances.</li>
+<li><code>run.resolved_through</code> is <code>485</code>.</li>
+</ul>
+<h2 id="run-the-domain-rule">Run the domain rule</h2>
+<p>Run the Constraint directly:</p>
+<div class="code-block"><div class="code-head"><span>Terminal</span><button aria-label="Copy code" class="copy-button" type="button">Copy</button></div><pre><code class="highlight language-console"><span class="go">npx workspec constraints start.workspec.json \</span>
+<span class="go">  --changes changes.workspec.js \</span>
+<span class="go">  --generator generator.workspec.js \</span>
+<span class="go">  --constraints constraints.workspec.js \</span>
+<span class="go">  --time 08:05 \</span>
+<span class="go">  --seed 7 \</span>
+<span class="go">  --yes</span></code></pre></div>
+<p>Expected output:</p>
+<div class="code-block"><div class="code-head"><span>Text</span><button aria-label="Copy code" class="copy-button" type="button">Copy</button></div><pre><code class="highlight language-text">Runtime constraints at 485 (resolved through 485): 0 violations (0 errors), 0 validation problems</code></pre></div>
+<h2 id="render-the-result">Render the result</h2>
+<p>Render the resolved world:</p>
+<div class="code-block"><div class="code-head"><span>Terminal</span><button aria-label="Copy code" class="copy-button" type="button">Copy</button></div><pre><code class="highlight language-console"><span class="go">npx workspec render start.workspec.json \</span>
+<span class="go">  --changes changes.workspec.js \</span>
+<span class="go">  --generator generator.workspec.js \</span>
+<span class="go">  --time 08:05 \</span>
+<span class="go">  --seed 7 \</span>
+<span class="go">  --out inspection-depot.svg</span></code></pre></div>
+<p>The SVG shows both pumps at intake. The snapshot remains the source of truth for their task-instance records.</p>
+<h2 id="result">Result</h2>
+<p>You now have a canonical WorkSpec 2.2 project that uses every authored source type.</p>
+<p>Continue with the <a href="/docs/workspec/overview/">WorkSpec reference</a> for exact contracts. Use <a href="/docs/start/where-next/">Choose your path</a> for task-focused sections.</p>
+</div>
+                    
+                    <nav class="page-nav" aria-label="Page navigation"><a href="/docs/learn/generators/"><small>Previous</small><span>8. Generator logic</span></a></nav>
+                </article>
+                <aside class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ol><li class="toc-level-2"><a href="#create-the-starting-state">Create the Starting State</a></li><li class="toc-level-2"><a href="#create-the-changes-source">Create the Changes source</a></li><li class="toc-level-2"><a href="#create-the-generator-source">Create the Generator source</a></li><li class="toc-level-2"><a href="#create-the-constraint-source">Create the Constraint source</a></li><li class="toc-level-2"><a href="#validate-the-complete-project">Validate the complete project</a></li><li class="toc-level-2"><a href="#inspect-the-resolved-state">Inspect the resolved state</a></li><li class="toc-level-2"><a href="#run-the-domain-rule">Run the domain rule</a></li><li class="toc-level-2"><a href="#render-the-result">Render the result</a></li><li class="toc-level-2"><a href="#result">Result</a></li></ol></aside>
+            </div>
+        </main>
+    </div>
+    
+    <dialog class="search-dialog" data-search-dialog>
+        <div class="search-panel">
+            <div class="search-input-wrap"><input class="search-input" data-search-input type="search" placeholder="Search WorkSpec documentation" aria-label="Search documentation"><kbd>Esc</kbd></div>
+            <ul class="search-results" data-search-results></ul>
+        </div>
+    </dialog>
+    <script src="/docs/assets/docs.js"></script>
+    
+</body>
+</html>

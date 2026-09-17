@@ -1,0 +1,158 @@
+{
+  "sections": [
+    {
+      "id": "start",
+      "label": "Start here",
+      "order": 10,
+      "landing": "/docs/start/",
+      "description": "Install WorkSpec, understand the project model, and build a complete first project.",
+      "sequence": true,
+      "include_home": true
+    },
+    {
+      "id": "learn",
+      "label": "Learn WorkSpec",
+      "order": 20,
+      "landing": "/docs/learn/",
+      "description": "Follow the linear path from world state to a complete WorkSpec project.",
+      "sequence": true
+    },
+    {
+      "id": "workspec",
+      "label": "WorkSpec",
+      "order": 30,
+      "landing": "/docs/workspec/",
+      "description": "Look up the canonical WorkSpec language, executable sources, runtime, and rendering model.",
+      "groups": [
+        {
+          "id": "fundamentals",
+          "label": "Fundamentals",
+          "order": 10,
+          "landing": "/docs/workspec/fundamentals/",
+          "description": "Understand the project model, terminology, and version boundaries.",
+          "paths": [
+            "workspec/overview.md",
+            "workspec/project-model.md",
+            "workspec/terminology.md",
+            "workspec/versioning-compatibility.md"
+          ]
+        },
+        {
+          "id": "language",
+          "label": "Shared language",
+          "order": 20,
+          "landing": "/docs/workspec/language/",
+          "description": "Look up identifiers, time values, expressions, conditions, and diagnostics.",
+          "prefix": "workspec/language/",
+          "paths": ["workspec/problems.md"]
+        },
+        {
+          "id": "sources",
+          "label": "Executable sources",
+          "order": 30,
+          "landing": "/docs/workspec/sources/",
+          "description": "Author and execute trusted WorkSpec JavaScript sources.",
+          "prefix": "workspec/sources/"
+        },
+        {
+          "id": "starting-state",
+          "label": "Starting State",
+          "order": 40,
+          "landing": "/docs/workspec/starting-state/",
+          "description": "Declare the world, planned work, collections, schedules, and configuration.",
+          "prefix": "workspec/starting-state/"
+        },
+        {
+          "id": "changes",
+          "label": "Changes",
+          "order": 50,
+          "landing": "/docs/workspec/changes/",
+          "description": "Attach predetermined state effects to task lifecycle events.",
+          "prefix": "workspec/changes/"
+        },
+        {
+          "id": "constraints",
+          "label": "Constraints",
+          "order": 60,
+          "landing": "/docs/workspec/constraints/",
+          "description": "Inspect resolved evidence and report domain violations.",
+          "prefix": "workspec/constraints/"
+        },
+        {
+          "id": "generators",
+          "label": "Generators",
+          "order": 70,
+          "landing": "/docs/workspec/generators/",
+          "description": "Add deterministic causal behavior to a WorkSpec run.",
+          "prefix": "workspec/generators/"
+        },
+        {
+          "id": "runtime",
+          "label": "Runtime",
+          "order": 80,
+          "landing": "/docs/workspec/runtime/",
+          "description": "Understand execution order, horizons, snapshots, task instances, and work budgets.",
+          "prefix": "workspec/runtime/"
+        },
+        {
+          "id": "rendering",
+          "label": "Rendering",
+          "order": 90,
+          "landing": "/docs/workspec/rendering/",
+          "description": "Present an existing resolved result as SVG or another visual surface.",
+          "prefix": "workspec/rendering/"
+        },
+        {
+          "id": "compatibility",
+          "label": "Compatibility",
+          "order": 100,
+          "landing": "/docs/workspec/compatibility/",
+          "description": "Understand historical versions, compatibility syntax, and migration behavior.",
+          "prefix": "workspec/compatibility/"
+        }
+      ]
+    },
+    {
+      "id": "cli",
+      "label": "CLI",
+      "order": 40,
+      "landing": "/docs/cli/",
+      "description": "Run, inspect, validate, render, and automate WorkSpec projects from the terminal."
+    },
+    {
+      "id": "studio",
+      "label": "WorkSpec Studio",
+      "order": 50,
+      "landing": "/docs/studio/",
+      "description": "Edit projects and inspect Problems, timelines, world state, assets, and exports."
+    },
+    {
+      "id": "api",
+      "label": "JavaScript API",
+      "order": 60,
+      "landing": "/docs/api/",
+      "description": "Embed validation, execution, snapshots, Constraints, and rendering in an application."
+    },
+    {
+      "id": "guides",
+      "label": "Guides",
+      "order": 70,
+      "landing": "/docs/guides/",
+      "description": "Complete focused modeling, debugging, security, and integration tasks."
+    },
+    {
+      "id": "concepts",
+      "label": "Concepts",
+      "order": 80,
+      "landing": "/docs/concepts/",
+      "description": "Understand the design decisions and mental models behind WorkSpec."
+    },
+    {
+      "id": "troubleshooting",
+      "label": "Troubleshooting",
+      "order": 90,
+      "landing": "/docs/troubleshooting/",
+      "description": "Diagnose validation, task, Constraint, time, rendering, and source-execution problems."
+    }
+  ]
+}

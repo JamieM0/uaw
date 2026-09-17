@@ -1,0 +1,25 @@
+{
+  "command": "workspec",
+  "package_version": "1.2.5",
+  "node": ">=18",
+  "availability": {"package":"1.2.5","status":"available"},
+  "commands": [
+    {"name":"validate","owner":"/docs/cli/validate/","input":"Starting State JSON file or - for stdin","options":["--changes <path>","--no-changes","--generator <path>","--no-generator","--constraints <path>","--no-constraints","--time <time>","--seed <integer>","--max-events <integer>","-custom, --custom <path>","--custom-catalog <path>","--json","--fail-on-warning","-y, --yes"],"json_envelope":["validation","run","problems"],"confirmation":["A loaded Constraints source requires --yes","--custom prompts on a TTY unless --yes is present"]},
+    {"name":"snapshot","owner":"/docs/cli/snapshot/","input":"Starting State JSON file or - for stdin","options":["--changes <path>","--no-changes","--generator <path>","--no-generator","--time <time> (required)","--seed <integer>","--max-events <integer>","--json"],"json_envelope":["time","time_minutes","seed","run","state","problems"],"confirmation":[]},
+    {"name":"constraints","owner":"/docs/cli/constraints/","input":"Starting State JSON file or - for stdin","options":["--constraints <path>","--no-constraints","--changes <path>","--no-changes","--generator <path>","--no-generator","--time <time>","--seed <integer>","--max-events <integer>","--json","-y, --yes"],"json_envelope":["time","seed","run","violations","problems"],"confirmation":["A loaded Constraints source requires --yes"]},
+    {"name":"render","owner":"/docs/cli/render/","input":"Starting State JSON file or - for stdin","options":["--changes <path>","--no-changes","--generator <path>","--no-generator","--time <time> (required)","--assets <directory>","--no-assets","--seed <integer>","--max-events <integer>","--out <path>","--json"],"json_envelope":["time","time_minutes","seed","output","svg","run","problems"],"confirmation":[]},
+    {"name":"format","owner":"/docs/cli/format/","input":"JSON file","options":["--write","--out <path>"],"json_envelope":null,"confirmation":[]},
+    {"name":"migrate","owner":"/docs/cli/migrate/","input":"Previous UAW Syntax JSON file","options":["--out <path> (required)","--schema"],"json_envelope":null,"confirmation":[]}
+  ],
+  "global_options": [
+    {"syntax":"-h, --help","effect":"Show help."},
+    {"syntax":"-v, --version, version","effect":"Print the installed package version."}
+  ],
+  "time_formats": ["finite elapsed minutes", "HH:MM", "strict ISO date-time with an offset", "JSON object with day and time"],
+  "defaults": {"seed":1,"max_events":10000,"max_events_limit":1000000},
+  "exit_codes": [
+    {"code":0,"meaning":"The command completed without an error result."},
+    {"code":1,"meaning":"Validation, runtime, migration, or Constraint results contain an error. validate also uses 1 for warnings with --fail-on-warning."},
+    {"code":2,"meaning":"CLI usage, confirmation, input, JSON parsing, rendering, or output handling failed."}
+  ]
+}

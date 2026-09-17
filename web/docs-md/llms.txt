@@ -1,0 +1,40 @@
+# WorkSpec documentation
+
+> WorkSpec models world state, planned work, resolved execution, domain Constraints, and state rendering.
+
+The canonical language version is WorkSpec 2.2. Package versions and language versions are separate. Changes, Constraints, and Generators execute JavaScript and require trusted-source handling.
+
+## Start here
+
+- [What is WorkSpec?](start/what-is-workspec.md): Product surfaces and the problem that WorkSpec solves.
+- [Install and verify](start/install.md): Node.js requirements, package installation, and verification.
+- [Your first WorkSpec project](start/first-project.md): A complete project with validation, inspection, a Constraint, and SVG rendering.
+- [Learn WorkSpec](learn/world-state.md): The first page in the linear WorkSpec 2.2 curriculum.
+
+## Reference
+
+- [WorkSpec language overview](workspec/overview.md): Canonical authored and resolved layers.
+- [Terminology and glossary](workspec/terminology.md): Approved meanings and capitalization for WorkSpec terms.
+- [Starting State overview](workspec/starting-state/overview.md): Declarative project structure and reference links.
+- [Starting State field index](workspec/starting-state/field-index.generated.md): Canonical fields and their owning pages.
+- [Executable source files](workspec/sources/authoring.md): Shared conventions for Changes, Constraints, and Generators.
+- [Trusted code and execution security](workspec/sources/security.md): System-wide execution and isolation contract.
+- [Execution model](workspec/runtime/execution-model.md): Event order and the authoritative run contract.
+- [CLI overview](cli/overview.md): Command workflow and project inputs.
+- [CLI reference](cli/reference.md): Commands, options, outputs, and owning pages.
+- [JavaScript API overview](api/overview.md): Supported embedding surfaces.
+- [JavaScript API reference](api/reference.md): Public and experimental symbols by owner.
+- [WorkSpec Studio overview](studio/overview.md): Visual editing and inspection workflows.
+
+## Guides and diagnosis
+
+- [Model a real process](guides/model-real-process.md): Turn a real process into WorkSpec concepts.
+- [Debug a broken project](guides/debug-project.md): Validate, inspect, constrain, and render in sequence.
+- [Troubleshoot validation](troubleshooting/validation.md): Diagnose document, source, and project-validation failures.
+- [Troubleshoot unresolved time](troubleshooting/unresolved-time.md): Diagnose horizons and work-budget exhaustion.
+
+## Optional
+
+- [Concepts](concepts/world-modelling.md): Deeper architectural rationale and modelling ideas.
+- [Versions and compatibility](workspec/versioning-compatibility.md): Package, language, schema, and migration boundaries.
+- [API stability](api/stability.md): Stable, experimental, compatibility, and internal classifications.

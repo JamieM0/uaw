@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Timeline versus simulator | WorkSpec documentation</title>
+    <meta name="description" content="Understand predetermined timeline effects and causal state-driven simulation as different modeling tools.">
+    <link rel="canonical" href="https://universalautomation.wiki/docs/concepts/timeline-vs-simulator/">
+    <link rel="icon" href="/assets/images/favicon.png">
+    <link rel="stylesheet" href="/docs/assets/docs.css">
+    <link rel="stylesheet" href="/docs/assets/syntax.css">
+    <script>try{document.documentElement.dataset.theme=localStorage.getItem('workspec-docs-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(error){}</script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-65XT8ZJM5X"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-65XT8ZJM5X');</script>
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    
+    <header class="site-header">
+        <a class="brand" href="/docs/" aria-label="WorkSpec documentation home">
+            <img class="brand-mark" src="/assets/images/workspec-logo.cleaned.png" alt="">
+            <span>WorkSpec</span><span class="brand-label">Docs</span>
+        </a>
+        <button class="header-search" type="button" data-search-trigger>
+            <span class="search-placeholder">Search WorkSpec</span><kbd>⌘ K</kbd>
+        </button>
+        <div class="header-actions">
+            <a class="icon-button" href="/playground.html" aria-label="Open WorkSpec Studio" title="Open WorkSpec Studio">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="M14 18h7m-3-3 3 3-3 3"></path></svg>
+            </a>
+            <button class="icon-button theme-button" type="button" data-theme-toggle aria-label="Use dark theme" title="Use dark theme">
+                <svg class="theme-icon theme-icon-moon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4a8.5 8.5 0 1 0 11.2 11.2Z"></path></svg>
+                <svg class="theme-icon theme-icon-sun" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+            </button>
+            <button class="mobile-menu" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">Menu</button>
+        </div>
+    </header>
+    <div class="docs-shell">
+        <aside class="sidebar" aria-label="Documentation navigation"><nav><details class="nav-section"><summary>Start here</summary><ul class="nav-list"><li><a href="/docs/">WorkSpec documentation</a></li><li><a href="/docs/start/what-is-workspec/">What is WorkSpec?</a></li><li><a href="/docs/start/install/">Install and verify</a></li><li><a href="/docs/start/first-project/">Your first WorkSpec project</a></li><li><a href="/docs/start/project-files/">The files in a WorkSpec project</a></li><li><a href="/docs/start/where-next/">Choose your path</a></li></ul></details><details class="nav-section"><summary>Learn WorkSpec</summary><ul class="nav-list"><li><a href="/docs/learn/world-state/">1. World state</a></li><li><a href="/docs/learn/tasks-and-time/">2. Tasks and time</a></li><li><a href="/docs/learn/changes/">3. Changes</a></li><li><a href="/docs/learn/constraints/">4. Constraints</a></li><li><a href="/docs/learn/inspect-state/">5. Inspect and debug</a></li><li><a href="/docs/learn/render-world/">6. Render the world</a></li><li><a href="/docs/learn/collections-and-dynamic-work/">7. Collections and dynamic work</a></li><li><a href="/docs/learn/generators/">8. Generator logic</a></li><li><a href="/docs/learn/capstone/">9. Capstone project</a></li></ul></details><details class="nav-section"><summary>WorkSpec</summary><details class="nav-subsection"><summary>Fundamentals</summary><ul class="nav-list"><li><a href="/docs/workspec/overview/">WorkSpec language overview</a></li><li><a href="/docs/workspec/project-model/">Project model</a></li><li><a href="/docs/workspec/terminology/">Terminology and glossary</a></li><li><a href="/docs/workspec/versioning-compatibility/">Versions and compatibility</a></li></ul></details><details class="nav-subsection"><summary>Shared language</summary><ul class="nav-list"><li><a href="/docs/workspec/language/identifiers/">Identifiers and naming</a></li><li><a href="/docs/workspec/language/time-durations/">Time, dates, durations, and offsets</a></li><li><a href="/docs/workspec/language/values-references-expressions/">Values, references, and expressions</a></li><li><a href="/docs/workspec/language/conditions/">Conditions and boolean logic</a></li><li><a href="/docs/workspec/problems/">Problems and diagnostics</a></li></ul></details><details class="nav-subsection"><summary>Executable sources</summary><ul class="nav-list"><li><a href="/docs/workspec/sources/authoring/">Executable source files</a></li><li><a href="/docs/workspec/sources/security/">Trusted code and execution security</a></li></ul></details><details class="nav-subsection"><summary>Starting State</summary><ul class="nav-list"><li><a href="/docs/workspec/starting-state/overview/">Starting State overview</a></li><li><a href="/docs/workspec/starting-state/root-meta-config/">Root, metadata, and configuration</a></li><li><a href="/docs/workspec/starting-state/objects/">Objects and properties</a></li><li><a href="/docs/workspec/starting-state/types-traits/">Type definitions and traits</a></li><li><a href="/docs/workspec/starting-state/locations-layout/">Locations and layout</a></li><li><a href="/docs/workspec/starting-state/state-libraries/">State Libraries and appearance</a></li><li><a href="/docs/workspec/starting-state/collections/">Collections</a></li><li><a href="/docs/workspec/starting-state/tasks/">Tasks</a></li><li><a href="/docs/workspec/starting-state/scheduling/">Scheduling and dependencies</a></li><li><a href="/docs/workspec/starting-state/actors-performers/">Actors and performers</a></li><li><a href="/docs/workspec/starting-state/reservations/">Reservations</a></li><li><a href="/docs/workspec/starting-state/work-definitions/">Work definitions</a></li><li><a href="/docs/workspec/starting-state/multi-period/">Calendars and multi-period models</a></li><li><a href="/docs/workspec/starting-state/field-index/">Starting State field index</a></li></ul></details><details class="nav-subsection"><summary>Changes</summary><ul class="nav-list"><li><a href="/docs/workspec/changes/overview/">Changes overview</a></li><li><a href="/docs/workspec/changes/authoring/">Authoring Changes</a></li><li><a href="/docs/workspec/changes/lifecycle/">Task start and completion Changes</a></li><li><a href="/docs/workspec/changes/operations/">Change operations</a></li><li><a href="/docs/workspec/changes/conflicts-transactions/">Same-time writes, conflicts, and transactions</a></li><li><a href="/docs/workspec/changes/boundaries/">What does not belong in Changes</a></li></ul></details><details class="nav-subsection"><summary>Constraints</summary><ul class="nav-list"><li><a href="/docs/workspec/constraints/overview/">Constraints overview</a></li><li><a href="/docs/workspec/constraints/authoring/">Authoring Constraints</a></li><li><a href="/docs/workspec/constraints/context/">Constraint context and history queries</a></li><li><a href="/docs/workspec/constraints/violations/">Constraint violations</a></li><li><a href="/docs/workspec/constraints/boundaries/">What belongs in a Constraint</a></li></ul></details><details class="nav-subsection"><summary>Generators</summary><ul class="nav-list"><li><a href="/docs/workspec/generators/overview/">Generator overview</a></li><li><a href="/docs/workspec/generators/authoring/">Authoring Generators</a></li><li><a href="/docs/workspec/generators/context-operations/">Generator context and operations</a></li><li><a href="/docs/workspec/generators/execution-order/">Generator execution order</a></li><li><a href="/docs/workspec/generators/determinism/">Seeds and determinism</a></li><li><a href="/docs/workspec/generators/dynamic-work-relationship/">Generator and dynamic work</a></li></ul></details><details class="nav-subsection"><summary>Runtime</summary><ul class="nav-list"><li><a href="/docs/workspec/runtime/execution-model/">Execution model and authoritative run</a></li><li><a href="/docs/workspec/runtime/horizons/">Requested horizons and resolved-through time</a></li><li><a href="/docs/workspec/runtime/snapshots/">Snapshots and resolved state</a></li><li><a href="/docs/workspec/runtime/task-instances/">Runtime task instances</a></li><li><a href="/docs/workspec/runtime/task-status/">Task status and failure propagation</a></li><li><a href="/docs/workspec/runtime/work-budget/">Work-unit budget and bounded execution</a></li><li><a href="/docs/workspec/runtime/usage/">Runtime usage accounting</a></li></ul></details><details class="nav-subsection"><summary>Rendering</summary><ul class="nav-list"><li><a href="/docs/workspec/rendering/overview/">Rendering model</a></li><li><a href="/docs/workspec/rendering/svg/">SVG renderer</a></li><li><a href="/docs/workspec/rendering/state-visuals/">State visuals and assets</a></li><li><a href="/docs/workspec/rendering/layout/">Visual layout</a></li></ul></details><details class="nav-subsection"><summary>Compatibility</summary><ul class="nav-list"><li><a href="/docs/workspec/compatibility/overview/">Compatibility policy</a></li><li><a href="/docs/workspec/compatibility/historical-versions/">Historical WorkSpec versions</a></li><li><a href="/docs/workspec/compatibility/legacy-syntax/">Compatibility-only fields and syntax</a></li><li><a href="/docs/workspec/compatibility/migration/">Migration behavior</a></li></ul></details></details><details class="nav-section"><summary>CLI</summary><ul class="nav-list"><li><a href="/docs/cli/overview/">CLI overview</a></li><li><a href="/docs/cli/install/">CLI installation and environment</a></li><li><a href="/docs/cli/project-inputs/">Project source inputs</a></li><li><a href="/docs/cli/validate/">workspec validate</a></li><li><a href="/docs/cli/snapshot/">workspec snapshot</a></li><li><a href="/docs/cli/constraints/">workspec constraints</a></li><li><a href="/docs/cli/render/">workspec render</a></li><li><a href="/docs/cli/format/">workspec format</a></li><li><a href="/docs/cli/migrate/">workspec migrate</a></li><li><a href="/docs/cli/json-output/">JSON output and automation</a></li><li><a href="/docs/cli/exit-codes/">Exit codes and failure policy</a></li><li><a href="/docs/cli/security/">Executing project JavaScript from the CLI</a></li><li><a href="/docs/cli/reference/">CLI command and option index</a></li></ul></details><details class="nav-section"><summary>WorkSpec Studio</summary><ul class="nav-list"><li><a href="/docs/studio/overview/">WorkSpec Studio overview</a></li><li><a href="/docs/studio/projects/">Projects and source files</a></li><li><a href="/docs/studio/editors/">Source editors</a></li><li><a href="/docs/studio/problems/">Validation and Problems</a></li><li><a href="/docs/studio/timeline/">Timeline and playback</a></li><li><a href="/docs/studio/visualiser/">World visualiser</a></li><li><a href="/docs/studio/assets/">Assets and State Libraries</a></li><li><a href="/docs/studio/export-share/">Export and sharing</a></li></ul></details><details class="nav-section"><summary>JavaScript API</summary><ul class="nav-list"><li><a href="/docs/api/overview/">JavaScript API overview</a></li><li><a href="/docs/api/stability/">API stability and support policy</a></li><li><a href="/docs/api/validation/">Validation APIs</a></li><li><a href="/docs/api/runtime/">Project execution</a></li><li><a href="/docs/api/snapshots/">Snapshot APIs</a></li><li><a href="/docs/api/constraints/">Constraint execution APIs</a></li><li><a href="/docs/api/rendering/">Rendering APIs</a></li><li><a href="/docs/api/migration/">Migration API</a></li><li><a href="/docs/api/state-visuals/">State visual helpers</a></li><li><a href="/docs/api/playback/">Playback model APIs</a></li><li><a href="/docs/api/custom-validation/">Custom validation APIs</a></li><li><a href="/docs/api/types/">Types and data structures</a></li><li><a href="/docs/api/tooling/">Tooling and analysis APIs</a></li><li><a href="/docs/api/reference/">JavaScript API index</a></li></ul></details><details class="nav-section"><summary>Guides</summary><ul class="nav-list"><li><a href="/docs/guides/model-real-process/">Model a real process</a></li><li><a href="/docs/guides/changes-vs-generator/">Choose Changes or Generator</a></li><li><a href="/docs/guides/design-constraints/">Design useful Constraints</a></li><li><a href="/docs/guides/debug-project/">Debug a broken project</a></li><li><a href="/docs/guides/reproducible-runs/">Make runs reproducible</a></li><li><a href="/docs/guides/dynamic-work/">Model dynamic work</a></li><li><a href="/docs/guides/embed-workspec/">Embed WorkSpec in another application</a></li><li><a href="/docs/guides/author-with-ai/">Author WorkSpec with AI tools</a></li></ul></details><details class="nav-section" open><summary>Concepts</summary><ul class="nav-list"><li><a href="/docs/concepts/timeline-vs-simulator/" aria-current="page">Timeline versus simulator</a></li><li><a href="/docs/concepts/valid-file-valid-world/">A valid file is not necessarily a valid world</a></li><li><a href="/docs/concepts/authoritative-run/">Why one authoritative run matters</a></li><li><a href="/docs/concepts/jigsaw-model/">The jigsaw model</a></li><li><a href="/docs/concepts/world-modelling/">WorkSpec as inspectable world modelling</a></li></ul></details><details class="nav-section"><summary>Troubleshooting</summary><ul class="nav-list"><li><a href="/docs/troubleshooting/validation/">Validation and source errors</a></li><li><a href="/docs/troubleshooting/tasks/">Tasks do not start or finish as expected</a></li><li><a href="/docs/troubleshooting/constraints/">Constraint surprises</a></li><li><a href="/docs/troubleshooting/unresolved-time/">Requested time was not resolved</a></li><li><a href="/docs/troubleshooting/rendering/">Rendered world looks wrong</a></li><li><a href="/docs/troubleshooting/security/">Executable source fails or the CLI requires confirmation</a></li></ul></details></nav></aside>
+        
+        <main class="docs-stage" id="main-content">
+            <div class="article-layout">
+                <article class="article">
+                    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/docs/">Docs</a><span aria-hidden="true">/</span><a href="/docs/concepts/">Concepts</a><span aria-hidden="true">/</span><span aria-current="page">Timeline versus simulator</span></nav>
+                    <header class="article-header"><h1>Timeline versus simulator</h1><p class="lead">Understand predetermined timeline effects and causal state-driven simulation as different modeling tools.</p></header>
+                    
+                    <div class="article-body"><p>WorkSpec supports a passive timeline and optional causal simulation without treating them as the same model.</p>
+<h2 id="the-timeline-model">The timeline model</h2>
+<p>A timeline resembles a cut scene. The author knows the planned tasks and their effects before execution.</p>
+<p>Changes attach those predetermined effects to task start or completion. The runtime resolves timing, dependencies, performers, reservations, and conflicts, but a handler does not ask what the world currently contains.</p>
+<p>This model keeps known process descriptions direct. A reader can connect each task with its authored effects.</p>
+<h2 id="the-simulator-model">The simulator model</h2>
+<p>A causal simulator reacts to evolving state. Generator logic can read the current world, use time, and use deterministic random values.</p>
+<p>The result of one event can affect later runtime decisions. For example, a Generator update can change collection membership before the runtime evaluates new task starts.</p>
+<p>This power adds responsibility. State-driven logic can hide the reason for an outcome if the model uses it for effects that were already known.</p>
+<h2 id="why-the-distinction-matters">Why the distinction matters</h2>
+<p>Predetermined effects and causal rules answer different questions.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Suitable model</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What known effect occurs when this task completes?</td>
+<td>Timeline with Changes</td>
+</tr>
+<tr>
+<td>How does current temperature affect the next update?</td>
+<td>Generator simulation</td>
+</tr>
+<tr>
+<td>What work applies to new eligible members?</td>
+<td>Declarative work definition</td>
+</tr>
+<tr>
+<td>Is the resolved world acceptable?</td>
+<td>Constraint</td>
+</tr>
+</tbody>
+</table></div>
+<p>Keeping these roles separate makes the authored project easier to inspect. It also prevents Changes from becoming hidden simulation code.</p>
+<h2 id="the-shared-result">The shared result</h2>
+<p>Both Changes and Generator writes enter one authoritative history. Snapshots, Constraints, and rendering consume that shared evidence.</p>
+<p>The <a href="/docs/workspec/changes/boundaries/">Changes boundary</a> defines the passive model. The <a href="/docs/workspec/generators/overview/">Generator overview</a> defines causal behavior. The <a href="/docs/workspec/runtime/execution-model/">execution model</a> owns their normative event order.</p>
+</div>
+                    <section class="related-links" aria-labelledby="related-title"><h2 id="related-title">Related pages</h2><ul><li><a href="/docs/workspec/changes/boundaries/">What does not belong in Changes</a></li><li><a href="/docs/workspec/generators/overview/">Generator overview</a></li></ul></section>
+                    
+                </article>
+                <aside class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ol><li class="toc-level-2"><a href="#the-timeline-model">The timeline model</a></li><li class="toc-level-2"><a href="#the-simulator-model">The simulator model</a></li><li class="toc-level-2"><a href="#why-the-distinction-matters">Why the distinction matters</a></li><li class="toc-level-2"><a href="#the-shared-result">The shared result</a></li></ol></aside>
+            </div>
+        </main>
+    </div>
+    
+    <dialog class="search-dialog" data-search-dialog>
+        <div class="search-panel">
+            <div class="search-input-wrap"><input class="search-input" data-search-input type="search" placeholder="Search WorkSpec documentation" aria-label="Search documentation"><kbd>Esc</kbd></div>
+            <ul class="search-results" data-search-results></ul>
+        </div>
+    </dialog>
+    <script src="/docs/assets/docs.js"></script>
+    
+</body>
+</html>

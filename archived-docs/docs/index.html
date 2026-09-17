@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-65XT8ZJM5X"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-65XT8ZJM5X');
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Universal Automation Wiki</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/category.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/documentation.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Placeholder styles to prevent layout shift */
+        #header-placeholder { min-height: 70px; }
+        #footer-placeholder { min-height: 250px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="docs-container">
+        <div class="docs-layout">
+            <div id="sidebar-placeholder"></div>
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <header class="docs-header">
+                        <div class="docs-breadcrumb">
+                            <nav aria-label="Breadcrumb">
+                                <ol>
+                                    <li><a href="/">Home</a></li>
+                                    <li aria-current="page">Documentation</li>
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="docs-title-section">
+                            <h1 class="docs-page-title">Documentation</h1>
+                            <p class="docs-page-subtitle">Comprehensive guides, reference materials, and resources for the Universal Automation Wiki platform. Navigate through the sections using the sidebar to explore different areas of the system.</p>
+                        </div>
+                    </header>
+
+                    <div class="docs-content">
+                        <p>Welcome to the Universal Automation Wiki documentation hub. This comprehensive resource center provides detailed guides, technical references, and practical examples to help you effectively use and contribute to the UAW platform.</p>
+
+                        <h2 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h2>
+                        
+                        <p>For WorkSpec, follow one current path: read the short WorkSpec 2 quickstart, complete the guided Studio tutorial, use the WorkSpec 2 Authoring Guide as the conceptual source of truth, then keep the cheatsheet nearby. Versioned 2.0 and 2.1 pages are historical.</p>
+
+                        <h2 id="recommended-reading">Recommended Starting Points<a class="headerlink" href="#recommended-reading" title="Permanent link">&para;</a></h2>
+                        
+                        <div class="docs-card-grid">
+                            <div class="docs-recommendation-card">
+                                <h4><a href="/docs/workspec/guides/quickstart">WorkSpec 2 Quickstart</a></h4>
+                                <p>Learn the five-part mental model, then start the small guided Studio tutorial.</p>
+                            </div>
+
+                            <div class="docs-recommendation-card">
+                                <h4><a href="/docs/workspec/guides/authoring">WorkSpec 2 Authoring Guide</a></h4>
+                                <p>The canonical conceptual reference for Starting State, Changes, Constraints, the optional Generator, and Simulation.</p>
+                            </div>
+
+                            <div class="docs-recommendation-card">
+                                <h4><a href="/docs/architecture-overview">Architecture Overview</a></h4>
+                                <p>Understand the foundational concepts and system design behind UAW's process automation approach.</p>
+                            </div>
+
+                            <div class="docs-recommendation-card">
+                                <h4><a href="/docs/playground/playground-guide">WorkSpec Studio Guide</a></h4>
+                                <p>Learn where project files, playback controls, validation results, and runtime evidence appear.</p>
+                            </div>
+
+                        </div>
+
+                        <h2 id="navigation-guide">How to Navigate<a class="headerlink" href="#navigation-guide" title="Permanent link">&para;</a></h2>
+                        
+                        <p>Use the <strong>sidebar navigation</strong> on the left to browse through different documentation sections:</p>
+                        
+                        <ul class="docs-list">
+                            <li><strong>Click section headers</strong> (WorkSpec, WorkSpec Studio, Developer) to expand and view available pages</li>
+                            <li><strong>Active sections</strong> remain expanded when you're viewing pages within them</li>
+                            <li><strong>Current page</strong> is highlighted with a colored indicator for easy reference</li>
+                            <li><strong>Browser search functionality</strong> - Use Ctrl/Cmd+F to find specific terms across the current page</li>
+                        </ul>
+
+                        <h2 id="feedback-contribution">Feedback & Contribution<a class="headerlink" href="#feedback-contribution" title="Permanent link">&para;</a></h2>
+                        
+                        <p>The UAW documentation is continuously evolving. If you find areas that need clarification, spot errors, or have suggestions for improvement:</p>
+                        
+                        <ul class="docs-list">
+                            <li>Documentation issues can be reported through the main UAW repository</li>
+                            <li>Each page is generated from source materials that can be updated by contributors</li>
+                            <li>The system supports multiple output formats and automatic regeneration</li>
+                        </ul>
+
+                        <p>Ready to explore? <strong>Use the sidebar navigation</strong> to dive into any section that interests you, or start with the recommended reading above.</p>
+                    </div>
+                    
+                    <footer class="docs-footer">
+                        <div class="docs-meta">
+                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
+                        </div>
+                    </footer>
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/assets/js/components.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#126ca8',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#e0e0e0',
+                lineColor: '#666'
+            }
+        });
+    </script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/documentation.js"></script>
+    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+</body>
+</html>

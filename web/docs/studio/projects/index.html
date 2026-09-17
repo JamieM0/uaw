@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Projects and source files | WorkSpec documentation</title>
+    <meta name="description" content="Create, open, duplicate, and manage Studio projects without confusing source files, metadata, and browser records.">
+    <link rel="canonical" href="https://universalautomation.wiki/docs/studio/projects/">
+    <link rel="icon" href="/assets/images/favicon.png">
+    <link rel="stylesheet" href="/docs/assets/docs.css">
+    <link rel="stylesheet" href="/docs/assets/syntax.css">
+    <script>try{document.documentElement.dataset.theme=localStorage.getItem('workspec-docs-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(error){}</script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-65XT8ZJM5X"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-65XT8ZJM5X');</script>
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    
+    <header class="site-header">
+        <a class="brand" href="/docs/" aria-label="WorkSpec documentation home">
+            <img class="brand-mark" src="/assets/images/workspec-logo.cleaned.png" alt="">
+            <span>WorkSpec</span><span class="brand-label">Docs</span>
+        </a>
+        <button class="header-search" type="button" data-search-trigger>
+            <span class="search-placeholder">Search WorkSpec</span><kbd>⌘ K</kbd>
+        </button>
+        <div class="header-actions">
+            <a class="icon-button" href="/playground.html" aria-label="Open WorkSpec Studio" title="Open WorkSpec Studio">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="M14 18h7m-3-3 3 3-3 3"></path></svg>
+            </a>
+            <button class="icon-button theme-button" type="button" data-theme-toggle aria-label="Use dark theme" title="Use dark theme">
+                <svg class="theme-icon theme-icon-moon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4a8.5 8.5 0 1 0 11.2 11.2Z"></path></svg>
+                <svg class="theme-icon theme-icon-sun" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+            </button>
+            <button class="mobile-menu" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">Menu</button>
+        </div>
+    </header>
+    <div class="docs-shell">
+        <aside class="sidebar" aria-label="Documentation navigation"><nav><details class="nav-section"><summary>Start here</summary><ul class="nav-list"><li><a href="/docs/">WorkSpec documentation</a></li><li><a href="/docs/start/what-is-workspec/">What is WorkSpec?</a></li><li><a href="/docs/start/install/">Install and verify</a></li><li><a href="/docs/start/first-project/">Your first WorkSpec project</a></li><li><a href="/docs/start/project-files/">The files in a WorkSpec project</a></li><li><a href="/docs/start/where-next/">Choose your path</a></li></ul></details><details class="nav-section"><summary>Learn WorkSpec</summary><ul class="nav-list"><li><a href="/docs/learn/world-state/">1. World state</a></li><li><a href="/docs/learn/tasks-and-time/">2. Tasks and time</a></li><li><a href="/docs/learn/changes/">3. Changes</a></li><li><a href="/docs/learn/constraints/">4. Constraints</a></li><li><a href="/docs/learn/inspect-state/">5. Inspect and debug</a></li><li><a href="/docs/learn/render-world/">6. Render the world</a></li><li><a href="/docs/learn/collections-and-dynamic-work/">7. Collections and dynamic work</a></li><li><a href="/docs/learn/generators/">8. Generator logic</a></li><li><a href="/docs/learn/capstone/">9. Capstone project</a></li></ul></details><details class="nav-section"><summary>WorkSpec</summary><details class="nav-subsection"><summary>Fundamentals</summary><ul class="nav-list"><li><a href="/docs/workspec/overview/">WorkSpec language overview</a></li><li><a href="/docs/workspec/project-model/">Project model</a></li><li><a href="/docs/workspec/terminology/">Terminology and glossary</a></li><li><a href="/docs/workspec/versioning-compatibility/">Versions and compatibility</a></li></ul></details><details class="nav-subsection"><summary>Shared language</summary><ul class="nav-list"><li><a href="/docs/workspec/language/identifiers/">Identifiers and naming</a></li><li><a href="/docs/workspec/language/time-durations/">Time, dates, durations, and offsets</a></li><li><a href="/docs/workspec/language/values-references-expressions/">Values, references, and expressions</a></li><li><a href="/docs/workspec/language/conditions/">Conditions and boolean logic</a></li><li><a href="/docs/workspec/problems/">Problems and diagnostics</a></li></ul></details><details class="nav-subsection"><summary>Executable sources</summary><ul class="nav-list"><li><a href="/docs/workspec/sources/authoring/">Executable source files</a></li><li><a href="/docs/workspec/sources/security/">Trusted code and execution security</a></li></ul></details><details class="nav-subsection"><summary>Starting State</summary><ul class="nav-list"><li><a href="/docs/workspec/starting-state/overview/">Starting State overview</a></li><li><a href="/docs/workspec/starting-state/root-meta-config/">Root, metadata, and configuration</a></li><li><a href="/docs/workspec/starting-state/objects/">Objects and properties</a></li><li><a href="/docs/workspec/starting-state/types-traits/">Type definitions and traits</a></li><li><a href="/docs/workspec/starting-state/locations-layout/">Locations and layout</a></li><li><a href="/docs/workspec/starting-state/state-libraries/">State Libraries and appearance</a></li><li><a href="/docs/workspec/starting-state/collections/">Collections</a></li><li><a href="/docs/workspec/starting-state/tasks/">Tasks</a></li><li><a href="/docs/workspec/starting-state/scheduling/">Scheduling and dependencies</a></li><li><a href="/docs/workspec/starting-state/actors-performers/">Actors and performers</a></li><li><a href="/docs/workspec/starting-state/reservations/">Reservations</a></li><li><a href="/docs/workspec/starting-state/work-definitions/">Work definitions</a></li><li><a href="/docs/workspec/starting-state/multi-period/">Calendars and multi-period models</a></li><li><a href="/docs/workspec/starting-state/field-index/">Starting State field index</a></li></ul></details><details class="nav-subsection"><summary>Changes</summary><ul class="nav-list"><li><a href="/docs/workspec/changes/overview/">Changes overview</a></li><li><a href="/docs/workspec/changes/authoring/">Authoring Changes</a></li><li><a href="/docs/workspec/changes/lifecycle/">Task start and completion Changes</a></li><li><a href="/docs/workspec/changes/operations/">Change operations</a></li><li><a href="/docs/workspec/changes/conflicts-transactions/">Same-time writes, conflicts, and transactions</a></li><li><a href="/docs/workspec/changes/boundaries/">What does not belong in Changes</a></li></ul></details><details class="nav-subsection"><summary>Constraints</summary><ul class="nav-list"><li><a href="/docs/workspec/constraints/overview/">Constraints overview</a></li><li><a href="/docs/workspec/constraints/authoring/">Authoring Constraints</a></li><li><a href="/docs/workspec/constraints/context/">Constraint context and history queries</a></li><li><a href="/docs/workspec/constraints/violations/">Constraint violations</a></li><li><a href="/docs/workspec/constraints/boundaries/">What belongs in a Constraint</a></li></ul></details><details class="nav-subsection"><summary>Generators</summary><ul class="nav-list"><li><a href="/docs/workspec/generators/overview/">Generator overview</a></li><li><a href="/docs/workspec/generators/authoring/">Authoring Generators</a></li><li><a href="/docs/workspec/generators/context-operations/">Generator context and operations</a></li><li><a href="/docs/workspec/generators/execution-order/">Generator execution order</a></li><li><a href="/docs/workspec/generators/determinism/">Seeds and determinism</a></li><li><a href="/docs/workspec/generators/dynamic-work-relationship/">Generator and dynamic work</a></li></ul></details><details class="nav-subsection"><summary>Runtime</summary><ul class="nav-list"><li><a href="/docs/workspec/runtime/execution-model/">Execution model and authoritative run</a></li><li><a href="/docs/workspec/runtime/horizons/">Requested horizons and resolved-through time</a></li><li><a href="/docs/workspec/runtime/snapshots/">Snapshots and resolved state</a></li><li><a href="/docs/workspec/runtime/task-instances/">Runtime task instances</a></li><li><a href="/docs/workspec/runtime/task-status/">Task status and failure propagation</a></li><li><a href="/docs/workspec/runtime/work-budget/">Work-unit budget and bounded execution</a></li><li><a href="/docs/workspec/runtime/usage/">Runtime usage accounting</a></li></ul></details><details class="nav-subsection"><summary>Rendering</summary><ul class="nav-list"><li><a href="/docs/workspec/rendering/overview/">Rendering model</a></li><li><a href="/docs/workspec/rendering/svg/">SVG renderer</a></li><li><a href="/docs/workspec/rendering/state-visuals/">State visuals and assets</a></li><li><a href="/docs/workspec/rendering/layout/">Visual layout</a></li></ul></details><details class="nav-subsection"><summary>Compatibility</summary><ul class="nav-list"><li><a href="/docs/workspec/compatibility/overview/">Compatibility policy</a></li><li><a href="/docs/workspec/compatibility/historical-versions/">Historical WorkSpec versions</a></li><li><a href="/docs/workspec/compatibility/legacy-syntax/">Compatibility-only fields and syntax</a></li><li><a href="/docs/workspec/compatibility/migration/">Migration behavior</a></li></ul></details></details><details class="nav-section"><summary>CLI</summary><ul class="nav-list"><li><a href="/docs/cli/overview/">CLI overview</a></li><li><a href="/docs/cli/install/">CLI installation and environment</a></li><li><a href="/docs/cli/project-inputs/">Project source inputs</a></li><li><a href="/docs/cli/validate/">workspec validate</a></li><li><a href="/docs/cli/snapshot/">workspec snapshot</a></li><li><a href="/docs/cli/constraints/">workspec constraints</a></li><li><a href="/docs/cli/render/">workspec render</a></li><li><a href="/docs/cli/format/">workspec format</a></li><li><a href="/docs/cli/migrate/">workspec migrate</a></li><li><a href="/docs/cli/json-output/">JSON output and automation</a></li><li><a href="/docs/cli/exit-codes/">Exit codes and failure policy</a></li><li><a href="/docs/cli/security/">Executing project JavaScript from the CLI</a></li><li><a href="/docs/cli/reference/">CLI command and option index</a></li></ul></details><details class="nav-section" open><summary>WorkSpec Studio</summary><ul class="nav-list"><li><a href="/docs/studio/overview/">WorkSpec Studio overview</a></li><li><a href="/docs/studio/projects/" aria-current="page">Projects and source files</a></li><li><a href="/docs/studio/editors/">Source editors</a></li><li><a href="/docs/studio/problems/">Validation and Problems</a></li><li><a href="/docs/studio/timeline/">Timeline and playback</a></li><li><a href="/docs/studio/visualiser/">World visualiser</a></li><li><a href="/docs/studio/assets/">Assets and State Libraries</a></li><li><a href="/docs/studio/export-share/">Export and sharing</a></li></ul></details><details class="nav-section"><summary>JavaScript API</summary><ul class="nav-list"><li><a href="/docs/api/overview/">JavaScript API overview</a></li><li><a href="/docs/api/stability/">API stability and support policy</a></li><li><a href="/docs/api/validation/">Validation APIs</a></li><li><a href="/docs/api/runtime/">Project execution</a></li><li><a href="/docs/api/snapshots/">Snapshot APIs</a></li><li><a href="/docs/api/constraints/">Constraint execution APIs</a></li><li><a href="/docs/api/rendering/">Rendering APIs</a></li><li><a href="/docs/api/migration/">Migration API</a></li><li><a href="/docs/api/state-visuals/">State visual helpers</a></li><li><a href="/docs/api/playback/">Playback model APIs</a></li><li><a href="/docs/api/custom-validation/">Custom validation APIs</a></li><li><a href="/docs/api/types/">Types and data structures</a></li><li><a href="/docs/api/tooling/">Tooling and analysis APIs</a></li><li><a href="/docs/api/reference/">JavaScript API index</a></li></ul></details><details class="nav-section"><summary>Guides</summary><ul class="nav-list"><li><a href="/docs/guides/model-real-process/">Model a real process</a></li><li><a href="/docs/guides/changes-vs-generator/">Choose Changes or Generator</a></li><li><a href="/docs/guides/design-constraints/">Design useful Constraints</a></li><li><a href="/docs/guides/debug-project/">Debug a broken project</a></li><li><a href="/docs/guides/reproducible-runs/">Make runs reproducible</a></li><li><a href="/docs/guides/dynamic-work/">Model dynamic work</a></li><li><a href="/docs/guides/embed-workspec/">Embed WorkSpec in another application</a></li><li><a href="/docs/guides/author-with-ai/">Author WorkSpec with AI tools</a></li></ul></details><details class="nav-section"><summary>Concepts</summary><ul class="nav-list"><li><a href="/docs/concepts/timeline-vs-simulator/">Timeline versus simulator</a></li><li><a href="/docs/concepts/valid-file-valid-world/">A valid file is not necessarily a valid world</a></li><li><a href="/docs/concepts/authoritative-run/">Why one authoritative run matters</a></li><li><a href="/docs/concepts/jigsaw-model/">The jigsaw model</a></li><li><a href="/docs/concepts/world-modelling/">WorkSpec as inspectable world modelling</a></li></ul></details><details class="nav-section"><summary>Troubleshooting</summary><ul class="nav-list"><li><a href="/docs/troubleshooting/validation/">Validation and source errors</a></li><li><a href="/docs/troubleshooting/tasks/">Tasks do not start or finish as expected</a></li><li><a href="/docs/troubleshooting/constraints/">Constraint surprises</a></li><li><a href="/docs/troubleshooting/unresolved-time/">Requested time was not resolved</a></li><li><a href="/docs/troubleshooting/rendering/">Rendered world looks wrong</a></li><li><a href="/docs/troubleshooting/security/">Executable source fails or the CLI requires confirmation</a></li></ul></details></nav></aside>
+        
+        <main class="docs-stage" id="main-content">
+            <div class="article-layout">
+                <article class="article">
+                    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/docs/">Docs</a><span aria-hidden="true">/</span><a href="/docs/studio/">WorkSpec Studio</a><span aria-hidden="true">/</span><span aria-current="page">Projects and source files</span></nav>
+                    <header class="article-header"><h1>Projects and source files</h1><p class="lead">Create, open, duplicate, and manage Studio projects without confusing source files, metadata, and browser records.</p></header>
+                    
+                    <div class="article-body"><p>Studio projects use folders that you choose. Studio writes project content to those folders and remembers folder handles in the browser.</p>
+<h2 id="project-storage-map">Project storage map</h2>
+<p>The following stores have different roles:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Store</th>
+<th>Contents</th>
+<th class="align-right">Portable project content?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Project folder root</td>
+<td>Four WorkSpec source files</td>
+<td class="align-right">Yes</td>
+</tr>
+<tr>
+<td>Project folder <code>assets/</code></td>
+<td>Asset bytes</td>
+<td class="align-right">Yes</td>
+</tr>
+<tr>
+<td>Project folder <code>.uaw/</code></td>
+<td>Studio metadata, asset metadata, recovery data, and checkpoints</td>
+<td class="align-right">Studio-specific</td>
+</tr>
+<tr>
+<td>Browser project registry</td>
+<td>Project ID, display name, and folder handle</td>
+<td class="align-right">No</td>
+</tr>
+<tr>
+<td>Browser preferences</td>
+<td>Onboarding and time-scale preferences</td>
+<td class="align-right">No</td>
+</tr>
+</tbody>
+</table></div>
+<p>The browser registry does not contain the four project sources. Forgetting a project in Studio leaves its folder unchanged.</p>
+<h2 id="project-folder-structure">Project folder structure</h2>
+<p>A complete working folder can contain these entries:</p>
+<div class="code-block"><div class="code-head"><span>Text</span><button aria-label="Copy code" class="copy-button" type="button">Copy</button></div><pre><code class="highlight language-text">PROJECT_FOLDER/
+├── start.workspec.json
+├── changes.workspec.js
+├── generator.workspec.js
+├── constraints.workspec.js
+├── assets/
+│   └── ASSET_ID.EXTENSION
+└── .uaw/
+    ├── project.json
+    ├── assets.json
+    ├── last-valid-start.workspec.json
+    └── checkpoints/</code></pre></div>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Entry</th>
+<th>Owner</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>start.workspec.json</code></td>
+<td>WorkSpec</td>
+<td>Declarative Starting State.</td>
+</tr>
+<tr>
+<td><code>changes.workspec.js</code></td>
+<td>WorkSpec</td>
+<td>Task-linked Changes source.</td>
+</tr>
+<tr>
+<td><code>generator.workspec.js</code></td>
+<td>WorkSpec</td>
+<td>Optional Generator source.</td>
+</tr>
+<tr>
+<td><code>constraints.workspec.js</code></td>
+<td>WorkSpec</td>
+<td>Constraint source.</td>
+</tr>
+<tr>
+<td><code>assets/</code></td>
+<td>Studio host</td>
+<td>Binary files addressed by asset ID.</td>
+</tr>
+<tr>
+<td><code>.uaw/project.json</code></td>
+<td>Studio</td>
+<td>Project ID, name, settings, seed, and checkpoint index.</td>
+</tr>
+<tr>
+<td><code>.uaw/assets.json</code></td>
+<td>Studio</td>
+<td>Asset IDs, filenames, media types, and update times.</td>
+</tr>
+<tr>
+<td><code>.uaw/last-valid-start.workspec.json</code></td>
+<td>Studio</td>
+<td>Last valid Starting State recovery copy.</td>
+</tr>
+<tr>
+<td><code>.uaw/checkpoints/</code></td>
+<td>Studio</td>
+<td>Up to 20 local source checkpoints.</td>
+</tr>
+</tbody>
+</table></div>
+<p>The <a href="/docs/workspec/sources/authoring/">executable source reference</a> defines the four source roles. Studio does not change their WorkSpec semantics.</p>
+<h2 id="create-a-blank-project">Create a blank project</h2>
+<ol>
+<li>Open <strong>Projects</strong>.</li>
+<li>Select <strong>New project</strong>.</li>
+<li>Enter the <strong>Project name</strong>.</li>
+<li>Select <strong>Choose location…</strong>.</li>
+<li>Choose a parent folder in the browser picker.</li>
+</ol>
+<p>Studio creates a dedicated child folder. If that name exists, Studio adds a numeric suffix such as <code>Project (2)</code>.</p>
+<p>Folder-backed projects require a browser with the File System Access API. Studio reports a compatibility error when the browser lacks this API.</p>
+<h2 id="create-a-project-from-a-template">Create a project from a template</h2>
+<ol>
+<li>Open <strong>Projects</strong>.</li>
+<li>Select <strong>From template</strong>.</li>
+<li>Choose a template in <strong>Simulation Library</strong>.</li>
+<li>Enter the project name.</li>
+<li>Select a parent folder.</li>
+</ol>
+<p>Studio writes the template's Starting State, Changes, Generator, and Constraints sources into the new folder.</p>
+<h2 id="open-an-existing-project-folder">Open an existing project folder</h2>
+<ol>
+<li>Open <strong>Projects</strong>.</li>
+<li>Select <strong>Open project folder</strong>.</li>
+<li>Choose the folder that contains <code>start.workspec.json</code>.</li>
+<li>Grant read and write access when the browser asks.</li>
+</ol>
+<p>Studio requires <code>start.workspec.json</code>. Missing executable source files receive blank source templates when Studio opens the project.</p>
+<p>The browser can require renewed folder access after a restart. Select the project card to restore access.</p>
+<h2 id="duplicate-a-project">Duplicate a project</h2>
+<ol>
+<li>Open <strong>Projects</strong>.</li>
+<li>Select <strong>Duplicate</strong> on the project card.</li>
+<li>Choose a parent folder.</li>
+</ol>
+<p>Studio creates a project named with the suffix <code>copy</code>. It copies the four current sources and the Generator seed.</p>
+<p>Duplicate does not copy project assets, checkpoints, or other <code>.uaw</code> settings. Use <a href="/docs/studio/export-share/">Export WorkSpec</a> for a portable copy with assets.</p>
+<h2 id="save-a-checkpoint">Save a checkpoint</h2>
+<p>Press <strong>Cmd/Ctrl+S</strong> or run <strong>Save local checkpoint</strong> from the command palette. Studio first saves current sources, then stores the checkpoint under <code>.uaw/checkpoints/</code>.</p>
+<p>Studio indexes the newest 20 checkpoints. Restoring a checkpoint first creates a checkpoint named <code>Before checkpoint restore</code>.</p>
+<h2 id="forget-a-remembered-project">Forget a remembered project</h2>
+<ol>
+<li>Open <strong>Projects</strong>.</li>
+<li>Select <strong>Remove Project</strong> on the project card.</li>
+<li>Confirm the action.</li>
+</ol>
+<p>Studio clears only the browser registry record. The folder, source files, assets, and <code>.uaw</code> data stay on disk.</p>
+<p>To reconnect the project, select <strong>Open project folder</strong> and choose its folder again.</p>
+<h2 id="migrate-a-legacy-browser-project">Migrate a legacy browser project</h2>
+<p>Studio shows <strong>Move browser projects into folders</strong> when it finds an older browser-stored project.</p>
+<p>Select the recovered project and choose a parent folder. Studio clears the browser copy only after the folder write succeeds.</p>
+<aside class="callout warning" role="note"><strong>Warning</strong>
+<p>Select <strong>Delete browser copy</strong> only if you no longer need the recovered data. Studio cannot restore that browser copy.</p>
+</aside>
+</div>
+                    
+                    
+                </article>
+                <aside class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ol><li class="toc-level-2"><a href="#project-storage-map">Project storage map</a></li><li class="toc-level-2"><a href="#project-folder-structure">Project folder structure</a></li><li class="toc-level-2"><a href="#create-a-blank-project">Create a blank project</a></li><li class="toc-level-2"><a href="#create-a-project-from-a-template">Create a project from a template</a></li><li class="toc-level-2"><a href="#open-an-existing-project-folder">Open an existing project folder</a></li><li class="toc-level-2"><a href="#duplicate-a-project">Duplicate a project</a></li><li class="toc-level-2"><a href="#save-a-checkpoint">Save a checkpoint</a></li><li class="toc-level-2"><a href="#forget-a-remembered-project">Forget a remembered project</a></li><li class="toc-level-2"><a href="#migrate-a-legacy-browser-project">Migrate a legacy browser project</a></li></ol></aside>
+            </div>
+        </main>
+    </div>
+    
+    <dialog class="search-dialog" data-search-dialog>
+        <div class="search-panel">
+            <div class="search-input-wrap"><input class="search-input" data-search-input type="search" placeholder="Search WorkSpec documentation" aria-label="Search documentation"><kbd>Esc</kbd></div>
+            <ul class="search-results" data-search-results></ul>
+        </div>
+    </dialog>
+    <script src="/docs/assets/docs.js"></script>
+    
+</body>
+</html>

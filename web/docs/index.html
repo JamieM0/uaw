@@ -1,143 +1,99 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-65XT8ZJM5X"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-65XT8ZJM5X');
-</script>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentation - Universal Automation Wiki</title>
-    <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="stylesheet" href="/assets/css/components.css">
-    <link rel="stylesheet" href="/assets/css/category.css">
-    <link rel="stylesheet" href="/assets/css/responsive.css">
-    <link rel="stylesheet" href="/assets/css/documentation.css">
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geologica:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        /* Placeholder styles to prevent layout shift */
-        #header-placeholder { min-height: 70px; }
-        #footer-placeholder { min-height: 250px; }
-    </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WorkSpec documentation | WorkSpec documentation</title>
+    <meta name="description" content="Learn, use, and integrate the canonical WorkSpec 2.2 language and tools.">
+    <link rel="canonical" href="https://universalautomation.wiki/docs/">
+    <link rel="icon" href="/assets/images/favicon.png">
+    <link rel="stylesheet" href="/docs/assets/docs.css">
+    <link rel="stylesheet" href="/docs/assets/syntax.css">
+    <script>try{document.documentElement.dataset.theme=localStorage.getItem('workspec-docs-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(error){}</script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-65XT8ZJM5X"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-65XT8ZJM5X');</script>
 </head>
 <body>
-    <div id="header-placeholder"></div>
-
-    <div class="docs-container">
-        <div class="docs-layout">
-            <div id="sidebar-placeholder"></div>
-
-            <main class="docs-main">
-                <article class="docs-article">
-                    <header class="docs-header">
-                        <div class="docs-breadcrumb">
-                            <nav aria-label="Breadcrumb">
-                                <ol>
-                                    <li><a href="/">Home</a></li>
-                                    <li aria-current="page">Documentation</li>
-                                </ol>
-                            </nav>
-                        </div>
-                        
-                        <div class="docs-title-section">
-                            <h1 class="docs-page-title">Documentation</h1>
-                            <p class="docs-page-subtitle">Comprehensive guides, reference materials, and resources for the Universal Automation Wiki platform. Navigate through the sections using the sidebar to explore different areas of the system.</p>
-                        </div>
-                    </header>
-
-                    <div class="docs-content">
-                        <p>Welcome to the Universal Automation Wiki documentation hub. This comprehensive resource center provides detailed guides, technical references, and practical examples to help you effectively use and contribute to the UAW platform.</p>
-
-                        <h2 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h2>
-                        
-                        <p>For WorkSpec, follow one current path: read the short WorkSpec 2 quickstart, complete the guided Studio tutorial, use the WorkSpec 2 Authoring Guide as the conceptual source of truth, then keep the cheatsheet nearby. Versioned 2.0 and 2.1 pages are historical.</p>
-
-                        <h2 id="recommended-reading">Recommended Starting Points<a class="headerlink" href="#recommended-reading" title="Permanent link">&para;</a></h2>
-                        
-                        <div class="docs-card-grid">
-                            <div class="docs-recommendation-card">
-                                <h4><a href="/docs/workspec/guides/quickstart">WorkSpec 2 Quickstart</a></h4>
-                                <p>Learn the five-part mental model, then start the small guided Studio tutorial.</p>
-                            </div>
-
-                            <div class="docs-recommendation-card">
-                                <h4><a href="/docs/workspec/guides/authoring">WorkSpec 2 Authoring Guide</a></h4>
-                                <p>The canonical conceptual reference for Starting State, Changes, Constraints, the optional Generator, and Simulation.</p>
-                            </div>
-
-                            <div class="docs-recommendation-card">
-                                <h4><a href="/docs/architecture-overview">Architecture Overview</a></h4>
-                                <p>Understand the foundational concepts and system design behind UAW's process automation approach.</p>
-                            </div>
-
-                            <div class="docs-recommendation-card">
-                                <h4><a href="/docs/playground/playground-guide">WorkSpec Studio Guide</a></h4>
-                                <p>Learn where project files, playback controls, validation results, and runtime evidence appear.</p>
-                            </div>
-
-                        </div>
-
-                        <h2 id="navigation-guide">How to Navigate<a class="headerlink" href="#navigation-guide" title="Permanent link">&para;</a></h2>
-                        
-                        <p>Use the <strong>sidebar navigation</strong> on the left to browse through different documentation sections:</p>
-                        
-                        <ul class="docs-list">
-                            <li><strong>Click section headers</strong> (WorkSpec, WorkSpec Studio, Developer) to expand and view available pages</li>
-                            <li><strong>Active sections</strong> remain expanded when you're viewing pages within them</li>
-                            <li><strong>Current page</strong> is highlighted with a colored indicator for easy reference</li>
-                            <li><strong>Browser search functionality</strong> - Use Ctrl/Cmd+F to find specific terms across the current page</li>
-                        </ul>
-
-                        <h2 id="feedback-contribution">Feedback & Contribution<a class="headerlink" href="#feedback-contribution" title="Permanent link">&para;</a></h2>
-                        
-                        <p>The UAW documentation is continuously evolving. If you find areas that need clarification, spot errors, or have suggestions for improvement:</p>
-                        
-                        <ul class="docs-list">
-                            <li>Documentation issues can be reported through the main UAW repository</li>
-                            <li>Each page is generated from source materials that can be updated by contributors</li>
-                            <li>The system supports multiple output formats and automatic regeneration</li>
-                        </ul>
-
-                        <p>Ready to explore? <strong>Use the sidebar navigation</strong> to dive into any section that interests you, or start with the recommended reading above.</p>
-                    </div>
-                    
-                    <footer class="docs-footer">
-                        <div class="docs-meta">
-                            <p>Part of the <a href="/">Universal Automation Wiki</a> documentation</p>
-                        </div>
-                    </footer>
-                </article>
-            </main>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    
+    <header class="site-header">
+        <a class="brand" href="/docs/" aria-label="WorkSpec documentation home">
+            <img class="brand-mark" src="/assets/images/workspec-logo.cleaned.png" alt="">
+            <span>WorkSpec</span><span class="brand-label">Docs</span>
+        </a>
+        <button class="header-search" type="button" data-search-trigger>
+            <span class="search-placeholder">Search WorkSpec</span><kbd>⌘ K</kbd>
+        </button>
+        <div class="header-actions">
+            <a class="icon-button" href="/playground.html" aria-label="Open WorkSpec Studio" title="Open WorkSpec Studio">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="M14 18h7m-3-3 3 3-3 3"></path></svg>
+            </a>
+            <button class="icon-button theme-button" type="button" data-theme-toggle aria-label="Use dark theme" title="Use dark theme">
+                <svg class="theme-icon theme-icon-moon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4a8.5 8.5 0 1 0 11.2 11.2Z"></path></svg>
+                <svg class="theme-icon theme-icon-sun" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+            </button>
+            <button class="mobile-menu" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">Menu</button>
         </div>
+    </header>
+    <div class="docs-shell">
+        <aside class="sidebar" aria-label="Documentation navigation"><nav><details class="nav-section" open><summary>Start here</summary><ul class="nav-list"><li><a href="/docs/" aria-current="page">WorkSpec documentation</a></li><li><a href="/docs/start/what-is-workspec/">What is WorkSpec?</a></li><li><a href="/docs/start/install/">Install and verify</a></li><li><a href="/docs/start/first-project/">Your first WorkSpec project</a></li><li><a href="/docs/start/project-files/">The files in a WorkSpec project</a></li><li><a href="/docs/start/where-next/">Choose your path</a></li></ul></details><details class="nav-section"><summary>Learn WorkSpec</summary><ul class="nav-list"><li><a href="/docs/learn/world-state/">1. World state</a></li><li><a href="/docs/learn/tasks-and-time/">2. Tasks and time</a></li><li><a href="/docs/learn/changes/">3. Changes</a></li><li><a href="/docs/learn/constraints/">4. Constraints</a></li><li><a href="/docs/learn/inspect-state/">5. Inspect and debug</a></li><li><a href="/docs/learn/render-world/">6. Render the world</a></li><li><a href="/docs/learn/collections-and-dynamic-work/">7. Collections and dynamic work</a></li><li><a href="/docs/learn/generators/">8. Generator logic</a></li><li><a href="/docs/learn/capstone/">9. Capstone project</a></li></ul></details><details class="nav-section"><summary>WorkSpec</summary><details class="nav-subsection"><summary>Fundamentals</summary><ul class="nav-list"><li><a href="/docs/workspec/overview/">WorkSpec language overview</a></li><li><a href="/docs/workspec/project-model/">Project model</a></li><li><a href="/docs/workspec/terminology/">Terminology and glossary</a></li><li><a href="/docs/workspec/versioning-compatibility/">Versions and compatibility</a></li></ul></details><details class="nav-subsection"><summary>Shared language</summary><ul class="nav-list"><li><a href="/docs/workspec/language/identifiers/">Identifiers and naming</a></li><li><a href="/docs/workspec/language/time-durations/">Time, dates, durations, and offsets</a></li><li><a href="/docs/workspec/language/values-references-expressions/">Values, references, and expressions</a></li><li><a href="/docs/workspec/language/conditions/">Conditions and boolean logic</a></li><li><a href="/docs/workspec/problems/">Problems and diagnostics</a></li></ul></details><details class="nav-subsection"><summary>Executable sources</summary><ul class="nav-list"><li><a href="/docs/workspec/sources/authoring/">Executable source files</a></li><li><a href="/docs/workspec/sources/security/">Trusted code and execution security</a></li></ul></details><details class="nav-subsection"><summary>Starting State</summary><ul class="nav-list"><li><a href="/docs/workspec/starting-state/overview/">Starting State overview</a></li><li><a href="/docs/workspec/starting-state/root-meta-config/">Root, metadata, and configuration</a></li><li><a href="/docs/workspec/starting-state/objects/">Objects and properties</a></li><li><a href="/docs/workspec/starting-state/types-traits/">Type definitions and traits</a></li><li><a href="/docs/workspec/starting-state/locations-layout/">Locations and layout</a></li><li><a href="/docs/workspec/starting-state/state-libraries/">State Libraries and appearance</a></li><li><a href="/docs/workspec/starting-state/collections/">Collections</a></li><li><a href="/docs/workspec/starting-state/tasks/">Tasks</a></li><li><a href="/docs/workspec/starting-state/scheduling/">Scheduling and dependencies</a></li><li><a href="/docs/workspec/starting-state/actors-performers/">Actors and performers</a></li><li><a href="/docs/workspec/starting-state/reservations/">Reservations</a></li><li><a href="/docs/workspec/starting-state/work-definitions/">Work definitions</a></li><li><a href="/docs/workspec/starting-state/multi-period/">Calendars and multi-period models</a></li><li><a href="/docs/workspec/starting-state/field-index/">Starting State field index</a></li></ul></details><details class="nav-subsection"><summary>Changes</summary><ul class="nav-list"><li><a href="/docs/workspec/changes/overview/">Changes overview</a></li><li><a href="/docs/workspec/changes/authoring/">Authoring Changes</a></li><li><a href="/docs/workspec/changes/lifecycle/">Task start and completion Changes</a></li><li><a href="/docs/workspec/changes/operations/">Change operations</a></li><li><a href="/docs/workspec/changes/conflicts-transactions/">Same-time writes, conflicts, and transactions</a></li><li><a href="/docs/workspec/changes/boundaries/">What does not belong in Changes</a></li></ul></details><details class="nav-subsection"><summary>Constraints</summary><ul class="nav-list"><li><a href="/docs/workspec/constraints/overview/">Constraints overview</a></li><li><a href="/docs/workspec/constraints/authoring/">Authoring Constraints</a></li><li><a href="/docs/workspec/constraints/context/">Constraint context and history queries</a></li><li><a href="/docs/workspec/constraints/violations/">Constraint violations</a></li><li><a href="/docs/workspec/constraints/boundaries/">What belongs in a Constraint</a></li></ul></details><details class="nav-subsection"><summary>Generators</summary><ul class="nav-list"><li><a href="/docs/workspec/generators/overview/">Generator overview</a></li><li><a href="/docs/workspec/generators/authoring/">Authoring Generators</a></li><li><a href="/docs/workspec/generators/context-operations/">Generator context and operations</a></li><li><a href="/docs/workspec/generators/execution-order/">Generator execution order</a></li><li><a href="/docs/workspec/generators/determinism/">Seeds and determinism</a></li><li><a href="/docs/workspec/generators/dynamic-work-relationship/">Generator and dynamic work</a></li></ul></details><details class="nav-subsection"><summary>Runtime</summary><ul class="nav-list"><li><a href="/docs/workspec/runtime/execution-model/">Execution model and authoritative run</a></li><li><a href="/docs/workspec/runtime/horizons/">Requested horizons and resolved-through time</a></li><li><a href="/docs/workspec/runtime/snapshots/">Snapshots and resolved state</a></li><li><a href="/docs/workspec/runtime/task-instances/">Runtime task instances</a></li><li><a href="/docs/workspec/runtime/task-status/">Task status and failure propagation</a></li><li><a href="/docs/workspec/runtime/work-budget/">Work-unit budget and bounded execution</a></li><li><a href="/docs/workspec/runtime/usage/">Runtime usage accounting</a></li></ul></details><details class="nav-subsection"><summary>Rendering</summary><ul class="nav-list"><li><a href="/docs/workspec/rendering/overview/">Rendering model</a></li><li><a href="/docs/workspec/rendering/svg/">SVG renderer</a></li><li><a href="/docs/workspec/rendering/state-visuals/">State visuals and assets</a></li><li><a href="/docs/workspec/rendering/layout/">Visual layout</a></li></ul></details><details class="nav-subsection"><summary>Compatibility</summary><ul class="nav-list"><li><a href="/docs/workspec/compatibility/overview/">Compatibility policy</a></li><li><a href="/docs/workspec/compatibility/historical-versions/">Historical WorkSpec versions</a></li><li><a href="/docs/workspec/compatibility/legacy-syntax/">Compatibility-only fields and syntax</a></li><li><a href="/docs/workspec/compatibility/migration/">Migration behavior</a></li></ul></details></details><details class="nav-section"><summary>CLI</summary><ul class="nav-list"><li><a href="/docs/cli/overview/">CLI overview</a></li><li><a href="/docs/cli/install/">CLI installation and environment</a></li><li><a href="/docs/cli/project-inputs/">Project source inputs</a></li><li><a href="/docs/cli/validate/">workspec validate</a></li><li><a href="/docs/cli/snapshot/">workspec snapshot</a></li><li><a href="/docs/cli/constraints/">workspec constraints</a></li><li><a href="/docs/cli/render/">workspec render</a></li><li><a href="/docs/cli/format/">workspec format</a></li><li><a href="/docs/cli/migrate/">workspec migrate</a></li><li><a href="/docs/cli/json-output/">JSON output and automation</a></li><li><a href="/docs/cli/exit-codes/">Exit codes and failure policy</a></li><li><a href="/docs/cli/security/">Executing project JavaScript from the CLI</a></li><li><a href="/docs/cli/reference/">CLI command and option index</a></li></ul></details><details class="nav-section"><summary>WorkSpec Studio</summary><ul class="nav-list"><li><a href="/docs/studio/overview/">WorkSpec Studio overview</a></li><li><a href="/docs/studio/projects/">Projects and source files</a></li><li><a href="/docs/studio/editors/">Source editors</a></li><li><a href="/docs/studio/problems/">Validation and Problems</a></li><li><a href="/docs/studio/timeline/">Timeline and playback</a></li><li><a href="/docs/studio/visualiser/">World visualiser</a></li><li><a href="/docs/studio/assets/">Assets and State Libraries</a></li><li><a href="/docs/studio/export-share/">Export and sharing</a></li></ul></details><details class="nav-section"><summary>JavaScript API</summary><ul class="nav-list"><li><a href="/docs/api/overview/">JavaScript API overview</a></li><li><a href="/docs/api/stability/">API stability and support policy</a></li><li><a href="/docs/api/validation/">Validation APIs</a></li><li><a href="/docs/api/runtime/">Project execution</a></li><li><a href="/docs/api/snapshots/">Snapshot APIs</a></li><li><a href="/docs/api/constraints/">Constraint execution APIs</a></li><li><a href="/docs/api/rendering/">Rendering APIs</a></li><li><a href="/docs/api/migration/">Migration API</a></li><li><a href="/docs/api/state-visuals/">State visual helpers</a></li><li><a href="/docs/api/playback/">Playback model APIs</a></li><li><a href="/docs/api/custom-validation/">Custom validation APIs</a></li><li><a href="/docs/api/types/">Types and data structures</a></li><li><a href="/docs/api/tooling/">Tooling and analysis APIs</a></li><li><a href="/docs/api/reference/">JavaScript API index</a></li></ul></details><details class="nav-section"><summary>Guides</summary><ul class="nav-list"><li><a href="/docs/guides/model-real-process/">Model a real process</a></li><li><a href="/docs/guides/changes-vs-generator/">Choose Changes or Generator</a></li><li><a href="/docs/guides/design-constraints/">Design useful Constraints</a></li><li><a href="/docs/guides/debug-project/">Debug a broken project</a></li><li><a href="/docs/guides/reproducible-runs/">Make runs reproducible</a></li><li><a href="/docs/guides/dynamic-work/">Model dynamic work</a></li><li><a href="/docs/guides/embed-workspec/">Embed WorkSpec in another application</a></li><li><a href="/docs/guides/author-with-ai/">Author WorkSpec with AI tools</a></li></ul></details><details class="nav-section"><summary>Concepts</summary><ul class="nav-list"><li><a href="/docs/concepts/timeline-vs-simulator/">Timeline versus simulator</a></li><li><a href="/docs/concepts/valid-file-valid-world/">A valid file is not necessarily a valid world</a></li><li><a href="/docs/concepts/authoritative-run/">Why one authoritative run matters</a></li><li><a href="/docs/concepts/jigsaw-model/">The jigsaw model</a></li><li><a href="/docs/concepts/world-modelling/">WorkSpec as inspectable world modelling</a></li></ul></details><details class="nav-section"><summary>Troubleshooting</summary><ul class="nav-list"><li><a href="/docs/troubleshooting/validation/">Validation and source errors</a></li><li><a href="/docs/troubleshooting/tasks/">Tasks do not start or finish as expected</a></li><li><a href="/docs/troubleshooting/constraints/">Constraint surprises</a></li><li><a href="/docs/troubleshooting/unresolved-time/">Requested time was not resolved</a></li><li><a href="/docs/troubleshooting/rendering/">Rendered world looks wrong</a></li><li><a href="/docs/troubleshooting/security/">Executable source fails or the CLI requires confirmation</a></li></ul></details></nav></aside>
+        
+        <main class="docs-stage home-stage" id="main-content">
+            <section class="home-hero" aria-labelledby="hero-title">
+                <div class="home-copy">
+                    <h1 id="hero-title">Describe work. <span class="accent-phrase">Resolve the world.</span></h1>
+                    <p class="lead">Model world state, planned work, executable effects, and the rules that prove the resolved result.</p>
+                    <div class="hero-actions">
+                        <a class="button primary" href="/docs/start/first-project/">Build your first project</a>
+                        <a class="button" href="/docs/start/what-is-workspec/">Understand the model</a>
+                    </div>
+                </div>
+                <section class="work-map" aria-labelledby="work-map-title">
+                    <header class="work-map-header"><p class="work-map-kicker">Interactive model</p><h2 id="work-map-title">Trace one source of truth</h2><p>Select a part of the model to follow its role.</p></header>
+                    <div class="orbit-canvas">
+                        <div class="orbit-ring orbit-ring-outer" aria-hidden="true"></div><div class="orbit-ring orbit-ring-inner" aria-hidden="true"></div>
+                        <div class="work-nodes" role="tablist" aria-label="Parts of a WorkSpec project">
+                            <button class="work-node work-node-state" id="work-node-state" type="button" role="tab" aria-selected="true" aria-controls="work-panel-state" data-work-node><span>01</span>Starting State</button>
+                            <button class="work-node work-node-changes" id="work-node-changes" type="button" role="tab" aria-selected="false" aria-controls="work-panel-changes" tabindex="-1" data-work-node><span>02</span>Changes</button>
+                            <button class="work-node work-node-run" id="work-node-run" type="button" role="tab" aria-selected="false" aria-controls="work-panel-run" tabindex="-1" data-work-node><span>03</span>Resolved run</button>
+                            <button class="work-node work-node-constraints" id="work-node-constraints" type="button" role="tab" aria-selected="false" aria-controls="work-panel-constraints" tabindex="-1" data-work-node><span>04</span>Constraints</button>
+                            <button class="work-node work-node-rendering" id="work-node-rendering" type="button" role="tab" aria-selected="false" aria-controls="work-panel-rendering" tabindex="-1" data-work-node><span>05</span>Rendering</button>
+                        </div>
+                        <div class="work-panel" id="work-panel-state" role="tabpanel" aria-labelledby="work-node-state" data-work-panel><p class="work-panel-step">Input / 01</p><h3>Declare what exists</h3><p>Objects, tasks, locations, and initial properties define the world before work starts.</p><code>parcel.state = "unpacked"</code><a href="/docs/learn/world-state/">Learn about world state</a></div>
+                        <div class="work-panel" id="work-panel-changes" role="tabpanel" aria-labelledby="work-node-changes" data-work-panel hidden><p class="work-panel-step">Effects / 02</p><h3>Attach known effects</h3><p>Changes describe the state updates that a task produces at known lifecycle points.</p><code>set("parcel", "state", "packed")</code><a href="/docs/learn/changes/">Learn about Changes</a></div>
+                        <div class="work-panel" id="work-panel-run" role="tabpanel" aria-labelledby="work-node-run" data-work-panel hidden><p class="work-panel-step">Runtime / 03</p><h3>Resolve one history</h3><p>The runtime applies every effect once and records the authoritative state for each time.</p><code>run.resolvedThrough = 550</code><a href="/docs/workspec/runtime/execution-model/">Read the execution model</a></div>
+                        <div class="work-panel" id="work-panel-constraints" role="tabpanel" aria-labelledby="work-node-constraints" data-work-panel hidden><p class="work-panel-step">Evidence / 04</p><h3>Test the resolved result</h3><p>Constraints inspect the run and report evidence without changing the world.</p><code>violations = 0</code><a href="/docs/workspec/constraints/overview/">Understand Constraints</a></div>
+                        <div class="work-panel" id="work-panel-rendering" role="tabpanel" aria-labelledby="work-node-rendering" data-work-panel hidden><p class="work-panel-step">Output / 05</p><h3>Present the same result</h3><p>Renderers and Studio display the existing run. They do not calculate another world.</p><code>parcel-world.svg</code><a href="/docs/workspec/rendering/overview/">Explore rendering</a></div>
+                    </div>
+                </section>
+            </section>
+            <section class="path-grid" aria-label="Start with WorkSpec">
+                <a class="path-card" href="/docs/start/what-is-workspec/"><span class="path-number">01 / Orient</span><h2>See the whole model</h2><p>Understand how state, Changes, Constraints, runtime execution, and rendering fit together.</p></a>
+                <a class="path-card" href="/docs/start/install/"><span class="path-number">02 / Prepare</span><h2>Install and verify</h2><p>Set up the CLI and JavaScript package with Node.js 18 or later.</p></a>
+                <a class="path-card" href="/docs/start/first-project/"><span class="path-number">03 / Build</span><h2>Resolve your first world</h2><p>Validate, inspect, constrain, and render a complete small project.</p></a>
+            </section>
+            <section class="reference-band" aria-labelledby="reference-title">
+                <div><p class="footer-kicker">Lookup mode</p><h2 id="reference-title">Go straight to the contract.</h2><p class="lead">Once you know what you need, the reference mirrors the product surface.</p></div>
+                <div class="reference-list">
+                    <a href="/docs/workspec/overview/"><span>WorkSpec language</span><small>Language</small></a><a href="/docs/cli/overview/"><span>CLI commands</span><small>Commands</small></a><a href="/docs/api/overview/"><span>JavaScript API</span><small>Library</small></a><a href="/docs/studio/overview/"><span>WorkSpec Studio</span><small>Interface</small></a><a href="/docs/workspec/sources/security/"><span>Execution security</span><small>Policy</small></a><a href="/docs/workspec/versioning-compatibility/"><span>Versions and compatibility</span><small>Release</small></a>
+                </div>
+            </section>
+            
+    <footer class="site-footer">
+        <span>WorkSpec language 2.2</span>
+        <span>Inspectable world modelling</span>
+    </footer>
+        </main>
     </div>
-
-    <div id="footer-placeholder"></div>
-
-    <script src="/assets/js/components.js"></script>
-    <script type="module">
-        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        mermaid.initialize({ 
-            startOnLoad: true,
-            theme: 'neutral',
-            themeVariables: {
-                primaryColor: '#126ca8',
-                primaryTextColor: '#333',
-                primaryBorderColor: '#e0e0e0',
-                lineColor: '#666'
-            }
-        });
-    </script>
-    <script src="/assets/js/main.js"></script>
-    <script src="/assets/js/documentation.js"></script>
-    <script>renderDocumentationSidebar('#sidebar-placeholder');</script>
+    
+    <dialog class="search-dialog" data-search-dialog>
+        <div class="search-panel">
+            <div class="search-input-wrap"><input class="search-input" data-search-input type="search" placeholder="Search WorkSpec documentation" aria-label="Search documentation"><kbd>Esc</kbd></div>
+            <ul class="search-results" data-search-results></ul>
+        </div>
+    </dialog>
+    <script src="/docs/assets/docs.js"></script>
+    
 </body>
 </html>

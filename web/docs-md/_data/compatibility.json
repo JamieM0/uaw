@@ -1,0 +1,50 @@
+{
+  "generated_from": [
+    "packages/workspec/workspec-validator.js",
+    "packages/workspec/workspec-runtime.js",
+    "packages/workspec/workspec-migrate-v1-to-v2.js",
+    "packages/workspec/README.md",
+    "packages/workspec/WORKSPEC-2.2-VALIDATION-LAYER-AUDIT.md"
+  ],
+  "current_language": "2.2",
+  "migration_target": "2.1",
+  "versions": [
+    {
+      "language": "previous-uaw-or-1.x",
+      "validator": "rejected-without-schema-version",
+      "runtime": "unsupported-public-contract",
+      "cli_project_execution": "migration-only",
+      "studio": "product-specific-migration-flow",
+      "migratable": "to-2.1",
+      "recommended": false
+    },
+    {
+      "language": "2.0",
+      "validator": "accepted",
+      "runtime": "historical-compatibility-not-complete-contract",
+      "cli_project_execution": "document-validation-accepted-execution-not-established",
+      "studio": "not-established-by-package-evidence",
+      "migratable": false,
+      "recommended": false
+    },
+    {
+      "language": "2.1",
+      "validator": "accepted",
+      "runtime": "version-gated-inline-compatibility",
+      "cli_project_execution": "document-validation-accepted",
+      "studio": "not-established-by-package-evidence",
+      "migratable": false,
+      "migration_target": true,
+      "recommended": false
+    },
+    {
+      "language": "2.2",
+      "validator": "accepted",
+      "runtime": "current-authoritative-runtime",
+      "cli_project_execution": "current",
+      "studio": "current-target-subject-to-application-release",
+      "migratable": false,
+      "recommended": true
+    }
+  ]
+}

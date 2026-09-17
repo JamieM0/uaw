@@ -1,0 +1,758 @@
+[
+  {
+    "description": "Learn, use, and integrate the canonical WorkSpec 2.2 language and tools.",
+    "href": "/docs/",
+    "section": "Start here",
+    "title": "WorkSpec documentation"
+  },
+  {
+    "description": "Run Constraint source against an existing authoritative WorkSpec run.",
+    "href": "/docs/api/constraints/",
+    "section": "JavaScript API",
+    "title": "Constraint execution APIs"
+  },
+  {
+    "description": "Run supported custom validators with subprocess isolation or in the current process.",
+    "href": "/docs/api/custom-validation/",
+    "section": "JavaScript API",
+    "title": "Custom validation APIs"
+  },
+  {
+    "description": "Migrate Previous UAW Syntax data to the historical WorkSpec 2.1 shape.",
+    "href": "/docs/api/migration/",
+    "section": "JavaScript API",
+    "title": "Migration API"
+  },
+  {
+    "description": "Embed WorkSpec validation, execution, snapshots, Constraints, rendering, and migration in Node.js applications.",
+    "href": "/docs/api/overview/",
+    "section": "JavaScript API",
+    "title": "JavaScript API overview"
+  },
+  {
+    "description": "Resolve pure playback state from authored WorkSpec tasks and interactions.",
+    "href": "/docs/api/playback/",
+    "section": "JavaScript API",
+    "title": "Playback model APIs"
+  },
+  {
+    "description": "Generated support classification for every export reachable from the WorkSpec package entrypoint.",
+    "href": "/docs/api/reference/",
+    "section": "JavaScript API",
+    "title": "JavaScript API index"
+  },
+  {
+    "description": "Render a resolved WorkSpec snapshot or project as deterministic standalone SVG.",
+    "href": "/docs/api/rendering/",
+    "section": "JavaScript API",
+    "title": "Rendering APIs"
+  },
+  {
+    "description": "Create one authoritative WorkSpec run with the supported runtime API.",
+    "href": "/docs/api/runtime/",
+    "section": "JavaScript API",
+    "title": "Project execution"
+  },
+  {
+    "description": "Inspect an existing authoritative run or create a one-call project snapshot.",
+    "href": "/docs/api/snapshots/",
+    "section": "JavaScript API",
+    "title": "Snapshot APIs"
+  },
+  {
+    "description": "Understand stable, experimental, compatibility, and internal WorkSpec JavaScript API classifications.",
+    "href": "/docs/api/stability/",
+    "section": "JavaScript API",
+    "title": "API stability and support policy"
+  },
+  {
+    "description": "Create asset IDs and resolve State Library visuals with supported JavaScript helpers.",
+    "href": "/docs/api/state-visuals/",
+    "section": "JavaScript API",
+    "title": "State visual helpers"
+  },
+  {
+    "description": "Experimental Changes source analysis for editors and developer tools.",
+    "href": "/docs/api/tooling/",
+    "section": "JavaScript API",
+    "title": "Tooling and analysis APIs"
+  },
+  {
+    "description": "Reference for the public TypeScript declarations returned by the WorkSpec JavaScript API.",
+    "href": "/docs/api/types/",
+    "section": "JavaScript API",
+    "title": "Types and data structures"
+  },
+  {
+    "description": "Validate a WorkSpec Starting State document or a project with executable sources.",
+    "href": "/docs/api/validation/",
+    "section": "JavaScript API",
+    "title": "Validation APIs"
+  },
+  {
+    "description": "Run Constraints against one authoritative WorkSpec execution.",
+    "href": "/docs/cli/constraints/",
+    "section": "CLI",
+    "title": "workspec constraints"
+  },
+  {
+    "description": "Reference for WorkSpec CLI success, result failure, and command failure statuses.",
+    "href": "/docs/cli/exit-codes/",
+    "section": "CLI",
+    "title": "Exit codes and failure policy"
+  },
+  {
+    "description": "Parse and write a JSON file with WorkSpec CLI formatting.",
+    "href": "/docs/cli/format/",
+    "section": "CLI",
+    "title": "workspec format"
+  },
+  {
+    "description": "Install the WorkSpec CLI and verify the installed package version.",
+    "href": "/docs/cli/install/",
+    "section": "CLI",
+    "title": "CLI installation and environment"
+  },
+  {
+    "description": "Consume WorkSpec CLI JSON envelopes in scripts and continuous integration.",
+    "href": "/docs/cli/json-output/",
+    "section": "CLI",
+    "title": "JSON output and automation"
+  },
+  {
+    "description": "Migrate Previous UAW Syntax input to the historical WorkSpec 2.1 shape.",
+    "href": "/docs/cli/migrate/",
+    "section": "CLI",
+    "title": "workspec migrate"
+  },
+  {
+    "description": "Choose a WorkSpec CLI command for validation, execution, inspection, rendering, migration, or formatting.",
+    "href": "/docs/cli/overview/",
+    "section": "CLI",
+    "title": "CLI overview"
+  },
+  {
+    "description": "Reference for Starting State, executable source flags, time, seed, and work-budget CLI inputs.",
+    "href": "/docs/cli/project-inputs/",
+    "section": "CLI",
+    "title": "Project source inputs"
+  },
+  {
+    "description": "Generated index of WorkSpec CLI commands, inputs, options, confirmations, and JSON envelopes.",
+    "href": "/docs/cli/reference/",
+    "section": "CLI",
+    "title": "CLI command and option index"
+  },
+  {
+    "description": "Run a WorkSpec project and render one resolved state as standalone SVG.",
+    "href": "/docs/cli/render/",
+    "section": "CLI",
+    "title": "workspec render"
+  },
+  {
+    "description": "Understand WorkSpec CLI confirmations before executing project JavaScript.",
+    "href": "/docs/cli/security/",
+    "section": "CLI",
+    "title": "Executing project JavaScript from the CLI"
+  },
+  {
+    "description": "Run a WorkSpec project and inspect its resolved observable state at one time.",
+    "href": "/docs/cli/snapshot/",
+    "section": "CLI",
+    "title": "workspec snapshot"
+  },
+  {
+    "description": "Validate a Starting State document or a complete WorkSpec project.",
+    "href": "/docs/cli/validate/",
+    "section": "CLI",
+    "title": "workspec validate"
+  },
+  {
+    "description": "Understand why snapshots, Constraints, playback, and rendering must share one resolved history.",
+    "href": "/docs/concepts/authoritative-run/",
+    "section": "Concepts",
+    "title": "Why one authoritative run matters"
+  },
+  {
+    "description": "Understand WorkSpec as sparse known facts completed and challenged by domain Constraints.",
+    "href": "/docs/concepts/jigsaw-model/",
+    "section": "Concepts",
+    "title": "The jigsaw model"
+  },
+  {
+    "description": "Understand predetermined timeline effects and causal state-driven simulation as different modeling tools.",
+    "href": "/docs/concepts/timeline-vs-simulator/",
+    "section": "Concepts",
+    "title": "Timeline versus simulator"
+  },
+  {
+    "description": "Understand the difference between structural correctness and domain truth.",
+    "href": "/docs/concepts/valid-file-valid-world/",
+    "section": "Concepts",
+    "title": "A valid file is not necessarily a valid world"
+  },
+  {
+    "description": "Understand how objects, state, time, execution, Constraints, and presentation form an inspectable model.",
+    "href": "/docs/concepts/world-modelling/",
+    "section": "Concepts",
+    "title": "WorkSpec as inspectable world modelling"
+  },
+  {
+    "description": "Give AI tools canonical context and require validated, inspected evidence from generated projects.",
+    "href": "/docs/guides/author-with-ai/",
+    "section": "Guides",
+    "title": "Author WorkSpec with AI tools"
+  },
+  {
+    "description": "Choose predetermined task effects or causal simulation behavior without mixing their roles.",
+    "href": "/docs/guides/changes-vs-generator/",
+    "section": "Guides",
+    "title": "Choose Changes or Generator"
+  },
+  {
+    "description": "Use validation, resolved inspection, Constraints, and rendering to isolate project failures.",
+    "href": "/docs/guides/debug-project/",
+    "section": "Guides",
+    "title": "Debug a broken project"
+  },
+  {
+    "description": "Create a small set of domain invariants that tests resolved evidence without copying implementation.",
+    "href": "/docs/guides/design-constraints/",
+    "section": "Guides",
+    "title": "Design useful Constraints"
+  },
+  {
+    "description": "Declare collection-driven work and inspect the runtime instances created from it.",
+    "href": "/docs/guides/dynamic-work/",
+    "section": "Guides",
+    "title": "Model dynamic work"
+  },
+  {
+    "description": "Run a trusted WorkSpec project once and reuse its evidence across application features.",
+    "href": "/docs/guides/embed-workspec/",
+    "section": "Guides",
+    "title": "Embed WorkSpec in another application"
+  },
+  {
+    "description": "Turn a real process into objects, tasks, state, effects, and domain invariants.",
+    "href": "/docs/guides/model-real-process/",
+    "section": "Guides",
+    "title": "Model a real process"
+  },
+  {
+    "description": "Capture versions, source, seed, horizon, budget, and evidence for repeatable WorkSpec runs.",
+    "href": "/docs/guides/reproducible-runs/",
+    "section": "Guides",
+    "title": "Make runs reproducible"
+  },
+  {
+    "description": "Build and verify a complete WorkSpec 2.2 project with dynamic work and one authoritative run.",
+    "href": "/docs/learn/capstone/",
+    "section": "Learn WorkSpec",
+    "title": "9. Capstone project"
+  },
+  {
+    "description": "Attach predetermined start and completion effects to known WorkSpec tasks.",
+    "href": "/docs/learn/changes/",
+    "section": "Learn WorkSpec",
+    "title": "3. Changes"
+  },
+  {
+    "description": "Declare a collection and work definition that create runtime task instances in WorkSpec 2.2.",
+    "href": "/docs/learn/collections-and-dynamic-work/",
+    "section": "Learn WorkSpec",
+    "title": "7. Collections and dynamic work"
+  },
+  {
+    "description": "Check a domain rule against resolved WorkSpec state without changing execution.",
+    "href": "/docs/learn/constraints/",
+    "section": "Learn WorkSpec",
+    "title": "4. Constraints"
+  },
+  {
+    "description": "Add deterministic causal behavior that indirectly triggers declared dynamic work.",
+    "href": "/docs/learn/generators/",
+    "section": "Learn WorkSpec",
+    "title": "8. Generator logic"
+  },
+  {
+    "description": "Use validation Problems, snapshots, and resolved-through time to inspect a WorkSpec run.",
+    "href": "/docs/learn/inspect-state/",
+    "section": "Learn WorkSpec",
+    "title": "5. Inspect and debug"
+  },
+  {
+    "description": "Render a resolved WorkSpec 2.2 world as deterministic standalone SVG.",
+    "href": "/docs/learn/render-world/",
+    "section": "Learn WorkSpec",
+    "title": "6. Render the world"
+  },
+  {
+    "description": "Add planned tasks, durations, start times, and dependencies to a WorkSpec 2.2 project.",
+    "href": "/docs/learn/tasks-and-time/",
+    "section": "Learn WorkSpec",
+    "title": "2. Tasks and time"
+  },
+  {
+    "description": "Build a WorkSpec 2.2 Starting State with objects, properties, and locations.",
+    "href": "/docs/learn/world-state/",
+    "section": "Learn WorkSpec",
+    "title": "1. World state"
+  },
+  {
+    "description": "Create and run a small WorkSpec 2.2 project with Changes, a Constraint, a snapshot, and SVG rendering.",
+    "href": "/docs/start/first-project/",
+    "section": "Start here",
+    "title": "Your first WorkSpec project"
+  },
+  {
+    "description": "Install WorkSpec with Node.js and verify the CLI and JavaScript package.",
+    "href": "/docs/start/install/",
+    "section": "Start here",
+    "title": "Install and verify"
+  },
+  {
+    "description": "Understand the role and boundary of each canonical WorkSpec 2.2 project file.",
+    "href": "/docs/start/project-files/",
+    "section": "Start here",
+    "title": "The files in a WorkSpec project"
+  },
+  {
+    "description": "Understand what WorkSpec models and how its language, runtime, tools, and renderer fit together.",
+    "href": "/docs/start/what-is-workspec/",
+    "section": "Start here",
+    "title": "What is WorkSpec?"
+  },
+  {
+    "description": "Choose the next WorkSpec documentation section for your current goal.",
+    "href": "/docs/start/where-next/",
+    "section": "Start here",
+    "title": "Choose your path"
+  },
+  {
+    "description": "Store project images, manage asset IDs, and map State Library states to appearance assets in Studio.",
+    "href": "/docs/studio/assets/",
+    "section": "WorkSpec Studio",
+    "title": "Assets and State Libraries"
+  },
+  {
+    "description": "Use Studio text editors for Starting State, Changes, Generator, Constraints, and the Studio Constraint Library.",
+    "href": "/docs/studio/editors/",
+    "section": "WorkSpec Studio",
+    "title": "Source editors"
+  },
+  {
+    "description": "Export and import portable Studio projects with sources, assets, manifests, and optional custom validation rules.",
+    "href": "/docs/studio/export-share/",
+    "section": "WorkSpec Studio",
+    "title": "Export and sharing"
+  },
+  {
+    "description": "Understand Studio workspaces, project storage, and the boundary between Studio and WorkSpec.",
+    "href": "/docs/studio/overview/",
+    "section": "WorkSpec Studio",
+    "title": "WorkSpec Studio overview"
+  },
+  {
+    "description": "Run Studio project validation, filter Problems, inspect provenance, and follow runtime Constraint evidence.",
+    "href": "/docs/studio/problems/",
+    "section": "WorkSpec Studio",
+    "title": "Validation and Problems"
+  },
+  {
+    "description": "Create, open, duplicate, and manage Studio projects without confusing source files, metadata, and browser records.",
+    "href": "/docs/studio/projects/",
+    "section": "WorkSpec Studio",
+    "title": "Projects and source files"
+  },
+  {
+    "description": "Inspect resolved WorkSpec execution with the Studio timeline, clock, scrubber, and live object state.",
+    "href": "/docs/studio/timeline/",
+    "section": "WorkSpec Studio",
+    "title": "Timeline and playback"
+  },
+  {
+    "description": "Use Studio Model views to author environments and inspect resolved physical state without redefining renderer behavior.",
+    "href": "/docs/studio/visualiser/",
+    "section": "WorkSpec Studio",
+    "title": "World visualiser"
+  },
+  {
+    "description": "Diagnose Constraints that do not run, query the wrong time, fire too often, or return weak evidence.",
+    "href": "/docs/troubleshooting/constraints/",
+    "section": "Troubleshooting",
+    "title": "Constraint surprises"
+  },
+  {
+    "description": "Separate world-state, visual mapping, asset, layout, and renderer-host errors.",
+    "href": "/docs/troubleshooting/rendering/",
+    "section": "Troubleshooting",
+    "title": "Rendered world looks wrong"
+  },
+  {
+    "description": "Diagnose CLI trust acknowledgements, synchronous-source failures, and isolation assumptions.",
+    "href": "/docs/troubleshooting/security/",
+    "section": "Troubleshooting",
+    "title": "Executable source fails or the CLI requires confirmation"
+  },
+  {
+    "description": "Diagnose pending, blocked, skipped, failed, interrupted, and unexpectedly active tasks.",
+    "href": "/docs/troubleshooting/tasks/",
+    "section": "Troubleshooting",
+    "title": "Tasks do not start or finish as expected"
+  },
+  {
+    "description": "Diagnose requested horizons that exceed the run's safe resolved-through boundary.",
+    "href": "/docs/troubleshooting/unresolved-time/",
+    "section": "Troubleshooting",
+    "title": "Requested time was not resolved"
+  },
+  {
+    "description": "Diagnose JSON parsing, document validation, source compilation, and provenance errors.",
+    "href": "/docs/troubleshooting/validation/",
+    "section": "Troubleshooting",
+    "title": "Validation and source errors"
+  },
+  {
+    "description": "Register WorkSpec 2.2 task handlers and use the Changes source contract.",
+    "href": "/docs/workspec/changes/authoring/",
+    "section": "WorkSpec",
+    "title": "Authoring Changes"
+  },
+  {
+    "description": "Choose Changes only for explicit predetermined task effects.",
+    "href": "/docs/workspec/changes/boundaries/",
+    "section": "WorkSpec",
+    "title": "What does not belong in Changes"
+  },
+  {
+    "description": "Understand deterministic combination and rejection of concurrent Changes writes.",
+    "href": "/docs/workspec/changes/conflicts-transactions/",
+    "section": "WorkSpec",
+    "title": "Same-time writes, conflicts, and transactions"
+  },
+  {
+    "description": "Reference the timing and lifetime of Changes effects.",
+    "href": "/docs/workspec/changes/lifecycle/",
+    "section": "WorkSpec",
+    "title": "Task start and completion Changes"
+  },
+  {
+    "description": "Reference set, change, move, create, and remove in Changes handlers.",
+    "href": "/docs/workspec/changes/operations/",
+    "section": "WorkSpec",
+    "title": "Change operations"
+  },
+  {
+    "description": "Understand explicit task-linked effects in a WorkSpec 2.2 project.",
+    "href": "/docs/workspec/changes/overview/",
+    "section": "WorkSpec",
+    "title": "Changes overview"
+  },
+  {
+    "description": "Compare validator acceptance, runtime status, CLI status, Studio evidence, migration, and authoring recommendations.",
+    "href": "/docs/workspec/compatibility/historical-versions/",
+    "section": "WorkSpec",
+    "title": "Historical WorkSpec versions"
+  },
+  {
+    "description": "Reference accepted historical forms that are not preferred WorkSpec 2.2 authoring.",
+    "href": "/docs/workspec/compatibility/legacy-syntax/",
+    "section": "WorkSpec",
+    "title": "Compatibility-only fields and syntax"
+  },
+  {
+    "description": "Migrate previous UAW or WorkSpec 1 documents to the exact WorkSpec 2.1 target produced by the current migrator.",
+    "href": "/docs/workspec/compatibility/migration/",
+    "section": "WorkSpec",
+    "title": "Migration behavior"
+  },
+  {
+    "description": "Understand how WorkSpec accepts historical projects without promoting historical syntax for new authoring.",
+    "href": "/docs/workspec/compatibility/overview/",
+    "section": "WorkSpec",
+    "title": "Compatibility policy"
+  },
+  {
+    "description": "Register synchronous domain checks in constraints.workspec.js.",
+    "href": "/docs/workspec/constraints/authoring/",
+    "section": "WorkSpec",
+    "title": "Authoring Constraints"
+  },
+  {
+    "description": "Separate domain truth from structural validation and implementation checks.",
+    "href": "/docs/workspec/constraints/boundaries/",
+    "section": "WorkSpec",
+    "title": "What belongs in a Constraint"
+  },
+  {
+    "description": "Reference read-only state and history access for WorkSpec Constraints.",
+    "href": "/docs/workspec/constraints/context/",
+    "section": "WorkSpec",
+    "title": "Constraint context and history queries"
+  },
+  {
+    "description": "Understand domain invariants over resolved WorkSpec state and history.",
+    "href": "/docs/workspec/constraints/overview/",
+    "section": "WorkSpec",
+    "title": "Constraints overview"
+  },
+  {
+    "description": "Reference supported Constraint return shapes and normalized violations.",
+    "href": "/docs/workspec/constraints/violations/",
+    "section": "WorkSpec",
+    "title": "Constraint violations"
+  },
+  {
+    "description": "Register synchronous Generator lifecycle callbacks in WorkSpec 2.2.",
+    "href": "/docs/workspec/generators/authoring/",
+    "section": "WorkSpec",
+    "title": "Authoring Generators"
+  },
+  {
+    "description": "Reference Generator time, state reads, randomness, and mutation operations.",
+    "href": "/docs/workspec/generators/context-operations/",
+    "section": "WorkSpec",
+    "title": "Generator context and operations"
+  },
+  {
+    "description": "Make Generator executions reproducible with the runtime seed.",
+    "href": "/docs/workspec/generators/determinism/",
+    "section": "WorkSpec",
+    "title": "Seeds and determinism"
+  },
+  {
+    "description": "Understand how Generator state can indirectly trigger declared work definitions.",
+    "href": "/docs/workspec/generators/dynamic-work-relationship/",
+    "section": "WorkSpec",
+    "title": "Generator and dynamic work"
+  },
+  {
+    "description": "Reference the position of Generator callbacks within each runtime event.",
+    "href": "/docs/workspec/generators/execution-order/",
+    "section": "WorkSpec",
+    "title": "Generator execution order"
+  },
+  {
+    "description": "Understand optional causal simulation logic in WorkSpec 2.2.",
+    "href": "/docs/workspec/generators/overview/",
+    "section": "WorkSpec",
+    "title": "Generator overview"
+  },
+  {
+    "description": "Reference WorkSpec comparisons, boolean operators, member quantifiers, and condition evaluation.",
+    "href": "/docs/workspec/language/conditions/",
+    "section": "WorkSpec",
+    "title": "Conditions and boolean logic"
+  },
+  {
+    "description": "Reference canonical WorkSpec identifier grammar, namespaces, reserved names, and uniqueness rules.",
+    "href": "/docs/workspec/language/identifiers/",
+    "section": "WorkSpec",
+    "title": "Identifiers and naming"
+  },
+  {
+    "description": "Reference canonical WorkSpec time values, duration values, multi-day times, and offsets.",
+    "href": "/docs/workspec/language/time-durations/",
+    "section": "WorkSpec",
+    "title": "Time, dates, durations, and offsets"
+  },
+  {
+    "description": "Reference literals, compact references, arithmetic, collection expressions, and allowed expression locations.",
+    "href": "/docs/workspec/language/values-references-expressions/",
+    "section": "WorkSpec",
+    "title": "Values, references, and expressions"
+  },
+  {
+    "description": "Understand the authored files, resolved run, and inspection surfaces in WorkSpec 2.2.",
+    "href": "/docs/workspec/overview/",
+    "section": "WorkSpec",
+    "title": "WorkSpec language overview"
+  },
+  {
+    "description": "Reference the generic WorkSpec Problem shape, scopes, provenance, pointers, and metric identifiers.",
+    "href": "/docs/workspec/problems/",
+    "section": "WorkSpec",
+    "title": "Problems and diagnostics"
+  },
+  {
+    "description": "Understand how WorkSpec project sources produce one resolved execution and history.",
+    "href": "/docs/workspec/project-model/",
+    "section": "WorkSpec",
+    "title": "Project model"
+  },
+  {
+    "description": "Reference location bounds, automatic object placement, and unplaced objects.",
+    "href": "/docs/workspec/rendering/layout/",
+    "section": "WorkSpec",
+    "title": "Visual layout"
+  },
+  {
+    "description": "Understand rendering as a presentation of resolved WorkSpec state.",
+    "href": "/docs/workspec/rendering/overview/",
+    "section": "WorkSpec",
+    "title": "Rendering model"
+  },
+  {
+    "description": "Reference State Library visual lookup and renderer asset resolution.",
+    "href": "/docs/workspec/rendering/state-visuals/",
+    "section": "WorkSpec",
+    "title": "State visuals and assets"
+  },
+  {
+    "description": "Reference deterministic SVG rendering from WorkSpec snapshots and projects.",
+    "href": "/docs/workspec/rendering/svg/",
+    "section": "WorkSpec",
+    "title": "SVG renderer"
+  },
+  {
+    "description": "Reference WorkSpec 2.2 event ordering and the authoritative run contract.",
+    "href": "/docs/workspec/runtime/execution-model/",
+    "section": "WorkSpec",
+    "title": "Execution model and authoritative run"
+  },
+  {
+    "description": "Reference finite execution prefixes and safe inspection boundaries.",
+    "href": "/docs/workspec/runtime/horizons/",
+    "section": "WorkSpec",
+    "title": "Requested horizons and resolved-through time"
+  },
+  {
+    "description": "Reference observations of resolved state from an authoritative WorkSpec run.",
+    "href": "/docs/workspec/runtime/snapshots/",
+    "section": "WorkSpec",
+    "title": "Snapshots and resolved state"
+  },
+  {
+    "description": "Reference task instances created from Starting State work definitions.",
+    "href": "/docs/workspec/runtime/task-instances/",
+    "section": "WorkSpec",
+    "title": "Runtime task instances"
+  },
+  {
+    "description": "Reference runtime task states and their transition causes.",
+    "href": "/docs/workspec/runtime/task-status/",
+    "section": "WorkSpec",
+    "title": "Task status and failure propagation"
+  },
+  {
+    "description": "Reference the bounded used-through-time diagnostic in WorkSpec 2.2.",
+    "href": "/docs/workspec/runtime/usage/",
+    "section": "WorkSpec",
+    "title": "Runtime usage accounting"
+  },
+  {
+    "description": "Reference maxEvents, work accounting, and execution limits.",
+    "href": "/docs/workspec/runtime/work-budget/",
+    "section": "WorkSpec",
+    "title": "Work-unit budget and bounded execution"
+  },
+  {
+    "description": "Reference shared authoring conventions for Changes, Constraints, and Generator JavaScript sources.",
+    "href": "/docs/workspec/sources/authoring/",
+    "section": "WorkSpec",
+    "title": "Executable source files"
+  },
+  {
+    "description": "Understand executable WorkSpec sources, in-process limits, custom-validation isolation, and hosting requirements.",
+    "href": "/docs/workspec/sources/security/",
+    "section": "WorkSpec",
+    "title": "Trusted code and execution security"
+  },
+  {
+    "description": "Reference performer-capable types, fixed assignments, selection expressions, and runtime binding.",
+    "href": "/docs/workspec/starting-state/actors-performers/",
+    "section": "WorkSpec",
+    "title": "Actors and performers"
+  },
+  {
+    "description": "Reference dynamic object and location collections, predicates, aliases, and open collection boundaries.",
+    "href": "/docs/workspec/starting-state/collections/",
+    "section": "WorkSpec",
+    "title": "Collections"
+  },
+  {
+    "description": "Find the owning reference page for each canonical WorkSpec 2.2 Starting State field group.",
+    "href": "/docs/workspec/starting-state/field-index/",
+    "section": "WorkSpec",
+    "title": "Starting State field index"
+  },
+  {
+    "description": "Reference physical locations, nesting, coordinates, shapes, and object placement.",
+    "href": "/docs/workspec/starting-state/locations-layout/",
+    "section": "WorkSpec",
+    "title": "Locations and layout"
+  },
+  {
+    "description": "Reference canonical WorkSpec 2.2 day types, repeating calendars, overrides, and multi-day configuration.",
+    "href": "/docs/workspec/starting-state/multi-period/",
+    "section": "WorkSpec",
+    "title": "Calendars and multi-period models"
+  },
+  {
+    "description": "Reference canonical world objects, built-in types, required properties, and placement fields.",
+    "href": "/docs/workspec/starting-state/objects/",
+    "section": "WorkSpec",
+    "title": "Objects and properties"
+  },
+  {
+    "description": "Reference the declarative WorkSpec 2.2 document and its major regions.",
+    "href": "/docs/workspec/starting-state/overview/",
+    "section": "WorkSpec",
+    "title": "Starting State overview"
+  },
+  {
+    "description": "Reference exclusive and capacity reservations, selection, conflicts, and resolved attempts.",
+    "href": "/docs/workspec/starting-state/reservations/",
+    "section": "WorkSpec",
+    "title": "Reservations"
+  },
+  {
+    "description": "Reference the WorkSpec 2.2 root, schema declaration, metadata, and global configuration fields.",
+    "href": "/docs/workspec/starting-state/root-meta-config/",
+    "section": "WorkSpec",
+    "title": "Root, metadata, and configuration"
+  },
+  {
+    "description": "Reference task starts, dependencies, relative timing, and scheduling inputs.",
+    "href": "/docs/workspec/starting-state/scheduling/",
+    "section": "WorkSpec",
+    "title": "Scheduling and dependencies"
+  },
+  {
+    "description": "Reference semantic state libraries, appearance mappings, and project asset identifiers.",
+    "href": "/docs/workspec/starting-state/state-libraries/",
+    "section": "WorkSpec",
+    "title": "State Libraries and appearance"
+  },
+  {
+    "description": "Reference authored static task declarations and canonical WorkSpec 2.2 task fields.",
+    "href": "/docs/workspec/starting-state/tasks/",
+    "section": "WorkSpec",
+    "title": "Tasks"
+  },
+  {
+    "description": "Reference custom object types, inheritance, declared properties, and performer traits.",
+    "href": "/docs/workspec/starting-state/types-traits/",
+    "section": "WorkSpec",
+    "title": "Type definitions and traits"
+  },
+  {
+    "description": "Reference reusable task templates that create runtime task instances from collection membership.",
+    "href": "/docs/workspec/starting-state/work-definitions/",
+    "section": "WorkSpec",
+    "title": "Work definitions"
+  },
+  {
+    "description": "Use the canonical WorkSpec terms and editorial capitalization.",
+    "href": "/docs/workspec/terminology/",
+    "section": "WorkSpec",
+    "title": "Terminology and glossary"
+  },
+  {
+    "description": "Distinguish WorkSpec language versions, package versions, schema URIs, and compatibility support.",
+    "href": "/docs/workspec/versioning-compatibility/",
+    "section": "WorkSpec",
+    "title": "Versions and compatibility"
+  }
+]
