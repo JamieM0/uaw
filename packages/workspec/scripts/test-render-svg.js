@@ -60,7 +60,7 @@ fs.writeFileSync(path.join(assetDirectory, 'Bread Fresh.png'), Buffer.from('iVBO
 fs.writeFileSync(startPath, JSON.stringify(documentValue), 'utf8');
 fs.writeFileSync(changesPath, changes, 'utf8');
 const cliPath = path.resolve(__dirname, '..', 'bin', 'workspec.js');
-const cli = spawnSync(process.execPath, [cliPath, 'render', startPath, '--changes', changesPath, '--time', '09:05', '--assets', assetDirectory, '--out', outputPath], { encoding: 'utf8' });
+const cli = spawnSync(process.execPath, [cliPath, 'render', startPath, '--time', '09:05', '--out', outputPath], { encoding: 'utf8' });
 assert.equal(cli.status, 0, cli.stderr || cli.stdout);
 const cliSvg = fs.readFileSync(outputPath, 'utf8');
 assert.match(cliSvg, /<svg /);
@@ -70,9 +70,14 @@ assert.match(cli.stdout, /Rendered 09:05/);
 documentValue.simulation.state_libraries.bread_states.appearances.main.fresh = 'asset:bread_fresh';
 fs.writeFileSync(startPath, JSON.stringify(documentValue), 'utf8');
 const prefixedOutputPath = path.join(fixtureDirectory, 'world-prefixed.svg');
-const prefixedCli = spawnSync(process.execPath, [cliPath, 'render', startPath, '--changes', changesPath, '--time', '09:05', '--assets', assetDirectory, '--out', prefixedOutputPath], { encoding: 'utf8' });
+const prefixedCli = spawnSync(process.execPath, [cliPath, 'render', startPath, '--time', '09:05', '--out', prefixedOutputPath], { encoding: 'utf8' });
 assert.equal(prefixedCli.status, 0, prefixedCli.stderr || prefixedCli.stdout);
 assert.match(fs.readFileSync(prefixedOutputPath, 'utf8'), /data:image\/png;base64,/, 'CLI should resolve the asset: prefix accepted by Studio');
+
+const withoutAssetsPath = path.join(fixtureDirectory, 'world-without-assets.svg');
+const withoutAssets = spawnSync(process.execPath, [cliPath, 'render', startPath, '--time', '09:05', '--no-assets', '--out', withoutAssetsPath], { encoding: 'utf8' });
+assert.equal(withoutAssets.status, 0, withoutAssets.stderr || withoutAssets.stdout);
+assert.doesNotMatch(fs.readFileSync(withoutAssetsPath, 'utf8'), /data:image\/png;base64,/, '--no-assets should disable the discovered asset directory');
 
 const failed = spawnSync(process.execPath, [cliPath, 'render', path.join(fixtureDirectory, 'missing.json'), '--time', '09:05', '--json'], { encoding: 'utf8' });
 assert.equal(failed.status, 2);

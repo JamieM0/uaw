@@ -130,20 +130,18 @@ workspec validate -custom path/to/simulation-validator-custom.js path/to/start.w
 workspec validate path/to/start.workspec.json --custom path/to/custom-validator.js --custom-catalog path/to/metrics-catalog-custom.json -y
 ```
 
-Without project-source flags, `validate` performs document validation. Supplying `--changes`, `--generator`, `--constraints`, `--seed`, `--time`, or `--max-events` selects the package's project validation path. `--time` is optional, but it is required for claims whose truth depends on a finite horizon, such as a resource being unused during the run. `--constraints` executes JavaScript and therefore requires `--yes` in non-interactive use. JSON validation output is always an envelope with `validation`, `run`, and `problems`; `run` is `null` for document-only validation and contains seed, requested horizon, actual resolved-through time, completion status, and work-budget accounting for project validation.
+The CLI discovers `changes.workspec.js`, `generator.workspec.js`, and `constraints.workspec.js` beside the Starting State. Explicit source paths override those files. Use `--no-changes`, `--no-generator`, or `--no-constraints` to exclude an input. A loaded Constraints source requires `--yes`. `--time` is optional, but it is required for claims whose truth depends on a finite horizon, such as a resource being unused during the run. JSON validation output is always an envelope with `validation`, `run`, and `problems`; `run` is `null` for document-only validation and contains seed, requested horizon, actual resolved-through time, completion status, and work-budget accounting for project validation.
 
 Run a project and inspect its resolved observable state:
 
 ```bash
 workspec snapshot path/to/start.workspec.json \
-  --changes path/to/changes.workspec.js \
-  --generator path/to/generator.workspec.js \
   --time 09:42 \
   --seed 1 \
   --json
 ```
 
-`--changes` and `--generator` are optional. `--time` accepts elapsed minutes, `HH:MM`, a strict ISO date-time, or a JSON day/time value such as `'{"day":2,"time":"09:42"}'`. `--seed` defaults to `1` and controls the Generator's deterministic `random()` helper. `--max-events` sets the work-unit budget. With `--json`, stdout is a stable envelope containing `time`, `time_minutes`, `seed`, `run`, the resolved `state`, and runtime `problems`. When execution does not reach the requested time, `state` is `null`, `run.resolved_through` reports the safe boundary, and `snapshot.time.unresolved` is returned. The command exits `1` when runtime problems contain an error and `2` for CLI usage or file-reading errors.
+`--changes` and `--generator` override discovered sibling sources. `--time` accepts elapsed minutes, `HH:MM`, a strict ISO date-time, or a JSON day/time value such as `'{"day":2,"time":"09:42"}'`. `--seed` defaults to `1` and controls the Generator's deterministic `random()` helper. `--max-events` sets the work-unit budget. With `--json`, stdout is a stable envelope containing `time`, `time_minutes`, `seed`, `run`, the resolved `state`, and runtime `problems`. When execution does not reach the requested time, `state` is `null`, `run.resolved_through` reports the safe boundary, and `snapshot.time.unresolved` is returned. The command exits `1` when runtime problems contain an error and `2` for CLI usage or file-reading errors.
 
 The snapshot command creates one `runProject(...)` result and passes that same object to `snapshotRunAt(...)`; it does not replay authored behavior independently and does not expose runtime history. Validate Starting State separately with `workspec validate` when using the edit → validate → snapshot loop.
 

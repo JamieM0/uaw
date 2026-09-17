@@ -18,15 +18,15 @@ function printHelp(exitCode = 0) {
         'workspec - WorkSpec 2 CLI',
         '',
         'Usage:',
-        '  workspec validate <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] [--constraints <constraints.workspec.js>] [--time <time>] [--seed <seed>] [--max-events <count>] [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json] [--fail-on-warning] [-y]',
-        '  workspec snapshot <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] --time <time> [--seed <seed>] [--max-events <count>] [--json]',
-        '  workspec render <start.workspec.json> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] --time <time> [--assets <directory>] [--seed <seed>] [--max-events <count>] [--out <world.svg>] [--json]',
-        '  workspec constraints <start.workspec.json> --constraints <constraints.workspec.js> [--changes <changes.workspec.js>] [--generator <generator.workspec.js>] [--time <time>] [--seed <seed>] [--max-events <count>] [--json] [-y]',
+        '  workspec validate <start.workspec.json> [--changes <path> | --no-changes] [--generator <path> | --no-generator] [--constraints <path> | --no-constraints] [--time <time>] [--seed <seed>] [--max-events <count>] [-custom <validator.js>] [--custom-catalog <catalog.json>] [--json] [--fail-on-warning] [-y]',
+        '  workspec snapshot <start.workspec.json> [--changes <path> | --no-changes] [--generator <path> | --no-generator] --time <time> [--seed <seed>] [--max-events <count>] [--json]',
+        '  workspec render <start.workspec.json> [--changes <path> | --no-changes] [--generator <path> | --no-generator] --time <time> [--assets <directory> | --no-assets] [--seed <seed>] [--max-events <count>] [--out <world.svg>] [--json]',
+        '  workspec constraints <start.workspec.json> [--constraints <path> | --no-constraints] [--changes <path> | --no-changes] [--generator <path> | --no-generator] [--time <time>] [--seed <seed>] [--max-events <count>] [--json] [-y]',
         '  workspec migrate <file.json> --out <output.json> [--schema]',
         '  workspec format <file.json> [--write] [--out <output.json>]',
         '',
         'Commands:',
-        '  validate   Validate a Starting State document, or a full project when project-source flags are supplied.',
+        '  validate   Validate a Starting State document or its discovered project sources.',
         '  snapshot   Run a project and resolve its observable world state at a time.',
         '  render     Run a project and render its observable world state as SVG.',
         '  constraints Run a project and execute runtime constraints over resolved state.',
@@ -39,11 +39,15 @@ function printHelp(exitCode = 0) {
         '  --custom-catalog <path> Optional metrics-catalog JSON for custom metrics.',
         '  -y, --yes      Acknowledge trusted custom validation/constraint JavaScript.',
         '  --json          Print machine-readable JSON (validate/snapshot/constraints).',
-        '  --changes <path> Optional WorkSpec Changes source (validate/snapshot/render/constraints).',
-        '  --generator <path> Optional WorkSpec Generator source (validate/snapshot/render/constraints).',
-        '  --constraints <path> Runtime constraint functions (validate/constraints).',
+        '  --changes <path> Override the discovered WorkSpec Changes source.',
+        '  --no-changes    Do not load changes.workspec.js.',
+        '  --generator <path> Override the discovered WorkSpec Generator source.',
+        '  --no-generator  Do not load generator.workspec.js.',
+        '  --constraints <path> Override the discovered Constraints source.',
+        '  --no-constraints Do not load constraints.workspec.js.',
         '  --time <time>   Runtime time as minutes, HH:MM, day/time JSON, or ISO date-time.',
-        '  --assets <path>  Asset directory for state-library visuals embedded by render.',
+        '  --assets <path>  Override the discovered asset directory used by render.',
+        '  --no-assets     Do not load the sibling assets directory.',
         '  --seed <seed>   Deterministic integer Generator seed (default: 1).',
         '  --max-events <count> Maximum runtime work units (default: 10000; maximum: 1000000).',
         '  --fail-on-warning Exit with status 1 when validation returns a warning.',
@@ -116,12 +120,24 @@ function parseArgs(argv) {
             result.flags.changes = args.shift() || '';
             continue;
         }
+        if (arg === '--no-changes') {
+            result.flags.noChanges = true;
+            continue;
+        }
         if (arg === '--generator') {
             result.flags.generator = args.shift() || '';
             continue;
         }
+        if (arg === '--no-generator') {
+            result.flags.noGenerator = true;
+            continue;
+        }
         if (arg === '--constraints') {
             result.flags.constraints = args.shift() || '';
+            continue;
+        }
+        if (arg === '--no-constraints') {
+            result.flags.noConstraints = true;
             continue;
         }
         if (arg === '--time') {
@@ -130,6 +146,10 @@ function parseArgs(argv) {
         }
         if (arg === '--assets') {
             result.flags.assets = args.shift() || '';
+            continue;
+        }
+        if (arg === '--no-assets') {
+            result.flags.noAssets = true;
             continue;
         }
         if (arg === '--seed') {
@@ -170,6 +190,35 @@ function resolvePath(inputPath) {
     if (!inputPath) return '';
     if (path.isAbsolute(inputPath)) return inputPath;
     return path.resolve(process.cwd(), inputPath);
+}
+
+const CONVENTIONAL_PROJECT_INPUTS = Object.freeze({
+    changes: { filename: 'changes.workspec.js', exclusion: 'noChanges' },
+    generator: { filename: 'generator.workspec.js', exclusion: 'noGenerator' },
+    constraints: { filename: 'constraints.workspec.js', exclusion: 'noConstraints' },
+    assets: { filename: 'assets', exclusion: 'noAssets' }
+});
+
+function projectDirectory(startPath) {
+    return startPath && startPath !== '-' ? path.dirname(resolvePath(startPath)) : process.cwd();
+}
+
+function resolveProjectInput(startPath, flags, inputName) {
+    const input = CONVENTIONAL_PROJECT_INPUTS[inputName];
+    if (!input) throw new Error(`Unknown project input: ${inputName}`);
+    if (flags[input.exclusion]) return '';
+    if (Object.prototype.hasOwnProperty.call(flags, inputName)) return resolvePath(flags[inputName]);
+    const conventionalPath = path.join(projectDirectory(startPath), input.filename);
+    return fs.existsSync(conventionalPath) ? conventionalPath : '';
+}
+
+function conflictingProjectInput(flags) {
+    for (const [inputName, input] of Object.entries(CONVENTIONAL_PROJECT_INPUTS)) {
+        if (Object.prototype.hasOwnProperty.call(flags, inputName) && flags[input.exclusion]) {
+            return `Cannot combine --${inputName} with --no-${inputName}.`;
+        }
+    }
+    return '';
 }
 
 function toPrettyJson(value) {
@@ -264,6 +313,13 @@ async function readInput(filePath) {
 }
 
 async function handleValidate(filePath, flags) {
+    const conflict = conflictingProjectInput(flags);
+    if (conflict) {
+        process.stderr.write(conflict + '\n');
+        process.exitCode = 2;
+        return;
+    }
+
     if (Object.prototype.hasOwnProperty.call(flags, 'custom') && !flags.custom) {
         process.stderr.write('Missing custom validator path after -custom/--custom.\n');
         printHelp(2);
@@ -290,15 +346,18 @@ async function handleValidate(filePath, flags) {
         return;
     }
 
-    if (flags.constraints && !flags.yes) {
-        process.stderr.write('Runtime constraints execute JavaScript. Re-run with -y/--yes after reviewing the constraint source.\n');
-        process.exitCode = 2;
-        return;
-    }
-
     if (!filePath) {
         process.stderr.write('Missing file path.\n');
         printHelp(2);
+        return;
+    }
+
+    const changesPath = resolveProjectInput(filePath, flags, 'changes');
+    const generatorPath = resolveProjectInput(filePath, flags, 'generator');
+    const constraintsPath = resolveProjectInput(filePath, flags, 'constraints');
+    if (constraintsPath && !flags.yes) {
+        process.stderr.write('Runtime constraints execute JavaScript. Re-run with -y/--yes after reviewing the constraint source, or use --no-constraints.\n');
+        process.exitCode = 2;
         return;
     }
 
@@ -324,7 +383,8 @@ async function handleValidate(filePath, flags) {
         return;
     }
 
-    const projectMode = ['changes', 'generator', 'constraints', 'time', 'seed', 'maxEvents'].some((flag) => Object.prototype.hasOwnProperty.call(flags, flag));
+    const projectMode = Boolean(changesPath || generatorPath || constraintsPath)
+        || ['time', 'seed', 'maxEvents'].some((flag) => Object.prototype.hasOwnProperty.call(flags, flag));
     const time = flags.time === undefined ? null : parseSnapshotTime(flags.time);
     if (time && !time.ok) {
         process.stderr.write(`Invalid validation time: ${flags.time}\n`);
@@ -348,9 +408,9 @@ async function handleValidate(filePath, flags) {
     try {
         result = projectMode
             ? projectValidator.validateProject(parsed, {
-                changesSource: readOptionalSource(flags.changes, 'Changes source'),
-                generatorSource: readOptionalSource(flags.generator, 'Generator source'),
-                constraintsSource: readOptionalSource(flags.constraints, 'constraint source'),
+                changesSource: readOptionalSource(changesPath, 'Changes source'),
+                generatorSource: readOptionalSource(generatorPath, 'Generator source'),
+                constraintsSource: readOptionalSource(constraintsPath, 'constraint source'),
                 seed,
                 ...(maxEvents.value === undefined ? {} : { maxEvents: maxEvents.value }),
                 ...(time ? { until: time.minutes } : {})
@@ -498,6 +558,13 @@ function assetResolverFromDirectory(directoryPath) {
 }
 
 async function handleSnapshot(filePath, flags) {
+    const conflict = conflictingProjectInput(flags);
+    if (conflict) {
+        process.stderr.write(conflict + '\n');
+        process.exitCode = 2;
+        return;
+    }
+
     if (!filePath) {
         process.stderr.write('Missing Starting State file path.\n');
         printHelp(2);
@@ -547,9 +614,11 @@ async function handleSnapshot(filePath, flags) {
     let changesSource;
     let generatorSource;
     try {
+        const changesPath = resolveProjectInput(filePath, flags, 'changes');
+        const generatorPath = resolveProjectInput(filePath, flags, 'generator');
         documentValue = JSON.parse(await readInput(filePath));
-        changesSource = readOptionalSource(flags.changes, 'Changes source');
-        generatorSource = readOptionalSource(flags.generator, 'Generator source');
+        changesSource = readOptionalSource(changesPath, 'Changes source');
+        generatorSource = readOptionalSource(generatorPath, 'Generator source');
     } catch (error) {
         process.stderr.write(`Failed to read project: ${error.message}\n`);
         process.exitCode = 2;
@@ -600,6 +669,13 @@ async function handleSnapshot(filePath, flags) {
 }
 
 async function handleRender(filePath, flags) {
+    const conflict = conflictingProjectInput(flags);
+    if (conflict) {
+        process.stderr.write(conflict + '\n');
+        process.exitCode = 2;
+        return;
+    }
+
     if (!filePath) {
         process.stderr.write('Missing Starting State file path.\n');
         printHelp(2);
@@ -638,11 +714,14 @@ async function handleRender(filePath, flags) {
 
     let result;
     try {
+        const changesPath = resolveProjectInput(filePath, flags, 'changes');
+        const generatorPath = resolveProjectInput(filePath, flags, 'generator');
+        const assetsPath = resolveProjectInput(filePath, flags, 'assets');
         const documentValue = JSON.parse(await readInput(filePath));
         result = stateVisuals.renderProjectToSvg(documentValue, time.value, {
-            changesSource: readOptionalSource(flags.changes, 'Changes source'),
-            generatorSource: readOptionalSource(flags.generator, 'Generator source'),
-            assetResolver: assetResolverFromDirectory(flags.assets),
+            changesSource: readOptionalSource(changesPath, 'Changes source'),
+            generatorSource: readOptionalSource(generatorPath, 'Generator source'),
+            assetResolver: assetResolverFromDirectory(assetsPath),
             seed,
             ...(maxEvents.value === undefined ? {} : { maxEvents: maxEvents.value }),
             timeLabel: flags.time
@@ -727,13 +806,31 @@ async function handleRender(filePath, flags) {
 }
 
 async function handleConstraints(filePath, flags) {
-    if (!filePath || !flags.constraints) {
-        process.stderr.write(!filePath ? 'Missing Starting State file path.\n' : 'Missing --constraints <path>.\n');
+    const conflict = conflictingProjectInput(flags);
+    if (conflict) {
+        process.stderr.write(conflict + '\n');
+        process.exitCode = 2;
+        return;
+    }
+
+    if (!filePath) {
+        process.stderr.write('Missing Starting State file path.\n');
         printHelp(2);
         return;
     }
-    if (!flags.yes) {
-        process.stderr.write('Runtime constraints execute JavaScript. Re-run with -y/--yes after reviewing the constraint source.\n');
+    for (const [flag, label] of [['changes', '--changes'], ['generator', '--generator'], ['constraints', '--constraints']]) {
+        if (Object.prototype.hasOwnProperty.call(flags, flag) && !flags[flag]) {
+            process.stderr.write(`Missing path after ${label}.\n`);
+            printHelp(2);
+            return;
+        }
+    }
+
+    const changesPath = resolveProjectInput(filePath, flags, 'changes');
+    const generatorPath = resolveProjectInput(filePath, flags, 'generator');
+    const constraintsPath = resolveProjectInput(filePath, flags, 'constraints');
+    if (constraintsPath && !flags.yes) {
+        process.stderr.write('Runtime constraints execute JavaScript. Re-run with -y/--yes after reviewing the constraint source, or use --no-constraints.\n');
         process.exitCode = 2;
         return;
     }
@@ -767,9 +864,9 @@ async function handleConstraints(filePath, flags) {
     let constraintSource;
     try {
         documentValue = JSON.parse(await readInput(filePath));
-        changesSource = readOptionalSource(flags.changes, 'Changes source');
-        generatorSource = readOptionalSource(flags.generator, 'Generator source');
-        constraintSource = readOptionalSource(flags.constraints, 'constraint source');
+        changesSource = readOptionalSource(changesPath, 'Changes source');
+        generatorSource = readOptionalSource(generatorPath, 'Generator source');
+        constraintSource = readOptionalSource(constraintsPath, 'constraint source');
     } catch (error) {
         process.stderr.write(`Failed to read project: ${error.message}\n`);
         process.exitCode = 2;

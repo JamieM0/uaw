@@ -41,7 +41,7 @@ for (const golden of goldens) {
     assert.equal(projectValidation.status, 0, projectValidation.stderr || projectValidation.stdout);
     assert.match(projectValidation.stdout, /Validation mode: project \| seed: 17 \| horizon: requested through 542 minutes; resolved through 542/);
 
-    const documentValidation = spawnSync(process.execPath, [cliPath, 'validate', startPath], { encoding: 'utf8' });
+    const documentValidation = spawnSync(process.execPath, [cliPath, 'validate', startPath, '--no-changes', '--no-generator', '--no-constraints'], { encoding: 'utf8' });
     assert.equal(documentValidation.status, 0, documentValidation.stderr || documentValidation.stdout);
     assert.match(documentValidation.stdout, /Validation mode: document/);
 }

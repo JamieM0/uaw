@@ -74,7 +74,7 @@ test('snapshot CLI combines Starting State, Changes, and seeded Generator throug
         ''
     ].join('\n'), 'utf8');
 
-    const args = ['snapshot', startPath, '--changes', changesPath, '--generator', generatorPath, '--time', '09:04', '--seed', '7', '--json'];
+    const args = ['snapshot', startPath, '--time', '09:04', '--seed', '7', '--json'];
     const first = runCli(args);
     const second = runCli(args);
     assert.equal(first.status, 0, first.stderr || first.stdout);
@@ -86,6 +86,31 @@ test('snapshot CLI combines Starting State, Changes, and seeded Generator throug
     assert.equal(output.state.objects.item.properties.ticks, 4);
     assert.equal(typeof output.state.objects.item.properties.sample, 'number');
     assert.deepEqual(output.problems, []);
+
+    const withoutChanges = runCli([...args, '--no-changes']);
+    assert.equal(withoutChanges.status, 0, withoutChanges.stderr || withoutChanges.stdout);
+    const stateWithoutChanges = JSON.parse(withoutChanges.stdout).state;
+    assert.equal(stateWithoutChanges.objects.item.properties.quantity, 0);
+    assert.equal(stateWithoutChanges.objects.item.properties.ticks, 4);
+
+    const withoutGenerator = runCli([...args, '--no-generator']);
+    assert.equal(withoutGenerator.status, 0, withoutGenerator.stderr || withoutGenerator.stdout);
+    const stateWithoutGenerator = JSON.parse(withoutGenerator.stdout).state;
+    assert.equal(stateWithoutGenerator.objects.item.properties.quantity, 10);
+    assert.equal(stateWithoutGenerator.objects.item.properties.ticks, 0);
+    assert.equal(stateWithoutGenerator.objects.item.properties.sample, undefined);
+
+    const conflict = runCli([...args, '--changes', changesPath, '--no-changes']);
+    assert.equal(conflict.status, 2);
+    assert.match(conflict.stderr, /Cannot combine --changes with --no-changes/);
+
+    const projectValidation = runCli(['validate', startPath, '--json']);
+    assert.equal(projectValidation.status, 0, projectValidation.stderr || projectValidation.stdout);
+    assert.equal(JSON.parse(projectValidation.stdout).validation.mode, 'project');
+
+    const documentValidation = runCli(['validate', startPath, '--no-changes', '--no-generator', '--json']);
+    assert.equal(documentValidation.status, 0, documentValidation.stderr || documentValidation.stdout);
+    assert.equal(JSON.parse(documentValidation.stdout).validation.mode, 'document');
 });
 
 const dogfoodCases = {
@@ -147,7 +172,7 @@ test('all simulation-library projects expose healthy and deliberately broken sta
         writeJson(startPath, project);
         fs.writeFileSync(changesPath, entry.changes, 'utf8');
         fs.writeFileSync(constraintsPath, quantityConstraintSource, 'utf8');
-        const validation = runCli(['validate', startPath, '--json']);
+        const validation = runCli(['validate', startPath, '--no-changes', '--no-constraints', '--json']);
         assert.equal(validation.status, 0, `${entry.id} should validate: ${validation.stderr || validation.stdout}`);
         assertNoErrors(JSON.parse(validation.stdout).problems, `${entry.id} validation should have no errors`);
 
@@ -156,7 +181,7 @@ test('all simulation-library projects expose healthy and deliberately broken sta
         const output = JSON.parse(snapshot.stdout);
         assertNoErrors(output.problems, `${entry.id} should have no runtime errors`);
         assertQuantity(output, scenario.healthy, `${entry.id} healthy outcome changed`);
-        const healthyConstraints = runCli(['constraints', startPath, '--changes', changesPath, '--constraints', constraintsPath, '--time', String(scenario.time), '--seed', '1', '--json', '--yes']);
+        const healthyConstraints = runCli(['constraints', startPath, '--time', String(scenario.time), '--seed', '1', '--json', '--yes']);
         assert.equal(healthyConstraints.status, 0, `${entry.id} healthy constraints should pass: ${healthyConstraints.stderr || healthyConstraints.stdout}`);
         assert.deepEqual(JSON.parse(healthyConstraints.stdout).violations, []);
 
@@ -165,7 +190,7 @@ test('all simulation-library projects expose healthy and deliberately broken sta
         const brokenChanges = scenario.mutateChanges ? scenario.mutateChanges(entry.changes) : entry.changes;
         writeJson(brokenStartPath, brokenProject);
         fs.writeFileSync(brokenChangesPath, brokenChanges, 'utf8');
-        const brokenValidation = runCli(['validate', brokenStartPath, '--json']);
+        const brokenValidation = runCli(['validate', brokenStartPath, '--no-changes', '--no-constraints', '--json']);
         assert.equal(brokenValidation.status, 0, `${entry.id} broken variant should remain structurally valid`);
         assertNoErrors(JSON.parse(brokenValidation.stdout).problems, `${entry.id} broken validation should have no errors`);
 
